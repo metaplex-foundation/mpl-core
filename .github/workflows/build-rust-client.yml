@@ -67,5 +67,5 @@ jobs:
         with:
           name: rust-client-builds
           # First wildcard ensures exported paths are consistently under the clients folder.
-          path: ./targe*/release/*mpl_project_name*
+          path: ./targe*/release/*mpl_asset*
           if-no-files-found: error

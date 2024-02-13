@@ -7,7 +7,6 @@
  */
 
 import {
-  ACCOUNT_HEADER_SIZE,
   Context,
   Pda,
   PublicKey,
@@ -18,12 +17,10 @@ import {
 import {
   Serializer,
   mapSerializer,
+  string,
   struct,
-  u16,
-  u32,
   u8,
 } from '@metaplex-foundation/umi/serializers';
-import { getMyAccountSize } from '../accounts';
 import {
   ResolvedAccount,
   ResolvedAccountsWithIndices,
@@ -32,12 +29,14 @@ import {
 
 // Accounts.
 export type CreateInstructionAccounts = {
-  /** The address of the new account */
-  address: Signer;
-  /** The authority of the new account */
+  /** The address of the new asset */
+  assetAddress: Signer;
+  /** The authority of the new asset */
   authority?: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
+  /** The owner of the new asset. Defaults to the authority if not present. */
+  owner?: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
 };
@@ -45,11 +44,11 @@ export type CreateInstructionAccounts = {
 // Data.
 export type CreateInstructionData = {
   discriminator: number;
-  arg1: number;
-  arg2: number;
+  name: string;
+  uri: string;
 };
 
-export type CreateInstructionDataArgs = { arg1: number; arg2: number };
+export type CreateInstructionDataArgs = { name: string; uri: string };
 
 export function getCreateInstructionDataSerializer(): Serializer<
   CreateInstructionDataArgs,
@@ -59,8 +58,8 @@ export function getCreateInstructionDataSerializer(): Serializer<
     struct<CreateInstructionData>(
       [
         ['discriminator', u8()],
-        ['arg1', u16()],
-        ['arg2', u32()],
+        ['name', string()],
+        ['uri', string()],
       ],
       { description: 'CreateInstructionData' }
     ),
@@ -73,22 +72,27 @@ export type CreateInstructionArgs = CreateInstructionDataArgs;
 
 // Instruction.
 export function create(
-  context: Pick<Context, 'identity' | 'payer' | 'programs'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   input: CreateInstructionAccounts & CreateInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
-    'mplProjectName',
-    'MyProgram1111111111111111111111111111111111'
+    'mplAsset',
+    'ASSETp3DinZKfiAyvdQG16YWWLJ2X3ZKjg9zku7n1sZD'
   );
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    address: { index: 0, isWritable: true, value: input.address ?? null },
+    assetAddress: {
+      index: 0,
+      isWritable: true,
+      value: input.assetAddress ?? null,
+    },
     authority: { index: 1, isWritable: false, value: input.authority ?? null },
     payer: { index: 2, isWritable: true, value: input.payer ?? null },
+    owner: { index: 3, isWritable: false, value: input.owner ?? null },
     systemProgram: {
-      index: 3,
+      index: 4,
       isWritable: false,
       value: input.systemProgram ?? null,
     },
@@ -98,9 +102,6 @@ export function create(
   const resolvedArgs: CreateInstructionArgs = { ...input };
 
   // Default values.
-  if (!resolvedAccounts.authority.value) {
-    resolvedAccounts.authority.value = context.identity.publicKey;
-  }
   if (!resolvedAccounts.payer.value) {
     resolvedAccounts.payer.value = context.payer;
   }
@@ -130,7 +131,7 @@ export function create(
   );
 
   // Bytes Created On Chain.
-  const bytesCreatedOnChain = getMyAccountSize() + ACCOUNT_HEADER_SIZE;
+  const bytesCreatedOnChain = 0;
 
   return transactionBuilder([
     { instruction: { keys, programId, data }, signers, bytesCreatedOnChain },

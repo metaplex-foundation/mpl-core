@@ -1,7 +1,7 @@
 {
-  "name": "@metaplex-foundation/mpl-project-name",
+  "name": "@metaplex-foundation/mpl-asset",
   "version": "0.1.0",
-  "description": "My project description",
+  "description": "Digital Assets",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
@@ -21,7 +21,7 @@
     "registry": "https://registry.npmjs.org"
   },
   "homepage": "https://metaplex.com",
-  "repository": "https://github.com/metaplex-foundation/mpl-project-name.git",
+  "repository": "https://github.com/metaplex-foundation/mpl-asset.git",
   "author": "Metaplex Maintainers <contact@metaplex.com>",
   "license": "Apache-2.0",
   "dependencies": {

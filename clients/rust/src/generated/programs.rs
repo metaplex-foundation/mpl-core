@@ -7,5 +7,5 @@
 
 use solana_program::{pubkey, pubkey::Pubkey};
 
-/// `mpl_project_name` program ID.
-pub const MPL_PROJECT_NAME_ID: Pubkey = pubkey!("MyProgram1111111111111111111111111111111111");
+/// `mpl_asset` program ID.
+pub const MPL_ASSET_ID: Pubkey = pubkey!("ASSETp3DinZKfiAyvdQG16YWWLJ2X3ZKjg9zku7n1sZD");

@@ -1,24 +1,25 @@
 {
   "version": "0.1.0",
-  "name": "mpl_project_name_program",
+  "name": "mpl_asset_program",
   "instructions": [
     {
       "name": "Create",
       "accounts": [
         {
-          "name": "address",
+          "name": "assetAddress",
           "isMut": true,
           "isSigner": true,
           "docs": [
-            "The address of the new account"
+            "The address of the new asset"
           ]
         },
         {
           "name": "authority",
           "isMut": false,
           "isSigner": false,
+          "isOptional": true,
           "docs": [
-            "The authority of the new account"
+            "The authority of the new asset"
           ]
         },
         {
@@ -27,6 +28,15 @@
           "isSigner": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The owner of the new asset. Defaults to the authority if not present."
           ]
         },
         {
@@ -54,43 +64,31 @@
   ],
   "accounts": [
     {
-      "name": "MyAccount",
+      "name": "NonFungible",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "key",
+            "name": "interface",
             "type": {
-              "defined": "Key"
+              "defined": "Interface"
             }
           },
           {
-            "name": "authority",
+            "name": "updateAuthority",
             "type": "publicKey"
           },
           {
-            "name": "data",
-            "type": {
-              "defined": "MyData"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "MyPdaAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "Key"
-            }
+            "name": "owner",
+            "type": "publicKey"
           },
           {
-            "name": "bump",
-            "type": "u8"
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
           }
         ]
       }
@@ -103,45 +101,89 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "arg1",
-            "type": "u16"
+            "name": "name",
+            "type": "string"
           },
           {
-            "name": "arg2",
-            "type": "u32"
+            "name": "uri",
+            "type": "string"
           }
         ]
       }
     },
     {
-      "name": "MyData",
+      "name": "Creator",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "field1",
-            "type": "u16"
+            "name": "address",
+            "type": "publicKey"
           },
           {
-            "name": "field2",
-            "type": "u32"
+            "name": "verified",
+            "type": "bool"
           }
         ]
       }
     },
     {
-      "name": "Key",
+      "name": "Royalties",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creators",
+            "type": {
+              "vec": {
+                "defined": "Creator"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetHeader",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "interfaceMapOffset",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Interface",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Uninitialized"
+            "name": "Reserved"
           },
           {
-            "name": "MyAccount"
+            "name": "NonFungible"
           },
           {
-            "name": "MyPdaAccount"
+            "name": "Royalties"
+          },
+          {
+            "name": "MasterEdition"
+          },
+          {
+            "name": "PrintEdition"
+          },
+          {
+            "name": "Delegate"
+          },
+          {
+            "name": "Inscription"
           }
         ]
       }
@@ -166,7 +208,7 @@
   ],
   "metadata": {
     "origin": "shank",
-    "address": "MyProgram1111111111111111111111111111111111",
+    "address": "ASSETp3DinZKfiAyvdQG16YWWLJ2X3ZKjg9zku7n1sZD",
     "binaryVersion": "0.3.0",
     "libVersion": "0.3.0"
   }

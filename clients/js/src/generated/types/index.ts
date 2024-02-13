@@ -6,5 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-export * from './key';
-export * from './myData';
+export * from './assetHeader';
+export * from './creator';
+export * from './interface';
+export * from './royalties';

@@ -5,8 +5,12 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub(crate) mod key;
-pub(crate) mod my_data;
+pub(crate) mod asset_header;
+pub(crate) mod creator;
+pub(crate) mod interface;
+pub(crate) mod royalties;
 
-pub use self::key::*;
-pub use self::my_data::*;
+pub use self::asset_header::*;
+pub use self::creator::*;
+pub use self::interface::*;
+pub use self::royalties::*;

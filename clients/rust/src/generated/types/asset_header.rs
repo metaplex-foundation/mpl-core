@@ -10,7 +10,7 @@ use borsh::BorshSerialize;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct MyData {
-    pub field1: u16,
-    pub field2: u32,
+pub struct AssetHeader {
+    pub version: u8,
+    pub interface_map_offset: u64,
 }

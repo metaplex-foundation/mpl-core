@@ -5,27 +5,30 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Key;
-use crate::generated::types::MyData;
+use crate::generated::types::Interface;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_program::pubkey::Pubkey;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct MyAccount {
-    pub key: Key,
+pub struct NonFungible {
+    pub interface: Interface,
     #[cfg_attr(
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
-    pub authority: Pubkey,
-    pub data: MyData,
+    pub update_authority: Pubkey,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
+    )]
+    pub owner: Pubkey,
+    pub name: String,
+    pub uri: String,
 }
 
-impl MyAccount {
-    pub const LEN: usize = 39;
-
+impl NonFungible {
     #[inline(always)]
     pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {
         let mut data = data;
@@ -33,7 +36,7 @@ impl MyAccount {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for MyAccount {
+impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for NonFungible {
     type Error = std::io::Error;
 
     fn try_from(

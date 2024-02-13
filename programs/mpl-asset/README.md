@@ -1,6 +1,6 @@
-# Mpl Project Name
+# Mpl Asset
 
-My project description
+Digital Assets
 
 ## Building
 
