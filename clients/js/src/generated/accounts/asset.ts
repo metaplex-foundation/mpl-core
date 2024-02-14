@@ -28,9 +28,9 @@ import {
 } from '@metaplex-foundation/umi/serializers';
 import { Interface, InterfaceArgs, getInterfaceSerializer } from '../types';
 
-export type NonFungible = Account<NonFungibleAccountData>;
+export type Asset = Account<AssetAccountData>;
 
-export type NonFungibleAccountData = {
+export type AssetAccountData = {
   interface: Interface;
   updateAuthority: PublicKey;
   owner: PublicKey;
@@ -38,19 +38,19 @@ export type NonFungibleAccountData = {
   uri: string;
 };
 
-export type NonFungibleAccountDataArgs = {
+export type AssetAccountDataArgs = {
   updateAuthority: PublicKey;
   owner: PublicKey;
   name: string;
   uri: string;
 };
 
-export function getNonFungibleAccountDataSerializer(): Serializer<
-  NonFungibleAccountDataArgs,
-  NonFungibleAccountData
+export function getAssetAccountDataSerializer(): Serializer<
+  AssetAccountDataArgs,
+  AssetAccountData
 > {
-  return mapSerializer<NonFungibleAccountDataArgs, any, NonFungibleAccountData>(
-    struct<NonFungibleAccountData>(
+  return mapSerializer<AssetAccountDataArgs, any, AssetAccountData>(
+    struct<AssetAccountData>(
       [
         ['interface', getInterfaceSerializer()],
         ['updateAuthority', publicKeySerializer()],
@@ -58,73 +58,71 @@ export function getNonFungibleAccountDataSerializer(): Serializer<
         ['name', string()],
         ['uri', string()],
       ],
-      { description: 'NonFungibleAccountData' }
+      { description: 'AssetAccountData' }
     ),
-    (value) => ({ ...value, interface: Interface.NonFungible })
-  ) as Serializer<NonFungibleAccountDataArgs, NonFungibleAccountData>;
+    (value) => ({ ...value, interface: Interface.Asset })
+  ) as Serializer<AssetAccountDataArgs, AssetAccountData>;
 }
 
-export function deserializeNonFungible(rawAccount: RpcAccount): NonFungible {
-  return deserializeAccount(rawAccount, getNonFungibleAccountDataSerializer());
+export function deserializeAsset(rawAccount: RpcAccount): Asset {
+  return deserializeAccount(rawAccount, getAssetAccountDataSerializer());
 }
 
-export async function fetchNonFungible(
+export async function fetchAsset(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<NonFungible> {
+): Promise<Asset> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  assertAccountExists(maybeAccount, 'NonFungible');
-  return deserializeNonFungible(maybeAccount);
+  assertAccountExists(maybeAccount, 'Asset');
+  return deserializeAsset(maybeAccount);
 }
 
-export async function safeFetchNonFungible(
+export async function safeFetchAsset(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<NonFungible | null> {
+): Promise<Asset | null> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  return maybeAccount.exists ? deserializeNonFungible(maybeAccount) : null;
+  return maybeAccount.exists ? deserializeAsset(maybeAccount) : null;
 }
 
-export async function fetchAllNonFungible(
+export async function fetchAllAsset(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions
-): Promise<NonFungible[]> {
+): Promise<Asset[]> {
   const maybeAccounts = await context.rpc.getAccounts(
     publicKeys.map((key) => toPublicKey(key, false)),
     options
   );
   return maybeAccounts.map((maybeAccount) => {
-    assertAccountExists(maybeAccount, 'NonFungible');
-    return deserializeNonFungible(maybeAccount);
+    assertAccountExists(maybeAccount, 'Asset');
+    return deserializeAsset(maybeAccount);
   });
 }
 
-export async function safeFetchAllNonFungible(
+export async function safeFetchAllAsset(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions
-): Promise<NonFungible[]> {
+): Promise<Asset[]> {
   const maybeAccounts = await context.rpc.getAccounts(
     publicKeys.map((key) => toPublicKey(key, false)),
     options
   );
   return maybeAccounts
     .filter((maybeAccount) => maybeAccount.exists)
-    .map((maybeAccount) => deserializeNonFungible(maybeAccount as RpcAccount));
+    .map((maybeAccount) => deserializeAsset(maybeAccount as RpcAccount));
 }
 
-export function getNonFungibleGpaBuilder(
-  context: Pick<Context, 'rpc' | 'programs'>
-) {
+export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
   const programId = context.programs.getPublicKey(
     'mplAsset',
     'ASSETp3DinZKfiAyvdQG16YWWLJ2X3ZKjg9zku7n1sZD'
@@ -143,6 +141,6 @@ export function getNonFungibleGpaBuilder(
       name: [65, string()],
       uri: [null, string()],
     })
-    .deserializeUsing<NonFungible>((account) => deserializeNonFungible(account))
-    .whereField('interface', Interface.NonFungible);
+    .deserializeUsing<Asset>((account) => deserializeAsset(account))
+    .whereField('interface', Interface.Asset);
 }

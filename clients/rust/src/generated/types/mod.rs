@@ -7,10 +7,12 @@
 
 pub(crate) mod asset_header;
 pub(crate) mod creator;
+pub(crate) mod data_state;
 pub(crate) mod interface;
 pub(crate) mod royalties;
 
 pub use self::asset_header::*;
 pub use self::creator::*;
+pub use self::data_state::*;
 pub use self::interface::*;
 pub use self::royalties::*;

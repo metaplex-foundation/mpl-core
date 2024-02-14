@@ -29,3 +29,10 @@ impl AssetHeader {
         })
     }
 }
+
+#[repr(C)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
+pub enum DataState {
+    AccountState,
+    LedgerState,
+}

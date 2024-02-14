@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::DataState;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -20,6 +21,8 @@ pub struct Create {
     pub owner: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
+    /// The SPL Noop Program
+    pub log_wrapper: Option<solana_program::pubkey::Pubkey>,
 }
 
 impl Create {
@@ -35,7 +38,7 @@ impl Create {
         args: CreateInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset_address,
             true,
@@ -67,6 +70,17 @@ impl Create {
             self.system_program,
             false,
         ));
+        if let Some(log_wrapper) = self.log_wrapper {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                log_wrapper,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_ASSET_ID,
+                false,
+            ));
+        }
         accounts.extend_from_slice(remaining_accounts);
         let mut data = CreateInstructionData::new().try_to_vec().unwrap();
         let mut args = args.try_to_vec().unwrap();
@@ -94,6 +108,8 @@ impl CreateInstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CreateInstructionArgs {
+    pub data_state: DataState,
+    pub watermark: bool,
     pub name: String,
     pub uri: String,
 }
@@ -106,6 +122,9 @@ pub struct CreateBuilder {
     payer: Option<solana_program::pubkey::Pubkey>,
     owner: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
+    log_wrapper: Option<solana_program::pubkey::Pubkey>,
+    data_state: Option<DataState>,
+    watermark: Option<bool>,
     name: Option<String>,
     uri: Option<String>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
@@ -148,6 +167,26 @@ impl CreateBuilder {
         self.system_program = Some(system_program);
         self
     }
+    /// `[optional account]`
+    /// The SPL Noop Program
+    #[inline(always)]
+    pub fn log_wrapper(
+        &mut self,
+        log_wrapper: Option<solana_program::pubkey::Pubkey>,
+    ) -> &mut Self {
+        self.log_wrapper = log_wrapper;
+        self
+    }
+    #[inline(always)]
+    pub fn data_state(&mut self, data_state: DataState) -> &mut Self {
+        self.data_state = Some(data_state);
+        self
+    }
+    #[inline(always)]
+    pub fn watermark(&mut self, watermark: bool) -> &mut Self {
+        self.watermark = Some(watermark);
+        self
+    }
     #[inline(always)]
     pub fn name(&mut self, name: String) -> &mut Self {
         self.name = Some(name);
@@ -186,8 +225,11 @@ impl CreateBuilder {
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
+            log_wrapper: self.log_wrapper,
         };
         let args = CreateInstructionArgs {
+            data_state: self.data_state.clone().expect("data_state is not set"),
+            watermark: self.watermark.clone().expect("watermark is not set"),
             name: self.name.clone().expect("name is not set"),
             uri: self.uri.clone().expect("uri is not set"),
         };
@@ -208,6 +250,8 @@ pub struct CreateCpiAccounts<'a, 'b> {
     pub owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The SPL Noop Program
+    pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
 /// `create` CPI instruction.
@@ -224,6 +268,8 @@ pub struct CreateCpi<'a, 'b> {
     pub owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The SPL Noop Program
+    pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The arguments for the instruction.
     pub __args: CreateInstructionArgs,
 }
@@ -241,6 +287,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             payer: accounts.payer,
             owner: accounts.owner,
             system_program: accounts.system_program,
+            log_wrapper: accounts.log_wrapper,
             __args: args,
         }
     }
@@ -277,7 +324,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset_address.key,
             true,
@@ -311,6 +358,17 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             *self.system_program.key,
             false,
         ));
+        if let Some(log_wrapper) = self.log_wrapper {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *log_wrapper.key,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_ASSET_ID,
+                false,
+            ));
+        }
         remaining_accounts.iter().for_each(|remaining_account| {
             accounts.push(solana_program::instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
@@ -327,7 +385,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset_address.clone());
         if let Some(authority) = self.authority {
@@ -338,6 +396,9 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             account_infos.push(owner.clone());
         }
         account_infos.push(self.system_program.clone());
+        if let Some(log_wrapper) = self.log_wrapper {
+            account_infos.push(log_wrapper.clone());
+        }
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -364,6 +425,9 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
             payer: None,
             owner: None,
             system_program: None,
+            log_wrapper: None,
+            data_state: None,
+            watermark: None,
             name: None,
             uri: None,
             __remaining_accounts: Vec::new(),
@@ -412,6 +476,26 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         system_program: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.system_program = Some(system_program);
+        self
+    }
+    /// `[optional account]`
+    /// The SPL Noop Program
+    #[inline(always)]
+    pub fn log_wrapper(
+        &mut self,
+        log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.log_wrapper = log_wrapper;
+        self
+    }
+    #[inline(always)]
+    pub fn data_state(&mut self, data_state: DataState) -> &mut Self {
+        self.instruction.data_state = Some(data_state);
+        self
+    }
+    #[inline(always)]
+    pub fn watermark(&mut self, watermark: bool) -> &mut Self {
+        self.instruction.watermark = Some(watermark);
         self
     }
     #[inline(always)]
@@ -466,6 +550,16 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = CreateInstructionArgs {
+            data_state: self
+                .instruction
+                .data_state
+                .clone()
+                .expect("data_state is not set"),
+            watermark: self
+                .instruction
+                .watermark
+                .clone()
+                .expect("watermark is not set"),
             name: self.instruction.name.clone().expect("name is not set"),
             uri: self.instruction.uri.clone().expect("uri is not set"),
         };
@@ -487,6 +581,8 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
                 .instruction
                 .system_program
                 .expect("system_program is not set"),
+
+            log_wrapper: self.instruction.log_wrapper,
             __args: args,
         };
         instruction.invoke_signed_with_remaining_accounts(
@@ -503,6 +599,9 @@ struct CreateCpiBuilderInstruction<'a, 'b> {
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    data_state: Option<DataState>,
+    watermark: Option<bool>,
     name: Option<String>,
     uri: Option<String>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.

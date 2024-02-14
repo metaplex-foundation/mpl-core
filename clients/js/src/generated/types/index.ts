@@ -8,5 +8,6 @@
 
 export * from './assetHeader';
 export * from './creator';
+export * from './dataState';
 export * from './interface';
 export * from './royalties';

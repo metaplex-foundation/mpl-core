@@ -1,6 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
+use crate::state::DataState;
+
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 #[rustfmt::skip]
 pub enum MplAssetInstruction {
@@ -11,12 +13,15 @@ pub enum MplAssetInstruction {
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, optional, name="owner", desc = "The owner of the new asset. Defaults to the authority if not present.")]
     #[account(4, name="system_program", desc = "The system program")]
+    #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Create(CreateArgs),
 }
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub struct CreateArgs {
+    pub data_state: DataState,
+    pub watermark: bool,
     pub name: String,
     pub uri: String,
 }

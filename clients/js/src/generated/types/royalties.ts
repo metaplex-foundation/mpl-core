@@ -6,19 +6,35 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+import { PublicKey } from '@metaplex-foundation/umi';
 import {
   Serializer,
   array,
+  publicKey as publicKeySerializer,
   struct,
+  u16,
 } from '@metaplex-foundation/umi/serializers';
 import { Creator, CreatorArgs, getCreatorSerializer } from '.';
 
-export type Royalties = { creators: Array<Creator> };
+export type Royalties = {
+  creators: Array<Creator>;
+  authRules: PublicKey;
+  sellerFeeBasisPoints: number;
+};
 
-export type RoyaltiesArgs = { creators: Array<CreatorArgs> };
+export type RoyaltiesArgs = {
+  creators: Array<CreatorArgs>;
+  authRules: PublicKey;
+  sellerFeeBasisPoints: number;
+};
 
 export function getRoyaltiesSerializer(): Serializer<RoyaltiesArgs, Royalties> {
-  return struct<Royalties>([['creators', array(getCreatorSerializer())]], {
-    description: 'Royalties',
-  }) as Serializer<RoyaltiesArgs, Royalties>;
+  return struct<Royalties>(
+    [
+      ['creators', array(getCreatorSerializer())],
+      ['authRules', publicKeySerializer()],
+      ['sellerFeeBasisPoints', u16()],
+    ],
+    { description: 'Royalties' }
+  ) as Serializer<RoyaltiesArgs, Royalties>;
 }

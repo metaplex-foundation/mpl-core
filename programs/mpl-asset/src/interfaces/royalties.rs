@@ -10,4 +10,6 @@ pub struct Creator {
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct Royalties {
     creators: Vec<Creator>,
+    auth_rules: Pubkey,
+    seller_fee_basis_points: u16,
 }

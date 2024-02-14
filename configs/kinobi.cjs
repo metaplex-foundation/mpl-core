@@ -15,6 +15,22 @@ kinobi.update(
   })
 );
 
+// Set default account values across multiple instructions.
+// kinobi.update(
+//   new k.SetInstructionAccountDefaultValuesVisitor([
+//     {
+//       account: "logWrapper",
+//       defaultsTo: k.conditionalDefault("arg", "dataState", {
+//         value: k.vEnum("DataState", "LedgerState"),
+//         ifTrue: k.programDefault(
+//           "splNoop",
+//           "noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV"
+//         ),
+//       }),
+//     },
+//   ])
+// );
+
 // // Update accounts.
 // kinobi.update(
 //   new k.UpdateAccountsVisitor({
@@ -42,7 +58,7 @@ kinobi.update(
 const iface = (name) => ({ field: "interface", value: k.vEnum("Interface", name) });
 kinobi.update(
   new k.SetAccountDiscriminatorFromFieldVisitor({
-    nonFungible: iface("NonFungible"),
+    asset: iface("Asset"),
     // myPdaAccount: key("MyPdaAccount"),
   })
 );

@@ -16,6 +16,7 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  bool,
   mapSerializer,
   string,
   struct,
@@ -26,6 +27,7 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import { DataState, DataStateArgs, getDataStateSerializer } from '../types';
 
 // Accounts.
 export type CreateInstructionAccounts = {
@@ -39,16 +41,25 @@ export type CreateInstructionAccounts = {
   owner?: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
+  /** The SPL Noop Program */
+  logWrapper?: PublicKey | Pda;
 };
 
 // Data.
 export type CreateInstructionData = {
   discriminator: number;
+  dataState: DataState;
+  watermark: boolean;
   name: string;
   uri: string;
 };
 
-export type CreateInstructionDataArgs = { name: string; uri: string };
+export type CreateInstructionDataArgs = {
+  dataState: DataStateArgs;
+  watermark: boolean;
+  name: string;
+  uri: string;
+};
 
 export function getCreateInstructionDataSerializer(): Serializer<
   CreateInstructionDataArgs,
@@ -58,6 +69,8 @@ export function getCreateInstructionDataSerializer(): Serializer<
     struct<CreateInstructionData>(
       [
         ['discriminator', u8()],
+        ['dataState', getDataStateSerializer()],
+        ['watermark', bool()],
         ['name', string()],
         ['uri', string()],
       ],
@@ -95,6 +108,11 @@ export function create(
       index: 4,
       isWritable: false,
       value: input.systemProgram ?? null,
+    },
+    logWrapper: {
+      index: 5,
+      isWritable: false,
+      value: input.logWrapper ?? null,
     },
   };
 

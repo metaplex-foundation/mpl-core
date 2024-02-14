@@ -46,6 +46,15 @@
           "docs": [
             "The system program"
           ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
         }
       ],
       "args": [
@@ -64,7 +73,7 @@
   ],
   "accounts": [
     {
-      "name": "NonFungible",
+      "name": "Asset",
       "type": {
         "kind": "struct",
         "fields": [
@@ -92,6 +101,35 @@
           }
         ]
       }
+    },
+    {
+      "name": "HashedAsset",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "interface",
+            "type": {
+              "defined": "Interface"
+            }
+          },
+          {
+            "name": "hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "watermarkSlot",
+            "type": {
+              "option": "u64"
+            }
+          }
+        ]
+      }
     }
   ],
   "types": [
@@ -100,6 +138,16 @@
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "dataState",
+            "type": {
+              "defined": "DataState"
+            }
+          },
+          {
+            "name": "watermark",
+            "type": "bool"
+          },
           {
             "name": "name",
             "type": "string"
@@ -139,6 +187,14 @@
                 "defined": "Creator"
               }
             }
+          },
+          {
+            "name": "authRules",
+            "type": "publicKey"
+          },
+          {
+            "name": "sellerFeeBasisPoints",
+            "type": "u16"
           }
         ]
       }
@@ -168,7 +224,10 @@
             "name": "Reserved"
           },
           {
-            "name": "NonFungible"
+            "name": "Asset"
+          },
+          {
+            "name": "HashedAsset"
           },
           {
             "name": "Royalties"
@@ -184,6 +243,20 @@
           },
           {
             "name": "Inscription"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DataState",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "AccountState"
+          },
+          {
+            "name": "LedgerState"
           }
         ]
       }

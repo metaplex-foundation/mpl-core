@@ -1,13 +1,13 @@
-mod non_fungible;
+mod asset;
 mod royalties;
 
+pub use asset::*;
 use borsh::{BorshDeserialize, BorshSerialize};
-pub use non_fungible::*;
 pub use royalties::*;
 
 use std::collections::HashMap;
 
-use solana_program::pubkey::Pubkey;
+use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 macro_rules! interface_instruction {
     ($a:expr, $b:expr) => {
@@ -15,11 +15,12 @@ macro_rules! interface_instruction {
     };
 }
 
-#[repr(C)]
+#[repr(u16)]
 #[derive(Clone, Copy, Debug, BorshSerialize, BorshDeserialize)]
 pub enum Interface {
     Reserved,
-    NonFungible,
+    Asset,
+    HashedAsset,
     Royalties,
     MasterEdition,
     PrintEdition,
@@ -29,9 +30,9 @@ pub enum Interface {
 
 #[repr(u32)]
 pub enum NonFungibleInstructions {
-    Create = interface_instruction!(Interface::NonFungible, 0),
-    Transfer = interface_instruction!(Interface::NonFungible, 1),
-    Burn = interface_instruction!(Interface::NonFungible, 2),
+    Create = interface_instruction!(Interface::Asset, 0),
+    Transfer = interface_instruction!(Interface::Asset, 1),
+    Burn = interface_instruction!(Interface::Asset, 2),
 }
 
 pub struct RegistryData {
@@ -48,4 +49,8 @@ pub trait DataStorage {
     fn save(&self, data: &mut [u8]);
     fn load(&self, data: &[u8]);
     fn load_mut(&self, data: &mut [u8]);
+}
+
+pub trait Compressible {
+    fn hash(&self) -> Result<[u8; 32], ProgramError>;
 }

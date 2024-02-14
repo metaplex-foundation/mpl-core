@@ -5,6 +5,8 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub(crate) mod non_fungible;
+pub(crate) mod asset;
+pub(crate) mod hashed_asset;
 
-pub use self::non_fungible::*;
+pub use self::asset::*;
+pub use self::hashed_asset::*;
