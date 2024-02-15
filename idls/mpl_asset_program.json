@@ -78,9 +78,9 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "interface",
+            "name": "key",
             "type": {
-              "defined": "Interface"
+              "defined": "Key"
             }
           },
           {
@@ -108,9 +108,9 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "interface",
+            "name": "key",
             "type": {
-              "defined": "Interface"
+              "defined": "Key"
             }
           },
           {
@@ -209,14 +209,14 @@
             "type": "u8"
           },
           {
-            "name": "interfaceMapOffset",
+            "name": "pluginMapOffset",
             "type": "u64"
           }
         ]
       }
     },
     {
-      "name": "Interface",
+      "name": "Plugin",
       "type": {
         "kind": "enum",
         "variants": [
@@ -248,6 +248,29 @@
       }
     },
     {
+      "name": "Key",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Uninitialized"
+          },
+          {
+            "name": "Asset"
+          },
+          {
+            "name": "HashedAsset"
+          },
+          {
+            "name": "Collection"
+          },
+          {
+            "name": "HashedCollection"
+          }
+        ]
+      }
+    },
+    {
       "name": "DataState",
       "type": {
         "kind": "enum",
@@ -257,6 +280,37 @@
           },
           {
             "name": "LedgerState"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Authority",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Owner"
+          },
+          {
+            "name": "Permanent",
+            "fields": [
+              {
+                "name": "address",
+                "type": "publicKey"
+              }
+            ]
+          },
+          {
+            "name": "SameAs",
+            "fields": [
+              {
+                "name": "plugin",
+                "type": {
+                  "defined": "Plugin"
+                }
+              }
+            ]
           }
         ]
       }

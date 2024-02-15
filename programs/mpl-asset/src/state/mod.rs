@@ -3,14 +3,16 @@ use solana_program::account_info::AccountInfo;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::msg;
 use solana_program::program_error::ProgramError;
+use solana_program::pubkey::Pubkey;
 
 use crate::error::MplAssetError;
+use crate::plugins::Plugin;
 
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct AssetHeader {
     pub version: u8,
-    pub interface_map_offset: usize,
+    pub plugin_map_offset: usize,
 }
 
 impl AssetHeader {
@@ -35,4 +37,12 @@ impl AssetHeader {
 pub enum DataState {
     AccountState,
     LedgerState,
+}
+
+#[repr(C)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
+pub enum Authority {
+    Owner,
+    Permanent { address: Pubkey },
+    SameAs { plugin: Plugin },
 }

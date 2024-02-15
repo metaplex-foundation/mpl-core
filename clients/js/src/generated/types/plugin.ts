@@ -8,7 +8,7 @@
 
 import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 
-export enum Interface {
+export enum Plugin {
   Reserved,
   Asset,
   HashedAsset,
@@ -19,10 +19,11 @@ export enum Interface {
   Inscription,
 }
 
-export type InterfaceArgs = Interface;
+export type PluginArgs = Plugin;
 
-export function getInterfaceSerializer(): Serializer<InterfaceArgs, Interface> {
-  return scalarEnum<Interface>(Interface, {
-    description: 'Interface',
-  }) as Serializer<InterfaceArgs, Interface>;
+export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
+  return scalarEnum<Plugin>(Plugin, { description: 'Plugin' }) as Serializer<
+    PluginArgs,
+    Plugin
+  >;
 }

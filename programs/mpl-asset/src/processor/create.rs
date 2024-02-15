@@ -8,7 +8,7 @@ use solana_program::{
 use crate::{
     error::MplAssetError,
     instruction::{accounts::CreateAccounts, CreateArgs},
-    interfaces::{Asset, Compressible, HashedAsset, Interface},
+    plugins::{Asset, Compressible, HashedAsset, Key},
     state::DataState,
 };
 
@@ -26,7 +26,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
     }
 
     let new_asset = Asset {
-        interface: Interface::Asset,
+        key: Key::Asset,
         update_authority: *ctx.accounts.authority.unwrap_or(ctx.accounts.payer).key,
         owner: *ctx
             .accounts
@@ -45,7 +45,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
             invoke(&spl_noop::instruction(serialized_data.clone()), &[])?;
 
             let hashed_asset = HashedAsset {
-                interface: Interface::HashedAsset,
+                key: Key::HashedAsset,
                 hash: new_asset.hash()?,
                 watermark_slot: match args.watermark {
                     true => Some(Clock::get()?.slot),

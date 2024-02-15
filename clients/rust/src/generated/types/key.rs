@@ -8,9 +8,12 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AssetHeader {
-    pub version: u8,
-    pub plugin_map_offset: u64,
+pub enum Key {
+    Uninitialized,
+    Asset,
+    HashedAsset,
+    Collection,
+    HashedCollection,
 }

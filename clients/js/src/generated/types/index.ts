@@ -7,7 +7,9 @@
  */
 
 export * from './assetHeader';
+export * from './authority';
 export * from './creator';
 export * from './dataState';
-export * from './interface';
+export * from './key';
+export * from './plugin';
 export * from './royalties';

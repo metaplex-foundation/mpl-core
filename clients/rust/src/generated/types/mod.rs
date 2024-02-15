@@ -6,13 +6,17 @@
 //!
 
 pub(crate) mod asset_header;
+pub(crate) mod authority;
 pub(crate) mod creator;
 pub(crate) mod data_state;
-pub(crate) mod interface;
+pub(crate) mod key;
+pub(crate) mod plugin;
 pub(crate) mod royalties;
 
 pub use self::asset_header::*;
+pub use self::authority::*;
 pub use self::creator::*;
 pub use self::data_state::*;
-pub use self::interface::*;
+pub use self::key::*;
+pub use self::plugin::*;
 pub use self::royalties::*;

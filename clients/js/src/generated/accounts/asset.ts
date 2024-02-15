@@ -26,12 +26,12 @@ import {
   string,
   struct,
 } from '@metaplex-foundation/umi/serializers';
-import { Interface, InterfaceArgs, getInterfaceSerializer } from '../types';
+import { Key, KeyArgs, getKeySerializer } from '../types';
 
 export type Asset = Account<AssetAccountData>;
 
 export type AssetAccountData = {
-  interface: Interface;
+  key: Key;
   updateAuthority: PublicKey;
   owner: PublicKey;
   name: string;
@@ -52,7 +52,7 @@ export function getAssetAccountDataSerializer(): Serializer<
   return mapSerializer<AssetAccountDataArgs, any, AssetAccountData>(
     struct<AssetAccountData>(
       [
-        ['interface', getInterfaceSerializer()],
+        ['key', getKeySerializer()],
         ['updateAuthority', publicKeySerializer()],
         ['owner', publicKeySerializer()],
         ['name', string()],
@@ -60,7 +60,7 @@ export function getAssetAccountDataSerializer(): Serializer<
       ],
       { description: 'AssetAccountData' }
     ),
-    (value) => ({ ...value, interface: Interface.Asset })
+    (value) => ({ ...value, key: Key.Asset })
   ) as Serializer<AssetAccountDataArgs, AssetAccountData>;
 }
 
@@ -129,18 +129,18 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
   );
   return gpaBuilder(context, programId)
     .registerFields<{
-      interface: InterfaceArgs;
+      key: KeyArgs;
       updateAuthority: PublicKey;
       owner: PublicKey;
       name: string;
       uri: string;
     }>({
-      interface: [0, getInterfaceSerializer()],
+      key: [0, getKeySerializer()],
       updateAuthority: [1, publicKeySerializer()],
       owner: [33, publicKeySerializer()],
       name: [65, string()],
       uri: [null, string()],
     })
     .deserializeUsing<Asset>((account) => deserializeAsset(account))
-    .whereField('interface', Interface.Asset);
+    .whereField('key', Key.Asset);
 }

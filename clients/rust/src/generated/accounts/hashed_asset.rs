@@ -5,14 +5,14 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Interface;
+use crate::generated::types::Key;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct HashedAsset {
-    pub interface: Interface,
+    pub key: Key,
     pub hash: [u8; 32],
     pub watermark_slot: Option<u64>,
 }

@@ -28,18 +28,18 @@ import {
   struct,
   u64,
 } from '@metaplex-foundation/umi/serializers';
-import { Interface, InterfaceArgs, getInterfaceSerializer } from '../types';
+import { Key, KeyArgs, getKeySerializer } from '../types';
 
 export type HashedAsset = Account<HashedAssetAccountData>;
 
 export type HashedAssetAccountData = {
-  interface: Interface;
+  key: Key;
   hash: Uint8Array;
   watermarkSlot: Option<bigint>;
 };
 
 export type HashedAssetAccountDataArgs = {
-  interface: InterfaceArgs;
+  key: KeyArgs;
   hash: Uint8Array;
   watermarkSlot: OptionOrNullable<number | bigint>;
 };
@@ -50,7 +50,7 @@ export function getHashedAssetAccountDataSerializer(): Serializer<
 > {
   return struct<HashedAssetAccountData>(
     [
-      ['interface', getInterfaceSerializer()],
+      ['key', getKeySerializer()],
       ['hash', bytes({ size: 32 })],
       ['watermarkSlot', option(u64())],
     ],
@@ -125,11 +125,11 @@ export function getHashedAssetGpaBuilder(
   );
   return gpaBuilder(context, programId)
     .registerFields<{
-      interface: InterfaceArgs;
+      key: KeyArgs;
       hash: Uint8Array;
       watermarkSlot: OptionOrNullable<number | bigint>;
     }>({
-      interface: [0, getInterfaceSerializer()],
+      key: [0, getKeySerializer()],
       hash: [1, bytes({ size: 32 })],
       watermarkSlot: [33, option(u64())],
     })

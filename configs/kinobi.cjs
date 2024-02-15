@@ -55,10 +55,10 @@ kinobi.update(
 );
 
 // Set ShankAccount discriminator.
-const iface = (name) => ({ field: "interface", value: k.vEnum("Interface", name) });
+const key = (name) => ({ field: "key", value: k.vEnum("Key", name) });
 kinobi.update(
   new k.SetAccountDiscriminatorFromFieldVisitor({
-    asset: iface("Asset"),
+    asset: key("Asset"),
     // myPdaAccount: key("MyPdaAccount"),
   })
 );

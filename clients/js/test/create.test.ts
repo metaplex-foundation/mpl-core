@@ -1,6 +1,6 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { base58 } from '@metaplex-foundation/umi/serializers';
+// import { base58 } from '@metaplex-foundation/umi/serializers';
 import { Asset, DataState, create, fetchAsset, fetchHashedAsset, getAssetAccountDataSerializer } from '../src';
 import { createUmi } from './_setup';
 
@@ -20,7 +20,7 @@ test('it can create a new asset in account state', async (t) => {
 
   // Then an account was created with the correct data.
   const asset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log(asset);
+  console.log("Account State:", asset);
   t.like(asset, <Asset>{
     publicKey: assetAddress.publicKey,
     updateAuthority: umi.identity.publicKey,
@@ -54,10 +54,17 @@ test('it can create a new asset in ledger state', async (t) => {
 
   const tx = await umi.rpc.getTransaction(txResult.signature);
   if (tx && tx.meta.innerInstructions) {
-    console.log(tx.meta.innerInstructions[0].instructions);
+    // console.log(tx.meta.innerInstructions[0].instructions);
     const { data } = tx.meta.innerInstructions[0].instructions[0];
-    console.log(base58.deserialize(data));
+    // console.log(base58.deserialize(data));
     const parsed = getAssetAccountDataSerializer().deserialize(data)[0];
-    console.log("Parsed data:", parsed);
+    console.log("Ledger State:", parsed);
+    t.like(parsed, <Asset>{
+      updateAuthority: umi.identity.publicKey,
+      owner: umi.identity.publicKey,
+      name: 'Test Bread',
+      uri: 'https://example.com/bread',
+    });
   }
+
 });
