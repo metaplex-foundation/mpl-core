@@ -14,10 +14,11 @@ use borsh::BorshSerialize;
 pub struct HashedAsset {
     pub key: Key,
     pub hash: [u8; 32],
-    pub watermark_slot: Option<u64>,
 }
 
 impl HashedAsset {
+    pub const LEN: usize = 33;
+
     #[inline(always)]
     pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {
         let mut data = data;

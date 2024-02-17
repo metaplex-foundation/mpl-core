@@ -5,18 +5,30 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub(crate) mod asset_header;
 pub(crate) mod authority;
+pub(crate) mod collection;
+pub(crate) mod compression_proof;
 pub(crate) mod creator;
 pub(crate) mod data_state;
+pub(crate) mod extra_accounts;
 pub(crate) mod key;
+pub(crate) mod migration_level;
 pub(crate) mod plugin;
+pub(crate) mod plugin_header;
+pub(crate) mod plugin_registry;
+pub(crate) mod registry_data;
 pub(crate) mod royalties;
 
-pub use self::asset_header::*;
 pub use self::authority::*;
+pub use self::collection::*;
+pub use self::compression_proof::*;
 pub use self::creator::*;
 pub use self::data_state::*;
+pub use self::extra_accounts::*;
 pub use self::key::*;
+pub use self::migration_level::*;
 pub use self::plugin::*;
+pub use self::plugin_header::*;
+pub use self::plugin_registry::*;
+pub use self::registry_data::*;
 pub use self::royalties::*;

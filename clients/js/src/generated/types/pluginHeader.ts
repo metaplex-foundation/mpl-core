@@ -13,22 +13,22 @@ import {
   u8,
 } from '@metaplex-foundation/umi/serializers';
 
-export type AssetHeader = { version: number; pluginMapOffset: bigint };
+export type PluginHeader = { version: number; pluginMapOffset: bigint };
 
-export type AssetHeaderArgs = {
+export type PluginHeaderArgs = {
   version: number;
   pluginMapOffset: number | bigint;
 };
 
-export function getAssetHeaderSerializer(): Serializer<
-  AssetHeaderArgs,
-  AssetHeader
+export function getPluginHeaderSerializer(): Serializer<
+  PluginHeaderArgs,
+  PluginHeader
 > {
-  return struct<AssetHeader>(
+  return struct<PluginHeader>(
     [
       ['version', u8()],
       ['pluginMapOffset', u64()],
     ],
-    { description: 'AssetHeader' }
-  ) as Serializer<AssetHeaderArgs, AssetHeader>;
+    { description: 'PluginHeader' }
+  ) as Serializer<PluginHeaderArgs, PluginHeader>;
 }
