@@ -1,7 +1,10 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
-use crate::state::DataState;
+use crate::processor::{
+    BurnArgs, CompressArgs, CreateArgs, DecompressArgs, DelegateArgs, FreezeArgs, MigrateArgs,
+    ThawArgs, TransferArgs, UpdateArgs,
+};
 
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 #[rustfmt::skip]
@@ -110,68 +113,3 @@ pub enum MplAssetInstruction {
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Decompress(DecompressArgs),
 }
-
-//TODO: Implement this struct
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct CompressionProof {}
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct CreateArgs {
-    pub data_state: DataState,
-    pub name: String,
-    pub uri: String,
-}
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub enum MigrationLevel {
-    MigrateOnly,
-    MigrateAndBurn,
-}
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct MigrateArgs {
-    pub data_state: DataState,
-    pub level: MigrationLevel,
-}
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct DelegateArgs {}
-
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct BurnArgs {}
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct TransferArgs {}
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct UpdateArgs {
-    pub new_name: String,
-    pub new_uri: String,
-}
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct SetFreezeAuthorityArgs {}
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct FreezeArgs {}
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct ThawArgs {}
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct CompressArgs {}
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct DecompressArgs {}

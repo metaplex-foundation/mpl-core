@@ -1,4 +1,4 @@
-use borsh::BorshSerialize;
+use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
@@ -7,9 +7,17 @@ use solana_program::{
 
 use crate::{
     error::MplAssetError,
-    instruction::{accounts::CreateAccounts, CreateArgs},
+    instruction::accounts::CreateAccounts,
     state::{Asset, Compressible, DataState, HashedAsset, Key},
 };
+
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct CreateArgs {
+    pub data_state: DataState,
+    pub name: String,
+    pub uri: String,
+}
 
 pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> ProgramResult {
     // Accounts.
