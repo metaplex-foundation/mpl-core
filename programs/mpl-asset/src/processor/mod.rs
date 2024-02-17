@@ -1,9 +1,6 @@
 use crate::instruction::MplAssetInstruction;
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-    pubkey::Pubkey,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, pubkey::Pubkey};
 
 mod create;
 pub(crate) use create::*;
@@ -87,6 +84,5 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Decompress");
             decompress(accounts, args)
         }
-        _ => Err(ProgramError::InvalidInstructionData),
     }
 }
