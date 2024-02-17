@@ -1,5 +1,10 @@
+mod collection;
 mod royalties;
+mod utils;
+
+pub use collection::*;
 pub use royalties::*;
+pub use utils::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use std::collections::HashMap;
@@ -16,8 +21,6 @@ use crate::state::Authority;
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum Plugin {
     Reserved,
-    Asset,
-    HashedAsset,
     Royalties,
     MasterEdition,
     PrintEdition,
