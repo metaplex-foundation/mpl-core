@@ -59,8 +59,7 @@ pub enum MplAssetInstruction {
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Burn(BurnArgs),
 
-    //TODO: Implement this instruction
-    /// Transfer an mpl-asset.
+    // danenbm working on
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]
     #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
