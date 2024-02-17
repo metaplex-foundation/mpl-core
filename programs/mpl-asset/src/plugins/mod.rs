@@ -1,7 +1,4 @@
-mod asset;
 mod royalties;
-
-pub use asset::*;
 pub use royalties::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -50,10 +47,6 @@ pub trait DataStorage {
     fn save(&self, data: &mut [u8]);
     fn load(&self, data: &[u8]);
     fn load_mut(&self, data: &mut [u8]);
-}
-
-pub trait Compressible {
-    fn hash(&self) -> Result<[u8; 32], ProgramError>;
 }
 
 // pub trait PluginTrait

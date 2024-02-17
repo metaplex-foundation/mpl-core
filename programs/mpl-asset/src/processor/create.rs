@@ -8,8 +8,7 @@ use solana_program::{
 use crate::{
     error::MplAssetError,
     instruction::{accounts::CreateAccounts, CreateArgs},
-    plugins::{Asset, Compressible, HashedAsset, Key},
-    state::DataState,
+    state::{Asset, Compressible, DataState, HashedAsset, Key},
 };
 
 pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> ProgramResult {

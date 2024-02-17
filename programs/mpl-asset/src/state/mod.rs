@@ -1,3 +1,6 @@
+mod asset;
+pub use asset::*;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::account_info::AccountInfo;
 use solana_program::entrypoint::ProgramResult;
@@ -45,4 +48,17 @@ pub enum Authority {
     Owner,
     Permanent { address: Pubkey },
     SameAs { plugin: Plugin },
+}
+
+pub trait Compressible {
+    fn hash(&self) -> Result<[u8; 32], ProgramError>;
+}
+
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
+pub enum Key {
+    Uninitialized,
+    Asset,
+    HashedAsset,
+    Collection,
+    HashedCollection,
 }
