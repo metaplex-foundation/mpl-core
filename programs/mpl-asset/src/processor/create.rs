@@ -1,7 +1,7 @@
 use borsh::BorshSerialize;
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo, clock::Clock, entrypoint::ProgramResult, program::invoke,
+    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
     program_memory::sol_memcpy, rent::Rent, system_instruction, system_program, sysvar::Sysvar,
 };
 
@@ -46,10 +46,6 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
             let hashed_asset = HashedAsset {
                 key: Key::HashedAsset,
                 hash: new_asset.hash()?,
-                watermark_slot: match args.watermark {
-                    true => Some(Clock::get()?.slot),
-                    false => None,
-                },
             };
 
             hashed_asset.try_to_vec()?

@@ -23,7 +23,6 @@ impl Compressible for Asset {
 
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
 pub struct HashedAsset {
-    pub key: Key,                    //1
-    pub hash: [u8; 32],              //32
-    pub watermark_slot: Option<u64>, //1 | 9
+    pub key: Key,       //1
+    pub hash: [u8; 32], //32
 }
