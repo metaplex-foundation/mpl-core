@@ -51,6 +51,42 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Create");
             create(accounts, args)
         }
+        MplAssetInstruction::Migrate(args) => {
+            msg!("Instruction: Migrate");
+            migrate(accounts, args)
+        }
+        MplAssetInstruction::Delegate(args) => {
+            msg!("Instruction: Delegate");
+            delegate(accounts, args)
+        }
+        MplAssetInstruction::Burn(args) => {
+            msg!("Instruction: Burn");
+            burn(accounts, args)
+        }
+        MplAssetInstruction::Transfer(args) => {
+            msg!("Instruction: Transfer");
+            transfer(accounts, args)
+        }
+        MplAssetInstruction::Update(args) => {
+            msg!("Instruction: Update");
+            update(accounts, args)
+        }
+        MplAssetInstruction::Freeze(args) => {
+            msg!("Instruction: Freeze");
+            freeze(accounts, args)
+        }
+        MplAssetInstruction::Thaw(args) => {
+            msg!("Instruction: Thaw");
+            thaw(accounts, args)
+        }
+        MplAssetInstruction::Compress(args) => {
+            msg!("Instruction: Compress");
+            compress(accounts, args)
+        }
+        MplAssetInstruction::Decompress(args) => {
+            msg!("Instruction: Decompress");
+            decompress(accounts, args)
+        }
         _ => Err(ProgramError::InvalidInstructionData),
     }
 }
