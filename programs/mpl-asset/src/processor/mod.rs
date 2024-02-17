@@ -3,7 +3,10 @@ mod create;
 use create::*;
 
 use borsh::BorshDeserialize;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, pubkey::Pubkey};
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
+    pubkey::Pubkey,
+};
 
 use crate::instruction::MplAssetInstruction;
 
@@ -18,5 +21,6 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Create");
             create(accounts, args)
         }
+        _ => Err(ProgramError::InvalidInstructionData),
     }
 }
