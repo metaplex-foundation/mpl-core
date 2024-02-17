@@ -4,12 +4,17 @@ mod utils;
 
 pub use collection::*;
 pub use royalties::*;
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
+};
 pub use utils::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
-use std::collections::HashMap;
 
-use crate::state::Authority;
+use crate::{
+    error::MplAssetError,
+    state::{Authority, Key},
+};
 
 // macro_rules! plugin_instruction {
 //     ($a:expr, $b:expr) => {
@@ -35,20 +40,35 @@ pub enum Plugin {
 //     Burn = plugin_instruction!(Plugin::Metadata, 2),
 //}
 
+#[repr(C)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct RegistryData {
     pub offset: usize,
     pub authorities: Vec<Authority>,
 }
 
+#[repr(C)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct PluginRegistry {
-    pub registry: HashMap<Plugin, RegistryData>,
+    pub registry: Vec<(Key, RegistryData)>,
+    // pub third_party_registry: HashMap<Authority, usize>,
 }
 
-pub trait DataStorage {
-    fn get_required_length(&self);
-    fn save(&self, data: &mut [u8]);
-    fn load(&self, data: &[u8]);
-    fn load_mut(&self, data: &mut [u8]);
+impl PluginRegistry {
+    pub fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
+        let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
+        PluginRegistry::deserialize(&mut bytes).map_err(|error| {
+            msg!("Error: {}", error);
+            MplAssetError::DeserializationError.into()
+        })
+    }
+
+    pub fn save(&self, account: &AccountInfo, offset: usize) -> ProgramResult {
+        borsh::to_writer(&mut account.data.borrow_mut()[offset..], self).map_err(|error| {
+            msg!("Error: {}", error);
+            MplAssetError::SerializationError.into()
+        })
+    }
 }
 
 // pub trait PluginTrait

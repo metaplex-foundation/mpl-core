@@ -11,12 +11,22 @@ pub enum MplAssetError {
     /// 0 - Invalid System Program
     #[error("Invalid System Program")]
     InvalidSystemProgram,
+
     /// 1 - Error deserializing account
     #[error("Error deserializing account")]
     DeserializationError,
+
     /// 2 - Error serializing account
     #[error("Error serializing account")]
     SerializationError,
+
+    /// 3 - Plugins not initialized
+    #[error("Plugins not initialized")]
+    PluginsNotInitialized,
+
+    /// 4 - Plugin not found
+    #[error("Plugin not found")]
+    PluginNotFound,
 }
 
 impl PrintProgramError for MplAssetError {
