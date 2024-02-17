@@ -2,7 +2,6 @@ mod royalties;
 pub use royalties::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::program_error::ProgramError;
 use std::collections::HashMap;
 
 use crate::state::Authority;

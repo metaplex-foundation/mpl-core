@@ -26,11 +26,15 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
 
     let new_asset = Asset {
         key: Key::Asset,
-        update_authority: *ctx.accounts.authority.unwrap_or(ctx.accounts.payer).key,
+        update_authority: *ctx
+            .accounts
+            .update_authority
+            .unwrap_or(ctx.accounts.payer)
+            .key,
         owner: *ctx
             .accounts
             .owner
-            .unwrap_or(ctx.accounts.authority.unwrap_or(ctx.accounts.payer))
+            .unwrap_or(ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer))
             .key,
         name: args.name,
         uri: args.uri,

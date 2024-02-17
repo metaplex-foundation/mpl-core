@@ -5,13 +5,9 @@ mod plugin_header;
 pub use plugin_header::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::account_info::AccountInfo;
-use solana_program::entrypoint::ProgramResult;
-use solana_program::msg;
 use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
 
-use crate::error::MplAssetError;
 use crate::plugins::Plugin;
 
 #[repr(C)]
@@ -27,6 +23,21 @@ pub enum Authority {
     Owner,
     Permanent { address: Pubkey },
     SameAs { plugin: Plugin },
+    Collection,
+}
+
+#[repr(C)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
+pub enum ExtraAccounts {
+    None,
+    SplHook {
+        extra_account_metas: Pubkey,
+    },
+    MplHook {
+        mint_pda: Option<Pubkey>,
+        collection_pda: Option<Pubkey>,
+        owner_pda: Option<Pubkey>,
+    },
 }
 
 pub trait Compressible {
