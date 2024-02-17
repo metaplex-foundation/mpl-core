@@ -13,7 +13,7 @@ use crate::{
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct CreateArgs {
+pub struct CreateArgs {
     pub data_state: DataState,
     pub name: String,
     pub uri: String,
