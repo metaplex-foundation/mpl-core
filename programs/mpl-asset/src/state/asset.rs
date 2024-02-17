@@ -2,9 +2,9 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::{keccak, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::utils::DataBlob;
+use crate::{state::Key, utils::DataBlob};
 
-use super::{Compressible, Key};
+use super::Compressible;
 
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
 pub struct Asset {
@@ -34,6 +34,10 @@ impl DataBlob for Asset {
 
     fn get_size(&self) -> usize {
         Asset::BASE_LENGTH + self.name.len() + self.uri.len()
+    }
+
+    fn key() -> Key {
+        Key::Asset
     }
 }
 
