@@ -54,6 +54,32 @@ export class SerializationErrorError extends ProgramError {
 codeToErrorMap.set(0x2, SerializationErrorError);
 nameToErrorMap.set('SerializationError', SerializationErrorError);
 
+/** PluginsNotInitialized: Plugins not initialized */
+export class PluginsNotInitializedError extends ProgramError {
+  readonly name: string = 'PluginsNotInitialized';
+
+  readonly code: number = 0x3; // 3
+
+  constructor(program: Program, cause?: Error) {
+    super('Plugins not initialized', program, cause);
+  }
+}
+codeToErrorMap.set(0x3, PluginsNotInitializedError);
+nameToErrorMap.set('PluginsNotInitialized', PluginsNotInitializedError);
+
+/** PluginNotFound: Plugin not found */
+export class PluginNotFoundError extends ProgramError {
+  readonly name: string = 'PluginNotFound';
+
+  readonly code: number = 0x4; // 4
+
+  constructor(program: Program, cause?: Error) {
+    super('Plugin not found', program, cause);
+  }
+}
+codeToErrorMap.set(0x4, PluginNotFoundError);
+nameToErrorMap.set('PluginNotFound', PluginNotFoundError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

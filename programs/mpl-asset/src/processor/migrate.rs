@@ -8,15 +8,8 @@ use solana_program::{
 use crate::{
     error::MplAssetError,
     instruction::accounts::CreateAccounts,
-    state::{Asset, Compressible, DataState, HashedAsset, Key},
+    state::{Asset, Compressible, DataState, HashedAsset, Key, MigrationLevel},
 };
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub enum MigrationLevel {
-    MigrateOnly,
-    MigrateAndBurn,
-}
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]

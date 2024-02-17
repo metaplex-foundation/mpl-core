@@ -7,21 +7,23 @@ use solana_program::{
 
 use crate::{
     error::MplAssetError,
-    instruction::accounts::CreateAccounts,
+    instruction::accounts::{CreateAccounts, DelegateAccounts},
+    plugins::create_idempotent,
     state::{Asset, Compressible, DataState, HashedAsset, Key},
 };
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub enum MigrationLevel {
-    MigrateOnly,
-    MigrateAndBurn,
-}
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub struct DelegateArgs {}
 
 pub(crate) fn delegate<'a>(accounts: &'a [AccountInfo<'a>], args: DelegateArgs) -> ProgramResult {
+    let ctx = DelegateAccounts::context(accounts)?;
+
+    create_idempotent(
+        ctx.accounts.asset_address,
+        ctx.accounts.owner,
+        ctx.accounts.system_program,
+    )?;
+
     Ok(())
 }

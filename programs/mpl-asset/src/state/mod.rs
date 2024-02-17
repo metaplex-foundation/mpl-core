@@ -44,11 +44,18 @@ pub trait Compressible {
     fn hash(&self) -> Result<[u8; 32], ProgramError>;
 }
 
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub enum Key {
     Uninitialized,
     Asset,
     HashedAsset,
     Collection,
     HashedCollection,
+}
+
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub enum MigrationLevel {
+    MigrateOnly,
+    MigrateAndBurn,
 }

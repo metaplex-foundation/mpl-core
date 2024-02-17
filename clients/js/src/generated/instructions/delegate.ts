@@ -17,7 +17,6 @@ import {
 import {
   Serializer,
   mapSerializer,
-  string,
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
@@ -26,20 +25,19 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import { DataState, DataStateArgs, getDataStateSerializer } from '../types';
 
 // Accounts.
-export type CreateInstructionAccounts = {
-  /** The address of the new asset */
-  assetAddress: Signer;
+export type DelegateInstructionAccounts = {
+  /** The address of the asset */
+  assetAddress: PublicKey | Pda;
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
-  /** The authority of the new asset */
-  updateAuthority?: PublicKey | Pda;
+  /** The owner of the asset */
+  owner: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The owner of the new asset. Defaults to the authority if not present. */
-  owner?: PublicKey | Pda;
+  /** The new simple delegate for the asset */
+  delegate: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
@@ -47,44 +45,30 @@ export type CreateInstructionAccounts = {
 };
 
 // Data.
-export type CreateInstructionData = {
-  discriminator: number;
-  dataState: DataState;
-  name: string;
-  uri: string;
-};
+export type DelegateInstructionData = { discriminator: number };
 
-export type CreateInstructionDataArgs = {
-  dataState: DataStateArgs;
-  name: string;
-  uri: string;
-};
+export type DelegateInstructionDataArgs = {};
 
-export function getCreateInstructionDataSerializer(): Serializer<
-  CreateInstructionDataArgs,
-  CreateInstructionData
+export function getDelegateInstructionDataSerializer(): Serializer<
+  DelegateInstructionDataArgs,
+  DelegateInstructionData
 > {
-  return mapSerializer<CreateInstructionDataArgs, any, CreateInstructionData>(
-    struct<CreateInstructionData>(
-      [
-        ['discriminator', u8()],
-        ['dataState', getDataStateSerializer()],
-        ['name', string()],
-        ['uri', string()],
-      ],
-      { description: 'CreateInstructionData' }
-    ),
-    (value) => ({ ...value, discriminator: 0 })
-  ) as Serializer<CreateInstructionDataArgs, CreateInstructionData>;
+  return mapSerializer<
+    DelegateInstructionDataArgs,
+    any,
+    DelegateInstructionData
+  >(
+    struct<DelegateInstructionData>([['discriminator', u8()]], {
+      description: 'DelegateInstructionData',
+    }),
+    (value) => ({ ...value, discriminator: 2 })
+  ) as Serializer<DelegateInstructionDataArgs, DelegateInstructionData>;
 }
 
-// Args.
-export type CreateInstructionArgs = CreateInstructionDataArgs;
-
 // Instruction.
-export function create(
-  context: Pick<Context, 'payer' | 'programs'>,
-  input: CreateInstructionAccounts & CreateInstructionArgs
+export function delegate(
+  context: Pick<Context, 'programs'>,
+  input: DelegateInstructionAccounts
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -99,14 +83,14 @@ export function create(
       isWritable: true,
       value: input.assetAddress ?? null,
     },
-    collection: { index: 1, isWritable: true, value: input.collection ?? null },
-    updateAuthority: {
-      index: 2,
+    collection: {
+      index: 1,
       isWritable: false,
-      value: input.updateAuthority ?? null,
+      value: input.collection ?? null,
     },
+    owner: { index: 2, isWritable: true, value: input.owner ?? null },
     payer: { index: 3, isWritable: true, value: input.payer ?? null },
-    owner: { index: 4, isWritable: false, value: input.owner ?? null },
+    delegate: { index: 4, isWritable: false, value: input.delegate ?? null },
     systemProgram: {
       index: 5,
       isWritable: false,
@@ -119,13 +103,7 @@ export function create(
     },
   };
 
-  // Arguments.
-  const resolvedArgs: CreateInstructionArgs = { ...input };
-
   // Default values.
-  if (!resolvedAccounts.payer.value) {
-    resolvedAccounts.payer.value = context.payer;
-  }
   if (!resolvedAccounts.systemProgram.value) {
     resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
       'splSystem',
@@ -147,9 +125,7 @@ export function create(
   );
 
   // Data.
-  const data = getCreateInstructionDataSerializer().serialize(
-    resolvedArgs as CreateInstructionDataArgs
-  );
+  const data = getDelegateInstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

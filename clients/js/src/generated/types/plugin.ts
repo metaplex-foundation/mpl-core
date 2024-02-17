@@ -10,8 +10,6 @@ import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 
 export enum Plugin {
   Reserved,
-  Asset,
-  HashedAsset,
   Royalties,
   MasterEdition,
   PrintEdition,

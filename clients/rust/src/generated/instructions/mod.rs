@@ -5,6 +5,24 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+pub(crate) mod burn;
+pub(crate) mod compress;
 pub(crate) mod create;
+pub(crate) mod decompress;
+pub(crate) mod delegate;
+pub(crate) mod freeze;
+pub(crate) mod migrate;
+pub(crate) mod thaw;
+pub(crate) mod transfer;
+pub(crate) mod update;
 
+pub use self::burn::*;
+pub use self::compress::*;
 pub use self::create::*;
+pub use self::decompress::*;
+pub use self::delegate::*;
+pub use self::freeze::*;
+pub use self::migrate::*;
+pub use self::thaw::*;
+pub use self::transfer::*;
+pub use self::update::*;

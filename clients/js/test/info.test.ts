@@ -11,7 +11,6 @@ test('fetch account info for account state', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    watermark: false,
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
@@ -38,7 +37,6 @@ test('fetch account info for ledger state', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.LedgerState,
-    watermark: true,
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',

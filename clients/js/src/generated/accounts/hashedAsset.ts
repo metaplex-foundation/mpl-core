@@ -9,8 +9,6 @@
 import {
   Account,
   Context,
-  Option,
-  OptionOrNullable,
   Pda,
   PublicKey,
   RpcAccount,
@@ -24,25 +22,15 @@ import {
 import {
   Serializer,
   bytes,
-  option,
   struct,
-  u64,
 } from '@metaplex-foundation/umi/serializers';
 import { Key, KeyArgs, getKeySerializer } from '../types';
 
 export type HashedAsset = Account<HashedAssetAccountData>;
 
-export type HashedAssetAccountData = {
-  key: Key;
-  hash: Uint8Array;
-  watermarkSlot: Option<bigint>;
-};
+export type HashedAssetAccountData = { key: Key; hash: Uint8Array };
 
-export type HashedAssetAccountDataArgs = {
-  key: KeyArgs;
-  hash: Uint8Array;
-  watermarkSlot: OptionOrNullable<number | bigint>;
-};
+export type HashedAssetAccountDataArgs = { key: KeyArgs; hash: Uint8Array };
 
 export function getHashedAssetAccountDataSerializer(): Serializer<
   HashedAssetAccountDataArgs,
@@ -52,7 +40,6 @@ export function getHashedAssetAccountDataSerializer(): Serializer<
     [
       ['key', getKeySerializer()],
       ['hash', bytes({ size: 32 })],
-      ['watermarkSlot', option(u64())],
     ],
     { description: 'HashedAssetAccountData' }
   ) as Serializer<HashedAssetAccountDataArgs, HashedAssetAccountData>;
@@ -124,16 +111,15 @@ export function getHashedAssetGpaBuilder(
     'ASSETp3DinZKfiAyvdQG16YWWLJ2X3ZKjg9zku7n1sZD'
   );
   return gpaBuilder(context, programId)
-    .registerFields<{
-      key: KeyArgs;
-      hash: Uint8Array;
-      watermarkSlot: OptionOrNullable<number | bigint>;
-    }>({
+    .registerFields<{ key: KeyArgs; hash: Uint8Array }>({
       key: [0, getKeySerializer()],
       hash: [1, bytes({ size: 32 })],
-      watermarkSlot: [33, option(u64())],
     })
     .deserializeUsing<HashedAsset>((account) =>
       deserializeHashedAsset(account)
     );
+}
+
+export function getHashedAssetSize(): number {
+  return 33;
 }

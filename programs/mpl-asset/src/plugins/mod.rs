@@ -14,6 +14,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use crate::{
     error::MplAssetError,
     state::{Authority, Key},
+    utils::DataBlob,
 };
 
 // macro_rules! plugin_instruction {
@@ -50,8 +51,7 @@ pub struct RegistryData {
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct PluginRegistry {
-    pub registry: Vec<(Key, RegistryData)>,
-    // pub third_party_registry: HashMap<Authority, usize>,
+    pub registry: Vec<(Key, RegistryData)>, // 4
 }
 
 impl PluginRegistry {
@@ -68,6 +68,16 @@ impl PluginRegistry {
             msg!("Error: {}", error);
             MplAssetError::SerializationError.into()
         })
+    }
+}
+
+impl DataBlob for PluginRegistry {
+    fn get_initial_size() -> usize {
+        4
+    }
+
+    fn get_size(&self) -> usize {
+        4 //TODO: Fix this
     }
 }
 

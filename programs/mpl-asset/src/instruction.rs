@@ -47,7 +47,8 @@ pub enum MplAssetInstruction {
     #[account(2, writable, signer, name="owner", desc = "The owner of the asset")]
     #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, name="delegate", desc = "The new simple delegate for the asset")]
-    #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    #[account(5, name="system_program", desc = "The system program")]
+    #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Delegate(DelegateArgs),
 
     //TODO: Implement this instruction

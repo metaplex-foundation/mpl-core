@@ -12,8 +12,6 @@ use borsh::BorshSerialize;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Plugin {
     Reserved,
-    Asset,
-    HashedAsset,
     Royalties,
     MasterEdition,
     PrintEdition,

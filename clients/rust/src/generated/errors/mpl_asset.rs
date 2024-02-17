@@ -19,6 +19,12 @@ pub enum MplAssetError {
     /// 2 (0x2) - Error serializing account
     #[error("Error serializing account")]
     SerializationError,
+    /// 3 (0x3) - Plugins not initialized
+    #[error("Plugins not initialized")]
+    PluginsNotInitialized,
+    /// 4 (0x4) - Plugin not found
+    #[error("Plugin not found")]
+    PluginNotFound,
 }
 
 impl solana_program::program_error::PrintProgramError for MplAssetError {

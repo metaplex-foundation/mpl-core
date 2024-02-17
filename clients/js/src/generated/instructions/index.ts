@@ -6,4 +6,13 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+export * from './burn';
+export * from './compress';
 export * from './create';
+export * from './decompress';
+export * from './delegate';
+export * from './freeze';
+export * from './migrate';
+export * from './thaw';
+export * from './transfer';
+export * from './update';

@@ -12,7 +12,6 @@ test('it can create a new asset in account state', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    watermark: false,
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
@@ -38,7 +37,6 @@ test('it can create a new asset in ledger state', async (t) => {
   // When we create a new account.
   const txResult = await create(umi, {
     dataState: DataState.LedgerState,
-    watermark: false,
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
