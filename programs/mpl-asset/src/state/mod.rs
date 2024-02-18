@@ -8,6 +8,9 @@ mod plugin_header;
 use num_derive::FromPrimitive;
 pub use plugin_header::*;
 
+mod traits;
+pub use traits::*;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;

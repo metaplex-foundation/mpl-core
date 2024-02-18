@@ -5,8 +5,8 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, progr
 use crate::{
     error::MplAssetError,
     instruction::accounts::TransferAccounts,
-    state::{Asset, Compressible, CompressionProof, HashedAsset, Key},
-    utils::{load_key, DataBlob},
+    state::{Asset, Compressible, CompressionProof, HashedAsset, Key, SolanaAccount},
+    utils::load_key,
 };
 
 #[repr(C)]

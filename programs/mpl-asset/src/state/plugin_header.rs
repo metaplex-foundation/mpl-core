@@ -1,4 +1,4 @@
-use crate::{state::Key, utils::DataBlob};
+use crate::state::{DataBlob, Key, SolanaAccount};
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 
@@ -17,7 +17,9 @@ impl DataBlob for PluginHeader {
     fn get_size(&self) -> usize {
         1 + 8
     }
+}
 
+impl SolanaAccount for PluginHeader {
     fn key() -> Key {
         Key::PluginHeader
     }

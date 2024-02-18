@@ -6,8 +6,7 @@ use solana_program::{
 
 use crate::{
     error::MplAssetError,
-    state::{Asset, Authority, Key, PluginHeader},
-    utils::DataBlob,
+    state::{Asset, Authority, DataBlob, Key, PluginHeader, SolanaAccount},
 };
 
 use super::{Plugin, PluginRegistry, RegistryData, RegistryRecord};
@@ -123,10 +122,7 @@ pub fn add_plugin<'a>(
     let (plugin_size, key) = match plugin {
         Plugin::Reserved => todo!(),
         Plugin::Royalties => todo!(),
-        Plugin::MasterEdition => todo!(),
-        Plugin::PrintEdition => todo!(),
         Plugin::Delegate(delegate) => (delegate.get_size(), Key::Delegate),
-        Plugin::Inscription => todo!(),
     };
     let authority_bytes = authority.try_to_vec()?;
 
@@ -191,10 +187,7 @@ pub fn add_plugin<'a>(
         match plugin {
             Plugin::Reserved => todo!(),
             Plugin::Royalties => todo!(),
-            Plugin::MasterEdition => todo!(),
-            Plugin::PrintEdition => todo!(),
-            Plugin::Delegate(delegate) => delegate.save(account, old_registry_offset),
-            Plugin::Inscription => todo!(),
+            Plugin::Delegate(delegate) => delegate.save(account, old_registry_offset)?,
         };
 
         solana_program::msg!("Saving plugin registry");

@@ -1092,21 +1092,12 @@
             "name": "Royalties"
           },
           {
-            "name": "MasterEdition"
-          },
-          {
-            "name": "PrintEdition"
-          },
-          {
             "name": "Delegate",
             "fields": [
               {
                 "defined": "Delegate"
               }
             ]
-          },
-          {
-            "name": "Inscription"
           }
         ]
       }

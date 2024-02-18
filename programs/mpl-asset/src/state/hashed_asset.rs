@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 
-use crate::{state::Key, utils::DataBlob};
+use crate::state::{DataBlob, Key, SolanaAccount};
 
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount, PartialEq, Eq)]
 pub struct HashedAsset {
@@ -28,7 +28,9 @@ impl DataBlob for HashedAsset {
     fn get_size(&self) -> usize {
         HashedAsset::LENGTH
     }
+}
 
+impl SolanaAccount for HashedAsset {
     fn key() -> Key {
         Key::HashedAsset
     }
