@@ -1,6 +1,9 @@
 mod asset;
 pub use asset::*;
 
+mod hashed_asset;
+pub use hashed_asset::*;
+
 mod plugin_header;
 use num_derive::FromPrimitive;
 pub use plugin_header::*;
@@ -60,4 +63,15 @@ pub enum Key {
 pub enum MigrationLevel {
     MigrateOnly,
     MigrateAndBurn,
+}
+
+//TODO: Implement this struct
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub struct CompressionProof {
+    pub key: Key,                 //1
+    pub update_authority: Pubkey, //32
+    pub owner: Pubkey,            //32
+    pub name: String,             //4
+    pub uri: String,              //4
 }

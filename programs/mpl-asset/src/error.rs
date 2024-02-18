@@ -27,6 +27,14 @@ pub enum MplAssetError {
     /// 4 - Plugin not found
     #[error("Plugin not found")]
     PluginNotFound,
+
+    /// 5 - Incorrect account
+    #[error("Incorrect account")]
+    IncorrectAccount,
+
+    /// 5 - Provided data does not match asset hash.
+    #[error("Incorrect asset hash")]
+    IncorrectAssetHash,
 }
 
 impl PrintProgramError for MplAssetError {
