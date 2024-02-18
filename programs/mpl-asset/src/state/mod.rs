@@ -47,12 +47,7 @@ pub enum ExtraAccounts {
         owner_pda: Option<Pubkey>,
     },
 }
-
-pub trait Compressible {
-    fn hash(&self) -> Result<[u8; 32], ProgramError>;
-}
-
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, FromPrimitive)]
+#[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, FromPrimitive)]
 pub enum Key {
     Uninitialized,
     Asset,

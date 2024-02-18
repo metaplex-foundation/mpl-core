@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, program::invoke};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
 use crate::{
     error::MplAssetError,
@@ -27,22 +27,14 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
 
     match load_key(ctx.accounts.asset_address, 0)? {
         Key::HashedAsset => {
-            // TODO: Needs to be in helper.
-            // Check that arguments passed in result in on-chain hash.
-            let mut asset = Asset::from(args.compression_proof);
-            let args_asset_hash = asset.hash()?;
-            let current_account_hash = HashedAsset::load(ctx.accounts.asset_address, 0)?.hash;
-            if args_asset_hash != current_account_hash {
-                return Err(MplAssetError::IncorrectAssetHash.into());
-            }
+            let mut asset =
+                Asset::verify_proof(ctx.accounts.asset_address, args.compression_proof)?;
 
-            // TODO: Needs to be in helper.
-            // Update owner and send Noop instruction.
             asset.owner = *ctx.accounts.new_owner.key;
-            let serialized_data = asset.try_to_vec()?;
-            invoke(&spl_noop::instruction(serialized_data), &[])?;
 
-            // Make a new hashed asset with updated owner.
+            asset.wrap()?;
+
+            // Make a new hashed asset with updated owner and save to account.
             HashedAsset::new(asset.hash()?).save(ctx.accounts.asset_address, 0)
         }
         Key::Asset => {
