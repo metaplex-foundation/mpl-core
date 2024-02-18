@@ -20,33 +20,24 @@ import { Delegate, DelegateArgs, getDelegateSerializer } from '.';
 export type Plugin =
   | { __kind: 'Reserved' }
   | { __kind: 'Royalties' }
-  | { __kind: 'MasterEdition' }
-  | { __kind: 'PrintEdition' }
-  | { __kind: 'Delegate'; fields: [Delegate] }
-  | { __kind: 'Inscription' };
+  | { __kind: 'Delegate'; fields: [Delegate] };
 
 export type PluginArgs =
   | { __kind: 'Reserved' }
   | { __kind: 'Royalties' }
-  | { __kind: 'MasterEdition' }
-  | { __kind: 'PrintEdition' }
-  | { __kind: 'Delegate'; fields: [DelegateArgs] }
-  | { __kind: 'Inscription' };
+  | { __kind: 'Delegate'; fields: [DelegateArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
     [
       ['Reserved', unit()],
       ['Royalties', unit()],
-      ['MasterEdition', unit()],
-      ['PrintEdition', unit()],
       [
         'Delegate',
         struct<GetDataEnumKindContent<Plugin, 'Delegate'>>([
           ['fields', tuple([getDelegateSerializer()])],
         ]),
       ],
-      ['Inscription', unit()],
     ],
     { description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
@@ -60,18 +51,9 @@ export function plugin(
   kind: 'Royalties'
 ): GetDataEnumKind<PluginArgs, 'Royalties'>;
 export function plugin(
-  kind: 'MasterEdition'
-): GetDataEnumKind<PluginArgs, 'MasterEdition'>;
-export function plugin(
-  kind: 'PrintEdition'
-): GetDataEnumKind<PluginArgs, 'PrintEdition'>;
-export function plugin(
   kind: 'Delegate',
   data: GetDataEnumKindContent<PluginArgs, 'Delegate'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Delegate'>;
-export function plugin(
-  kind: 'Inscription'
-): GetDataEnumKind<PluginArgs, 'Inscription'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any

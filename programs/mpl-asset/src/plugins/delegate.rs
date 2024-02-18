@@ -1,7 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use shank::ShankAccount;
 
-use crate::{state::Key, utils::DataBlob};
+use crate::{
+    state::Key,
+    state::{DataBlob, SolanaAccount},
+};
 
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
@@ -33,7 +35,9 @@ impl DataBlob for Delegate {
     fn get_size(&self) -> usize {
         2
     }
+}
 
+impl SolanaAccount for Delegate {
     fn key() -> crate::state::Key {
         Key::Delegate
     }

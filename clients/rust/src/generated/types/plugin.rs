@@ -14,8 +14,5 @@ use borsh::BorshSerialize;
 pub enum Plugin {
     Reserved,
     Royalties,
-    MasterEdition,
-    PrintEdition,
     Delegate(Delegate),
-    Inscription,
 }

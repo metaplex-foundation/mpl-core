@@ -2,10 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::{keccak, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{
-    state::{CompressionProof, Key},
-    utils::DataBlob,
-};
+use crate::state::{CompressionProof, DataBlob, Key, SolanaAccount};
 
 use super::Compressible;
 
@@ -38,7 +35,9 @@ impl DataBlob for Asset {
     fn get_size(&self) -> usize {
         Asset::BASE_LENGTH + self.name.len() + self.uri.len()
     }
+}
 
+impl SolanaAccount for Asset {
     fn key() -> Key {
         Key::Asset
     }
