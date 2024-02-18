@@ -16,4 +16,6 @@ pub enum Key {
     HashedAsset,
     Collection,
     HashedCollection,
+    PluginHeader,
+    PluginRegistry,
 }

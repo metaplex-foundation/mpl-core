@@ -20,3 +20,8 @@ This project contains the following clients:
 ## Contributing
 
 Check out the [Contributing Guide](./CONTRIBUTING.md) the learn more about how to contribute to this project.
+
+TODO:
+Today: Functional Asset - utilities, transfer, burn + JS tests, stretch goal compress/decompress
+Tomorrow: Migrate, Plugins (Collection and Delgate which contains Freeze) + JS tests, compress/decompress, royalties
+Next day: Lifecycle hooks with Pick 3 PDAs + JS tests

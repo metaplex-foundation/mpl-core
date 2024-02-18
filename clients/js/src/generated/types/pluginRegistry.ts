@@ -13,18 +13,27 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  Authority,
+  AuthorityArgs,
   Key,
   KeyArgs,
   RegistryData,
   RegistryDataArgs,
+  getAuthoritySerializer,
   getKeySerializer,
   getRegistryDataSerializer,
 } from '.';
 
-export type PluginRegistry = { registry: Array<[Key, RegistryData]> };
+export type PluginRegistry = {
+  key: Key;
+  registry: Array<[Key, RegistryData]>;
+  externalPlugins: Array<[Authority, RegistryData]>;
+};
 
 export type PluginRegistryArgs = {
+  key: KeyArgs;
   registry: Array<[KeyArgs, RegistryDataArgs]>;
+  externalPlugins: Array<[AuthorityArgs, RegistryDataArgs]>;
 };
 
 export function getPluginRegistrySerializer(): Serializer<
@@ -33,9 +42,14 @@ export function getPluginRegistrySerializer(): Serializer<
 > {
   return struct<PluginRegistry>(
     [
+      ['key', getKeySerializer()],
       [
         'registry',
         array(tuple([getKeySerializer(), getRegistryDataSerializer()])),
+      ],
+      [
+        'externalPlugins',
+        array(tuple([getAuthoritySerializer(), getRegistryDataSerializer()])),
       ],
     ],
     { description: 'PluginRegistry' }

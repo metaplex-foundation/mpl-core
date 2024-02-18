@@ -6,17 +6,43 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
+import { PublicKey } from '@metaplex-foundation/umi';
+import {
+  Serializer,
+  publicKey as publicKeySerializer,
+  string,
+  struct,
+} from '@metaplex-foundation/umi/serializers';
+import { Key, KeyArgs, getKeySerializer } from '.';
 
-export type CompressionProof = {};
+export type CompressionProof = {
+  key: Key;
+  updateAuthority: PublicKey;
+  owner: PublicKey;
+  name: string;
+  uri: string;
+};
 
-export type CompressionProofArgs = CompressionProof;
+export type CompressionProofArgs = {
+  key: KeyArgs;
+  updateAuthority: PublicKey;
+  owner: PublicKey;
+  name: string;
+  uri: string;
+};
 
 export function getCompressionProofSerializer(): Serializer<
   CompressionProofArgs,
   CompressionProof
 > {
-  return struct<CompressionProof>([], {
-    description: 'CompressionProof',
-  }) as Serializer<CompressionProofArgs, CompressionProof>;
+  return struct<CompressionProof>(
+    [
+      ['key', getKeySerializer()],
+      ['updateAuthority', publicKeySerializer()],
+      ['owner', publicKeySerializer()],
+      ['name', string()],
+      ['uri', string()],
+    ],
+    { description: 'CompressionProof' }
+  ) as Serializer<CompressionProofArgs, CompressionProof>;
 }

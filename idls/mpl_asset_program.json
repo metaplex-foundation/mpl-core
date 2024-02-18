@@ -780,12 +780,33 @@
         "kind": "struct",
         "fields": [
           {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
             "name": "registry",
             "type": {
               "vec": {
                 "tuple": [
                   {
                     "defined": "Key"
+                  },
+                  {
+                    "defined": "RegistryData"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "externalPlugins",
+            "type": {
+              "vec": {
+                "tuple": [
+                  {
+                    "defined": "Authority"
                   },
                   {
                     "defined": "RegistryData"
@@ -808,6 +829,18 @@
           },
           {
             "name": "required",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Delegate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "frozen",
             "type": "bool"
           }
         ]
@@ -851,13 +884,6 @@
             "type": "u16"
           }
         ]
-      }
-    },
-    {
-      "name": "CompressionProof",
-      "type": {
-        "kind": "struct",
-        "fields": []
       }
     },
     {
@@ -948,7 +974,14 @@
       "name": "TransferArgs",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "compressionProof",
+            "type": {
+              "defined": "CompressionProof"
+            }
+          }
+        ]
       }
     },
     {
@@ -968,13 +1001,45 @@
       }
     },
     {
+      "name": "CompressionProof",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "updateAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
       "name": "PluginHeader",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "version",
-            "type": "u8"
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
           },
           {
             "name": "pluginMapOffset",
@@ -1001,7 +1066,12 @@
             "name": "PrintEdition"
           },
           {
-            "name": "Delegate"
+            "name": "Delegate",
+            "fields": [
+              {
+                "defined": "Delegate"
+              }
+            ]
           },
           {
             "name": "Inscription"
@@ -1119,6 +1189,12 @@
           },
           {
             "name": "HashedCollection"
+          },
+          {
+            "name": "PluginHeader"
+          },
+          {
+            "name": "PluginRegistry"
           }
         ]
       }
@@ -1163,6 +1239,16 @@
       "code": 4,
       "name": "PluginNotFound",
       "msg": "Plugin not found"
+    },
+    {
+      "code": 5,
+      "name": "IncorrectAccount",
+      "msg": "Incorrect account"
+    },
+    {
+      "code": 6,
+      "name": "IncorrectAssetHash",
+      "msg": "Incorrect asset hash"
     }
   ],
   "metadata": {

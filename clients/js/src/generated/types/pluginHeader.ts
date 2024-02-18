@@ -6,17 +6,13 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import {
-  Serializer,
-  struct,
-  u64,
-  u8,
-} from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
+import { Key, KeyArgs, getKeySerializer } from '.';
 
-export type PluginHeader = { version: number; pluginMapOffset: bigint };
+export type PluginHeader = { key: Key; pluginMapOffset: bigint };
 
 export type PluginHeaderArgs = {
-  version: number;
+  key: KeyArgs;
   pluginMapOffset: number | bigint;
 };
 
@@ -26,7 +22,7 @@ export function getPluginHeaderSerializer(): Serializer<
 > {
   return struct<PluginHeader>(
     [
-      ['version', u8()],
+      ['key', getKeySerializer()],
       ['pluginMapOffset', u64()],
     ],
     { description: 'PluginHeader' }
