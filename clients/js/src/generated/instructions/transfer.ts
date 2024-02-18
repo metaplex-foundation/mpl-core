@@ -25,6 +25,11 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import {
+  CompressionProof,
+  CompressionProofArgs,
+  getCompressionProofSerializer,
+} from '../types';
 
 // Accounts.
 export type TransferInstructionAccounts = {
@@ -43,9 +48,14 @@ export type TransferInstructionAccounts = {
 };
 
 // Data.
-export type TransferInstructionData = { discriminator: number };
+export type TransferInstructionData = {
+  discriminator: number;
+  compressionProof: CompressionProof;
+};
 
-export type TransferInstructionDataArgs = {};
+export type TransferInstructionDataArgs = {
+  compressionProof: CompressionProofArgs;
+};
 
 export function getTransferInstructionDataSerializer(): Serializer<
   TransferInstructionDataArgs,
@@ -56,17 +66,24 @@ export function getTransferInstructionDataSerializer(): Serializer<
     any,
     TransferInstructionData
   >(
-    struct<TransferInstructionData>([['discriminator', u8()]], {
-      description: 'TransferInstructionData',
-    }),
+    struct<TransferInstructionData>(
+      [
+        ['discriminator', u8()],
+        ['compressionProof', getCompressionProofSerializer()],
+      ],
+      { description: 'TransferInstructionData' }
+    ),
     (value) => ({ ...value, discriminator: 4 })
   ) as Serializer<TransferInstructionDataArgs, TransferInstructionData>;
 }
 
+// Args.
+export type TransferInstructionArgs = TransferInstructionDataArgs;
+
 // Instruction.
 export function transfer(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: TransferInstructionAccounts
+  input: TransferInstructionAccounts & TransferInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -96,6 +113,9 @@ export function transfer(
     },
   };
 
+  // Arguments.
+  const resolvedArgs: TransferInstructionArgs = { ...input };
+
   // Default values.
   if (!resolvedAccounts.authority.value) {
     resolvedAccounts.authority.value = context.identity;
@@ -114,7 +134,9 @@ export function transfer(
   );
 
   // Data.
-  const data = getTransferInstructionDataSerializer().serialize({});
+  const data = getTransferInstructionDataSerializer().serialize(
+    resolvedArgs as TransferInstructionDataArgs
+  );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

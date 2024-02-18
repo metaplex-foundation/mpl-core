@@ -6,22 +6,83 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
+import {
+  GetDataEnumKind,
+  GetDataEnumKindContent,
+  Serializer,
+  dataEnum,
+  struct,
+  tuple,
+  unit,
+} from '@metaplex-foundation/umi/serializers';
+import { Delegate, DelegateArgs, getDelegateSerializer } from '.';
 
-export enum Plugin {
-  Reserved,
-  Royalties,
-  MasterEdition,
-  PrintEdition,
-  Delegate,
-  Inscription,
-}
+export type Plugin =
+  | { __kind: 'Reserved' }
+  | { __kind: 'Royalties' }
+  | { __kind: 'MasterEdition' }
+  | { __kind: 'PrintEdition' }
+  | { __kind: 'Delegate'; fields: [Delegate] }
+  | { __kind: 'Inscription' };
 
-export type PluginArgs = Plugin;
+export type PluginArgs =
+  | { __kind: 'Reserved' }
+  | { __kind: 'Royalties' }
+  | { __kind: 'MasterEdition' }
+  | { __kind: 'PrintEdition' }
+  | { __kind: 'Delegate'; fields: [DelegateArgs] }
+  | { __kind: 'Inscription' };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
-  return scalarEnum<Plugin>(Plugin, { description: 'Plugin' }) as Serializer<
-    PluginArgs,
-    Plugin
-  >;
+  return dataEnum<Plugin>(
+    [
+      ['Reserved', unit()],
+      ['Royalties', unit()],
+      ['MasterEdition', unit()],
+      ['PrintEdition', unit()],
+      [
+        'Delegate',
+        struct<GetDataEnumKindContent<Plugin, 'Delegate'>>([
+          ['fields', tuple([getDelegateSerializer()])],
+        ]),
+      ],
+      ['Inscription', unit()],
+    ],
+    { description: 'Plugin' }
+  ) as Serializer<PluginArgs, Plugin>;
+}
+
+// Data Enum Helpers.
+export function plugin(
+  kind: 'Reserved'
+): GetDataEnumKind<PluginArgs, 'Reserved'>;
+export function plugin(
+  kind: 'Royalties'
+): GetDataEnumKind<PluginArgs, 'Royalties'>;
+export function plugin(
+  kind: 'MasterEdition'
+): GetDataEnumKind<PluginArgs, 'MasterEdition'>;
+export function plugin(
+  kind: 'PrintEdition'
+): GetDataEnumKind<PluginArgs, 'PrintEdition'>;
+export function plugin(
+  kind: 'Delegate',
+  data: GetDataEnumKindContent<PluginArgs, 'Delegate'>['fields']
+): GetDataEnumKind<PluginArgs, 'Delegate'>;
+export function plugin(
+  kind: 'Inscription'
+): GetDataEnumKind<PluginArgs, 'Inscription'>;
+export function plugin<K extends PluginArgs['__kind']>(
+  kind: K,
+  data?: any
+): Extract<PluginArgs, { __kind: K }> {
+  return Array.isArray(data)
+    ? { __kind: kind, fields: data }
+    : { __kind: kind, ...(data ?? {}) };
+}
+export function isPlugin<K extends Plugin['__kind']>(
+  kind: K,
+  value: Plugin
+): value is Plugin & { __kind: K } {
+  return value.__kind === kind;
 }
