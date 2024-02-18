@@ -6,12 +6,13 @@
 //!
 
 use crate::generated::types::Key;
+use crate::generated::types::RegistryData;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct PluginHeader {
+pub struct RegistryRecord {
     pub key: Key,
-    pub plugin_map_offset: u64,
+    pub data: RegistryData,
 }

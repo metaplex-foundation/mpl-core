@@ -1,7 +1,7 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 // import { base58 } from '@metaplex-foundation/umi/serializers';
-import { DataState, create, delegate, fetchAsset, getAssetAccountDataSerializer, getPluginHeaderSerializer, getPluginRegistrySerializer, } from '../src';
+import { DataState, create, delegate, fetchAsset, getAssetAccountDataSerializer, getDelegateSerializer, getPluginHeaderAccountDataSerializer, getPluginRegistryAccountDataSerializer, } from '../src';
 import { createUmi } from './_setup';
 
 test('it initializes the plugin system correctly', async (t) => {
@@ -31,10 +31,12 @@ test('it initializes the plugin system correctly', async (t) => {
 
   const pluginData = await umi.rpc.getAccount(assetAddress.publicKey);
   if (pluginData.exists) {
-    const pluginHeader = getPluginHeaderSerializer().deserialize(pluginData.data, assetData.length);
+    const pluginHeader = getPluginHeaderAccountDataSerializer().deserialize(pluginData.data, assetData.length)[0];
     console.log("After Plugins:\n", pluginHeader);
-    const pluginRegistry = getPluginRegistrySerializer().deserialize(pluginData.data, Number(pluginHeader[0].pluginMapOffset));
-    console.log(pluginRegistry);
+    const pluginRegistry = getPluginRegistryAccountDataSerializer().deserialize(pluginData.data, Number(pluginHeader.pluginRegistryOffset));
+    console.log(JSON.stringify(pluginRegistry, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
+    const delegatePlugin = getDelegateSerializer().deserialize(pluginData.data, Number(pluginRegistry[0].registry[0].data.offset));
+    console.log(delegatePlugin);
   } else {
     t.fail("Plugin data not found");
   }

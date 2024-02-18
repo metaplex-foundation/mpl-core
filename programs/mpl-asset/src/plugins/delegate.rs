@@ -1,11 +1,28 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use shank::ShankAccount;
 
 use crate::{state::Key, utils::DataBlob};
 
+#[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct Delegate {
-    key: Key,     // 1
-    frozen: bool, // 1
+    pub key: Key,     // 1
+    pub frozen: bool, // 1
+}
+
+impl Delegate {
+    pub fn new() -> Self {
+        Self {
+            key: Key::Delegate,
+            frozen: false,
+        }
+    }
+}
+
+impl Default for Delegate {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl DataBlob for Delegate {

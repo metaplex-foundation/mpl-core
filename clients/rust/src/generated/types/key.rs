@@ -18,4 +18,5 @@ pub enum Key {
     HashedCollection,
     PluginHeader,
     PluginRegistry,
+    Delegate,
 }

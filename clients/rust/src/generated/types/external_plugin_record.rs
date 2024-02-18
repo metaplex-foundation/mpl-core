@@ -6,15 +6,13 @@
 //!
 
 use crate::generated::types::Authority;
-use crate::generated::types::Key;
 use crate::generated::types::RegistryData;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct PluginRegistry {
-    pub key: Key,
-    pub registry: Vec<(Key, RegistryData)>,
-    pub external_plugins: Vec<(Authority, RegistryData)>,
+pub struct ExternalPluginRecord {
+    pub authority: Authority,
+    pub data: RegistryData,
 }
