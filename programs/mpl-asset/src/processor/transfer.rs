@@ -1,9 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
-    program_memory::sol_memcpy,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, program::invoke};
 
 use crate::{
     error::MplAssetError,
@@ -28,8 +25,9 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
         assert_signer(payer)?;
     }
 
-    let serialized_data = match load_key(ctx.accounts.asset_address, 0)? {
+    match load_key(ctx.accounts.asset_address, 0)? {
         Key::HashedAsset => {
+            // TODO: Needs to be in helper.
             // Check that arguments passed in result in on-chain hash.
             let mut asset = Asset::from(args.compression_proof);
             let args_asset_hash = asset.hash()?;
@@ -38,27 +36,20 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                 return Err(MplAssetError::IncorrectAssetHash.into());
             }
 
+            // TODO: Needs to be in helper.
             // Update owner and send Noop instruction.
             asset.owner = *ctx.accounts.new_owner.key;
             let serialized_data = asset.try_to_vec()?;
             invoke(&spl_noop::instruction(serialized_data), &[])?;
 
             // Make a new hashed asset with updated owner.
-            HashedAsset::new(asset.hash()?).try_to_vec()?
+            HashedAsset::new(asset.hash()?).save(ctx.accounts.asset_address, 0)
         }
         Key::Asset => {
             let mut asset = Asset::load(ctx.accounts.asset_address, 0)?;
             asset.owner = *ctx.accounts.new_owner.key;
-            asset.try_to_vec()?
+            asset.save(ctx.accounts.asset_address, 0)
         }
-        _ => return Err(MplAssetError::IncorrectAccount.into()),
-    };
-
-    sol_memcpy(
-        &mut ctx.accounts.asset_address.try_borrow_mut_data()?,
-        &serialized_data,
-        serialized_data.len(),
-    );
-
-    Ok(())
+        _ => Err(MplAssetError::IncorrectAccount.into()),
+    }
 }
