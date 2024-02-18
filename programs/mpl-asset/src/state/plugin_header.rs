@@ -6,7 +6,7 @@ use crate::{state::Key, utils::DataBlob};
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct PluginHeader {
     pub key: Key,
-    pub plugin_map_offset: usize, // 8
+    pub plugin_registry_offset: usize, // 8
 }
 
 impl DataBlob for PluginHeader {

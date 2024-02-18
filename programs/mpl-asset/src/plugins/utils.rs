@@ -1,4 +1,4 @@
-use borsh::BorshDeserialize;
+use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::resize_or_reallocate_account_raw;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
@@ -10,7 +10,7 @@ use crate::{
     utils::DataBlob,
 };
 
-use super::{Plugin, PluginRegistry};
+use super::{Plugin, PluginRegistry, RegistryData};
 
 /// Create plugin header and registry if it doesn't exist
 pub fn create_idempotent<'a>(
@@ -28,7 +28,7 @@ pub fn create_idempotent<'a>(
         // They don't exist, so create them.
         let header = PluginHeader {
             key: Key::PluginHeader,
-            plugin_map_offset: asset.get_size() + PluginHeader::get_initial_size(),
+            plugin_registry_offset: asset.get_size() + PluginHeader::get_initial_size(),
         };
         let registry = PluginRegistry {
             key: Key::PluginRegistry,
@@ -40,11 +40,11 @@ pub fn create_idempotent<'a>(
             account,
             payer,
             system_program,
-            header.plugin_map_offset + PluginRegistry::get_initial_size(),
+            header.plugin_registry_offset + PluginRegistry::get_initial_size(),
         )?;
 
         header.save(account, asset.get_size())?;
-        registry.save(account, header.plugin_map_offset)?;
+        registry.save(account, header.plugin_registry_offset)?;
     }
 
     Ok(())
@@ -70,7 +70,8 @@ pub fn fetch_plugin(
     let asset = Asset::deserialize(&mut bytes)?;
 
     let header = PluginHeader::load(account, asset.get_size())?;
-    let PluginRegistry { registry, .. } = PluginRegistry::load(account, header.plugin_map_offset)?;
+    let PluginRegistry { registry, .. } =
+        PluginRegistry::load(account, header.plugin_registry_offset)?;
 
     // Find the plugin in the registry.
     let plugin_data = registry
@@ -92,30 +93,94 @@ pub fn list_plugins(account: &AccountInfo) -> Result<Vec<Key>, ProgramError> {
     let asset = Asset::deserialize(&mut bytes)?;
 
     let header = PluginHeader::load(account, asset.get_size())?;
-    let PluginRegistry { registry, .. } = PluginRegistry::load(account, header.plugin_map_offset)?;
+    let PluginRegistry { registry, .. } =
+        PluginRegistry::load(account, header.plugin_registry_offset)?;
 
     Ok(registry.iter().map(|(key, _)| *key).collect())
 }
 
 /// Add a plugin into the registry
-pub fn add_plugin(plugin: &Plugin, authority: Authority, account: &AccountInfo) -> ProgramResult {
-    let mut bytes: &[u8] = &(*account.data).borrow();
-    let asset = Asset::deserialize(&mut bytes)?;
+pub fn add_plugin<'a>(
+    plugin: &Plugin,
+    authority: Authority,
+    account: &AccountInfo<'a>,
+    payer: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+) -> ProgramResult {
+    let asset = {
+        let mut bytes: &[u8] = &(*account.data).borrow();
+        Asset::deserialize(&mut bytes)?
+    };
 
     //TODO: Bytemuck this.
     let mut header = PluginHeader::load(account, asset.get_size())?;
-    let mut plugin_registry = PluginRegistry::load(account, header.plugin_map_offset)?;
+    let mut plugin_registry = PluginRegistry::load(account, header.plugin_registry_offset)?;
 
-    let plugin_type = match plugin {
+    let (plugin_size, key) = match plugin {
         Plugin::Reserved => todo!(),
         Plugin::Royalties => todo!(),
         Plugin::MasterEdition => todo!(),
         Plugin::PrintEdition => todo!(),
-        Plugin::Delegate(delegate) => todo!(),
+        Plugin::Delegate(delegate) => (delegate.get_size(), Key::Delegate),
         Plugin::Inscription => todo!(),
     };
 
-    // plugin_registry.registry.push(());
+    if let Some((_, registry_data)) = plugin_registry
+        .registry
+        .iter_mut()
+        .find(|(search_key, registry_data)| search_key == &key)
+    {
+        registry_data.authorities.push(authority);
+
+        let authority_bytes = authority.try_to_vec()?;
+
+        let new_size = account
+            .data_len()
+            .checked_add(authority_bytes.len())
+            .ok_or(MplAssetError::NumericalOverflow)?;
+        resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
+
+        plugin_registry.save(account, header.plugin_registry_offset);
+    } else {
+        let authority_bytes = authority.try_to_vec()?;
+
+        let new_size = account
+            .data_len()
+            .checked_add(plugin_size)
+            .ok_or(MplAssetError::NumericalOverflow)?
+            .checked_add(authority_bytes.len())
+            .ok_or(MplAssetError::NumericalOverflow)?;
+
+        let old_registry_offset = header.plugin_registry_offset;
+        let new_registry_offset = header
+            .plugin_registry_offset
+            .checked_add(plugin_size)
+            .ok_or(MplAssetError::NumericalOverflow)?
+            .checked_add(authority_bytes.len())
+            .ok_or(MplAssetError::NumericalOverflow)?;
+
+        header.plugin_registry_offset = new_registry_offset;
+        plugin_registry.registry.push((
+            key,
+            RegistryData {
+                offset: old_registry_offset,
+                authorities: vec![authority],
+            },
+        ));
+
+        resize_or_reallocate_account_raw(account, payer, system_program, new_size);
+
+        header.save(account, asset.get_size());
+        match plugin {
+            Plugin::Reserved => todo!(),
+            Plugin::Royalties => todo!(),
+            Plugin::MasterEdition => todo!(),
+            Plugin::PrintEdition => todo!(),
+            Plugin::Delegate(delegate) => delegate.save(account, old_registry_offset),
+            Plugin::Inscription => todo!(),
+        };
+        plugin_registry.save(account, new_registry_offset);
+    }
 
     Ok(())
 }
