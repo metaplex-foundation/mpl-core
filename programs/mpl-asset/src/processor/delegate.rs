@@ -1,16 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use mpl_utils::assert_signer;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
-    program_memory::sol_memcpy, rent::Rent, system_instruction, system_program, sysvar::Sysvar,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
-use crate::{
-    error::MplAssetError,
-    instruction::accounts::{CreateAccounts, DelegateAccounts},
-    plugins::create_idempotent,
-    state::{Asset, Compressible, DataState, HashedAsset, Key},
-};
+use crate::{instruction::accounts::DelegateAccounts, plugins::create_idempotent};
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]

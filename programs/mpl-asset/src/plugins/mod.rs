@@ -1,9 +1,12 @@
 mod collection;
+mod delegate;
 mod royalties;
 mod utils;
 
 pub use collection::*;
+pub use delegate::*;
 pub use royalties::*;
+
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
 };
@@ -30,7 +33,7 @@ pub enum Plugin {
     Royalties,
     MasterEdition,
     PrintEdition,
-    Delegate,
+    Delegate(Delegate),
     Inscription,
 }
 
@@ -51,27 +54,33 @@ pub struct RegistryData {
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct PluginRegistry {
+    pub key: Key,
     pub registry: Vec<(Key, RegistryData)>, // 4
+    pub external_plugins: Vec<(Authority, RegistryData)>,
 }
 
-impl PluginRegistry {
-    pub fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
-        let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
-        PluginRegistry::deserialize(&mut bytes).map_err(|error| {
-            msg!("Error: {}", error);
-            MplAssetError::DeserializationError.into()
-        })
-    }
+// impl PluginRegistry {
+//     pub fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
+//         let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
+//         PluginRegistry::deserialize(&mut bytes).map_err(|error| {
+//             msg!("Error: {}", error);
+//             MplAssetError::DeserializationError.into()
+//         })
+//     }
 
-    pub fn save(&self, account: &AccountInfo, offset: usize) -> ProgramResult {
-        borsh::to_writer(&mut account.data.borrow_mut()[offset..], self).map_err(|error| {
-            msg!("Error: {}", error);
-            MplAssetError::SerializationError.into()
-        })
-    }
-}
+//     pub fn save(&self, account: &AccountInfo, offset: usize) -> ProgramResult {
+//         borsh::to_writer(&mut account.data.borrow_mut()[offset..], self).map_err(|error| {
+//             msg!("Error: {}", error);
+//             MplAssetError::SerializationError.into()
+//         })
+//     }
+// }
 
 impl DataBlob for PluginRegistry {
+    fn key() -> Key {
+        Key::PluginRegistry
+    }
+
     fn get_initial_size() -> usize {
         4
     }

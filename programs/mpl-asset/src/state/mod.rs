@@ -2,6 +2,7 @@ mod asset;
 pub use asset::*;
 
 mod plugin_header;
+use num_derive::FromPrimitive;
 pub use plugin_header::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -44,13 +45,15 @@ pub trait Compressible {
     fn hash(&self) -> Result<[u8; 32], ProgramError>;
 }
 
-#[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, FromPrimitive)]
 pub enum Key {
     Uninitialized,
     Asset,
     HashedAsset,
     Collection,
     HashedCollection,
+    PluginHeader,
+    PluginRegistry,
 }
 
 #[repr(C)]

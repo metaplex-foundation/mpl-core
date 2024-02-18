@@ -27,10 +27,14 @@ pub fn create_idempotent<'a>(
     if asset.get_size() == account.data_len() {
         // They don't exist, so create them.
         let header = PluginHeader {
-            version: 1,
+            key: Key::PluginHeader,
             plugin_map_offset: asset.get_size() + PluginHeader::get_initial_size(),
         };
-        let registry = PluginRegistry { registry: vec![] };
+        let registry = PluginRegistry {
+            key: Key::PluginRegistry,
+            registry: vec![],
+            external_plugins: vec![],
+        };
 
         resize_or_reallocate_account_raw(
             account,
@@ -66,7 +70,7 @@ pub fn fetch_plugin(
     let asset = Asset::deserialize(&mut bytes)?;
 
     let header = PluginHeader::load(account, asset.get_size())?;
-    let PluginRegistry { registry } = PluginRegistry::load(account, header.plugin_map_offset)?;
+    let PluginRegistry { registry, .. } = PluginRegistry::load(account, header.plugin_map_offset)?;
 
     // Find the plugin in the registry.
     let plugin_data = registry
@@ -88,7 +92,30 @@ pub fn list_plugins(account: &AccountInfo) -> Result<Vec<Key>, ProgramError> {
     let asset = Asset::deserialize(&mut bytes)?;
 
     let header = PluginHeader::load(account, asset.get_size())?;
-    let PluginRegistry { registry } = PluginRegistry::load(account, header.plugin_map_offset)?;
+    let PluginRegistry { registry, .. } = PluginRegistry::load(account, header.plugin_map_offset)?;
 
     Ok(registry.iter().map(|(key, _)| *key).collect())
+}
+
+/// Add a plugin into the registry
+pub fn add_plugin(plugin: &Plugin, authority: Authority, account: &AccountInfo) -> ProgramResult {
+    let mut bytes: &[u8] = &(*account.data).borrow();
+    let asset = Asset::deserialize(&mut bytes)?;
+
+    //TODO: Bytemuck this.
+    let mut header = PluginHeader::load(account, asset.get_size())?;
+    let mut plugin_registry = PluginRegistry::load(account, header.plugin_map_offset)?;
+
+    let plugin_type = match plugin {
+        Plugin::Reserved => todo!(),
+        Plugin::Royalties => todo!(),
+        Plugin::MasterEdition => todo!(),
+        Plugin::PrintEdition => todo!(),
+        Plugin::Delegate(delegate) => todo!(),
+        Plugin::Inscription => todo!(),
+    };
+
+    // plugin_registry.registry.push(());
+
+    Ok(())
 }
