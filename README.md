@@ -23,5 +23,5 @@ Check out the [Contributing Guide](./CONTRIBUTING.md) the learn more about how t
 
 TODO:
 Today: Functional Asset - utilities, transfer, burn + JS tests, stretch goal compress/decompress
-Tomorrow: Migrate, Plugins (Collection and Delgate which contains Freeze) + JS tests, compress/decompress
+Tomorrow: Migrate, Plugins (Collection and Delgate which contains Freeze) + JS tests, compress/decompress, royalties
 Next day: Lifecycle hooks with Pick 3 PDAs + JS tests

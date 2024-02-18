@@ -12,8 +12,7 @@ pub trait DataBlob: BorshSerialize + BorshDeserialize {
     fn key() -> Key;
 
     fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
-        let key = Key::from_u8((*account.data).borrow()[offset])
-            .ok_or(MplAssetError::DeserializationError)?;
+        let key = load_key(account, offset)?;
 
         if key != Self::key() {
             return Err(MplAssetError::DeserializationError.into());
@@ -32,4 +31,11 @@ pub trait DataBlob: BorshSerialize + BorshDeserialize {
             MplAssetError::SerializationError.into()
         })
     }
+}
+
+pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, ProgramError> {
+    let key = Key::from_u8((*account.data).borrow()[offset])
+        .ok_or(MplAssetError::DeserializationError)?;
+
+    Ok(key)
 }

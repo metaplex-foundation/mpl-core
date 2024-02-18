@@ -31,6 +31,14 @@ pub enum MplAssetError {
     /// 5 - Numerical Overflow
     #[error("Numerical Overflow")]
     NumericalOverflow,
+
+    /// 6 - Incorrect account
+    #[error("Incorrect account")]
+    IncorrectAccount,
+
+    /// 7 - Provided data does not match asset hash.
+    #[error("Incorrect asset hash")]
+    IncorrectAssetHash,
 }
 
 impl PrintProgramError for MplAssetError {

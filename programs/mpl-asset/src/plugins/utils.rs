@@ -128,9 +128,9 @@ pub fn add_plugin<'a>(
     if let Some((_, registry_data)) = plugin_registry
         .registry
         .iter_mut()
-        .find(|(search_key, registry_data)| search_key == &key)
+        .find(|(search_key, _)| search_key == &key)
     {
-        registry_data.authorities.push(authority);
+        registry_data.authorities.push(authority.clone());
 
         let authority_bytes = authority.try_to_vec()?;
 
@@ -140,7 +140,7 @@ pub fn add_plugin<'a>(
             .ok_or(MplAssetError::NumericalOverflow)?;
         resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
 
-        plugin_registry.save(account, header.plugin_registry_offset);
+        plugin_registry.save(account, header.plugin_registry_offset)?;
     } else {
         let authority_bytes = authority.try_to_vec()?;
 
@@ -168,18 +168,19 @@ pub fn add_plugin<'a>(
             },
         ));
 
-        resize_or_reallocate_account_raw(account, payer, system_program, new_size);
+        resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
 
-        header.save(account, asset.get_size());
+        header.save(account, asset.get_size())?;
         match plugin {
             Plugin::Reserved => todo!(),
             Plugin::Royalties => todo!(),
             Plugin::MasterEdition => todo!(),
             Plugin::PrintEdition => todo!(),
-            Plugin::Delegate(delegate) => delegate.save(account, old_registry_offset),
+            Plugin::Delegate(delegate) => delegate.save(account, old_registry_offset)?,
             Plugin::Inscription => todo!(),
         };
-        plugin_registry.save(account, new_registry_offset);
+
+        plugin_registry.save(account, new_registry_offset)?;
     }
 
     Ok(())

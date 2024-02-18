@@ -11,6 +11,7 @@ export * from './collection';
 export * from './compressionProof';
 export * from './creator';
 export * from './dataState';
+export * from './delegate';
 export * from './extraAccounts';
 export * from './key';
 export * from './migrationLevel';
