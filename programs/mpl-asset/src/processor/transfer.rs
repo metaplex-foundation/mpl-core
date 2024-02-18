@@ -2,28 +2,21 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
-    program_memory::sol_memcpy, system_instruction, system_program,
+    program_memory::sol_memcpy,
 };
 
 use crate::{
     error::MplAssetError,
     instruction::accounts::TransferAccounts,
-    state::{Asset, Compressible, DataState, HashedAsset, Key},
-    utils::DataBlob,
+    state::{Asset, Compressible, CompressionProof, HashedAsset, Key},
+    utils::{load_key, DataBlob},
 };
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct TransferArgs {}
-
-// // danenbm working on
-// #[account(0, writable, name="asset_address", desc = "The address of the asset")]
-// #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
-// #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
-// #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
-// #[account(4, name="new_owner", desc = "The new owner to which to transfer the asset")]
-// #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-// Transfer(TransferArgs),
+pub struct TransferArgs {
+    compression_proof: CompressionProof,
+}
 
 pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) -> ProgramResult {
     // Accounts.
@@ -31,74 +24,41 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-
     if let Some(payer) = ctx.accounts.payer {
         assert_signer(payer)?;
     }
 
-    let asset = Asset::load(ctx.accounts.asset_address, 0)?;
+    let serialized_data = match load_key(ctx.accounts.asset_address, 0)? {
+        Key::HashedAsset => {
+            // Check that arguments passed in result in on-chain hash.
+            let mut asset = Asset::from(args.compression_proof);
+            let args_asset_hash = asset.hash()?;
+            let current_account_hash = HashedAsset::load(ctx.accounts.asset_address, 0)?.hash;
+            if args_asset_hash != current_account_hash {
+                return Err(MplAssetError::IncorrectAssetHash.into());
+            }
 
-    asset.owner = ctx.accounts.new_owner.key();
+            // Update owner and send Noop instruction.
+            asset.owner = *ctx.accounts.new_owner.key;
+            let serialized_data = asset.try_to_vec()?;
+            invoke(&spl_noop::instruction(serialized_data), &[])?;
 
-    // if *ctx.accounts.system_program.key != system_program::id() {
-    //     return Err(MplAssetError::InvalidSystemProgram.into());
-    // }
+            // Make a new hashed asset with updated owner.
+            HashedAsset::new(asset.hash()?).try_to_vec()?
+        }
+        Key::Asset => {
+            let mut asset = Asset::load(ctx.accounts.asset_address, 0)?;
+            asset.owner = *ctx.accounts.new_owner.key;
+            asset.try_to_vec()?
+        }
+        _ => return Err(MplAssetError::IncorrectAccount.into()),
+    };
 
-    // let updated_asset = Asset {
-    //     key: Key::Asset,
-    //     update_authority: *ctx
-    //         .accounts
-    //         .update_authority
-    //         .unwrap_or(ctx.accounts.payer)
-    //         .key,
-    //     owner: *ctx
-    //         .accounts
-    //         .owner
-    //         .unwrap_or(ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer))
-    //         .key,
-    //     name: args.name,
-    //     uri: args.uri,
-    // };
-
-    // let serialized_data = new_asset.try_to_vec()?;
-
-    // let serialized_data = match args.data_state {
-    //     DataState::AccountState => serialized_data,
-    //     DataState::LedgerState => {
-    //         invoke(&spl_noop::instruction(serialized_data.clone()), &[])?;
-
-    //         let hashed_asset = HashedAsset {
-    //             key: Key::HashedAsset,
-    //             hash: new_asset.hash()?,
-    //         };
-
-    //         hashed_asset.try_to_vec()?
-    //     }
-    // };
-
-    //let lamports = rent.minimum_balance(serialized_data.len());
-
-    // CPI to the System Program.
-    // invoke(
-    //     &system_instruction::create_account(
-    //         ctx.accounts.payer.key,
-    //         ctx.accounts.asset_address.key,
-    //         lamports,
-    //         serialized_data.len() as u64,
-    //         &crate::id(),
-    //     ),
-    //     &[
-    //         ctx.accounts.payer.clone(),
-    //         ctx.accounts.asset_address.clone(),
-    //         ctx.accounts.system_program.clone(),
-    //     ],
-    // )?;
-
-    // sol_memcpy(
-    //     &mut ctx.accounts.asset_address.try_borrow_mut_data()?,
-    //     &serialized_data,
-    //     serialized_data.len(),
-    // );
+    sol_memcpy(
+        &mut ctx.accounts.asset_address.try_borrow_mut_data()?,
+        &serialized_data,
+        serialized_data.len(),
+    );
 
     Ok(())
 }

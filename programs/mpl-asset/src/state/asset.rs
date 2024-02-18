@@ -2,7 +2,10 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::{keccak, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{state::Key, utils::DataBlob};
+use crate::{
+    state::{CompressionProof, Key},
+    utils::DataBlob,
+};
 
 use super::Compressible;
 
@@ -41,8 +44,14 @@ impl DataBlob for Asset {
     }
 }
 
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
-pub struct HashedAsset {
-    pub key: Key,       //1
-    pub hash: [u8; 32], //32
+impl From<CompressionProof> for Asset {
+    fn from(compression_proof: CompressionProof) -> Self {
+        Self {
+            key: Self::key(),
+            update_authority: compression_proof.update_authority,
+            owner: compression_proof.owner,
+            name: compression_proof.name,
+            uri: compression_proof.uri,
+        }
+    }
 }

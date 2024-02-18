@@ -1,6 +1,5 @@
-use borsh::{BorshDeserialize, BorshSerialize};
-
 use crate::{state::Key, utils::DataBlob};
+use borsh::{BorshDeserialize, BorshSerialize};
 
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]

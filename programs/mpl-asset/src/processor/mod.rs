@@ -32,11 +32,6 @@ pub(crate) use compress::*;
 mod decompress;
 pub(crate) use decompress::*;
 
-//TODO: Implement this struct
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct CompressionProof {}
-
 pub fn process_instruction<'a>(
     _program_id: &Pubkey,
     accounts: &'a [AccountInfo<'a>],
