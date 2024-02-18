@@ -1,8 +1,9 @@
 use crate::{state::Key, utils::DataBlob};
 use borsh::{BorshDeserialize, BorshSerialize};
+use shank::ShankAccount;
 
 #[repr(C)]
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
 pub struct PluginHeader {
     pub key: Key,
     pub plugin_registry_offset: usize, // 8

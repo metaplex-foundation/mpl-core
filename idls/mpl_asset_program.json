@@ -700,6 +700,36 @@
   ],
   "accounts": [
     {
+      "name": "PluginRegistry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "registry",
+            "type": {
+              "vec": {
+                "defined": "RegistryRecord"
+              }
+            }
+          },
+          {
+            "name": "externalPlugins",
+            "type": {
+              "vec": {
+                "defined": "ExternalPluginRecord"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Asset",
       "type": {
         "kind": "struct",
@@ -751,6 +781,24 @@
           }
         ]
       }
+    },
+    {
+      "name": "PluginHeader",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "pluginRegistryOffset",
+            "type": "u64"
+          }
+        ]
+      }
     }
   ],
   "types": [
@@ -775,7 +823,7 @@
       }
     },
     {
-      "name": "PluginRegistry",
+      "name": "RegistryRecord",
       "type": {
         "kind": "struct",
         "fields": [
@@ -786,33 +834,29 @@
             }
           },
           {
-            "name": "registry",
+            "name": "data",
             "type": {
-              "vec": {
-                "tuple": [
-                  {
-                    "defined": "Key"
-                  },
-                  {
-                    "defined": "RegistryData"
-                  }
-                ]
-              }
+              "defined": "RegistryData"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExternalPluginRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": {
+              "defined": "Authority"
             }
           },
           {
-            "name": "externalPlugins",
+            "name": "data",
             "type": {
-              "vec": {
-                "tuple": [
-                  {
-                    "defined": "Authority"
-                  },
-                  {
-                    "defined": "RegistryData"
-                  }
-                ]
-              }
+              "defined": "RegistryData"
             }
           }
         ]
@@ -839,6 +883,12 @@
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
           {
             "name": "frozen",
             "type": "bool"
@@ -1031,24 +1081,6 @@
       }
     },
     {
-      "name": "PluginHeader",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "Key"
-            }
-          },
-          {
-            "name": "pluginMapOffset",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
       "name": "Plugin",
       "type": {
         "kind": "enum",
@@ -1100,6 +1132,15 @@
         "variants": [
           {
             "name": "Owner"
+          },
+          {
+            "name": "Pubkey",
+            "fields": [
+              {
+                "name": "address",
+                "type": "publicKey"
+              }
+            ]
           },
           {
             "name": "Permanent",
@@ -1195,6 +1236,9 @@
           },
           {
             "name": "PluginRegistry"
+          },
+          {
+            "name": "Delegate"
           }
         ]
       }
@@ -1242,11 +1286,16 @@
     },
     {
       "code": 5,
+      "name": "NumericalOverflow",
+      "msg": "Numerical Overflow"
+    },
+    {
+      "code": 6,
       "name": "IncorrectAccount",
       "msg": "Incorrect account"
     },
     {
-      "code": 6,
+      "code": 7,
       "name": "IncorrectAssetHash",
       "msg": "Incorrect asset hash"
     }

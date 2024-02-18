@@ -10,7 +10,7 @@ use crate::{
     utils::DataBlob,
 };
 
-use super::{Plugin, PluginRegistry, RegistryData};
+use super::{Plugin, PluginRegistry, RegistryData, RegistryRecord};
 
 /// Create plugin header and registry if it doesn't exist
 pub fn create_idempotent<'a>(
@@ -72,8 +72,13 @@ pub fn fetch_plugin(
     // Find the plugin in the registry.
     let plugin_data = registry
         .iter()
-        .find(|(plugin_key, _)| *plugin_key == key)
-        .map(|(_, data)| data)
+        .find(
+            |RegistryRecord {
+                 key: plugin_key,
+                 data: _,
+             }| *plugin_key == key,
+        )
+        .map(|RegistryRecord { key: _, data }| data)
         .ok_or(MplAssetError::PluginNotFound)?;
 
     // Deserialize the plugin.
@@ -92,7 +97,10 @@ pub fn list_plugins(account: &AccountInfo) -> Result<Vec<Key>, ProgramError> {
     let PluginRegistry { registry, .. } =
         PluginRegistry::load(account, header.plugin_registry_offset)?;
 
-    Ok(registry.iter().map(|(key, _)| *key).collect())
+    Ok(registry
+        .iter()
+        .map(|registry_record| registry_record.key)
+        .collect())
 }
 
 /// Add a plugin into the registry
@@ -120,15 +128,19 @@ pub fn add_plugin<'a>(
         Plugin::Delegate(delegate) => (delegate.get_size(), Key::Delegate),
         Plugin::Inscription => todo!(),
     };
+    let authority_bytes = authority.try_to_vec()?;
 
-    if let Some((_, registry_data)) = plugin_registry
-        .registry
-        .iter_mut()
-        .find(|(search_key, registry_data)| search_key == &key)
-    {
-        registry_data.authorities.push(authority);
-
-        let authority_bytes = authority.try_to_vec()?;
+    if let Some(RegistryRecord {
+        key: _,
+        data: registry_data,
+    }) = plugin_registry.registry.iter_mut().find(
+        |RegistryRecord {
+             key: search_key,
+             data: _,
+         }| search_key == &key,
+    ) {
+        solana_program::msg!("Adding authority to existing plugin");
+        registry_data.authorities.push(authority.clone());
 
         let new_size = account
             .data_len()
@@ -138,35 +150,44 @@ pub fn add_plugin<'a>(
 
         plugin_registry.save(account, header.plugin_registry_offset);
     } else {
-        let authority_bytes = authority.try_to_vec()?;
-
-        let new_size = account
-            .data_len()
-            .checked_add(plugin_size)
-            .ok_or(MplAssetError::NumericalOverflow)?
-            .checked_add(authority_bytes.len())
-            .ok_or(MplAssetError::NumericalOverflow)?;
+        solana_program::msg!("Adding new plugin");
 
         let old_registry_offset = header.plugin_registry_offset;
+        let registry_data = RegistryData {
+            offset: old_registry_offset,
+            authorities: vec![authority],
+        };
+
+        //TODO: There's probably a better way to get the size without having to serialize the registry data.
+        let size_increase = plugin_size
+            .checked_add(Key::get_initial_size())
+            .ok_or(MplAssetError::NumericalOverflow)?
+            .checked_add(registry_data.clone().try_to_vec()?.len())
+            .ok_or(MplAssetError::NumericalOverflow)?;
+
         let new_registry_offset = header
             .plugin_registry_offset
             .checked_add(plugin_size)
-            .ok_or(MplAssetError::NumericalOverflow)?
-            .checked_add(authority_bytes.len())
             .ok_or(MplAssetError::NumericalOverflow)?;
 
         header.plugin_registry_offset = new_registry_offset;
-        plugin_registry.registry.push((
+
+        plugin_registry.registry.push(RegistryRecord {
             key,
-            RegistryData {
-                offset: old_registry_offset,
-                authorities: vec![authority],
-            },
-        ));
+            data: registry_data.clone(),
+        });
 
-        resize_or_reallocate_account_raw(account, payer, system_program, new_size);
+        let new_size = account
+            .data_len()
+            .checked_add(size_increase)
+            .ok_or(MplAssetError::NumericalOverflow)?;
 
-        header.save(account, asset.get_size());
+        solana_program::msg!("Resizing account");
+        resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
+
+        solana_program::msg!("Saving plugin header");
+        header.save(account, asset.get_size())?;
+        solana_program::msg!("Saving plugin");
         match plugin {
             Plugin::Reserved => todo!(),
             Plugin::Royalties => todo!(),
@@ -175,7 +196,9 @@ pub fn add_plugin<'a>(
             Plugin::Delegate(delegate) => delegate.save(account, old_registry_offset),
             Plugin::Inscription => todo!(),
         };
-        plugin_registry.save(account, new_registry_offset);
+
+        solana_program::msg!("Saving plugin registry");
+        plugin_registry.save(account, new_registry_offset)?;
     }
 
     Ok(())

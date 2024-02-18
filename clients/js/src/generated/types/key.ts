@@ -16,6 +16,7 @@ export enum Key {
   HashedCollection,
   PluginHeader,
   PluginRegistry,
+  Delegate,
 }
 
 export type KeyArgs = Key;

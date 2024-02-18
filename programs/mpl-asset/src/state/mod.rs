@@ -25,6 +25,7 @@ pub enum DataState {
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub enum Authority {
     Owner,
+    Pubkey { address: Pubkey },
     Permanent { address: Pubkey },
     SameAs { plugin: Plugin },
     Collection,
@@ -58,6 +59,12 @@ pub enum Key {
     PluginHeader,
     PluginRegistry,
     Delegate,
+}
+
+impl Key {
+    pub fn get_initial_size() -> usize {
+        1
+    }
 }
 
 #[repr(C)]

@@ -4,15 +4,13 @@ mod utils;
 
 pub use collection::*;
 pub use royalties::*;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-};
+
+use shank::ShankAccount;
 pub use utils::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 
 use crate::{
-    error::MplAssetError,
     state::{Authority, Key},
     utils::DataBlob,
 };
@@ -50,8 +48,24 @@ pub struct RegistryData {
 
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
+pub struct RegistryRecord {
+    pub key: Key,
+    pub data: RegistryData,
+}
+
+#[repr(C)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
+pub struct ExternalPluginRecord {
+    pub authority: Authority,
+    pub data: RegistryData,
+}
+
+#[repr(C)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
 pub struct PluginRegistry {
-    pub registry: Vec<(Key, RegistryData)>, // 4
+    pub key: Key,                                    // 1
+    pub registry: Vec<RegistryRecord>,               // 4
+    pub external_plugins: Vec<ExternalPluginRecord>, // 4
 }
 
 impl PluginRegistry {
@@ -73,11 +87,11 @@ impl PluginRegistry {
 
 impl DataBlob for PluginRegistry {
     fn get_initial_size() -> usize {
-        4
+        9
     }
 
     fn get_size(&self) -> usize {
-        4 //TODO: Fix this
+        9 //TODO: Fix this
     }
 }
 

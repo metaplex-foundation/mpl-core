@@ -1,23 +1,28 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
-    program_memory::sol_memcpy, rent::Rent, system_instruction, system_program, sysvar::Sysvar,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
 use crate::{
-    error::MplAssetError,
-    instruction::accounts::{CreateAccounts, DelegateAccounts},
-    plugins::create_idempotent,
-    state::{Asset, Compressible, DataState, HashedAsset, Key},
+    instruction::accounts::DelegateAccounts,
+    plugins::{add_plugin, create_idempotent, Delegate, Plugin},
+    state::Authority,
 };
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub struct DelegateArgs {}
 
-pub(crate) fn delegate<'a>(accounts: &'a [AccountInfo<'a>], args: DelegateArgs) -> ProgramResult {
+pub(crate) fn delegate<'a>(accounts: &'a [AccountInfo<'a>], _args: DelegateArgs) -> ProgramResult {
     let ctx = DelegateAccounts::context(accounts)?;
+
+    assert_signer(ctx.accounts.owner)?;
+    let payer = match ctx.accounts.payer {
+        Some(payer) => {
+            assert_signer(payer)?;
+            payer
+        }
+        None => ctx.accounts.owner,
+    };
 
     create_idempotent(
         ctx.accounts.asset_address,
@@ -25,5 +30,16 @@ pub(crate) fn delegate<'a>(accounts: &'a [AccountInfo<'a>], args: DelegateArgs) 
         ctx.accounts.system_program,
     )?;
 
-    Ok(())
+    let plugin = Plugin::Delegate(Delegate::new());
+
+    solana_program::msg!("Add plugin");
+    add_plugin(
+        &plugin,
+        Authority::Pubkey {
+            address: *ctx.accounts.delegate.key,
+        },
+        ctx.accounts.asset_address,
+        payer,
+        ctx.accounts.system_program,
+    )
 }

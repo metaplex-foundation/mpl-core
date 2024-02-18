@@ -80,30 +80,43 @@ export class PluginNotFoundError extends ProgramError {
 codeToErrorMap.set(0x4, PluginNotFoundError);
 nameToErrorMap.set('PluginNotFound', PluginNotFoundError);
 
+/** NumericalOverflow: Numerical Overflow */
+export class NumericalOverflowError extends ProgramError {
+  readonly name: string = 'NumericalOverflow';
+
+  readonly code: number = 0x5; // 5
+
+  constructor(program: Program, cause?: Error) {
+    super('Numerical Overflow', program, cause);
+  }
+}
+codeToErrorMap.set(0x5, NumericalOverflowError);
+nameToErrorMap.set('NumericalOverflow', NumericalOverflowError);
+
 /** IncorrectAccount: Incorrect account */
 export class IncorrectAccountError extends ProgramError {
   readonly name: string = 'IncorrectAccount';
 
-  readonly code: number = 0x5; // 5
+  readonly code: number = 0x6; // 6
 
   constructor(program: Program, cause?: Error) {
     super('Incorrect account', program, cause);
   }
 }
-codeToErrorMap.set(0x5, IncorrectAccountError);
+codeToErrorMap.set(0x6, IncorrectAccountError);
 nameToErrorMap.set('IncorrectAccount', IncorrectAccountError);
 
 /** IncorrectAssetHash: Incorrect asset hash */
 export class IncorrectAssetHashError extends ProgramError {
   readonly name: string = 'IncorrectAssetHash';
 
-  readonly code: number = 0x6; // 6
+  readonly code: number = 0x7; // 7
 
   constructor(program: Program, cause?: Error) {
     super('Incorrect asset hash', program, cause);
   }
 }
-codeToErrorMap.set(0x6, IncorrectAssetHashError);
+codeToErrorMap.set(0x7, IncorrectAssetHashError);
 nameToErrorMap.set('IncorrectAssetHash', IncorrectAssetHashError);
 
 /**
