@@ -25,6 +25,12 @@ pub enum MplAssetError {
     /// 4 (0x4) - Plugin not found
     #[error("Plugin not found")]
     PluginNotFound,
+    /// 5 (0x5) - Incorrect account
+    #[error("Incorrect account")]
+    IncorrectAccount,
+    /// 6 (0x6) - Incorrect asset hash
+    #[error("Incorrect asset hash")]
+    IncorrectAssetHash,
 }
 
 impl solana_program::program_error::PrintProgramError for MplAssetError {
