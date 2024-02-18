@@ -9,8 +9,8 @@ use crate::{error::MplAssetError, state::Key, utils::DataBlob};
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct PluginHeader {
-    pub version: u8,              // 1
-    pub plugin_map_offset: usize, // 8
+    pub key: Key,
+    pub plugin_registry_offset: usize, // 8
 }
 
 impl DataBlob for PluginHeader {

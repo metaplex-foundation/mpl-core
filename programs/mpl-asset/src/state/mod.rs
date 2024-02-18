@@ -53,6 +53,8 @@ pub enum Key {
     Collection,
     HashedCollection,
     PluginHeader,
+    PluginRegistry,
+    Delegate,
 }
 
 #[repr(C)]
