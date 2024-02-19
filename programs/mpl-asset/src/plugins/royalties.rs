@@ -7,9 +7,15 @@ pub struct Creator {
     verified: bool,
 }
 
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
+pub enum RuleSet {
+    ProgramAllowList(Vec<Pubkey>),
+    ProgramDenyList(Vec<Pubkey>),
+}
+
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct Royalties {
-    creators: Vec<Creator>,
-    auth_rules: Pubkey,
     seller_fee_basis_points: u16,
+    creators: Vec<Creator>,
+    rule_set: RuleSet,
 }

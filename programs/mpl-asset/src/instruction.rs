@@ -21,6 +21,7 @@ pub enum MplAssetInstruction {
     Create(CreateArgs),
 
     //TODO: Implement this instruction
+    // keith WIP
     /// Migrate an mpl-token-metadata asset to an mpl-asset.
     #[account(0, writable, signer, name="asset_address", desc = "The address of the new asset")]
     #[account(1, optional, signer, name="owner", desc = "The authority of the new asset")]
@@ -30,7 +31,7 @@ pub enum MplAssetInstruction {
     #[account(4, writable, name="token", desc="Token account")]
     #[account(5, writable, name="mint", desc="Mint of token asset")]
     #[account(6, writable, name="metadata", desc="Metadata (pda of ['metadata', program id, mint id])")]
-    #[account(7, optional, writable, name="edition", desc="Edition of token asset")]
+    #[account(7, writable, name="edition", desc="Edition of token asset")]
     #[account(8, optional, writable, name="owner_token_record", desc="Owner token record account")]
     #[account(9, name="spl_token_program", desc="SPL Token Program")]
     #[account(10, name="spl_ata_program", desc="SPL Associated Token Account program")]
@@ -40,7 +41,6 @@ pub enum MplAssetInstruction {
     #[account(14, optional, name="authorization_rules", desc="Token Authorization Rules account")]
     Migrate(MigrateArgs),
 
-    //TODO: Implement this instruction
     /// Delegate an mpl-asset.
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]
     #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
@@ -80,14 +80,12 @@ pub enum MplAssetInstruction {
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Update(UpdateArgs),
 
-    //TODO: Implement this instruction
     /// Freeze an mpl-asset.
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]
     #[account(1, signer, name="delegate", desc = "The delegate of the asset")]
     #[account(2, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Freeze(FreezeArgs),
 
-    //TODO: Implement this instruction
     /// Thaw an mpl-asset.
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]
     #[account(1, signer, name="delegate", desc = "The delegate of the asset")]

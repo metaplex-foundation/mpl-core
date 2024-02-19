@@ -51,7 +51,7 @@ export type MigrateInstructionAccounts = {
   /** Metadata (pda of ['metadata', program id, mint id]) */
   metadata: PublicKey | Pda;
   /** Edition of token asset */
-  edition?: PublicKey | Pda;
+  edition: PublicKey | Pda;
   /** Owner token record account */
   ownerTokenRecord?: PublicKey | Pda;
   /** SPL Token Program */
