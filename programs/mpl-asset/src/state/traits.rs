@@ -1,6 +1,5 @@
-use crate::{error::MplAssetError, state::Key};
+use crate::{error::MplAssetError, state::Key, utils::load_key};
 use borsh::{BorshDeserialize, BorshSerialize};
-use num_traits::FromPrimitive;
 use solana_program::account_info::AccountInfo;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::msg;
@@ -36,9 +35,7 @@ pub trait SolanaAccount: BorshSerialize + BorshDeserialize {
     }
 }
 
-pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, ProgramError> {
-    let key = Key::from_u8((*account.data).borrow()[offset])
-        .ok_or(MplAssetError::DeserializationError)?;
-
-    Ok(key)
+pub trait Compressible {
+    fn hash(&self) -> Result<[u8; 32], ProgramError>;
+    fn wrap(&self) -> ProgramResult;
 }
