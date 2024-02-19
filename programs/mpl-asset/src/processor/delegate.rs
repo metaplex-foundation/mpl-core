@@ -4,7 +4,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
 use crate::{
     instruction::accounts::DelegateAccounts,
-    plugins::{add_plugin, create_idempotent, Delegate, Plugin},
+    plugins::{add_plugin_or_authority, create_meta_idempotent, Delegate, Plugin},
     state::Authority,
 };
 
@@ -24,7 +24,7 @@ pub(crate) fn delegate<'a>(accounts: &'a [AccountInfo<'a>], _args: DelegateArgs)
         None => ctx.accounts.owner,
     };
 
-    create_idempotent(
+    create_meta_idempotent(
         ctx.accounts.asset_address,
         ctx.accounts.owner,
         ctx.accounts.system_program,
@@ -32,8 +32,7 @@ pub(crate) fn delegate<'a>(accounts: &'a [AccountInfo<'a>], _args: DelegateArgs)
 
     let plugin = Plugin::Delegate(Delegate::new());
 
-    solana_program::msg!("Add plugin");
-    add_plugin(
+    add_plugin_or_authority(
         &plugin,
         Authority::Pubkey {
             address: *ctx.accounts.delegate.key,

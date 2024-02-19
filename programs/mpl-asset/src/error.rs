@@ -35,6 +35,22 @@ pub enum MplAssetError {
     /// 5 - Provided data does not match asset hash.
     #[error("Incorrect asset hash")]
     IncorrectAssetHash,
+
+    /// 8 - Invalid Plugin
+    #[error("Invalid Plugin")]
+    InvalidPlugin,
+
+    /// 9 - Invalid Authority
+    #[error("Invalid Authority")]
+    InvalidAuthority,
+
+    /// 10 - Asset is frozen
+    #[error("Cannot transfer a frozen asset")]
+    AssetIsFrozen,
+
+    /// 11 - Missing compression proof
+    #[error("Missing compression proof")]
+    MissingCompressionProof,
 }
 
 impl PrintProgramError for MplAssetError {

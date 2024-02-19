@@ -1,18 +1,22 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, program::invoke};
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
+    program_error::ProgramError,
+};
 
 use crate::{
     error::MplAssetError,
     instruction::accounts::TransferAccounts,
-    state::{Asset, Compressible, CompressionProof, HashedAsset, Key, SolanaAccount},
-    utils::load_key,
+    plugins::{fetch_plugin, Plugin},
+    state::{Asset, Compressible, CompressionProof, DataBlob, HashedAsset, Key, SolanaAccount},
+    utils::{assert_authority, load_key},
 };
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub struct TransferArgs {
-    compression_proof: CompressionProof,
+    compression_proof: Option<CompressionProof>,
 }
 
 pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) -> ProgramResult {
@@ -29,7 +33,10 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
         Key::HashedAsset => {
             // TODO: Needs to be in helper.
             // Check that arguments passed in result in on-chain hash.
-            let mut asset = Asset::from(args.compression_proof);
+            let compression_proof = args
+                .compression_proof
+                .ok_or(MplAssetError::MissingCompressionProof)?;
+            let mut asset = Asset::from(compression_proof);
             let args_asset_hash = asset.hash()?;
             let current_account_hash = HashedAsset::load(ctx.accounts.asset_address, 0)?.hash;
             if args_asset_hash != current_account_hash {
@@ -47,6 +54,37 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
         }
         Key::Asset => {
             let mut asset = Asset::load(ctx.accounts.asset_address, 0)?;
+
+            let mut authority_check: Result<(), ProgramError> =
+                Err(MplAssetError::InvalidAuthority.into());
+            if asset.get_size() != ctx.accounts.asset_address.data_len() {
+                let (authorities, plugin, _) =
+                    fetch_plugin(ctx.accounts.asset_address, Key::Delegate)?;
+
+                authority_check = assert_authority(
+                    ctx.accounts.asset_address,
+                    ctx.accounts.authority,
+                    &authorities,
+                );
+
+                if let Plugin::Delegate(delegate) = plugin {
+                    if delegate.frozen {
+                        return Err(MplAssetError::AssetIsFrozen.into());
+                    }
+                }
+            }
+
+            match authority_check {
+                Ok(_) => Ok::<(), ProgramError>(()),
+                Err(_) => {
+                    if ctx.accounts.authority.key != &asset.owner {
+                        Err(MplAssetError::InvalidAuthority.into())
+                    } else {
+                        Ok(())
+                    }
+                }
+            }?;
+
             asset.owner = *ctx.accounts.new_owner.key;
             asset.save(ctx.accounts.asset_address, 0)
         }

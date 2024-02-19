@@ -8,6 +8,8 @@
 
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -17,6 +19,7 @@ import {
 import {
   Serializer,
   mapSerializer,
+  option,
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
@@ -50,11 +53,11 @@ export type TransferInstructionAccounts = {
 // Data.
 export type TransferInstructionData = {
   discriminator: number;
-  compressionProof: CompressionProof;
+  compressionProof: Option<CompressionProof>;
 };
 
 export type TransferInstructionDataArgs = {
-  compressionProof: CompressionProofArgs;
+  compressionProof: OptionOrNullable<CompressionProofArgs>;
 };
 
 export function getTransferInstructionDataSerializer(): Serializer<
@@ -69,7 +72,7 @@ export function getTransferInstructionDataSerializer(): Serializer<
     struct<TransferInstructionData>(
       [
         ['discriminator', u8()],
-        ['compressionProof', getCompressionProofSerializer()],
+        ['compressionProof', option(getCompressionProofSerializer())],
       ],
       { description: 'TransferInstructionData' }
     ),

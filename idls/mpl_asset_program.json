@@ -1028,7 +1028,9 @@
           {
             "name": "compressionProof",
             "type": {
-              "defined": "CompressionProof"
+              "option": {
+                "defined": "CompressionProof"
+              }
             }
           }
         ]
@@ -1289,6 +1291,26 @@
       "code": 7,
       "name": "IncorrectAssetHash",
       "msg": "Incorrect asset hash"
+    },
+    {
+      "code": 8,
+      "name": "InvalidPlugin",
+      "msg": "Invalid Plugin"
+    },
+    {
+      "code": 9,
+      "name": "InvalidAuthority",
+      "msg": "Invalid Authority"
+    },
+    {
+      "code": 10,
+      "name": "AssetIsFrozen",
+      "msg": "Cannot transfer a frozen asset"
+    },
+    {
+      "code": 11,
+      "name": "MissingCompressionProof",
+      "msg": "Missing compression proof"
     }
   ],
   "metadata": {

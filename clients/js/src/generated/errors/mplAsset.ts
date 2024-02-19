@@ -119,6 +119,58 @@ export class IncorrectAssetHashError extends ProgramError {
 codeToErrorMap.set(0x7, IncorrectAssetHashError);
 nameToErrorMap.set('IncorrectAssetHash', IncorrectAssetHashError);
 
+/** InvalidPlugin: Invalid Plugin */
+export class InvalidPluginError extends ProgramError {
+  readonly name: string = 'InvalidPlugin';
+
+  readonly code: number = 0x8; // 8
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Plugin', program, cause);
+  }
+}
+codeToErrorMap.set(0x8, InvalidPluginError);
+nameToErrorMap.set('InvalidPlugin', InvalidPluginError);
+
+/** InvalidAuthority: Invalid Authority */
+export class InvalidAuthorityError extends ProgramError {
+  readonly name: string = 'InvalidAuthority';
+
+  readonly code: number = 0x9; // 9
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Authority', program, cause);
+  }
+}
+codeToErrorMap.set(0x9, InvalidAuthorityError);
+nameToErrorMap.set('InvalidAuthority', InvalidAuthorityError);
+
+/** AssetIsFrozen: Cannot transfer a frozen asset */
+export class AssetIsFrozenError extends ProgramError {
+  readonly name: string = 'AssetIsFrozen';
+
+  readonly code: number = 0xa; // 10
+
+  constructor(program: Program, cause?: Error) {
+    super('Cannot transfer a frozen asset', program, cause);
+  }
+}
+codeToErrorMap.set(0xa, AssetIsFrozenError);
+nameToErrorMap.set('AssetIsFrozen', AssetIsFrozenError);
+
+/** MissingCompressionProof: Missing compression proof */
+export class MissingCompressionProofError extends ProgramError {
+  readonly name: string = 'MissingCompressionProof';
+
+  readonly code: number = 0xb; // 11
+
+  constructor(program: Program, cause?: Error) {
+    super('Missing compression proof', program, cause);
+  }
+}
+codeToErrorMap.set(0xb, MissingCompressionProofError);
+nameToErrorMap.set('MissingCompressionProof', MissingCompressionProofError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

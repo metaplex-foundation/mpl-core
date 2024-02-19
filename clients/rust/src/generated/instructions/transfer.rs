@@ -107,7 +107,7 @@ impl TransferInstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TransferInstructionArgs {
-    pub compression_proof: CompressionProof,
+    pub compression_proof: Option<CompressionProof>,
 }
 
 /// Instruction builder.
@@ -169,6 +169,7 @@ impl TransferBuilder {
         self.log_wrapper = log_wrapper;
         self
     }
+    /// `[optional argument]`
     #[inline(always)]
     pub fn compression_proof(&mut self, compression_proof: CompressionProof) -> &mut Self {
         self.compression_proof = Some(compression_proof);
@@ -203,10 +204,7 @@ impl TransferBuilder {
             log_wrapper: self.log_wrapper,
         };
         let args = TransferInstructionArgs {
-            compression_proof: self
-                .compression_proof
-                .clone()
-                .expect("compression_proof is not set"),
+            compression_proof: self.compression_proof.clone(),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -463,6 +461,7 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
         self.instruction.log_wrapper = log_wrapper;
         self
     }
+    /// `[optional argument]`
     #[inline(always)]
     pub fn compression_proof(&mut self, compression_proof: CompressionProof) -> &mut Self {
         self.instruction.compression_proof = Some(compression_proof);
@@ -510,11 +509,7 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = TransferInstructionArgs {
-            compression_proof: self
-                .instruction
-                .compression_proof
-                .clone()
-                .expect("compression_proof is not set"),
+            compression_proof: self.instruction.compression_proof.clone(),
         };
         let instruction = TransferCpi {
             __program: self.instruction.__program,
