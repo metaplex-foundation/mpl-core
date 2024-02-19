@@ -7,8 +7,7 @@ use solana_program::{
 use crate::{
     error::MplAssetError,
     instruction::accounts::ThawAccounts,
-    plugins::{fetch_plugin, Delegate, Plugin},
-    state::{Key, SolanaAccount},
+    plugins::{fetch_plugin, Delegate, Plugin, PluginType},
     utils::assert_authority,
 };
 
@@ -22,7 +21,7 @@ pub(crate) fn thaw<'a>(accounts: &'a [AccountInfo<'a>], _args: ThawArgs) -> Prog
     assert_signer(ctx.accounts.delegate)?;
 
     let (authorities, mut plugin, offset) =
-        fetch_plugin(ctx.accounts.asset_address, Key::Delegate)?;
+        fetch_plugin(ctx.accounts.asset_address, PluginType::Delegate)?;
 
     assert_authority(
         ctx.accounts.asset_address,
@@ -38,7 +37,7 @@ pub(crate) fn thaw<'a>(accounts: &'a [AccountInfo<'a>], _args: ThawArgs) -> Prog
         _ => Err(MplAssetError::InvalidPlugin.into()),
     }?;
 
-    delegate.save(ctx.accounts.asset_address, offset)?;
+    Plugin::Delegate(*delegate).save(ctx.accounts.asset_address, offset)?;
 
     Ok(())
 }

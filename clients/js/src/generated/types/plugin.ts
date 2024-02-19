@@ -15,23 +15,35 @@ import {
   tuple,
   unit,
 } from '@metaplex-foundation/umi/serializers';
-import { Delegate, DelegateArgs, getDelegateSerializer } from '.';
+import {
+  Delegate,
+  DelegateArgs,
+  Royalties,
+  RoyaltiesArgs,
+  getDelegateSerializer,
+  getRoyaltiesSerializer,
+} from '.';
 
 export type Plugin =
   | { __kind: 'Reserved' }
-  | { __kind: 'Royalties' }
+  | { __kind: 'Royalties'; fields: [Royalties] }
   | { __kind: 'Delegate'; fields: [Delegate] };
 
 export type PluginArgs =
   | { __kind: 'Reserved' }
-  | { __kind: 'Royalties' }
+  | { __kind: 'Royalties'; fields: [RoyaltiesArgs] }
   | { __kind: 'Delegate'; fields: [DelegateArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
     [
       ['Reserved', unit()],
-      ['Royalties', unit()],
+      [
+        'Royalties',
+        struct<GetDataEnumKindContent<Plugin, 'Royalties'>>([
+          ['fields', tuple([getRoyaltiesSerializer()])],
+        ]),
+      ],
       [
         'Delegate',
         struct<GetDataEnumKindContent<Plugin, 'Delegate'>>([
@@ -48,7 +60,8 @@ export function plugin(
   kind: 'Reserved'
 ): GetDataEnumKind<PluginArgs, 'Reserved'>;
 export function plugin(
-  kind: 'Royalties'
+  kind: 'Royalties',
+  data: GetDataEnumKindContent<PluginArgs, 'Royalties'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Royalties'>;
 export function plugin(
   kind: 'Delegate',

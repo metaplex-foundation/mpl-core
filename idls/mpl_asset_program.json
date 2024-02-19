@@ -828,9 +828,9 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "key",
+            "name": "pluginType",
             "type": {
-              "defined": "Key"
+              "defined": "PluginType"
             }
           },
           {
@@ -883,12 +883,6 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "Key"
-            }
-          },
           {
             "name": "frozen",
             "type": "bool"
@@ -1091,7 +1085,12 @@
             "name": "Reserved"
           },
           {
-            "name": "Royalties"
+            "name": "Royalties",
+            "fields": [
+              {
+                "defined": "Royalties"
+              }
+            ]
           },
           {
             "name": "Delegate",
@@ -1100,6 +1099,23 @@
                 "defined": "Delegate"
               }
             ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "PluginType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Reserved"
+          },
+          {
+            "name": "Royalties"
+          },
+          {
+            "name": "Delegate"
           }
         ]
       }
@@ -1219,19 +1235,10 @@
             "name": "HashedAsset"
           },
           {
-            "name": "Collection"
-          },
-          {
-            "name": "HashedCollection"
-          },
-          {
             "name": "PluginHeader"
           },
           {
             "name": "PluginRegistry"
-          },
-          {
-            "name": "Delegate"
           }
         ]
       }

@@ -2,6 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::resize_or_reallocate_account_raw;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+    program_memory::sol_memcpy,
 };
 
 use crate::{
@@ -9,7 +10,7 @@ use crate::{
     state::{Asset, Authority, DataBlob, Key, PluginHeader, SolanaAccount},
 };
 
-use super::{Plugin, PluginRegistry, RegistryData, RegistryRecord};
+use super::{Plugin, PluginRegistry, PluginType, RegistryData, RegistryRecord};
 
 /// Create plugin header and registry if it doesn't exist
 pub fn create_meta_idempotent<'a>(
@@ -59,7 +60,7 @@ pub fn assert_plugins_initialized(account: &AccountInfo) -> ProgramResult {
 /// Fetch the plugin from the registry.
 pub fn fetch_plugin(
     account: &AccountInfo,
-    key: Key,
+    plugin_type: PluginType,
 ) -> Result<(Vec<Authority>, Plugin, usize), ProgramError> {
     let mut bytes: &[u8] = &(*account.data).borrow();
     let asset = Asset::deserialize(&mut bytes)?;
@@ -68,27 +69,36 @@ pub fn fetch_plugin(
     let PluginRegistry { registry, .. } =
         PluginRegistry::load(account, header.plugin_registry_offset)?;
 
+    solana_program::msg!("{:?}", registry);
+
     // Find the plugin in the registry.
     let plugin_data = registry
         .iter()
         .find(
             |RegistryRecord {
-                 key: plugin_key,
+                 plugin_type: plugin_type_iter,
                  data: _,
-             }| *plugin_key == key,
+             }| *plugin_type_iter == plugin_type,
         )
-        .map(|RegistryRecord { key: _, data }| data)
+        .map(
+            |RegistryRecord {
+                 plugin_type: _,
+                 data,
+             }| data,
+        )
         .ok_or(MplAssetError::PluginNotFound)?;
 
+    solana_program::msg!("Deserialize plugin at offset");
     // Deserialize the plugin.
     let plugin = Plugin::deserialize(&mut &(*account.data).borrow()[plugin_data.offset..])?;
 
+    solana_program::msg!("Return plugin");
     // Return the plugin and its authorities.
     Ok((plugin_data.authorities.clone(), plugin, plugin_data.offset))
 }
 
 /// Create plugin header and registry if it doesn't exist
-pub fn list_plugins(account: &AccountInfo) -> Result<Vec<Key>, ProgramError> {
+pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramError> {
     let mut bytes: &[u8] = &(*account.data).borrow();
     let asset = Asset::deserialize(&mut bytes)?;
 
@@ -98,7 +108,7 @@ pub fn list_plugins(account: &AccountInfo) -> Result<Vec<Key>, ProgramError> {
 
     Ok(registry
         .iter()
-        .map(|registry_record| registry_record.key)
+        .map(|registry_record| registry_record.plugin_type)
         .collect())
 }
 
@@ -119,21 +129,23 @@ pub fn add_plugin_or_authority<'a>(
     let mut header = PluginHeader::load(account, asset.get_size())?;
     let mut plugin_registry = PluginRegistry::load(account, header.plugin_registry_offset)?;
 
-    let (plugin_size, key) = match plugin {
+    let plugin_type = match plugin {
         Plugin::Reserved => return Err(MplAssetError::InvalidPlugin.into()),
-        Plugin::Royalties => todo!(),
-        Plugin::Delegate(delegate) => (delegate.get_size(), Key::Delegate),
+        Plugin::Royalties(_) => PluginType::Royalties,
+        Plugin::Delegate(_) => PluginType::Delegate,
     };
+    let plugin_data = plugin.try_to_vec()?;
+    let plugin_size = plugin_data.len();
     let authority_bytes = authority.try_to_vec()?;
 
     if let Some(RegistryRecord {
-        key: _,
+        plugin_type: _,
         data: registry_data,
     }) = plugin_registry.registry.iter_mut().find(
         |RegistryRecord {
-             key: search_key,
+             plugin_type: type_iter,
              data: _,
-         }| search_key == &key,
+         }| type_iter == &plugin_type,
     ) {
         registry_data.authorities.push(authority.clone());
 
@@ -166,7 +178,7 @@ pub fn add_plugin_or_authority<'a>(
         header.plugin_registry_offset = new_registry_offset;
 
         plugin_registry.registry.push(RegistryRecord {
-            key,
+            plugin_type,
             data: registry_data.clone(),
         });
 
@@ -178,12 +190,7 @@ pub fn add_plugin_or_authority<'a>(
         resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
 
         header.save(account, asset.get_size())?;
-        match plugin {
-            Plugin::Reserved => return Err(MplAssetError::InvalidPlugin.into()),
-            Plugin::Royalties => todo!(),
-            Plugin::Delegate(delegate) => delegate.save(account, old_registry_offset)?,
-        };
-
+        plugin.save(account, old_registry_offset)?;
         plugin_registry.save(account, new_registry_offset)?;
     }
 

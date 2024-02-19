@@ -5,7 +5,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use crate::{
     error::MplAssetError,
     instruction::accounts::TransferAccounts,
-    plugins::{fetch_plugin, Plugin},
+    plugins::{fetch_plugin, Plugin, PluginType},
     state::{Asset, Compressible, CompressionProof, DataBlob, HashedAsset, Key, SolanaAccount},
     utils::{assert_authority, load_key},
 };
@@ -44,9 +44,11 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             let mut authority_check: Result<(), ProgramError> =
                 Err(MplAssetError::InvalidAuthority.into());
             if asset.get_size() != ctx.accounts.asset_address.data_len() {
+                solana_program::msg!("Fetch Plugin");
                 let (authorities, plugin, _) =
-                    fetch_plugin(ctx.accounts.asset_address, Key::Delegate)?;
+                    fetch_plugin(ctx.accounts.asset_address, PluginType::Delegate)?;
 
+                solana_program::msg!("Assert authority");
                 authority_check = assert_authority(
                     ctx.accounts.asset_address,
                     ctx.accounts.authority,

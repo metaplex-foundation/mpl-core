@@ -14,9 +14,6 @@ pub enum Key {
     Uninitialized,
     Asset,
     HashedAsset,
-    Collection,
-    HashedCollection,
     PluginHeader,
     PluginRegistry,
-    Delegate,
 }

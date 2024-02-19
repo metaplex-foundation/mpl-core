@@ -7,18 +7,13 @@
  */
 
 import { Serializer, bool, struct } from '@metaplex-foundation/umi/serializers';
-import { Key, KeyArgs, getKeySerializer } from '.';
 
-export type Delegate = { key: Key; frozen: boolean };
+export type Delegate = { frozen: boolean };
 
-export type DelegateArgs = { key: KeyArgs; frozen: boolean };
+export type DelegateArgs = Delegate;
 
 export function getDelegateSerializer(): Serializer<DelegateArgs, Delegate> {
-  return struct<Delegate>(
-    [
-      ['key', getKeySerializer()],
-      ['frozen', bool()],
-    ],
-    { description: 'Delegate' }
-  ) as Serializer<DelegateArgs, Delegate>;
+  return struct<Delegate>([['frozen', bool()]], {
+    description: 'Delegate',
+  }) as Serializer<DelegateArgs, Delegate>;
 }
