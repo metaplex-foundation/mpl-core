@@ -8,17 +8,20 @@
 
 import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
 import {
-  Key,
-  KeyArgs,
+  PluginType,
+  PluginTypeArgs,
   RegistryData,
   RegistryDataArgs,
-  getKeySerializer,
+  getPluginTypeSerializer,
   getRegistryDataSerializer,
 } from '.';
 
-export type RegistryRecord = { key: Key; data: RegistryData };
+export type RegistryRecord = { pluginType: PluginType; data: RegistryData };
 
-export type RegistryRecordArgs = { key: KeyArgs; data: RegistryDataArgs };
+export type RegistryRecordArgs = {
+  pluginType: PluginTypeArgs;
+  data: RegistryDataArgs;
+};
 
 export function getRegistryRecordSerializer(): Serializer<
   RegistryRecordArgs,
@@ -26,7 +29,7 @@ export function getRegistryRecordSerializer(): Serializer<
 > {
   return struct<RegistryRecord>(
     [
-      ['key', getKeySerializer()],
+      ['pluginType', getPluginTypeSerializer()],
       ['data', getRegistryDataSerializer()],
     ],
     { description: 'RegistryRecord' }

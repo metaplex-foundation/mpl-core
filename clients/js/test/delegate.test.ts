@@ -16,7 +16,8 @@ import {
   getAssetAccountDataSerializer,
   getDelegateSerializer,
   getPluginHeaderAccountDataSerializer,
-  getPluginRegistryAccountDataSerializer
+  getPluginRegistryAccountDataSerializer,
+  PluginType,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -58,7 +59,7 @@ test('it can delegate a new authority', async (t) => {
     t.like(pluginRegistry, <PluginRegistryAccountData>{
       key: Key.PluginRegistry,
       registry: [<RegistryRecord>{
-        key: Key.Delegate,
+        pluginType: PluginType.Delegate,
         data: <RegistryData>{
           offset: BigInt(117),
           authorities: [<Authority>{ __kind: 'Pubkey', address: delegateAddress.publicKey }],
@@ -69,7 +70,6 @@ test('it can delegate a new authority', async (t) => {
     const delegatePlugin = getDelegateSerializer().deserialize(pluginData.data, Number(pluginRegistry.registry[0].data.offset))[0];
     // console.log(delegatePlugin);
     t.like(delegatePlugin, <Delegate>{
-      key: Key.Delegate,
       frozen: false,
     });
   } else {

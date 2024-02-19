@@ -12,7 +12,6 @@ mod traits;
 pub use traits::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
 
 use crate::plugins::Plugin;
@@ -52,11 +51,8 @@ pub enum Key {
     Uninitialized,
     Asset,
     HashedAsset,
-    Collection,
-    HashedCollection,
     PluginHeader,
     PluginRegistry,
-    Delegate,
 }
 
 impl Key {

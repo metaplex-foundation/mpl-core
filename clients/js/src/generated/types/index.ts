@@ -17,6 +17,7 @@ export * from './extraAccounts';
 export * from './key';
 export * from './migrationLevel';
 export * from './plugin';
+export * from './pluginType';
 export * from './registryData';
 export * from './registryRecord';
 export * from './royalties';

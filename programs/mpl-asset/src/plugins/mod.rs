@@ -8,18 +8,49 @@ pub use delegate::*;
 pub use royalties::*;
 
 use shank::ShankAccount;
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
+};
 pub use utils::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 
-use crate::state::{Authority, DataBlob, Key, SolanaAccount};
+use crate::{
+    error::MplAssetError,
+    state::{Authority, DataBlob, Key, SolanaAccount},
+};
 
 #[repr(u16)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum Plugin {
     Reserved,
-    Royalties,
+    Royalties(Royalties),
     Delegate(Delegate),
+}
+
+#[repr(u16)]
+#[derive(Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
+pub enum PluginType {
+    Reserved,
+    Royalties,
+    Delegate,
+}
+
+impl Plugin {
+    pub fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
+        let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
+        Self::deserialize(&mut bytes).map_err(|error| {
+            msg!("Error: {}", error);
+            MplAssetError::DeserializationError.into()
+        })
+    }
+
+    pub fn save(&self, account: &AccountInfo, offset: usize) -> ProgramResult {
+        borsh::to_writer(&mut account.data.borrow_mut()[offset..], self).map_err(|error| {
+            msg!("Error: {}", error);
+            MplAssetError::SerializationError.into()
+        })
+    }
 }
 
 #[repr(C)]
@@ -32,7 +63,7 @@ pub struct RegistryData {
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct RegistryRecord {
-    pub key: Key,
+    pub plugin_type: PluginType,
     pub data: RegistryData,
 }
 
