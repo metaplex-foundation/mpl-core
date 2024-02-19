@@ -79,7 +79,7 @@ test('it cannot transfer an asset if not the owner', async (t) => {
     authority: attacker,
   }).sendAndConfirm(umi);
 
-  t.throwsAsync(result, { name: 'InvalidAuthority' })
+  await t.throwsAsync(result, { name: 'InvalidAuthority' })
 
   const afterAsset = await fetchAsset(umi, assetAddress.publicKey);
   // console.log("Account State:", afterAsset);

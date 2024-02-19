@@ -28,11 +28,15 @@ pub enum MplAssetError {
     #[error("Plugin not found")]
     PluginNotFound,
 
-    /// 5 - Incorrect account
+    /// 5 - Numerical Overflow
+    #[error("Numerical Overflow")]
+    NumericalOverflow,
+
+    /// 6 - Incorrect account
     #[error("Incorrect account")]
     IncorrectAccount,
 
-    /// 5 - Provided data does not match asset hash.
+    /// 7 - Provided data does not match asset hash.
     #[error("Incorrect asset hash")]
     IncorrectAssetHash,
 

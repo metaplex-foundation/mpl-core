@@ -1,6 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+};
 
 use crate::{
     error::MplAssetError,
@@ -28,8 +30,10 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
 
     match load_key(ctx.accounts.asset_address, 0)? {
         Key::HashedAsset => {
-            let mut asset =
-                Asset::verify_proof(ctx.accounts.asset_address, args.compression_proof)?;
+            let compression_proof = args
+                .compression_proof
+                .ok_or(MplAssetError::MissingCompressionProof)?;
+            let mut asset = Asset::verify_proof(ctx.accounts.asset_address, compression_proof)?;
 
             asset.owner = *ctx.accounts.new_owner.key;
 

@@ -29,7 +29,11 @@ pub fn create_meta_idempotent<'a>(
             key: Key::PluginHeader,
             plugin_registry_offset: asset.get_size() + PluginHeader::get_initial_size(),
         };
-        let registry = PluginRegistry { registry: vec![] };
+        let registry = PluginRegistry {
+            key: Key::PluginRegistry,
+            registry: vec![],
+            external_plugins: vec![],
+        };
 
         resize_or_reallocate_account_raw(
             account,
@@ -150,7 +154,7 @@ pub fn add_plugin_or_authority<'a>(
             .ok_or(MplAssetError::NumericalOverflow)?;
         resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
 
-        plugin_registry.save(account, header.plugin_registry_offset);
+        plugin_registry.save(account, header.plugin_registry_offset)?;
     } else {
         let old_registry_offset = header.plugin_registry_offset;
         let registry_data = RegistryData {
