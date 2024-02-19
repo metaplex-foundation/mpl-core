@@ -2,7 +2,6 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::resize_or_reallocate_account_raw;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
-    program_memory::sol_memcpy,
 };
 
 use crate::{
@@ -129,11 +128,7 @@ pub fn add_plugin_or_authority<'a>(
     let mut header = PluginHeader::load(account, asset.get_size())?;
     let mut plugin_registry = PluginRegistry::load(account, header.plugin_registry_offset)?;
 
-    let plugin_type = match plugin {
-        Plugin::Reserved => return Err(MplAssetError::InvalidPlugin.into()),
-        Plugin::Royalties(_) => PluginType::Royalties,
-        Plugin::Delegate(_) => PluginType::Delegate,
-    };
+    let plugin_type = plugin.into();
     let plugin_data = plugin.try_to_vec()?;
     let plugin_size = plugin_data.len();
     let authority_bytes = authority.try_to_vec()?;

@@ -51,6 +51,14 @@ pub enum MplAssetError {
     /// 11 - Missing compression proof
     #[error("Missing compression proof")]
     MissingCompressionProof,
+
+    /// 12 - Cannot migrate a master edition used for prints
+    #[error("Cannot migrate a master edition used for prints")]
+    CannotMigrateMasterWithSupply,
+
+    /// 13 - Cannot migrate a print edition
+    #[error("Cannot migrate a print edition")]
+    CannotMigratePrints,
 }
 
 impl PrintProgramError for MplAssetError {

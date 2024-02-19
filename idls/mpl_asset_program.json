@@ -144,7 +144,6 @@
           "name": "edition",
           "isMut": true,
           "isSigner": false,
-          "isOptional": true,
           "docs": [
             "Edition of token asset"
           ]
@@ -863,6 +862,13 @@
       }
     },
     {
+      "name": "AssetSigner",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
       "name": "Collection",
       "type": {
         "kind": "struct",
@@ -891,6 +897,18 @@
       }
     },
     {
+      "name": "LegacyMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
       "name": "Creator",
       "type": {
         "kind": "struct",
@@ -912,6 +930,10 @@
         "kind": "struct",
         "fields": [
           {
+            "name": "sellerFeeBasisPoints",
+            "type": "u16"
+          },
+          {
             "name": "creators",
             "type": {
               "vec": {
@@ -920,12 +942,10 @@
             }
           },
           {
-            "name": "authRules",
-            "type": "publicKey"
-          },
-          {
-            "name": "sellerFeeBasisPoints",
-            "type": "u16"
+            "name": "ruleSet",
+            "type": {
+              "defined": "RuleSet"
+            }
           }
         ]
       }
@@ -1099,6 +1119,22 @@
                 "defined": "Delegate"
               }
             ]
+          },
+          {
+            "name": "LegacyMetadata",
+            "fields": [
+              {
+                "defined": "LegacyMetadata"
+              }
+            ]
+          },
+          {
+            "name": "AssetSigner",
+            "fields": [
+              {
+                "defined": "AssetSigner"
+              }
+            ]
           }
         ]
       }
@@ -1116,6 +1152,36 @@
           },
           {
             "name": "Delegate"
+          },
+          {
+            "name": "LegacyMetadata"
+          },
+          {
+            "name": "AssetSigner"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RuleSet",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "ProgramAllowList",
+            "fields": [
+              {
+                "vec": "publicKey"
+              }
+            ]
+          },
+          {
+            "name": "ProgramDenyList",
+            "fields": [
+              {
+                "vec": "publicKey"
+              }
+            ]
           }
         ]
       }
@@ -1318,6 +1384,16 @@
       "code": 11,
       "name": "MissingCompressionProof",
       "msg": "Missing compression proof"
+    },
+    {
+      "code": 12,
+      "name": "CannotMigrateMasterWithSupply",
+      "msg": "Cannot migrate a master edition used for prints"
+    },
+    {
+      "code": 13,
+      "name": "CannotMigratePrints",
+      "msg": "Cannot migrate a print edition"
     }
   ],
   "metadata": {

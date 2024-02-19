@@ -6,18 +6,14 @@
 //!
 
 use crate::generated::types::Creator;
+use crate::generated::types::RuleSet;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
-use solana_program::pubkey::Pubkey;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Royalties {
-    pub creators: Vec<Creator>,
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
-    )]
-    pub auth_rules: Pubkey,
     pub seller_fee_basis_points: u16,
+    pub creators: Vec<Creator>,
+    pub rule_set: RuleSet,
 }

@@ -171,6 +171,35 @@ export class MissingCompressionProofError extends ProgramError {
 codeToErrorMap.set(0xb, MissingCompressionProofError);
 nameToErrorMap.set('MissingCompressionProof', MissingCompressionProofError);
 
+/** CannotMigrateMasterWithSupply: Cannot migrate a master edition used for prints */
+export class CannotMigrateMasterWithSupplyError extends ProgramError {
+  readonly name: string = 'CannotMigrateMasterWithSupply';
+
+  readonly code: number = 0xc; // 12
+
+  constructor(program: Program, cause?: Error) {
+    super('Cannot migrate a master edition used for prints', program, cause);
+  }
+}
+codeToErrorMap.set(0xc, CannotMigrateMasterWithSupplyError);
+nameToErrorMap.set(
+  'CannotMigrateMasterWithSupply',
+  CannotMigrateMasterWithSupplyError
+);
+
+/** CannotMigratePrints: Cannot migrate a print edition */
+export class CannotMigratePrintsError extends ProgramError {
+  readonly name: string = 'CannotMigratePrints';
+
+  readonly code: number = 0xd; // 13
+
+  constructor(program: Program, cause?: Error) {
+    super('Cannot migrate a print edition', program, cause);
+  }
+}
+codeToErrorMap.set(0xd, CannotMigratePrintsError);
+nameToErrorMap.set('CannotMigratePrints', CannotMigratePrintsError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

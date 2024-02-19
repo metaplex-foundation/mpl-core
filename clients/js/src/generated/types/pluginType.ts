@@ -12,6 +12,8 @@ export enum PluginType {
   Reserved,
   Royalties,
   Delegate,
+  LegacyMetadata,
+  AssetSigner,
 }
 
 export type PluginTypeArgs = PluginType;

@@ -27,7 +27,7 @@ pub struct Migrate {
     /// Metadata (pda of ['metadata', program id, mint id])
     pub metadata: solana_program::pubkey::Pubkey,
     /// Edition of token asset
-    pub edition: Option<solana_program::pubkey::Pubkey>,
+    pub edition: solana_program::pubkey::Pubkey,
     /// Owner token record account
     pub owner_token_record: Option<solana_program::pubkey::Pubkey>,
     /// SPL Token Program
@@ -95,16 +95,10 @@ impl Migrate {
             self.metadata,
             false,
         ));
-        if let Some(edition) = self.edition {
-            accounts.push(solana_program::instruction::AccountMeta::new(
-                edition, false,
-            ));
-        } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_ASSET_ID,
-                false,
-            ));
-        }
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.edition,
+            false,
+        ));
         if let Some(owner_token_record) = self.owner_token_record {
             accounts.push(solana_program::instruction::AccountMeta::new(
                 owner_token_record,
@@ -263,11 +257,10 @@ impl MigrateBuilder {
         self.metadata = Some(metadata);
         self
     }
-    /// `[optional account]`
     /// Edition of token asset
     #[inline(always)]
-    pub fn edition(&mut self, edition: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
-        self.edition = edition;
+    pub fn edition(&mut self, edition: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.edition = Some(edition);
         self
     }
     /// `[optional account]`
@@ -375,7 +368,7 @@ impl MigrateBuilder {
             token: self.token.expect("token is not set"),
             mint: self.mint.expect("mint is not set"),
             metadata: self.metadata.expect("metadata is not set"),
-            edition: self.edition,
+            edition: self.edition.expect("edition is not set"),
             owner_token_record: self.owner_token_record,
             spl_token_program: self.spl_token_program.unwrap_or(solana_program::pubkey!(
                 "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
@@ -416,7 +409,7 @@ pub struct MigrateCpiAccounts<'a, 'b> {
     /// Metadata (pda of ['metadata', program id, mint id])
     pub metadata: &'b solana_program::account_info::AccountInfo<'a>,
     /// Edition of token asset
-    pub edition: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub edition: &'b solana_program::account_info::AccountInfo<'a>,
     /// Owner token record account
     pub owner_token_record: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// SPL Token Program
@@ -452,7 +445,7 @@ pub struct MigrateCpi<'a, 'b> {
     /// Metadata (pda of ['metadata', program id, mint id])
     pub metadata: &'b solana_program::account_info::AccountInfo<'a>,
     /// Edition of token asset
-    pub edition: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub edition: &'b solana_program::account_info::AccountInfo<'a>,
     /// Owner token record account
     pub owner_token_record: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// SPL Token Program
@@ -572,17 +565,10 @@ impl<'a, 'b> MigrateCpi<'a, 'b> {
             *self.metadata.key,
             false,
         ));
-        if let Some(edition) = self.edition {
-            accounts.push(solana_program::instruction::AccountMeta::new(
-                *edition.key,
-                false,
-            ));
-        } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_ASSET_ID,
-                false,
-            ));
-        }
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.edition.key,
+            false,
+        ));
         if let Some(owner_token_record) = self.owner_token_record {
             accounts.push(solana_program::instruction::AccountMeta::new(
                 *owner_token_record.key,
@@ -668,9 +654,7 @@ impl<'a, 'b> MigrateCpi<'a, 'b> {
         account_infos.push(self.token.clone());
         account_infos.push(self.mint.clone());
         account_infos.push(self.metadata.clone());
-        if let Some(edition) = self.edition {
-            account_infos.push(edition.clone());
-        }
+        account_infos.push(self.edition.clone());
         if let Some(owner_token_record) = self.owner_token_record {
             account_infos.push(owner_token_record.clone());
         }
@@ -784,14 +768,13 @@ impl<'a, 'b> MigrateCpiBuilder<'a, 'b> {
         self.instruction.metadata = Some(metadata);
         self
     }
-    /// `[optional account]`
     /// Edition of token asset
     #[inline(always)]
     pub fn edition(
         &mut self,
-        edition: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+        edition: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.edition = edition;
+        self.instruction.edition = Some(edition);
         self
     }
     /// `[optional account]`
@@ -940,7 +923,7 @@ impl<'a, 'b> MigrateCpiBuilder<'a, 'b> {
 
             metadata: self.instruction.metadata.expect("metadata is not set"),
 
-            edition: self.instruction.edition,
+            edition: self.instruction.edition.expect("edition is not set"),
 
             owner_token_record: self.instruction.owner_token_record,
 

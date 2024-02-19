@@ -46,6 +46,12 @@ pub enum MplAssetError {
     /// 11 (0xB) - Missing compression proof
     #[error("Missing compression proof")]
     MissingCompressionProof,
+    /// 12 (0xC) - Cannot migrate a master edition used for prints
+    #[error("Cannot migrate a master edition used for prints")]
+    CannotMigrateMasterWithSupply,
+    /// 13 (0xD) - Cannot migrate a print edition
+    #[error("Cannot migrate a print edition")]
+    CannotMigratePrints,
 }
 
 impl solana_program::program_error::PrintProgramError for MplAssetError {

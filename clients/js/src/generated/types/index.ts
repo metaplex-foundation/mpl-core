@@ -6,6 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+export * from './assetSigner';
 export * from './authority';
 export * from './collection';
 export * from './compressionProof';
@@ -15,9 +16,11 @@ export * from './delegate';
 export * from './externalPluginRecord';
 export * from './extraAccounts';
 export * from './key';
+export * from './legacyMetadata';
 export * from './migrationLevel';
 export * from './plugin';
 export * from './pluginType';
 export * from './registryData';
 export * from './registryRecord';
 export * from './royalties';
+export * from './ruleSet';

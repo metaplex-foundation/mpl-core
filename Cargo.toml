@@ -1,6 +1,3 @@
 [workspace]
 resolver = "2"
-members = [
-    "clients/rust",
-    "programs/mpl-asset"
-]
+members = ["clients/rust", "programs/mpl-asset"]
