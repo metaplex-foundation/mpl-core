@@ -34,6 +34,18 @@ pub enum MplAssetError {
     /// 7 (0x7) - Incorrect asset hash
     #[error("Incorrect asset hash")]
     IncorrectAssetHash,
+    /// 8 (0x8) - Invalid Plugin
+    #[error("Invalid Plugin")]
+    InvalidPlugin,
+    /// 9 (0x9) - Invalid Authority
+    #[error("Invalid Authority")]
+    InvalidAuthority,
+    /// 10 (0xA) - Cannot transfer a frozen asset
+    #[error("Cannot transfer a frozen asset")]
+    AssetIsFrozen,
+    /// 11 (0xB) - Missing compression proof
+    #[error("Missing compression proof")]
+    MissingCompressionProof,
 }
 
 impl solana_program::program_error::PrintProgramError for MplAssetError {

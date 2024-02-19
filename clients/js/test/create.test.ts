@@ -19,7 +19,7 @@ test('it can create a new asset in account state', async (t) => {
 
   // Then an account was created with the correct data.
   const asset = await fetchAsset(umi, assetAddress.publicKey);
-  console.log("Account State:", asset);
+  // console.log("Account State:", asset);
   t.like(asset, <Asset>{
     publicKey: assetAddress.publicKey,
     updateAuthority: umi.identity.publicKey,
@@ -56,7 +56,7 @@ test('it can create a new asset in ledger state', async (t) => {
     const { data } = tx.meta.innerInstructions[0].instructions[0];
     // console.log(base58.deserialize(data));
     const parsed = getAssetAccountDataSerializer().deserialize(data)[0];
-    console.log("Ledger State:", parsed);
+    // console.log("Ledger State:", parsed);
     t.like(parsed, <Asset>{
       updateAuthority: umi.identity.publicKey,
       owner: umi.identity.publicKey,
