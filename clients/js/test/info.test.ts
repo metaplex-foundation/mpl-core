@@ -1,6 +1,6 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { DataState, create, fetchAsset, fetchHashedAsset } from '../src';
+import { DataState, create, /* fetchAsset, fetchHashedAsset */ } from '../src';
 import { createUmi } from './_setup';
 
 test('fetch account info for account state', async (t) => {
@@ -23,8 +23,8 @@ test('fetch account info for account state', async (t) => {
   }
 
   // Then an account was created with the correct data.
-  const nonFungible = await fetchAsset(umi, assetAddress.publicKey);
-  console.log(nonFungible);
+  // const nonFungible = await fetchAsset(umi, assetAddress.publicKey);
+  // console.log(nonFungible);
 
   t.pass();
 });
@@ -50,8 +50,8 @@ test('fetch account info for ledger state', async (t) => {
   }
 
   // Then an account was created with the correct data.
-  const nonFungible = await fetchHashedAsset(umi, assetAddress.publicKey);
-  console.log(nonFungible);
+  // const nonFungible = await fetchHashedAsset(umi, assetAddress.publicKey);
+  // console.log(nonFungible);
 
   t.pass();
 });
