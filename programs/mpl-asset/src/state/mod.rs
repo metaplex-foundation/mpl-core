@@ -5,7 +5,7 @@ mod hashed_asset;
 pub use hashed_asset::*;
 
 mod plugin_header;
-use num_derive::FromPrimitive;
+use num_derive::{FromPrimitive, ToPrimitive};
 pub use plugin_header::*;
 
 mod traits;
@@ -46,7 +46,9 @@ pub enum ExtraAccounts {
         owner_pda: Option<Pubkey>,
     },
 }
-#[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, FromPrimitive)]
+#[derive(
+    Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, ToPrimitive, FromPrimitive,
+)]
 pub enum Key {
     Uninitialized,
     Asset,
