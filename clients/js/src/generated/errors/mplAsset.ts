@@ -213,6 +213,19 @@ export class CannotBurnCollectionError extends ProgramError {
 codeToErrorMap.set(0xe, CannotBurnCollectionError);
 nameToErrorMap.set('CannotBurnCollection', CannotBurnCollectionError);
 
+/** NumericalOverflowError: Numerical overflow */
+export class NumericalOverflowErrorError extends ProgramError {
+  readonly name: string = 'NumericalOverflowError';
+
+  readonly code: number = 0xf; // 15
+
+  constructor(program: Program, cause?: Error) {
+    super('Numerical overflow', program, cause);
+  }
+}
+codeToErrorMap.set(0xf, NumericalOverflowErrorError);
+nameToErrorMap.set('NumericalOverflowError', NumericalOverflowErrorError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

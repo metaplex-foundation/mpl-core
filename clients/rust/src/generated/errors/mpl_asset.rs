@@ -55,6 +55,9 @@ pub enum MplAssetError {
     /// 14 (0xE) - Cannot burn a collection NFT
     #[error("Cannot burn a collection NFT")]
     CannotBurnCollection,
+    /// 15 (0xF) - Numerical overflow
+    #[error("Numerical overflow")]
+    NumericalOverflowError,
 }
 
 impl solana_program::program_error::PrintProgramError for MplAssetError {

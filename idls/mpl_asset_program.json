@@ -875,7 +875,16 @@
       "name": "BurnArgs",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "compressionProof",
+            "type": {
+              "option": {
+                "defined": "CompressionProof"
+              }
+            }
+          }
+        ]
       }
     },
     {
@@ -1296,6 +1305,11 @@
       "code": 14,
       "name": "CannotBurnCollection",
       "msg": "Cannot burn a collection NFT"
+    },
+    {
+      "code": 15,
+      "name": "NumericalOverflowError",
+      "msg": "Numerical overflow"
     }
   ],
   "metadata": {
