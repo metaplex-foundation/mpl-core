@@ -200,6 +200,19 @@ export class CannotMigratePrintsError extends ProgramError {
 codeToErrorMap.set(0xd, CannotMigratePrintsError);
 nameToErrorMap.set('CannotMigratePrints', CannotMigratePrintsError);
 
+/** CannotBurnCollection: Cannot burn a collection NFT */
+export class CannotBurnCollectionError extends ProgramError {
+  readonly name: string = 'CannotBurnCollection';
+
+  readonly code: number = 0xe; // 14
+
+  constructor(program: Program, cause?: Error) {
+    super('Cannot burn a collection NFT', program, cause);
+  }
+}
+codeToErrorMap.set(0xe, CannotBurnCollectionError);
+nameToErrorMap.set('CannotBurnCollection', CannotBurnCollectionError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

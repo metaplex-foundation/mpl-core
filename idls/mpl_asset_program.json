@@ -1394,6 +1394,11 @@
       "code": 13,
       "name": "CannotMigratePrints",
       "msg": "Cannot migrate a print edition"
+    },
+    {
+      "code": 14,
+      "name": "CannotBurnCollection",
+      "msg": "Cannot burn a collection NFT"
     }
   ],
   "metadata": {

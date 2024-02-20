@@ -63,6 +63,10 @@ pub enum MplAssetError {
     /// 13 - Cannot migrate a print edition
     #[error("Cannot migrate a print edition")]
     CannotMigratePrints,
+
+    /// 14 - Cannot burn a collection NFT
+    #[error("Cannot burn a collection NFT")]
+    CannotBurnCollection,
 }
 
 impl PrintProgramError for MplAssetError {

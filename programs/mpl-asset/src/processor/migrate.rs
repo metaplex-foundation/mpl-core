@@ -29,10 +29,18 @@ pub(crate) fn migrate<'a>(accounts: &'a [AccountInfo<'a>], args: MigrateArgs) ->
     };
 
     let metadata = Metadata::safe_deserialize(&ctx.accounts.metadata.data.borrow())?;
-
     match metadata.collection_details {
         // If this is a collection NFT then we need to initialize migration for the whole collection.
-        Some(_) => {}
+        Some(_) => {
+            // We don't want to burn the collection NFT if we are migrating the whole collection.
+            if args.level != MigrationLevel::MigrateOnly {
+                return Err(MplAssetError::CannotBurnCollection.into());
+            }
+
+            // If the mpl-asset collection doesn't already exist, then create it.
+
+            
+        }
         // Otherwise, we need to migrate the NFT
         None => {
             // Assert that the NFT is not a print edition.

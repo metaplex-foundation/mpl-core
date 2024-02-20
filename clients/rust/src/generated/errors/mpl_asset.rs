@@ -52,6 +52,9 @@ pub enum MplAssetError {
     /// 13 (0xD) - Cannot migrate a print edition
     #[error("Cannot migrate a print edition")]
     CannotMigratePrints,
+    /// 14 (0xE) - Cannot burn a collection NFT
+    #[error("Cannot burn a collection NFT")]
+    CannotBurnCollection,
 }
 
 impl solana_program::program_error::PrintProgramError for MplAssetError {
