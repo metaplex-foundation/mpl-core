@@ -1,15 +1,15 @@
 use crate::instruction::MplAssetInstruction;
-use borsh::{BorshDeserialize, BorshSerialize};
+use borsh::BorshDeserialize;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, pubkey::Pubkey};
 
 mod create;
 pub(crate) use create::*;
 
-mod migrate;
-pub(crate) use migrate::*;
-
 mod delegate;
 pub(crate) use delegate::*;
+
+mod revoke;
+pub(crate) use revoke::*;
 
 mod burn;
 pub(crate) use burn::*;
@@ -43,13 +43,13 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Create");
             create(accounts, args)
         }
-        MplAssetInstruction::Migrate(args) => {
-            msg!("Instruction: Migrate");
-            migrate(accounts, args)
-        }
         MplAssetInstruction::Delegate(args) => {
             msg!("Instruction: Delegate");
             delegate(accounts, args)
+        }
+        MplAssetInstruction::Revoke(args) => {
+            msg!("Instruction: Revoke");
+            revoke(accounts, args)
         }
         MplAssetInstruction::Burn(args) => {
             msg!("Instruction: Burn");

@@ -27,7 +27,7 @@ import {
 } from '../shared';
 
 // Accounts.
-export type DelegateInstructionAccounts = {
+export type RevokeInstructionAccounts = {
   /** The address of the asset */
   assetAddress: PublicKey | Pda;
   /** The collection to which the asset belongs */
@@ -36,7 +36,7 @@ export type DelegateInstructionAccounts = {
   owner: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The new simple delegate for the asset */
+  /** The delegate to be revoked for the asset */
   delegate: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
@@ -45,30 +45,26 @@ export type DelegateInstructionAccounts = {
 };
 
 // Data.
-export type DelegateInstructionData = { discriminator: number };
+export type RevokeInstructionData = { discriminator: number };
 
-export type DelegateInstructionDataArgs = {};
+export type RevokeInstructionDataArgs = {};
 
-export function getDelegateInstructionDataSerializer(): Serializer<
-  DelegateInstructionDataArgs,
-  DelegateInstructionData
+export function getRevokeInstructionDataSerializer(): Serializer<
+  RevokeInstructionDataArgs,
+  RevokeInstructionData
 > {
-  return mapSerializer<
-    DelegateInstructionDataArgs,
-    any,
-    DelegateInstructionData
-  >(
-    struct<DelegateInstructionData>([['discriminator', u8()]], {
-      description: 'DelegateInstructionData',
+  return mapSerializer<RevokeInstructionDataArgs, any, RevokeInstructionData>(
+    struct<RevokeInstructionData>([['discriminator', u8()]], {
+      description: 'RevokeInstructionData',
     }),
-    (value) => ({ ...value, discriminator: 1 })
-  ) as Serializer<DelegateInstructionDataArgs, DelegateInstructionData>;
+    (value) => ({ ...value, discriminator: 2 })
+  ) as Serializer<RevokeInstructionDataArgs, RevokeInstructionData>;
 }
 
 // Instruction.
-export function delegate(
+export function revoke(
   context: Pick<Context, 'programs'>,
-  input: DelegateInstructionAccounts
+  input: RevokeInstructionAccounts
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -125,7 +121,7 @@ export function delegate(
   );
 
   // Data.
-  const data = getDelegateInstructionDataSerializer().serialize({});
+  const data = getRevokeInstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

@@ -1,14 +1,12 @@
 mod asset_signer;
 mod collection;
 mod delegate;
-mod legacy_metadata;
 mod royalties;
 mod utils;
 
 pub use asset_signer::*;
 pub use collection::*;
 pub use delegate::*;
-pub use legacy_metadata::*;
 pub use royalties::*;
 
 use shank::ShankAccount;
@@ -30,7 +28,6 @@ pub enum Plugin {
     Reserved,
     Royalties(Royalties),
     Delegate(Delegate),
-    LegacyMetadata(LegacyMetadata),
     AssetSigner(AssetSigner),
 }
 
@@ -40,7 +37,6 @@ pub enum PluginType {
     Reserved,
     Royalties,
     Delegate,
-    LegacyMetadata,
     AssetSigner,
 }
 
@@ -50,7 +46,6 @@ impl From<&Plugin> for PluginType {
             Plugin::Reserved => PluginType::Reserved,
             Plugin::Royalties(_) => PluginType::Royalties,
             Plugin::Delegate(_) => PluginType::Delegate,
-            Plugin::LegacyMetadata(_) => PluginType::LegacyMetadata,
             Plugin::AssetSigner(_) => PluginType::AssetSigner,
         }
     }

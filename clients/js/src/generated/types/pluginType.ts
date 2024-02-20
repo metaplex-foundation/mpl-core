@@ -12,7 +12,6 @@ export enum PluginType {
   Reserved,
   Royalties,
   Delegate,
-  LegacyMetadata,
   AssetSigner,
 }
 

@@ -7,7 +7,6 @@
 
 use crate::generated::types::AssetSigner;
 use crate::generated::types::Delegate;
-use crate::generated::types::LegacyMetadata;
 use crate::generated::types::Royalties;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
@@ -18,6 +17,5 @@ pub enum Plugin {
     Reserved,
     Royalties(Royalties),
     Delegate(Delegate),
-    LegacyMetadata(LegacyMetadata),
     AssetSigner(AssetSigner),
 }

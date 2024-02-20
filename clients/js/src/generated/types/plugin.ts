@@ -20,13 +20,10 @@ import {
   AssetSignerArgs,
   Delegate,
   DelegateArgs,
-  LegacyMetadata,
-  LegacyMetadataArgs,
   Royalties,
   RoyaltiesArgs,
   getAssetSignerSerializer,
   getDelegateSerializer,
-  getLegacyMetadataSerializer,
   getRoyaltiesSerializer,
 } from '.';
 
@@ -34,14 +31,12 @@ export type Plugin =
   | { __kind: 'Reserved' }
   | { __kind: 'Royalties'; fields: [Royalties] }
   | { __kind: 'Delegate'; fields: [Delegate] }
-  | { __kind: 'LegacyMetadata'; fields: [LegacyMetadata] }
   | { __kind: 'AssetSigner'; fields: [AssetSigner] };
 
 export type PluginArgs =
   | { __kind: 'Reserved' }
   | { __kind: 'Royalties'; fields: [RoyaltiesArgs] }
   | { __kind: 'Delegate'; fields: [DelegateArgs] }
-  | { __kind: 'LegacyMetadata'; fields: [LegacyMetadataArgs] }
   | { __kind: 'AssetSigner'; fields: [AssetSignerArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
@@ -58,12 +53,6 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
         'Delegate',
         struct<GetDataEnumKindContent<Plugin, 'Delegate'>>([
           ['fields', tuple([getDelegateSerializer()])],
-        ]),
-      ],
-      [
-        'LegacyMetadata',
-        struct<GetDataEnumKindContent<Plugin, 'LegacyMetadata'>>([
-          ['fields', tuple([getLegacyMetadataSerializer()])],
         ]),
       ],
       [
@@ -89,10 +78,6 @@ export function plugin(
   kind: 'Delegate',
   data: GetDataEnumKindContent<PluginArgs, 'Delegate'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Delegate'>;
-export function plugin(
-  kind: 'LegacyMetadata',
-  data: GetDataEnumKindContent<PluginArgs, 'LegacyMetadata'>['fields']
-): GetDataEnumKind<PluginArgs, 'LegacyMetadata'>;
 export function plugin(
   kind: 'AssetSigner',
   data: GetDataEnumKindContent<PluginArgs, 'AssetSigner'>['fields']

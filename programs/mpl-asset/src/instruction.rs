@@ -2,7 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
 use crate::processor::{
-    BurnArgs, CompressArgs, CreateArgs, DecompressArgs, DelegateArgs, FreezeArgs, MigrateArgs,
+    BurnArgs, CompressArgs, CreateArgs, DecompressArgs, DelegateArgs, FreezeArgs, RevokeArgs,
     ThawArgs, TransferArgs, UpdateArgs,
 };
 
@@ -20,28 +20,6 @@ pub enum MplAssetInstruction {
     #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Create(CreateArgs),
 
-    //TODO: Implement this instruction
-    // keith WIP
-    /// Migrate an mpl-token-metadata asset to an mpl-asset.
-    #[account(0, writable, signer, name="asset_address", desc = "The address of the new asset")]
-    #[account(1, optional, signer, name="owner", desc = "The authority of the new asset")]
-    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
-    // Dependent on how migration is handled
-    #[account(3, optional, name="collection_metadata", desc="mpl-token-metadata collection metadata")]
-    #[account(4, optional, writable, name="collection", desc="mpl-asset collection")]
-    #[account(5, writable, name="token", desc="Token account")]
-    #[account(6, writable, name="mint", desc="Mint of token asset")]
-    #[account(7, writable, name="metadata", desc="Metadata (pda of ['metadata', program id, mint id])")]
-    #[account(8, writable, name="edition", desc="Edition of token asset")]
-    #[account(9, optional, writable, name="owner_token_record", desc="Owner token record account")]
-    #[account(10, name="spl_token_program", desc="SPL Token Program")]
-    #[account(11, name="spl_ata_program", desc="SPL Associated Token Account program")]
-    #[account(12, name="system_program", desc = "The system program")]
-    #[account(13, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    #[account(14, optional, name="authorization_rules_program", desc="Token Authorization Rules Program")]
-    #[account(15, optional, name="authorization_rules", desc="Token Authorization Rules account")]
-    Migrate(MigrateArgs),
-
     /// Delegate an mpl-asset.
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]
     #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
@@ -51,6 +29,16 @@ pub enum MplAssetInstruction {
     #[account(5, name="system_program", desc = "The system program")]
     #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Delegate(DelegateArgs),
+
+    /// Delegate an mpl-asset.
+    #[account(0, writable, name="asset_address", desc = "The address of the asset")]
+    #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
+    #[account(2, writable, signer, name="owner", desc = "The owner of the asset")]
+    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(4, name="delegate", desc = "The delegate to be revoked for the asset")]
+    #[account(5, name="system_program", desc = "The system program")]
+    #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    Revoke(RevokeArgs),
 
     //TODO: Implement this instruction
     /// Burn an mpl-asset.

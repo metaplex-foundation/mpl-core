@@ -80,149 +80,6 @@
       }
     },
     {
-      "name": "Migrate",
-      "accounts": [
-        {
-          "name": "assetAddress",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The address of the new asset"
-          ]
-        },
-        {
-          "name": "owner",
-          "isMut": false,
-          "isSigner": true,
-          "isOptional": true,
-          "docs": [
-            "The authority of the new asset"
-          ]
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The account paying for the storage fees"
-          ]
-        },
-        {
-          "name": "collection",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "mpl-token-metadata collection metadata or mpl-asset collection"
-          ]
-        },
-        {
-          "name": "token",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Token account"
-          ]
-        },
-        {
-          "name": "mint",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Mint of token asset"
-          ]
-        },
-        {
-          "name": "metadata",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Metadata (pda of ['metadata', program id, mint id])"
-          ]
-        },
-        {
-          "name": "edition",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Edition of token asset"
-          ]
-        },
-        {
-          "name": "ownerTokenRecord",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Owner token record account"
-          ]
-        },
-        {
-          "name": "splTokenProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "SPL Token Program"
-          ]
-        },
-        {
-          "name": "splAtaProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "SPL Associated Token Account program"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The system program"
-          ]
-        },
-        {
-          "name": "logWrapper",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The SPL Noop Program"
-          ]
-        },
-        {
-          "name": "authorizationRulesProgram",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Token Authorization Rules Program"
-          ]
-        },
-        {
-          "name": "authorizationRules",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Token Authorization Rules account"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "migrateArgs",
-          "type": {
-            "defined": "MigrateArgs"
-          }
-        }
-      ],
-      "discriminant": {
-        "type": "u8",
-        "value": 1
-      }
-    },
-    {
       "name": "Delegate",
       "accounts": [
         {
@@ -290,6 +147,82 @@
           "name": "delegateArgs",
           "type": {
             "defined": "DelegateArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 1
+      }
+    },
+    {
+      "name": "Revoke",
+      "accounts": [
+        {
+          "name": "assetAddress",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The owner of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "delegate",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The delegate to be revoked for the asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "revokeArgs",
+          "type": {
+            "defined": "RevokeArgs"
           }
         }
       ],
@@ -897,18 +830,6 @@
       }
     },
     {
-      "name": "LegacyMetadata",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "mint",
-            "type": "publicKey"
-          }
-        ]
-      }
-    },
-    {
       "name": "Creator",
       "type": {
         "kind": "struct",
@@ -1008,23 +929,10 @@
       }
     },
     {
-      "name": "MigrateArgs",
+      "name": "RevokeArgs",
       "type": {
         "kind": "struct",
-        "fields": [
-          {
-            "name": "dataState",
-            "type": {
-              "defined": "DataState"
-            }
-          },
-          {
-            "name": "level",
-            "type": {
-              "defined": "MigrationLevel"
-            }
-          }
-        ]
+        "fields": []
       }
     },
     {
@@ -1121,14 +1029,6 @@
             ]
           },
           {
-            "name": "LegacyMetadata",
-            "fields": [
-              {
-                "defined": "LegacyMetadata"
-              }
-            ]
-          },
-          {
             "name": "AssetSigner",
             "fields": [
               {
@@ -1152,9 +1052,6 @@
           },
           {
             "name": "Delegate"
-          },
-          {
-            "name": "LegacyMetadata"
           },
           {
             "name": "AssetSigner"

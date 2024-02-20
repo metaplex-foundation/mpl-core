@@ -9,7 +9,7 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct Delegate {
+pub struct Revoke {
     /// The address of the asset
     pub asset_address: solana_program::pubkey::Pubkey,
     /// The collection to which the asset belongs
@@ -18,7 +18,7 @@ pub struct Delegate {
     pub owner: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
     pub payer: Option<solana_program::pubkey::Pubkey>,
-    /// The new simple delegate for the asset
+    /// The delegate to be revoked for the asset
     pub delegate: solana_program::pubkey::Pubkey,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
@@ -26,7 +26,7 @@ pub struct Delegate {
     pub log_wrapper: Option<solana_program::pubkey::Pubkey>,
 }
 
-impl Delegate {
+impl Revoke {
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(&[])
     }
@@ -81,7 +81,7 @@ impl Delegate {
             ));
         }
         accounts.extend_from_slice(remaining_accounts);
-        let data = DelegateInstructionData::new().try_to_vec().unwrap();
+        let data = RevokeInstructionData::new().try_to_vec().unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::MPL_ASSET_ID,
@@ -92,19 +92,19 @@ impl Delegate {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct DelegateInstructionData {
+struct RevokeInstructionData {
     discriminator: u8,
 }
 
-impl DelegateInstructionData {
+impl RevokeInstructionData {
     fn new() -> Self {
-        Self { discriminator: 1 }
+        Self { discriminator: 2 }
     }
 }
 
 /// Instruction builder.
 #[derive(Default)]
-pub struct DelegateBuilder {
+pub struct RevokeBuilder {
     asset_address: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
     owner: Option<solana_program::pubkey::Pubkey>,
@@ -115,7 +115,7 @@ pub struct DelegateBuilder {
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl DelegateBuilder {
+impl RevokeBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -145,7 +145,7 @@ impl DelegateBuilder {
         self.payer = payer;
         self
     }
-    /// The new simple delegate for the asset
+    /// The delegate to be revoked for the asset
     #[inline(always)]
     pub fn delegate(&mut self, delegate: solana_program::pubkey::Pubkey) -> &mut Self {
         self.delegate = Some(delegate);
@@ -188,7 +188,7 @@ impl DelegateBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = Delegate {
+        let accounts = Revoke {
             asset_address: self.asset_address.expect("asset_address is not set"),
             collection: self.collection,
             owner: self.owner.expect("owner is not set"),
@@ -204,8 +204,8 @@ impl DelegateBuilder {
     }
 }
 
-/// `delegate` CPI accounts.
-pub struct DelegateCpiAccounts<'a, 'b> {
+/// `revoke` CPI accounts.
+pub struct RevokeCpiAccounts<'a, 'b> {
     /// The address of the asset
     pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
@@ -214,7 +214,7 @@ pub struct DelegateCpiAccounts<'a, 'b> {
     pub owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The new simple delegate for the asset
+    /// The delegate to be revoked for the asset
     pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -222,8 +222,8 @@ pub struct DelegateCpiAccounts<'a, 'b> {
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-/// `delegate` CPI instruction.
-pub struct DelegateCpi<'a, 'b> {
+/// `revoke` CPI instruction.
+pub struct RevokeCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The address of the asset
@@ -234,7 +234,7 @@ pub struct DelegateCpi<'a, 'b> {
     pub owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The new simple delegate for the asset
+    /// The delegate to be revoked for the asset
     pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -242,10 +242,10 @@ pub struct DelegateCpi<'a, 'b> {
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-impl<'a, 'b> DelegateCpi<'a, 'b> {
+impl<'a, 'b> RevokeCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: DelegateCpiAccounts<'a, 'b>,
+        accounts: RevokeCpiAccounts<'a, 'b>,
     ) -> Self {
         Self {
             __program: program,
@@ -347,7 +347,7 @@ impl<'a, 'b> DelegateCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = DelegateInstructionData::new().try_to_vec().unwrap();
+        let data = RevokeInstructionData::new().try_to_vec().unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::MPL_ASSET_ID,
@@ -381,14 +381,14 @@ impl<'a, 'b> DelegateCpi<'a, 'b> {
     }
 }
 
-/// `delegate` CPI instruction builder.
-pub struct DelegateCpiBuilder<'a, 'b> {
-    instruction: Box<DelegateCpiBuilderInstruction<'a, 'b>>,
+/// `revoke` CPI instruction builder.
+pub struct RevokeCpiBuilder<'a, 'b> {
+    instruction: Box<RevokeCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
+impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(DelegateCpiBuilderInstruction {
+        let instruction = Box::new(RevokeCpiBuilderInstruction {
             __program: program,
             asset_address: None,
             collection: None,
@@ -436,7 +436,7 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
         self.instruction.payer = payer;
         self
     }
-    /// The new simple delegate for the asset
+    /// The delegate to be revoked for the asset
     #[inline(always)]
     pub fn delegate(
         &mut self,
@@ -505,7 +505,7 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let instruction = DelegateCpi {
+        let instruction = RevokeCpi {
             __program: self.instruction.__program,
 
             asset_address: self
@@ -535,7 +535,7 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
     }
 }
 
-struct DelegateCpiBuilderInstruction<'a, 'b> {
+struct RevokeCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset_address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,

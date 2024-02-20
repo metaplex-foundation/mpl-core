@@ -12,7 +12,7 @@ export * from './create';
 export * from './decompress';
 export * from './delegate';
 export * from './freeze';
-export * from './migrate';
+export * from './revoke';
 export * from './thaw';
 export * from './transfer';
 export * from './update';

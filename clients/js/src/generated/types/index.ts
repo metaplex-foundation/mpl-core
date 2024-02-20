@@ -16,7 +16,6 @@ export * from './delegate';
 export * from './externalPluginRecord';
 export * from './extraAccounts';
 export * from './key';
-export * from './legacyMetadata';
 export * from './migrationLevel';
 export * from './plugin';
 export * from './pluginType';
