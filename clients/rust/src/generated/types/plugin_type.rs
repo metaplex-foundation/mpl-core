@@ -14,4 +14,5 @@ pub enum PluginType {
     Reserved,
     Royalties,
     Delegate,
+    Collection,
 }

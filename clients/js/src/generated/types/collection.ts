@@ -14,7 +14,7 @@ import {
   struct,
 } from '@metaplex-foundation/umi/serializers';
 
-export type Collection = { collectionAddress: PublicKey; required: boolean };
+export type Collection = { collectionAddress: PublicKey; managed: boolean };
 
 export type CollectionArgs = Collection;
 
@@ -25,7 +25,7 @@ export function getCollectionSerializer(): Serializer<
   return struct<Collection>(
     [
       ['collectionAddress', publicKeySerializer()],
-      ['required', bool()],
+      ['managed', bool()],
     ],
     { description: 'Collection' }
   ) as Serializer<CollectionArgs, Collection>;

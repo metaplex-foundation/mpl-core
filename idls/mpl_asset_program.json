@@ -780,7 +780,7 @@
             "type": "publicKey"
           },
           {
-            "name": "required",
+            "name": "managed",
             "type": "bool"
           }
         ]
@@ -1105,6 +1105,14 @@
                 "defined": "Delegate"
               }
             ]
+          },
+          {
+            "name": "Collection",
+            "fields": [
+              {
+                "defined": "Collection"
+              }
+            ]
           }
         ]
       }
@@ -1122,6 +1130,9 @@
           },
           {
             "name": "Delegate"
+          },
+          {
+            "name": "Collection"
           }
         ]
       }

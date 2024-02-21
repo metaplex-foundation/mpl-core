@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::Collection;
 use crate::generated::types::Delegate;
 use crate::generated::types::Royalties;
 use borsh::BorshDeserialize;
@@ -16,4 +17,5 @@ pub enum Plugin {
     Reserved,
     Royalties(Royalties),
     Delegate(Delegate),
+    Collection(Collection),
 }

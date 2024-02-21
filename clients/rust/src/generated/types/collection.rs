@@ -17,5 +17,5 @@ pub struct Collection {
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     pub collection_address: Pubkey,
-    pub required: bool,
+    pub managed: bool,
 }

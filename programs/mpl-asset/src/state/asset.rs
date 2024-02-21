@@ -7,6 +7,7 @@ use solana_program::{
 
 use crate::{
     error::MplAssetError,
+    plugins::{CheckLifecyclePermission, CheckResult, PluginType},
     state::{Compressible, CompressionProof, DataBlob, HashedAsset, Key, SolanaAccount},
 };
 
@@ -75,5 +76,15 @@ impl From<CompressionProof> for Asset {
             name: compression_proof.name,
             uri: compression_proof.uri,
         }
+    }
+}
+
+impl CheckLifecyclePermission for Asset {
+    fn check_transfer(_: PluginType) -> Result<CheckResult, ProgramError> {
+        Ok(CheckResult::CanApprove)
+    }
+
+    fn check_update(_: PluginType) -> Result<CheckResult, ProgramError> {
+        Ok(CheckResult::CanApprove)
     }
 }
