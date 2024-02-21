@@ -8,7 +8,7 @@ use solana_program::{
 use crate::{
     error::MplAssetError,
     state::{Asset, Authority, DataBlob, Key, PluginHeader, SolanaAccount},
-    utils::assert_authority,
+    utils::{assert_authority, resolve_authority_to_default},
 };
 
 use super::{Plugin, PluginRegistry, PluginType, RegistryData, RegistryRecord};
@@ -263,19 +263,16 @@ pub fn initialize_plugin<'a>(
     Ok(())
 }
 
-/// Remoc a plugin from the registry and delete it.
+/// Remove a plugin from the registry and delete it.
+//TODO: Do the work to prevent deleting a plugin with other authorities.
 pub fn delete_plugin<'a>(
     plugin_type: &PluginType,
+    asset: &Asset,
     authority: &AccountInfo<'a>,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
-    let asset = {
-        let mut bytes: &[u8] = &(*account.data).borrow();
-        Asset::deserialize(&mut bytes)?
-    };
-
     //TODO: Bytemuck this.
     let mut header = PluginHeader::load(account, asset.get_size())?;
     let mut plugin_registry = PluginRegistry::load(account, header.plugin_registry_offset)?;
@@ -289,7 +286,13 @@ pub fn delete_plugin<'a>(
         let registry_record = plugin_registry.registry.swap_remove(index);
         let serialized_registry_record = registry_record.try_to_vec()?;
 
-        assert_authority(&asset, authority, &registry_record.data.authorities)?;
+        // Only allow the default authority to delete the plugin.
+        let authorities = registry_record.data.authorities;
+
+        let resolved_authority = resolve_authority_to_default(asset, authority);
+        if resolved_authority != authorities[0] {
+            return Err(MplAssetError::InvalidAuthority.into());
+        }
 
         let plugin_offset = registry_record.data.offset;
         let plugin = Plugin::load(account, plugin_offset)?;
@@ -334,6 +337,130 @@ pub fn delete_plugin<'a>(
         plugin_registry.save(account, new_offset)?;
 
         resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
+    } else {
+        return Err(MplAssetError::PluginNotFound.into());
+    }
+
+    Ok(())
+}
+
+//TODO: Prevent duplicate authorities.
+#[allow(clippy::too_many_arguments)]
+pub fn add_authority_to_plugin<'a>(
+    plugin_type: &PluginType,
+    authority: &AccountInfo<'a>,
+    new_authority: &Authority,
+    asset: &Asset,
+    account: &AccountInfo<'a>,
+    plugin_header: &PluginHeader,
+    plugin_registry: &mut PluginRegistry,
+    payer: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+) -> ProgramResult {
+    let authorities = &plugin_registry
+        .registry
+        .iter_mut()
+        .find(
+            |RegistryRecord {
+                 plugin_type: type_iter,
+                 data: _,
+             }| type_iter == plugin_type,
+        )
+        .ok_or(MplAssetError::PluginNotFound)?
+        .data
+        .authorities;
+
+    assert_authority(asset, authority, authorities)?;
+
+    if let Some(RegistryRecord {
+        plugin_type: _,
+        data: registry_data,
+    }) = plugin_registry.registry.iter_mut().find(
+        |RegistryRecord {
+             plugin_type: type_iter,
+             data: _,
+         }| type_iter == plugin_type,
+    ) {
+        registry_data.authorities.push(new_authority.clone());
+
+        let authority_bytes = new_authority.try_to_vec()?;
+
+        let new_size = account
+            .data_len()
+            .checked_add(authority_bytes.len())
+            .ok_or(MplAssetError::NumericalOverflow)?;
+        resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
+
+        plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
+    } else {
+        return Err(MplAssetError::PluginNotFound.into());
+    }
+
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn remove_authority_from_plugin<'a>(
+    plugin_type: &PluginType,
+    authority: &AccountInfo<'a>,
+    authority_to_remove: &Authority,
+    asset: &Asset,
+    account: &AccountInfo<'a>,
+    plugin_header: &PluginHeader,
+    plugin_registry: &mut PluginRegistry,
+    payer: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+) -> ProgramResult {
+    let authorities = &plugin_registry
+        .registry
+        .iter_mut()
+        .find(
+            |RegistryRecord {
+                 plugin_type: type_iter,
+                 data: _,
+             }| type_iter == plugin_type,
+        )
+        .ok_or(MplAssetError::PluginNotFound)?
+        .data
+        .authorities;
+
+    let resolved_authority = resolve_authority_to_default(asset, authority);
+    if resolved_authority != authorities[0] {
+        return Err(MplAssetError::InvalidAuthority.into());
+    }
+
+    if let Some(RegistryRecord {
+        plugin_type: _,
+        data: registry_data,
+    }) = plugin_registry.registry.iter_mut().find(
+        |RegistryRecord {
+             plugin_type: type_iter,
+             data: _,
+         }| type_iter == plugin_type,
+    ) {
+        let index = registry_data
+            .authorities
+            .iter()
+            .position(|auth| auth == authority_to_remove)
+            .ok_or(MplAssetError::InvalidAuthority)?;
+
+        // Here we replace the default authority with None to indicate it's been removed.
+        if index == 0 {
+            registry_data.authorities[0] = Authority::None;
+            plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
+        } else {
+            registry_data.authorities.swap_remove(index);
+
+            let authority_bytes = authority_to_remove.try_to_vec()?;
+
+            let new_size = account
+                .data_len()
+                .checked_sub(authority_bytes.len())
+                .ok_or(MplAssetError::NumericalOverflow)?;
+            resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
+
+            plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
+        }
     } else {
         return Err(MplAssetError::PluginNotFound.into());
     }

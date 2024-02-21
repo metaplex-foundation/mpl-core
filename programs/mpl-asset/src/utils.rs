@@ -24,6 +24,7 @@ pub fn assert_authority(
 ) -> ProgramResult {
     for auth_iter in authorities {
         match auth_iter {
+            Authority::None => (),
             Authority::Owner => {
                 if &asset.owner == authority.key {
                     return Ok(());
@@ -50,6 +51,14 @@ pub fn assert_authority(
     }
 
     Err(MplAssetError::InvalidAuthority.into())
+}
+
+pub fn resolve_authority_to_default(asset: &Asset, authority: &AccountInfo) -> Authority {
+    if authority.key == &asset.owner {
+        Authority::Owner
+    } else {
+        Authority::UpdateAuthority
+    }
 }
 
 pub fn fetch_core_data(

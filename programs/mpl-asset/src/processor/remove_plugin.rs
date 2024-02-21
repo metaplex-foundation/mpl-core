@@ -40,6 +40,7 @@ pub(crate) fn remove_plugin<'a>(
 
     delete_plugin(
         &args.plugin_type,
+        &asset,
         ctx.accounts.authority,
         ctx.accounts.asset_address,
         payer,

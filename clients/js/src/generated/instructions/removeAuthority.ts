@@ -25,6 +25,14 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import {
+  Authority,
+  AuthorityArgs,
+  PluginType,
+  PluginTypeArgs,
+  getAuthoritySerializer,
+  getPluginTypeSerializer,
+} from '../types';
 
 // Accounts.
 export type RemoveAuthorityInstructionAccounts = {
@@ -36,14 +44,23 @@ export type RemoveAuthorityInstructionAccounts = {
   authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
+  /** The system program */
+  systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
   logWrapper?: PublicKey | Pda;
 };
 
 // Data.
-export type RemoveAuthorityInstructionData = { discriminator: number };
+export type RemoveAuthorityInstructionData = {
+  discriminator: number;
+  pluginType: PluginType;
+  authorityToRemove: Authority;
+};
 
-export type RemoveAuthorityInstructionDataArgs = {};
+export type RemoveAuthorityInstructionDataArgs = {
+  pluginType: PluginTypeArgs;
+  authorityToRemove: AuthorityArgs;
+};
 
 export function getRemoveAuthorityInstructionDataSerializer(): Serializer<
   RemoveAuthorityInstructionDataArgs,
@@ -54,9 +71,14 @@ export function getRemoveAuthorityInstructionDataSerializer(): Serializer<
     any,
     RemoveAuthorityInstructionData
   >(
-    struct<RemoveAuthorityInstructionData>([['discriminator', u8()]], {
-      description: 'RemoveAuthorityInstructionData',
-    }),
+    struct<RemoveAuthorityInstructionData>(
+      [
+        ['discriminator', u8()],
+        ['pluginType', getPluginTypeSerializer()],
+        ['authorityToRemove', getAuthoritySerializer()],
+      ],
+      { description: 'RemoveAuthorityInstructionData' }
+    ),
     (value) => ({ ...value, discriminator: 4 })
   ) as Serializer<
     RemoveAuthorityInstructionDataArgs,
@@ -64,10 +86,13 @@ export function getRemoveAuthorityInstructionDataSerializer(): Serializer<
   >;
 }
 
+// Args.
+export type RemoveAuthorityInstructionArgs = RemoveAuthorityInstructionDataArgs;
+
 // Instruction.
 export function removeAuthority(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: RemoveAuthorityInstructionAccounts
+  input: RemoveAuthorityInstructionAccounts & RemoveAuthorityInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -85,16 +110,31 @@ export function removeAuthority(
     collection: { index: 1, isWritable: true, value: input.collection ?? null },
     authority: { index: 2, isWritable: false, value: input.authority ?? null },
     payer: { index: 3, isWritable: true, value: input.payer ?? null },
-    logWrapper: {
+    systemProgram: {
       index: 4,
+      isWritable: false,
+      value: input.systemProgram ?? null,
+    },
+    logWrapper: {
+      index: 5,
       isWritable: false,
       value: input.logWrapper ?? null,
     },
   };
 
+  // Arguments.
+  const resolvedArgs: RemoveAuthorityInstructionArgs = { ...input };
+
   // Default values.
   if (!resolvedAccounts.authority.value) {
     resolvedAccounts.authority.value = context.identity;
+  }
+  if (!resolvedAccounts.systemProgram.value) {
+    resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
+      'splSystem',
+      '11111111111111111111111111111111'
+    );
+    resolvedAccounts.systemProgram.isWritable = false;
   }
 
   // Accounts in order.
@@ -110,7 +150,9 @@ export function removeAuthority(
   );
 
   // Data.
-  const data = getRemoveAuthorityInstructionDataSerializer().serialize({});
+  const data = getRemoveAuthorityInstructionDataSerializer().serialize(
+    resolvedArgs as RemoveAuthorityInstructionDataArgs
+  );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

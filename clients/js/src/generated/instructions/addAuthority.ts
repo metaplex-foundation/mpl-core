@@ -25,6 +25,14 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import {
+  Authority,
+  AuthorityArgs,
+  PluginType,
+  PluginTypeArgs,
+  getAuthoritySerializer,
+  getPluginTypeSerializer,
+} from '../types';
 
 // Accounts.
 export type AddAuthorityInstructionAccounts = {
@@ -36,14 +44,23 @@ export type AddAuthorityInstructionAccounts = {
   authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
+  /** The system program */
+  systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
   logWrapper?: PublicKey | Pda;
 };
 
 // Data.
-export type AddAuthorityInstructionData = { discriminator: number };
+export type AddAuthorityInstructionData = {
+  discriminator: number;
+  pluginType: PluginType;
+  newAuthority: Authority;
+};
 
-export type AddAuthorityInstructionDataArgs = {};
+export type AddAuthorityInstructionDataArgs = {
+  pluginType: PluginTypeArgs;
+  newAuthority: AuthorityArgs;
+};
 
 export function getAddAuthorityInstructionDataSerializer(): Serializer<
   AddAuthorityInstructionDataArgs,
@@ -54,17 +71,25 @@ export function getAddAuthorityInstructionDataSerializer(): Serializer<
     any,
     AddAuthorityInstructionData
   >(
-    struct<AddAuthorityInstructionData>([['discriminator', u8()]], {
-      description: 'AddAuthorityInstructionData',
-    }),
+    struct<AddAuthorityInstructionData>(
+      [
+        ['discriminator', u8()],
+        ['pluginType', getPluginTypeSerializer()],
+        ['newAuthority', getAuthoritySerializer()],
+      ],
+      { description: 'AddAuthorityInstructionData' }
+    ),
     (value) => ({ ...value, discriminator: 3 })
   ) as Serializer<AddAuthorityInstructionDataArgs, AddAuthorityInstructionData>;
 }
 
+// Args.
+export type AddAuthorityInstructionArgs = AddAuthorityInstructionDataArgs;
+
 // Instruction.
 export function addAuthority(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: AddAuthorityInstructionAccounts
+  input: AddAuthorityInstructionAccounts & AddAuthorityInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -82,16 +107,31 @@ export function addAuthority(
     collection: { index: 1, isWritable: true, value: input.collection ?? null },
     authority: { index: 2, isWritable: false, value: input.authority ?? null },
     payer: { index: 3, isWritable: true, value: input.payer ?? null },
-    logWrapper: {
+    systemProgram: {
       index: 4,
+      isWritable: false,
+      value: input.systemProgram ?? null,
+    },
+    logWrapper: {
+      index: 5,
       isWritable: false,
       value: input.logWrapper ?? null,
     },
   };
 
+  // Arguments.
+  const resolvedArgs: AddAuthorityInstructionArgs = { ...input };
+
   // Default values.
   if (!resolvedAccounts.authority.value) {
     resolvedAccounts.authority.value = context.identity;
+  }
+  if (!resolvedAccounts.systemProgram.value) {
+    resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
+      'splSystem',
+      '11111111111111111111111111111111'
+    );
+    resolvedAccounts.systemProgram.isWritable = false;
   }
 
   // Accounts in order.
@@ -107,7 +147,9 @@ export function addAuthority(
   );
 
   // Data.
-  const data = getAddAuthorityInstructionDataSerializer().serialize({});
+  const data = getAddAuthorityInstructionDataSerializer().serialize(
+    resolvedArgs as AddAuthorityInstructionDataArgs
+  );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

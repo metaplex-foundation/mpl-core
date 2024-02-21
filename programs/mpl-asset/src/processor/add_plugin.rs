@@ -5,7 +5,6 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use crate::{
     instruction::accounts::AddPluginAccounts,
     plugins::{create_meta_idempotent, initialize_plugin, Plugin},
-    utils::fetch_core_data,
 };
 
 #[repr(C)]
@@ -35,8 +34,6 @@ pub(crate) fn add_plugin<'a>(
         payer,
         ctx.accounts.system_program,
     )?;
-
-    let (asset, plugin_header, plugin_registry) = fetch_core_data(ctx.accounts.asset_address)?;
 
     initialize_plugin(
         &args.plugin,

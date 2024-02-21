@@ -26,6 +26,7 @@ pub enum DataState {
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub enum Authority {
+    None,
     Owner,
     UpdateAuthority,
     Pubkey { address: Pubkey },

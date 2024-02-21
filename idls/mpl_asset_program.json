@@ -253,6 +253,14 @@
           ]
         },
         {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
           "name": "logWrapper",
           "isMut": false,
           "isSigner": false,
@@ -310,6 +318,14 @@
           "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
           ]
         },
         {
@@ -895,7 +911,20 @@
       "name": "AddAuthorityArgs",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "pluginType",
+            "type": {
+              "defined": "PluginType"
+            }
+          },
+          {
+            "name": "newAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          }
+        ]
       }
     },
     {
@@ -968,7 +997,20 @@
       "name": "RemoveAuthorityArgs",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "pluginType",
+            "type": {
+              "defined": "PluginType"
+            }
+          },
+          {
+            "name": "authorityToRemove",
+            "type": {
+              "defined": "Authority"
+            }
+          }
+        ]
       }
     },
     {
@@ -1134,6 +1176,9 @@
       "type": {
         "kind": "enum",
         "variants": [
+          {
+            "name": "None"
+          },
           {
             "name": "Owner"
           },

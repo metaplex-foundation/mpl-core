@@ -19,6 +19,7 @@ import {
 import { Plugin, PluginArgs, getPluginSerializer } from '.';
 
 export type Authority =
+  | { __kind: 'None' }
   | { __kind: 'Owner' }
   | { __kind: 'UpdateAuthority' }
   | { __kind: 'Pubkey'; address: PublicKey }
@@ -27,6 +28,7 @@ export type Authority =
   | { __kind: 'Collection' };
 
 export type AuthorityArgs =
+  | { __kind: 'None' }
   | { __kind: 'Owner' }
   | { __kind: 'UpdateAuthority' }
   | { __kind: 'Pubkey'; address: PublicKey }
@@ -37,6 +39,7 @@ export type AuthorityArgs =
 export function getAuthoritySerializer(): Serializer<AuthorityArgs, Authority> {
   return dataEnum<Authority>(
     [
+      ['None', unit()],
       ['Owner', unit()],
       ['UpdateAuthority', unit()],
       [
@@ -64,6 +67,7 @@ export function getAuthoritySerializer(): Serializer<AuthorityArgs, Authority> {
 }
 
 // Data Enum Helpers.
+export function authority(kind: 'None'): GetDataEnumKind<AuthorityArgs, 'None'>;
 export function authority(
   kind: 'Owner'
 ): GetDataEnumKind<AuthorityArgs, 'Owner'>;
