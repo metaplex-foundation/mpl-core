@@ -80,7 +80,7 @@
       }
     },
     {
-      "name": "Delegate",
+      "name": "AddPlugin",
       "accounts": [
         {
           "name": "assetAddress",
@@ -92,7 +92,7 @@
         },
         {
           "name": "collection",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "isOptional": true,
           "docs": [
@@ -100,11 +100,11 @@
           ]
         },
         {
-          "name": "owner",
-          "isMut": true,
+          "name": "authority",
+          "isMut": false,
           "isSigner": true,
           "docs": [
-            "The owner of the asset"
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -114,14 +114,6 @@
           "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
-          ]
-        },
-        {
-          "name": "delegate",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The new simple delegate for the asset"
           ]
         },
         {
@@ -144,9 +136,9 @@
       ],
       "args": [
         {
-          "name": "delegateArgs",
+          "name": "addPluginArgs",
           "type": {
-            "defined": "DelegateArgs"
+            "defined": "AddPluginArgs"
           }
         }
       ],
@@ -156,7 +148,7 @@
       }
     },
     {
-      "name": "Revoke",
+      "name": "RemovePlugin",
       "accounts": [
         {
           "name": "assetAddress",
@@ -168,7 +160,7 @@
         },
         {
           "name": "collection",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "isOptional": true,
           "docs": [
@@ -176,11 +168,11 @@
           ]
         },
         {
-          "name": "owner",
-          "isMut": true,
+          "name": "authority",
+          "isMut": false,
           "isSigner": true,
           "docs": [
-            "The owner of the asset"
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -190,14 +182,6 @@
           "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
-          ]
-        },
-        {
-          "name": "delegate",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The delegate to be revoked for the asset"
           ]
         },
         {
@@ -220,15 +204,135 @@
       ],
       "args": [
         {
-          "name": "revokeArgs",
+          "name": "removePluginArgs",
           "type": {
-            "defined": "RevokeArgs"
+            "defined": "RemovePluginArgs"
           }
         }
       ],
       "discriminant": {
         "type": "u8",
         "value": 2
+      }
+    },
+    {
+      "name": "AddAuthority",
+      "accounts": [
+        {
+          "name": "assetAddress",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addAuthorityArgs",
+          "type": {
+            "defined": "AddAuthorityArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 3
+      }
+    },
+    {
+      "name": "RemoveAuthority",
+      "accounts": [
+        {
+          "name": "assetAddress",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removeAuthorityArgs",
+          "type": {
+            "defined": "RemoveAuthorityArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 4
       }
     },
     {
@@ -288,7 +392,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 3
+        "value": 5
       }
     },
     {
@@ -356,7 +460,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 4
+        "value": 6
       }
     },
     {
@@ -419,90 +523,6 @@
           "name": "updateArgs",
           "type": {
             "defined": "UpdateArgs"
-          }
-        }
-      ],
-      "discriminant": {
-        "type": "u8",
-        "value": 5
-      }
-    },
-    {
-      "name": "Freeze",
-      "accounts": [
-        {
-          "name": "assetAddress",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The address of the asset"
-          ]
-        },
-        {
-          "name": "delegate",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The delegate of the asset"
-          ]
-        },
-        {
-          "name": "logWrapper",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The SPL Noop Program"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "freezeArgs",
-          "type": {
-            "defined": "FreezeArgs"
-          }
-        }
-      ],
-      "discriminant": {
-        "type": "u8",
-        "value": 6
-      }
-    },
-    {
-      "name": "Thaw",
-      "accounts": [
-        {
-          "name": "assetAddress",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The address of the asset"
-          ]
-        },
-        {
-          "name": "delegate",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The delegate of the asset"
-          ]
-        },
-        {
-          "name": "logWrapper",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The SPL Noop Program"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "thawArgs",
-          "type": {
-            "defined": "ThawArgs"
           }
         }
       ],
@@ -735,6 +755,41 @@
   ],
   "types": [
     {
+      "name": "AssetSigner",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "Collection",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "collectionAddress",
+            "type": "publicKey"
+          },
+          {
+            "name": "required",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Delegate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "frozen",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
       "name": "RegistryData",
       "type": {
         "kind": "struct",
@@ -795,41 +850,6 @@
       }
     },
     {
-      "name": "AssetSigner",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
-      "name": "Collection",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "collectionAddress",
-            "type": "publicKey"
-          },
-          {
-            "name": "required",
-            "type": "bool"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Delegate",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "frozen",
-            "type": "bool"
-          }
-        ]
-      }
-    },
-    {
       "name": "Creator",
       "type": {
         "kind": "struct",
@@ -866,6 +886,27 @@
             "name": "ruleSet",
             "type": {
               "defined": "RuleSet"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddAuthorityArgs",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "AddPluginArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plugin",
+            "type": {
+              "defined": "Plugin"
             }
           }
         ]
@@ -915,31 +956,24 @@
       }
     },
     {
-      "name": "DelegateArgs",
+      "name": "RemoveAuthorityArgs",
       "type": {
         "kind": "struct",
         "fields": []
       }
     },
     {
-      "name": "FreezeArgs",
+      "name": "RemovePluginArgs",
       "type": {
         "kind": "struct",
-        "fields": []
-      }
-    },
-    {
-      "name": "RevokeArgs",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
-      "name": "ThawArgs",
-      "type": {
-        "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "pluginType",
+            "type": {
+              "defined": "PluginType"
+            }
+          }
+        ]
       }
     },
     {
@@ -1027,14 +1061,6 @@
                 "defined": "Delegate"
               }
             ]
-          },
-          {
-            "name": "AssetSigner",
-            "fields": [
-              {
-                "defined": "AssetSigner"
-              }
-            ]
           }
         ]
       }
@@ -1052,9 +1078,6 @@
           },
           {
             "name": "Delegate"
-          },
-          {
-            "name": "AssetSigner"
           }
         ]
       }
@@ -1104,6 +1127,9 @@
         "variants": [
           {
             "name": "Owner"
+          },
+          {
+            "name": "UpdateAuthority"
           },
           {
             "name": "Pubkey",
@@ -1296,6 +1322,11 @@
       "code": 14,
       "name": "CannotBurnCollection",
       "msg": "Cannot burn a collection NFT"
+    },
+    {
+      "code": 15,
+      "name": "PluginAlreadyExists",
+      "msg": "Plugin already exists"
     }
   ],
   "metadata": {

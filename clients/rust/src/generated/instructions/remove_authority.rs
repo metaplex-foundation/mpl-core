@@ -9,16 +9,20 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct Freeze {
+pub struct RemoveAuthority {
     /// The address of the asset
     pub asset_address: solana_program::pubkey::Pubkey,
-    /// The delegate of the asset
-    pub delegate: solana_program::pubkey::Pubkey,
+    /// The collection to which the asset belongs
+    pub collection: Option<solana_program::pubkey::Pubkey>,
+    /// The owner or delegate of the asset
+    pub authority: solana_program::pubkey::Pubkey,
+    /// The account paying for the storage fees
+    pub payer: Option<solana_program::pubkey::Pubkey>,
     /// The SPL Noop Program
     pub log_wrapper: Option<solana_program::pubkey::Pubkey>,
 }
 
-impl Freeze {
+impl RemoveAuthority {
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(&[])
     }
@@ -27,15 +31,33 @@ impl Freeze {
         &self,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset_address,
             false,
         ));
+        if let Some(collection) = self.collection {
+            accounts.push(solana_program::instruction::AccountMeta::new(
+                collection, false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_ASSET_ID,
+                false,
+            ));
+        }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.delegate,
+            self.authority,
             true,
         ));
+        if let Some(payer) = self.payer {
+            accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_ASSET_ID,
+                false,
+            ));
+        }
         if let Some(log_wrapper) = self.log_wrapper {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 log_wrapper,
@@ -48,7 +70,7 @@ impl Freeze {
             ));
         }
         accounts.extend_from_slice(remaining_accounts);
-        let data = FreezeInstructionData::new().try_to_vec().unwrap();
+        let data = RemoveAuthorityInstructionData::new().try_to_vec().unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::MPL_ASSET_ID,
@@ -59,26 +81,28 @@ impl Freeze {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct FreezeInstructionData {
+struct RemoveAuthorityInstructionData {
     discriminator: u8,
 }
 
-impl FreezeInstructionData {
+impl RemoveAuthorityInstructionData {
     fn new() -> Self {
-        Self { discriminator: 6 }
+        Self { discriminator: 4 }
     }
 }
 
 /// Instruction builder.
 #[derive(Default)]
-pub struct FreezeBuilder {
+pub struct RemoveAuthorityBuilder {
     asset_address: Option<solana_program::pubkey::Pubkey>,
-    delegate: Option<solana_program::pubkey::Pubkey>,
+    collection: Option<solana_program::pubkey::Pubkey>,
+    authority: Option<solana_program::pubkey::Pubkey>,
+    payer: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl FreezeBuilder {
+impl RemoveAuthorityBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -88,10 +112,24 @@ impl FreezeBuilder {
         self.asset_address = Some(asset_address);
         self
     }
-    /// The delegate of the asset
+    /// `[optional account]`
+    /// The collection to which the asset belongs
     #[inline(always)]
-    pub fn delegate(&mut self, delegate: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.delegate = Some(delegate);
+    pub fn collection(&mut self, collection: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.collection = collection;
+        self
+    }
+    /// The owner or delegate of the asset
+    #[inline(always)]
+    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.authority = Some(authority);
+        self
+    }
+    /// `[optional account]`
+    /// The account paying for the storage fees
+    #[inline(always)]
+    pub fn payer(&mut self, payer: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.payer = payer;
         self
     }
     /// `[optional account]`
@@ -124,9 +162,11 @@ impl FreezeBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = Freeze {
+        let accounts = RemoveAuthority {
             asset_address: self.asset_address.expect("asset_address is not set"),
-            delegate: self.delegate.expect("delegate is not set"),
+            collection: self.collection,
+            authority: self.authority.expect("authority is not set"),
+            payer: self.payer,
             log_wrapper: self.log_wrapper,
         };
 
@@ -134,37 +174,47 @@ impl FreezeBuilder {
     }
 }
 
-/// `freeze` CPI accounts.
-pub struct FreezeCpiAccounts<'a, 'b> {
+/// `remove_authority` CPI accounts.
+pub struct RemoveAuthorityCpiAccounts<'a, 'b> {
     /// The address of the asset
     pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The delegate of the asset
-    pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The collection to which the asset belongs
+    pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The owner or delegate of the asset
+    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The account paying for the storage fees
+    pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-/// `freeze` CPI instruction.
-pub struct FreezeCpi<'a, 'b> {
+/// `remove_authority` CPI instruction.
+pub struct RemoveAuthorityCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The address of the asset
     pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The delegate of the asset
-    pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The collection to which the asset belongs
+    pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The owner or delegate of the asset
+    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The account paying for the storage fees
+    pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-impl<'a, 'b> FreezeCpi<'a, 'b> {
+impl<'a, 'b> RemoveAuthorityCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: FreezeCpiAccounts<'a, 'b>,
+        accounts: RemoveAuthorityCpiAccounts<'a, 'b>,
     ) -> Self {
         Self {
             __program: program,
             asset_address: accounts.asset_address,
-            delegate: accounts.delegate,
+            collection: accounts.collection,
+            authority: accounts.authority,
+            payer: accounts.payer,
             log_wrapper: accounts.log_wrapper,
         }
     }
@@ -201,15 +251,36 @@ impl<'a, 'b> FreezeCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset_address.key,
             false,
         ));
+        if let Some(collection) = self.collection {
+            accounts.push(solana_program::instruction::AccountMeta::new(
+                *collection.key,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_ASSET_ID,
+                false,
+            ));
+        }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.delegate.key,
+            *self.authority.key,
             true,
         ));
+        if let Some(payer) = self.payer {
+            accounts.push(solana_program::instruction::AccountMeta::new(
+                *payer.key, true,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_ASSET_ID,
+                false,
+            ));
+        }
         if let Some(log_wrapper) = self.log_wrapper {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 *log_wrapper.key,
@@ -228,17 +299,23 @@ impl<'a, 'b> FreezeCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = FreezeInstructionData::new().try_to_vec().unwrap();
+        let data = RemoveAuthorityInstructionData::new().try_to_vec().unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::MPL_ASSET_ID,
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset_address.clone());
-        account_infos.push(self.delegate.clone());
+        if let Some(collection) = self.collection {
+            account_infos.push(collection.clone());
+        }
+        account_infos.push(self.authority.clone());
+        if let Some(payer) = self.payer {
+            account_infos.push(payer.clone());
+        }
         if let Some(log_wrapper) = self.log_wrapper {
             account_infos.push(log_wrapper.clone());
         }
@@ -254,17 +331,19 @@ impl<'a, 'b> FreezeCpi<'a, 'b> {
     }
 }
 
-/// `freeze` CPI instruction builder.
-pub struct FreezeCpiBuilder<'a, 'b> {
-    instruction: Box<FreezeCpiBuilderInstruction<'a, 'b>>,
+/// `remove_authority` CPI instruction builder.
+pub struct RemoveAuthorityCpiBuilder<'a, 'b> {
+    instruction: Box<RemoveAuthorityCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> FreezeCpiBuilder<'a, 'b> {
+impl<'a, 'b> RemoveAuthorityCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(FreezeCpiBuilderInstruction {
+        let instruction = Box::new(RemoveAuthorityCpiBuilderInstruction {
             __program: program,
             asset_address: None,
-            delegate: None,
+            collection: None,
+            authority: None,
+            payer: None,
             log_wrapper: None,
             __remaining_accounts: Vec::new(),
         });
@@ -279,13 +358,33 @@ impl<'a, 'b> FreezeCpiBuilder<'a, 'b> {
         self.instruction.asset_address = Some(asset_address);
         self
     }
-    /// The delegate of the asset
+    /// `[optional account]`
+    /// The collection to which the asset belongs
     #[inline(always)]
-    pub fn delegate(
+    pub fn collection(
         &mut self,
-        delegate: &'b solana_program::account_info::AccountInfo<'a>,
+        collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
-        self.instruction.delegate = Some(delegate);
+        self.instruction.collection = collection;
+        self
+    }
+    /// The owner or delegate of the asset
+    #[inline(always)]
+    pub fn authority(
+        &mut self,
+        authority: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.authority = Some(authority);
+        self
+    }
+    /// `[optional account]`
+    /// The account paying for the storage fees
+    #[inline(always)]
+    pub fn payer(
+        &mut self,
+        payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.payer = payer;
         self
     }
     /// `[optional account]`
@@ -339,7 +438,7 @@ impl<'a, 'b> FreezeCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let instruction = FreezeCpi {
+        let instruction = RemoveAuthorityCpi {
             __program: self.instruction.__program,
 
             asset_address: self
@@ -347,7 +446,11 @@ impl<'a, 'b> FreezeCpiBuilder<'a, 'b> {
                 .asset_address
                 .expect("asset_address is not set"),
 
-            delegate: self.instruction.delegate.expect("delegate is not set"),
+            collection: self.instruction.collection,
+
+            authority: self.instruction.authority.expect("authority is not set"),
+
+            payer: self.instruction.payer,
 
             log_wrapper: self.instruction.log_wrapper,
         };
@@ -358,10 +461,12 @@ impl<'a, 'b> FreezeCpiBuilder<'a, 'b> {
     }
 }
 
-struct FreezeCpiBuilderInstruction<'a, 'b> {
+struct RemoveAuthorityCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset_address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    delegate: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(

@@ -14,6 +14,7 @@ use solana_program::pubkey::Pubkey;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Authority {
     Owner,
+    UpdateAuthority,
     Pubkey {
         #[cfg_attr(
             feature = "serde",

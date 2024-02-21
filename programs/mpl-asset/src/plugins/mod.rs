@@ -1,15 +1,18 @@
 mod asset_signer;
 mod collection;
 mod delegate;
+// mod lifecycle;
+mod plugin_registry;
 mod royalties;
 mod utils;
 
 pub use asset_signer::*;
 pub use collection::*;
 pub use delegate::*;
+// pub use lifecycle::*;
+pub use plugin_registry::*;
 pub use royalties::*;
 
-use shank::ShankAccount;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
 };
@@ -19,7 +22,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 
 use crate::{
     error::MplAssetError,
-    state::{Authority, DataBlob, Key, SolanaAccount},
+    state::{Authority, DataBlob},
 };
 
 #[repr(u16)]
@@ -28,7 +31,16 @@ pub enum Plugin {
     Reserved,
     Royalties(Royalties),
     Delegate(Delegate),
-    AssetSigner(AssetSigner),
+}
+
+impl Plugin {
+    pub fn default_authority(&self) -> Result<Authority, ProgramError> {
+        match self {
+            Plugin::Reserved => Err(MplAssetError::InvalidPlugin.into()),
+            Plugin::Royalties(_) => Ok(Authority::UpdateAuthority),
+            Plugin::Delegate(_) => Ok(Authority::Owner),
+        }
+    }
 }
 
 #[repr(u16)]
@@ -37,7 +49,16 @@ pub enum PluginType {
     Reserved,
     Royalties,
     Delegate,
-    AssetSigner,
+}
+
+impl DataBlob for PluginType {
+    fn get_initial_size() -> usize {
+        2
+    }
+
+    fn get_size(&self) -> usize {
+        2
+    }
 }
 
 impl From<&Plugin> for PluginType {
@@ -46,7 +67,6 @@ impl From<&Plugin> for PluginType {
             Plugin::Reserved => PluginType::Reserved,
             Plugin::Royalties(_) => PluginType::Royalties,
             Plugin::Delegate(_) => PluginType::Delegate,
-            Plugin::AssetSigner(_) => PluginType::AssetSigner,
         }
     }
 }
@@ -65,50 +85,5 @@ impl Plugin {
             msg!("Error: {}", error);
             MplAssetError::SerializationError.into()
         })
-    }
-}
-
-#[repr(C)]
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
-pub struct RegistryData {
-    pub offset: usize,
-    pub authorities: Vec<Authority>,
-}
-
-#[repr(C)]
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
-pub struct RegistryRecord {
-    pub plugin_type: PluginType,
-    pub data: RegistryData,
-}
-
-#[repr(C)]
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
-pub struct ExternalPluginRecord {
-    pub authority: Authority,
-    pub data: RegistryData,
-}
-
-#[repr(C)]
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
-pub struct PluginRegistry {
-    pub key: Key,                                    // 1
-    pub registry: Vec<RegistryRecord>,               // 4
-    pub external_plugins: Vec<ExternalPluginRecord>, // 4
-}
-
-impl DataBlob for PluginRegistry {
-    fn get_initial_size() -> usize {
-        9
-    }
-
-    fn get_size(&self) -> usize {
-        9 //TODO: Fix this
-    }
-}
-
-impl SolanaAccount for PluginRegistry {
-    fn key() -> Key {
-        Key::PluginRegistry
     }
 }

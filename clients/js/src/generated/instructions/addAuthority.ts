@@ -27,36 +27,44 @@ import {
 } from '../shared';
 
 // Accounts.
-export type ThawInstructionAccounts = {
+export type AddAuthorityInstructionAccounts = {
   /** The address of the asset */
   assetAddress: PublicKey | Pda;
-  /** The delegate of the asset */
-  delegate: Signer;
+  /** The collection to which the asset belongs */
+  collection?: PublicKey | Pda;
+  /** The owner or delegate of the asset */
+  authority?: Signer;
+  /** The account paying for the storage fees */
+  payer?: Signer;
   /** The SPL Noop Program */
   logWrapper?: PublicKey | Pda;
 };
 
 // Data.
-export type ThawInstructionData = { discriminator: number };
+export type AddAuthorityInstructionData = { discriminator: number };
 
-export type ThawInstructionDataArgs = {};
+export type AddAuthorityInstructionDataArgs = {};
 
-export function getThawInstructionDataSerializer(): Serializer<
-  ThawInstructionDataArgs,
-  ThawInstructionData
+export function getAddAuthorityInstructionDataSerializer(): Serializer<
+  AddAuthorityInstructionDataArgs,
+  AddAuthorityInstructionData
 > {
-  return mapSerializer<ThawInstructionDataArgs, any, ThawInstructionData>(
-    struct<ThawInstructionData>([['discriminator', u8()]], {
-      description: 'ThawInstructionData',
+  return mapSerializer<
+    AddAuthorityInstructionDataArgs,
+    any,
+    AddAuthorityInstructionData
+  >(
+    struct<AddAuthorityInstructionData>([['discriminator', u8()]], {
+      description: 'AddAuthorityInstructionData',
     }),
-    (value) => ({ ...value, discriminator: 7 })
-  ) as Serializer<ThawInstructionDataArgs, ThawInstructionData>;
+    (value) => ({ ...value, discriminator: 3 })
+  ) as Serializer<AddAuthorityInstructionDataArgs, AddAuthorityInstructionData>;
 }
 
 // Instruction.
-export function thaw(
-  context: Pick<Context, 'programs'>,
-  input: ThawInstructionAccounts
+export function addAuthority(
+  context: Pick<Context, 'identity' | 'programs'>,
+  input: AddAuthorityInstructionAccounts
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -71,13 +79,20 @@ export function thaw(
       isWritable: true,
       value: input.assetAddress ?? null,
     },
-    delegate: { index: 1, isWritable: false, value: input.delegate ?? null },
+    collection: { index: 1, isWritable: true, value: input.collection ?? null },
+    authority: { index: 2, isWritable: false, value: input.authority ?? null },
+    payer: { index: 3, isWritable: true, value: input.payer ?? null },
     logWrapper: {
-      index: 2,
+      index: 4,
       isWritable: false,
       value: input.logWrapper ?? null,
     },
   };
+
+  // Default values.
+  if (!resolvedAccounts.authority.value) {
+    resolvedAccounts.authority.value = context.identity;
+  }
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(
@@ -92,7 +107,7 @@ export function thaw(
   );
 
   // Data.
-  const data = getThawInstructionDataSerializer().serialize({});
+  const data = getAddAuthorityInstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

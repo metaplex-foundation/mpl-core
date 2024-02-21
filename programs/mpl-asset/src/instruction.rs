@@ -2,8 +2,8 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
 use crate::processor::{
-    BurnArgs, CompressArgs, CreateArgs, DecompressArgs, DelegateArgs, FreezeArgs, RevokeArgs,
-    ThawArgs, TransferArgs, UpdateArgs,
+    AddAuthorityArgs, AddPluginArgs, BurnArgs, CompressArgs, CreateArgs, DecompressArgs,
+    RemoveAuthorityArgs, RemovePluginArgs, TransferArgs, UpdateArgs,
 };
 
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
@@ -20,25 +20,39 @@ pub enum MplAssetInstruction {
     #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Create(CreateArgs),
 
-    /// Delegate an mpl-asset.
+    /// Add a plugin to an mpl-asset.
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]
-    #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, writable, signer, name="owner", desc = "The owner of the asset")]
+    #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
+    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
-    #[account(4, name="delegate", desc = "The new simple delegate for the asset")]
-    #[account(5, name="system_program", desc = "The system program")]
-    #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    Delegate(DelegateArgs),
+    #[account(4, name="system_program", desc = "The system program")]
+    #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    AddPlugin(AddPluginArgs),
 
-    /// Delegate an mpl-asset.
+    /// Remove a plugin from an mpl-asset.
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]
-    #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, writable, signer, name="owner", desc = "The owner of the asset")]
+    #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
+    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
-    #[account(4, name="delegate", desc = "The delegate to be revoked for the asset")]
-    #[account(5, name="system_program", desc = "The system program")]
-    #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    Revoke(RevokeArgs),
+    #[account(4, name="system_program", desc = "The system program")]
+    #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    RemovePlugin(RemovePluginArgs),
+
+    /// Add an authority to an mpl-asset plugin.
+    #[account(0, writable, name="asset_address", desc = "The address of the asset")]
+    #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
+    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
+    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    AddAuthority(AddAuthorityArgs),
+
+    /// Remove an authority from an mpl-asset plugin.
+    #[account(0, writable, name="asset_address", desc = "The address of the asset")]
+    #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
+    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
+    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    RemoveAuthority(RemoveAuthorityArgs),
 
     //TODO: Implement this instruction
     /// Burn an mpl-asset.
@@ -68,18 +82,6 @@ pub enum MplAssetInstruction {
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Update(UpdateArgs),
-
-    /// Freeze an mpl-asset.
-    #[account(0, writable, name="asset_address", desc = "The address of the asset")]
-    #[account(1, signer, name="delegate", desc = "The delegate of the asset")]
-    #[account(2, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    Freeze(FreezeArgs),
-
-    /// Thaw an mpl-asset.
-    #[account(0, writable, name="asset_address", desc = "The address of the asset")]
-    #[account(1, signer, name="delegate", desc = "The delegate of the asset")]
-    #[account(2, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    Thaw(ThawArgs),
 
     //TODO: Implement this instruction
     /// Create a new mpl-asset.

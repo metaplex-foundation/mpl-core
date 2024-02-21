@@ -27,48 +27,47 @@ import {
 } from '../shared';
 
 // Accounts.
-export type DelegateInstructionAccounts = {
+export type RemoveAuthorityInstructionAccounts = {
   /** The address of the asset */
   assetAddress: PublicKey | Pda;
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
-  /** The owner of the asset */
-  owner: Signer;
+  /** The owner or delegate of the asset */
+  authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The new simple delegate for the asset */
-  delegate: PublicKey | Pda;
-  /** The system program */
-  systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
   logWrapper?: PublicKey | Pda;
 };
 
 // Data.
-export type DelegateInstructionData = { discriminator: number };
+export type RemoveAuthorityInstructionData = { discriminator: number };
 
-export type DelegateInstructionDataArgs = {};
+export type RemoveAuthorityInstructionDataArgs = {};
 
-export function getDelegateInstructionDataSerializer(): Serializer<
-  DelegateInstructionDataArgs,
-  DelegateInstructionData
+export function getRemoveAuthorityInstructionDataSerializer(): Serializer<
+  RemoveAuthorityInstructionDataArgs,
+  RemoveAuthorityInstructionData
 > {
   return mapSerializer<
-    DelegateInstructionDataArgs,
+    RemoveAuthorityInstructionDataArgs,
     any,
-    DelegateInstructionData
+    RemoveAuthorityInstructionData
   >(
-    struct<DelegateInstructionData>([['discriminator', u8()]], {
-      description: 'DelegateInstructionData',
+    struct<RemoveAuthorityInstructionData>([['discriminator', u8()]], {
+      description: 'RemoveAuthorityInstructionData',
     }),
-    (value) => ({ ...value, discriminator: 1 })
-  ) as Serializer<DelegateInstructionDataArgs, DelegateInstructionData>;
+    (value) => ({ ...value, discriminator: 4 })
+  ) as Serializer<
+    RemoveAuthorityInstructionDataArgs,
+    RemoveAuthorityInstructionData
+  >;
 }
 
 // Instruction.
-export function delegate(
-  context: Pick<Context, 'programs'>,
-  input: DelegateInstructionAccounts
+export function removeAuthority(
+  context: Pick<Context, 'identity' | 'programs'>,
+  input: RemoveAuthorityInstructionAccounts
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -83,33 +82,19 @@ export function delegate(
       isWritable: true,
       value: input.assetAddress ?? null,
     },
-    collection: {
-      index: 1,
-      isWritable: false,
-      value: input.collection ?? null,
-    },
-    owner: { index: 2, isWritable: true, value: input.owner ?? null },
+    collection: { index: 1, isWritable: true, value: input.collection ?? null },
+    authority: { index: 2, isWritable: false, value: input.authority ?? null },
     payer: { index: 3, isWritable: true, value: input.payer ?? null },
-    delegate: { index: 4, isWritable: false, value: input.delegate ?? null },
-    systemProgram: {
-      index: 5,
-      isWritable: false,
-      value: input.systemProgram ?? null,
-    },
     logWrapper: {
-      index: 6,
+      index: 4,
       isWritable: false,
       value: input.logWrapper ?? null,
     },
   };
 
   // Default values.
-  if (!resolvedAccounts.systemProgram.value) {
-    resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
-      'splSystem',
-      '11111111111111111111111111111111'
-    );
-    resolvedAccounts.systemProgram.isWritable = false;
+  if (!resolvedAccounts.authority.value) {
+    resolvedAccounts.authority.value = context.identity;
   }
 
   // Accounts in order.
@@ -125,7 +110,7 @@ export function delegate(
   );
 
   // Data.
-  const data = getDelegateInstructionDataSerializer().serialize({});
+  const data = getRemoveAuthorityInstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

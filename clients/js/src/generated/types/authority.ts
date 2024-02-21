@@ -20,6 +20,7 @@ import { Plugin, PluginArgs, getPluginSerializer } from '.';
 
 export type Authority =
   | { __kind: 'Owner' }
+  | { __kind: 'UpdateAuthority' }
   | { __kind: 'Pubkey'; address: PublicKey }
   | { __kind: 'Permanent'; address: PublicKey }
   | { __kind: 'SameAs'; plugin: Plugin }
@@ -27,6 +28,7 @@ export type Authority =
 
 export type AuthorityArgs =
   | { __kind: 'Owner' }
+  | { __kind: 'UpdateAuthority' }
   | { __kind: 'Pubkey'; address: PublicKey }
   | { __kind: 'Permanent'; address: PublicKey }
   | { __kind: 'SameAs'; plugin: PluginArgs }
@@ -36,6 +38,7 @@ export function getAuthoritySerializer(): Serializer<AuthorityArgs, Authority> {
   return dataEnum<Authority>(
     [
       ['Owner', unit()],
+      ['UpdateAuthority', unit()],
       [
         'Pubkey',
         struct<GetDataEnumKindContent<Authority, 'Pubkey'>>([
@@ -64,6 +67,9 @@ export function getAuthoritySerializer(): Serializer<AuthorityArgs, Authority> {
 export function authority(
   kind: 'Owner'
 ): GetDataEnumKind<AuthorityArgs, 'Owner'>;
+export function authority(
+  kind: 'UpdateAuthority'
+): GetDataEnumKind<AuthorityArgs, 'UpdateAuthority'>;
 export function authority(
   kind: 'Pubkey',
   data: GetDataEnumKindContent<AuthorityArgs, 'Pubkey'>

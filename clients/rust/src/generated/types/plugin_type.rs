@@ -14,5 +14,4 @@ pub enum PluginType {
     Reserved,
     Royalties,
     Delegate,
-    AssetSigner,
 }

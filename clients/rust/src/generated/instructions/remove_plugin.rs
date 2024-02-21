@@ -5,43 +5,46 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::PluginType;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct Revoke {
+pub struct RemovePlugin {
     /// The address of the asset
     pub asset_address: solana_program::pubkey::Pubkey,
     /// The collection to which the asset belongs
     pub collection: Option<solana_program::pubkey::Pubkey>,
-    /// The owner of the asset
-    pub owner: solana_program::pubkey::Pubkey,
+    /// The owner or delegate of the asset
+    pub authority: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
     pub payer: Option<solana_program::pubkey::Pubkey>,
-    /// The delegate to be revoked for the asset
-    pub delegate: solana_program::pubkey::Pubkey,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
     /// The SPL Noop Program
     pub log_wrapper: Option<solana_program::pubkey::Pubkey>,
 }
 
-impl Revoke {
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        self.instruction_with_remaining_accounts(&[])
+impl RemovePlugin {
+    pub fn instruction(
+        &self,
+        args: RemovePluginInstructionArgs,
+    ) -> solana_program::instruction::Instruction {
+        self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
+        args: RemovePluginInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset_address,
             false,
         ));
         if let Some(collection) = self.collection {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            accounts.push(solana_program::instruction::AccountMeta::new(
                 collection, false,
             ));
         } else {
@@ -50,8 +53,9 @@ impl Revoke {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.owner, true,
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.authority,
+            true,
         ));
         if let Some(payer) = self.payer {
             accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
@@ -61,10 +65,6 @@ impl Revoke {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.delegate,
-            false,
-        ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.system_program,
             false,
@@ -81,7 +81,9 @@ impl Revoke {
             ));
         }
         accounts.extend_from_slice(remaining_accounts);
-        let data = RevokeInstructionData::new().try_to_vec().unwrap();
+        let mut data = RemovePluginInstructionData::new().try_to_vec().unwrap();
+        let mut args = args.try_to_vec().unwrap();
+        data.append(&mut args);
 
         solana_program::instruction::Instruction {
             program_id: crate::MPL_ASSET_ID,
@@ -92,30 +94,36 @@ impl Revoke {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct RevokeInstructionData {
+struct RemovePluginInstructionData {
     discriminator: u8,
 }
 
-impl RevokeInstructionData {
+impl RemovePluginInstructionData {
     fn new() -> Self {
         Self { discriminator: 2 }
     }
 }
 
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct RemovePluginInstructionArgs {
+    pub plugin_type: PluginType,
+}
+
 /// Instruction builder.
 #[derive(Default)]
-pub struct RevokeBuilder {
+pub struct RemovePluginBuilder {
     asset_address: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
-    owner: Option<solana_program::pubkey::Pubkey>,
+    authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
-    delegate: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
+    plugin_type: Option<PluginType>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl RevokeBuilder {
+impl RemovePluginBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -132,10 +140,10 @@ impl RevokeBuilder {
         self.collection = collection;
         self
     }
-    /// The owner of the asset
+    /// The owner or delegate of the asset
     #[inline(always)]
-    pub fn owner(&mut self, owner: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.owner = Some(owner);
+    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.authority = Some(authority);
         self
     }
     /// `[optional account]`
@@ -143,12 +151,6 @@ impl RevokeBuilder {
     #[inline(always)]
     pub fn payer(&mut self, payer: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.payer = payer;
-        self
-    }
-    /// The delegate to be revoked for the asset
-    #[inline(always)]
-    pub fn delegate(&mut self, delegate: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.delegate = Some(delegate);
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
@@ -166,6 +168,11 @@ impl RevokeBuilder {
         log_wrapper: Option<solana_program::pubkey::Pubkey>,
     ) -> &mut Self {
         self.log_wrapper = log_wrapper;
+        self
+    }
+    #[inline(always)]
+    pub fn plugin_type(&mut self, plugin_type: PluginType) -> &mut Self {
+        self.plugin_type = Some(plugin_type);
         self
     }
     /// Add an aditional account to the instruction.
@@ -188,74 +195,75 @@ impl RevokeBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = Revoke {
+        let accounts = RemovePlugin {
             asset_address: self.asset_address.expect("asset_address is not set"),
             collection: self.collection,
-            owner: self.owner.expect("owner is not set"),
+            authority: self.authority.expect("authority is not set"),
             payer: self.payer,
-            delegate: self.delegate.expect("delegate is not set"),
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
             log_wrapper: self.log_wrapper,
         };
+        let args = RemovePluginInstructionArgs {
+            plugin_type: self.plugin_type.clone().expect("plugin_type is not set"),
+        };
 
-        accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
+        accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
     }
 }
 
-/// `revoke` CPI accounts.
-pub struct RevokeCpiAccounts<'a, 'b> {
+/// `remove_plugin` CPI accounts.
+pub struct RemovePluginCpiAccounts<'a, 'b> {
     /// The address of the asset
     pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The owner of the asset
-    pub owner: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner or delegate of the asset
+    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The delegate to be revoked for the asset
-    pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-/// `revoke` CPI instruction.
-pub struct RevokeCpi<'a, 'b> {
+/// `remove_plugin` CPI instruction.
+pub struct RemovePluginCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The address of the asset
     pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The owner of the asset
-    pub owner: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner or delegate of the asset
+    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The delegate to be revoked for the asset
-    pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The arguments for the instruction.
+    pub __args: RemovePluginInstructionArgs,
 }
 
-impl<'a, 'b> RevokeCpi<'a, 'b> {
+impl<'a, 'b> RemovePluginCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: RevokeCpiAccounts<'a, 'b>,
+        accounts: RemovePluginCpiAccounts<'a, 'b>,
+        args: RemovePluginInstructionArgs,
     ) -> Self {
         Self {
             __program: program,
             asset_address: accounts.asset_address,
             collection: accounts.collection,
-            owner: accounts.owner,
+            authority: accounts.authority,
             payer: accounts.payer,
-            delegate: accounts.delegate,
             system_program: accounts.system_program,
             log_wrapper: accounts.log_wrapper,
+            __args: args,
         }
     }
     #[inline(always)]
@@ -291,13 +299,13 @@ impl<'a, 'b> RevokeCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset_address.key,
             false,
         ));
         if let Some(collection) = self.collection {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            accounts.push(solana_program::instruction::AccountMeta::new(
                 *collection.key,
                 false,
             ));
@@ -307,8 +315,8 @@ impl<'a, 'b> RevokeCpi<'a, 'b> {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.owner.key,
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.authority.key,
             true,
         ));
         if let Some(payer) = self.payer {
@@ -321,10 +329,6 @@ impl<'a, 'b> RevokeCpi<'a, 'b> {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.delegate.key,
-            false,
-        ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.system_program.key,
             false,
@@ -347,24 +351,25 @@ impl<'a, 'b> RevokeCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = RevokeInstructionData::new().try_to_vec().unwrap();
+        let mut data = RemovePluginInstructionData::new().try_to_vec().unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
+        data.append(&mut args);
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::MPL_ASSET_ID,
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(7 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset_address.clone());
         if let Some(collection) = self.collection {
             account_infos.push(collection.clone());
         }
-        account_infos.push(self.owner.clone());
+        account_infos.push(self.authority.clone());
         if let Some(payer) = self.payer {
             account_infos.push(payer.clone());
         }
-        account_infos.push(self.delegate.clone());
         account_infos.push(self.system_program.clone());
         if let Some(log_wrapper) = self.log_wrapper {
             account_infos.push(log_wrapper.clone());
@@ -381,22 +386,22 @@ impl<'a, 'b> RevokeCpi<'a, 'b> {
     }
 }
 
-/// `revoke` CPI instruction builder.
-pub struct RevokeCpiBuilder<'a, 'b> {
-    instruction: Box<RevokeCpiBuilderInstruction<'a, 'b>>,
+/// `remove_plugin` CPI instruction builder.
+pub struct RemovePluginCpiBuilder<'a, 'b> {
+    instruction: Box<RemovePluginCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
+impl<'a, 'b> RemovePluginCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(RevokeCpiBuilderInstruction {
+        let instruction = Box::new(RemovePluginCpiBuilderInstruction {
             __program: program,
             asset_address: None,
             collection: None,
-            owner: None,
+            authority: None,
             payer: None,
-            delegate: None,
             system_program: None,
             log_wrapper: None,
+            plugin_type: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -420,10 +425,13 @@ impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
         self.instruction.collection = collection;
         self
     }
-    /// The owner of the asset
+    /// The owner or delegate of the asset
     #[inline(always)]
-    pub fn owner(&mut self, owner: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.owner = Some(owner);
+    pub fn authority(
+        &mut self,
+        authority: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.authority = Some(authority);
         self
     }
     /// `[optional account]`
@@ -434,15 +442,6 @@ impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
         payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
         self.instruction.payer = payer;
-        self
-    }
-    /// The delegate to be revoked for the asset
-    #[inline(always)]
-    pub fn delegate(
-        &mut self,
-        delegate: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.delegate = Some(delegate);
         self
     }
     /// The system program
@@ -462,6 +461,11 @@ impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
         log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
         self.instruction.log_wrapper = log_wrapper;
+        self
+    }
+    #[inline(always)]
+    pub fn plugin_type(&mut self, plugin_type: PluginType) -> &mut Self {
+        self.instruction.plugin_type = Some(plugin_type);
         self
     }
     /// Add an additional account to the instruction.
@@ -505,7 +509,14 @@ impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let instruction = RevokeCpi {
+        let args = RemovePluginInstructionArgs {
+            plugin_type: self
+                .instruction
+                .plugin_type
+                .clone()
+                .expect("plugin_type is not set"),
+        };
+        let instruction = RemovePluginCpi {
             __program: self.instruction.__program,
 
             asset_address: self
@@ -515,11 +526,9 @@ impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
 
             collection: self.instruction.collection,
 
-            owner: self.instruction.owner.expect("owner is not set"),
+            authority: self.instruction.authority.expect("authority is not set"),
 
             payer: self.instruction.payer,
-
-            delegate: self.instruction.delegate.expect("delegate is not set"),
 
             system_program: self
                 .instruction
@@ -527,6 +536,7 @@ impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
                 .expect("system_program is not set"),
 
             log_wrapper: self.instruction.log_wrapper,
+            __args: args,
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -535,15 +545,15 @@ impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
     }
 }
 
-struct RevokeCpiBuilderInstruction<'a, 'b> {
+struct RemovePluginCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset_address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    delegate: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    plugin_type: Option<PluginType>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

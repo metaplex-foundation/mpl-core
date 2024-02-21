@@ -17,7 +17,6 @@ import {
 import {
   Serializer,
   mapSerializer,
-  string,
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
@@ -26,17 +25,18 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import { PluginType, PluginTypeArgs, getPluginTypeSerializer } from '../types';
 
 // Accounts.
-export type UpdateInstructionAccounts = {
+export type RemovePluginInstructionAccounts = {
   /** The address of the asset */
   assetAddress: PublicKey | Pda;
-  /** The update authority or update authority delegate of the asset */
+  /** The collection to which the asset belongs */
+  collection?: PublicKey | Pda;
+  /** The owner or delegate of the asset */
   authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The new update authority of the asset */
-  newUpdateAuthority?: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
@@ -44,38 +44,40 @@ export type UpdateInstructionAccounts = {
 };
 
 // Data.
-export type UpdateInstructionData = {
+export type RemovePluginInstructionData = {
   discriminator: number;
-  newName: string;
-  newUri: string;
+  pluginType: PluginType;
 };
 
-export type UpdateInstructionDataArgs = { newName: string; newUri: string };
+export type RemovePluginInstructionDataArgs = { pluginType: PluginTypeArgs };
 
-export function getUpdateInstructionDataSerializer(): Serializer<
-  UpdateInstructionDataArgs,
-  UpdateInstructionData
+export function getRemovePluginInstructionDataSerializer(): Serializer<
+  RemovePluginInstructionDataArgs,
+  RemovePluginInstructionData
 > {
-  return mapSerializer<UpdateInstructionDataArgs, any, UpdateInstructionData>(
-    struct<UpdateInstructionData>(
+  return mapSerializer<
+    RemovePluginInstructionDataArgs,
+    any,
+    RemovePluginInstructionData
+  >(
+    struct<RemovePluginInstructionData>(
       [
         ['discriminator', u8()],
-        ['newName', string()],
-        ['newUri', string()],
+        ['pluginType', getPluginTypeSerializer()],
       ],
-      { description: 'UpdateInstructionData' }
+      { description: 'RemovePluginInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 7 })
-  ) as Serializer<UpdateInstructionDataArgs, UpdateInstructionData>;
+    (value) => ({ ...value, discriminator: 2 })
+  ) as Serializer<RemovePluginInstructionDataArgs, RemovePluginInstructionData>;
 }
 
 // Args.
-export type UpdateInstructionArgs = UpdateInstructionDataArgs;
+export type RemovePluginInstructionArgs = RemovePluginInstructionDataArgs;
 
 // Instruction.
-export function update(
+export function removePlugin(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: UpdateInstructionAccounts & UpdateInstructionArgs
+  input: RemovePluginInstructionAccounts & RemovePluginInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -90,13 +92,9 @@ export function update(
       isWritable: true,
       value: input.assetAddress ?? null,
     },
-    authority: { index: 1, isWritable: false, value: input.authority ?? null },
-    payer: { index: 2, isWritable: true, value: input.payer ?? null },
-    newUpdateAuthority: {
-      index: 3,
-      isWritable: false,
-      value: input.newUpdateAuthority ?? null,
-    },
+    collection: { index: 1, isWritable: true, value: input.collection ?? null },
+    authority: { index: 2, isWritable: false, value: input.authority ?? null },
+    payer: { index: 3, isWritable: true, value: input.payer ?? null },
     systemProgram: {
       index: 4,
       isWritable: false,
@@ -110,7 +108,7 @@ export function update(
   };
 
   // Arguments.
-  const resolvedArgs: UpdateInstructionArgs = { ...input };
+  const resolvedArgs: RemovePluginInstructionArgs = { ...input };
 
   // Default values.
   if (!resolvedAccounts.authority.value) {
@@ -137,8 +135,8 @@ export function update(
   );
 
   // Data.
-  const data = getUpdateInstructionDataSerializer().serialize(
-    resolvedArgs as UpdateInstructionDataArgs
+  const data = getRemovePluginInstructionDataSerializer().serialize(
+    resolvedArgs as RemovePluginInstructionDataArgs
   );
 
   // Bytes Created On Chain.

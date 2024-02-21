@@ -5,43 +5,46 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::Plugin;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct Delegate {
+pub struct AddPlugin {
     /// The address of the asset
     pub asset_address: solana_program::pubkey::Pubkey,
     /// The collection to which the asset belongs
     pub collection: Option<solana_program::pubkey::Pubkey>,
-    /// The owner of the asset
-    pub owner: solana_program::pubkey::Pubkey,
+    /// The owner or delegate of the asset
+    pub authority: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
     pub payer: Option<solana_program::pubkey::Pubkey>,
-    /// The new simple delegate for the asset
-    pub delegate: solana_program::pubkey::Pubkey,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
     /// The SPL Noop Program
     pub log_wrapper: Option<solana_program::pubkey::Pubkey>,
 }
 
-impl Delegate {
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        self.instruction_with_remaining_accounts(&[])
+impl AddPlugin {
+    pub fn instruction(
+        &self,
+        args: AddPluginInstructionArgs,
+    ) -> solana_program::instruction::Instruction {
+        self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
+        args: AddPluginInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset_address,
             false,
         ));
         if let Some(collection) = self.collection {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            accounts.push(solana_program::instruction::AccountMeta::new(
                 collection, false,
             ));
         } else {
@@ -50,8 +53,9 @@ impl Delegate {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.owner, true,
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.authority,
+            true,
         ));
         if let Some(payer) = self.payer {
             accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
@@ -61,10 +65,6 @@ impl Delegate {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.delegate,
-            false,
-        ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.system_program,
             false,
@@ -81,7 +81,9 @@ impl Delegate {
             ));
         }
         accounts.extend_from_slice(remaining_accounts);
-        let data = DelegateInstructionData::new().try_to_vec().unwrap();
+        let mut data = AddPluginInstructionData::new().try_to_vec().unwrap();
+        let mut args = args.try_to_vec().unwrap();
+        data.append(&mut args);
 
         solana_program::instruction::Instruction {
             program_id: crate::MPL_ASSET_ID,
@@ -92,30 +94,36 @@ impl Delegate {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct DelegateInstructionData {
+struct AddPluginInstructionData {
     discriminator: u8,
 }
 
-impl DelegateInstructionData {
+impl AddPluginInstructionData {
     fn new() -> Self {
         Self { discriminator: 1 }
     }
 }
 
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct AddPluginInstructionArgs {
+    pub plugin: Plugin,
+}
+
 /// Instruction builder.
 #[derive(Default)]
-pub struct DelegateBuilder {
+pub struct AddPluginBuilder {
     asset_address: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
-    owner: Option<solana_program::pubkey::Pubkey>,
+    authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
-    delegate: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
+    plugin: Option<Plugin>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl DelegateBuilder {
+impl AddPluginBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -132,10 +140,10 @@ impl DelegateBuilder {
         self.collection = collection;
         self
     }
-    /// The owner of the asset
+    /// The owner or delegate of the asset
     #[inline(always)]
-    pub fn owner(&mut self, owner: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.owner = Some(owner);
+    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.authority = Some(authority);
         self
     }
     /// `[optional account]`
@@ -143,12 +151,6 @@ impl DelegateBuilder {
     #[inline(always)]
     pub fn payer(&mut self, payer: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.payer = payer;
-        self
-    }
-    /// The new simple delegate for the asset
-    #[inline(always)]
-    pub fn delegate(&mut self, delegate: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.delegate = Some(delegate);
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
@@ -166,6 +168,11 @@ impl DelegateBuilder {
         log_wrapper: Option<solana_program::pubkey::Pubkey>,
     ) -> &mut Self {
         self.log_wrapper = log_wrapper;
+        self
+    }
+    #[inline(always)]
+    pub fn plugin(&mut self, plugin: Plugin) -> &mut Self {
+        self.plugin = Some(plugin);
         self
     }
     /// Add an aditional account to the instruction.
@@ -188,74 +195,75 @@ impl DelegateBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = Delegate {
+        let accounts = AddPlugin {
             asset_address: self.asset_address.expect("asset_address is not set"),
             collection: self.collection,
-            owner: self.owner.expect("owner is not set"),
+            authority: self.authority.expect("authority is not set"),
             payer: self.payer,
-            delegate: self.delegate.expect("delegate is not set"),
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
             log_wrapper: self.log_wrapper,
         };
+        let args = AddPluginInstructionArgs {
+            plugin: self.plugin.clone().expect("plugin is not set"),
+        };
 
-        accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
+        accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
     }
 }
 
-/// `delegate` CPI accounts.
-pub struct DelegateCpiAccounts<'a, 'b> {
+/// `add_plugin` CPI accounts.
+pub struct AddPluginCpiAccounts<'a, 'b> {
     /// The address of the asset
     pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The owner of the asset
-    pub owner: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner or delegate of the asset
+    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The new simple delegate for the asset
-    pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-/// `delegate` CPI instruction.
-pub struct DelegateCpi<'a, 'b> {
+/// `add_plugin` CPI instruction.
+pub struct AddPluginCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The address of the asset
     pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The owner of the asset
-    pub owner: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner or delegate of the asset
+    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The new simple delegate for the asset
-    pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The arguments for the instruction.
+    pub __args: AddPluginInstructionArgs,
 }
 
-impl<'a, 'b> DelegateCpi<'a, 'b> {
+impl<'a, 'b> AddPluginCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: DelegateCpiAccounts<'a, 'b>,
+        accounts: AddPluginCpiAccounts<'a, 'b>,
+        args: AddPluginInstructionArgs,
     ) -> Self {
         Self {
             __program: program,
             asset_address: accounts.asset_address,
             collection: accounts.collection,
-            owner: accounts.owner,
+            authority: accounts.authority,
             payer: accounts.payer,
-            delegate: accounts.delegate,
             system_program: accounts.system_program,
             log_wrapper: accounts.log_wrapper,
+            __args: args,
         }
     }
     #[inline(always)]
@@ -291,13 +299,13 @@ impl<'a, 'b> DelegateCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset_address.key,
             false,
         ));
         if let Some(collection) = self.collection {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            accounts.push(solana_program::instruction::AccountMeta::new(
                 *collection.key,
                 false,
             ));
@@ -307,8 +315,8 @@ impl<'a, 'b> DelegateCpi<'a, 'b> {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.owner.key,
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.authority.key,
             true,
         ));
         if let Some(payer) = self.payer {
@@ -321,10 +329,6 @@ impl<'a, 'b> DelegateCpi<'a, 'b> {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.delegate.key,
-            false,
-        ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.system_program.key,
             false,
@@ -347,24 +351,25 @@ impl<'a, 'b> DelegateCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = DelegateInstructionData::new().try_to_vec().unwrap();
+        let mut data = AddPluginInstructionData::new().try_to_vec().unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
+        data.append(&mut args);
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::MPL_ASSET_ID,
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(7 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset_address.clone());
         if let Some(collection) = self.collection {
             account_infos.push(collection.clone());
         }
-        account_infos.push(self.owner.clone());
+        account_infos.push(self.authority.clone());
         if let Some(payer) = self.payer {
             account_infos.push(payer.clone());
         }
-        account_infos.push(self.delegate.clone());
         account_infos.push(self.system_program.clone());
         if let Some(log_wrapper) = self.log_wrapper {
             account_infos.push(log_wrapper.clone());
@@ -381,22 +386,22 @@ impl<'a, 'b> DelegateCpi<'a, 'b> {
     }
 }
 
-/// `delegate` CPI instruction builder.
-pub struct DelegateCpiBuilder<'a, 'b> {
-    instruction: Box<DelegateCpiBuilderInstruction<'a, 'b>>,
+/// `add_plugin` CPI instruction builder.
+pub struct AddPluginCpiBuilder<'a, 'b> {
+    instruction: Box<AddPluginCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
+impl<'a, 'b> AddPluginCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(DelegateCpiBuilderInstruction {
+        let instruction = Box::new(AddPluginCpiBuilderInstruction {
             __program: program,
             asset_address: None,
             collection: None,
-            owner: None,
+            authority: None,
             payer: None,
-            delegate: None,
             system_program: None,
             log_wrapper: None,
+            plugin: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -420,10 +425,13 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
         self.instruction.collection = collection;
         self
     }
-    /// The owner of the asset
+    /// The owner or delegate of the asset
     #[inline(always)]
-    pub fn owner(&mut self, owner: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.owner = Some(owner);
+    pub fn authority(
+        &mut self,
+        authority: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.authority = Some(authority);
         self
     }
     /// `[optional account]`
@@ -434,15 +442,6 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
         payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
         self.instruction.payer = payer;
-        self
-    }
-    /// The new simple delegate for the asset
-    #[inline(always)]
-    pub fn delegate(
-        &mut self,
-        delegate: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.delegate = Some(delegate);
         self
     }
     /// The system program
@@ -462,6 +461,11 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
         log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
         self.instruction.log_wrapper = log_wrapper;
+        self
+    }
+    #[inline(always)]
+    pub fn plugin(&mut self, plugin: Plugin) -> &mut Self {
+        self.instruction.plugin = Some(plugin);
         self
     }
     /// Add an additional account to the instruction.
@@ -505,7 +509,10 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let instruction = DelegateCpi {
+        let args = AddPluginInstructionArgs {
+            plugin: self.instruction.plugin.clone().expect("plugin is not set"),
+        };
+        let instruction = AddPluginCpi {
             __program: self.instruction.__program,
 
             asset_address: self
@@ -515,11 +522,9 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
 
             collection: self.instruction.collection,
 
-            owner: self.instruction.owner.expect("owner is not set"),
+            authority: self.instruction.authority.expect("authority is not set"),
 
             payer: self.instruction.payer,
-
-            delegate: self.instruction.delegate.expect("delegate is not set"),
 
             system_program: self
                 .instruction
@@ -527,6 +532,7 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
                 .expect("system_program is not set"),
 
             log_wrapper: self.instruction.log_wrapper,
+            __args: args,
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -535,15 +541,15 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
     }
 }
 
-struct DelegateCpiBuilderInstruction<'a, 'b> {
+struct AddPluginCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset_address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    delegate: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    plugin: Option<Plugin>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

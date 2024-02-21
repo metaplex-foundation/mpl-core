@@ -53,11 +53,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                     fetch_plugin(ctx.accounts.asset_address, PluginType::Delegate)?;
 
                 solana_program::msg!("Assert authority");
-                authority_check = assert_authority(
-                    ctx.accounts.asset_address,
-                    ctx.accounts.authority,
-                    &authorities,
-                );
+                authority_check = assert_authority(&asset, ctx.accounts.authority, &authorities);
 
                 if let Plugin::Delegate(delegate) = plugin {
                     if delegate.frozen {

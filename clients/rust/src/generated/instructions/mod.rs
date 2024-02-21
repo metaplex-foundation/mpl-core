@@ -5,24 +5,24 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+pub(crate) mod add_authority;
+pub(crate) mod add_plugin;
 pub(crate) mod burn;
 pub(crate) mod compress;
 pub(crate) mod create;
 pub(crate) mod decompress;
-pub(crate) mod delegate;
-pub(crate) mod freeze;
-pub(crate) mod revoke;
-pub(crate) mod thaw;
+pub(crate) mod remove_authority;
+pub(crate) mod remove_plugin;
 pub(crate) mod transfer;
 pub(crate) mod update;
 
+pub use self::add_authority::*;
+pub use self::add_plugin::*;
 pub use self::burn::*;
 pub use self::compress::*;
 pub use self::create::*;
 pub use self::decompress::*;
-pub use self::delegate::*;
-pub use self::freeze::*;
-pub use self::revoke::*;
-pub use self::thaw::*;
+pub use self::remove_authority::*;
+pub use self::remove_plugin::*;
 pub use self::transfer::*;
 pub use self::update::*;

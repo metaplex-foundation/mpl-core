@@ -25,19 +25,18 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import { Plugin, PluginArgs, getPluginSerializer } from '../types';
 
 // Accounts.
-export type RevokeInstructionAccounts = {
+export type AddPluginInstructionAccounts = {
   /** The address of the asset */
   assetAddress: PublicKey | Pda;
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
-  /** The owner of the asset */
-  owner: Signer;
+  /** The owner or delegate of the asset */
+  authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The delegate to be revoked for the asset */
-  delegate: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
@@ -45,26 +44,40 @@ export type RevokeInstructionAccounts = {
 };
 
 // Data.
-export type RevokeInstructionData = { discriminator: number };
+export type AddPluginInstructionData = {
+  discriminator: number;
+  plugin: Plugin;
+};
 
-export type RevokeInstructionDataArgs = {};
+export type AddPluginInstructionDataArgs = { plugin: PluginArgs };
 
-export function getRevokeInstructionDataSerializer(): Serializer<
-  RevokeInstructionDataArgs,
-  RevokeInstructionData
+export function getAddPluginInstructionDataSerializer(): Serializer<
+  AddPluginInstructionDataArgs,
+  AddPluginInstructionData
 > {
-  return mapSerializer<RevokeInstructionDataArgs, any, RevokeInstructionData>(
-    struct<RevokeInstructionData>([['discriminator', u8()]], {
-      description: 'RevokeInstructionData',
-    }),
-    (value) => ({ ...value, discriminator: 2 })
-  ) as Serializer<RevokeInstructionDataArgs, RevokeInstructionData>;
+  return mapSerializer<
+    AddPluginInstructionDataArgs,
+    any,
+    AddPluginInstructionData
+  >(
+    struct<AddPluginInstructionData>(
+      [
+        ['discriminator', u8()],
+        ['plugin', getPluginSerializer()],
+      ],
+      { description: 'AddPluginInstructionData' }
+    ),
+    (value) => ({ ...value, discriminator: 1 })
+  ) as Serializer<AddPluginInstructionDataArgs, AddPluginInstructionData>;
 }
 
+// Args.
+export type AddPluginInstructionArgs = AddPluginInstructionDataArgs;
+
 // Instruction.
-export function revoke(
-  context: Pick<Context, 'programs'>,
-  input: RevokeInstructionAccounts
+export function addPlugin(
+  context: Pick<Context, 'identity' | 'programs'>,
+  input: AddPluginInstructionAccounts & AddPluginInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -79,27 +92,28 @@ export function revoke(
       isWritable: true,
       value: input.assetAddress ?? null,
     },
-    collection: {
-      index: 1,
-      isWritable: false,
-      value: input.collection ?? null,
-    },
-    owner: { index: 2, isWritable: true, value: input.owner ?? null },
+    collection: { index: 1, isWritable: true, value: input.collection ?? null },
+    authority: { index: 2, isWritable: false, value: input.authority ?? null },
     payer: { index: 3, isWritable: true, value: input.payer ?? null },
-    delegate: { index: 4, isWritable: false, value: input.delegate ?? null },
     systemProgram: {
-      index: 5,
+      index: 4,
       isWritable: false,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
-      index: 6,
+      index: 5,
       isWritable: false,
       value: input.logWrapper ?? null,
     },
   };
 
+  // Arguments.
+  const resolvedArgs: AddPluginInstructionArgs = { ...input };
+
   // Default values.
+  if (!resolvedAccounts.authority.value) {
+    resolvedAccounts.authority.value = context.identity;
+  }
   if (!resolvedAccounts.systemProgram.value) {
     resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
       'splSystem',
@@ -121,7 +135,9 @@ export function revoke(
   );
 
   // Data.
-  const data = getRevokeInstructionDataSerializer().serialize({});
+  const data = getAddPluginInstructionDataSerializer().serialize(
+    resolvedArgs as AddPluginInstructionDataArgs
+  );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

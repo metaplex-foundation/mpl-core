@@ -67,6 +67,10 @@ pub enum MplAssetError {
     /// 14 - Cannot burn a collection NFT
     #[error("Cannot burn a collection NFT")]
     CannotBurnCollection,
+
+    /// 15 - Plugin already exists
+    #[error("Plugin already exists")]
+    PluginAlreadyExists,
 }
 
 impl PrintProgramError for MplAssetError {

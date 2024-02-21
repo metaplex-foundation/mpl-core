@@ -5,11 +5,17 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, 
 mod create;
 pub(crate) use create::*;
 
-mod delegate;
-pub(crate) use delegate::*;
+mod add_plugin;
+pub(crate) use add_plugin::*;
 
-mod revoke;
-pub(crate) use revoke::*;
+mod remove_plugin;
+pub(crate) use remove_plugin::*;
+
+mod add_authority;
+pub(crate) use add_authority::*;
+
+mod remove_authority;
+pub(crate) use remove_authority::*;
 
 mod burn;
 pub(crate) use burn::*;
@@ -19,12 +25,6 @@ pub(crate) use transfer::*;
 
 mod update;
 pub(crate) use update::*;
-
-mod freeze;
-pub(crate) use freeze::*;
-
-mod thaw;
-pub(crate) use thaw::*;
 
 mod compress;
 pub(crate) use compress::*;
@@ -43,13 +43,21 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Create");
             create(accounts, args)
         }
-        MplAssetInstruction::Delegate(args) => {
-            msg!("Instruction: Delegate");
-            delegate(accounts, args)
+        MplAssetInstruction::AddPlugin(args) => {
+            msg!("Instruction: AddPlugin");
+            add_plugin(accounts, args)
         }
-        MplAssetInstruction::Revoke(args) => {
-            msg!("Instruction: Revoke");
-            revoke(accounts, args)
+        MplAssetInstruction::RemovePlugin(args) => {
+            msg!("Instruction: RemovePlugin");
+            remove_plugin(accounts, args)
+        }
+        MplAssetInstruction::AddAuthority(args) => {
+            msg!("Instruction: AddAuthority");
+            add_authority(accounts, args)
+        }
+        MplAssetInstruction::RemoveAuthority(args) => {
+            msg!("Instruction: RemoveAuthority");
+            remove_authority(accounts, args)
         }
         MplAssetInstruction::Burn(args) => {
             msg!("Instruction: Burn");
@@ -62,14 +70,6 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::Update(args) => {
             msg!("Instruction: Update");
             update(accounts, args)
-        }
-        MplAssetInstruction::Freeze(args) => {
-            msg!("Instruction: Freeze");
-            freeze(accounts, args)
-        }
-        MplAssetInstruction::Thaw(args) => {
-            msg!("Instruction: Thaw");
-            thaw(accounts, args)
         }
         MplAssetInstruction::Compress(args) => {
             msg!("Instruction: Compress");

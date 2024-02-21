@@ -213,6 +213,19 @@ export class CannotBurnCollectionError extends ProgramError {
 codeToErrorMap.set(0xe, CannotBurnCollectionError);
 nameToErrorMap.set('CannotBurnCollection', CannotBurnCollectionError);
 
+/** PluginAlreadyExists: Plugin already exists */
+export class PluginAlreadyExistsError extends ProgramError {
+  readonly name: string = 'PluginAlreadyExists';
+
+  readonly code: number = 0xf; // 15
+
+  constructor(program: Program, cause?: Error) {
+    super('Plugin already exists', program, cause);
+  }
+}
+codeToErrorMap.set(0xf, PluginAlreadyExistsError);
+nameToErrorMap.set('PluginAlreadyExists', PluginAlreadyExistsError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
