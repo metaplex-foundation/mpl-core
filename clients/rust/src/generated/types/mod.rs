@@ -5,7 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub(crate) mod asset_signer;
 pub(crate) mod authority;
 pub(crate) mod collection;
 pub(crate) mod compression_proof;
@@ -23,7 +22,6 @@ pub(crate) mod registry_record;
 pub(crate) mod royalties;
 pub(crate) mod rule_set;
 
-pub use self::asset_signer::*;
 pub use self::authority::*;
 pub use self::collection::*;
 pub use self::compression_proof::*;

@@ -6,7 +6,6 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-export * from './assetSigner';
 export * from './authority';
 export * from './collection';
 export * from './compressionProof';

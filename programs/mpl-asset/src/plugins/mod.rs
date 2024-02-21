@@ -1,14 +1,14 @@
-mod asset_signer;
 mod collection;
 mod delegate;
 // mod lifecycle;
+mod plugin_header;
 mod plugin_registry;
 mod royalties;
 mod utils;
 
-pub use asset_signer::*;
 pub use collection::*;
 pub use delegate::*;
+pub use plugin_header::*;
 // pub use lifecycle::*;
 pub use plugin_registry::*;
 pub use royalties::*;

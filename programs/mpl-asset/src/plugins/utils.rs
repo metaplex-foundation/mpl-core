@@ -7,11 +7,11 @@ use solana_program::{
 
 use crate::{
     error::MplAssetError,
-    state::{Asset, Authority, DataBlob, Key, PluginHeader, SolanaAccount},
+    state::{Asset, Authority, DataBlob, Key, SolanaAccount},
     utils::{assert_authority, resolve_authority_to_default},
 };
 
-use super::{Plugin, PluginRegistry, PluginType, RegistryData, RegistryRecord};
+use super::{Plugin, PluginHeader, PluginRegistry, PluginType, RegistryData, RegistryRecord};
 
 /// Create plugin header and registry if it doesn't exist
 pub fn create_meta_idempotent<'a>(

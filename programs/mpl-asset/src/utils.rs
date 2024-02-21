@@ -6,8 +6,8 @@ use solana_program::{
 
 use crate::{
     error::MplAssetError,
-    plugins::PluginRegistry,
-    state::{Asset, Authority, DataBlob, Key, PluginHeader, SolanaAccount},
+    plugins::{PluginHeader, PluginRegistry},
+    state::{Asset, Authority, DataBlob, Key, SolanaAccount},
 };
 
 pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, ProgramError> {

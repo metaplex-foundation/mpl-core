@@ -668,6 +668,24 @@
   ],
   "accounts": [
     {
+      "name": "PluginHeader",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "pluginRegistryOffset",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "PluginRegistry",
       "type": {
         "kind": "struct",
@@ -749,34 +767,9 @@
           }
         ]
       }
-    },
-    {
-      "name": "PluginHeader",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "Key"
-            }
-          },
-          {
-            "name": "pluginRegistryOffset",
-            "type": "u64"
-          }
-        ]
-      }
     }
   ],
   "types": [
-    {
-      "name": "AssetSigner",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
     {
       "name": "Collection",
       "type": {

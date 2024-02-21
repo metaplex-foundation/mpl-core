@@ -4,17 +4,13 @@ pub use asset::*;
 mod hashed_asset;
 pub use hashed_asset::*;
 
-mod plugin_header;
-use num_derive::{FromPrimitive, ToPrimitive};
-pub use plugin_header::*;
-
 mod traits;
 pub use traits::*;
 
-use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::pubkey::Pubkey;
-
 use crate::plugins::Plugin;
+use borsh::{BorshDeserialize, BorshSerialize};
+use num_derive::{FromPrimitive, ToPrimitive};
+use solana_program::pubkey::Pubkey;
 
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
