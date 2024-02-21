@@ -226,6 +226,19 @@ export class PluginAlreadyExistsError extends ProgramError {
 codeToErrorMap.set(0xf, PluginAlreadyExistsError);
 nameToErrorMap.set('PluginAlreadyExists', PluginAlreadyExistsError);
 
+/** NumericalOverflowError: Numerical overflow */
+export class NumericalOverflowErrorError extends ProgramError {
+  readonly name: string = 'NumericalOverflowError';
+
+  readonly code: number = 0x10; // 16
+
+  constructor(program: Program, cause?: Error) {
+    super('Numerical overflow', program, cause);
+  }
+}
+codeToErrorMap.set(0x10, NumericalOverflowErrorError);
+nameToErrorMap.set('NumericalOverflowError', NumericalOverflowErrorError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

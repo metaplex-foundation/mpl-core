@@ -35,6 +35,12 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                 .ok_or(MplAssetError::MissingCompressionProof)?;
             let mut asset = Asset::verify_proof(ctx.accounts.asset_address, compression_proof)?;
 
+            if ctx.accounts.authority.key != &asset.owner {
+                return Err(MplAssetError::InvalidAuthority.into());
+            }
+
+            // TODO: Check delegates in compressed case.
+
             asset.owner = *ctx.accounts.new_owner.key;
 
             asset.wrap()?;

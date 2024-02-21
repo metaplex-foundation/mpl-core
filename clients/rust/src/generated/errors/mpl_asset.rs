@@ -58,6 +58,9 @@ pub enum MplAssetError {
     /// 15 (0xF) - Plugin already exists
     #[error("Plugin already exists")]
     PluginAlreadyExists,
+    /// 16 (0x10) - Numerical overflow
+    #[error("Numerical overflow")]
+    NumericalOverflowError,
 }
 
 impl solana_program::program_error::PrintProgramError for MplAssetError {

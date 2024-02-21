@@ -916,7 +916,16 @@
       "name": "BurnArgs",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "compressionProof",
+            "type": {
+              "option": {
+                "defined": "CompressionProof"
+              }
+            }
+          }
+        ]
       }
     },
     {
@@ -1327,6 +1336,11 @@
       "code": 15,
       "name": "PluginAlreadyExists",
       "msg": "Plugin already exists"
+    },
+    {
+      "code": 16,
+      "name": "NumericalOverflowError",
+      "msg": "Numerical overflow"
     }
   ],
   "metadata": {

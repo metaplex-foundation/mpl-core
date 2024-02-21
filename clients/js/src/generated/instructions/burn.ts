@@ -8,6 +8,8 @@
 
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -17,6 +19,7 @@ import {
 import {
   Serializer,
   mapSerializer,
+  option,
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
@@ -25,6 +28,11 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import {
+  CompressionProof,
+  CompressionProofArgs,
+  getCompressionProofSerializer,
+} from '../types';
 
 // Accounts.
 export type BurnInstructionAccounts = {
@@ -41,26 +49,38 @@ export type BurnInstructionAccounts = {
 };
 
 // Data.
-export type BurnInstructionData = { discriminator: number };
+export type BurnInstructionData = {
+  discriminator: number;
+  compressionProof: Option<CompressionProof>;
+};
 
-export type BurnInstructionDataArgs = {};
+export type BurnInstructionDataArgs = {
+  compressionProof: OptionOrNullable<CompressionProofArgs>;
+};
 
 export function getBurnInstructionDataSerializer(): Serializer<
   BurnInstructionDataArgs,
   BurnInstructionData
 > {
   return mapSerializer<BurnInstructionDataArgs, any, BurnInstructionData>(
-    struct<BurnInstructionData>([['discriminator', u8()]], {
-      description: 'BurnInstructionData',
-    }),
+    struct<BurnInstructionData>(
+      [
+        ['discriminator', u8()],
+        ['compressionProof', option(getCompressionProofSerializer())],
+      ],
+      { description: 'BurnInstructionData' }
+    ),
     (value) => ({ ...value, discriminator: 5 })
   ) as Serializer<BurnInstructionDataArgs, BurnInstructionData>;
 }
 
+// Args.
+export type BurnInstructionArgs = BurnInstructionDataArgs;
+
 // Instruction.
 export function burn(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: BurnInstructionAccounts
+  input: BurnInstructionAccounts & BurnInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -85,6 +105,9 @@ export function burn(
     },
   };
 
+  // Arguments.
+  const resolvedArgs: BurnInstructionArgs = { ...input };
+
   // Default values.
   if (!resolvedAccounts.authority.value) {
     resolvedAccounts.authority.value = context.identity;
@@ -103,7 +126,9 @@ export function burn(
   );
 
   // Data.
-  const data = getBurnInstructionDataSerializer().serialize({});
+  const data = getBurnInstructionDataSerializer().serialize(
+    resolvedArgs as BurnInstructionDataArgs
+  );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

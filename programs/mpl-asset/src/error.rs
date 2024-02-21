@@ -71,6 +71,10 @@ pub enum MplAssetError {
     /// 15 - Plugin already exists
     #[error("Plugin already exists")]
     PluginAlreadyExists,
+
+    /// 16 - Numerical overflow
+    #[error("Numerical overflow")]
+    NumericalOverflowError,
 }
 
 impl PrintProgramError for MplAssetError {
