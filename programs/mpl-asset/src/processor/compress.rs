@@ -43,10 +43,10 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
 
             // TODO: Delegated compress/decompress authority.
 
+            let mut plugin_hashes = vec![];
             if asset.get_size() != ctx.accounts.asset_address.data_len() {
                 let registry_records = fetch_plugins(ctx.accounts.asset_address)?;
 
-                let mut plugin_hashes = Vec::with_capacity(registry_records.len());
                 for record in registry_records {
                     let authorities: AuthorityVec = record.data.authorities;
                     let plugin_authorities_hash = authorities.hash()?;
@@ -61,29 +61,29 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
                         plugin_hash,
                     });
                 }
-
-                let asset_hash = asset.hash()?;
-                let hashed_asset_schema = HashedAssetSchema {
-                    asset_hash,
-                    plugin_hashes,
-                };
-
-                let hashed_asset = HashedAsset::new(hashed_asset_schema.hash()?);
-                let serialized_data = hashed_asset.try_to_vec()?;
-
-                resize_or_reallocate_account_raw(
-                    ctx.accounts.asset_address,
-                    payer,
-                    ctx.accounts.system_program,
-                    serialized_data.len(),
-                )?;
-
-                sol_memcpy(
-                    &mut ctx.accounts.asset_address.try_borrow_mut_data()?,
-                    &serialized_data,
-                    serialized_data.len(),
-                );
             }
+
+            let asset_hash = asset.hash()?;
+            let hashed_asset_schema = HashedAssetSchema {
+                asset_hash,
+                plugin_hashes,
+            };
+
+            let hashed_asset = HashedAsset::new(hashed_asset_schema.hash()?);
+            let serialized_data = hashed_asset.try_to_vec()?;
+
+            resize_or_reallocate_account_raw(
+                ctx.accounts.asset_address,
+                payer,
+                ctx.accounts.system_program,
+                serialized_data.len(),
+            )?;
+
+            sol_memcpy(
+                &mut ctx.accounts.asset_address.try_borrow_mut_data()?,
+                &serialized_data,
+                serialized_data.len(),
+            );
         }
         Key::HashedAsset => return Err(MplAssetError::AlreadyCompressed.into()),
         _ => return Err(MplAssetError::IncorrectAccount.into()),

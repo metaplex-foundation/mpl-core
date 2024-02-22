@@ -10,7 +10,6 @@ pub use hashed_asset_schema::*;
 mod traits;
 pub use traits::*;
 
-use crate::plugins::Plugin;
 use borsh::{BorshDeserialize, BorshSerialize};
 use num_derive::{FromPrimitive, ToPrimitive};
 use solana_program::pubkey::Pubkey;
