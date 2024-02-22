@@ -75,6 +75,14 @@ pub enum MplAssetError {
     /// 16 - Numerical overflow
     #[error("Numerical overflow")]
     NumericalOverflowError,
+
+    /// 17 - Already compressed account
+    #[error("Already compressed account")]
+    AlreadyCompressed,
+
+    /// 18 - Already decompressed
+    #[error("Already decompressed account")]
+    AlreadyDecompressed,
 }
 
 impl PrintProgramError for MplAssetError {

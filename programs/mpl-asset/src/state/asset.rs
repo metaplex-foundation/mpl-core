@@ -1,9 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, keccak, program::invoke,
-    program_error::ProgramError, pubkey::Pubkey,
-};
+use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
     error::MplAssetError,
@@ -99,17 +96,7 @@ impl Asset {
     }
 }
 
-impl Compressible for Asset {
-    fn hash(&self) -> Result<[u8; 32], ProgramError> {
-        let serialized_data = self.try_to_vec()?;
-        Ok(keccak::hash(serialized_data.as_slice()).to_bytes())
-    }
-
-    fn wrap(&self) -> ProgramResult {
-        let serialized_data = self.try_to_vec()?;
-        invoke(&spl_noop::instruction(serialized_data), &[])
-    }
-}
+impl Compressible for Asset {}
 
 impl DataBlob for Asset {
     fn get_initial_size() -> usize {

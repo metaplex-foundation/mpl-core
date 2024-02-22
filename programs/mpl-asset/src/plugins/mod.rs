@@ -26,7 +26,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 
 use crate::{
     error::MplAssetError,
-    state::{Authority, DataBlob},
+    state::{Authority, Compressible, DataBlob},
 };
 
 #[repr(u16)]
@@ -52,6 +52,8 @@ impl Plugin {
         }
     }
 }
+
+impl Compressible for Plugin {}
 
 #[repr(u16)]
 #[derive(Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]

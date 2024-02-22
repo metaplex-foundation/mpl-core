@@ -67,8 +67,7 @@ pub fn fetch_plugin(
     account: &AccountInfo,
     plugin_type: PluginType,
 ) -> Result<(Vec<Authority>, Plugin, usize), ProgramError> {
-    let mut bytes: &[u8] = &(*account.data).borrow();
-    let asset = Asset::deserialize(&mut bytes)?;
+    let asset = Asset::load(account, 0)?;
 
     let header = PluginHeader::load(account, asset.get_size())?;
     let PluginRegistry { registry, .. } =
@@ -102,10 +101,19 @@ pub fn fetch_plugin(
     Ok((plugin_data.authorities.clone(), plugin, plugin_data.offset))
 }
 
+pub fn fetch_plugins(account: &AccountInfo) -> Result<Vec<RegistryRecord>, ProgramError> {
+    let asset = Asset::load(account, 0)?;
+
+    let header = PluginHeader::load(account, asset.get_size())?;
+    let PluginRegistry { registry, .. } =
+        PluginRegistry::load(account, header.plugin_registry_offset)?;
+
+    Ok(registry)
+}
+
 /// Create plugin header and registry if it doesn't exist
 pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramError> {
-    let mut bytes: &[u8] = &(*account.data).borrow();
-    let asset = Asset::deserialize(&mut bytes)?;
+    let asset = Asset::load(account, 0)?;
 
     let header = PluginHeader::load(account, asset.get_size())?;
     let PluginRegistry { registry, .. } =
@@ -283,7 +291,7 @@ pub fn delete_plugin<'a>(
              data: _,
          }| type_iter == plugin_type,
     ) {
-        let registry_record = plugin_registry.registry.swap_remove(index);
+        let registry_record = plugin_registry.registry.remove(index);
         let serialized_registry_record = registry_record.try_to_vec()?;
 
         // Only allow the default authority to delete the plugin.

@@ -4,6 +4,9 @@ pub use asset::*;
 mod hashed_asset;
 pub use hashed_asset::*;
 
+mod hashed_asset_schema;
+pub use hashed_asset_schema::*;
+
 mod traits;
 pub use traits::*;
 
@@ -28,6 +31,9 @@ pub enum Authority {
     Pubkey { address: Pubkey },
     Permanent { address: Pubkey },
 }
+
+pub type AuthorityVec = Vec<Authority>;
+impl Compressible for AuthorityVec {}
 
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
