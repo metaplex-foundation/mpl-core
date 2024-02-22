@@ -18,6 +18,7 @@ export * from './freeze';
 export * from './key';
 export * from './migrationLevel';
 export * from './plugin';
+export * from './pluginHash';
 export * from './pluginType';
 export * from './registryData';
 export * from './registryRecord';

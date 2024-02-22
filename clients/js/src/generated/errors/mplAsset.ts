@@ -239,6 +239,32 @@ export class NumericalOverflowErrorError extends ProgramError {
 codeToErrorMap.set(0x10, NumericalOverflowErrorError);
 nameToErrorMap.set('NumericalOverflowError', NumericalOverflowErrorError);
 
+/** AlreadyCompressed: Already compressed account */
+export class AlreadyCompressedError extends ProgramError {
+  readonly name: string = 'AlreadyCompressed';
+
+  readonly code: number = 0x11; // 17
+
+  constructor(program: Program, cause?: Error) {
+    super('Already compressed account', program, cause);
+  }
+}
+codeToErrorMap.set(0x11, AlreadyCompressedError);
+nameToErrorMap.set('AlreadyCompressed', AlreadyCompressedError);
+
+/** AlreadyDecompressed: Already decompressed account */
+export class AlreadyDecompressedError extends ProgramError {
+  readonly name: string = 'AlreadyDecompressed';
+
+  readonly code: number = 0x12; // 18
+
+  constructor(program: Program, cause?: Error) {
+    super('Already decompressed account', program, cause);
+  }
+}
+codeToErrorMap.set(0x12, AlreadyDecompressedError);
+nameToErrorMap.set('AlreadyDecompressed', AlreadyDecompressedError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

@@ -61,6 +61,12 @@ pub enum MplAssetError {
     /// 16 (0x10) - Numerical overflow
     #[error("Numerical overflow")]
     NumericalOverflowError,
+    /// 17 (0x11) - Already compressed account
+    #[error("Already compressed account")]
+    AlreadyCompressed,
+    /// 18 (0x12) - Already decompressed account
+    #[error("Already decompressed account")]
+    AlreadyDecompressed,
 }
 
 impl solana_program::program_error::PrintProgramError for MplAssetError {

@@ -51,6 +51,7 @@ impl PluginType {
         match self {
             PluginType::Royalties => CheckResult::CanReject,
             PluginType::Freeze => CheckResult::CanReject,
+            PluginType::Transfer => CheckResult::CanApprove,
             _ => CheckResult::None,
         }
     }

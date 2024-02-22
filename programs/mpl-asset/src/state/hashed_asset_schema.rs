@@ -3,7 +3,7 @@ use shank::ShankAccount;
 
 use crate::state::Compressible;
 
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount, PartialEq, Eq)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct PluginHash {
     pub plugin_authorities_hash: [u8; 32],
     pub plugin_hash: [u8; 32],

@@ -835,6 +835,31 @@
           }
         ]
       }
+    },
+    {
+      "name": "HashedAssetSchema",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "assetHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pluginHashes",
+            "type": {
+              "vec": {
+                "defined": "PluginHash"
+              }
+            }
+          }
+        ]
+      }
     }
   ],
   "types": [
@@ -1183,6 +1208,32 @@
       }
     },
     {
+      "name": "PluginHash",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pluginAuthoritiesHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pluginHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Plugin",
       "type": {
         "kind": "enum",
@@ -1498,6 +1549,16 @@
       "code": 16,
       "name": "NumericalOverflowError",
       "msg": "Numerical overflow"
+    },
+    {
+      "code": 17,
+      "name": "AlreadyCompressed",
+      "msg": "Already compressed account"
+    },
+    {
+      "code": 18,
+      "name": "AlreadyDecompressed",
+      "msg": "Already decompressed account"
     }
   ],
   "metadata": {

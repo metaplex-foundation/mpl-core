@@ -77,11 +77,14 @@ impl PluginValidation for Transfer {
         _args: &TransferArgs,
         authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+        solana_program::msg!("Validate Transfer for Transfer Plugin");
         if authorities.contains(&Authority::Pubkey {
             address: *ctx.authority.key,
         }) {
+            solana_program::msg!("Approved");
             Ok(ValidationResult::Approved)
         } else {
+            solana_program::msg!("Pass");
             Ok(ValidationResult::Pass)
         }
     }
