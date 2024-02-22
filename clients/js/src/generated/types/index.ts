@@ -15,6 +15,7 @@ export * from './dataState';
 export * from './externalPluginRecord';
 export * from './extraAccounts';
 export * from './freeze';
+export * from './hashedAssetSchema';
 export * from './key';
 export * from './migrationLevel';
 export * from './plugin';

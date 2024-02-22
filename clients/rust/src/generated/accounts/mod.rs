@@ -7,12 +7,10 @@
 
 pub(crate) mod asset;
 pub(crate) mod hashed_asset;
-pub(crate) mod hashed_asset_schema;
 pub(crate) mod plugin_header;
 pub(crate) mod plugin_registry;
 
 pub use self::asset::*;
 pub use self::hashed_asset::*;
-pub use self::hashed_asset_schema::*;
 pub use self::plugin_header::*;
 pub use self::plugin_registry::*;

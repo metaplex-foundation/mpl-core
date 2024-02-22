@@ -15,22 +15,3 @@ pub struct HashedAssetSchema {
     pub asset_hash: [u8; 32],
     pub plugin_hashes: Vec<PluginHash>,
 }
-
-impl HashedAssetSchema {
-    #[inline(always)]
-    pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {
-        let mut data = data;
-        Self::deserialize(&mut data)
-    }
-}
-
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for HashedAssetSchema {
-    type Error = std::io::Error;
-
-    fn try_from(
-        account_info: &solana_program::account_info::AccountInfo<'a>,
-    ) -> Result<Self, Self::Error> {
-        let mut data: &[u8] = &(*account_info.data).borrow();
-        Self::deserialize(&mut data)
-    }
-}

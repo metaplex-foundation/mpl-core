@@ -8,6 +8,5 @@
 
 export * from './asset';
 export * from './hashedAsset';
-export * from './hashedAssetSchema';
 export * from './pluginHeader';
 export * from './pluginRegistry';

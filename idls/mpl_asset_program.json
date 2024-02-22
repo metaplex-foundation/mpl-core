@@ -835,31 +835,6 @@
           }
         ]
       }
-    },
-    {
-      "name": "HashedAssetSchema",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "assetHash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "pluginHashes",
-            "type": {
-              "vec": {
-                "defined": "PluginHash"
-              }
-            }
-          }
-        ]
-      }
     }
   ],
   "types": [
@@ -1228,6 +1203,31 @@
                 "u8",
                 32
               ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "HashedAssetSchema",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "assetHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pluginHashes",
+            "type": {
+              "vec": {
+                "defined": "PluginHash"
+              }
             }
           }
         ]
