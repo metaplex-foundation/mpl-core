@@ -7,11 +7,14 @@ use solana_program::{
 
 use crate::{
     error::MplAssetError,
-    plugins::{CheckLifecyclePermission, CheckResult, PluginType},
+    instruction::accounts::{
+        BurnAccounts, CompressAccounts, DecompressAccounts, TransferAccounts, UpdateAccounts,
+    },
+    plugins::{CheckResult, ValidationResult},
     state::{Compressible, CompressionProof, DataBlob, HashedAsset, Key, SolanaAccount},
 };
 
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount, Eq, PartialEq)]
 pub struct Asset {
     pub key: Key,                 //1
     pub update_authority: Pubkey, //32
@@ -36,6 +39,63 @@ impl Asset {
         }
 
         Ok(asset)
+    }
+
+    pub fn check_transfer() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
+    pub fn check_update() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
+    pub fn validate_update(&self, ctx: &UpdateAccounts) -> Result<ValidationResult, ProgramError> {
+        if ctx.authority.key == &self.update_authority {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
+    pub fn validate_burn(&self, ctx: &BurnAccounts) -> Result<ValidationResult, ProgramError> {
+        if ctx.authority.key == &self.owner {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
+    pub fn validate_transfer(
+        &self,
+        ctx: &TransferAccounts,
+    ) -> Result<ValidationResult, ProgramError> {
+        if ctx.authority.key == &self.owner {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
+    pub fn validate_compress(
+        &self,
+        ctx: &CompressAccounts,
+    ) -> Result<ValidationResult, ProgramError> {
+        if ctx.owner.key == &self.owner {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
+    pub fn validate_decompress(
+        &self,
+        ctx: &DecompressAccounts,
+    ) -> Result<ValidationResult, ProgramError> {
+        if ctx.owner.key == &self.owner {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
     }
 }
 
@@ -76,15 +136,5 @@ impl From<CompressionProof> for Asset {
             name: compression_proof.name,
             uri: compression_proof.uri,
         }
-    }
-}
-
-impl CheckLifecyclePermission for Asset {
-    fn check_transfer(_: PluginType) -> Result<CheckResult, ProgramError> {
-        Ok(CheckResult::CanApprove)
-    }
-
-    fn check_update(_: PluginType) -> Result<CheckResult, ProgramError> {
-        Ok(CheckResult::CanApprove)
     }
 }

@@ -16,25 +16,15 @@ import {
   struct,
   unit,
 } from '@metaplex-foundation/umi/serializers';
-import { Plugin, PluginArgs, getPluginSerializer } from '.';
 
 export type Authority =
   | { __kind: 'None' }
   | { __kind: 'Owner' }
   | { __kind: 'UpdateAuthority' }
   | { __kind: 'Pubkey'; address: PublicKey }
-  | { __kind: 'Permanent'; address: PublicKey }
-  | { __kind: 'SameAs'; plugin: Plugin }
-  | { __kind: 'Collection' };
+  | { __kind: 'Permanent'; address: PublicKey };
 
-export type AuthorityArgs =
-  | { __kind: 'None' }
-  | { __kind: 'Owner' }
-  | { __kind: 'UpdateAuthority' }
-  | { __kind: 'Pubkey'; address: PublicKey }
-  | { __kind: 'Permanent'; address: PublicKey }
-  | { __kind: 'SameAs'; plugin: PluginArgs }
-  | { __kind: 'Collection' };
+export type AuthorityArgs = Authority;
 
 export function getAuthoritySerializer(): Serializer<AuthorityArgs, Authority> {
   return dataEnum<Authority>(
@@ -54,13 +44,6 @@ export function getAuthoritySerializer(): Serializer<AuthorityArgs, Authority> {
           ['address', publicKeySerializer()],
         ]),
       ],
-      [
-        'SameAs',
-        struct<GetDataEnumKindContent<Authority, 'SameAs'>>([
-          ['plugin', getPluginSerializer()],
-        ]),
-      ],
-      ['Collection', unit()],
     ],
     { description: 'Authority' }
   ) as Serializer<AuthorityArgs, Authority>;
@@ -82,13 +65,6 @@ export function authority(
   kind: 'Permanent',
   data: GetDataEnumKindContent<AuthorityArgs, 'Permanent'>
 ): GetDataEnumKind<AuthorityArgs, 'Permanent'>;
-export function authority(
-  kind: 'SameAs',
-  data: GetDataEnumKindContent<AuthorityArgs, 'SameAs'>
-): GetDataEnumKind<AuthorityArgs, 'SameAs'>;
-export function authority(
-  kind: 'Collection'
-): GetDataEnumKind<AuthorityArgs, 'Collection'>;
 export function authority<K extends AuthorityArgs['__kind']>(
   kind: K,
   data?: any

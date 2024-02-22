@@ -6,13 +6,14 @@
 //!
 
 pub(crate) mod authority;
+pub(crate) mod burn;
 pub(crate) mod collection;
 pub(crate) mod compression_proof;
 pub(crate) mod creator;
 pub(crate) mod data_state;
-pub(crate) mod delegate;
 pub(crate) mod external_plugin_record;
 pub(crate) mod extra_accounts;
+pub(crate) mod freeze;
 pub(crate) mod key;
 pub(crate) mod migration_level;
 pub(crate) mod plugin;
@@ -21,15 +22,17 @@ pub(crate) mod registry_data;
 pub(crate) mod registry_record;
 pub(crate) mod royalties;
 pub(crate) mod rule_set;
+pub(crate) mod transfer;
 
 pub use self::authority::*;
+pub use self::burn::*;
 pub use self::collection::*;
 pub use self::compression_proof::*;
 pub use self::creator::*;
 pub use self::data_state::*;
-pub use self::delegate::*;
 pub use self::external_plugin_record::*;
 pub use self::extra_accounts::*;
+pub use self::freeze::*;
 pub use self::key::*;
 pub use self::migration_level::*;
 pub use self::plugin::*;
@@ -38,3 +41,4 @@ pub use self::registry_data::*;
 pub use self::registry_record::*;
 pub use self::royalties::*;
 pub use self::rule_set::*;
+pub use self::transfer::*;

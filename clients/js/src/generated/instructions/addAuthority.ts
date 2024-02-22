@@ -79,7 +79,7 @@ export function getAddAuthorityInstructionDataSerializer(): Serializer<
       ],
       { description: 'AddAuthorityInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 3 })
+    (value) => ({ ...value, discriminator: 4 })
   ) as Serializer<AddAuthorityInstructionDataArgs, AddAuthorityInstructionData>;
 }
 

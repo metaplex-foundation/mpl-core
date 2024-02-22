@@ -1,17 +1,21 @@
+mod burn;
 mod collection;
-mod delegate;
+mod freeze;
 mod lifecycle;
 mod plugin_header;
 mod plugin_registry;
 mod royalties;
+mod transfer;
 mod utils;
 
+pub use burn::*;
 pub use collection::*;
-pub use delegate::*;
+pub use freeze::*;
 pub use lifecycle::*;
 pub use plugin_header::*;
 pub use plugin_registry::*;
 pub use royalties::*;
+pub use transfer::*;
 
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
@@ -30,7 +34,9 @@ use crate::{
 pub enum Plugin {
     Reserved,
     Royalties(Royalties),
-    Delegate(Delegate),
+    Freeze(Freeze),
+    Burn(Burn),
+    Transfer(Transfer),
     Collection(Collection),
 }
 
@@ -39,20 +45,22 @@ impl Plugin {
         match self {
             Plugin::Reserved => Err(MplAssetError::InvalidPlugin.into()),
             Plugin::Royalties(_) => Ok(Authority::UpdateAuthority),
-            Plugin::Delegate(_) => Ok(Authority::Owner),
+            Plugin::Freeze(_) => Ok(Authority::Owner),
+            Plugin::Burn(_) => Ok(Authority::Owner),
+            Plugin::Transfer(_) => Ok(Authority::Owner),
             Plugin::Collection(_) => Ok(Authority::UpdateAuthority),
         }
     }
 }
-
-impl CheckLifecyclePermission for Plugin {}
 
 #[repr(u16)]
 #[derive(Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum PluginType {
     Reserved,
     Royalties,
-    Delegate,
+    Freeze,
+    Burn,
+    Transfer,
     Collection,
 }
 
@@ -71,7 +79,9 @@ impl From<&Plugin> for PluginType {
         match plugin {
             Plugin::Reserved => PluginType::Reserved,
             Plugin::Royalties(_) => PluginType::Royalties,
-            Plugin::Delegate(_) => PluginType::Delegate,
+            Plugin::Freeze(_) => PluginType::Freeze,
+            Plugin::Burn(_) => PluginType::Burn,
+            Plugin::Transfer(_) => PluginType::Transfer,
             Plugin::Collection(_) => PluginType::Collection,
         }
     }

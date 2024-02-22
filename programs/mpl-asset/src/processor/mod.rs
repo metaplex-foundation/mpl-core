@@ -32,6 +32,9 @@ pub(crate) use compress::*;
 mod decompress;
 pub(crate) use decompress::*;
 
+mod update_plugin;
+pub(crate) use update_plugin::*;
+
 pub fn process_instruction<'a>(
     _program_id: &Pubkey,
     accounts: &'a [AccountInfo<'a>],
@@ -50,6 +53,10 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::RemovePlugin(args) => {
             msg!("Instruction: RemovePlugin");
             remove_plugin(accounts, args)
+        }
+        MplAssetInstruction::UpdatePlugin(args) => {
+            msg!("Instruction: UpdatePlugin");
+            update_plugin(accounts, args)
         }
         MplAssetInstruction::AddAuthority(args) => {
             msg!("Instruction: AddAuthority");

@@ -3,7 +3,7 @@ use shank::{ShankContext, ShankInstruction};
 
 use crate::processor::{
     AddAuthorityArgs, AddPluginArgs, BurnArgs, CompressArgs, CreateArgs, DecompressArgs,
-    RemoveAuthorityArgs, RemovePluginArgs, TransferArgs, UpdateArgs,
+    RemoveAuthorityArgs, RemovePluginArgs, TransferArgs, UpdateArgs, UpdatePluginArgs,
 };
 
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
@@ -37,6 +37,15 @@ pub enum MplAssetInstruction {
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     RemovePlugin(RemovePluginArgs),
+
+    /// Update a plugin of an mpl-asset.
+    #[account(0, writable, name="asset_address", desc = "The address of the asset")]
+    #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
+    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
+    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(4, name="system_program", desc = "The system program")]
+    #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    UpdatePlugin(UpdatePluginArgs),
 
     /// Add an authority to an mpl-asset plugin.
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]
@@ -75,7 +84,6 @@ pub enum MplAssetInstruction {
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Transfer(TransferArgs),
 
-    //TODO: Implement this instruction
     /// Update an mpl-asset.
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]
     #[account(1, signer, name="authority", desc = "The update authority or update authority delegate of the asset")]

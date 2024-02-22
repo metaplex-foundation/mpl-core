@@ -15,6 +15,7 @@ pub(crate) mod remove_authority;
 pub(crate) mod remove_plugin;
 pub(crate) mod transfer;
 pub(crate) mod update;
+pub(crate) mod update_plugin;
 
 pub use self::add_authority::*;
 pub use self::add_plugin::*;
@@ -26,3 +27,4 @@ pub use self::remove_authority::*;
 pub use self::remove_plugin::*;
 pub use self::transfer::*;
 pub use self::update::*;
+pub use self::update_plugin::*;

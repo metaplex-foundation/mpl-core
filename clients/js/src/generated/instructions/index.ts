@@ -16,3 +16,4 @@ export * from './removeAuthority';
 export * from './removePlugin';
 export * from './transfer';
 export * from './update';
+export * from './updatePlugin';

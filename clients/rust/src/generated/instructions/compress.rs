@@ -80,7 +80,7 @@ struct CompressInstructionData {
 
 impl CompressInstructionData {
     fn new() -> Self {
-        Self { discriminator: 8 }
+        Self { discriminator: 9 }
     }
 }
 

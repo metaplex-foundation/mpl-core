@@ -100,7 +100,7 @@ struct TransferInstructionData {
 
 impl TransferInstructionData {
     fn new() -> Self {
-        Self { discriminator: 6 }
+        Self { discriminator: 7 }
     }
 }
 

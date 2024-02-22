@@ -45,8 +45,6 @@ pub fn assert_authority(
                     return Ok(());
                 }
             }
-            Authority::SameAs { .. } => todo!(),
-            Authority::Collection => todo!(),
         }
     }
 

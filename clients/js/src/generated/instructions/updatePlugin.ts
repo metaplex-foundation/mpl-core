@@ -8,8 +8,6 @@
 
 import {
   Context,
-  Option,
-  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -19,8 +17,6 @@ import {
 import {
   Serializer,
   mapSerializer,
-  option,
-  string,
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
@@ -29,17 +25,18 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import { Plugin, PluginArgs, getPluginSerializer } from '../types';
 
 // Accounts.
-export type UpdateInstructionAccounts = {
+export type UpdatePluginInstructionAccounts = {
   /** The address of the asset */
   assetAddress: PublicKey | Pda;
-  /** The update authority or update authority delegate of the asset */
+  /** The collection to which the asset belongs */
+  collection?: PublicKey | Pda;
+  /** The owner or delegate of the asset */
   authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The new update authority of the asset */
-  newUpdateAuthority?: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
@@ -47,41 +44,40 @@ export type UpdateInstructionAccounts = {
 };
 
 // Data.
-export type UpdateInstructionData = {
+export type UpdatePluginInstructionData = {
   discriminator: number;
-  newName: Option<string>;
-  newUri: Option<string>;
+  plugin: Plugin;
 };
 
-export type UpdateInstructionDataArgs = {
-  newName: OptionOrNullable<string>;
-  newUri: OptionOrNullable<string>;
-};
+export type UpdatePluginInstructionDataArgs = { plugin: PluginArgs };
 
-export function getUpdateInstructionDataSerializer(): Serializer<
-  UpdateInstructionDataArgs,
-  UpdateInstructionData
+export function getUpdatePluginInstructionDataSerializer(): Serializer<
+  UpdatePluginInstructionDataArgs,
+  UpdatePluginInstructionData
 > {
-  return mapSerializer<UpdateInstructionDataArgs, any, UpdateInstructionData>(
-    struct<UpdateInstructionData>(
+  return mapSerializer<
+    UpdatePluginInstructionDataArgs,
+    any,
+    UpdatePluginInstructionData
+  >(
+    struct<UpdatePluginInstructionData>(
       [
         ['discriminator', u8()],
-        ['newName', option(string())],
-        ['newUri', option(string())],
+        ['plugin', getPluginSerializer()],
       ],
-      { description: 'UpdateInstructionData' }
+      { description: 'UpdatePluginInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 8 })
-  ) as Serializer<UpdateInstructionDataArgs, UpdateInstructionData>;
+    (value) => ({ ...value, discriminator: 3 })
+  ) as Serializer<UpdatePluginInstructionDataArgs, UpdatePluginInstructionData>;
 }
 
 // Args.
-export type UpdateInstructionArgs = UpdateInstructionDataArgs;
+export type UpdatePluginInstructionArgs = UpdatePluginInstructionDataArgs;
 
 // Instruction.
-export function update(
+export function updatePlugin(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: UpdateInstructionAccounts & UpdateInstructionArgs
+  input: UpdatePluginInstructionAccounts & UpdatePluginInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -96,13 +92,9 @@ export function update(
       isWritable: true,
       value: input.assetAddress ?? null,
     },
-    authority: { index: 1, isWritable: false, value: input.authority ?? null },
-    payer: { index: 2, isWritable: true, value: input.payer ?? null },
-    newUpdateAuthority: {
-      index: 3,
-      isWritable: false,
-      value: input.newUpdateAuthority ?? null,
-    },
+    collection: { index: 1, isWritable: true, value: input.collection ?? null },
+    authority: { index: 2, isWritable: false, value: input.authority ?? null },
+    payer: { index: 3, isWritable: true, value: input.payer ?? null },
     systemProgram: {
       index: 4,
       isWritable: false,
@@ -116,7 +108,7 @@ export function update(
   };
 
   // Arguments.
-  const resolvedArgs: UpdateInstructionArgs = { ...input };
+  const resolvedArgs: UpdatePluginInstructionArgs = { ...input };
 
   // Default values.
   if (!resolvedAccounts.authority.value) {
@@ -143,8 +135,8 @@ export function update(
   );
 
   // Data.
-  const data = getUpdateInstructionDataSerializer().serialize(
-    resolvedArgs as UpdateInstructionDataArgs
+  const data = getUpdatePluginInstructionDataSerializer().serialize(
+    resolvedArgs as UpdatePluginInstructionDataArgs
   );
 
   // Bytes Created On Chain.

@@ -2,25 +2,14 @@ import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 // import { base58 } from '@metaplex-foundation/umi/serializers';
 import {
-  // Authority,
+  AssetWithPlugins,
   DataState,
-  // Delegate,
-  // Key,
-  // PluginHeaderAccountData,
-  // PluginRegistryAccountData,
-  // RegistryData,
-  // RegistryRecord,
+  PluginType,
+  addAuthority,
+  addPlugin,
   create,
-  // delegate,
-  // fetchAsset,
-  // getAssetAccountDataSerializer,
-  // getDelegateSerializer,
-  // getPluginHeaderAccountDataSerializer,
-  // getPluginRegistryAccountDataSerializer,
-  // PluginType,
-  // freeze,
-  // getPluginSerializer,
-  // Plugin,
+  fetchAssetWithPlugins,
+  updatePlugin,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -28,7 +17,7 @@ test('it can delegate a new authority', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
-  // const delegateAddress = generateSigner(umi);
+  const delegateAddress = generateSigner(umi);
 
   // When we create a new account.
   await create(umi, {
@@ -38,120 +27,67 @@ test('it can delegate a new authority', async (t) => {
     uri: 'https://example.com/bread',
   }).sendAndConfirm(umi);
 
-  // // Then an account was created with the correct data.
-  // const asset = await fetchAsset(umi, assetAddress.publicKey);
-  // // console.log("Before Plugins:\n", asset);
-  // const assetData = getAssetAccountDataSerializer().serialize(asset);
-
-  // await delegate(umi, {
-  //   assetAddress: assetAddress.publicKey,
-  //   owner: umi.identity,
-  //   delegate: delegateAddress.publicKey,
-  // }).sendAndConfirm(umi);
-
-  // const pluginData = await umi.rpc.getAccount(assetAddress.publicKey);
-  // if (pluginData.exists) {
-  //   const pluginHeader = getPluginHeaderAccountDataSerializer().deserialize(pluginData.data, assetData.length)[0];
-  //   // console.log("After Plugins:\n", pluginHeader);
-  //   t.like(pluginHeader, <PluginHeaderAccountData>{
-  //     key: Key.PluginHeader,
-  //     pluginRegistryOffset: BigInt(119),
-  //   });
-  //   const pluginRegistry = getPluginRegistryAccountDataSerializer().deserialize(pluginData.data, Number(pluginHeader.pluginRegistryOffset))[0];
-  //   // console.log(JSON.stringify(pluginRegistry, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
-  //   t.like(pluginRegistry, <PluginRegistryAccountData>{
-  //     key: Key.PluginRegistry,
-  //     registry: [<RegistryRecord>{
-  //       pluginType: PluginType.Delegate,
-  //       data: <RegistryData>{
-  //         offset: BigInt(117),
-  //         authorities: [<Authority>{ __kind: 'Pubkey', address: delegateAddress.publicKey }],
-  //       },
-  //     }],
-  //     externalPlugins: [],
-  //   });
-  //   const delegatePlugin = getDelegateSerializer().deserialize(pluginData.data, Number(pluginRegistry.registry[0].data.offset))[0];
-  //   // console.log(delegatePlugin);
-  //   t.like(delegatePlugin, <Delegate>{
-  //     frozen: false,
-  //   });
-  // } else {
-  //   t.fail("Plugin data not found");
-  // }
-
-  t.pass();
-});
-
-test('it can delegate several new authorities', async (t) => {
-  // Given a Umi instance and a new signer.
-  const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
-  // const delegateAddress0 = generateSigner(umi);
-  // const delegateAddress1 = generateSigner(umi);
-
-  // When we create a new account.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+  await addPlugin(umi, {
+    assetAddress: assetAddress.publicKey,
+    plugin: {
+      __kind: 'Freeze',
+      fields: [{ frozen: false }],
+    }
   }).sendAndConfirm(umi);
 
-  // // Then an account was created with the correct data.
-  // const asset = await fetchAsset(umi, assetAddress.publicKey);
-  // // console.log("Before Plugins:\n", asset);
-  // const assetData = getAssetAccountDataSerializer().serialize(asset);
+  await addAuthority(umi, {
+    assetAddress: assetAddress.publicKey,
+    pluginType: PluginType.Freeze,
+    newAuthority: {
+      __kind: 'Pubkey',
+      address: delegateAddress.publicKey,
+    }
+  }).sendAndConfirm(umi);
 
-  // await delegate(umi, {
-  //   assetAddress: assetAddress.publicKey,
-  //   owner: umi.identity,
-  //   delegate: delegateAddress0.publicKey,
-  // }).sendAndConfirm(umi);
-
-  // await delegate(umi, {
-  //   assetAddress: assetAddress.publicKey,
-  //   owner: umi.identity,
-  //   delegate: delegateAddress1.publicKey,
-  // }).sendAndConfirm(umi);
-
-  // const pluginData = await umi.rpc.getAccount(assetAddress.publicKey);
-  // if (pluginData.exists) {
-  //   const pluginHeader = getPluginHeaderAccountDataSerializer().deserialize(pluginData.data, assetData.length)[0];
-  //   // console.log("After Plugins:\n", pluginHeader);
-  //   t.like(pluginHeader, <PluginHeaderAccountData>{
-  //     key: Key.PluginHeader,
-  //     pluginRegistryOffset: BigInt(119),
-  //   });
-  //   const pluginRegistry = getPluginRegistryAccountDataSerializer().deserialize(pluginData.data, Number(pluginHeader.pluginRegistryOffset))[0];
-  //   // console.log(JSON.stringify(pluginRegistry, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
-  //   t.like(pluginRegistry, <PluginRegistryAccountData>{
-  //     key: Key.PluginRegistry,
-  //     registry: [<RegistryRecord>{
-  //       pluginType: PluginType.Delegate,
-  //       data: <RegistryData>{
-  //         offset: BigInt(117),
-  //         authorities: [<Authority>{ __kind: 'Pubkey', address: delegateAddress0.publicKey }, <Authority>{ __kind: 'Pubkey', address: delegateAddress1.publicKey }],
-  //       },
-  //     }],
-  //     externalPlugins: [],
-  //   });
-  //   const delegatePlugin = getDelegateSerializer().deserialize(pluginData.data, Number(pluginRegistry.registry[0].data.offset))[0];
-  //   // console.log(delegatePlugin);
-  //   t.like(delegatePlugin, <Delegate>{
-  //     frozen: false,
-  //   });
-  // } else {
-  //   t.fail("Plugin data not found");
-  // }
-
-  t.pass();
+  const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
+  // console.log(asset);
+  t.like(asset, <AssetWithPlugins>{
+    publicKey: assetAddress.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    owner: umi.identity.publicKey,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+    pluginHeader: {
+      key: 3,
+      pluginRegistryOffset: BigInt(119),
+    },
+    pluginRegistry: {
+      key: 4,
+      registry: [{
+        pluginType: 2,
+        data: {
+          offset: BigInt(117),
+          authorities: [
+            { __kind: "Owner" },
+            { __kind: "Pubkey", address: delegateAddress.publicKey }
+          ]
+        }
+      }],
+    },
+    plugins: [{
+      authorities: [
+        { __kind: "Owner" },
+        { __kind: "Pubkey", address: delegateAddress.publicKey }
+      ],
+      plugin: {
+        __kind: 'Freeze',
+        fields: [{ frozen: false }],
+      },
+    }],
+  });
 });
+
 
 test('a delegate can freeze the token', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
-  // const delegateAddress = generateSigner(umi);
+  const delegateAddress = generateSigner(umi);
 
   // When we create a new account.
   await create(umi, {
@@ -161,53 +97,65 @@ test('a delegate can freeze the token', async (t) => {
     uri: 'https://example.com/bread',
   }).sendAndConfirm(umi);
 
-  // // Then an account was created with the correct data.
-  // const asset = await fetchAsset(umi, assetAddress.publicKey);
-  // // console.log("Before Plugins:\n", asset);
-  // const assetData = getAssetAccountDataSerializer().serialize(asset);
+  await addPlugin(umi, {
+    assetAddress: assetAddress.publicKey,
+    plugin: {
+      __kind: 'Freeze',
+      fields: [{ frozen: false }],
+    }
+  }).sendAndConfirm(umi);
 
-  // await delegate(umi, {
-  //   assetAddress: assetAddress.publicKey,
-  //   owner: umi.identity,
-  //   delegate: delegateAddress.publicKey,
-  // })
-  //   .append(freeze(umi, {
-  //     assetAddress: assetAddress.publicKey,
-  //     delegate: delegateAddress
-  //   }))
-  //   .sendAndConfirm(umi);
+  await addAuthority(umi, {
+    assetAddress: assetAddress.publicKey,
+    pluginType: PluginType.Freeze,
+    newAuthority: {
+      __kind: 'Pubkey',
+      address: delegateAddress.publicKey,
+    }
+  }).sendAndConfirm(umi);
 
-  // const pluginData = await umi.rpc.getAccount(assetAddress.publicKey);
-  // if (pluginData.exists) {
-  //   // console.log("Plugin Data:\n", pluginData.data);
-  //   const pluginHeader = getPluginHeaderAccountDataSerializer().deserialize(pluginData.data, assetData.length)[0];
-  //   // console.log("After Plugins:\n", pluginHeader);
-  //   t.like(pluginHeader, <PluginHeaderAccountData>{
-  //     key: Key.PluginHeader,
-  //     pluginRegistryOffset: BigInt(119),
-  //   });
-  //   const pluginRegistry = getPluginRegistryAccountDataSerializer().deserialize(pluginData.data, Number(pluginHeader.pluginRegistryOffset))[0];
-  //   // console.log(JSON.stringify(pluginRegistry, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
-  //   t.like(pluginRegistry, <PluginRegistryAccountData>{
-  //     key: Key.PluginRegistry,
-  //     registry: [<RegistryRecord>{
-  //       pluginType: PluginType.Delegate,
-  //       data: <RegistryData>{
-  //         offset: BigInt(117),
-  //         authorities: [<Authority>{ __kind: 'Pubkey', address: delegateAddress.publicKey }],
-  //       },
-  //     }],
-  //     externalPlugins: [],
-  //   });
-  //   const delegatePlugin = getPluginSerializer().deserialize(pluginData.data, Number(pluginRegistry.registry[0].data.offset))[0];
-  //   // console.log(delegatePlugin);
-  //   t.like(delegatePlugin, <Plugin>{
-  //     __kind: 'Delegate',
-  //     fields: [{ frozen: true }]
-  //   });
-  // } else {
-  //   t.fail("Plugin data not found");
-  // }
+  await updatePlugin(umi, {
+    assetAddress: assetAddress.publicKey,
+    plugin: {
+      __kind: 'Freeze',
+      fields: [{ frozen: true }],
+    }
+  }).sendAndConfirm(umi);
 
-  t.pass();
+  const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
+  // console.log(asset);
+  t.like(asset, <AssetWithPlugins>{
+    publicKey: assetAddress.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    owner: umi.identity.publicKey,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+    pluginHeader: {
+      key: 3,
+      pluginRegistryOffset: BigInt(119),
+    },
+    pluginRegistry: {
+      key: 4,
+      registry: [{
+        pluginType: 2,
+        data: {
+          offset: BigInt(117),
+          authorities: [
+            { __kind: "Owner" },
+            { __kind: "Pubkey", address: delegateAddress.publicKey }
+          ]
+        }
+      }],
+    },
+    plugins: [{
+      authorities: [
+        { __kind: "Owner" },
+        { __kind: "Pubkey", address: delegateAddress.publicKey }
+      ],
+      plugin: {
+        __kind: 'Freeze',
+        fields: [{ frozen: true }],
+      },
+    }],
+  });
 });

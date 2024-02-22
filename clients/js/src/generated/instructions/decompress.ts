@@ -57,7 +57,7 @@ export function getDecompressInstructionDataSerializer(): Serializer<
     struct<DecompressInstructionData>([['discriminator', u8()]], {
       description: 'DecompressInstructionData',
     }),
-    (value) => ({ ...value, discriminator: 9 })
+    (value) => ({ ...value, discriminator: 10 })
   ) as Serializer<DecompressInstructionDataArgs, DecompressInstructionData>;
 }
 

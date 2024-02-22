@@ -16,27 +16,37 @@ import {
   unit,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  Burn,
+  BurnArgs,
   Collection,
   CollectionArgs,
-  Delegate,
-  DelegateArgs,
+  Freeze,
+  FreezeArgs,
   Royalties,
   RoyaltiesArgs,
+  Transfer,
+  TransferArgs,
+  getBurnSerializer,
   getCollectionSerializer,
-  getDelegateSerializer,
+  getFreezeSerializer,
   getRoyaltiesSerializer,
+  getTransferSerializer,
 } from '.';
 
 export type Plugin =
   | { __kind: 'Reserved' }
   | { __kind: 'Royalties'; fields: [Royalties] }
-  | { __kind: 'Delegate'; fields: [Delegate] }
+  | { __kind: 'Freeze'; fields: [Freeze] }
+  | { __kind: 'Burn'; fields: [Burn] }
+  | { __kind: 'Transfer'; fields: [Transfer] }
   | { __kind: 'Collection'; fields: [Collection] };
 
 export type PluginArgs =
   | { __kind: 'Reserved' }
   | { __kind: 'Royalties'; fields: [RoyaltiesArgs] }
-  | { __kind: 'Delegate'; fields: [DelegateArgs] }
+  | { __kind: 'Freeze'; fields: [FreezeArgs] }
+  | { __kind: 'Burn'; fields: [BurnArgs] }
+  | { __kind: 'Transfer'; fields: [TransferArgs] }
   | { __kind: 'Collection'; fields: [CollectionArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
@@ -50,9 +60,21 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
         ]),
       ],
       [
-        'Delegate',
-        struct<GetDataEnumKindContent<Plugin, 'Delegate'>>([
-          ['fields', tuple([getDelegateSerializer()])],
+        'Freeze',
+        struct<GetDataEnumKindContent<Plugin, 'Freeze'>>([
+          ['fields', tuple([getFreezeSerializer()])],
+        ]),
+      ],
+      [
+        'Burn',
+        struct<GetDataEnumKindContent<Plugin, 'Burn'>>([
+          ['fields', tuple([getBurnSerializer()])],
+        ]),
+      ],
+      [
+        'Transfer',
+        struct<GetDataEnumKindContent<Plugin, 'Transfer'>>([
+          ['fields', tuple([getTransferSerializer()])],
         ]),
       ],
       [
@@ -75,9 +97,17 @@ export function plugin(
   data: GetDataEnumKindContent<PluginArgs, 'Royalties'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Royalties'>;
 export function plugin(
-  kind: 'Delegate',
-  data: GetDataEnumKindContent<PluginArgs, 'Delegate'>['fields']
-): GetDataEnumKind<PluginArgs, 'Delegate'>;
+  kind: 'Freeze',
+  data: GetDataEnumKindContent<PluginArgs, 'Freeze'>['fields']
+): GetDataEnumKind<PluginArgs, 'Freeze'>;
+export function plugin(
+  kind: 'Burn',
+  data: GetDataEnumKindContent<PluginArgs, 'Burn'>['fields']
+): GetDataEnumKind<PluginArgs, 'Burn'>;
+export function plugin(
+  kind: 'Transfer',
+  data: GetDataEnumKindContent<PluginArgs, 'Transfer'>['fields']
+): GetDataEnumKind<PluginArgs, 'Transfer'>;
 export function plugin(
   kind: 'Collection',
   data: GetDataEnumKindContent<PluginArgs, 'Collection'>['fields']

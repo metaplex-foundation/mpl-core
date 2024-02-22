@@ -27,8 +27,6 @@ pub enum Authority {
     UpdateAuthority,
     Pubkey { address: Pubkey },
     Permanent { address: Pubkey },
-    SameAs { plugin: Plugin },
-    Collection,
 }
 
 #[repr(C)]

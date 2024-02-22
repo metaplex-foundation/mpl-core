@@ -1,5 +1,4 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::pubkey::Pubkey;
 
 use crate::{
     instruction::accounts::{
@@ -7,38 +6,45 @@ use crate::{
         UpdateAccounts,
     },
     processor::{BurnArgs, CompressArgs, CreateArgs, DecompressArgs, TransferArgs, UpdateArgs},
-    state::Authority,
+    state::{Authority, DataBlob},
 };
 
-use super::PluginValidation;
+use super::{PluginValidation, ValidationResult};
 
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
-pub struct Creator {
-    address: Pubkey,
-    verified: bool,
+#[repr(C)]
+#[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
+pub struct Transfer {}
+
+impl Transfer {
+    pub fn new() -> Self {
+        Self {}
+    }
 }
 
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
-pub enum RuleSet {
-    ProgramAllowList(Vec<Pubkey>),
-    ProgramDenyList(Vec<Pubkey>),
+impl Default for Transfer {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
-pub struct Royalties {
-    seller_fee_basis_points: u16,
-    creators: Vec<Creator>,
-    rule_set: RuleSet,
+impl DataBlob for Transfer {
+    fn get_initial_size() -> usize {
+        0
+    }
+
+    fn get_size(&self) -> usize {
+        0
+    }
 }
 
-impl PluginValidation for Royalties {
+impl PluginValidation for Transfer {
     fn validate_create(
         &self,
         _ctx: &CreateAccounts,
         _args: &CreateArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        todo!()
+        Ok(ValidationResult::Pass)
     }
 
     fn validate_update(
@@ -47,25 +53,37 @@ impl PluginValidation for Royalties {
         _args: &UpdateArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        todo!()
+        Ok(ValidationResult::Pass)
     }
 
     fn validate_burn(
         &self,
-        _ctx: &BurnAccounts,
+        ctx: &BurnAccounts,
         _args: &BurnArgs,
-        _authorities: &[Authority],
+        authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        todo!()
+        if authorities.contains(&Authority::Pubkey {
+            address: *ctx.authority.key,
+        }) {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
     }
 
     fn validate_transfer(
         &self,
-        _ctx: &TransferAccounts,
+        ctx: &TransferAccounts,
         _args: &TransferArgs,
-        _authorities: &[Authority],
+        authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        todo!()
+        if authorities.contains(&Authority::Pubkey {
+            address: *ctx.authority.key,
+        }) {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
     }
 
     fn validate_compress(
@@ -74,7 +92,7 @@ impl PluginValidation for Royalties {
         _args: &CompressArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        todo!()
+        Ok(ValidationResult::Pass)
     }
 
     fn validate_decompress(
@@ -83,6 +101,6 @@ impl PluginValidation for Royalties {
         _args: &DecompressArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        todo!()
+        Ok(ValidationResult::Pass)
     }
 }

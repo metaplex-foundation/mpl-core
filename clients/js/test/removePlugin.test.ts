@@ -31,7 +31,7 @@ test('it can remove a plugin from an asset', async (t) => {
   await addPlugin(umi, {
     assetAddress: assetAddress.publicKey,
     plugin: {
-      __kind: 'Delegate',
+      __kind: 'Freeze',
       fields: [{ frozen: false }],
     }
   }).sendAndConfirm(umi);
@@ -61,7 +61,7 @@ test('it can remove a plugin from an asset', async (t) => {
     plugins: [{
       authorities: [{ __kind: "Owner" }],
       plugin: {
-        __kind: 'Delegate',
+        __kind: 'Freeze',
         fields: [{ frozen: false }],
       },
     }],
@@ -69,7 +69,7 @@ test('it can remove a plugin from an asset', async (t) => {
 
   await removePlugin(umi, {
     assetAddress: assetAddress.publicKey,
-    pluginType: PluginType.Delegate,
+    pluginType: PluginType.Freeze,
   }).sendAndConfirm(umi);
 
   const asset2 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);

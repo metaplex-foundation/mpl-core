@@ -7,13 +7,14 @@
  */
 
 export * from './authority';
+export * from './burn';
 export * from './collection';
 export * from './compressionProof';
 export * from './creator';
 export * from './dataState';
-export * from './delegate';
 export * from './externalPluginRecord';
 export * from './extraAccounts';
+export * from './freeze';
 export * from './key';
 export * from './migrationLevel';
 export * from './plugin';
@@ -22,3 +23,4 @@ export * from './registryData';
 export * from './registryRecord';
 export * from './royalties';
 export * from './ruleSet';
+export * from './transfer';

@@ -1,5 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::pubkey::Pubkey;
+use solana_program::program_error::ProgramError;
 
 use crate::{
     instruction::accounts::{
@@ -7,24 +7,44 @@ use crate::{
         UpdateAccounts,
     },
     processor::{BurnArgs, CompressArgs, CreateArgs, DecompressArgs, TransferArgs, UpdateArgs},
-    state::Authority,
+    state::{Authority, DataBlob},
 };
 
 use super::{PluginValidation, ValidationResult};
 
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
-pub struct Collection {
-    collection_address: Pubkey,
-    managed: bool,
+#[repr(C)]
+#[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
+pub struct Burn {}
+
+impl Burn {
+    pub fn new() -> Self {
+        Self {}
+    }
 }
 
-impl PluginValidation for Collection {
+impl Default for Burn {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl DataBlob for Burn {
+    fn get_initial_size() -> usize {
+        0
+    }
+
+    fn get_size(&self) -> usize {
+        0
+    }
+}
+
+impl PluginValidation for Burn {
     fn validate_create(
         &self,
         _ctx: &CreateAccounts,
         _args: &CreateArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -33,17 +53,23 @@ impl PluginValidation for Collection {
         _ctx: &UpdateAccounts,
         _args: &UpdateArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_burn(
         &self,
-        _ctx: &BurnAccounts,
+        ctx: &BurnAccounts,
         _args: &BurnArgs,
-        _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        Ok(ValidationResult::Pass)
+        authorities: &[Authority],
+    ) -> Result<super::ValidationResult, ProgramError> {
+        if authorities.contains(&Authority::Pubkey {
+            address: *ctx.authority.key,
+        }) {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
     }
 
     fn validate_transfer(
@@ -51,7 +77,7 @@ impl PluginValidation for Collection {
         _ctx: &TransferAccounts,
         _args: &TransferArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -60,7 +86,7 @@ impl PluginValidation for Collection {
         _ctx: &CompressAccounts,
         _args: &CompressArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -69,7 +95,7 @@ impl PluginValidation for Collection {
         _ctx: &DecompressAccounts,
         _args: &DecompressArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 }

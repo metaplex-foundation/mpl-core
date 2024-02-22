@@ -50,12 +50,12 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
             if asset.get_size() != ctx.accounts.asset_address.data_len() {
                 solana_program::msg!("Fetch Plugin");
                 let (authorities, plugin, _) =
-                    fetch_plugin(ctx.accounts.asset_address, PluginType::Delegate)?;
+                    fetch_plugin(ctx.accounts.asset_address, PluginType::Freeze)?;
 
                 solana_program::msg!("Assert authority");
                 authority_check = assert_authority(&asset, ctx.accounts.authority, &authorities);
 
-                if let Plugin::Delegate(delegate) = plugin {
+                if let Plugin::Freeze(delegate) = plugin {
                     if delegate.frozen {
                         return Err(MplAssetError::AssetIsFrozen.into());
                     }

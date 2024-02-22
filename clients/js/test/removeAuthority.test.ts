@@ -32,13 +32,13 @@ test('it can remove an authority from a plugin', async (t) => {
   await addPlugin(umi, {
     assetAddress: assetAddress.publicKey,
     plugin: {
-      __kind: 'Delegate',
+      __kind: 'Freeze',
       fields: [{ frozen: false }],
     }
   }).append(
     addAuthority(umi, {
       assetAddress: assetAddress.publicKey,
-      pluginType: PluginType.Delegate,
+      pluginType: PluginType.Freeze,
       newAuthority: {
         __kind: 'Pubkey',
         address: delegateAddress.publicKey,
@@ -77,7 +77,7 @@ test('it can remove an authority from a plugin', async (t) => {
         { __kind: "Pubkey", address: delegateAddress.publicKey }
       ],
       plugin: {
-        __kind: 'Delegate',
+        __kind: 'Freeze',
         fields: [{ frozen: false }],
       },
     }],
@@ -85,7 +85,7 @@ test('it can remove an authority from a plugin', async (t) => {
 
   await removeAuthority(umi, {
     assetAddress: assetAddress.publicKey,
-    pluginType: PluginType.Delegate,
+    pluginType: PluginType.Freeze,
     authorityToRemove: {
       __kind: 'Pubkey',
       address: delegateAddress.publicKey,
@@ -121,7 +121,7 @@ test('it can remove an authority from a plugin', async (t) => {
         { __kind: "Owner" },
       ],
       plugin: {
-        __kind: 'Delegate',
+        __kind: 'Freeze',
         fields: [{ frozen: false }],
       },
     }],
@@ -155,14 +155,14 @@ test('it can remove the default authority from a plugin to make it immutable', a
   await addPlugin(umi, {
     assetAddress: assetAddress.publicKey,
     plugin: {
-      __kind: 'Delegate',
+      __kind: 'Freeze',
       fields: [{ frozen: false }],
     }
   }).sendAndConfirm(umi);
 
   await removeAuthority(umi, {
     assetAddress: assetAddress.publicKey,
-    pluginType: PluginType.Delegate,
+    pluginType: PluginType.Freeze,
     authorityToRemove: {
       __kind: 'Owner',
     }
@@ -197,7 +197,7 @@ test('it can remove the default authority from a plugin to make it immutable', a
         { __kind: "None" },
       ],
       plugin: {
-        __kind: 'Delegate',
+        __kind: 'Freeze',
         fields: [{ frozen: false }],
       },
     }],

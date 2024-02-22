@@ -5,9 +5,11 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::Burn;
 use crate::generated::types::Collection;
-use crate::generated::types::Delegate;
+use crate::generated::types::Freeze;
 use crate::generated::types::Royalties;
+use crate::generated::types::Transfer;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -16,6 +18,8 @@ use borsh::BorshSerialize;
 pub enum Plugin {
     Reserved,
     Royalties(Royalties),
-    Delegate(Delegate),
+    Freeze(Freeze),
+    Burn(Burn),
+    Transfer(Transfer),
     Collection(Collection),
 }

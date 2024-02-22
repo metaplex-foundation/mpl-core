@@ -31,7 +31,7 @@ test('it can add a plugin to an asset', async (t) => {
   await addPlugin(umi, {
     assetAddress: assetAddress.publicKey,
     plugin: {
-      __kind: 'Delegate',
+      __kind: 'Freeze',
       fields: [{ frozen: false }],
     }
   }).sendAndConfirm(umi);
@@ -61,7 +61,7 @@ test('it can add a plugin to an asset', async (t) => {
     plugins: [{
       authorities: [{ __kind: "Owner" }],
       plugin: {
-        __kind: 'Delegate',
+        __kind: 'Freeze',
         fields: [{ frozen: false }],
       },
     }],

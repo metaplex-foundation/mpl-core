@@ -32,13 +32,13 @@ test('it can add an authority to a plugin', async (t) => {
   await addPlugin(umi, {
     assetAddress: assetAddress.publicKey,
     plugin: {
-      __kind: 'Delegate',
+      __kind: 'Freeze',
       fields: [{ frozen: false }],
     }
   }).append(
     addAuthority(umi, {
       assetAddress: assetAddress.publicKey,
-      pluginType: PluginType.Delegate,
+      pluginType: PluginType.Freeze,
       newAuthority: {
         __kind: 'Pubkey',
         address: delegateAddress.publicKey,
@@ -77,7 +77,7 @@ test('it can add an authority to a plugin', async (t) => {
         { __kind: "Pubkey", address: delegateAddress.publicKey }
       ],
       plugin: {
-        __kind: 'Delegate',
+        __kind: 'Freeze',
         fields: [{ frozen: false }],
       },
     }],

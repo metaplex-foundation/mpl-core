@@ -100,15 +100,15 @@ struct UpdateInstructionData {
 
 impl UpdateInstructionData {
     fn new() -> Self {
-        Self { discriminator: 7 }
+        Self { discriminator: 8 }
     }
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UpdateInstructionArgs {
-    pub new_name: String,
-    pub new_uri: String,
+    pub new_name: Option<String>,
+    pub new_uri: Option<String>,
 }
 
 /// Instruction builder.
@@ -175,11 +175,13 @@ impl UpdateBuilder {
         self.log_wrapper = log_wrapper;
         self
     }
+    /// `[optional argument]`
     #[inline(always)]
     pub fn new_name(&mut self, new_name: String) -> &mut Self {
         self.new_name = Some(new_name);
         self
     }
+    /// `[optional argument]`
     #[inline(always)]
     pub fn new_uri(&mut self, new_uri: String) -> &mut Self {
         self.new_uri = Some(new_uri);
@@ -216,8 +218,8 @@ impl UpdateBuilder {
             log_wrapper: self.log_wrapper,
         };
         let args = UpdateInstructionArgs {
-            new_name: self.new_name.clone().expect("new_name is not set"),
-            new_uri: self.new_uri.clone().expect("new_uri is not set"),
+            new_name: self.new_name.clone(),
+            new_uri: self.new_uri.clone(),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -475,11 +477,13 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
         self.instruction.log_wrapper = log_wrapper;
         self
     }
+    /// `[optional argument]`
     #[inline(always)]
     pub fn new_name(&mut self, new_name: String) -> &mut Self {
         self.instruction.new_name = Some(new_name);
         self
     }
+    /// `[optional argument]`
     #[inline(always)]
     pub fn new_uri(&mut self, new_uri: String) -> &mut Self {
         self.instruction.new_uri = Some(new_uri);
@@ -527,16 +531,8 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = UpdateInstructionArgs {
-            new_name: self
-                .instruction
-                .new_name
-                .clone()
-                .expect("new_name is not set"),
-            new_uri: self
-                .instruction
-                .new_uri
-                .clone()
-                .expect("new_uri is not set"),
+            new_name: self.instruction.new_name.clone(),
+            new_uri: self.instruction.new_uri.clone(),
         };
         let instruction = UpdateCpi {
             __program: self.instruction.__program,

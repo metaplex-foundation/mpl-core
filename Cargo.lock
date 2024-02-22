@@ -2094,26 +2094,12 @@ version = "0.1.0"
 dependencies = [
  "borsh 0.10.3",
  "bytemuck",
- "mpl-token-metadata",
  "mpl-utils",
  "num-derive 0.3.3",
  "num-traits",
  "shank",
  "solana-program",
  "spl-noop",
- "thiserror",
-]
-
-[[package]]
-name = "mpl-token-metadata"
-version = "4.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4b2de608098eb2ef2a5392069dea83084967e25a4d69d0380a6bb02454fc0fe"
-dependencies = [
- "borsh 0.10.3",
- "num-derive 0.3.3",
- "num-traits",
- "solana-program",
  "thiserror",
 ]
 

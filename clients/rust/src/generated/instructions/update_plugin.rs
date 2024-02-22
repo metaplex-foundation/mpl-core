@@ -5,13 +5,12 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Authority;
-use crate::generated::types::PluginType;
+use crate::generated::types::Plugin;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct AddAuthority {
+pub struct UpdatePlugin {
     /// The address of the asset
     pub asset_address: solana_program::pubkey::Pubkey,
     /// The collection to which the asset belongs
@@ -26,17 +25,17 @@ pub struct AddAuthority {
     pub log_wrapper: Option<solana_program::pubkey::Pubkey>,
 }
 
-impl AddAuthority {
+impl UpdatePlugin {
     pub fn instruction(
         &self,
-        args: AddAuthorityInstructionArgs,
+        args: UpdatePluginInstructionArgs,
     ) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        args: AddAuthorityInstructionArgs,
+        args: UpdatePluginInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
         let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
@@ -82,7 +81,7 @@ impl AddAuthority {
             ));
         }
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = AddAuthorityInstructionData::new().try_to_vec().unwrap();
+        let mut data = UpdatePluginInstructionData::new().try_to_vec().unwrap();
         let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
@@ -95,38 +94,36 @@ impl AddAuthority {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct AddAuthorityInstructionData {
+struct UpdatePluginInstructionData {
     discriminator: u8,
 }
 
-impl AddAuthorityInstructionData {
+impl UpdatePluginInstructionData {
     fn new() -> Self {
-        Self { discriminator: 4 }
+        Self { discriminator: 3 }
     }
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AddAuthorityInstructionArgs {
-    pub plugin_type: PluginType,
-    pub new_authority: Authority,
+pub struct UpdatePluginInstructionArgs {
+    pub plugin: Plugin,
 }
 
 /// Instruction builder.
 #[derive(Default)]
-pub struct AddAuthorityBuilder {
+pub struct UpdatePluginBuilder {
     asset_address: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
-    plugin_type: Option<PluginType>,
-    new_authority: Option<Authority>,
+    plugin: Option<Plugin>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl AddAuthorityBuilder {
+impl UpdatePluginBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -174,13 +171,8 @@ impl AddAuthorityBuilder {
         self
     }
     #[inline(always)]
-    pub fn plugin_type(&mut self, plugin_type: PluginType) -> &mut Self {
-        self.plugin_type = Some(plugin_type);
-        self
-    }
-    #[inline(always)]
-    pub fn new_authority(&mut self, new_authority: Authority) -> &mut Self {
-        self.new_authority = Some(new_authority);
+    pub fn plugin(&mut self, plugin: Plugin) -> &mut Self {
+        self.plugin = Some(plugin);
         self
     }
     /// Add an aditional account to the instruction.
@@ -203,7 +195,7 @@ impl AddAuthorityBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = AddAuthority {
+        let accounts = UpdatePlugin {
             asset_address: self.asset_address.expect("asset_address is not set"),
             collection: self.collection,
             authority: self.authority.expect("authority is not set"),
@@ -213,20 +205,16 @@ impl AddAuthorityBuilder {
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
             log_wrapper: self.log_wrapper,
         };
-        let args = AddAuthorityInstructionArgs {
-            plugin_type: self.plugin_type.clone().expect("plugin_type is not set"),
-            new_authority: self
-                .new_authority
-                .clone()
-                .expect("new_authority is not set"),
+        let args = UpdatePluginInstructionArgs {
+            plugin: self.plugin.clone().expect("plugin is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
     }
 }
 
-/// `add_authority` CPI accounts.
-pub struct AddAuthorityCpiAccounts<'a, 'b> {
+/// `update_plugin` CPI accounts.
+pub struct UpdatePluginCpiAccounts<'a, 'b> {
     /// The address of the asset
     pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
@@ -241,8 +229,8 @@ pub struct AddAuthorityCpiAccounts<'a, 'b> {
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-/// `add_authority` CPI instruction.
-pub struct AddAuthorityCpi<'a, 'b> {
+/// `update_plugin` CPI instruction.
+pub struct UpdatePluginCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The address of the asset
@@ -258,14 +246,14 @@ pub struct AddAuthorityCpi<'a, 'b> {
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The arguments for the instruction.
-    pub __args: AddAuthorityInstructionArgs,
+    pub __args: UpdatePluginInstructionArgs,
 }
 
-impl<'a, 'b> AddAuthorityCpi<'a, 'b> {
+impl<'a, 'b> UpdatePluginCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: AddAuthorityCpiAccounts<'a, 'b>,
-        args: AddAuthorityInstructionArgs,
+        accounts: UpdatePluginCpiAccounts<'a, 'b>,
+        args: UpdatePluginInstructionArgs,
     ) -> Self {
         Self {
             __program: program,
@@ -363,7 +351,7 @@ impl<'a, 'b> AddAuthorityCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = AddAuthorityInstructionData::new().try_to_vec().unwrap();
+        let mut data = UpdatePluginInstructionData::new().try_to_vec().unwrap();
         let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
@@ -398,14 +386,14 @@ impl<'a, 'b> AddAuthorityCpi<'a, 'b> {
     }
 }
 
-/// `add_authority` CPI instruction builder.
-pub struct AddAuthorityCpiBuilder<'a, 'b> {
-    instruction: Box<AddAuthorityCpiBuilderInstruction<'a, 'b>>,
+/// `update_plugin` CPI instruction builder.
+pub struct UpdatePluginCpiBuilder<'a, 'b> {
+    instruction: Box<UpdatePluginCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> AddAuthorityCpiBuilder<'a, 'b> {
+impl<'a, 'b> UpdatePluginCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(AddAuthorityCpiBuilderInstruction {
+        let instruction = Box::new(UpdatePluginCpiBuilderInstruction {
             __program: program,
             asset_address: None,
             collection: None,
@@ -413,8 +401,7 @@ impl<'a, 'b> AddAuthorityCpiBuilder<'a, 'b> {
             payer: None,
             system_program: None,
             log_wrapper: None,
-            plugin_type: None,
-            new_authority: None,
+            plugin: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -477,13 +464,8 @@ impl<'a, 'b> AddAuthorityCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn plugin_type(&mut self, plugin_type: PluginType) -> &mut Self {
-        self.instruction.plugin_type = Some(plugin_type);
-        self
-    }
-    #[inline(always)]
-    pub fn new_authority(&mut self, new_authority: Authority) -> &mut Self {
-        self.instruction.new_authority = Some(new_authority);
+    pub fn plugin(&mut self, plugin: Plugin) -> &mut Self {
+        self.instruction.plugin = Some(plugin);
         self
     }
     /// Add an additional account to the instruction.
@@ -527,19 +509,10 @@ impl<'a, 'b> AddAuthorityCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let args = AddAuthorityInstructionArgs {
-            plugin_type: self
-                .instruction
-                .plugin_type
-                .clone()
-                .expect("plugin_type is not set"),
-            new_authority: self
-                .instruction
-                .new_authority
-                .clone()
-                .expect("new_authority is not set"),
+        let args = UpdatePluginInstructionArgs {
+            plugin: self.instruction.plugin.clone().expect("plugin is not set"),
         };
-        let instruction = AddAuthorityCpi {
+        let instruction = UpdatePluginCpi {
             __program: self.instruction.__program,
 
             asset_address: self
@@ -568,7 +541,7 @@ impl<'a, 'b> AddAuthorityCpiBuilder<'a, 'b> {
     }
 }
 
-struct AddAuthorityCpiBuilderInstruction<'a, 'b> {
+struct UpdatePluginCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset_address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -576,8 +549,7 @@ struct AddAuthorityCpiBuilderInstruction<'a, 'b> {
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    plugin_type: Option<PluginType>,
-    new_authority: Option<Authority>,
+    plugin: Option<Plugin>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

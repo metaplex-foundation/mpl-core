@@ -8,12 +8,12 @@
 
 import { Serializer, bool, struct } from '@metaplex-foundation/umi/serializers';
 
-export type Delegate = { frozen: boolean };
+export type Freeze = { frozen: boolean };
 
-export type DelegateArgs = Delegate;
+export type FreezeArgs = Freeze;
 
-export function getDelegateSerializer(): Serializer<DelegateArgs, Delegate> {
-  return struct<Delegate>([['frozen', bool()]], {
-    description: 'Delegate',
-  }) as Serializer<DelegateArgs, Delegate>;
+export function getFreezeSerializer(): Serializer<FreezeArgs, Freeze> {
+  return struct<Freeze>([['frozen', bool()]], {
+    description: 'Freeze',
+  }) as Serializer<FreezeArgs, Freeze>;
 }

@@ -216,6 +216,74 @@
       }
     },
     {
+      "name": "UpdatePlugin",
+      "accounts": [
+        {
+          "name": "assetAddress",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updatePluginArgs",
+          "type": {
+            "defined": "UpdatePluginArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 3
+      }
+    },
+    {
       "name": "AddAuthority",
       "accounts": [
         {
@@ -280,7 +348,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 3
+        "value": 4
       }
     },
     {
@@ -348,7 +416,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 4
+        "value": 5
       }
     },
     {
@@ -408,7 +476,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 5
+        "value": 6
       }
     },
     {
@@ -476,7 +544,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 6
+        "value": 7
       }
     },
     {
@@ -544,7 +612,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 7
+        "value": 8
       }
     },
     {
@@ -603,7 +671,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 8
+        "value": 9
       }
     },
     {
@@ -662,7 +730,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 9
+        "value": 10
       }
     }
   ],
@@ -771,6 +839,13 @@
   ],
   "types": [
     {
+      "name": "Burn",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
       "name": "Collection",
       "type": {
         "kind": "struct",
@@ -787,7 +862,7 @@
       }
     },
     {
-      "name": "Delegate",
+      "name": "Freeze",
       "type": {
         "kind": "struct",
         "fields": [
@@ -898,6 +973,13 @@
             }
           }
         ]
+      }
+    },
+    {
+      "name": "Transfer",
+      "type": {
+        "kind": "struct",
+        "fields": []
       }
     },
     {
@@ -1043,11 +1125,29 @@
         "fields": [
           {
             "name": "newName",
-            "type": "string"
+            "type": {
+              "option": "string"
+            }
           },
           {
             "name": "newUri",
-            "type": "string"
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdatePluginArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plugin",
+            "type": {
+              "defined": "Plugin"
+            }
           }
         ]
       }
@@ -1099,10 +1199,26 @@
             ]
           },
           {
-            "name": "Delegate",
+            "name": "Freeze",
             "fields": [
               {
-                "defined": "Delegate"
+                "defined": "Freeze"
+              }
+            ]
+          },
+          {
+            "name": "Burn",
+            "fields": [
+              {
+                "defined": "Burn"
+              }
+            ]
+          },
+          {
+            "name": "Transfer",
+            "fields": [
+              {
+                "defined": "Transfer"
               }
             ]
           },
@@ -1129,7 +1245,13 @@
             "name": "Royalties"
           },
           {
-            "name": "Delegate"
+            "name": "Freeze"
+          },
+          {
+            "name": "Burn"
+          },
+          {
+            "name": "Transfer"
           },
           {
             "name": "Collection"
@@ -1206,20 +1328,6 @@
                 "type": "publicKey"
               }
             ]
-          },
-          {
-            "name": "SameAs",
-            "fields": [
-              {
-                "name": "plugin",
-                "type": {
-                  "defined": "Plugin"
-                }
-              }
-            ]
-          },
-          {
-            "name": "Collection"
           }
         ]
       }

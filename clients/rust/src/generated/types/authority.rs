@@ -5,7 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Plugin;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_program::pubkey::Pubkey;
@@ -30,8 +29,4 @@ pub enum Authority {
         )]
         address: Pubkey,
     },
-    SameAs {
-        plugin: Plugin,
-    },
-    Collection,
 }

@@ -70,7 +70,7 @@ export function getBurnInstructionDataSerializer(): Serializer<
       ],
       { description: 'BurnInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 5 })
+    (value) => ({ ...value, discriminator: 6 })
   ) as Serializer<BurnInstructionDataArgs, BurnInstructionData>;
 }
 
