@@ -25,6 +25,11 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import {
+  CompressionProof,
+  CompressionProofArgs,
+  getCompressionProofSerializer,
+} from '../types';
 
 // Accounts.
 export type DecompressInstructionAccounts = {
@@ -41,9 +46,14 @@ export type DecompressInstructionAccounts = {
 };
 
 // Data.
-export type DecompressInstructionData = { discriminator: number };
+export type DecompressInstructionData = {
+  discriminator: number;
+  compressionProof: CompressionProof;
+};
 
-export type DecompressInstructionDataArgs = {};
+export type DecompressInstructionDataArgs = {
+  compressionProof: CompressionProofArgs;
+};
 
 export function getDecompressInstructionDataSerializer(): Serializer<
   DecompressInstructionDataArgs,
@@ -54,17 +64,24 @@ export function getDecompressInstructionDataSerializer(): Serializer<
     any,
     DecompressInstructionData
   >(
-    struct<DecompressInstructionData>([['discriminator', u8()]], {
-      description: 'DecompressInstructionData',
-    }),
+    struct<DecompressInstructionData>(
+      [
+        ['discriminator', u8()],
+        ['compressionProof', getCompressionProofSerializer()],
+      ],
+      { description: 'DecompressInstructionData' }
+    ),
     (value) => ({ ...value, discriminator: 10 })
   ) as Serializer<DecompressInstructionDataArgs, DecompressInstructionData>;
 }
 
+// Args.
+export type DecompressInstructionArgs = DecompressInstructionDataArgs;
+
 // Instruction.
 export function decompress(
   context: Pick<Context, 'programs'>,
-  input: DecompressInstructionAccounts
+  input: DecompressInstructionAccounts & DecompressInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -93,6 +110,9 @@ export function decompress(
     },
   };
 
+  // Arguments.
+  const resolvedArgs: DecompressInstructionArgs = { ...input };
+
   // Default values.
   if (!resolvedAccounts.systemProgram.value) {
     resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
@@ -115,7 +135,9 @@ export function decompress(
   );
 
   // Data.
-  const data = getDecompressInstructionDataSerializer().serialize({});
+  const data = getDecompressInstructionDataSerializer().serialize(
+    resolvedArgs as DecompressInstructionDataArgs
+  );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

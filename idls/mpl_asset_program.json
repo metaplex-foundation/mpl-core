@@ -1065,7 +1065,14 @@
       "name": "DecompressArgs",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "compressionProof",
+            "type": {
+              "defined": "CompressionProof"
+            }
+          }
+        ]
       }
     },
     {
