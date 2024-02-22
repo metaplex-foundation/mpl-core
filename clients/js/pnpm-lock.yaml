@@ -1,9 +1,16 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 dependencies:
   '@metaplex-foundation/mpl-toolbox':
     specifier: ^0.8.0
     version: 0.8.0(@metaplex-foundation/umi@0.8.2)
+  '@noble/hashes':
+    specifier: ^1.3.1
+    version: 1.3.1
 
 devDependencies:
   '@ava/typescript':
@@ -27,6 +34,9 @@ devDependencies:
   ava:
     specifier: ^5.1.0
     version: 5.1.0(@ava/typescript@3.0.1)
+  bs58:
+    specifier: 5.0.0
+    version: 5.0.0
   eslint:
     specifier: ^8.0.1
     version: 8.30.0
@@ -1772,14 +1782,9 @@ packages:
     resolution: {integrity: sha512-Rk4SkJFaXZiznFyC/t77Q0NKS4FL7TLJJsVG2V2oiEq3kJVeTdxysEe/yRWSpnWMe808XRDJ+VFh5pt/FN5plw==}
     dev: true
 
-  /@noble/hashes@1.1.5:
-    resolution: {integrity: sha512-LTMZiiLc+V4v1Yi16TD6aX2gmtKszNye0pQgbaLqkvhIqP7nVsSaJsWloGQjJfJ8offaoP5GtX3yY5swbcJxxQ==}
-    dev: true
-
   /@noble/hashes@1.3.1:
     resolution: {integrity: sha512-EbqwksQwz9xDRGfDST86whPBgM65E0OH/pCgqW0GBVzO22bNE+NuIbeTb714+IfSjU3aRk47EUvXIb5bTsenKA==}
     engines: {node: '>= 16'}
-    dev: true
 
   /@noble/secp256k1@1.7.0:
     resolution: {integrity: sha512-kbacwGSsH/CTout0ZnZWxnW1B+jH/7r/WAAKLBtrRJ/+CUH7lgmQzl3GTrQua3SGKWNSDsS6lmjnDpIJ5Dxyaw==}
@@ -1941,7 +1946,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.20.7
       '@noble/ed25519': 1.7.1
-      '@noble/hashes': 1.1.5
+      '@noble/hashes': 1.3.1
       '@noble/secp256k1': 1.7.0
       '@solana/buffer-layout': 4.0.1
       agentkeepalive: 4.2.1
@@ -2827,6 +2832,10 @@ packages:
       safe-buffer: 5.2.1
     dev: true
 
+  /base-x@4.0.0:
+    resolution: {integrity: sha512-FuwxlW4H5kh37X/oW59pwTzzTKRzfrrQwhmyspRM7swOEZcHtDZSCt45U6oKgtuFE+WYPblePMVIPR4RZrh/hw==}
+    dev: true
+
   /base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
     dev: true
@@ -2939,6 +2948,12 @@ packages:
     resolution: {integrity: sha512-Ok3Wdf5vOIlBrgCvTq96gBkJw+JUEzdBgyaza5HLtPm7yTHkjRy8+JzNyHF7BHa0bNWOQIp3m5YF0nnFcOIKLw==}
     dependencies:
       base-x: 3.0.9
+    dev: true
+
+  /bs58@5.0.0:
+    resolution: {integrity: sha512-r+ihvQJvahgYT50JD05dyJNKlmmSlMoOGwn1lCcEzanPglg7TxYjioQUYehQ9mAR/+hOSd2jRc/Z2y5UxBymvQ==}
+    dependencies:
+      base-x: 4.0.0
     dev: true
 
   /buffer-from@1.1.2:
@@ -6165,6 +6180,7 @@ packages:
 
   /node-addon-api@1.7.2:
     resolution: {integrity: sha512-ibPK3iA+vaY1eEjESkQkM0BbCqFOaZMiXRTtdB0u7b4djtY6JnsjvPdUHVMg6xQt3B8fpTTWHI9A+ADjM9frzg==}
+    requiresBuild: true
     dev: true
     optional: true
 
