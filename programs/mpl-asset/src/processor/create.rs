@@ -53,13 +53,8 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
     let serialized_data = match args.data_state {
         DataState::AccountState => serialized_data,
         DataState::LedgerState => {
-            invoke(&spl_noop::instruction(serialized_data.clone()), &[])?;
-
-            let hashed_asset = HashedAsset {
-                key: Key::HashedAsset,
-                hash: new_asset.hash()?,
-            };
-
+            new_asset.wrap()?;
+            let hashed_asset = HashedAsset::new(new_asset.hash()?);
             hashed_asset.try_to_vec()?
         }
     };
