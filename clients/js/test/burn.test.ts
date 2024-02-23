@@ -1,4 +1,8 @@
-import { assertAccountExists, generateSigner, sol} from '@metaplex-foundation/umi';
+import {
+  assertAccountExists,
+  generateSigner,
+  sol,
+} from '@metaplex-foundation/umi';
 import test from 'ava';
 // import { base58 } from '@metaplex-foundation/umi/serializers';
 import { Asset, DataState, create, fetchAsset, burn, Key } from '../src';
@@ -30,7 +34,7 @@ test('it can burn an asset as the owner', async (t) => {
 
   await burn(umi, {
     assetAddress: assetAddress.publicKey,
-    compressionProof: null
+    compressionProof: null,
   }).sendAndConfirm(umi);
 
   // And the asset address still exists but was resized to 1.
@@ -73,7 +77,7 @@ test('it cannot burn an asset if not the owner', async (t) => {
     authority: attacker,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' })
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
 
   const afterAsset = await fetchAsset(umi, assetAddress.publicKey);
   // console.log("Account State:", afterAsset);

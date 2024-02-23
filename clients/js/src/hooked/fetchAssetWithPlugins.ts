@@ -21,7 +21,10 @@ import {
     getPluginSerializer
 } from "../generated";
 
-export type PluginWithAuthorities = { plugin: Plugin, authorities: Authority[] };
+export type PluginWithAuthorities = {
+    plugin: Plugin;
+    authorities: Authority[];
+};
 
 export type PluginList = {
     pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>,
@@ -59,7 +62,7 @@ export async function fetchAssetWithPlugins(
         pluginHeader,
         plugins,
         pluginRegistry,
-        ...asset
+        ...asset,
     };
 
     return assetWithPlugins;

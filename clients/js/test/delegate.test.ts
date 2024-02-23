@@ -32,7 +32,7 @@ test('it can delegate a new authority', async (t) => {
     plugin: {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
-    }
+    },
   }).sendAndConfirm(umi);
 
   await addAuthority(umi, {
@@ -41,7 +41,7 @@ test('it can delegate a new authority', async (t) => {
     newAuthority: {
       __kind: 'Pubkey',
       address: delegateAddress.publicKey,
-    }
+    },
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -58,30 +58,33 @@ test('it can delegate a new authority', async (t) => {
     },
     pluginRegistry: {
       key: 4,
-      registry: [{
-        pluginType: 2,
-        data: {
-          offset: BigInt(117),
-          authorities: [
-            { __kind: "Owner" },
-            { __kind: "Pubkey", address: delegateAddress.publicKey }
-          ]
-        }
-      }],
-    },
-    plugins: [{
-      authorities: [
-        { __kind: "Owner" },
-        { __kind: "Pubkey", address: delegateAddress.publicKey }
+      registry: [
+        {
+          pluginType: 2,
+          data: {
+            offset: BigInt(117),
+            authorities: [
+              { __kind: 'Owner' },
+              { __kind: 'Pubkey', address: delegateAddress.publicKey },
+            ],
+          },
+        },
       ],
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
+    },
+    plugins: [
+      {
+        authorities: [
+          { __kind: 'Owner' },
+          { __kind: 'Pubkey', address: delegateAddress.publicKey },
+        ],
+        plugin: {
+          __kind: 'Freeze',
+          fields: [{ frozen: false }],
+        },
       },
-    }],
+    ],
   });
 });
-
 
 test('a delegate can freeze the token', async (t) => {
   // Given a Umi instance and a new signer.
@@ -102,7 +105,7 @@ test('a delegate can freeze the token', async (t) => {
     plugin: {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
-    }
+    },
   }).sendAndConfirm(umi);
 
   await addAuthority(umi, {
@@ -111,7 +114,7 @@ test('a delegate can freeze the token', async (t) => {
     newAuthority: {
       __kind: 'Pubkey',
       address: delegateAddress.publicKey,
-    }
+    },
   }).sendAndConfirm(umi);
 
   await updatePlugin(umi, {
@@ -119,7 +122,7 @@ test('a delegate can freeze the token', async (t) => {
     plugin: {
       __kind: 'Freeze',
       fields: [{ frozen: true }],
-    }
+    },
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -136,26 +139,30 @@ test('a delegate can freeze the token', async (t) => {
     },
     pluginRegistry: {
       key: 4,
-      registry: [{
-        pluginType: 2,
-        data: {
-          offset: BigInt(117),
-          authorities: [
-            { __kind: "Owner" },
-            { __kind: "Pubkey", address: delegateAddress.publicKey }
-          ]
-        }
-      }],
-    },
-    plugins: [{
-      authorities: [
-        { __kind: "Owner" },
-        { __kind: "Pubkey", address: delegateAddress.publicKey }
+      registry: [
+        {
+          pluginType: 2,
+          data: {
+            offset: BigInt(117),
+            authorities: [
+              { __kind: 'Owner' },
+              { __kind: 'Pubkey', address: delegateAddress.publicKey },
+            ],
+          },
+        },
       ],
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: true }],
+    },
+    plugins: [
+      {
+        authorities: [
+          { __kind: 'Owner' },
+          { __kind: 'Pubkey', address: delegateAddress.publicKey },
+        ],
+        plugin: {
+          __kind: 'Freeze',
+          fields: [{ frozen: true }],
+        },
       },
-    }],
+    ],
   });
 });

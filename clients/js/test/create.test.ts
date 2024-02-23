@@ -1,7 +1,14 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
 // import { base58 } from '@metaplex-foundation/umi/serializers';
-import { Asset, DataState, create, fetchAsset, fetchHashedAsset, getAssetAccountDataSerializer } from '../src';
+import {
+  Asset,
+  DataState,
+  create,
+  fetchAsset,
+  fetchHashedAsset,
+  getAssetAccountDataSerializer,
+} from '../src';
 import { createUmi } from './_setup';
 
 test('it can create a new asset in account state', async (t) => {
@@ -40,7 +47,7 @@ test('it can create a new asset in ledger state', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    logWrapper: publicKey("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV")
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -64,5 +71,4 @@ test('it can create a new asset in ledger state', async (t) => {
       uri: 'https://example.com/bread',
     });
   }
-
 });

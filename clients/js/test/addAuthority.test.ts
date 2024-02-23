@@ -1,7 +1,17 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 // import { base58 } from '@metaplex-foundation/umi/serializers';
-import { Asset, AssetWithPlugins, DataState, PluginType, addAuthority, addPlugin, create, fetchAsset, fetchAssetWithPlugins } from '../src';
+import {
+  Asset,
+  AssetWithPlugins,
+  DataState,
+  PluginType,
+  addAuthority,
+  addPlugin,
+  create,
+  fetchAsset,
+  fetchAssetWithPlugins,
+} from '../src';
 import { createUmi } from './_setup';
 
 test('it can add an authority to a plugin', async (t) => {
@@ -34,17 +44,19 @@ test('it can add an authority to a plugin', async (t) => {
     plugin: {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
-    }
-  }).append(
-    addAuthority(umi, {
-      assetAddress: assetAddress.publicKey,
-      pluginType: PluginType.Freeze,
-      newAuthority: {
-        __kind: 'Pubkey',
-        address: delegateAddress.publicKey,
-      }
-    })
-  ).sendAndConfirm(umi);
+    },
+  })
+    .append(
+      addAuthority(umi, {
+        assetAddress: assetAddress.publicKey,
+        pluginType: PluginType.Freeze,
+        newAuthority: {
+          __kind: 'Pubkey',
+          address: delegateAddress.publicKey,
+        },
+      })
+    )
+    .sendAndConfirm(umi);
 
   const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
   // console.log(JSON.stringify(asset1, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
@@ -60,26 +72,30 @@ test('it can add an authority to a plugin', async (t) => {
     },
     pluginRegistry: {
       key: 4,
-      registry: [{
-        pluginType: 2,
-        data: {
-          offset: BigInt(117),
-          authorities: [
-            { __kind: "Owner" },
-            { __kind: "Pubkey", address: delegateAddress.publicKey }
-          ]
-        }
-      }],
-    },
-    plugins: [{
-      authorities: [
-        { __kind: "Owner" },
-        { __kind: "Pubkey", address: delegateAddress.publicKey }
+      registry: [
+        {
+          pluginType: 2,
+          data: {
+            offset: BigInt(117),
+            authorities: [
+              { __kind: 'Owner' },
+              { __kind: 'Pubkey', address: delegateAddress.publicKey },
+            ],
+          },
+        },
       ],
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
+    },
+    plugins: [
+      {
+        authorities: [
+          { __kind: 'Owner' },
+          { __kind: 'Pubkey', address: delegateAddress.publicKey },
+        ],
+        plugin: {
+          __kind: 'Freeze',
+          fields: [{ frozen: false }],
+        },
       },
-    }],
+    ],
   });
 });

@@ -8,7 +8,10 @@ use crate::{
         BurnAccounts, CompressAccounts, DecompressAccounts, TransferAccounts, UpdateAccounts,
     },
     plugins::{CheckResult, ValidationResult},
-    state::{Compressible, CompressionProof, DataBlob, HashedAsset, Key, SolanaAccount},
+    state::{
+        Compressible, CompressionProof, DataBlob, HashedAsset, HashedAssetSchema, Key,
+        SolanaAccount,
+    },
 };
 
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount, Eq, PartialEq)]
@@ -30,8 +33,17 @@ impl Asset {
     ) -> Result<Asset, ProgramError> {
         let asset = Self::from(compression_proof);
         let asset_hash = asset.hash()?;
+
+        // TODO: this currently assumes no plugins.
+        let hashed_asset_schema = HashedAssetSchema {
+            asset_hash,
+            plugin_hashes: vec![],
+        };
+
+        let hashed_asset_schema_hash = hashed_asset_schema.hash()?;
+
         let current_account_hash = HashedAsset::load(hashed_asset, 0)?.hash;
-        if asset_hash != current_account_hash {
+        if hashed_asset_schema_hash != current_account_hash {
             return Err(MplAssetError::IncorrectAssetHash.into());
         }
 

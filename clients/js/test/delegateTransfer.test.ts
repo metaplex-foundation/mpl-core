@@ -1,6 +1,15 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { AssetWithPlugins, DataState, PluginType, addAuthority, addPlugin, create, fetchAssetWithPlugins, transfer } from '../src';
+import {
+  AssetWithPlugins,
+  DataState,
+  PluginType,
+  addAuthority,
+  addPlugin,
+  create,
+  fetchAssetWithPlugins,
+  transfer,
+} from '../src';
 import { createUmi } from './_setup';
 
 test('a delegate can transfer the asset', async (t) => {
@@ -23,7 +32,7 @@ test('a delegate can transfer the asset', async (t) => {
     plugin: {
       __kind: 'Transfer',
       fields: [{}],
-    }
+    },
   }).sendAndConfirm(umi);
 
   await addAuthority(umi, {
@@ -32,14 +41,14 @@ test('a delegate can transfer the asset', async (t) => {
     newAuthority: {
       __kind: 'Pubkey',
       address: delegateAddress.publicKey,
-    }
+    },
   }).sendAndConfirm(umi);
 
   await transfer(umi, {
     assetAddress: assetAddress.publicKey,
     newOwner: newOwnerAddress.publicKey,
     authority: delegateAddress,
-    compressionProof: null
+    compressionProof: null,
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -56,26 +65,30 @@ test('a delegate can transfer the asset', async (t) => {
     },
     pluginRegistry: {
       key: 4,
-      registry: [{
-        pluginType: PluginType.Transfer,
-        data: {
-          offset: BigInt(117),
-          authorities: [
-            { __kind: "Owner" },
-            { __kind: "Pubkey", address: delegateAddress.publicKey }
-          ]
-        }
-      }],
-    },
-    plugins: [{
-      authorities: [
-        { __kind: "Owner" },
-        { __kind: "Pubkey", address: delegateAddress.publicKey }
+      registry: [
+        {
+          pluginType: PluginType.Transfer,
+          data: {
+            offset: BigInt(117),
+            authorities: [
+              { __kind: 'Owner' },
+              { __kind: 'Pubkey', address: delegateAddress.publicKey },
+            ],
+          },
+        },
       ],
-      plugin: {
-        __kind: 'Transfer',
-        fields: [{}],
+    },
+    plugins: [
+      {
+        authorities: [
+          { __kind: 'Owner' },
+          { __kind: 'Pubkey', address: delegateAddress.publicKey },
+        ],
+        plugin: {
+          __kind: 'Transfer',
+          fields: [{}],
+        },
       },
-    }],
+    ],
   });
 });
