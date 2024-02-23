@@ -331,6 +331,7 @@ pub fn delete_plugin<'a>(
             .ok_or(MplAssetError::NumericalOverflow)?;
         solana_program::msg!("data_to_move: {:?}", data_to_move);
 
+        //TODO: This is memory intensive, we should use memmove instead probably.
         let src = account.data.borrow()[next_plugin_offset..].to_vec();
         solana_program::msg!("src: {:?}", src);
         sol_memcpy(
