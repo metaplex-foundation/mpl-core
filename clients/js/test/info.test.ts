@@ -1,6 +1,6 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { DataState, create, /* fetchAsset, fetchHashedAsset */ } from '../src';
+import { DataState, create /* fetchAsset, fetchHashedAsset */ } from '../src';
 import { createUmi } from './_setup';
 
 test('fetch account info for account state', async (t) => {
@@ -40,7 +40,7 @@ test('fetch account info for ledger state', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    logWrapper: publicKey("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV"),
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
   }).sendAndConfirm(umi);
 
   // Print the size of the account.

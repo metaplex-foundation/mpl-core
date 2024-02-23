@@ -1,7 +1,15 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 // import { base58 } from '@metaplex-foundation/umi/serializers';
-import { Asset, AssetWithPlugins, DataState, addPlugin, create, fetchAsset, fetchAssetWithPlugins } from '../src';
+import {
+  Asset,
+  AssetWithPlugins,
+  DataState,
+  addPlugin,
+  create,
+  fetchAsset,
+  fetchAssetWithPlugins,
+} from '../src';
 import { createUmi } from './_setup';
 
 test('it can add a plugin to an asset', async (t) => {
@@ -33,7 +41,7 @@ test('it can add a plugin to an asset', async (t) => {
     plugin: {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
-    }
+    },
   }).sendAndConfirm(umi);
 
   const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -50,20 +58,24 @@ test('it can add a plugin to an asset', async (t) => {
     },
     pluginRegistry: {
       key: 4,
-      registry: [{
-        pluginType: 2,
-        data: {
-          offset: BigInt(117),
-          authorities: [{ __kind: "Owner" }]
-        }
-      }],
+      registry: [
+        {
+          pluginType: 2,
+          data: {
+            offset: BigInt(117),
+            authorities: [{ __kind: 'Owner' }],
+          },
+        },
+      ],
     },
-    plugins: [{
-      authorities: [{ __kind: "Owner" }],
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
+    plugins: [
+      {
+        authorities: [{ __kind: 'Owner' }],
+        plugin: {
+          __kind: 'Freeze',
+          fields: [{ frozen: false }],
+        },
       },
-    }],
+    ],
   });
 });

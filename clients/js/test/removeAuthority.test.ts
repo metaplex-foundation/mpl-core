@@ -1,7 +1,18 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 // import { base58 } from '@metaplex-foundation/umi/serializers';
-import { Asset, AssetWithPlugins, DataState, PluginType, addAuthority, addPlugin, create, fetchAsset, fetchAssetWithPlugins, removeAuthority } from '../src';
+import {
+  Asset,
+  AssetWithPlugins,
+  DataState,
+  PluginType,
+  addAuthority,
+  addPlugin,
+  create,
+  fetchAsset,
+  fetchAssetWithPlugins,
+  removeAuthority,
+} from '../src';
 import { createUmi } from './_setup';
 
 test('it can remove an authority from a plugin', async (t) => {
@@ -34,17 +45,19 @@ test('it can remove an authority from a plugin', async (t) => {
     plugin: {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
-    }
-  }).append(
-    addAuthority(umi, {
-      assetAddress: assetAddress.publicKey,
-      pluginType: PluginType.Freeze,
-      newAuthority: {
-        __kind: 'Pubkey',
-        address: delegateAddress.publicKey,
-      }
-    })
-  ).sendAndConfirm(umi);
+    },
+  })
+    .append(
+      addAuthority(umi, {
+        assetAddress: assetAddress.publicKey,
+        pluginType: PluginType.Freeze,
+        newAuthority: {
+          __kind: 'Pubkey',
+          address: delegateAddress.publicKey,
+        },
+      })
+    )
+    .sendAndConfirm(umi);
 
   const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
   // console.log(JSON.stringify(asset1, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
@@ -60,27 +73,31 @@ test('it can remove an authority from a plugin', async (t) => {
     },
     pluginRegistry: {
       key: 4,
-      registry: [{
-        pluginType: 2,
-        data: {
-          offset: BigInt(117),
-          authorities: [
-            { __kind: "Owner" },
-            { __kind: "Pubkey", address: delegateAddress.publicKey }
-          ]
-        }
-      }],
-    },
-    plugins: [{
-      authorities: [
-        { __kind: "Owner" },
-        { __kind: "Pubkey", address: delegateAddress.publicKey }
+      registry: [
+        {
+          pluginType: 2,
+          data: {
+            offset: BigInt(117),
+            authorities: [
+              { __kind: 'Owner' },
+              { __kind: 'Pubkey', address: delegateAddress.publicKey },
+            ],
+          },
+        },
       ],
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
+    },
+    plugins: [
+      {
+        authorities: [
+          { __kind: 'Owner' },
+          { __kind: 'Pubkey', address: delegateAddress.publicKey },
+        ],
+        plugin: {
+          __kind: 'Freeze',
+          fields: [{ frozen: false }],
+        },
       },
-    }],
+    ],
   });
 
   await removeAuthority(umi, {
@@ -89,7 +106,7 @@ test('it can remove an authority from a plugin', async (t) => {
     authorityToRemove: {
       __kind: 'Pubkey',
       address: delegateAddress.publicKey,
-    }
+    },
   }).sendAndConfirm(umi);
 
   const asset2 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -106,25 +123,25 @@ test('it can remove an authority from a plugin', async (t) => {
     },
     pluginRegistry: {
       key: 4,
-      registry: [{
-        pluginType: 2,
-        data: {
-          offset: BigInt(117),
-          authorities: [
-            { __kind: "Owner" },
-          ]
-        }
-      }],
-    },
-    plugins: [{
-      authorities: [
-        { __kind: "Owner" },
+      registry: [
+        {
+          pluginType: 2,
+          data: {
+            offset: BigInt(117),
+            authorities: [{ __kind: 'Owner' }],
+          },
+        },
       ],
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
+    },
+    plugins: [
+      {
+        authorities: [{ __kind: 'Owner' }],
+        plugin: {
+          __kind: 'Freeze',
+          fields: [{ frozen: false }],
+        },
       },
-    }],
+    ],
   });
 });
 
@@ -157,7 +174,7 @@ test('it can remove the default authority from a plugin to make it immutable', a
     plugin: {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
-    }
+    },
   }).sendAndConfirm(umi);
 
   await removeAuthority(umi, {
@@ -165,7 +182,7 @@ test('it can remove the default authority from a plugin to make it immutable', a
     pluginType: PluginType.Freeze,
     authorityToRemove: {
       __kind: 'Owner',
-    }
+    },
   }).sendAndConfirm(umi);
 
   const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -182,24 +199,24 @@ test('it can remove the default authority from a plugin to make it immutable', a
     },
     pluginRegistry: {
       key: 4,
-      registry: [{
-        pluginType: 2,
-        data: {
-          offset: BigInt(117),
-          authorities: [
-            { __kind: "None" },
-          ]
-        }
-      }],
-    },
-    plugins: [{
-      authorities: [
-        { __kind: "None" },
+      registry: [
+        {
+          pluginType: 2,
+          data: {
+            offset: BigInt(117),
+            authorities: [{ __kind: 'None' }],
+          },
+        },
       ],
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
+    },
+    plugins: [
+      {
+        authorities: [{ __kind: 'None' }],
+        plugin: {
+          __kind: 'Freeze',
+          fields: [{ frozen: false }],
+        },
       },
-    }],
+    ],
   });
 });
