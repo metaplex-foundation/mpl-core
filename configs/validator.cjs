@@ -11,9 +11,9 @@ module.exports = {
     commitment: "processed",
     programs: [
       {
-        label: "Mpl Asset",
-        programId: "ASSETp3DinZKfiAyvdQG16YWWLJ2X3ZKjg9zku7n1sZD",
-        deployPath: getProgram("mpl_asset_program.so"),
+        label: "Mpl Core",
+        programId: "CoREzp6dAdLVRKf3EM5tWrsXM2jQwRFeu5uhzsAyjYXL",
+        deployPath: getProgram("mpl_core_program.so"),
       },
       // Below are external programs that should be included in the local validator.
       // You may configure which ones to fetch from the cluster when building

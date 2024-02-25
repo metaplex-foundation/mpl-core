@@ -1,5 +1,5 @@
 [package]
-name = "mpl-asset-program"
+name = "mpl-core-program"
 version = "0.1.0"
 edition = "2021"
 readme = "./README.md"

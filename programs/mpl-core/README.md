@@ -1,4 +1,4 @@
-# Mpl Asset
+# Mpl Core
 
 Digital Assets
 

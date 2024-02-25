@@ -49,7 +49,7 @@ impl RemovePlugin {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_ASSET_ID,
+                crate::MPL_CORE_PROGRAM_ID,
                 false,
             ));
         }
@@ -61,7 +61,7 @@ impl RemovePlugin {
             accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_ASSET_ID,
+                crate::MPL_CORE_PROGRAM_ID,
                 false,
             ));
         }
@@ -76,7 +76,7 @@ impl RemovePlugin {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_ASSET_ID,
+                crate::MPL_CORE_PROGRAM_ID,
                 false,
             ));
         }
@@ -86,7 +86,7 @@ impl RemovePlugin {
         data.append(&mut args);
 
         solana_program::instruction::Instruction {
-            program_id: crate::MPL_ASSET_ID,
+            program_id: crate::MPL_CORE_PROGRAM_ID,
             accounts,
             data,
         }
@@ -311,7 +311,7 @@ impl<'a, 'b> RemovePluginCpi<'a, 'b> {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_ASSET_ID,
+                crate::MPL_CORE_PROGRAM_ID,
                 false,
             ));
         }
@@ -325,7 +325,7 @@ impl<'a, 'b> RemovePluginCpi<'a, 'b> {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_ASSET_ID,
+                crate::MPL_CORE_PROGRAM_ID,
                 false,
             ));
         }
@@ -340,7 +340,7 @@ impl<'a, 'b> RemovePluginCpi<'a, 'b> {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_ASSET_ID,
+                crate::MPL_CORE_PROGRAM_ID,
                 false,
             ));
         }
@@ -356,7 +356,7 @@ impl<'a, 'b> RemovePluginCpi<'a, 'b> {
         data.append(&mut args);
 
         let instruction = solana_program::instruction::Instruction {
-            program_id: crate::MPL_ASSET_ID,
+            program_id: crate::MPL_CORE_PROGRAM_ID,
             accounts,
             data,
         };

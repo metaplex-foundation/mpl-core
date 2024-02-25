@@ -1,7 +1,7 @@
 #![cfg(feature = "test-sbf")]
 
 use borsh::BorshDeserialize;
-use mpl_asset::{accounts::MyAccount, instructions::CreateBuilder};
+use mpl_core::{accounts::MyAccount, instructions::CreateBuilder};
 use solana_program_test::{tokio, ProgramTest};
 use solana_sdk::{
     signature::{Keypair, Signer},
@@ -10,7 +10,7 @@ use solana_sdk::{
 
 #[tokio::test]
 async fn create() {
-    let mut context = ProgramTest::new("mpl_asset_program", mpl_asset::ID, None)
+    let mut context = ProgramTest::new("mpl_core_program", mpl_core::ID, None)
         .start_with_context()
         .await;
 

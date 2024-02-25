@@ -1,8 +1,8 @@
 import { UmiPlugin } from '@metaplex-foundation/umi';
-import { createMplAssetProgram } from './generated';
+import { createMplCoreProgramProgram } from './generated';
 
-export const mplAsset = (): UmiPlugin => ({
+export const mplCore = (): UmiPlugin => ({
   install(umi) {
-    umi.programs.add(createMplAssetProgram(), false);
+    umi.programs.add(createMplCoreProgramProgram(), false);
   },
 });

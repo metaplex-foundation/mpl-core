@@ -2073,7 +2073,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mpl-asset"
+name = "mpl-core"
 version = "0.1.0"
 dependencies = [
  "assert_matches",
@@ -2089,7 +2089,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mpl-asset-program"
+name = "mpl-core-program"
 version = "0.1.0"
 dependencies = [
  "borsh 0.10.3",

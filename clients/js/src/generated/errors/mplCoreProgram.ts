@@ -269,7 +269,7 @@ nameToErrorMap.set('AlreadyDecompressed', AlreadyDecompressedError);
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  */
-export function getMplAssetErrorFromCode(
+export function getMplCoreProgramErrorFromCode(
   code: number,
   program: Program,
   cause?: Error
@@ -282,7 +282,7 @@ export function getMplAssetErrorFromCode(
  * Attempts to resolve a custom program error from the provided error name, i.e. 'Unauthorized'.
  * @category Errors
  */
-export function getMplAssetErrorFromName(
+export function getMplCoreProgramErrorFromName(
   name: string,
   program: Program,
   cause?: Error
