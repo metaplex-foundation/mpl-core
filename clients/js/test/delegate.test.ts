@@ -25,6 +25,7 @@ test('it can delegate a new authority', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   await addPlugin(umi, {
@@ -98,6 +99,7 @@ test('a delegate can freeze the token', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   await addPlugin(umi, {

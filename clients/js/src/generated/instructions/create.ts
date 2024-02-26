@@ -16,6 +16,7 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  array,
   mapSerializer,
   string,
   struct,
@@ -26,7 +27,14 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import { DataState, DataStateArgs, getDataStateSerializer } from '../types';
+import {
+  DataState,
+  DataStateArgs,
+  Plugin,
+  PluginArgs,
+  getDataStateSerializer,
+  getPluginSerializer,
+} from '../types';
 
 // Accounts.
 export type CreateInstructionAccounts = {
@@ -52,12 +60,14 @@ export type CreateInstructionData = {
   dataState: DataState;
   name: string;
   uri: string;
+  plugins: Array<Plugin>;
 };
 
 export type CreateInstructionDataArgs = {
   dataState: DataStateArgs;
   name: string;
   uri: string;
+  plugins: Array<PluginArgs>;
 };
 
 export function getCreateInstructionDataSerializer(): Serializer<
@@ -71,6 +81,7 @@ export function getCreateInstructionDataSerializer(): Serializer<
         ['dataState', getDataStateSerializer()],
         ['name', string()],
         ['uri', string()],
+        ['plugins', array(getPluginSerializer())],
       ],
       { description: 'CreateInstructionData' }
     ),

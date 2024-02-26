@@ -27,6 +27,7 @@ test('it can remove an authority from a plugin', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -156,6 +157,7 @@ test('it can remove the default authority from a plugin to make it immutable', a
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.

@@ -25,6 +25,7 @@ test('a delegate can transfer the asset', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   await addPlugin(umi, {

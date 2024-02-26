@@ -23,6 +23,7 @@ test('it can update an asset to be larger', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   await update(umi, {
@@ -53,6 +54,7 @@ test('it can update an asset to be smaller', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   await update(umi, {
@@ -83,6 +85,7 @@ test('it can update an asset with plugins to be larger', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   await addPlugin(umi, {
@@ -147,6 +150,7 @@ test('it can update an asset with plugins to be smaller', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   await addPlugin(umi, {

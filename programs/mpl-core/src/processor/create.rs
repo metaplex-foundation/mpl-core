@@ -8,6 +8,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateAccounts,
+    plugins::{create_meta_idempotent, initialize_plugin, Plugin},
     state::{Asset, Compressible, DataState, HashedAsset, Key},
 };
 
@@ -17,6 +18,7 @@ pub struct CreateArgs {
     pub data_state: DataState,
     pub name: String,
     pub uri: String,
+    pub plugins: Vec<Plugin>,
 }
 
 pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> ProgramResult {
@@ -82,6 +84,25 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
         &serialized_data,
         serialized_data.len(),
     );
+
+    //TODO: Do compressed state
+    if args.data_state == DataState::AccountState {
+        create_meta_idempotent(
+            ctx.accounts.asset_address,
+            ctx.accounts.payer,
+            ctx.accounts.system_program,
+        )?;
+
+        for plugin in args.plugins {
+            initialize_plugin(
+                &plugin,
+                &plugin.default_authority()?,
+                ctx.accounts.asset_address,
+                ctx.accounts.payer,
+                ctx.accounts.system_program,
+            )?;
+        }
+    }
 
     Ok(())
 }

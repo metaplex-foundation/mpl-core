@@ -10,11 +10,11 @@ import {
   fetchHashedAsset,
   getAssetAccountDataSerializer,
   getHashedAssetSchemaSerializer,
+  hash,
   HashedAssetSchema,
   Key,
 } from '../src';
 import { createUmi } from './_setup';
-import { hash } from '../src';
 
 test('it can decompress a previously compressed asset as the owner', async (t) => {
   // Given a Umi instance and a new signer.
@@ -27,11 +27,12 @@ test('it can decompress a previously compressed asset as the owner', async (t) =
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
   const beforeAsset = await fetchAsset(umi, assetAddress.publicKey);
-  //console.log("Account State:", beforeAsset);
+  // console.log("Account State:", beforeAsset);
   t.like(beforeAsset, <Asset>{
     publicKey: assetAddress.publicKey,
     updateAuthority: umi.identity.publicKey,
@@ -53,12 +54,12 @@ test('it can decompress a previously compressed asset as the owner', async (t) =
   );
 
   // And the hash matches the expected value.
-  let hashedAssetSchema: HashedAssetSchema = {
+  const hashedAssetSchema: HashedAssetSchema = {
     assetHash: hash(getAssetAccountDataSerializer().serialize(beforeAsset)),
     pluginHashes: [],
   };
 
-  let hashedAsset = hash(
+  const hashedAsset = hash(
     getHashedAssetSchemaSerializer().serialize(hashedAssetSchema)
   );
   t.deepEqual(afterCompressedAsset.hash, hashedAsset);

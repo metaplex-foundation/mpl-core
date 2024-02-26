@@ -1,15 +1,13 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
 use crate::{
     error::MplCoreError,
     instruction::accounts::BurnAccounts,
-    plugins::{fetch_plugin, Plugin, PluginType},
-    state::{Asset, Compressible, CompressionProof, DataBlob, Key, SolanaAccount},
-    utils::{assert_authority, close_program_account, load_key},
+    plugins::{CheckResult, Plugin, ValidationResult},
+    state::{Asset, Compressible, CompressionProof, Key},
+    utils::{close_program_account, fetch_core_data, load_key},
 };
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
@@ -43,33 +41,44 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
             asset.wrap()?;
         }
         Key::Asset => {
-            let asset = Asset::load(ctx.accounts.asset_address, 0)?;
+            let (asset, _, plugin_registry) = fetch_core_data(ctx.accounts.asset_address)?;
 
-            let mut authority_check: Result<(), ProgramError> =
-                Err(MplCoreError::InvalidAuthority.into());
-            if asset.get_size() != ctx.accounts.asset_address.data_len() {
-                let (authorities, plugin, _) =
-                    fetch_plugin(ctx.accounts.asset_address, PluginType::Freeze)?;
-
-                authority_check = assert_authority(&asset, ctx.accounts.authority, &authorities);
-
-                if let Plugin::Freeze(delegate) = plugin {
-                    if delegate.frozen {
-                        return Err(MplCoreError::AssetIsFrozen.into());
+            let mut approved = false;
+            match Asset::check_transfer() {
+                CheckResult::CanApprove | CheckResult::CanReject => {
+                    match asset.validate_burn(&ctx.accounts)? {
+                        ValidationResult::Approved => {
+                            approved = true;
+                        }
+                        ValidationResult::Rejected => {
+                            return Err(MplCoreError::InvalidAuthority.into())
+                        }
+                        ValidationResult::Pass => (),
                     }
                 }
+                CheckResult::None => (),
+            };
+
+            if let Some(plugin_registry) = plugin_registry {
+                for record in plugin_registry.registry {
+                    if matches!(
+                        record.plugin_type.check_transfer(),
+                        CheckResult::CanApprove | CheckResult::CanReject
+                    ) {
+                        let result = Plugin::load(ctx.accounts.asset_address, record.data.offset)?
+                            .validate_burn(&ctx.accounts, &args, &record.data.authorities)?;
+                        if result == ValidationResult::Rejected {
+                            return Err(MplCoreError::InvalidAuthority.into());
+                        } else if result == ValidationResult::Approved {
+                            approved = true;
+                        }
+                    }
+                }
+            };
+
+            if !approved {
+                return Err(MplCoreError::InvalidAuthority.into());
             }
-
-            match authority_check {
-                Ok(_) => Ok::<(), ProgramError>(()),
-                Err(_) => {
-                    if ctx.accounts.authority.key != &asset.owner {
-                        Err(MplCoreError::InvalidAuthority.into())
-                    } else {
-                        Ok(())
-                    }
-                }
-            }?;
         }
         _ => return Err(MplCoreError::IncorrectAccount.into()),
     }

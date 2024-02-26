@@ -6,6 +6,7 @@
 //!
 
 use crate::generated::types::DataState;
+use crate::generated::types::Plugin;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -124,6 +125,7 @@ pub struct CreateInstructionArgs {
     pub data_state: DataState,
     pub name: String,
     pub uri: String,
+    pub plugins: Vec<Plugin>,
 }
 
 /// Instruction builder.
@@ -139,6 +141,7 @@ pub struct CreateBuilder {
     data_state: Option<DataState>,
     name: Option<String>,
     uri: Option<String>,
+    plugins: Option<Vec<Plugin>>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -214,6 +217,11 @@ impl CreateBuilder {
         self.uri = Some(uri);
         self
     }
+    #[inline(always)]
+    pub fn plugins(&mut self, plugins: Vec<Plugin>) -> &mut Self {
+        self.plugins = Some(plugins);
+        self
+    }
     /// Add an aditional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -249,6 +257,7 @@ impl CreateBuilder {
             data_state: self.data_state.clone().expect("data_state is not set"),
             name: self.name.clone().expect("name is not set"),
             uri: self.uri.clone().expect("uri is not set"),
+            plugins: self.plugins.clone().expect("plugins is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -466,6 +475,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
             data_state: None,
             name: None,
             uri: None,
+            plugins: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -549,6 +559,11 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         self.instruction.uri = Some(uri);
         self
     }
+    #[inline(always)]
+    pub fn plugins(&mut self, plugins: Vec<Plugin>) -> &mut Self {
+        self.instruction.plugins = Some(plugins);
+        self
+    }
     /// Add an additional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -598,6 +613,11 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
                 .expect("data_state is not set"),
             name: self.instruction.name.clone().expect("name is not set"),
             uri: self.instruction.uri.clone().expect("uri is not set"),
+            plugins: self
+                .instruction
+                .plugins
+                .clone()
+                .expect("plugins is not set"),
         };
         let instruction = CreateCpi {
             __program: self.instruction.__program,
@@ -642,6 +662,7 @@ struct CreateCpiBuilderInstruction<'a, 'b> {
     data_state: Option<DataState>,
     name: Option<String>,
     uri: Option<String>,
+    plugins: Option<Vec<Plugin>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

@@ -19,6 +19,7 @@ test('it can burn an asset as the owner', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -58,6 +59,7 @@ test('it cannot burn an asset if not the owner', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.

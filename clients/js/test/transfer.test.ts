@@ -16,6 +16,7 @@ test('it can transfer an asset as the owner', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -59,6 +60,7 @@ test('it cannot transfer an asset if not the owner', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.

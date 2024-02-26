@@ -26,6 +26,7 @@ test('it can add an authority to a plugin', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.

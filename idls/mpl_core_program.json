@@ -1057,6 +1057,14 @@
           {
             "name": "uri",
             "type": "string"
+          },
+          {
+            "name": "plugins",
+            "type": {
+              "vec": {
+                "defined": "Plugin"
+              }
+            }
           }
         ]
       }

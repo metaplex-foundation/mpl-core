@@ -9,11 +9,11 @@ import {
   fetchHashedAsset,
   getAssetAccountDataSerializer,
   getHashedAssetSchemaSerializer,
+  hash,
   HashedAssetSchema,
 } from '../src';
 import { createUmi } from './_setup';
-//import bs58 from 'bs58';
-import { hash } from '../src';
+// import bs58 from 'bs58';
 
 test('it can compress an asset without any plugins as the owner', async (t) => {
   // Given a Umi instance and a new signer.
@@ -26,11 +26,12 @@ test('it can compress an asset without any plugins as the owner', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
   const beforeAsset = await fetchAsset(umi, assetAddress.publicKey);
-  //console.log("Account State:", beforeAsset);
+  // console.log("Account State:", beforeAsset);
   t.like(beforeAsset, <Asset>{
     publicKey: assetAddress.publicKey,
     updateAuthority: umi.identity.publicKey,
@@ -44,19 +45,19 @@ test('it can compress an asset without any plugins as the owner', async (t) => {
     assetAddress: assetAddress.publicKey,
     owner: umi.identity,
   }).sendAndConfirm(umi);
-  //console.log('Compress signature: ', bs58.encode(tx.signature));
+  // console.log('Compress signature: ', bs58.encode(tx.signature));
 
   // And the asset is now compressed as a hashed asset.
   const afterAsset = await fetchHashedAsset(umi, assetAddress.publicKey);
-  //console.log("Account State:", afterAsset);
+  // console.log("Account State:", afterAsset);
 
   // And the hash matches the expected value.
-  let hashedAssetSchema: HashedAssetSchema = {
+  const hashedAssetSchema: HashedAssetSchema = {
     assetHash: hash(getAssetAccountDataSerializer().serialize(beforeAsset)),
     pluginHashes: [],
   };
 
-  let hashedAsset = hash(
+  const hashedAsset = hash(
     getHashedAssetSchemaSerializer().serialize(hashedAssetSchema)
   );
   t.deepEqual(afterAsset.hash, hashedAsset);
@@ -74,6 +75,7 @@ test('it cannot compress an asset if not the owner', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
