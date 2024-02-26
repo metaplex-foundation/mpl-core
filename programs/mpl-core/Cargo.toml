@@ -19,3 +19,4 @@ thiserror = "^1.0"
 bytemuck = "1.14.1"
 mpl-utils = "0.3.3"
 spl-noop = { version = "0.2.0", features = ["cpi"] }
+podded = "0.5.1"

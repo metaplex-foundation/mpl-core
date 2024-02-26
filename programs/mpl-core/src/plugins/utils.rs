@@ -6,7 +6,7 @@ use solana_program::{
 };
 
 use crate::{
-    error::MplAssetError,
+    error::MplCoreError,
     state::{Asset, Authority, DataBlob, Key, SolanaAccount},
     utils::{assert_authority, resolve_authority_to_default},
 };
@@ -51,12 +51,13 @@ pub fn create_meta_idempotent<'a>(
     Ok(())
 }
 
+/// Assert that the Plugin metadata has been initialized.
 pub fn assert_plugins_initialized(account: &AccountInfo) -> ProgramResult {
     let mut bytes: &[u8] = &(*account.data).borrow();
     let asset = Asset::deserialize(&mut bytes).unwrap();
 
     if asset.get_size() == account.data_len() {
-        return Err(MplAssetError::PluginsNotInitialized.into());
+        return Err(MplCoreError::PluginsNotInitialized.into());
     }
 
     Ok(())
@@ -88,7 +89,7 @@ pub fn fetch_plugin(
                  data,
              }| data,
         )
-        .ok_or(MplAssetError::PluginNotFound)?;
+        .ok_or(MplCoreError::PluginNotFound)?;
 
     // Deserialize the plugin.
     let plugin = Plugin::deserialize(&mut &(*account.data).borrow()[plugin_data.offset..])?;
@@ -97,6 +98,7 @@ pub fn fetch_plugin(
     Ok((plugin_data.authorities.clone(), plugin, plugin_data.offset))
 }
 
+/// Fetch the plugin registry.
 pub fn fetch_plugins(account: &AccountInfo) -> Result<Vec<RegistryRecord>, ProgramError> {
     let asset = Asset::load(account, 0)?;
 
@@ -152,7 +154,7 @@ pub fn initialize_plugin<'a>(
              data: _,
          }| type_iter == &plugin_type,
     ) {
-        return Err(MplAssetError::PluginAlreadyExists.into());
+        return Err(MplCoreError::PluginAlreadyExists.into());
     }
 
     let old_registry_offset = header.plugin_registry_offset;
@@ -162,13 +164,13 @@ pub fn initialize_plugin<'a>(
     };
     let size_increase = plugin_size
         .checked_add(Key::get_initial_size())
-        .ok_or(MplAssetError::NumericalOverflow)?
+        .ok_or(MplCoreError::NumericalOverflow)?
         .checked_add(registry_data.clone().try_to_vec()?.len())
-        .ok_or(MplAssetError::NumericalOverflow)?;
+        .ok_or(MplCoreError::NumericalOverflow)?;
     let new_registry_offset = header
         .plugin_registry_offset
         .checked_add(plugin_size)
-        .ok_or(MplAssetError::NumericalOverflow)?;
+        .ok_or(MplCoreError::NumericalOverflow)?;
     header.plugin_registry_offset = new_registry_offset;
     plugin_registry.registry.push(RegistryRecord {
         plugin_type,
@@ -177,7 +179,7 @@ pub fn initialize_plugin<'a>(
     let new_size = account
         .data_len()
         .checked_add(size_increase)
-        .ok_or(MplAssetError::NumericalOverflow)?;
+        .ok_or(MplCoreError::NumericalOverflow)?;
     resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
     header.save(account, asset.get_size())?;
     plugin.save(account, old_registry_offset)?;
@@ -214,7 +216,7 @@ pub fn delete_plugin<'a>(
 
         let resolved_authority = resolve_authority_to_default(asset, authority);
         if resolved_authority != authorities[0] {
-            return Err(MplAssetError::InvalidAuthority.into());
+            return Err(MplCoreError::InvalidAuthority.into());
         }
 
         let plugin_offset = registry_record.data.offset;
@@ -223,24 +225,24 @@ pub fn delete_plugin<'a>(
 
         let next_plugin_offset = plugin_offset
             .checked_add(serialized_plugin.len())
-            .ok_or(MplAssetError::NumericalOverflow)?;
+            .ok_or(MplCoreError::NumericalOverflow)?;
 
         let new_size = account
             .data_len()
             .checked_sub(serialized_registry_record.len())
-            .ok_or(MplAssetError::NumericalOverflow)?
+            .ok_or(MplCoreError::NumericalOverflow)?
             .checked_sub(serialized_plugin.len())
-            .ok_or(MplAssetError::NumericalOverflow)?;
+            .ok_or(MplCoreError::NumericalOverflow)?;
 
         let new_offset = header
             .plugin_registry_offset
             .checked_sub(serialized_plugin.len())
-            .ok_or(MplAssetError::NumericalOverflow)?;
+            .ok_or(MplCoreError::NumericalOverflow)?;
 
         let data_to_move = header
             .plugin_registry_offset
             .checked_sub(new_offset)
-            .ok_or(MplAssetError::NumericalOverflow)?;
+            .ok_or(MplCoreError::NumericalOverflow)?;
 
         //TODO: This is memory intensive, we should use memmove instead probably.
         let src = account.data.borrow()[next_plugin_offset..].to_vec();
@@ -257,12 +259,13 @@ pub fn delete_plugin<'a>(
 
         resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
     } else {
-        return Err(MplAssetError::PluginNotFound.into());
+        return Err(MplCoreError::PluginNotFound.into());
     }
 
     Ok(())
 }
 
+/// Add an authority to a plugin.
 //TODO: Prevent duplicate authorities.
 #[allow(clippy::too_many_arguments)]
 pub fn add_authority_to_plugin<'a>(
@@ -285,7 +288,7 @@ pub fn add_authority_to_plugin<'a>(
                  data: _,
              }| type_iter == plugin_type,
         )
-        .ok_or(MplAssetError::PluginNotFound)?
+        .ok_or(MplCoreError::PluginNotFound)?
         .data
         .authorities;
 
@@ -307,17 +310,18 @@ pub fn add_authority_to_plugin<'a>(
         let new_size = account
             .data_len()
             .checked_add(authority_bytes.len())
-            .ok_or(MplAssetError::NumericalOverflow)?;
+            .ok_or(MplCoreError::NumericalOverflow)?;
         resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
 
         plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
     } else {
-        return Err(MplAssetError::PluginNotFound.into());
+        return Err(MplCoreError::PluginNotFound.into());
     }
 
     Ok(())
 }
 
+/// Remove an authority from a plugin.
 #[allow(clippy::too_many_arguments)]
 pub fn remove_authority_from_plugin<'a>(
     plugin_type: &PluginType,
@@ -339,13 +343,13 @@ pub fn remove_authority_from_plugin<'a>(
                  data: _,
              }| type_iter == plugin_type,
         )
-        .ok_or(MplAssetError::PluginNotFound)?
+        .ok_or(MplCoreError::PluginNotFound)?
         .data
         .authorities;
 
     let resolved_authority = resolve_authority_to_default(asset, authority);
     if resolved_authority != authorities[0] {
-        return Err(MplAssetError::InvalidAuthority.into());
+        return Err(MplCoreError::InvalidAuthority.into());
     }
 
     if let Some(RegistryRecord {
@@ -361,7 +365,7 @@ pub fn remove_authority_from_plugin<'a>(
             .authorities
             .iter()
             .position(|auth| auth == authority_to_remove)
-            .ok_or(MplAssetError::InvalidAuthority)?;
+            .ok_or(MplCoreError::InvalidAuthority)?;
 
         // Here we replace the default authority with None to indicate it's been removed.
         if index == 0 {
@@ -375,13 +379,13 @@ pub fn remove_authority_from_plugin<'a>(
             let new_size = account
                 .data_len()
                 .checked_sub(authority_bytes.len())
-                .ok_or(MplAssetError::NumericalOverflow)?;
+                .ok_or(MplCoreError::NumericalOverflow)?;
             resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
 
             plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
         }
     } else {
-        return Err(MplAssetError::PluginNotFound.into());
+        return Err(MplCoreError::PluginNotFound.into());
     }
 
     Ok(())

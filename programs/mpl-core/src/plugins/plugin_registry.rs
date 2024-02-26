@@ -5,11 +5,15 @@ use crate::state::{Authority, DataBlob, Key, SolanaAccount};
 
 use super::PluginType;
 
+/// The Plugin Registry stores a record of all plugins, their location, and their authorities.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
 pub struct PluginRegistry {
-    pub key: Key,                                    // 1
-    pub registry: Vec<RegistryRecord>,               // 4
+    /// The Discriminator of the header which doubles as a Plugin metadata version.
+    pub key: Key, // 1
+    /// The registry of all plugins.
+    pub registry: Vec<RegistryRecord>, // 4
+    /// The registry of all external, third party, plugins.
     pub external_plugins: Vec<ExternalPluginRecord>, // 4
 }
 
@@ -29,23 +33,32 @@ impl SolanaAccount for PluginRegistry {
     }
 }
 
+/// A simple type to store the core data of a plugin.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct RegistryData {
+    /// The offset to the plugin in the account.
     pub offset: usize,
+    /// The authorities who have permission to utilize a plugin.
     pub authorities: Vec<Authority>,
 }
 
+/// A simple type to store the mapping of Plugin type to Plugin data.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct RegistryRecord {
+    /// The type of plugin.
     pub plugin_type: PluginType,
+    /// The data of the plugin.
     pub data: RegistryData,
 }
 
+/// A simple type to store the mapping of external Plugin authority to Plugin data.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct ExternalPluginRecord {
+    /// The authority of the external plugin.
     pub authority: Authority,
+    /// The data of the plugin.
     pub data: RegistryData,
 }

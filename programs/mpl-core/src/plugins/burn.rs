@@ -12,11 +12,14 @@ use crate::{
 
 use super::{PluginValidation, ValidationResult};
 
+/// This plugin manages additional permissions to burn.
+/// Any authorities approved are given permission to burn the asset on behalf of the owner.
 #[repr(C)]
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct Burn {}
 
 impl Burn {
+    /// Initialize the Burn plugin.
     pub fn new() -> Self {
         Self {}
     }

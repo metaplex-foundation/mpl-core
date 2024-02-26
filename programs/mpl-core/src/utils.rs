@@ -5,18 +5,20 @@ use solana_program::{
 };
 
 use crate::{
-    error::MplAssetError,
+    error::MplCoreError,
     plugins::{PluginHeader, PluginRegistry},
     state::{Asset, Authority, DataBlob, Key, SolanaAccount},
 };
 
+/// Load the one byte key from the account data at the given offset.
 pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, ProgramError> {
-    let key = Key::from_u8((*account.data).borrow()[offset])
-        .ok_or(MplAssetError::DeserializationError)?;
+    let key =
+        Key::from_u8((*account.data).borrow()[offset]).ok_or(MplCoreError::DeserializationError)?;
 
     Ok(key)
 }
 
+/// Assert that the account info address is in the authorities array.
 pub fn assert_authority(
     asset: &Asset,
     authority: &AccountInfo,
@@ -48,9 +50,10 @@ pub fn assert_authority(
         }
     }
 
-    Err(MplAssetError::InvalidAuthority.into())
+    Err(MplCoreError::InvalidAuthority.into())
 }
 
+/// Resolve the key to one of the two default authorities; owner or update authority.
 pub fn resolve_authority_to_default(asset: &Asset, authority: &AccountInfo) -> Authority {
     if authority.key == &asset.owner {
         Authority::Owner
@@ -59,6 +62,7 @@ pub fn resolve_authority_to_default(asset: &Asset, authority: &AccountInfo) -> A
     }
 }
 
+/// Fetch the core data from the account; asset, plugin header (if present), and plugin registry (if present).
 pub fn fetch_core_data(
     account: &AccountInfo,
 ) -> Result<(Asset, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
@@ -86,13 +90,13 @@ pub(crate) fn close_program_account<'a>(
 
     let amount_to_return = account_rent
         .checked_sub(one_byte_rent)
-        .ok_or(MplAssetError::NumericalOverflowError)?;
+        .ok_or(MplCoreError::NumericalOverflowError)?;
 
     // Transfer lamports from the account to the destination account.
     let dest_starting_lamports = funds_dest_account_info.lamports();
     **funds_dest_account_info.lamports.borrow_mut() = dest_starting_lamports
         .checked_add(amount_to_return)
-        .ok_or(MplAssetError::NumericalOverflowError)?;
+        .ok_or(MplCoreError::NumericalOverflowError)?;
     **account_to_close_info.lamports.borrow_mut() = one_byte_rent;
 
     account_to_close_info.realloc(1, false)?;

@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
@@ -6,6 +7,7 @@ use crate::processor::{
     RemoveAuthorityArgs, RemovePluginArgs, TransferArgs, UpdateArgs, UpdatePluginArgs,
 };
 
+/// Instructions supported by the mpl-core program.
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 #[rustfmt::skip]
 pub enum MplAssetInstruction {
@@ -75,7 +77,7 @@ pub enum MplAssetInstruction {
     Burn(BurnArgs),
 
     // Transfer an asset.
-    // danenbm WIP
+    /// Transfer an asset by changing its owner.
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]
     #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]

@@ -3,7 +3,7 @@ use mpl_utils::assert_signer;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
 use crate::{
-    error::MplAssetError,
+    error::MplCoreError,
     instruction::accounts::TransferAccounts,
     plugins::{CheckResult, Plugin, ValidationResult},
     state::{Asset, Compressible, CompressionProof, HashedAsset, Key, SolanaAccount},
@@ -30,11 +30,11 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
         Key::HashedAsset => {
             let compression_proof = args
                 .compression_proof
-                .ok_or(MplAssetError::MissingCompressionProof)?;
+                .ok_or(MplCoreError::MissingCompressionProof)?;
             let mut asset = Asset::verify_proof(ctx.accounts.asset_address, compression_proof)?;
 
             if ctx.accounts.authority.key != &asset.owner {
-                return Err(MplAssetError::InvalidAuthority.into());
+                return Err(MplCoreError::InvalidAuthority.into());
             }
 
             // TODO: Check delegates in compressed case.
@@ -50,7 +50,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             // let mut asset = Asset::load(ctx.accounts.asset_address, 0)?;
 
             // let mut authority_check: Result<(), ProgramError> =
-            //     Err(MplAssetError::InvalidAuthority.into());
+            //     Err(MplCoreError::InvalidAuthority.into());
             // if asset.get_size() != ctx.accounts.asset_address.data_len() {
             //     solana_program::msg!("Fetch Plugin");
             //     let (authorities, plugin, _) =
@@ -61,7 +61,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
 
             //     if let Plugin::Delegate(delegate) = plugin {
             //         if delegate.frozen {
-            //             return Err(MplAssetError::AssetIsFrozen.into());
+            //             return Err(MplCoreError::AssetIsFrozen.into());
             //         }
             //     }
             // }
@@ -70,7 +70,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             //     Ok(_) => Ok::<(), ProgramError>(()),
             //     Err(_) => {
             //         if ctx.accounts.authority.key != &asset.owner {
-            //             Err(MplAssetError::InvalidAuthority.into())
+            //             Err(MplCoreError::InvalidAuthority.into())
             //         } else {
             //             Ok(())
             //         }
@@ -87,7 +87,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                             approved = true;
                         }
                         ValidationResult::Rejected => {
-                            return Err(MplAssetError::InvalidAuthority.into())
+                            return Err(MplCoreError::InvalidAuthority.into())
                         }
                         ValidationResult::Pass => (),
                     }
@@ -104,7 +104,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                         let result = Plugin::load(ctx.accounts.asset_address, record.data.offset)?
                             .validate_transfer(&ctx.accounts, &args, &record.data.authorities)?;
                         if result == ValidationResult::Rejected {
-                            return Err(MplAssetError::InvalidAuthority.into());
+                            return Err(MplCoreError::InvalidAuthority.into());
                         } else if result == ValidationResult::Approved {
                             approved = true;
                         }
@@ -113,12 +113,12 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             };
 
             if !approved {
-                return Err(MplAssetError::InvalidAuthority.into());
+                return Err(MplCoreError::InvalidAuthority.into());
             }
 
             asset.owner = *ctx.accounts.new_owner.key;
             asset.save(ctx.accounts.asset_address, 0)
         }
-        _ => Err(MplAssetError::IncorrectAccount.into()),
+        _ => Err(MplCoreError::IncorrectAccount.into()),
     }
 }

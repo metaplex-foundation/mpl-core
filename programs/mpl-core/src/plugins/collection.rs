@@ -12,9 +12,15 @@ use crate::{
 
 use super::{PluginValidation, ValidationResult};
 
+/// This plugin manages a collection or grouping of assets.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct Collection {
+    /// A pointer to the collection which the asset is a part of.
     collection_address: Pubkey,
+    /// This flag indicates if the collection is required when operating on the asset.
+    /// Managed collections use the Collection as a parent which can store plugins that
+    /// are applied to all assets in the collection by default. Plugins on the asset itself
+    /// can override the collection plugins.
     managed: bool,
 }
 

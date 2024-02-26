@@ -6,8 +6,9 @@ use solana_program::{
 };
 use thiserror::Error;
 
+/// Errors that may be returned by the Mpl Core program.
 #[derive(Error, Clone, Debug, Eq, PartialEq, FromPrimitive)]
-pub enum MplAssetError {
+pub enum MplCoreError {
     /// 0 - Invalid System Program
     #[error("Invalid System Program")]
     InvalidSystemProgram,
@@ -85,19 +86,19 @@ pub enum MplAssetError {
     AlreadyDecompressed,
 }
 
-impl PrintProgramError for MplAssetError {
+impl PrintProgramError for MplCoreError {
     fn print<E>(&self) {
         msg!(&self.to_string());
     }
 }
 
-impl From<MplAssetError> for ProgramError {
-    fn from(e: MplAssetError) -> Self {
+impl From<MplCoreError> for ProgramError {
+    fn from(e: MplCoreError) -> Self {
         ProgramError::Custom(e as u32)
     }
 }
 
-impl<T> DecodeError<T> for MplAssetError {
+impl<T> DecodeError<T> for MplCoreError {
     fn type_of() -> &'static str {
         "Mpl Core Error"
     }

@@ -10,7 +10,7 @@ import {
   Serializer,
   array,
   struct,
-  u16,
+  u8,
 } from '@metaplex-foundation/umi/serializers';
 import {
   Creator,
@@ -22,13 +22,13 @@ import {
 } from '.';
 
 export type Royalties = {
-  sellerFeeBasisPoints: number;
+  percentage: number;
   creators: Array<Creator>;
   ruleSet: RuleSet;
 };
 
 export type RoyaltiesArgs = {
-  sellerFeeBasisPoints: number;
+  percentage: number;
   creators: Array<CreatorArgs>;
   ruleSet: RuleSetArgs;
 };
@@ -36,7 +36,7 @@ export type RoyaltiesArgs = {
 export function getRoyaltiesSerializer(): Serializer<RoyaltiesArgs, Royalties> {
   return struct<Royalties>(
     [
-      ['sellerFeeBasisPoints', u16()],
+      ['percentage', u8()],
       ['creators', array(getCreatorSerializer())],
       ['ruleSet', getRuleSetSerializer()],
     ],

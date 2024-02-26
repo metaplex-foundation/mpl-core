@@ -12,22 +12,30 @@ use crate::{
 
 use super::PluginValidation;
 
+/// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct Creator {
     address: Pubkey,
-    verified: bool,
+    percentage: u8,
 }
 
+/// The rule set for an asset indicating where it is allowed to be transferred.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub enum RuleSet {
+    /// Allow list of programs that are allowed to transfer, receive, or send the asset.
     ProgramAllowList(Vec<Pubkey>),
+    /// Deny list of programs that are not allowed to transfer, receive, or send the asset.
     ProgramDenyList(Vec<Pubkey>),
 }
 
+/// Traditional royalties structure for an asset.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct Royalties {
-    seller_fee_basis_points: u16,
+    /// The percentage of royalties to be paid to the creators.
+    percentage: u8,
+    /// A list of creators to receive royalties.
     creators: Vec<Creator>,
+    /// The rule set for the asset to enforce royalties.
     rule_set: RuleSet,
 }
 

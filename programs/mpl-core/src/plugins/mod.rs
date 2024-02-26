@@ -25,25 +25,33 @@ pub use utils::*;
 use borsh::{BorshDeserialize, BorshSerialize};
 
 use crate::{
-    error::MplAssetError,
+    error::MplCoreError,
     state::{Authority, Compressible, DataBlob},
 };
 
+/// Definition of the plugin variants, each containing a link to the plugin struct.
 #[repr(u16)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum Plugin {
+    /// Reserved for uninitialized or invalid plugins.
     Reserved,
+    /// Royalties plugin.
     Royalties(Royalties),
+    /// Freeze plugin.
     Freeze(Freeze),
+    /// Burn plugin.
     Burn(Burn),
+    /// Transfer plugin.
     Transfer(Transfer),
+    /// Collection plugin.
     Collection(Collection),
 }
 
 impl Plugin {
+    /// Get the default authority for a plugin which defines who must allow the plugin to be created.
     pub fn default_authority(&self) -> Result<Authority, ProgramError> {
         match self {
-            Plugin::Reserved => Err(MplAssetError::InvalidPlugin.into()),
+            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(_) => Ok(Authority::UpdateAuthority),
             Plugin::Freeze(_) => Ok(Authority::Owner),
             Plugin::Burn(_) => Ok(Authority::Owner),
@@ -55,14 +63,21 @@ impl Plugin {
 
 impl Compressible for Plugin {}
 
+/// List of First Party Plugin types.
 #[repr(u16)]
 #[derive(Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum PluginType {
+    /// Reserved plugin.
     Reserved,
+    /// Royalties plugin.
     Royalties,
+    /// Freeze plugin.
     Freeze,
+    /// Burn plugin.
     Burn,
+    /// Transfer plugin.
     Transfer,
+    /// Collection plugin.
     Collection,
 }
 
@@ -90,18 +105,20 @@ impl From<&Plugin> for PluginType {
 }
 
 impl Plugin {
+    /// Load and deserialize a plugin from an offset in the account.
     pub fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
         let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
         Self::deserialize(&mut bytes).map_err(|error| {
             msg!("Error: {}", error);
-            MplAssetError::DeserializationError.into()
+            MplCoreError::DeserializationError.into()
         })
     }
 
+    /// Save and serialize a plugin to an offset in the account.
     pub fn save(&self, account: &AccountInfo, offset: usize) -> ProgramResult {
         borsh::to_writer(&mut account.data.borrow_mut()[offset..], self).map_err(|error| {
             msg!("Error: {}", error);
-            MplAssetError::SerializationError.into()
+            MplCoreError::SerializationError.into()
         })
     }
 }

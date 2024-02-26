@@ -3,7 +3,7 @@ use mpl_utils::assert_signer;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
 use crate::{
-    error::MplAssetError,
+    error::MplCoreError,
     instruction::accounts::RemovePluginAccounts,
     plugins::{delete_plugin, PluginType},
     utils::fetch_core_data,
@@ -35,7 +35,7 @@ pub(crate) fn remove_plugin<'a>(
 
     // We don't have anything to delete if there's no plugin meta.
     if plugin_header.is_none() || plugin_registry.is_none() {
-        return Err(MplAssetError::PluginNotFound.into());
+        return Err(MplCoreError::PluginNotFound.into());
     }
 
     delete_plugin(

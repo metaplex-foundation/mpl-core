@@ -3,7 +3,7 @@ use mpl_utils::assert_signer;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
 use crate::{
-    error::MplAssetError,
+    error::MplCoreError,
     instruction::accounts::UpdatePluginAccounts,
     plugins::{Plugin, PluginType, RegistryRecord, ValidationResult},
     utils::fetch_core_data,
@@ -29,7 +29,7 @@ pub(crate) fn update_plugin<'a>(
     }
 
     let (asset, _, plugin_registry) = fetch_core_data(ctx.accounts.asset_address)?;
-    let plugin_registry = plugin_registry.ok_or(MplAssetError::PluginsNotInitialized)?;
+    let plugin_registry = plugin_registry.ok_or(MplCoreError::PluginsNotInitialized)?;
 
     let plugin_type: PluginType = (&args.plugin).into();
     if let Some(RegistryRecord {
@@ -43,13 +43,13 @@ pub(crate) fn update_plugin<'a>(
         let result = Plugin::load(ctx.accounts.asset_address, data.offset)?
             .validate_update_plugin(&asset, &ctx.accounts, &args, &data.authorities)?;
         if result == ValidationResult::Rejected {
-            return Err(MplAssetError::InvalidAuthority.into());
+            return Err(MplCoreError::InvalidAuthority.into());
         } else if result == ValidationResult::Approved {
             //TODO: Handle plugins that are dynamically sized.
             args.plugin.save(ctx.accounts.asset_address, data.offset)?;
         }
     } else {
-        return Err(MplAssetError::PluginNotFound.into());
+        return Err(MplCoreError::PluginNotFound.into());
     }
 
     Ok(())

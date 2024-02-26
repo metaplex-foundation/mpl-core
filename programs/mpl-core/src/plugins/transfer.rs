@@ -11,11 +11,14 @@ use crate::{
 
 use super::{PluginValidation, ValidationResult};
 
+/// This plugin manages the ability to transfer an asset and any authorities
+/// added are permitted to transfer the asset on behalf of the owner.
 #[repr(C)]
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct Transfer {}
 
 impl Transfer {
+    /// Initialize the Transfer plugin.
     pub fn new() -> Self {
         Self {}
     }

@@ -6,7 +6,7 @@ use solana_program::{
 };
 
 use crate::{
-    error::MplAssetError,
+    error::MplCoreError,
     instruction::accounts::CreateAccounts,
     state::{Asset, Compressible, DataState, HashedAsset, Key},
 };
@@ -29,7 +29,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
     assert_signer(ctx.accounts.payer)?;
 
     if *ctx.accounts.system_program.key != system_program::id() {
-        return Err(MplAssetError::InvalidSystemProgram.into());
+        return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     let new_asset = Asset {

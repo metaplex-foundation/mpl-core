@@ -11,13 +11,17 @@ use crate::{
 
 use super::{PluginValidation, ValidationResult};
 
+/// The freeze plugin allows any authority to lock the asset so it's no longer transferable.
+/// The default authority for this plugin is the owner.
 #[repr(C)]
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct Freeze {
+    /// The current state of the asset and whether or not it's transferable.
     pub frozen: bool, // 1
 }
 
 impl Freeze {
+    /// Initialize the Freeze plugin, unfrozen by default.
     pub fn new() -> Self {
         Self { frozen: false }
     }

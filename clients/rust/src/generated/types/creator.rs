@@ -17,5 +17,5 @@ pub struct Creator {
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     pub address: Pubkey,
-    pub verified: bool,
+    pub percentage: u8,
 }

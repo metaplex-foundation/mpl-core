@@ -2097,6 +2097,7 @@ dependencies = [
  "mpl-utils",
  "num-derive 0.3.3",
  "num-traits",
+ "podded",
  "shank",
  "solana-program",
  "spl-noop",
@@ -2514,6 +2515,15 @@ name = "plain"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4596b6d070b27117e987119b4dac604f3c58cfb0b191112e24771b2faeac1a6"
+
+[[package]]
+name = "podded"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5ef03855395ea7838e038410cf2be5dd419fa65560c3c82dfcf1ee5b32cfb4e"
+dependencies = [
+ "bytemuck",
+]
 
 [[package]]
 name = "polyval"

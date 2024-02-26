@@ -5,7 +5,7 @@ use solana_program::{
 };
 
 use crate::{
-    error::MplAssetError,
+    error::MplCoreError,
     instruction::accounts::UpdateAccounts,
     plugins::{CheckResult, Plugin, RegistryData, RegistryRecord, ValidationResult},
     state::{Asset, DataBlob, SolanaAccount},
@@ -43,7 +43,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
                 approved = true;
             }
         }
-        CheckResult::CanReject => return Err(MplAssetError::InvalidAuthority.into()),
+        CheckResult::CanReject => return Err(MplCoreError::InvalidAuthority.into()),
         CheckResult::None => (),
     };
 
@@ -56,7 +56,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
                 let result = Plugin::load(ctx.accounts.asset_address, record.data.offset)?
                     .validate_update(&ctx.accounts, &args, &record.data.authorities)?;
                 if result == ValidationResult::Rejected {
-                    return Err(MplAssetError::InvalidAuthority.into());
+                    return Err(MplCoreError::InvalidAuthority.into());
                 } else if result == ValidationResult::Approved {
                     approved = true;
                 }
@@ -65,7 +65,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
     };
 
     if !approved {
-        return Err(MplAssetError::InvalidAuthority.into());
+        return Err(MplCoreError::InvalidAuthority.into());
     }
 
     let mut dirty = false;
@@ -88,22 +88,22 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
             let new_asset_size = asset.get_size() as isize;
             let size_diff = new_asset_size
                 .checked_sub(asset_size)
-                .ok_or(MplAssetError::NumericalOverflow)?;
+                .ok_or(MplCoreError::NumericalOverflow)?;
             let new_size = (ctx.accounts.asset_address.data_len() as isize)
                 .checked_add(size_diff)
-                .ok_or(MplAssetError::NumericalOverflow)?;
+                .ok_or(MplCoreError::NumericalOverflow)?;
             let new_registry_offset = (plugin_header.plugin_registry_offset as isize)
                 .checked_add(size_diff)
-                .ok_or(MplAssetError::NumericalOverflow)?;
+                .ok_or(MplCoreError::NumericalOverflow)?;
             let registry_offset = plugin_header.plugin_registry_offset;
             plugin_header.plugin_registry_offset = new_registry_offset as usize;
 
             let plugin_offset = asset_size
                 .checked_add(size_diff)
-                .ok_or(MplAssetError::NumericalOverflow)?;
+                .ok_or(MplCoreError::NumericalOverflow)?;
             let new_plugin_offset = new_asset_size
                 .checked_add(size_diff)
-                .ok_or(MplAssetError::NumericalOverflow)?;
+                .ok_or(MplCoreError::NumericalOverflow)?;
 
             // //TODO: This is memory intensive, we should use memmove instead probably.
             let src = ctx.accounts.asset_address.data.borrow()
@@ -130,7 +130,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
                 .map(|record| {
                     let new_offset = (record.data.offset as isize)
                         .checked_add(size_diff)
-                        .ok_or(MplAssetError::NumericalOverflow)?;
+                        .ok_or(MplCoreError::NumericalOverflow)?;
                     Ok(RegistryRecord {
                         plugin_type: record.plugin_type,
                         data: RegistryData {
@@ -139,7 +139,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
                         },
                     })
                 })
-                .collect::<Result<Vec<_>, MplAssetError>>()?;
+                .collect::<Result<Vec<_>, MplCoreError>>()?;
             plugin_registry.save(ctx.accounts.asset_address, new_registry_offset as usize)?;
         } else {
             resize_or_reallocate_account_raw(

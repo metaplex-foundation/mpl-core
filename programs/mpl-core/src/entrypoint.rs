@@ -3,9 +3,11 @@ use solana_program::{
     program_error::PrintProgramError, pubkey::Pubkey,
 };
 
-use crate::{error::MplAssetError, processor};
+use crate::{error::MplCoreError, processor};
 
 entrypoint!(process_instruction);
+
+/// Entrypoint function
 fn process_instruction<'a>(
     program_id: &'a Pubkey,
     accounts: &'a [AccountInfo<'a>],
@@ -13,7 +15,7 @@ fn process_instruction<'a>(
 ) -> ProgramResult {
     if let Err(error) = processor::process_instruction(program_id, accounts, instruction_data) {
         // catch the error so we can print it
-        error.print::<MplAssetError>();
+        error.print::<MplCoreError>();
         return Err(error);
     }
     Ok(())

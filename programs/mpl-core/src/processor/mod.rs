@@ -35,6 +35,7 @@ pub(crate) use decompress::*;
 mod update_plugin;
 pub(crate) use update_plugin::*;
 
+/// Standard processor that deserializes and instruction and routes it to the appropriate handler.
 pub fn process_instruction<'a>(
     _program_id: &Pubkey,
     accounts: &'a [AccountInfo<'a>],

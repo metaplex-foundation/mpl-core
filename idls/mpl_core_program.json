@@ -943,8 +943,8 @@
             "type": "publicKey"
           },
           {
-            "name": "verified",
-            "type": "bool"
+            "name": "percentage",
+            "type": "u8"
           }
         ]
       }
@@ -955,8 +955,8 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "sellerFeeBasisPoints",
-            "type": "u16"
+            "name": "percentage",
+            "type": "u8"
           },
           {
             "name": "creators",

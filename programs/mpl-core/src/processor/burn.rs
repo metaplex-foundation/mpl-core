@@ -5,7 +5,7 @@ use solana_program::{
 };
 
 use crate::{
-    error::MplAssetError,
+    error::MplCoreError,
     instruction::accounts::BurnAccounts,
     plugins::{fetch_plugin, Plugin, PluginType},
     state::{Asset, Compressible, CompressionProof, DataBlob, Key, SolanaAccount},
@@ -31,11 +31,11 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
         Key::HashedAsset => {
             let compression_proof = args
                 .compression_proof
-                .ok_or(MplAssetError::MissingCompressionProof)?;
+                .ok_or(MplCoreError::MissingCompressionProof)?;
             let asset = Asset::verify_proof(ctx.accounts.asset_address, compression_proof)?;
 
             if ctx.accounts.authority.key != &asset.owner {
-                return Err(MplAssetError::InvalidAuthority.into());
+                return Err(MplCoreError::InvalidAuthority.into());
             }
 
             // TODO: Check delegates in compressed case.
@@ -46,7 +46,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
             let asset = Asset::load(ctx.accounts.asset_address, 0)?;
 
             let mut authority_check: Result<(), ProgramError> =
-                Err(MplAssetError::InvalidAuthority.into());
+                Err(MplCoreError::InvalidAuthority.into());
             if asset.get_size() != ctx.accounts.asset_address.data_len() {
                 let (authorities, plugin, _) =
                     fetch_plugin(ctx.accounts.asset_address, PluginType::Freeze)?;
@@ -55,7 +55,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
 
                 if let Plugin::Freeze(delegate) = plugin {
                     if delegate.frozen {
-                        return Err(MplAssetError::AssetIsFrozen.into());
+                        return Err(MplCoreError::AssetIsFrozen.into());
                     }
                 }
             }
@@ -64,14 +64,14 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
                 Ok(_) => Ok::<(), ProgramError>(()),
                 Err(_) => {
                     if ctx.accounts.authority.key != &asset.owner {
-                        Err(MplAssetError::InvalidAuthority.into())
+                        Err(MplCoreError::InvalidAuthority.into())
                     } else {
                         Ok(())
                     }
                 }
             }?;
         }
-        _ => return Err(MplAssetError::IncorrectAccount.into()),
+        _ => return Err(MplCoreError::IncorrectAccount.into()),
     }
 
     close_program_account(ctx.accounts.asset_address, ctx.accounts.authority)

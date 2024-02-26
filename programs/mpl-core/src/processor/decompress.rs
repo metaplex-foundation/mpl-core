@@ -6,7 +6,7 @@ use solana_program::{
 };
 
 use crate::{
-    error::MplAssetError,
+    error::MplCoreError,
     instruction::accounts::DecompressAccounts,
     state::{Asset, CompressionProof, Key},
     utils::load_key,
@@ -41,7 +41,7 @@ pub(crate) fn decompress<'a>(
             let asset = Asset::verify_proof(ctx.accounts.asset_address, args.compression_proof)?;
 
             if ctx.accounts.owner.key != &asset.owner {
-                return Err(MplAssetError::InvalidAuthority.into());
+                return Err(MplCoreError::InvalidAuthority.into());
             }
 
             // TODO: Delegated compress/decompress authority.
@@ -61,8 +61,8 @@ pub(crate) fn decompress<'a>(
                 serialized_data.len(),
             );
         }
-        Key::Asset => return Err(MplAssetError::AlreadyDecompressed.into()),
-        _ => return Err(MplAssetError::IncorrectAccount.into()),
+        Key::Asset => return Err(MplCoreError::AlreadyDecompressed.into()),
+        _ => return Err(MplCoreError::IncorrectAccount.into()),
     }
 
     Ok(())

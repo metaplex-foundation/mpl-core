@@ -3,7 +3,7 @@ use mpl_utils::assert_signer;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
 use crate::{
-    error::MplAssetError,
+    error::MplCoreError,
     instruction::accounts::AddAuthorityAccounts,
     plugins::{add_authority_to_plugin, PluginType},
     state::Authority,
@@ -37,12 +37,12 @@ pub(crate) fn add_authority<'a>(
 
     let plugin_header = match plugin_header {
         Some(header) => header,
-        None => return Err(MplAssetError::PluginsNotInitialized.into()),
+        None => return Err(MplCoreError::PluginsNotInitialized.into()),
     };
 
     let mut plugin_registry = match plugin_registry {
         Some(registry) => registry,
-        None => return Err(MplAssetError::PluginsNotInitialized.into()),
+        None => return Err(MplCoreError::PluginsNotInitialized.into()),
     };
 
     add_authority_to_plugin(
