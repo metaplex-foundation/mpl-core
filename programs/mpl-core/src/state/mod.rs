@@ -64,13 +64,6 @@ impl Key {
     }
 }
 
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub enum MigrationLevel {
-    MigrateOnly,
-    MigrateAndBurn,
-}
-
 //TODO: Implement this struct
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]

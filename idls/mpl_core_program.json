@@ -1455,20 +1455,6 @@
           }
         ]
       }
-    },
-    {
-      "name": "MigrationLevel",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "MigrateOnly"
-          },
-          {
-            "name": "MigrateAndBurn"
-          }
-        ]
-      }
     }
   ],
   "errors": [

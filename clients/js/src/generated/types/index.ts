@@ -17,7 +17,6 @@ export * from './extraAccounts';
 export * from './freeze';
 export * from './hashedAssetSchema';
 export * from './key';
-export * from './migrationLevel';
 export * from './plugin';
 export * from './pluginHash';
 export * from './pluginType';
