@@ -1,7 +1,15 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 // import { base58 } from '@metaplex-foundation/umi/serializers';
-import { AssetWithPlugins, DataState, Key, addPlugin, create, fetchAssetWithPlugins, update } from '../src';
+import {
+  AssetWithPlugins,
+  DataState,
+  Key,
+  addPlugin,
+  create,
+  fetchAssetWithPlugins,
+  update,
+} from '../src';
 import { createUmi } from './_setup';
 
 test('it can update an asset to be larger', async (t) => {
@@ -29,8 +37,8 @@ test('it can update an asset to be larger', async (t) => {
     key: Key.Asset,
     updateAuthority: umi.identity.publicKey,
     owner: umi.identity.publicKey,
-    name: "Test Bread 2",
-    uri: "https://example.com/bread2"
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
   });
 });
 
@@ -59,8 +67,8 @@ test('it can update an asset to be smaller', async (t) => {
     key: Key.Asset,
     updateAuthority: umi.identity.publicKey,
     owner: umi.identity.publicKey,
-    name: "",
-    uri: ""
+    name: '',
+    uri: '',
   });
 });
 
@@ -82,7 +90,7 @@ test('it can update an asset with plugins to be larger', async (t) => {
     plugin: {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
-    }
+    },
   }).sendAndConfirm(umi);
 
   await update(umi, {
@@ -106,21 +114,25 @@ test('it can update an asset with plugins to be larger', async (t) => {
     },
     pluginRegistry: {
       key: 4,
-      registry: [{
-        pluginType: 2,
-        data: {
-          offset: BigInt(120),
-          authorities: [{ __kind: "Owner" }]
-        }
-      }],
+      registry: [
+        {
+          pluginType: 2,
+          data: {
+            offset: BigInt(120),
+            authorities: [{ __kind: 'Owner' }],
+          },
+        },
+      ],
     },
-    plugins: [{
-      authorities: [{ __kind: "Owner" }],
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
+    plugins: [
+      {
+        authorities: [{ __kind: 'Owner' }],
+        plugin: {
+          __kind: 'Freeze',
+          fields: [{ frozen: false }],
+        },
       },
-    }],
+    ],
   });
 });
 
@@ -142,7 +154,7 @@ test('it can update an asset with plugins to be smaller', async (t) => {
     plugin: {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
-    }
+    },
   }).sendAndConfirm(umi);
 
   await update(umi, {
@@ -165,20 +177,24 @@ test('it can update an asset with plugins to be smaller', async (t) => {
     },
     pluginRegistry: {
       key: 4,
-      registry: [{
-        pluginType: 2,
-        data: {
-          offset: BigInt(82),
-          authorities: [{ __kind: "Owner" }]
-        }
-      }],
+      registry: [
+        {
+          pluginType: 2,
+          data: {
+            offset: BigInt(82),
+            authorities: [{ __kind: 'Owner' }],
+          },
+        },
+      ],
     },
-    plugins: [{
-      authorities: [{ __kind: "Owner" }],
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
+    plugins: [
+      {
+        authorities: [{ __kind: 'Owner' }],
+        plugin: {
+          __kind: 'Freeze',
+          fields: [{ frozen: false }],
+        },
       },
-    }],
+    ],
   });
 });
