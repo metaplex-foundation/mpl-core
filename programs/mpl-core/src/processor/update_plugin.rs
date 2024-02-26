@@ -29,7 +29,6 @@ pub(crate) fn update_plugin<'a>(
     }
 
     let (asset, _, plugin_registry) = fetch_core_data(ctx.accounts.asset_address)?;
-    solana_program::msg!("Fetched Core Data");
     let plugin_registry = plugin_registry.ok_or(MplAssetError::PluginsNotInitialized)?;
 
     let plugin_type: PluginType = (&args.plugin).into();

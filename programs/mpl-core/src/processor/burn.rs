@@ -48,11 +48,9 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
             let mut authority_check: Result<(), ProgramError> =
                 Err(MplAssetError::InvalidAuthority.into());
             if asset.get_size() != ctx.accounts.asset_address.data_len() {
-                solana_program::msg!("Fetch Plugin");
                 let (authorities, plugin, _) =
                     fetch_plugin(ctx.accounts.asset_address, PluginType::Freeze)?;
 
-                solana_program::msg!("Assert authority");
                 authority_check = assert_authority(&asset, ctx.accounts.authority, &authorities);
 
                 if let Plugin::Freeze(delegate) = plugin {

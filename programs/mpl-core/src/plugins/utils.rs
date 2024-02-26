@@ -73,8 +73,6 @@ pub fn fetch_plugin(
     let PluginRegistry { registry, .. } =
         PluginRegistry::load(account, header.plugin_registry_offset)?;
 
-    solana_program::msg!("{:?}", registry);
-
     // Find the plugin in the registry.
     let plugin_data = registry
         .iter()
@@ -92,11 +90,9 @@ pub fn fetch_plugin(
         )
         .ok_or(MplAssetError::PluginNotFound)?;
 
-    solana_program::msg!("Deserialize plugin at offset");
     // Deserialize the plugin.
     let plugin = Plugin::deserialize(&mut &(*account.data).borrow()[plugin_data.offset..])?;
 
-    solana_program::msg!("Return plugin");
     // Return the plugin and its authorities.
     Ok((plugin_data.authorities.clone(), plugin, plugin_data.offset))
 }
@@ -124,87 +120,6 @@ pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramErr
         .map(|registry_record| registry_record.plugin_type)
         .collect())
 }
-
-/// Add a plugin into the registry
-// pub fn add_plugin_or_authority<'a>(
-//     plugin: &Plugin,
-//     authority: Authority,
-//     account: &AccountInfo<'a>,
-//     payer: &AccountInfo<'a>,
-//     system_program: &AccountInfo<'a>,
-// ) -> ProgramResult {
-//     let asset = {
-//         let mut bytes: &[u8] = &(*account.data).borrow();
-//         Asset::deserialize(&mut bytes)?
-//     };
-
-//     //TODO: Bytemuck this.
-//     let mut header = PluginHeader::load(account, asset.get_size())?;
-//     let mut plugin_registry = PluginRegistry::load(account, header.plugin_registry_offset)?;
-
-//     let plugin_type = plugin.into();
-//     let plugin_data = plugin.try_to_vec()?;
-//     let plugin_size = plugin_data.len();
-//     let authority_bytes = authority.try_to_vec()?;
-
-//     if let Some(RegistryRecord {
-//         plugin_type: _,
-//         data: registry_data,
-//     }) = plugin_registry.registry.iter_mut().find(
-//         |RegistryRecord {
-//              plugin_type: type_iter,
-//              data: _,
-//          }| type_iter == &plugin_type,
-//     ) {
-//         registry_data.authorities.push(authority.clone());
-
-//         let new_size = account
-//             .data_len()
-//             .checked_add(authority_bytes.len())
-//             .ok_or(MplAssetError::NumericalOverflow)?;
-//         resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
-
-//         plugin_registry.save(account, header.plugin_registry_offset)?;
-//     } else {
-//         let old_registry_offset = header.plugin_registry_offset;
-//         let registry_data = RegistryData {
-//             offset: old_registry_offset,
-//             authorities: vec![authority],
-//         };
-
-//         //TODO: There's probably a better way to get the size without having to serialize the registry data.
-//         let size_increase = plugin_size
-//             .checked_add(Key::get_initial_size())
-//             .ok_or(MplAssetError::NumericalOverflow)?
-//             .checked_add(registry_data.clone().try_to_vec()?.len())
-//             .ok_or(MplAssetError::NumericalOverflow)?;
-
-//         let new_registry_offset = header
-//             .plugin_registry_offset
-//             .checked_add(plugin_size)
-//             .ok_or(MplAssetError::NumericalOverflow)?;
-
-//         header.plugin_registry_offset = new_registry_offset;
-
-//         plugin_registry.registry.push(RegistryRecord {
-//             plugin_type,
-//             data: registry_data.clone(),
-//         });
-
-//         let new_size = account
-//             .data_len()
-//             .checked_add(size_increase)
-//             .ok_or(MplAssetError::NumericalOverflow)?;
-
-//         resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
-
-//         header.save(account, asset.get_size())?;
-//         plugin.save(account, old_registry_offset)?;
-//         plugin_registry.save(account, new_registry_offset)?;
-//     }
-
-//     Ok(())
-// }
 
 /// Add a plugin to the registry and initialize it.
 pub fn initialize_plugin<'a>(
@@ -309,7 +224,6 @@ pub fn delete_plugin<'a>(
         let next_plugin_offset = plugin_offset
             .checked_add(serialized_plugin.len())
             .ok_or(MplAssetError::NumericalOverflow)?;
-        solana_program::msg!("next_plugin_offset: {:?}", next_plugin_offset);
 
         let new_size = account
             .data_len()
@@ -317,23 +231,19 @@ pub fn delete_plugin<'a>(
             .ok_or(MplAssetError::NumericalOverflow)?
             .checked_sub(serialized_plugin.len())
             .ok_or(MplAssetError::NumericalOverflow)?;
-        solana_program::msg!("new_size: {:?}", new_size);
 
         let new_offset = header
             .plugin_registry_offset
             .checked_sub(serialized_plugin.len())
             .ok_or(MplAssetError::NumericalOverflow)?;
-        solana_program::msg!("new_offset: {:?}", new_offset);
 
         let data_to_move = header
             .plugin_registry_offset
             .checked_sub(new_offset)
             .ok_or(MplAssetError::NumericalOverflow)?;
-        solana_program::msg!("data_to_move: {:?}", data_to_move);
 
         //TODO: This is memory intensive, we should use memmove instead probably.
         let src = account.data.borrow()[next_plugin_offset..].to_vec();
-        solana_program::msg!("src: {:?}", src);
         sol_memcpy(
             &mut account.data.borrow_mut()[plugin_offset..],
             &src,

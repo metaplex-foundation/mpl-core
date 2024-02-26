@@ -35,7 +35,6 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
 
     let (mut asset, plugin_header, plugin_registry) = fetch_core_data(ctx.accounts.asset_address)?;
     let asset_size = asset.get_size() as isize;
-    solana_program::msg!("asset_size: {:?}", asset_size);
 
     let mut approved = false;
     match Asset::check_update() {
@@ -87,22 +86,15 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
             (plugin_header, plugin_registry)
         {
             let new_asset_size = asset.get_size() as isize;
-            solana_program::msg!("new_asset_size: {:?}", new_asset_size);
             let size_diff = new_asset_size
                 .checked_sub(asset_size)
                 .ok_or(MplAssetError::NumericalOverflow)?;
             let new_size = (ctx.accounts.asset_address.data_len() as isize)
                 .checked_add(size_diff)
                 .ok_or(MplAssetError::NumericalOverflow)?;
-            solana_program::msg!("size_diff: {:?}", size_diff);
-            solana_program::msg!(
-                "old plugin_registry_offset: {:?}",
-                plugin_header.plugin_registry_offset
-            );
             let new_registry_offset = (plugin_header.plugin_registry_offset as isize)
                 .checked_add(size_diff)
                 .ok_or(MplAssetError::NumericalOverflow)?;
-            solana_program::msg!("new_registry_offset: {:?}", new_registry_offset);
             let registry_offset = plugin_header.plugin_registry_offset;
             plugin_header.plugin_registry_offset = new_registry_offset as usize;
 

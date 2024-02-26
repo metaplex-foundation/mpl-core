@@ -96,13 +96,11 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             };
 
             if let Some(plugin_registry) = plugin_registry {
-                solana_program::msg!("Iterating through plugin registry");
                 for record in plugin_registry.registry {
                     if matches!(
                         record.plugin_type.check_transfer(),
                         CheckResult::CanApprove | CheckResult::CanReject
                     ) {
-                        solana_program::msg!("Validating Transfer for {:#?}", record.plugin_type);
                         let result = Plugin::load(ctx.accounts.asset_address, record.data.offset)?
                             .validate_transfer(&ctx.accounts, &args, &record.data.authorities)?;
                         if result == ValidationResult::Rejected {
