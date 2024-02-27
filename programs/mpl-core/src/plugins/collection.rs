@@ -1,4 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use mpl_utils::assert_signer;
 use solana_program::pubkey::Pubkey;
 
 use crate::{
@@ -44,22 +45,24 @@ impl PluginValidation for Collection {
         match ctx.collection {
             Some(collection) => {
                 let collection = CollectionData::load(collection, 0)?;
-                if ctx.payer.is_signer
-                    || (ctx.update_authority.is_some() && ctx.update_authority.unwrap().is_signer)
-                {
-                    if collection.update_authority != *ctx.payer.key {
-                        return Ok(ValidationResult::Rejected);
-                    }
-                } else {
+                solana_program::msg!("Collection: {:?}", collection);
+                // Check that the collection update authority is a signer.
+                let authority = match ctx.update_authority {
+                    Some(authority) => authority,
+                    None => ctx.payer,
+                };
+
+                assert_signer(authority)?;
+
+                if authority.key != &collection.update_authority {
                     return Ok(ValidationResult::Rejected);
                 }
+
                 Ok(ValidationResult::Pass)
             }
             None => {
-                if self.managed {
-                    return Ok(ValidationResult::Rejected);
-                }
-                Ok(ValidationResult::Pass)
+                solana_program::msg!("No collection provided");
+                Ok(ValidationResult::Rejected)
             }
         }
     }

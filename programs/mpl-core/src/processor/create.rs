@@ -123,7 +123,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
         if let Some(plugin_registry) = plugin_registry {
             for record in plugin_registry.registry {
                 if matches!(
-                    record.plugin_type.check_transfer(),
+                    record.plugin_type.check_create(),
                     CheckResult::CanApprove | CheckResult::CanReject
                 ) {
                     let result = Plugin::load(ctx.accounts.asset_address, record.offset)?
