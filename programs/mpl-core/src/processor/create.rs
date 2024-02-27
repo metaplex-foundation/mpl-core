@@ -8,8 +8,9 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateAccounts,
-    plugins::{create_meta_idempotent, initialize_plugin, Plugin},
+    plugins::{create_meta_idempotent, initialize_plugin, CheckResult, Plugin, ValidationResult},
     state::{Asset, Compressible, DataState, HashedAsset, Key},
+    utils::fetch_core_data,
 };
 
 #[repr(C)]
@@ -46,8 +47,8 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
             .owner
             .unwrap_or(ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer))
             .key,
-        name: args.name,
-        uri: args.uri,
+        name: args.name.clone(),
+        uri: args.uri.clone(),
     };
 
     let serialized_data = new_asset.try_to_vec()?;
@@ -93,14 +94,51 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
             ctx.accounts.system_program,
         )?;
 
-        for plugin in args.plugins {
+        for plugin in &args.plugins {
             initialize_plugin(
-                &plugin,
+                plugin,
                 &plugin.default_authority()?,
                 ctx.accounts.asset_address,
                 ctx.accounts.payer,
                 ctx.accounts.system_program,
             )?;
+        }
+
+        let (_, _, plugin_registry) = fetch_core_data(ctx.accounts.asset_address)?;
+
+        let mut approved = true;
+        // match Asset::check_create() {
+        //     CheckResult::CanApprove | CheckResult::CanReject => {
+        //         match asset.validate_create(&ctx.accounts)? {
+        //             ValidationResult::Approved => {
+        //                 approved = true;
+        //             }
+        //             ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
+        //             ValidationResult::Pass => (),
+        //         }
+        //     }
+        //     CheckResult::None => (),
+        // };
+
+        if let Some(plugin_registry) = plugin_registry {
+            for record in plugin_registry.registry {
+                if matches!(
+                    record.plugin_type.check_transfer(),
+                    CheckResult::CanApprove | CheckResult::CanReject
+                ) {
+                    let result = Plugin::load(ctx.accounts.asset_address, record.offset)?
+                        .validate_create(&ctx.accounts, &args, &record.authorities)?;
+                    if result == ValidationResult::Rejected {
+                        return Err(MplCoreError::InvalidAuthority.into());
+                    } else if result == ValidationResult::Approved {
+                        approved = true;
+                    }
+                }
+            }
+        };
+
+        if !approved {
+            return Err(MplCoreError::InvalidAuthority.into());
         }
     }
 

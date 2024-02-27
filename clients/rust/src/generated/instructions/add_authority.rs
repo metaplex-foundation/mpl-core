@@ -101,7 +101,7 @@ struct AddAuthorityInstructionData {
 
 impl AddAuthorityInstructionData {
     fn new() -> Self {
-        Self { discriminator: 4 }
+        Self { discriminator: 5 }
     }
 }
 

@@ -100,7 +100,7 @@ struct UpdatePluginInstructionData {
 
 impl UpdatePluginInstructionData {
     fn new() -> Self {
-        Self { discriminator: 3 }
+        Self { discriminator: 4 }
     }
 }
 

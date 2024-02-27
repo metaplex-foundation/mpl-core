@@ -10,6 +10,9 @@ pub use hashed_asset_schema::*;
 mod traits;
 pub use traits::*;
 
+mod collection;
+pub use collection::*;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 use num_derive::{FromPrimitive, ToPrimitive};
 use solana_program::pubkey::Pubkey;
@@ -87,6 +90,8 @@ pub enum Key {
     PluginHeader,
     /// A discriminator indicating the plugin registry.
     PluginRegistry,
+    /// A discriminator indicating the collection.
+    Collection,
 }
 
 impl Key {

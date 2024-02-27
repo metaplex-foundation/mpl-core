@@ -67,7 +67,7 @@ export function getUpdatePluginInstructionDataSerializer(): Serializer<
       ],
       { description: 'UpdatePluginInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 3 })
+    (value) => ({ ...value, discriminator: 4 })
   ) as Serializer<UpdatePluginInstructionDataArgs, UpdatePluginInstructionData>;
 }
 

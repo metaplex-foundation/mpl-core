@@ -32,6 +32,7 @@ impl PluginType {
     pub fn check_create(&self) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match self {
+            PluginType::Collection => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }

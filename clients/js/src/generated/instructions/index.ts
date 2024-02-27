@@ -11,6 +11,7 @@ export * from './addPlugin';
 export * from './burn';
 export * from './compress';
 export * from './create';
+export * from './createCollection';
 export * from './decompress';
 export * from './removeAuthority';
 export * from './removePlugin';

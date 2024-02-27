@@ -7,6 +7,7 @@
  */
 
 export * from './asset';
+export * from './collectionData';
 export * from './hashedAsset';
 export * from './pluginHeader';
 export * from './pluginRegistry';

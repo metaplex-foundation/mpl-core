@@ -8,8 +8,6 @@
 
 import {
   Context,
-  Option,
-  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -18,8 +16,8 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  array,
   mapSerializer,
-  option,
   string,
   struct,
   u8,
@@ -29,59 +27,69 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import { Plugin, PluginArgs, getPluginSerializer } from '../types';
 
 // Accounts.
-export type UpdateInstructionAccounts = {
-  /** The address of the asset */
-  assetAddress: PublicKey | Pda;
-  /** The update authority or update authority delegate of the asset */
-  authority?: Signer;
+export type CreateCollectionInstructionAccounts = {
+  /** The address of the new asset */
+  collectionAddress: Signer;
+  /** The authority of the new asset */
+  updateAuthority?: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The new update authority of the asset */
-  newUpdateAuthority?: PublicKey | Pda;
+  /** The owner of the new asset. Defaults to the authority if not present. */
+  owner?: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
-  /** The SPL Noop Program */
-  logWrapper?: PublicKey | Pda;
 };
 
 // Data.
-export type UpdateInstructionData = {
+export type CreateCollectionInstructionData = {
   discriminator: number;
-  newName: Option<string>;
-  newUri: Option<string>;
+  name: string;
+  uri: string;
+  plugins: Array<Plugin>;
 };
 
-export type UpdateInstructionDataArgs = {
-  newName: OptionOrNullable<string>;
-  newUri: OptionOrNullable<string>;
+export type CreateCollectionInstructionDataArgs = {
+  name: string;
+  uri: string;
+  plugins: Array<PluginArgs>;
 };
 
-export function getUpdateInstructionDataSerializer(): Serializer<
-  UpdateInstructionDataArgs,
-  UpdateInstructionData
+export function getCreateCollectionInstructionDataSerializer(): Serializer<
+  CreateCollectionInstructionDataArgs,
+  CreateCollectionInstructionData
 > {
-  return mapSerializer<UpdateInstructionDataArgs, any, UpdateInstructionData>(
-    struct<UpdateInstructionData>(
+  return mapSerializer<
+    CreateCollectionInstructionDataArgs,
+    any,
+    CreateCollectionInstructionData
+  >(
+    struct<CreateCollectionInstructionData>(
       [
         ['discriminator', u8()],
-        ['newName', option(string())],
-        ['newUri', option(string())],
+        ['name', string()],
+        ['uri', string()],
+        ['plugins', array(getPluginSerializer())],
       ],
-      { description: 'UpdateInstructionData' }
+      { description: 'CreateCollectionInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 9 })
-  ) as Serializer<UpdateInstructionDataArgs, UpdateInstructionData>;
+    (value) => ({ ...value, discriminator: 1 })
+  ) as Serializer<
+    CreateCollectionInstructionDataArgs,
+    CreateCollectionInstructionData
+  >;
 }
 
 // Args.
-export type UpdateInstructionArgs = UpdateInstructionDataArgs;
+export type CreateCollectionInstructionArgs =
+  CreateCollectionInstructionDataArgs;
 
 // Instruction.
-export function update(
-  context: Pick<Context, 'identity' | 'programs'>,
-  input: UpdateInstructionAccounts & UpdateInstructionArgs
+export function createCollection(
+  context: Pick<Context, 'payer' | 'programs'>,
+  input: CreateCollectionInstructionAccounts & CreateCollectionInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -91,36 +99,31 @@ export function update(
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    assetAddress: {
+    collectionAddress: {
       index: 0,
       isWritable: true,
-      value: input.assetAddress ?? null,
+      value: input.collectionAddress ?? null,
     },
-    authority: { index: 1, isWritable: false, value: input.authority ?? null },
-    payer: { index: 2, isWritable: true, value: input.payer ?? null },
-    newUpdateAuthority: {
-      index: 3,
+    updateAuthority: {
+      index: 1,
       isWritable: false,
-      value: input.newUpdateAuthority ?? null,
+      value: input.updateAuthority ?? null,
     },
+    payer: { index: 2, isWritable: true, value: input.payer ?? null },
+    owner: { index: 3, isWritable: false, value: input.owner ?? null },
     systemProgram: {
       index: 4,
       isWritable: false,
       value: input.systemProgram ?? null,
     },
-    logWrapper: {
-      index: 5,
-      isWritable: false,
-      value: input.logWrapper ?? null,
-    },
   };
 
   // Arguments.
-  const resolvedArgs: UpdateInstructionArgs = { ...input };
+  const resolvedArgs: CreateCollectionInstructionArgs = { ...input };
 
   // Default values.
-  if (!resolvedAccounts.authority.value) {
-    resolvedAccounts.authority.value = context.identity;
+  if (!resolvedAccounts.payer.value) {
+    resolvedAccounts.payer.value = context.payer;
   }
   if (!resolvedAccounts.systemProgram.value) {
     resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
@@ -143,8 +146,8 @@ export function update(
   );
 
   // Data.
-  const data = getUpdateInstructionDataSerializer().serialize(
-    resolvedArgs as UpdateInstructionDataArgs
+  const data = getCreateCollectionInstructionDataSerializer().serialize(
+    resolvedArgs as CreateCollectionInstructionDataArgs
   );
 
   // Bytes Created On Chain.

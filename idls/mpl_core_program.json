@@ -80,6 +80,65 @@
       }
     },
     {
+      "name": "CreateCollection",
+      "accounts": [
+        {
+          "name": "collectionAddress",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The address of the new asset"
+          ]
+        },
+        {
+          "name": "updateAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The authority of the new asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The owner of the new asset. Defaults to the authority if not present."
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "createCollectionArgs",
+          "type": {
+            "defined": "CreateCollectionArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 1
+      }
+    },
+    {
       "name": "AddPlugin",
       "accounts": [
         {
@@ -144,7 +203,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 1
+        "value": 2
       }
     },
     {
@@ -212,7 +271,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 2
+        "value": 3
       }
     },
     {
@@ -280,7 +339,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 3
+        "value": 4
       }
     },
     {
@@ -348,7 +407,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 4
+        "value": 5
       }
     },
     {
@@ -416,7 +475,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 5
+        "value": 6
       }
     },
     {
@@ -476,7 +535,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 6
+        "value": 7
       }
     },
     {
@@ -544,7 +603,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 7
+        "value": 8
       }
     },
     {
@@ -612,7 +671,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 8
+        "value": 9
       }
     },
     {
@@ -671,7 +730,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 9
+        "value": 10
       }
     },
     {
@@ -730,7 +789,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 10
+        "value": 11
       }
     }
   ],
@@ -809,6 +868,40 @@
           {
             "name": "uri",
             "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CollectionData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "updateAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "numMinted",
+            "type": "u32"
+          },
+          {
+            "name": "currentSize",
+            "type": "u32"
           }
         ]
       }
@@ -1034,6 +1127,30 @@
               "defined": "DataState"
             }
           },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "plugins",
+            "type": {
+              "vec": {
+                "defined": "Plugin"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreateCollectionArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
             "name": "name",
             "type": "string"
@@ -1444,6 +1561,9 @@
           },
           {
             "name": "PluginRegistry"
+          },
+          {
+            "name": "Collection"
           }
         ]
       }

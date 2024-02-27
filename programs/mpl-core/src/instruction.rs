@@ -3,16 +3,17 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
 use crate::processor::{
-    AddAuthorityArgs, AddPluginArgs, BurnArgs, CompressArgs, CreateArgs, DecompressArgs,
-    RemoveAuthorityArgs, RemovePluginArgs, TransferArgs, UpdateArgs, UpdatePluginArgs,
+    AddAuthorityArgs, AddPluginArgs, BurnArgs, CompressArgs, CreateArgs, CreateCollectionArgs,
+    DecompressArgs, RemoveAuthorityArgs, RemovePluginArgs, TransferArgs, UpdateArgs,
+    UpdatePluginArgs,
 };
 
 /// Instructions supported by the mpl-core program.
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 #[rustfmt::skip]
 pub enum MplAssetInstruction {
-    /// Create a new mpl-core.
-    /// This function creates the initial mpl-core
+    /// Create a new mpl-core Asset.
+    /// This function creates the initial Asset, with or without plugins.
     #[account(0, writable, signer, name="asset_address", desc = "The address of the new asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, optional, name="update_authority", desc = "The authority of the new asset")]
@@ -21,6 +22,15 @@ pub enum MplAssetInstruction {
     #[account(5, name="system_program", desc = "The system program")]
     #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Create(CreateArgs),
+
+    /// Create a new mpl-core Collection.
+    /// This function creates the initial Collection, with or without plugins.
+    #[account(0, writable, signer, name="collection_address", desc = "The address of the new asset")]
+    #[account(1, optional, name="update_authority", desc = "The authority of the new asset")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, name="owner", desc = "The owner of the new asset. Defaults to the authority if not present.")]
+    #[account(4, name="system_program", desc = "The system program")]
+    CreateCollection(CreateCollectionArgs),
 
     /// Add a plugin to an mpl-core.
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]

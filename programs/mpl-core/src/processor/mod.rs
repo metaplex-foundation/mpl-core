@@ -5,6 +5,9 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, 
 mod create;
 pub(crate) use create::*;
 
+mod create_collection;
+pub(crate) use create_collection::*;
+
 mod add_plugin;
 pub(crate) use add_plugin::*;
 
@@ -46,6 +49,10 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::Create(args) => {
             msg!("Instruction: Create");
             create(accounts, args)
+        }
+        MplAssetInstruction::CreateCollection(args) => {
+            msg!("Instruction: CreateCollection");
+            create_collection(accounts, args)
         }
         MplAssetInstruction::AddPlugin(args) => {
             msg!("Instruction: AddPlugin");

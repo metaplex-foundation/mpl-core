@@ -7,8 +7,8 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    state::{Asset, Authority, DataBlob, Key, SolanaAccount},
-    utils::{assert_authority, resolve_authority_to_default},
+    state::{Asset, Authority, CollectionData, DataBlob, Key, SolanaAccount},
+    utils::{assert_authority, load_key, resolve_authority_to_default},
 };
 
 use super::{Plugin, PluginHeader, PluginRegistry, PluginType, RegistryRecord};
@@ -19,17 +19,32 @@ pub fn create_meta_idempotent<'a>(
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
-    let asset = {
-        let mut bytes: &[u8] = &(*account.data).borrow();
-        Asset::deserialize(&mut bytes)?
+    let header_offset = match load_key(account, 0)? {
+        Key::Asset => {
+            let asset = {
+                let mut bytes: &[u8] = &(*account.data).borrow();
+                Asset::deserialize(&mut bytes)?
+            };
+
+            asset.get_size()
+        }
+        Key::Collection => {
+            let collection = {
+                let mut bytes: &[u8] = &(*account.data).borrow();
+                CollectionData::deserialize(&mut bytes)?
+            };
+
+            collection.get_size()
+        }
+        _ => return Err(MplCoreError::IncorrectAccount.into()),
     };
 
     // Check if the plugin header and registry exist.
-    if asset.get_size() == account.data_len() {
+    if header_offset == account.data_len() {
         // They don't exist, so create them.
         let header = PluginHeader {
             key: Key::PluginHeader,
-            plugin_registry_offset: asset.get_size() + PluginHeader::get_initial_size(),
+            plugin_registry_offset: header_offset + PluginHeader::get_initial_size(),
         };
         let registry = PluginRegistry {
             key: Key::PluginRegistry,
@@ -44,7 +59,7 @@ pub fn create_meta_idempotent<'a>(
             header.plugin_registry_offset + PluginRegistry::get_initial_size(),
         )?;
 
-        header.save(account, asset.get_size())?;
+        header.save(account, header_offset)?;
         registry.save(account, header.plugin_registry_offset)?;
     }
 
@@ -124,13 +139,28 @@ pub fn initialize_plugin<'a>(
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
-    let asset = {
-        let mut bytes: &[u8] = &(*account.data).borrow();
-        Asset::deserialize(&mut bytes)?
+    let header_offset = match load_key(account, 0)? {
+        Key::Asset => {
+            let asset = {
+                let mut bytes: &[u8] = &(*account.data).borrow();
+                Asset::deserialize(&mut bytes)?
+            };
+
+            asset.get_size()
+        }
+        Key::Collection => {
+            let collection = {
+                let mut bytes: &[u8] = &(*account.data).borrow();
+                CollectionData::deserialize(&mut bytes)?
+            };
+
+            collection.get_size()
+        }
+        _ => return Err(MplCoreError::IncorrectAccount.into()),
     };
 
     //TODO: Bytemuck this.
-    let mut header = PluginHeader::load(account, asset.get_size())?;
+    let mut header = PluginHeader::load(account, header_offset)?;
     let mut plugin_registry = PluginRegistry::load(account, header.plugin_registry_offset)?;
 
     let plugin_type = plugin.into();
@@ -174,7 +204,7 @@ pub fn initialize_plugin<'a>(
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
-    header.save(account, asset.get_size())?;
+    header.save(account, header_offset)?;
     plugin.save(account, old_registry_offset)?;
     plugin_registry.save(account, new_registry_offset)?;
 

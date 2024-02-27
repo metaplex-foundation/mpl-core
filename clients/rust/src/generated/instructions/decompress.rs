@@ -87,7 +87,7 @@ struct DecompressInstructionData {
 
 impl DecompressInstructionData {
     fn new() -> Self {
-        Self { discriminator: 10 }
+        Self { discriminator: 11 }
     }
 }
 

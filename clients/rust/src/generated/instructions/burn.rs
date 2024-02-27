@@ -94,7 +94,7 @@ struct BurnInstructionData {
 
 impl BurnInstructionData {
     fn new() -> Self {
-        Self { discriminator: 6 }
+        Self { discriminator: 7 }
     }
 }
 

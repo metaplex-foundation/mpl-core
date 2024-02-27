@@ -7,40 +7,39 @@ import {
   publicKey as toPublicKey,
 } from '@metaplex-foundation/umi';
 import {
-  Asset,
+  CollectionData,
   PluginHeaderAccountData,
   PluginRegistryAccountData,
-  deserializeAsset,
-  getAssetAccountDataSerializer,
+  deserializeCollectionData,
+  getCollectionDataAccountDataSerializer,
   getPluginHeaderAccountDataSerializer,
   getPluginRegistryAccountDataSerializer,
   getPluginSerializer,
 } from '../generated';
 import { PluginList, PluginWithAuthorities } from '.';
 
+export type CollectionWithPlugins = CollectionData & PluginList;
 
-export type AssetWithPlugins = Asset & PluginList;
-
-export async function fetchAssetWithPlugins(
+export async function fetchCollectionWithPlugins(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<AssetWithPlugins> {
+): Promise<CollectionWithPlugins> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  assertAccountExists(maybeAccount, 'Asset');
-  const asset = deserializeAsset(maybeAccount);
-  const assetData = getAssetAccountDataSerializer().serialize(asset);
+  assertAccountExists(maybeAccount, 'Collection');
+  const collection = deserializeCollectionData(maybeAccount);
+  const collectionData = getCollectionDataAccountDataSerializer().serialize(collection);
 
   let pluginHeader: PluginHeaderAccountData | undefined;
   let pluginRegistry: PluginRegistryAccountData | undefined;
   let plugins: PluginWithAuthorities[] | undefined;
-  if (maybeAccount.data.length !== assetData.length) {
+  if (maybeAccount.data.length !== collectionData.length) {
     [pluginHeader] = getPluginHeaderAccountDataSerializer().deserialize(
       maybeAccount.data,
-      assetData.length
+      collectionData.length
     );
     [pluginRegistry] = getPluginRegistryAccountDataSerializer().deserialize(
       maybeAccount.data,
@@ -55,12 +54,12 @@ export async function fetchAssetWithPlugins(
     }));
   }
 
-  const assetWithPlugins: AssetWithPlugins = {
+  const collectionWithPlugins: CollectionWithPlugins = {
     pluginHeader,
     plugins,
     pluginRegistry,
-    ...asset,
+    ...collection,
   };
 
-  return assetWithPlugins;
+  return collectionWithPlugins;
 }

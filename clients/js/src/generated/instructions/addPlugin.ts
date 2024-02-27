@@ -67,7 +67,7 @@ export function getAddPluginInstructionDataSerializer(): Serializer<
       ],
       { description: 'AddPluginInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 1 })
+    (value) => ({ ...value, discriminator: 2 })
   ) as Serializer<AddPluginInstructionDataArgs, AddPluginInstructionData>;
 }
 

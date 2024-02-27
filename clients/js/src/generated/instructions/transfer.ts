@@ -76,7 +76,7 @@ export function getTransferInstructionDataSerializer(): Serializer<
       ],
       { description: 'TransferInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 7 })
+    (value) => ({ ...value, discriminator: 8 })
   ) as Serializer<TransferInstructionDataArgs, TransferInstructionData>;
 }
 
