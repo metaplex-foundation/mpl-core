@@ -20,7 +20,6 @@ export * from './key';
 export * from './plugin';
 export * from './pluginHash';
 export * from './pluginType';
-export * from './registryData';
 export * from './registryRecord';
 export * from './royalties';
 export * from './ruleSet';

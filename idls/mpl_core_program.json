@@ -874,26 +874,6 @@
       }
     },
     {
-      "name": "RegistryData",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "offset",
-            "type": "u64"
-          },
-          {
-            "name": "authorities",
-            "type": {
-              "vec": {
-                "defined": "Authority"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "RegistryRecord",
       "type": {
         "kind": "struct",
@@ -905,10 +885,16 @@
             }
           },
           {
-            "name": "data",
+            "name": "authorities",
             "type": {
-              "defined": "RegistryData"
+              "vec": {
+                "defined": "Authority"
+              }
             }
+          },
+          {
+            "name": "offset",
+            "type": "u64"
           }
         ]
       }
@@ -925,10 +911,8 @@
             }
           },
           {
-            "name": "data",
-            "type": {
-              "defined": "RegistryData"
-            }
+            "name": "offset",
+            "type": "u64"
           }
         ]
       }
