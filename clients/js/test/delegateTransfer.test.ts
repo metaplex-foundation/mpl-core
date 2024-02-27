@@ -69,13 +69,11 @@ test('a delegate can transfer the asset', async (t) => {
       registry: [
         {
           pluginType: PluginType.Transfer,
-          data: {
-            offset: BigInt(117),
-            authorities: [
-              { __kind: 'Owner' },
-              { __kind: 'Pubkey', address: delegateAddress.publicKey },
-            ],
-          },
+          offset: BigInt(117),
+          authorities: [
+            { __kind: 'Owner' },
+            { __kind: 'Pubkey', address: delegateAddress.publicKey },
+          ],
         },
       ],
     },

@@ -76,13 +76,11 @@ test('it can add an authority to a plugin', async (t) => {
       registry: [
         {
           pluginType: 2,
-          data: {
-            offset: BigInt(117),
-            authorities: [
-              { __kind: 'Owner' },
-              { __kind: 'Pubkey', address: delegateAddress.publicKey },
-            ],
-          },
+          offset: BigInt(117),
+          authorities: [
+            { __kind: 'Owner' },
+            { __kind: 'Pubkey', address: delegateAddress.publicKey },
+          ],
         },
       ],
     },

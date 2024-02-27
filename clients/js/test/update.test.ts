@@ -120,10 +120,8 @@ test('it can update an asset with plugins to be larger', async (t) => {
       registry: [
         {
           pluginType: 2,
-          data: {
-            offset: BigInt(120),
-            authorities: [{ __kind: 'Owner' }],
-          },
+          offset: BigInt(120),
+          authorities: [{ __kind: 'Owner' }],
         },
       ],
     },
@@ -184,10 +182,8 @@ test('it can update an asset with plugins to be smaller', async (t) => {
       registry: [
         {
           pluginType: 2,
-          data: {
-            offset: BigInt(82),
-            authorities: [{ __kind: 'Owner' }],
-          },
+          offset: BigInt(82),
+          authorities: [{ __kind: 'Owner' }],
         },
       ],
     },
