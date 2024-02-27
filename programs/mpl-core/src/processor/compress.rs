@@ -48,11 +48,11 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
                 let registry_records = fetch_plugins(ctx.accounts.asset_address)?;
 
                 for record in registry_records {
-                    let authorities: AuthorityVec = record.data.authorities;
+                    let authorities: AuthorityVec = record.authorities;
                     let plugin_authorities_hash = authorities.hash()?;
 
                     let plugin = Plugin::deserialize(
-                        &mut &(*ctx.accounts.asset_address.data).borrow()[record.data.offset..],
+                        &mut &(*ctx.accounts.asset_address.data).borrow()[record.offset..],
                     )?;
                     let plugin_hash = plugin.hash()?;
 

@@ -5,7 +5,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use crate::{
     error::MplCoreError,
     instruction::accounts::UpdatePluginAccounts,
-    plugins::{Plugin, PluginType, RegistryRecord, ValidationResult},
+    plugins::{Plugin, PluginType, ValidationResult},
     utils::fetch_core_data,
 };
 
@@ -32,24 +32,20 @@ pub(crate) fn update_plugin<'a>(
     let plugin_registry = plugin_registry.ok_or(MplCoreError::PluginsNotInitialized)?;
 
     let plugin_type: PluginType = (&args.plugin).into();
-    if let Some(RegistryRecord {
-        plugin_type: _,
-        data,
-    }) = plugin_registry
+    let registry_record = plugin_registry
         .registry
         .iter()
         .find(|record| record.plugin_type == plugin_type)
-    {
-        let result = Plugin::load(ctx.accounts.asset_address, data.offset)?
-            .validate_update_plugin(&asset, &ctx.accounts, &args, &data.authorities)?;
-        if result == ValidationResult::Rejected {
-            return Err(MplCoreError::InvalidAuthority.into());
-        } else if result == ValidationResult::Approved {
-            //TODO: Handle plugins that are dynamically sized.
-            args.plugin.save(ctx.accounts.asset_address, data.offset)?;
-        }
-    } else {
-        return Err(MplCoreError::PluginNotFound.into());
+        .ok_or(MplCoreError::PluginNotFound)?;
+
+    let result = Plugin::load(ctx.accounts.asset_address, registry_record.offset)?
+        .validate_update_plugin(&asset, &ctx.accounts, &args, &registry_record.authorities)?;
+    if result == ValidationResult::Rejected {
+        return Err(MplCoreError::InvalidAuthority.into());
+    } else if result == ValidationResult::Approved {
+        //TODO: Handle plugins that are dynamically sized.
+        args.plugin
+            .save(ctx.accounts.asset_address, registry_record.offset)?;
     }
 
     Ok(())

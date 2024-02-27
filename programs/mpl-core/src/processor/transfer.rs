@@ -101,8 +101,8 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                         record.plugin_type.check_transfer(),
                         CheckResult::CanApprove | CheckResult::CanReject
                     ) {
-                        let result = Plugin::load(ctx.accounts.asset_address, record.data.offset)?
-                            .validate_transfer(&ctx.accounts, &args, &record.data.authorities)?;
+                        let result = Plugin::load(ctx.accounts.asset_address, record.offset)?
+                            .validate_transfer(&ctx.accounts, &args, &record.authorities)?;
                         if result == ValidationResult::Rejected {
                             return Err(MplCoreError::InvalidAuthority.into());
                         } else if result == ValidationResult::Approved {
