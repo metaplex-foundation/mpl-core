@@ -6,7 +6,6 @@
 //!
 
 use crate::generated::types::Authority;
-use crate::generated::types::RegistryData;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -14,5 +13,5 @@ use borsh::BorshSerialize;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ExternalPluginRecord {
     pub authority: Authority,
-    pub data: RegistryData,
+    pub offset: u64,
 }

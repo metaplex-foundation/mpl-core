@@ -6,21 +6,31 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
 import {
+  Serializer,
+  array,
+  struct,
+  u64,
+} from '@metaplex-foundation/umi/serializers';
+import {
+  Authority,
+  AuthorityArgs,
   PluginType,
   PluginTypeArgs,
-  RegistryData,
-  RegistryDataArgs,
+  getAuthoritySerializer,
   getPluginTypeSerializer,
-  getRegistryDataSerializer,
 } from '.';
 
-export type RegistryRecord = { pluginType: PluginType; data: RegistryData };
+export type RegistryRecord = {
+  pluginType: PluginType;
+  authorities: Array<Authority>;
+  offset: bigint;
+};
 
 export type RegistryRecordArgs = {
   pluginType: PluginTypeArgs;
-  data: RegistryDataArgs;
+  authorities: Array<AuthorityArgs>;
+  offset: number | bigint;
 };
 
 export function getRegistryRecordSerializer(): Serializer<
@@ -30,7 +40,8 @@ export function getRegistryRecordSerializer(): Serializer<
   return struct<RegistryRecord>(
     [
       ['pluginType', getPluginTypeSerializer()],
-      ['data', getRegistryDataSerializer()],
+      ['authorities', array(getAuthoritySerializer())],
+      ['offset', u64()],
     ],
     { description: 'RegistryRecord' }
   ) as Serializer<RegistryRecordArgs, RegistryRecord>;

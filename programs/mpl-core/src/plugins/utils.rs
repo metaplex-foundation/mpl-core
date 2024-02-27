@@ -11,7 +11,7 @@ use crate::{
     utils::{assert_authority, resolve_authority_to_default},
 };
 
-use super::{Plugin, PluginHeader, PluginRegistry, PluginType, RegistryData, RegistryRecord};
+use super::{Plugin, PluginHeader, PluginRegistry, PluginType, RegistryRecord};
 
 /// Create plugin header and registry if it doesn't exist
 pub fn create_meta_idempotent<'a>(
@@ -75,27 +75,20 @@ pub fn fetch_plugin(
         PluginRegistry::load(account, header.plugin_registry_offset)?;
 
     // Find the plugin in the registry.
-    let plugin_data = registry
+    let registry_record = registry
         .iter()
-        .find(
-            |RegistryRecord {
-                 plugin_type: plugin_type_iter,
-                 data: _,
-             }| *plugin_type_iter == plugin_type,
-        )
-        .map(
-            |RegistryRecord {
-                 plugin_type: _,
-                 data,
-             }| data,
-        )
+        .find(|record| record.plugin_type == plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
 
     // Deserialize the plugin.
-    let plugin = Plugin::deserialize(&mut &(*account.data).borrow()[plugin_data.offset..])?;
+    let plugin = Plugin::deserialize(&mut &(*account.data).borrow()[registry_record.offset..])?;
 
     // Return the plugin and its authorities.
-    Ok((plugin_data.authorities.clone(), plugin, plugin_data.offset))
+    Ok((
+        registry_record.authorities.clone(),
+        plugin,
+        registry_record.offset,
+    ))
 }
 
 /// Fetch the plugin registry.
@@ -143,43 +136,43 @@ pub fn initialize_plugin<'a>(
     let plugin_type = plugin.into();
     let plugin_data = plugin.try_to_vec()?;
     let plugin_size = plugin_data.len();
-    // let authority_bytes = authority.try_to_vec()?;
 
-    if let Some(RegistryRecord {
-        plugin_type: _,
-        data: _,
-    }) = plugin_registry.registry.iter_mut().find(
-        |RegistryRecord {
-             plugin_type: type_iter,
-             data: _,
-         }| type_iter == &plugin_type,
-    ) {
+    if plugin_registry
+        .registry
+        .iter_mut()
+        .any(|record| record.plugin_type == plugin_type)
+    {
         return Err(MplCoreError::PluginAlreadyExists.into());
     }
 
     let old_registry_offset = header.plugin_registry_offset;
-    let registry_data = RegistryData {
+
+    let new_registry_record = RegistryRecord {
+        plugin_type,
         offset: old_registry_offset,
         authorities: vec![authority.clone()],
     };
+
     let size_increase = plugin_size
         .checked_add(Key::get_initial_size())
         .ok_or(MplCoreError::NumericalOverflow)?
-        .checked_add(registry_data.clone().try_to_vec()?.len())
+        .checked_add(new_registry_record.try_to_vec()?.len())
         .ok_or(MplCoreError::NumericalOverflow)?;
+
     let new_registry_offset = header
         .plugin_registry_offset
         .checked_add(plugin_size)
         .ok_or(MplCoreError::NumericalOverflow)?;
+
     header.plugin_registry_offset = new_registry_offset;
-    plugin_registry.registry.push(RegistryRecord {
-        plugin_type,
-        data: registry_data.clone(),
-    });
+
+    plugin_registry.registry.push(new_registry_record);
+
     let new_size = account
         .data_len()
         .checked_add(size_increase)
         .ok_or(MplCoreError::NumericalOverflow)?;
+
     resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
     header.save(account, asset.get_size())?;
     plugin.save(account, old_registry_offset)?;
@@ -202,24 +195,23 @@ pub fn delete_plugin<'a>(
     let mut header = PluginHeader::load(account, asset.get_size())?;
     let mut plugin_registry = PluginRegistry::load(account, header.plugin_registry_offset)?;
 
-    if let Some(index) = plugin_registry.registry.iter_mut().position(
-        |RegistryRecord {
-             plugin_type: type_iter,
-             data: _,
-         }| type_iter == plugin_type,
-    ) {
+    if let Some(index) = plugin_registry
+        .registry
+        .iter_mut()
+        .position(|record| record.plugin_type == *plugin_type)
+    {
         let registry_record = plugin_registry.registry.remove(index);
         let serialized_registry_record = registry_record.try_to_vec()?;
 
         // Only allow the default authority to delete the plugin.
-        let authorities = registry_record.data.authorities;
+        let authorities = registry_record.authorities;
 
         let resolved_authority = resolve_authority_to_default(asset, authority);
         if resolved_authority != authorities[0] {
             return Err(MplCoreError::InvalidAuthority.into());
         }
 
-        let plugin_offset = registry_record.data.offset;
+        let plugin_offset = registry_record.offset;
         let plugin = Plugin::load(account, plugin_offset)?;
         let serialized_plugin = plugin.try_to_vec()?;
 
@@ -279,44 +271,25 @@ pub fn add_authority_to_plugin<'a>(
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
-    let authorities = &plugin_registry
+    let registry_record = &mut plugin_registry
         .registry
         .iter_mut()
-        .find(
-            |RegistryRecord {
-                 plugin_type: type_iter,
-                 data: _,
-             }| type_iter == plugin_type,
-        )
-        .ok_or(MplCoreError::PluginNotFound)?
-        .data
-        .authorities;
+        .find(|record| record.plugin_type == *plugin_type)
+        .ok_or(MplCoreError::PluginNotFound)?;
 
-    assert_authority(asset, authority, authorities)?;
+    assert_authority(asset, authority, &registry_record.authorities)?;
 
-    if let Some(RegistryRecord {
-        plugin_type: _,
-        data: registry_data,
-    }) = plugin_registry.registry.iter_mut().find(
-        |RegistryRecord {
-             plugin_type: type_iter,
-             data: _,
-         }| type_iter == plugin_type,
-    ) {
-        registry_data.authorities.push(new_authority.clone());
+    registry_record.authorities.push(new_authority.clone());
 
-        let authority_bytes = new_authority.try_to_vec()?;
+    let authority_bytes = new_authority.try_to_vec()?;
 
-        let new_size = account
-            .data_len()
-            .checked_add(authority_bytes.len())
-            .ok_or(MplCoreError::NumericalOverflow)?;
-        resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
+    let new_size = account
+        .data_len()
+        .checked_add(authority_bytes.len())
+        .ok_or(MplCoreError::NumericalOverflow)?;
+    resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
 
-        plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
-    } else {
-        return Err(MplCoreError::PluginNotFound.into());
-    }
+    plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
 
     Ok(())
 }
@@ -334,58 +307,39 @@ pub fn remove_authority_from_plugin<'a>(
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
-    let authorities = &plugin_registry
+    let registry_record = &mut plugin_registry
         .registry
         .iter_mut()
-        .find(
-            |RegistryRecord {
-                 plugin_type: type_iter,
-                 data: _,
-             }| type_iter == plugin_type,
-        )
-        .ok_or(MplCoreError::PluginNotFound)?
-        .data
-        .authorities;
+        .find(|record| record.plugin_type == *plugin_type)
+        .ok_or(MplCoreError::PluginNotFound)?;
 
     let resolved_authority = resolve_authority_to_default(asset, authority);
-    if resolved_authority != authorities[0] {
+    if resolved_authority != registry_record.authorities[0] {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
-    if let Some(RegistryRecord {
-        plugin_type: _,
-        data: registry_data,
-    }) = plugin_registry.registry.iter_mut().find(
-        |RegistryRecord {
-             plugin_type: type_iter,
-             data: _,
-         }| type_iter == plugin_type,
-    ) {
-        let index = registry_data
-            .authorities
-            .iter()
-            .position(|auth| auth == authority_to_remove)
-            .ok_or(MplCoreError::InvalidAuthority)?;
+    let index = registry_record
+        .authorities
+        .iter()
+        .position(|auth| auth == authority_to_remove)
+        .ok_or(MplCoreError::InvalidAuthority)?;
 
-        // Here we replace the default authority with None to indicate it's been removed.
-        if index == 0 {
-            registry_data.authorities[0] = Authority::None;
-            plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
-        } else {
-            registry_data.authorities.swap_remove(index);
-
-            let authority_bytes = authority_to_remove.try_to_vec()?;
-
-            let new_size = account
-                .data_len()
-                .checked_sub(authority_bytes.len())
-                .ok_or(MplCoreError::NumericalOverflow)?;
-            resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
-
-            plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
-        }
+    // Here we replace the default authority with None to indicate it's been removed.
+    if index == 0 {
+        registry_record.authorities[0] = Authority::None;
+        plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
     } else {
-        return Err(MplCoreError::PluginNotFound.into());
+        registry_record.authorities.swap_remove(index);
+
+        let authority_bytes = authority_to_remove.try_to_vec()?;
+
+        let new_size = account
+            .data_len()
+            .checked_sub(authority_bytes.len())
+            .ok_or(MplCoreError::NumericalOverflow)?;
+        resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
+
+        plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
     }
 
     Ok(())

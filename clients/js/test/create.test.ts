@@ -24,7 +24,7 @@ test('it can create a new asset in account state', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    plugins: []
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -51,7 +51,7 @@ test('it can create a new asset in ledger state', async (t) => {
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
-    plugins: []
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -88,7 +88,7 @@ test('it can create a new asset with plugins', async (t) => {
     assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }]
+    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -109,10 +109,8 @@ test('it can create a new asset with plugins', async (t) => {
       registry: [
         {
           pluginType: 2,
-          data: {
-            offset: BigInt(117),
-            authorities: [{ __kind: 'Owner' }],
-          },
+          offset: BigInt(117),
+          authorities: [{ __kind: 'Owner' }],
         },
       ],
     },

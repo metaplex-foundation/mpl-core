@@ -62,13 +62,11 @@ test('it can delegate a new authority', async (t) => {
       registry: [
         {
           pluginType: 2,
-          data: {
-            offset: BigInt(117),
-            authorities: [
-              { __kind: 'Owner' },
-              { __kind: 'Pubkey', address: delegateAddress.publicKey },
-            ],
-          },
+          offset: BigInt(117),
+          authorities: [
+            { __kind: 'Owner' },
+            { __kind: 'Pubkey', address: delegateAddress.publicKey },
+          ],
         },
       ],
     },
@@ -144,13 +142,11 @@ test('a delegate can freeze the token', async (t) => {
       registry: [
         {
           pluginType: 2,
-          data: {
-            offset: BigInt(117),
-            authorities: [
-              { __kind: 'Owner' },
-              { __kind: 'Pubkey', address: delegateAddress.publicKey },
-            ],
-          },
+          offset: BigInt(117),
+          authorities: [
+            { __kind: 'Owner' },
+            { __kind: 'Pubkey', address: delegateAddress.publicKey },
+          ],
         },
       ],
     },

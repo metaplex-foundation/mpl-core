@@ -61,9 +61,9 @@ export async function fetchAssetWithPlugins(
     plugins = pluginRegistry.registry.map((record) => ({
       plugin: getPluginSerializer().deserialize(
         maybeAccount.data,
-        Number(record.data.offset)
+        Number(record.offset)
       )[0],
-      authorities: record.data.authorities,
+      authorities: record.authorities,
     }));
   }
 

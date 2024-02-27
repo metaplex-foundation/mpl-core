@@ -77,13 +77,11 @@ test('it can remove an authority from a plugin', async (t) => {
       registry: [
         {
           pluginType: 2,
-          data: {
-            offset: BigInt(117),
-            authorities: [
-              { __kind: 'Owner' },
-              { __kind: 'Pubkey', address: delegateAddress.publicKey },
-            ],
-          },
+          offset: BigInt(117),
+          authorities: [
+            { __kind: 'Owner' },
+            { __kind: 'Pubkey', address: delegateAddress.publicKey },
+          ],
         },
       ],
     },
@@ -127,10 +125,8 @@ test('it can remove an authority from a plugin', async (t) => {
       registry: [
         {
           pluginType: 2,
-          data: {
-            offset: BigInt(117),
-            authorities: [{ __kind: 'Owner' }],
-          },
+          offset: BigInt(117),
+          authorities: [{ __kind: 'Owner' }],
         },
       ],
     },
@@ -204,10 +200,8 @@ test('it can remove the default authority from a plugin to make it immutable', a
       registry: [
         {
           pluginType: 2,
-          data: {
-            offset: BigInt(117),
-            authorities: [{ __kind: 'None' }],
-          },
+          offset: BigInt(117),
+          authorities: [{ __kind: 'None' }],
         },
       ],
     },

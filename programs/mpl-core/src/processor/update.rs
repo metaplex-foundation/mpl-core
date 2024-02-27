@@ -7,7 +7,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::UpdateAccounts,
-    plugins::{CheckResult, Plugin, RegistryData, RegistryRecord, ValidationResult},
+    plugins::{CheckResult, Plugin, RegistryRecord, ValidationResult},
     state::{Asset, DataBlob, SolanaAccount},
     utils::fetch_core_data,
 };
@@ -53,8 +53,8 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
                 record.plugin_type.check_transfer(),
                 CheckResult::CanApprove | CheckResult::CanReject
             ) {
-                let result = Plugin::load(ctx.accounts.asset_address, record.data.offset)?
-                    .validate_update(&ctx.accounts, &args, &record.data.authorities)?;
+                let result = Plugin::load(ctx.accounts.asset_address, record.offset)?
+                    .validate_update(&ctx.accounts, &args, &record.authorities)?;
                 if result == ValidationResult::Rejected {
                     return Err(MplCoreError::InvalidAuthority.into());
                 } else if result == ValidationResult::Approved {
@@ -128,15 +128,13 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
                 .registry
                 .iter_mut()
                 .map(|record| {
-                    let new_offset = (record.data.offset as isize)
+                    let new_offset = (record.offset as isize)
                         .checked_add(size_diff)
                         .ok_or(MplCoreError::NumericalOverflow)?;
                     Ok(RegistryRecord {
                         plugin_type: record.plugin_type,
-                        data: RegistryData {
-                            offset: new_offset as usize,
-                            authorities: record.data.authorities.clone(),
-                        },
+                        offset: new_offset as usize,
+                        authorities: record.authorities.clone(),
                     })
                 })
                 .collect::<Result<Vec<_>, MplCoreError>>()?;

@@ -62,10 +62,8 @@ test('it can add a plugin to an asset', async (t) => {
       registry: [
         {
           pluginType: 2,
-          data: {
-            offset: BigInt(117),
-            authorities: [{ __kind: 'Owner' }],
-          },
+          offset: BigInt(117),
+          authorities: [{ __kind: 'Owner' }],
         },
       ],
     },
