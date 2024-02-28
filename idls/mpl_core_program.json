@@ -807,7 +807,7 @@
           },
           {
             "name": "pluginRegistryOffset",
-            "type": "u64"
+            "type": "u32"
           }
         ]
       }
@@ -987,7 +987,7 @@
           },
           {
             "name": "offset",
-            "type": "u64"
+            "type": "u32"
           }
         ]
       }
@@ -1005,7 +1005,7 @@
           },
           {
             "name": "offset",
-            "type": "u64"
+            "type": "u32"
           }
         ]
       }

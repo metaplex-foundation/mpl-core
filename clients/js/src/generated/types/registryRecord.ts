@@ -10,7 +10,7 @@ import {
   Serializer,
   array,
   struct,
-  u64,
+  u32,
 } from '@metaplex-foundation/umi/serializers';
 import {
   Authority,
@@ -24,13 +24,13 @@ import {
 export type RegistryRecord = {
   pluginType: PluginType;
   authorities: Array<Authority>;
-  offset: bigint;
+  offset: number;
 };
 
 export type RegistryRecordArgs = {
   pluginType: PluginTypeArgs;
   authorities: Array<AuthorityArgs>;
-  offset: number | bigint;
+  offset: number;
 };
 
 export function getRegistryRecordSerializer(): Serializer<
@@ -41,7 +41,7 @@ export function getRegistryRecordSerializer(): Serializer<
     [
       ['pluginType', getPluginTypeSerializer()],
       ['authorities', array(getAuthoritySerializer())],
-      ['offset', u64()],
+      ['offset', u32()],
     ],
     { description: 'RegistryRecord' }
   ) as Serializer<RegistryRecordArgs, RegistryRecord>;

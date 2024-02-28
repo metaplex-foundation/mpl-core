@@ -60,14 +60,14 @@ test('it can create a new collection with plugins', async (t) => {
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(106),
+      pluginRegistryOffset: 102,
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: 2,
-          offset: BigInt(104),
+          offset: 100,
           authorities: [{ __kind: 'Owner' }],
         },
       ],
@@ -124,14 +124,14 @@ test('it can create a new asset with a collection', async (t) => {
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(151),
+      pluginRegistryOffset: 147,
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: 5,
-          offset: BigInt(117),
+          offset: 113,
           authorities: [{ __kind: 'UpdateAuthority' }],
         },
       ],
@@ -173,14 +173,14 @@ test('it cannot create a new asset with a collection if it is not the collection
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(106),
+      pluginRegistryOffset: 102,
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: 2,
-          offset: BigInt(104),
+          offset: 100,
           authorities: [{ __kind: 'Owner' }],
         },
       ],

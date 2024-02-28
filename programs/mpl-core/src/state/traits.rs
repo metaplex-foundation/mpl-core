@@ -19,14 +19,14 @@ pub trait SolanaAccount: BorshSerialize + BorshDeserialize {
     fn key() -> Key;
 
     /// Load the account from the given account info starting at the offset.
-    fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
-        let key = load_key(account, offset)?;
+    fn load(account: &AccountInfo, offset: u32) -> Result<Self, ProgramError> {
+        let key = load_key(account, offset as usize)?;
 
         if key != Self::key() {
             return Err(MplCoreError::DeserializationError.into());
         }
 
-        let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
+        let mut bytes: &[u8] = &(*account.data).borrow()[(offset as usize)..];
         Self::deserialize(&mut bytes).map_err(|error| {
             msg!("Error: {}", error);
             MplCoreError::DeserializationError.into()
@@ -34,11 +34,13 @@ pub trait SolanaAccount: BorshSerialize + BorshDeserialize {
     }
 
     /// Save the account to the given account info starting at the offset.
-    fn save(&self, account: &AccountInfo, offset: usize) -> ProgramResult {
-        borsh::to_writer(&mut account.data.borrow_mut()[offset..], self).map_err(|error| {
-            msg!("Error: {}", error);
-            MplCoreError::SerializationError.into()
-        })
+    fn save(&self, account: &AccountInfo, offset: u32) -> ProgramResult {
+        borsh::to_writer(&mut account.data.borrow_mut()[(offset as usize)..], self).map_err(
+            |error| {
+                msg!("Error: {}", error);
+                MplCoreError::SerializationError.into()
+            },
+        )
     }
 }
 

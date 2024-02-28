@@ -19,19 +19,19 @@ import {
   gpaBuilder,
   publicKey as toPublicKey,
 } from '@metaplex-foundation/umi';
-import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct, u32 } from '@metaplex-foundation/umi/serializers';
 import { Key, KeyArgs, getKeySerializer } from '../types';
 
 export type PluginHeader = Account<PluginHeaderAccountData>;
 
 export type PluginHeaderAccountData = {
   key: Key;
-  pluginRegistryOffset: bigint;
+  pluginRegistryOffset: number;
 };
 
 export type PluginHeaderAccountDataArgs = {
   key: KeyArgs;
-  pluginRegistryOffset: number | bigint;
+  pluginRegistryOffset: number;
 };
 
 export function getPluginHeaderAccountDataSerializer(): Serializer<
@@ -41,7 +41,7 @@ export function getPluginHeaderAccountDataSerializer(): Serializer<
   return struct<PluginHeaderAccountData>(
     [
       ['key', getKeySerializer()],
-      ['pluginRegistryOffset', u64()],
+      ['pluginRegistryOffset', u32()],
     ],
     { description: 'PluginHeaderAccountData' }
   ) as Serializer<PluginHeaderAccountDataArgs, PluginHeaderAccountData>;
@@ -113,9 +113,9 @@ export function getPluginHeaderGpaBuilder(
     'CoREzp6dAdLVRKf3EM5tWrsXM2jQwRFeu5uhzsAyjYXL'
   );
   return gpaBuilder(context, programId)
-    .registerFields<{ key: KeyArgs; pluginRegistryOffset: number | bigint }>({
+    .registerFields<{ key: KeyArgs; pluginRegistryOffset: number }>({
       key: [0, getKeySerializer()],
-      pluginRegistryOffset: [1, u64()],
+      pluginRegistryOffset: [1, u32()],
     })
     .deserializeUsing<PluginHeader>((account) =>
       deserializePluginHeader(account)
@@ -123,5 +123,5 @@ export function getPluginHeaderGpaBuilder(
 }
 
 export function getPluginHeaderSize(): number {
-  return 9;
+  return 5;
 }

@@ -62,14 +62,14 @@ test('a delegate can transfer the asset', async (t) => {
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(118),
+      pluginRegistryOffset: 114,
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: PluginType.Transfer,
-          offset: BigInt(117),
+          offset: 113,
           authorities: [
             { __kind: 'Owner' },
             { __kind: 'Pubkey', address: delegateAddress.publicKey },

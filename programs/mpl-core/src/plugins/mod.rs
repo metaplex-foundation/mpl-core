@@ -114,8 +114,8 @@ impl From<&Plugin> for PluginType {
 
 impl Plugin {
     /// Load and deserialize a plugin from an offset in the account.
-    pub fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
-        let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
+    pub fn load(account: &AccountInfo, offset: u32) -> Result<Self, ProgramError> {
+        let mut bytes: &[u8] = &(*account.data).borrow()[(offset as usize)..];
         Self::deserialize(&mut bytes).map_err(|error| {
             msg!("Error: {}", error);
             MplCoreError::DeserializationError.into()
@@ -123,10 +123,12 @@ impl Plugin {
     }
 
     /// Save and serialize a plugin to an offset in the account.
-    pub fn save(&self, account: &AccountInfo, offset: usize) -> ProgramResult {
-        borsh::to_writer(&mut account.data.borrow_mut()[offset..], self).map_err(|error| {
-            msg!("Error: {}", error);
-            MplCoreError::SerializationError.into()
-        })
+    pub fn save(&self, account: &AccountInfo, offset: u32) -> ProgramResult {
+        borsh::to_writer(&mut account.data.borrow_mut()[(offset as usize)..], self).map_err(
+            |error| {
+                msg!("Error: {}", error);
+                MplCoreError::SerializationError.into()
+            },
+        )
     }
 }

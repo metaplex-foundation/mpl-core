@@ -113,14 +113,14 @@ test('it can update an asset with plugins to be larger', async (t) => {
     uri: 'https://example.com/bread2',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(122),
+      pluginRegistryOffset: 118,
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: 2,
-          offset: BigInt(120),
+          offset: 116,
           authorities: [{ __kind: 'Owner' }],
         },
       ],
@@ -175,14 +175,14 @@ test('it can update an asset with plugins to be smaller', async (t) => {
     uri: '',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(84),
+      pluginRegistryOffset: 80,
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: 2,
-          offset: BigInt(82),
+          offset: 78,
           authorities: [{ __kind: 'Owner' }],
         },
       ],

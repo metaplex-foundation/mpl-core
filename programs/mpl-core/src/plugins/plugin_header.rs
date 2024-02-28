@@ -11,16 +11,16 @@ pub struct PluginHeader {
     /// The Discriminator of the header which doubles as a Plugin metadata version.
     pub key: Key, // 1
     /// The offset to the plugin registry stored at the end of the account.
-    pub plugin_registry_offset: usize, // 8
+    pub plugin_registry_offset: u32, // 4
 }
 
 impl DataBlob for PluginHeader {
     fn get_initial_size() -> usize {
-        1 + 8
+        1 + 4
     }
 
     fn get_size(&self) -> usize {
-        1 + 8
+        1 + 4
     }
 }
 

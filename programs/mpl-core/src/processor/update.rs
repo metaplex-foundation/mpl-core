@@ -97,7 +97,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
                 .checked_add(size_diff)
                 .ok_or(MplCoreError::NumericalOverflow)?;
             let registry_offset = plugin_header.plugin_registry_offset;
-            plugin_header.plugin_registry_offset = new_registry_offset as usize;
+            plugin_header.plugin_registry_offset = new_registry_offset as u32;
 
             let plugin_offset = asset_size
                 .checked_add(size_diff)
@@ -108,7 +108,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
 
             // //TODO: This is memory intensive, we should use memmove instead probably.
             let src = ctx.accounts.asset_address.data.borrow()
-                [(plugin_offset as usize)..registry_offset]
+                [(plugin_offset as usize)..(registry_offset as usize)]
                 .to_vec();
 
             resize_or_reallocate_account_raw(
@@ -124,7 +124,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
                 src.len(),
             );
 
-            plugin_header.save(ctx.accounts.asset_address, new_asset_size as usize)?;
+            plugin_header.save(ctx.accounts.asset_address, new_asset_size as u32)?;
             plugin_registry.registry = plugin_registry
                 .registry
                 .iter_mut()
@@ -134,12 +134,12 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
                         .ok_or(MplCoreError::NumericalOverflow)?;
                     Ok(RegistryRecord {
                         plugin_type: record.plugin_type,
-                        offset: new_offset as usize,
+                        offset: new_offset as u32,
                         authorities: record.authorities.clone(),
                     })
                 })
                 .collect::<Result<Vec<_>, MplCoreError>>()?;
-            plugin_registry.save(ctx.accounts.asset_address, new_registry_offset as usize)?;
+            plugin_registry.save(ctx.accounts.asset_address, new_registry_offset as u32)?;
         } else {
             resize_or_reallocate_account_raw(
                 ctx.accounts.asset_address,

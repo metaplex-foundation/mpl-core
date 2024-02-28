@@ -52,7 +52,8 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
                     let plugin_authorities_hash = authorities.hash()?;
 
                     let plugin = Plugin::deserialize(
-                        &mut &(*ctx.accounts.asset_address.data).borrow()[record.offset..],
+                        &mut &(*ctx.accounts.asset_address.data).borrow()
+                            [(record.offset as usize)..],
                     )?;
                     let plugin_hash = plugin.hash()?;
 

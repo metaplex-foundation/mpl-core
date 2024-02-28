@@ -13,11 +13,11 @@ use borsh::BorshSerialize;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct PluginHeader {
     pub key: Key,
-    pub plugin_registry_offset: u64,
+    pub plugin_registry_offset: u32,
 }
 
 impl PluginHeader {
-    pub const LEN: usize = 9;
+    pub const LEN: usize = 5;
 
     #[inline(always)]
     pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {

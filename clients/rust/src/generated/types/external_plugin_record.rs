@@ -13,5 +13,5 @@ use borsh::BorshSerialize;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ExternalPluginRecord {
     pub authority: Authority,
-    pub offset: u64,
+    pub offset: u32,
 }

@@ -26,7 +26,7 @@ pub fn create_meta_idempotent<'a>(
                 Asset::deserialize(&mut bytes)?
             };
 
-            asset.get_size()
+            asset.get_size() as u32
         }
         Key::Collection => {
             let collection = {
@@ -34,17 +34,17 @@ pub fn create_meta_idempotent<'a>(
                 CollectionData::deserialize(&mut bytes)?
             };
 
-            collection.get_size()
+            collection.get_size() as u32
         }
         _ => return Err(MplCoreError::IncorrectAccount.into()),
     };
 
     // Check if the plugin header and registry exist.
-    if header_offset == account.data_len() {
+    if header_offset == account.data_len() as u32 {
         // They don't exist, so create them.
         let header = PluginHeader {
             key: Key::PluginHeader,
-            plugin_registry_offset: header_offset + PluginHeader::get_initial_size(),
+            plugin_registry_offset: header_offset + (PluginHeader::get_initial_size() as u32),
         };
         let registry = PluginRegistry {
             key: Key::PluginRegistry,
@@ -56,7 +56,7 @@ pub fn create_meta_idempotent<'a>(
             account,
             payer,
             system_program,
-            header.plugin_registry_offset + PluginRegistry::get_initial_size(),
+            (header.plugin_registry_offset as usize) + PluginRegistry::get_initial_size(),
         )?;
 
         header.save(account, header_offset)?;
@@ -82,10 +82,10 @@ pub fn assert_plugins_initialized(account: &AccountInfo) -> ProgramResult {
 pub fn fetch_plugin(
     account: &AccountInfo,
     plugin_type: PluginType,
-) -> Result<(Vec<Authority>, Plugin, usize), ProgramError> {
+) -> Result<(Vec<Authority>, Plugin, u32), ProgramError> {
     let asset = Asset::load(account, 0)?;
 
-    let header = PluginHeader::load(account, asset.get_size())?;
+    let header = PluginHeader::load(account, asset.get_size() as u32)?;
     let PluginRegistry { registry, .. } =
         PluginRegistry::load(account, header.plugin_registry_offset)?;
 
@@ -96,7 +96,8 @@ pub fn fetch_plugin(
         .ok_or(MplCoreError::PluginNotFound)?;
 
     // Deserialize the plugin.
-    let plugin = Plugin::deserialize(&mut &(*account.data).borrow()[registry_record.offset..])?;
+    let plugin =
+        Plugin::deserialize(&mut &(*account.data).borrow()[(registry_record.offset as usize)..])?;
 
     // Return the plugin and its authorities.
     Ok((
@@ -110,7 +111,7 @@ pub fn fetch_plugin(
 pub fn fetch_plugins(account: &AccountInfo) -> Result<Vec<RegistryRecord>, ProgramError> {
     let asset = Asset::load(account, 0)?;
 
-    let header = PluginHeader::load(account, asset.get_size())?;
+    let header = PluginHeader::load(account, asset.get_size() as u32)?;
     let PluginRegistry { registry, .. } =
         PluginRegistry::load(account, header.plugin_registry_offset)?;
 
@@ -121,7 +122,7 @@ pub fn fetch_plugins(account: &AccountInfo) -> Result<Vec<RegistryRecord>, Progr
 pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramError> {
     let asset = Asset::load(account, 0)?;
 
-    let header = PluginHeader::load(account, asset.get_size())?;
+    let header = PluginHeader::load(account, asset.get_size() as u32)?;
     let PluginRegistry { registry, .. } =
         PluginRegistry::load(account, header.plugin_registry_offset)?;
 
@@ -146,7 +147,7 @@ pub fn initialize_plugin<'a>(
                 Asset::deserialize(&mut bytes)?
             };
 
-            asset.get_size()
+            asset.get_size() as u32
         }
         Key::Collection => {
             let collection = {
@@ -154,18 +155,18 @@ pub fn initialize_plugin<'a>(
                 CollectionData::deserialize(&mut bytes)?
             };
 
-            collection.get_size()
+            collection.get_size() as u32
         }
         _ => return Err(MplCoreError::IncorrectAccount.into()),
     };
 
     //TODO: Bytemuck this.
-    let mut header = PluginHeader::load(account, header_offset)?;
+    let mut header = PluginHeader::load(account, header_offset as u32)?;
     let mut plugin_registry = PluginRegistry::load(account, header.plugin_registry_offset)?;
 
     let plugin_type = plugin.into();
     let plugin_data = plugin.try_to_vec()?;
-    let plugin_size = plugin_data.len();
+    let plugin_size = plugin_data.len() as u32;
 
     if plugin_registry
         .registry
@@ -184,9 +185,9 @@ pub fn initialize_plugin<'a>(
     };
 
     let size_increase = plugin_size
-        .checked_add(Key::get_initial_size())
+        .checked_add(Key::get_initial_size() as u32)
         .ok_or(MplCoreError::NumericalOverflow)?
-        .checked_add(new_registry_record.try_to_vec()?.len())
+        .checked_add(new_registry_record.try_to_vec()?.len() as u32)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     let new_registry_offset = header
@@ -200,7 +201,7 @@ pub fn initialize_plugin<'a>(
 
     let new_size = account
         .data_len()
-        .checked_add(size_increase)
+        .checked_add(size_increase as usize)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
@@ -222,7 +223,7 @@ pub fn delete_plugin<'a>(
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
     //TODO: Bytemuck this.
-    let mut header = PluginHeader::load(account, asset.get_size())?;
+    let mut header = PluginHeader::load(account, asset.get_size() as u32)?;
     let mut plugin_registry = PluginRegistry::load(account, header.plugin_registry_offset)?;
 
     if let Some(index) = plugin_registry
@@ -246,7 +247,7 @@ pub fn delete_plugin<'a>(
         let serialized_plugin = plugin.try_to_vec()?;
 
         let next_plugin_offset = plugin_offset
-            .checked_add(serialized_plugin.len())
+            .checked_add(serialized_plugin.len() as u32)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
         let new_size = account
@@ -258,24 +259,24 @@ pub fn delete_plugin<'a>(
 
         let new_offset = header
             .plugin_registry_offset
-            .checked_sub(serialized_plugin.len())
+            .checked_sub(serialized_plugin.len() as u32)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
         let data_to_move = header
             .plugin_registry_offset
             .checked_sub(new_offset)
-            .ok_or(MplCoreError::NumericalOverflow)?;
+            .ok_or(MplCoreError::NumericalOverflow)? as usize;
 
         //TODO: This is memory intensive, we should use memmove instead probably.
-        let src = account.data.borrow()[next_plugin_offset..].to_vec();
+        let src = account.data.borrow()[(next_plugin_offset as usize)..].to_vec();
         sol_memcpy(
-            &mut account.data.borrow_mut()[plugin_offset..],
+            &mut account.data.borrow_mut()[(plugin_offset as usize)..],
             &src,
             data_to_move,
         );
 
         header.plugin_registry_offset = new_offset;
-        header.save(account, asset.get_size())?;
+        header.save(account, asset.get_size() as u32)?;
 
         plugin_registry.save(account, new_offset)?;
 

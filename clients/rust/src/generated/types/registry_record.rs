@@ -15,5 +15,5 @@ use borsh::BorshSerialize;
 pub struct RegistryRecord {
     pub plugin_type: PluginType,
     pub authorities: Vec<Authority>,
-    pub offset: u64,
+    pub offset: u32,
 }

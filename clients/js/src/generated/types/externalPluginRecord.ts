@@ -6,14 +6,14 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct, u32 } from '@metaplex-foundation/umi/serializers';
 import { Authority, AuthorityArgs, getAuthoritySerializer } from '.';
 
-export type ExternalPluginRecord = { authority: Authority; offset: bigint };
+export type ExternalPluginRecord = { authority: Authority; offset: number };
 
 export type ExternalPluginRecordArgs = {
   authority: AuthorityArgs;
-  offset: number | bigint;
+  offset: number;
 };
 
 export function getExternalPluginRecordSerializer(): Serializer<
@@ -23,7 +23,7 @@ export function getExternalPluginRecordSerializer(): Serializer<
   return struct<ExternalPluginRecord>(
     [
       ['authority', getAuthoritySerializer()],
-      ['offset', u64()],
+      ['offset', u32()],
     ],
     { description: 'ExternalPluginRecord' }
   ) as Serializer<ExternalPluginRecordArgs, ExternalPluginRecord>;

@@ -101,7 +101,7 @@ pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
     let asset = T::load(account, 0)?;
 
     if asset.get_size() != account.data_len() {
-        let plugin_header = PluginHeader::load(account, asset.get_size())?;
+        let plugin_header = PluginHeader::load(account, asset.get_size() as u32)?;
         let plugin_registry = PluginRegistry::load(account, plugin_header.plugin_registry_offset)?;
 
         Ok((asset, Some(plugin_header), Some(plugin_registry)))

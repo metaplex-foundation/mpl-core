@@ -42,7 +42,7 @@ pub struct RegistryRecord {
     /// The authorities who have permission to utilize a plugin.
     pub authorities: Vec<Authority>,
     /// The offset to the plugin in the account.
-    pub offset: usize,
+    pub offset: u32,
 }
 
 /// A simple type to store the mapping of external Plugin authority to Plugin data.
@@ -52,5 +52,5 @@ pub struct ExternalPluginRecord {
     /// The authority of the external plugin.
     pub authority: Authority,
     /// The offset to the plugin in the account.
-    pub offset: usize,
+    pub offset: u32,
 }

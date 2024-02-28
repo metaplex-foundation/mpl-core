@@ -55,14 +55,14 @@ test('it can add a plugin to an asset', async (t) => {
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(119),
+      pluginRegistryOffset: 115,
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: 2,
-          offset: BigInt(117),
+          offset: 113,
           authorities: [{ __kind: 'Owner' }],
         },
       ],

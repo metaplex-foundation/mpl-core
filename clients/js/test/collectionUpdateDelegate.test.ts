@@ -57,14 +57,14 @@ test('it can create a new asset with a collection if it is the collection update
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(105),
+      pluginRegistryOffset: 101,
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: PluginType.UpdateDelegate,
-          offset: BigInt(104),
+          offset: 100,
           authorities: [
             { __kind: 'UpdateAuthority' },
             { __kind: 'Pubkey', address: updateDelegate.publicKey }
@@ -102,7 +102,7 @@ test('it can create a new asset with a collection if it is the collection update
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  console.log("Asset State:", asset);
+  // console.log("Asset State:", asset);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
     updateAuthority: umi.identity.publicKey,
@@ -111,14 +111,14 @@ test('it can create a new asset with a collection if it is the collection update
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(151),
+      pluginRegistryOffset: 147,
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: PluginType.Collection,
-          offset: BigInt(117),
+          offset: 113,
           authorities: [{ __kind: 'UpdateAuthority' }],
         },
       ],
