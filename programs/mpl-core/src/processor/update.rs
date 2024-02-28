@@ -33,7 +33,8 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
         None => ctx.accounts.authority,
     };
 
-    let (mut asset, plugin_header, plugin_registry) = fetch_core_data(ctx.accounts.asset_address)?;
+    let (mut asset, plugin_header, plugin_registry) =
+        fetch_core_data::<Asset>(ctx.accounts.asset_address)?;
     let asset_size = asset.get_size() as isize;
 
     let mut approved = false;

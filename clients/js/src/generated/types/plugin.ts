@@ -26,11 +26,14 @@ import {
   RoyaltiesArgs,
   Transfer,
   TransferArgs,
+  UpdateDelegate,
+  UpdateDelegateArgs,
   getBurnSerializer,
   getCollectionSerializer,
   getFreezeSerializer,
   getRoyaltiesSerializer,
   getTransferSerializer,
+  getUpdateDelegateSerializer,
 } from '.';
 
 export type Plugin =
@@ -39,7 +42,8 @@ export type Plugin =
   | { __kind: 'Freeze'; fields: [Freeze] }
   | { __kind: 'Burn'; fields: [Burn] }
   | { __kind: 'Transfer'; fields: [Transfer] }
-  | { __kind: 'Collection'; fields: [Collection] };
+  | { __kind: 'Collection'; fields: [Collection] }
+  | { __kind: 'UpdateDelegate'; fields: [UpdateDelegate] };
 
 export type PluginArgs =
   | { __kind: 'Reserved' }
@@ -47,7 +51,8 @@ export type PluginArgs =
   | { __kind: 'Freeze'; fields: [FreezeArgs] }
   | { __kind: 'Burn'; fields: [BurnArgs] }
   | { __kind: 'Transfer'; fields: [TransferArgs] }
-  | { __kind: 'Collection'; fields: [CollectionArgs] };
+  | { __kind: 'Collection'; fields: [CollectionArgs] }
+  | { __kind: 'UpdateDelegate'; fields: [UpdateDelegateArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -83,6 +88,12 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
           ['fields', tuple([getCollectionSerializer()])],
         ]),
       ],
+      [
+        'UpdateDelegate',
+        struct<GetDataEnumKindContent<Plugin, 'UpdateDelegate'>>([
+          ['fields', tuple([getUpdateDelegateSerializer()])],
+        ]),
+      ],
     ],
     { description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
@@ -112,6 +123,10 @@ export function plugin(
   kind: 'Collection',
   data: GetDataEnumKindContent<PluginArgs, 'Collection'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Collection'>;
+export function plugin(
+  kind: 'UpdateDelegate',
+  data: GetDataEnumKindContent<PluginArgs, 'UpdateDelegate'>['fields']
+): GetDataEnumKind<PluginArgs, 'UpdateDelegate'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any

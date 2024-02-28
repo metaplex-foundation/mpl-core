@@ -7,7 +7,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     plugins::{PluginHeader, PluginRegistry},
-    state::{Asset, Authority, DataBlob, Key, SolanaAccount},
+    state::{Asset, Authority, CollectionData, CoreAsset, DataBlob, Key, SolanaAccount},
 };
 
 /// Load the one byte key from the account data at the given offset.
@@ -19,19 +19,51 @@ pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, ProgramErro
 }
 
 /// Assert that the account info address is in the authorities array.
-pub fn assert_authority(
-    asset: &Asset,
+pub fn assert_authority<T: CoreAsset>(
+    asset: &T,
+    authority: &AccountInfo,
+    authorities: &[Authority],
+) -> ProgramResult {
+    solana_program::msg!("Update authority: {:?}", asset.update_authority());
+    for auth_iter in authorities {
+        solana_program::msg!("Check if {:?} matches {:?}", authority.key, auth_iter);
+        match auth_iter {
+            Authority::None => (),
+            Authority::Owner => {
+                if asset.owner() == authority.key {
+                    return Ok(());
+                }
+            }
+            Authority::UpdateAuthority => {
+                if asset.update_authority() == authority.key {
+                    return Ok(());
+                }
+            }
+            Authority::Pubkey { address } => {
+                if authority.key == address {
+                    return Ok(());
+                }
+            }
+            Authority::Permanent { address } => {
+                if authority.key == address {
+                    return Ok(());
+                }
+            }
+        }
+    }
+
+    Err(MplCoreError::InvalidAuthority.into())
+}
+
+/// Assert that the account info address is in the authorities array.
+pub fn assert_collection_authority(
+    asset: &CollectionData,
     authority: &AccountInfo,
     authorities: &[Authority],
 ) -> ProgramResult {
     for auth_iter in authorities {
         match auth_iter {
-            Authority::None => (),
-            Authority::Owner => {
-                if &asset.owner == authority.key {
-                    return Ok(());
-                }
-            }
+            Authority::None | Authority::Owner => (),
             Authority::UpdateAuthority => {
                 if &asset.update_authority == authority.key {
                     return Ok(());
@@ -63,10 +95,10 @@ pub fn resolve_authority_to_default(asset: &Asset, authority: &AccountInfo) -> A
 }
 
 /// Fetch the core data from the account; asset, plugin header (if present), and plugin registry (if present).
-pub fn fetch_core_data(
+pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
-) -> Result<(Asset, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
-    let asset = Asset::load(account, 0)?;
+) -> Result<(T, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
+    let asset = T::load(account, 0)?;
 
     if asset.get_size() != account.data_len() {
         let plugin_header = PluginHeader::load(account, asset.get_size())?;

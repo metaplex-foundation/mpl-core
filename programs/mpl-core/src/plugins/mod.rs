@@ -6,6 +6,7 @@ mod plugin_header;
 mod plugin_registry;
 mod royalties;
 mod transfer;
+mod update_delegate;
 mod utils;
 
 pub use burn::*;
@@ -16,6 +17,7 @@ pub use plugin_header::*;
 pub use plugin_registry::*;
 pub use royalties::*;
 pub use transfer::*;
+pub use update_delegate::*;
 
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
@@ -45,6 +47,8 @@ pub enum Plugin {
     Transfer(Transfer),
     /// Collection plugin.
     Collection(Collection),
+    /// Update Delegate plugin.
+    UpdateDelegate(UpdateDelegate),
 }
 
 impl Plugin {
@@ -57,6 +61,7 @@ impl Plugin {
             Plugin::Burn(_) => Ok(Authority::Owner),
             Plugin::Transfer(_) => Ok(Authority::Owner),
             Plugin::Collection(_) => Ok(Authority::UpdateAuthority),
+            Plugin::UpdateDelegate(_) => Ok(Authority::UpdateAuthority),
         }
     }
 }
@@ -79,6 +84,8 @@ pub enum PluginType {
     Transfer,
     /// Collection plugin.
     Collection,
+    /// Update Delegate plugin.
+    UpdateDelegate,
 }
 
 impl DataBlob for PluginType {
@@ -100,6 +107,7 @@ impl From<&Plugin> for PluginType {
             Plugin::Burn(_) => PluginType::Burn,
             Plugin::Transfer(_) => PluginType::Transfer,
             Plugin::Collection(_) => PluginType::Collection,
+            Plugin::UpdateDelegate(_) => PluginType::UpdateDelegate,
         }
     }
 }

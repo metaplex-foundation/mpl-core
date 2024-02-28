@@ -14,6 +14,8 @@ use crate::{
     },
 };
 
+use super::CoreAsset;
+
 /// The Core Asset structure that exists at the beginning of every asset account.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount, Eq, PartialEq)]
 pub struct Asset {
@@ -149,5 +151,15 @@ impl From<CompressionProof> for Asset {
             name: compression_proof.name,
             uri: compression_proof.uri,
         }
+    }
+}
+
+impl CoreAsset for Asset {
+    fn update_authority(&self) -> &Pubkey {
+        &self.update_authority
+    }
+
+    fn owner(&self) -> &Pubkey {
+        &self.owner
     }
 }

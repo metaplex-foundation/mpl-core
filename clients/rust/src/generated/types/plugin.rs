@@ -10,6 +10,7 @@ use crate::generated::types::Collection;
 use crate::generated::types::Freeze;
 use crate::generated::types::Royalties;
 use crate::generated::types::Transfer;
+use crate::generated::types::UpdateDelegate;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -22,4 +23,5 @@ pub enum Plugin {
     Burn(Burn),
     Transfer(Transfer),
     Collection(Collection),
+    UpdateDelegate(UpdateDelegate),
 }

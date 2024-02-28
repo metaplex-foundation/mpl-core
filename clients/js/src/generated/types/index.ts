@@ -24,3 +24,4 @@ export * from './registryRecord';
 export * from './royalties';
 export * from './ruleSet';
 export * from './transfer';
+export * from './updateDelegate';

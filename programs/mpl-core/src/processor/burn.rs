@@ -41,7 +41,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
             asset.wrap()?;
         }
         Key::Asset => {
-            let (asset, _, plugin_registry) = fetch_core_data(ctx.accounts.asset_address)?;
+            let (asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset_address)?;
 
             let mut approved = false;
             match Asset::check_transfer() {

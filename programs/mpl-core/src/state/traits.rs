@@ -2,7 +2,7 @@ use crate::{error::MplCoreError, state::Key, utils::load_key};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, keccak, msg, program::invoke,
-    program_error::ProgramError,
+    program_error::ProgramError, pubkey::Pubkey,
 };
 
 /// A trait for generic blobs of data that have size.
@@ -55,4 +55,13 @@ pub trait Compressible: BorshSerialize + BorshDeserialize {
         let serialized_data = self.try_to_vec()?;
         invoke(&spl_noop::instruction(serialized_data), &[])
     }
+}
+
+/// A trait for core assets.
+pub trait CoreAsset {
+    /// Get the update authority of the asset.
+    fn update_authority(&self) -> &Pubkey;
+
+    /// Get the owner of the asset.
+    fn owner(&self) -> &Pubkey;
 }

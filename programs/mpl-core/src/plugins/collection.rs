@@ -7,8 +7,10 @@ use crate::{
         BurnAccounts, CompressAccounts, CreateAccounts, DecompressAccounts, TransferAccounts,
         UpdateAccounts,
     },
+    plugins::{fetch_plugin, PluginType},
     processor::{BurnArgs, CompressArgs, CreateArgs, DecompressArgs, TransferArgs, UpdateArgs},
     state::{Authority, CollectionData, DataBlob, SolanaAccount},
+    utils::assert_collection_authority,
 };
 
 use super::{PluginValidation, ValidationResult};
@@ -43,8 +45,8 @@ impl PluginValidation for Collection {
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
         match ctx.collection {
-            Some(collection) => {
-                let collection = CollectionData::load(collection, 0)?;
+            Some(collection_info) => {
+                let collection = CollectionData::load(collection_info, 0)?;
                 solana_program::msg!("Collection: {:?}", collection);
                 // Check that the collection update authority is a signer.
                 let authority = match ctx.update_authority {
@@ -54,7 +56,15 @@ impl PluginValidation for Collection {
 
                 assert_signer(authority)?;
 
-                if authority.key != &collection.update_authority {
+                let maybe_update_delegate =
+                    fetch_plugin(collection_info, PluginType::UpdateDelegate);
+
+                if let Ok((mut authorities, _, _)) = maybe_update_delegate {
+                    authorities.push(Authority::UpdateAuthority);
+                    if assert_collection_authority(&collection, authority, &authorities).is_err() {
+                        return Ok(ValidationResult::Rejected);
+                    }
+                } else if authority.key != &collection.update_authority {
                     return Ok(ValidationResult::Rejected);
                 }
 

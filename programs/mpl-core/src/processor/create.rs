@@ -104,7 +104,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
             )?;
         }
 
-        let (_, _, plugin_registry) = fetch_core_data(ctx.accounts.asset_address)?;
+        let (_, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset_address)?;
 
         let mut approved = true;
         // match Asset::check_create() {

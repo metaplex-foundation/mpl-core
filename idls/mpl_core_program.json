@@ -1060,6 +1060,13 @@
       }
     },
     {
+      "name": "UpdateDelegate",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
       "name": "AddAuthorityArgs",
       "type": {
         "kind": "struct",
@@ -1396,6 +1403,14 @@
                 "defined": "Collection"
               }
             ]
+          },
+          {
+            "name": "UpdateDelegate",
+            "fields": [
+              {
+                "defined": "UpdateDelegate"
+              }
+            ]
           }
         ]
       }
@@ -1422,6 +1437,9 @@
           },
           {
             "name": "Collection"
+          },
+          {
+            "name": "UpdateDelegate"
           }
         ]
       }

@@ -7,7 +7,7 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    state::{Asset, Authority, CollectionData, DataBlob, Key, SolanaAccount},
+    state::{Asset, Authority, CollectionData, CoreAsset, DataBlob, Key, SolanaAccount},
     utils::{assert_authority, load_key, resolve_authority_to_default},
 };
 
@@ -290,11 +290,11 @@ pub fn delete_plugin<'a>(
 /// Add an authority to a plugin.
 //TODO: Prevent duplicate authorities.
 #[allow(clippy::too_many_arguments)]
-pub fn add_authority_to_plugin<'a>(
+pub fn add_authority_to_plugin<'a, T: CoreAsset>(
     plugin_type: &PluginType,
     authority: &AccountInfo<'a>,
     new_authority: &Authority,
-    asset: &Asset,
+    asset: &T,
     account: &AccountInfo<'a>,
     plugin_header: &PluginHeader,
     plugin_registry: &mut PluginRegistry,

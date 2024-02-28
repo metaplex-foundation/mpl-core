@@ -23,6 +23,7 @@ pub(crate) mod registry_record;
 pub(crate) mod royalties;
 pub(crate) mod rule_set;
 pub(crate) mod transfer;
+pub(crate) mod update_delegate;
 
 pub use self::authority::*;
 pub use self::burn::*;
@@ -42,3 +43,4 @@ pub use self::registry_record::*;
 pub use self::royalties::*;
 pub use self::rule_set::*;
 pub use self::transfer::*;
+pub use self::update_delegate::*;

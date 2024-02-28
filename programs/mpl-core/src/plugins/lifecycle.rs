@@ -39,8 +39,8 @@ impl PluginType {
 
     /// Check if a plugin is permitted to approve or deny an update action.
     pub fn check_update(&self) -> CheckResult {
-        #[allow(clippy::match_single_binding)]
         match self {
+            PluginType::Collection => CheckResult::CanApprove,
             _ => CheckResult::None,
         }
     }
@@ -97,6 +97,9 @@ impl Plugin {
             Plugin::Burn(burn) => burn.validate_create(ctx, args, authorities),
             Plugin::Transfer(transfer) => transfer.validate_create(ctx, args, authorities),
             Plugin::Collection(collection) => collection.validate_create(ctx, args, authorities),
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_create(ctx, args, authorities)
+            }
         }
     }
 
@@ -114,6 +117,9 @@ impl Plugin {
             Plugin::Burn(burn) => burn.validate_update(ctx, args, authorities),
             Plugin::Transfer(transfer) => transfer.validate_update(ctx, args, authorities),
             Plugin::Collection(collection) => collection.validate_update(ctx, args, authorities),
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_update(ctx, args, authorities)
+            }
         }
     }
 
@@ -139,6 +145,9 @@ impl Plugin {
             Plugin::Collection(collection) => {
                 collection.validate_update_plugin(asset, ctx, args, authorities)
             }
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_update_plugin(asset, ctx, args, authorities)
+            }
         }
     }
 
@@ -156,6 +165,9 @@ impl Plugin {
             Plugin::Burn(burn) => burn.validate_burn(ctx, args, authorities),
             Plugin::Transfer(transfer) => transfer.validate_burn(ctx, args, authorities),
             Plugin::Collection(collection) => collection.validate_burn(ctx, args, authorities),
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_burn(ctx, args, authorities)
+            }
         }
     }
 
@@ -173,6 +185,9 @@ impl Plugin {
             Plugin::Burn(burn) => burn.validate_transfer(ctx, args, authorities),
             Plugin::Transfer(transfer) => transfer.validate_transfer(ctx, args, authorities),
             Plugin::Collection(collection) => collection.validate_transfer(ctx, args, authorities),
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_transfer(ctx, args, authorities)
+            }
         }
     }
 
@@ -190,6 +205,9 @@ impl Plugin {
             Plugin::Burn(burn) => burn.validate_compress(ctx, args, authorities),
             Plugin::Transfer(transfer) => transfer.validate_compress(ctx, args, authorities),
             Plugin::Collection(collection) => collection.validate_compress(ctx, args, authorities),
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_compress(ctx, args, authorities)
+            }
         }
     }
 
@@ -208,6 +226,9 @@ impl Plugin {
             Plugin::Transfer(transfer) => transfer.validate_decompress(ctx, args, authorities),
             Plugin::Collection(collection) => {
                 collection.validate_decompress(ctx, args, authorities)
+            }
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_decompress(ctx, args, authorities)
             }
         }
     }
