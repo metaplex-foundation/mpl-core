@@ -1294,26 +1294,26 @@
       }
     },
     {
-      "name": "PluginHash",
+      "name": "HashablePluginSchema",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "pluginAuthoritiesHash",
+            "name": "index",
+            "type": "u64"
+          },
+          {
+            "name": "authorities",
             "type": {
-              "array": [
-                "u8",
-                32
-              ]
+              "vec": {
+                "defined": "Authority"
+              }
             }
           },
           {
-            "name": "pluginHash",
+            "name": "plugin",
             "type": {
-              "array": [
-                "u8",
-                32
-              ]
+              "defined": "Plugin"
             }
           }
         ]
@@ -1337,7 +1337,10 @@
             "name": "pluginHashes",
             "type": {
               "vec": {
-                "defined": "PluginHash"
+                "array": [
+                  "u8",
+                  32
+                ]
               }
             }
           }

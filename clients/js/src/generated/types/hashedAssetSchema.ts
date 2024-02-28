@@ -12,17 +12,13 @@ import {
   bytes,
   struct,
 } from '@metaplex-foundation/umi/serializers';
-import { PluginHash, PluginHashArgs, getPluginHashSerializer } from '.';
 
 export type HashedAssetSchema = {
   assetHash: Uint8Array;
-  pluginHashes: Array<PluginHash>;
+  pluginHashes: Array<Uint8Array>;
 };
 
-export type HashedAssetSchemaArgs = {
-  assetHash: Uint8Array;
-  pluginHashes: Array<PluginHashArgs>;
-};
+export type HashedAssetSchemaArgs = HashedAssetSchema;
 
 export function getHashedAssetSchemaSerializer(): Serializer<
   HashedAssetSchemaArgs,
@@ -31,7 +27,7 @@ export function getHashedAssetSchemaSerializer(): Serializer<
   return struct<HashedAssetSchema>(
     [
       ['assetHash', bytes({ size: 32 })],
-      ['pluginHashes', array(getPluginHashSerializer())],
+      ['pluginHashes', array(bytes({ size: 32 }))],
     ],
     { description: 'HashedAssetSchema' }
   ) as Serializer<HashedAssetSchemaArgs, HashedAssetSchema>;
