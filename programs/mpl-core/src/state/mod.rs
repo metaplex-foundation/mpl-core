@@ -52,10 +52,6 @@ pub enum Authority {
     },
 }
 
-/// A vector of authorities.
-pub type AuthorityVec = Vec<Authority>;
-impl Compressible for AuthorityVec {}
-
 /// Different types of extra accounts that can be passed in for lifecycle hooks.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]

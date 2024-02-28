@@ -1,5 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
+use std::cmp::Ordering;
 
 use crate::state::{Authority, DataBlob, Key, SolanaAccount};
 
@@ -43,6 +44,13 @@ pub struct RegistryRecord {
     pub authorities: Vec<Authority>,
     /// The offset to the plugin in the account.
     pub offset: usize,
+}
+
+impl RegistryRecord {
+    /// Associated function for sorting `RegistryRecords` by offset.
+    pub fn compare_offsets(a: &RegistryRecord, b: &RegistryRecord) -> Ordering {
+        a.offset.cmp(&b.offset)
+    }
 }
 
 /// A simple type to store the mapping of external Plugin authority to Plugin data.
