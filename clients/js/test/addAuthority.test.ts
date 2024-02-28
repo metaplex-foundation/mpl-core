@@ -11,6 +11,8 @@ import {
   create,
   fetchAsset,
   fetchAssetWithPlugins,
+  plugin,
+  authority,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -42,19 +44,15 @@ test('it can add an authority to a plugin', async (t) => {
 
   await addPlugin(umi, {
     assetAddress: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
+    plugin: plugin('Freeze', [{ frozen: false }]),
   })
     .append(
       addAuthority(umi, {
         assetAddress: assetAddress.publicKey,
         pluginType: PluginType.Freeze,
-        newAuthority: {
-          __kind: 'Pubkey',
+        newAuthority: authority('Pubkey', {
           address: delegateAddress.publicKey,
-        },
+        }),
       })
     )
     .sendAndConfirm(umi);
