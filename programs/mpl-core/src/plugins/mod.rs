@@ -1,5 +1,4 @@
 mod burn;
-mod collection;
 mod freeze;
 mod lifecycle;
 mod plugin_header;
@@ -10,7 +9,6 @@ mod update_delegate;
 mod utils;
 
 pub use burn::*;
-pub use collection::*;
 pub use freeze::*;
 pub use lifecycle::*;
 pub use plugin_header::*;
@@ -45,8 +43,6 @@ pub enum Plugin {
     Burn(Burn),
     /// Transfer plugin.
     Transfer(Transfer),
-    /// Collection plugin.
-    Collection(Collection),
     /// Update Delegate plugin.
     UpdateDelegate(UpdateDelegate),
 }
@@ -60,7 +56,6 @@ impl Plugin {
             Plugin::Freeze(_) => Ok(Authority::Owner),
             Plugin::Burn(_) => Ok(Authority::Owner),
             Plugin::Transfer(_) => Ok(Authority::Owner),
-            Plugin::Collection(_) => Ok(Authority::UpdateAuthority),
             Plugin::UpdateDelegate(_) => Ok(Authority::UpdateAuthority),
         }
     }
@@ -82,8 +77,6 @@ pub enum PluginType {
     Burn,
     /// Transfer plugin.
     Transfer,
-    /// Collection plugin.
-    Collection,
     /// Update Delegate plugin.
     UpdateDelegate,
 }
@@ -106,7 +99,6 @@ impl From<&Plugin> for PluginType {
             Plugin::Freeze(_) => PluginType::Freeze,
             Plugin::Burn(_) => PluginType::Burn,
             Plugin::Transfer(_) => PluginType::Transfer,
-            Plugin::Collection(_) => PluginType::Collection,
             Plugin::UpdateDelegate(_) => PluginType::UpdateDelegate,
         }
     }

@@ -9,8 +9,9 @@ import {
   create,
   fetchAssetWithPlugins,
   transfer,
-} from '../src';
-import { createUmi } from './_setup';
+  updateAuthority,
+} from '../../src';
+import { createUmi } from '../_setup';
 
 test('a delegate can transfer the asset', async (t) => {
   // Given a Umi instance and a new signer.
@@ -56,20 +57,20 @@ test('a delegate can transfer the asset', async (t) => {
   // console.log(asset);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: umi.identity.publicKey,
+    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
     owner: newOwnerAddress.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(118),
+      pluginRegistryOffset: BigInt(119),
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: PluginType.Transfer,
-          offset: BigInt(117),
+          offset: BigInt(118),
           authorities: [
             { __kind: 'Owner' },
             { __kind: 'Pubkey', address: delegateAddress.publicKey },

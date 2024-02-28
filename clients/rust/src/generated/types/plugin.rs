@@ -6,7 +6,6 @@
 //!
 
 use crate::generated::types::Burn;
-use crate::generated::types::Collection;
 use crate::generated::types::Freeze;
 use crate::generated::types::Royalties;
 use crate::generated::types::Transfer;
@@ -22,6 +21,5 @@ pub enum Plugin {
     Freeze(Freeze),
     Burn(Burn),
     Transfer(Transfer),
-    Collection(Collection),
     UpdateDelegate(UpdateDelegate),
 }

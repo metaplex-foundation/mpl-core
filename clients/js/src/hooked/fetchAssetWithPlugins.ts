@@ -8,7 +8,11 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Asset,
+  Authority,
+  Plugin,
+  PluginHeader,
   PluginHeaderAccountData,
+  PluginRegistry,
   PluginRegistryAccountData,
   deserializeAsset,
   getAssetAccountDataSerializer,
@@ -16,9 +20,17 @@ import {
   getPluginRegistryAccountDataSerializer,
   getPluginSerializer,
 } from '../generated';
-import { PluginList, PluginWithAuthorities } from '.';
 
+export type PluginWithAuthorities = {
+  plugin: Plugin;
+  authorities: Authority[];
+};
 
+export type PluginList = {
+  pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>;
+  plugins?: PluginWithAuthorities[];
+  pluginRegistry?: Omit<PluginRegistry, 'publicKey' | 'header'>;
+};
 export type AssetWithPlugins = Asset & PluginList;
 
 export async function fetchAssetWithPlugins(

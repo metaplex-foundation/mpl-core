@@ -265,6 +265,19 @@ export class AlreadyDecompressedError extends ProgramError {
 codeToErrorMap.set(0x12, AlreadyDecompressedError);
 nameToErrorMap.set('AlreadyDecompressed', AlreadyDecompressedError);
 
+/** InvalidCollection: Invalid Collection passed in */
+export class InvalidCollectionError extends ProgramError {
+  readonly name: string = 'InvalidCollection';
+
+  readonly code: number = 0x13; // 19
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Collection passed in', program, cause);
+  }
+}
+codeToErrorMap.set(0x13, InvalidCollectionError);
+nameToErrorMap.set('InvalidCollection', InvalidCollectionError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

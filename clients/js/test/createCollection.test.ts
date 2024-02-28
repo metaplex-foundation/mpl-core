@@ -10,6 +10,7 @@ import {
   fetchAssetWithPlugins,
   fetchCollectionData,
   fetchCollectionWithPlugins,
+  updateAuthority,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -105,12 +106,7 @@ test('it can create a new asset with a collection', async (t) => {
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     collection: collectionAddress.publicKey,
-    plugins: [{
-      __kind: 'Collection', fields: [{
-        collectionAddress: collectionAddress.publicKey,
-        managed: true
-      }]
-    }],
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -118,34 +114,21 @@ test('it can create a new asset with a collection', async (t) => {
   // console.log("Account State:", asset);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: umi.identity.publicKey,
+    updateAuthority: updateAuthority("Collection", [collectionAddress.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(151),
+      pluginRegistryOffset: BigInt(118),
     },
     pluginRegistry: {
       key: 4,
-      registry: [
-        {
-          pluginType: 5,
-          offset: BigInt(117),
-          authorities: [{ __kind: 'UpdateAuthority' }],
-        },
-      ],
     },
-    plugins: [
-      {
-        authorities: [{ __kind: 'UpdateAuthority' }],
-        plugin: {
-          __kind: 'Collection',
-          fields: [{ collectionAddress: collectionAddress.publicKey, managed: true }],
-        },
-      },
-    ],
   });
+
+  t.assert(asset.pluginRegistry?.registry.length === 0);
+  t.assert(asset.plugins?.length === 0);
 });
 
 test('it cannot create a new asset with a collection if it is not the collection auth', async (t) => {
@@ -203,12 +186,7 @@ test('it cannot create a new asset with a collection if it is not the collection
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     collection: collectionAddress.publicKey,
-    plugins: [{
-      __kind: 'Collection', fields: [{
-        collectionAddress: collectionAddress.publicKey,
-        managed: true
-      }]
-    }],
+    plugins: [],
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: "InvalidAuthority" });

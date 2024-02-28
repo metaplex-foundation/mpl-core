@@ -13,20 +13,27 @@ import {
   string,
   struct,
 } from '@metaplex-foundation/umi/serializers';
-import { Key, KeyArgs, getKeySerializer } from '.';
+import {
+  Key,
+  KeyArgs,
+  UpdateAuthority,
+  UpdateAuthorityArgs,
+  getKeySerializer,
+  getUpdateAuthoritySerializer,
+} from '.';
 
 export type CompressionProof = {
   key: Key;
-  updateAuthority: PublicKey;
   owner: PublicKey;
+  updateAuthority: UpdateAuthority;
   name: string;
   uri: string;
 };
 
 export type CompressionProofArgs = {
   key: KeyArgs;
-  updateAuthority: PublicKey;
   owner: PublicKey;
+  updateAuthority: UpdateAuthorityArgs;
   name: string;
   uri: string;
 };
@@ -38,8 +45,8 @@ export function getCompressionProofSerializer(): Serializer<
   return struct<CompressionProof>(
     [
       ['key', getKeySerializer()],
-      ['updateAuthority', publicKeySerializer()],
       ['owner', publicKeySerializer()],
+      ['updateAuthority', getUpdateAuthoritySerializer()],
       ['name', string()],
       ['uri', string()],
     ],

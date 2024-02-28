@@ -71,7 +71,7 @@ impl PluginValidation for Freeze {
     ) -> Result<ValidationResult, solana_program::program_error::ProgramError> {
         if !self.frozen
             && ((ctx.authority.key == &asset.owner && authorities.contains(&Authority::Owner))
-                || (ctx.authority.key == &asset.update_authority
+                || (ctx.authority.key == &asset.update_authority.key()
                     && authorities.contains(&Authority::UpdateAuthority))
                 || authorities.contains(&Authority::Pubkey {
                     address: *ctx.authority.key,

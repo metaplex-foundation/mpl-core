@@ -67,6 +67,9 @@ pub enum MplCoreProgramError {
     /// 18 (0x12) - Already decompressed account
     #[error("Already decompressed account")]
     AlreadyDecompressed,
+    /// 19 (0x13) - Invalid Collection passed in
+    #[error("Invalid Collection passed in")]
+    InvalidCollection,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreProgramError {

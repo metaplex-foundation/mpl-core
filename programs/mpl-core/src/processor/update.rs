@@ -8,7 +8,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::UpdateAccounts,
     plugins::{CheckResult, Plugin, RegistryRecord, ValidationResult},
-    state::{Asset, DataBlob, SolanaAccount},
+    state::{Asset, DataBlob, SolanaAccount, UpdateAuthority},
     utils::fetch_core_data,
 };
 
@@ -71,7 +71,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
 
     let mut dirty = false;
     if let Some(new_update_authority) = ctx.accounts.new_update_authority {
-        asset.update_authority = *new_update_authority.key;
+        asset.update_authority = UpdateAuthority::Address(*new_update_authority.key);
         dirty = true;
     }
     if let Some(new_name) = &args.new_name {

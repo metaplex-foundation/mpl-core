@@ -14,7 +14,6 @@ export enum PluginType {
   Freeze,
   Burn,
   Transfer,
-  Collection,
   UpdateDelegate,
 }
 

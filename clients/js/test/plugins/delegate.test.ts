@@ -9,9 +9,10 @@ import {
   addPlugin,
   create,
   fetchAssetWithPlugins,
+  updateAuthority,
   updatePlugin,
-} from '../src';
-import { createUmi } from './_setup';
+} from '../../src';
+import { createUmi } from '../_setup';
 
 test('it can delegate a new authority', async (t) => {
   // Given a Umi instance and a new signer.
@@ -49,20 +50,19 @@ test('it can delegate a new authority', async (t) => {
   // console.log(asset);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: umi.identity.publicKey,
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(119),
+      pluginRegistryOffset: BigInt(120),
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: 2,
-          offset: BigInt(117),
+          offset: BigInt(118),
           authorities: [
             { __kind: 'Owner' },
             { __kind: 'Pubkey', address: delegateAddress.publicKey },
@@ -129,20 +129,20 @@ test('a delegate can freeze the token', async (t) => {
   // console.log(asset);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: umi.identity.publicKey,
+    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(119),
+      pluginRegistryOffset: BigInt(120),
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: 2,
-          offset: BigInt(117),
+          offset: BigInt(118),
           authorities: [
             { __kind: 'Owner' },
             { __kind: 'Pubkey', address: delegateAddress.publicKey },

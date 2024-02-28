@@ -9,9 +9,11 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::CreateAccounts,
     plugins::{create_meta_idempotent, initialize_plugin, CheckResult, Plugin, ValidationResult},
-    state::{Asset, Compressible, DataState, HashedAsset, Key},
+    state::{Asset, Compressible, DataState, HashedAsset, Key, UpdateAuthority},
     utils::fetch_core_data,
 };
+
+use super::update;
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
@@ -35,13 +37,23 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
+    let update_authority = match ctx.accounts.collection {
+        Some(collection) => UpdateAuthority::Collection(*collection.key),
+        None => UpdateAuthority::Address(
+            *ctx.accounts
+                .update_authority
+                .unwrap_or(ctx.accounts.payer)
+                .key,
+        ),
+    };
+
+    if update_authority.validate_create(&ctx.accounts, &args)? == ValidationResult::Rejected {
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
+
     let new_asset = Asset {
         key: Key::Asset,
-        update_authority: *ctx
-            .accounts
-            .update_authority
-            .unwrap_or(ctx.accounts.payer)
-            .key,
+        update_authority,
         owner: *ctx
             .accounts
             .owner

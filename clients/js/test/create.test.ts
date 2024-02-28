@@ -10,6 +10,7 @@ import {
   fetchAssetWithPlugins,
   fetchHashedAsset,
   getAssetAccountDataSerializer,
+  updateAuthority,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -32,7 +33,7 @@ test('it can create a new asset in account state', async (t) => {
   // console.log("Account State:", asset);
   t.like(asset, <Asset>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: umi.identity.publicKey,
+    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
@@ -69,7 +70,7 @@ test('it can create a new asset in ledger state', async (t) => {
     const parsed = getAssetAccountDataSerializer().deserialize(data)[0];
     // console.log("Ledger State:", parsed);
     t.like(parsed, <Asset>{
-      updateAuthority: umi.identity.publicKey,
+      updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
       owner: umi.identity.publicKey,
       name: 'Test Bread',
       uri: 'https://example.com/bread',
@@ -96,20 +97,20 @@ test('it can create a new asset with plugins', async (t) => {
   // console.log("Account State:", asset);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: umi.identity.publicKey,
+    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(119),
+      pluginRegistryOffset: BigInt(120),
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: 2,
-          offset: BigInt(117),
+          offset: BigInt(118),
           authorities: [{ __kind: 'Owner' }],
         },
       ],

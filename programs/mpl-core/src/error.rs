@@ -84,6 +84,10 @@ pub enum MplCoreError {
     /// 18 - Already decompressed
     #[error("Already decompressed account")]
     AlreadyDecompressed,
+
+    /// 19 - Invalid Collection passed in
+    #[error("Invalid Collection passed in")]
+    InvalidCollection,
 }
 
 impl PrintProgramError for MplCoreError {

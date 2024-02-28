@@ -14,17 +14,17 @@ use crate::{
     },
 };
 
-use super::CoreAsset;
+use super::{CoreAsset, UpdateAuthority};
 
 /// The Core Asset structure that exists at the beginning of every asset account.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount, Eq, PartialEq)]
 pub struct Asset {
     /// The account discriminator.
     pub key: Key, //1
-    /// The update authority of the asset.
-    pub update_authority: Pubkey, //32
     /// The owner of the asset.
     pub owner: Pubkey, //32
+    /// The update authority of the asset.
+    pub update_authority: UpdateAuthority, //33
     /// The name of the asset.
     pub name: String, //4
     /// The URI of the asset that points to the off-chain data.
@@ -33,7 +33,7 @@ pub struct Asset {
 
 impl Asset {
     /// The base length of the asset account with an empty name and uri.
-    pub const BASE_LENGTH: usize = 1 + 32 + 32 + 4 + 4;
+    pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4;
 
     /// Check that a compression proof results in same on-chain hash.
     pub fn verify_proof(
@@ -71,7 +71,7 @@ impl Asset {
 
     /// Validate the update lifecycle event.
     pub fn validate_update(&self, ctx: &UpdateAccounts) -> Result<ValidationResult, ProgramError> {
-        if ctx.authority.key == &self.update_authority {
+        if ctx.authority.key == &self.update_authority.key() {
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -155,8 +155,8 @@ impl From<CompressionProof> for Asset {
 }
 
 impl CoreAsset for Asset {
-    fn update_authority(&self) -> &Pubkey {
-        &self.update_authority
+    fn update_authority(&self) -> UpdateAuthority {
+        self.update_authority.clone()
     }
 
     fn owner(&self) -> &Pubkey {

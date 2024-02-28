@@ -8,7 +8,6 @@
 
 export * from './authority';
 export * from './burn';
-export * from './collection';
 export * from './compressionProof';
 export * from './creator';
 export * from './dataState';
@@ -24,4 +23,5 @@ export * from './registryRecord';
 export * from './royalties';
 export * from './ruleSet';
 export * from './transfer';
+export * from './updateAuthority';
 export * from './updateDelegate';

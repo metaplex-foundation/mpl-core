@@ -6,6 +6,7 @@
 //!
 
 use crate::generated::types::Key;
+use crate::generated::types::UpdateAuthority;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_program::pubkey::Pubkey;
@@ -18,12 +19,8 @@ pub struct CompressionProof {
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
-    pub update_authority: Pubkey,
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
-    )]
     pub owner: Pubkey,
+    pub update_authority: UpdateAuthority,
     pub name: String,
     pub uri: String,
 }

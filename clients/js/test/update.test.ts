@@ -9,6 +9,7 @@ import {
   create,
   fetchAssetWithPlugins,
   update,
+  updateAuthority,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -36,7 +37,7 @@ test('it can update an asset to be larger', async (t) => {
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
   t.like(asset, <AssetWithPlugins>{
     key: Key.Asset,
-    updateAuthority: umi.identity.publicKey,
+    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
@@ -67,7 +68,7 @@ test('it can update an asset to be smaller', async (t) => {
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
   t.like(asset, <AssetWithPlugins>{
     key: Key.Asset,
-    updateAuthority: umi.identity.publicKey,
+    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: '',
     uri: '',
@@ -107,20 +108,20 @@ test('it can update an asset with plugins to be larger', async (t) => {
   // console.log(JSON.stringify(asset, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: umi.identity.publicKey,
+    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(122),
+      pluginRegistryOffset: BigInt(123),
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: 2,
-          offset: BigInt(120),
+          offset: BigInt(121),
           authorities: [{ __kind: 'Owner' }],
         },
       ],
@@ -169,20 +170,20 @@ test('it can update an asset with plugins to be smaller', async (t) => {
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: umi.identity.publicKey,
+    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: '',
     uri: '',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(84),
+      pluginRegistryOffset: BigInt(85),
     },
     pluginRegistry: {
       key: 4,
       registry: [
         {
           pluginType: 2,
-          offset: BigInt(82),
+          offset: BigInt(83),
           authorities: [{ __kind: 'Owner' }],
         },
       ],

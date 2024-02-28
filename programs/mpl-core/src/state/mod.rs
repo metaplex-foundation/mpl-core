@@ -13,6 +13,9 @@ pub use traits::*;
 mod collection;
 pub use collection::*;
 
+mod update_authority;
+pub use update_authority::*;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 use num_derive::{FromPrimitive, ToPrimitive};
 use solana_program::pubkey::Pubkey;
@@ -108,10 +111,10 @@ impl Key {
 pub struct CompressionProof {
     /// The discriminator of the account.
     pub key: Key, //1
-    /// The update authority of the asset.
-    pub update_authority: Pubkey, //32
     /// The owner of the asset.
     pub owner: Pubkey, //32
+    /// The update authority of the asset.
+    pub update_authority: UpdateAuthority, //33
     /// The name of the asset.
     pub name: String, //4
     /// The URI of the asset that points to the off-chain data.

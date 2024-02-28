@@ -18,8 +18,6 @@ import {
 import {
   Burn,
   BurnArgs,
-  Collection,
-  CollectionArgs,
   Freeze,
   FreezeArgs,
   Royalties,
@@ -29,7 +27,6 @@ import {
   UpdateDelegate,
   UpdateDelegateArgs,
   getBurnSerializer,
-  getCollectionSerializer,
   getFreezeSerializer,
   getRoyaltiesSerializer,
   getTransferSerializer,
@@ -42,7 +39,6 @@ export type Plugin =
   | { __kind: 'Freeze'; fields: [Freeze] }
   | { __kind: 'Burn'; fields: [Burn] }
   | { __kind: 'Transfer'; fields: [Transfer] }
-  | { __kind: 'Collection'; fields: [Collection] }
   | { __kind: 'UpdateDelegate'; fields: [UpdateDelegate] };
 
 export type PluginArgs =
@@ -51,7 +47,6 @@ export type PluginArgs =
   | { __kind: 'Freeze'; fields: [FreezeArgs] }
   | { __kind: 'Burn'; fields: [BurnArgs] }
   | { __kind: 'Transfer'; fields: [TransferArgs] }
-  | { __kind: 'Collection'; fields: [CollectionArgs] }
   | { __kind: 'UpdateDelegate'; fields: [UpdateDelegateArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
@@ -80,12 +75,6 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
         'Transfer',
         struct<GetDataEnumKindContent<Plugin, 'Transfer'>>([
           ['fields', tuple([getTransferSerializer()])],
-        ]),
-      ],
-      [
-        'Collection',
-        struct<GetDataEnumKindContent<Plugin, 'Collection'>>([
-          ['fields', tuple([getCollectionSerializer()])],
         ]),
       ],
       [
@@ -119,10 +108,6 @@ export function plugin(
   kind: 'Transfer',
   data: GetDataEnumKindContent<PluginArgs, 'Transfer'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Transfer'>;
-export function plugin(
-  kind: 'Collection',
-  data: GetDataEnumKindContent<PluginArgs, 'Collection'>['fields']
-): GetDataEnumKind<PluginArgs, 'Collection'>;
 export function plugin(
   kind: 'UpdateDelegate',
   data: GetDataEnumKindContent<PluginArgs, 'UpdateDelegate'>['fields']

@@ -5,6 +5,8 @@ use solana_program::{
     program_error::ProgramError, pubkey::Pubkey,
 };
 
+use super::UpdateAuthority;
+
 /// A trait for generic blobs of data that have size.
 pub trait DataBlob: BorshSerialize + BorshDeserialize {
     /// Get the size of an empty instance of the data blob.
@@ -60,7 +62,7 @@ pub trait Compressible: BorshSerialize + BorshDeserialize {
 /// A trait for core assets.
 pub trait CoreAsset {
     /// Get the update authority of the asset.
-    fn update_authority(&self) -> &Pubkey;
+    fn update_authority(&self) -> UpdateAuthority;
 
     /// Get the owner of the asset.
     fn owner(&self) -> &Pubkey;

@@ -854,12 +854,14 @@
             }
           },
           {
-            "name": "updateAuthority",
+            "name": "owner",
             "type": "publicKey"
           },
           {
-            "name": "owner",
-            "type": "publicKey"
+            "name": "updateAuthority",
+            "type": {
+              "defined": "UpdateAuthority"
+            }
           },
           {
             "name": "name",
@@ -936,22 +938,6 @@
       "type": {
         "kind": "struct",
         "fields": []
-      }
-    },
-    {
-      "name": "Collection",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "collectionAddress",
-            "type": "publicKey"
-          },
-          {
-            "name": "managed",
-            "type": "bool"
-          }
-        ]
       }
     },
     {
@@ -1287,12 +1273,14 @@
             }
           },
           {
-            "name": "updateAuthority",
+            "name": "owner",
             "type": "publicKey"
           },
           {
-            "name": "owner",
-            "type": "publicKey"
+            "name": "updateAuthority",
+            "type": {
+              "defined": "UpdateAuthority"
+            }
           },
           {
             "name": "name",
@@ -1397,14 +1385,6 @@
             ]
           },
           {
-            "name": "Collection",
-            "fields": [
-              {
-                "defined": "Collection"
-              }
-            ]
-          },
-          {
             "name": "UpdateDelegate",
             "fields": [
               {
@@ -1434,9 +1414,6 @@
           },
           {
             "name": "Transfer"
-          },
-          {
-            "name": "Collection"
           },
           {
             "name": "UpdateDelegate"
@@ -1585,6 +1562,29 @@
           }
         ]
       }
+    },
+    {
+      "name": "UpdateAuthority",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "None"
+          },
+          {
+            "name": "Address",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "Collection",
+            "fields": [
+              "publicKey"
+            ]
+          }
+        ]
+      }
     }
   ],
   "errors": [
@@ -1682,6 +1682,11 @@
       "code": 18,
       "name": "AlreadyDecompressed",
       "msg": "Already decompressed account"
+    },
+    {
+      "code": 19,
+      "name": "InvalidCollection",
+      "msg": "Invalid Collection passed in"
     }
   ],
   "metadata": {

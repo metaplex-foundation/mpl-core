@@ -35,7 +35,7 @@ pub fn assert_authority<T: CoreAsset>(
                 }
             }
             Authority::UpdateAuthority => {
-                if asset.update_authority() == authority.key {
+                if asset.update_authority().key() == *authority.key {
                     return Ok(());
                 }
             }

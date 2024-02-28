@@ -2,7 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::pubkey::Pubkey;
 
-use super::{CoreAsset, DataBlob, Key, SolanaAccount};
+use super::{CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
 
 /// The representation of a collection of assets.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
@@ -61,8 +61,8 @@ impl SolanaAccount for CollectionData {
 }
 
 impl CoreAsset for CollectionData {
-    fn update_authority(&self) -> &Pubkey {
-        &self.update_authority
+    fn update_authority(&self) -> UpdateAuthority {
+        UpdateAuthority::Collection(self.update_authority)
     }
 
     fn owner(&self) -> &Pubkey {

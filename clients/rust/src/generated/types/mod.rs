@@ -7,7 +7,6 @@
 
 pub(crate) mod authority;
 pub(crate) mod burn;
-pub(crate) mod collection;
 pub(crate) mod compression_proof;
 pub(crate) mod creator;
 pub(crate) mod data_state;
@@ -23,11 +22,11 @@ pub(crate) mod registry_record;
 pub(crate) mod royalties;
 pub(crate) mod rule_set;
 pub(crate) mod transfer;
+pub(crate) mod update_authority;
 pub(crate) mod update_delegate;
 
 pub use self::authority::*;
 pub use self::burn::*;
-pub use self::collection::*;
 pub use self::compression_proof::*;
 pub use self::creator::*;
 pub use self::data_state::*;
@@ -43,4 +42,5 @@ pub use self::registry_record::*;
 pub use self::royalties::*;
 pub use self::rule_set::*;
 pub use self::transfer::*;
+pub use self::update_authority::*;
 pub use self::update_delegate::*;

@@ -11,8 +11,9 @@ import {
   createCollection,
   fetchAssetWithPlugins,
   fetchCollectionWithPlugins,
-} from '../src';
-import { createUmi } from './_setup';
+  updateAuthority,
+} from '../../src';
+import { createUmi } from '../_setup';
 
 test('it can create a new asset with a collection if it is the collection update delegate', async (t) => {
   // Given a Umi instance and a new signer.
@@ -93,44 +94,26 @@ test('it can create a new asset with a collection if it is the collection update
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     collection: collectionAddress.publicKey,
-    plugins: [{
-      __kind: 'Collection', fields: [{
-        collectionAddress: collectionAddress.publicKey,
-        managed: true
-      }]
-    }],
+    plugins: [],
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  console.log("Asset State:", asset);
+  // console.log("Asset State:", asset);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: umi.identity.publicKey,
+    updateAuthority: updateAuthority("Collection", [collectionAddress.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     pluginHeader: {
       key: 3,
-      pluginRegistryOffset: BigInt(151),
+      pluginRegistryOffset: BigInt(118),
     },
     pluginRegistry: {
       key: 4,
-      registry: [
-        {
-          pluginType: PluginType.Collection,
-          offset: BigInt(117),
-          authorities: [{ __kind: 'UpdateAuthority' }],
-        },
-      ],
     },
-    plugins: [
-      {
-        authorities: [{ __kind: 'UpdateAuthority' }],
-        plugin: {
-          __kind: 'Collection',
-          fields: [{ collectionAddress: collectionAddress.publicKey, managed: true }],
-        },
-      },
-    ],
   });
+
+  t.assert(asset.pluginRegistry?.registry.length === 0);
+  t.assert(asset.plugins?.length === 0);
 });
