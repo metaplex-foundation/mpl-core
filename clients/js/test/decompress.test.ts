@@ -12,7 +12,6 @@ import {
   getHashedAssetSchemaSerializer,
   hash,
   HashedAssetSchema,
-  Key,
   updateAuthority,
 } from '../src';
 import { createUmi } from './_setup';
@@ -70,11 +69,11 @@ test('it can decompress a previously compressed asset as the owner', async (t) =
     assetAddress: assetAddress.publicKey,
     owner: umi.identity,
     compressionProof: {
-      key: Key.Asset,
       updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
       owner: umi.identity.publicKey,
       name: 'Test Bread',
       uri: 'https://example.com/bread',
+      plugins: []
     },
   }).sendAndConfirm(umi);
 
