@@ -4,12 +4,17 @@ import test from 'ava';
 import {
   Asset,
   AssetWithPlugins,
-  DataState,
+  authority,
   create,
+  DataState,
   fetchAsset,
   fetchAssetWithPlugins,
   fetchHashedAsset,
+  formPluginHeader,
+  formPluginRegistry,
   getAssetAccountDataSerializer,
+  plugin,
+  PluginType,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -100,27 +105,16 @@ test('it can create a new asset with plugins', async (t) => {
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(119),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(117),
-          authorities: [{ __kind: 'Owner' }],
-        },
-      ],
-    },
+    pluginHeader: formPluginHeader(BigInt(119)),
+    pluginRegistry: formPluginRegistry({
+      pluginType: PluginType.Freeze,
+      offset: BigInt(117),
+      authorities: [authority('Owner')],
+    }),
     plugins: [
       {
-        authorities: [{ __kind: 'Owner' }],
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
+        authorities: [authority('Owner')],
+        plugin: plugin('Freeze', [{ frozen: false }]),
       },
     ],
   });

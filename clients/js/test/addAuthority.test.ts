@@ -2,17 +2,21 @@ import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 // import { base58 } from '@metaplex-foundation/umi/serializers';
 import {
-  Asset,
-  AssetWithPlugins,
-  DataState,
-  PluginType,
   addAuthority,
   addPlugin,
+  Asset,
+  AssetWithPlugins,
   create,
+  DataState,
   fetchAsset,
   fetchAssetWithPlugins,
+  formPluginHeader,
+  formPluginRegistry,
+  formPluginWithAuthorities,
+  ownerAuthority,
   plugin,
-  authority,
+  PluginType,
+  pubkeyAuthority,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -50,9 +54,7 @@ test('it can add an authority to a plugin', async (t) => {
       addAuthority(umi, {
         assetAddress: assetAddress.publicKey,
         pluginType: PluginType.Freeze,
-        newAuthority: authority('Pubkey', {
-          address: delegateAddress.publicKey,
-        }),
+        newAuthority: pubkeyAuthority(delegateAddress.publicKey),
       })
     )
     .sendAndConfirm(umi);
@@ -65,34 +67,23 @@ test('it can add an authority to a plugin', async (t) => {
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(119),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(117),
-          authorities: [
-            { __kind: 'Owner' },
-            { __kind: 'Pubkey', address: delegateAddress.publicKey },
-          ],
-        },
+    pluginHeader: formPluginHeader(BigInt(119)),
+    pluginRegistry: formPluginRegistry({
+      pluginType: PluginType.Freeze,
+      offset: BigInt(117),
+      authorities: [
+        ownerAuthority(),
+        pubkeyAuthority(delegateAddress.publicKey),
       ],
-    },
+    }),
     plugins: [
-      {
+      formPluginWithAuthorities({
         authorities: [
-          { __kind: 'Owner' },
-          { __kind: 'Pubkey', address: delegateAddress.publicKey },
+          ownerAuthority(),
+          pubkeyAuthority(delegateAddress.publicKey),
         ],
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
-      },
+        plugin: plugin('Freeze', [{ frozen: false }]),
+      }),
     ],
   });
 });
