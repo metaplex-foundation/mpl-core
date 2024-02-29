@@ -129,7 +129,7 @@ test('a delegate can freeze the token', async (t) => {
   // console.log(asset);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',

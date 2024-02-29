@@ -35,7 +35,7 @@ test('it can add an authority to a plugin', async (t) => {
   // console.log("Account State:", asset);
   t.like(asset, <Asset>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
@@ -64,7 +64,7 @@ test('it can add an authority to a plugin', async (t) => {
   // console.log(JSON.stringify(asset1, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
   t.like(asset1, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',

@@ -27,7 +27,7 @@ test('it can create a new asset with a collection if it is the collection update
     collectionAddress,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
-    plugins: []
+    plugins: [],
   }).sendAndConfirm(umi);
 
   await addPlugin(umi, {
@@ -35,7 +35,7 @@ test('it can create a new asset with a collection if it is the collection update
     plugin: {
       __kind: 'UpdateDelegate',
       fields: [{}],
-    }
+    },
   }).sendAndConfirm(umi);
 
   // console.log(JSON.stringify(await fetchCollectionWithPlugins(umi, collectionAddress.publicKey), (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
@@ -46,10 +46,13 @@ test('it can create a new asset with a collection if it is the collection update
     newAuthority: {
       __kind: 'Pubkey',
       address: updateDelegate.publicKey,
-    }
+    },
   }).sendAndConfirm(umi);
 
-  const collection = await fetchCollectionWithPlugins(umi, collectionAddress.publicKey);
+  const collection = await fetchCollectionWithPlugins(
+    umi,
+    collectionAddress.publicKey
+  );
   // console.log("Account State:", collection);
   t.like(collection, <CollectionWithPlugins>{
     publicKey: collectionAddress.publicKey,
@@ -68,7 +71,7 @@ test('it can create a new asset with a collection if it is the collection update
           offset: BigInt(104),
           authorities: [
             { __kind: 'UpdateAuthority' },
-            { __kind: 'Pubkey', address: updateDelegate.publicKey }
+            { __kind: 'Pubkey', address: updateDelegate.publicKey },
           ],
         },
       ],
@@ -77,7 +80,7 @@ test('it can create a new asset with a collection if it is the collection update
       {
         authorities: [
           { __kind: 'UpdateAuthority' },
-          { __kind: 'Pubkey', address: updateDelegate.publicKey }
+          { __kind: 'Pubkey', address: updateDelegate.publicKey },
         ],
         plugin: {
           __kind: 'UpdateDelegate',
@@ -101,7 +104,9 @@ test('it can create a new asset with a collection if it is the collection update
   // console.log("Asset State:", asset);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Collection", [collectionAddress.publicKey]),
+    updateAuthority: updateAuthority('Collection', [
+      collectionAddress.publicKey,
+    ]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',

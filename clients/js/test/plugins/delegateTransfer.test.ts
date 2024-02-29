@@ -57,7 +57,7 @@ test('a delegate can transfer the asset', async (t) => {
   // console.log(asset);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: newOwnerAddress.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',

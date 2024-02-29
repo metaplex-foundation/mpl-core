@@ -34,7 +34,7 @@ test('it can remove a plugin from an asset', async (t) => {
   // console.log("Account State:", asset);
   t.like(asset, <Asset>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
@@ -52,7 +52,7 @@ test('it can remove a plugin from an asset', async (t) => {
   // console.log(JSON.stringify(asset1, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
   t.like(asset1, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
@@ -90,7 +90,7 @@ test('it can remove a plugin from an asset', async (t) => {
   // console.log(JSON.stringify(asset2, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
   t.like(asset2, <AssetWithPlugins>(<unknown>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',

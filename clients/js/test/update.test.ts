@@ -37,7 +37,7 @@ test('it can update an asset to be larger', async (t) => {
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
   t.like(asset, <AssetWithPlugins>{
     key: Key.Asset,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
@@ -68,7 +68,7 @@ test('it can update an asset to be smaller', async (t) => {
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
   t.like(asset, <AssetWithPlugins>{
     key: Key.Asset,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: '',
     uri: '',
@@ -108,7 +108,7 @@ test('it can update an asset with plugins to be larger', async (t) => {
   // console.log(JSON.stringify(asset, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
@@ -170,7 +170,7 @@ test('it can update an asset with plugins to be smaller', async (t) => {
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: '',
     uri: '',

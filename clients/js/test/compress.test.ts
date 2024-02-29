@@ -35,7 +35,7 @@ test('it can compress an asset without any plugins as the owner', async (t) => {
   // console.log("Account State:", beforeAsset);
   t.like(beforeAsset, <Asset>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
@@ -84,7 +84,7 @@ test('it cannot compress an asset if not the owner', async (t) => {
   // console.log("Account State:", beforeAsset);
   t.like(beforeAsset, <Asset>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
@@ -101,7 +101,7 @@ test('it cannot compress an asset if not the owner', async (t) => {
   // console.log("Account State:", afterAsset);
   t.like(afterAsset, <Asset>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',

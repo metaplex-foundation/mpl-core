@@ -31,7 +31,8 @@ export async function fetchCollectionWithPlugins(
   );
   assertAccountExists(maybeAccount, 'Collection');
   const collection = deserializeCollectionData(maybeAccount);
-  const collectionData = getCollectionDataAccountDataSerializer().serialize(collection);
+  const collectionData =
+    getCollectionDataAccountDataSerializer().serialize(collection);
 
   let pluginHeader: PluginHeaderAccountData | undefined;
   let pluginRegistry: PluginRegistryAccountData | undefined;

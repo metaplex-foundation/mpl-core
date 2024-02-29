@@ -33,7 +33,7 @@ test('it can create a new asset in account state', async (t) => {
   // console.log("Account State:", asset);
   t.like(asset, <Asset>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
@@ -70,7 +70,7 @@ test('it can create a new asset in ledger state', async (t) => {
     const parsed = getAssetAccountDataSerializer().deserialize(data)[0];
     // console.log("Ledger State:", parsed);
     t.like(parsed, <Asset>{
-      updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+      updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
       owner: umi.identity.publicKey,
       name: 'Test Bread',
       uri: 'https://example.com/bread',
@@ -97,7 +97,7 @@ test('it can create a new asset with plugins', async (t) => {
   // console.log("Account State:", asset);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',

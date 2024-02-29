@@ -24,11 +24,14 @@ test('it can create a new collection', async (t) => {
     collectionAddress,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
-    plugins: []
+    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
-  const collection = await fetchCollectionData(umi, collectionAddress.publicKey);
+  const collection = await fetchCollectionData(
+    umi,
+    collectionAddress.publicKey
+  );
   // console.log("Account State:", collection);
   t.like(collection, <CollectionData>{
     publicKey: collectionAddress.publicKey,
@@ -48,11 +51,14 @@ test('it can create a new collection with plugins', async (t) => {
     collectionAddress,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
-    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }]
+    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
-  const collection = await fetchCollectionWithPlugins(umi, collectionAddress.publicKey);
+  const collection = await fetchCollectionWithPlugins(
+    umi,
+    collectionAddress.publicKey
+  );
   // console.log("Account State:", collection);
   t.like(collection, <CollectionWithPlugins>{
     publicKey: collectionAddress.publicKey,
@@ -96,7 +102,7 @@ test('it can create a new asset with a collection', async (t) => {
     collectionAddress,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
-    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }]
+    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }],
   }).sendAndConfirm(umi);
 
   // When we create a new account.
@@ -114,7 +120,9 @@ test('it can create a new asset with a collection', async (t) => {
   // console.log("Account State:", asset);
   t.like(asset, <AssetWithPlugins>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Collection", [collectionAddress.publicKey]),
+    updateAuthority: updateAuthority('Collection', [
+      collectionAddress.publicKey,
+    ]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
@@ -144,10 +152,13 @@ test('it cannot create a new asset with a collection if it is not the collection
     updateAuthority: collectionAuth.publicKey,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
-    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }]
+    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }],
   }).sendAndConfirm(umi);
 
-  const collection = await fetchCollectionWithPlugins(umi, collectionAddress.publicKey);
+  const collection = await fetchCollectionWithPlugins(
+    umi,
+    collectionAddress.publicKey
+  );
   // console.log("Account State:", collection);
   t.like(collection, <CollectionWithPlugins>{
     publicKey: collectionAddress.publicKey,
@@ -189,5 +200,5 @@ test('it cannot create a new asset with a collection if it is not the collection
     plugins: [],
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: "InvalidAuthority" });
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });
