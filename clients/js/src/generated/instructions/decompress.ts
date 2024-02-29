@@ -35,6 +35,8 @@ import {
 export type DecompressInstructionAccounts = {
   /** The address of the asset */
   assetAddress: PublicKey | Pda;
+  /** The collection to which the asset belongs */
+  collection?: PublicKey | Pda;
   /** The owner or delegate of the asset */
   owner: Signer;
   /** The account paying for the storage fees */
@@ -96,15 +98,20 @@ export function decompress(
       isWritable: true,
       value: input.assetAddress ?? null,
     },
-    owner: { index: 1, isWritable: false, value: input.owner ?? null },
-    payer: { index: 2, isWritable: true, value: input.payer ?? null },
+    collection: {
+      index: 1,
+      isWritable: false,
+      value: input.collection ?? null,
+    },
+    owner: { index: 2, isWritable: false, value: input.owner ?? null },
+    payer: { index: 3, isWritable: true, value: input.payer ?? null },
     systemProgram: {
-      index: 3,
+      index: 4,
       isWritable: false,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
-      index: 4,
+      index: 5,
       isWritable: false,
       value: input.logWrapper ?? null,
     },

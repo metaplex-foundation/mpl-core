@@ -9,33 +9,34 @@
 import { PublicKey } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  array,
   publicKey as publicKeySerializer,
   string,
   struct,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  Key,
-  KeyArgs,
+  HashablePluginSchema,
+  HashablePluginSchemaArgs,
   UpdateAuthority,
   UpdateAuthorityArgs,
-  getKeySerializer,
+  getHashablePluginSchemaSerializer,
   getUpdateAuthoritySerializer,
 } from '.';
 
 export type CompressionProof = {
-  key: Key;
   owner: PublicKey;
   updateAuthority: UpdateAuthority;
   name: string;
   uri: string;
+  plugins: Array<HashablePluginSchema>;
 };
 
 export type CompressionProofArgs = {
-  key: KeyArgs;
   owner: PublicKey;
   updateAuthority: UpdateAuthorityArgs;
   name: string;
   uri: string;
+  plugins: Array<HashablePluginSchemaArgs>;
 };
 
 export function getCompressionProofSerializer(): Serializer<
@@ -44,11 +45,11 @@ export function getCompressionProofSerializer(): Serializer<
 > {
   return struct<CompressionProof>(
     [
-      ['key', getKeySerializer()],
       ['owner', publicKeySerializer()],
       ['updateAuthority', getUpdateAuthoritySerializer()],
       ['name', string()],
       ['uri', string()],
+      ['plugins', array(getHashablePluginSchemaSerializer())],
     ],
     { description: 'CompressionProof' }
   ) as Serializer<CompressionProofArgs, CompressionProof>;

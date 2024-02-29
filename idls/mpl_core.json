@@ -695,6 +695,15 @@
           ]
         },
         {
+          "name": "collection",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
           "name": "owner",
           "isMut": false,
           "isSigner": true,
@@ -751,6 +760,15 @@
           "isSigner": false,
           "docs": [
             "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
           ]
         },
         {
@@ -1276,12 +1294,6 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "key",
-            "type": {
-              "defined": "Key"
-            }
-          },
-          {
             "name": "owner",
             "type": "publicKey"
           },
@@ -1298,6 +1310,14 @@
           {
             "name": "uri",
             "type": "string"
+          },
+          {
+            "name": "plugins",
+            "type": {
+              "vec": {
+                "defined": "HashablePluginSchema"
+              }
+            }
           }
         ]
       }
