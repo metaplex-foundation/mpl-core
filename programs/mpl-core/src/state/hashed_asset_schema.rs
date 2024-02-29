@@ -1,14 +1,23 @@
-use crate::state::Compressible;
+use crate::{
+    plugins::Plugin,
+    state::{Authority, Compressible},
+};
 use borsh::{BorshDeserialize, BorshSerialize};
 
-/// The plugin hash is a hash of the plugin authority and the plugin itself.
+/// A type that stores a plugin's authorities and deserialized data into a
+/// schema that will be later hashed into a hashed asset.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
-pub struct PluginHash {
-    /// The hash of the plugin authorities.
-    pub plugin_authorities_hash: [u8; 32],
-    /// The hash of the plugin.
-    pub plugin_hash: [u8; 32],
+pub struct HashablePluginSchema {
+    /// This is the order the plugins are stored in the account, allowing us
+    /// to keep track of their order in the hashing.
+    pub index: usize,
+    /// The authorities who have permission to utilize a plugin.
+    pub authorities: Vec<Authority>,
+    /// The deserialized plugin.
+    pub plugin: Plugin,
 }
+
+impl Compressible for HashablePluginSchema {}
 
 /// The hashed asset schema is a schema that contains a hash of the asset and a vec of plugin hashes.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
@@ -16,7 +25,7 @@ pub struct HashedAssetSchema {
     /// The hash of the asset.
     pub asset_hash: [u8; 32],
     /// A vec of plugin hashes.
-    pub plugin_hashes: Vec<PluginHash>,
+    pub plugin_hashes: Vec<[u8; 32]>,
 }
 
 impl Compressible for HashedAssetSchema {}

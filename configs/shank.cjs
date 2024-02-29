@@ -7,9 +7,10 @@ const programDir = path.join(__dirname, "..", "programs");
 
 generateIdl({
   generator: "shank",
-  programName: "mpl_core_program",
+  programName: "mpl_core",
   programId: "CoREzp6dAdLVRKf3EM5tWrsXM2jQwRFeu5uhzsAyjYXL",
   idlDir,
+  idlName: "mpl_core",
   binaryInstallDir,
   programDir: path.join(programDir, "mpl-core"),
 });

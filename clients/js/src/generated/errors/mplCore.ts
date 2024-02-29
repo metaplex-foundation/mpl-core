@@ -295,7 +295,7 @@ nameToErrorMap.set('MissingUpdateAuthority', MissingUpdateAuthorityError);
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  */
-export function getMplCoreProgramErrorFromCode(
+export function getMplCoreErrorFromCode(
   code: number,
   program: Program,
   cause?: Error
@@ -308,7 +308,7 @@ export function getMplCoreProgramErrorFromCode(
  * Attempts to resolve a custom program error from the provided error name, i.e. 'Unauthorized'.
  * @category Errors
  */
-export function getMplCoreProgramErrorFromName(
+export function getMplCoreErrorFromName(
   name: string,
   program: Program,
   cause?: Error

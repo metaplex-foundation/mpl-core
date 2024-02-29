@@ -8,10 +8,10 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::CompressAccounts,
-    plugins::{fetch_plugins, Plugin},
+    plugins::{fetch_plugins, Plugin, RegistryRecord},
     state::{
-        Asset, AuthorityVec, Compressible, DataBlob, HashedAsset, HashedAssetSchema, Key,
-        PluginHash, SolanaAccount,
+        Asset, Compressible, DataBlob, HashablePluginSchema, HashedAsset, HashedAssetSchema, Key,
+        SolanaAccount,
     },
     utils::load_key,
 };
@@ -45,21 +45,24 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
 
             let mut plugin_hashes = vec![];
             if asset.get_size() != ctx.accounts.asset_address.data_len() {
-                let registry_records = fetch_plugins(ctx.accounts.asset_address)?;
+                let mut registry_records = fetch_plugins(ctx.accounts.asset_address)?;
 
-                for record in registry_records {
-                    let authorities: AuthorityVec = record.authorities;
-                    let plugin_authorities_hash = authorities.hash()?;
+                // It should already be sorted but we just want to make sure.
+                registry_records.sort_by(RegistryRecord::compare_offsets);
 
+                for (i, record) in registry_records.into_iter().enumerate() {
                     let plugin = Plugin::deserialize(
                         &mut &(*ctx.accounts.asset_address.data).borrow()[record.offset..],
                     )?;
-                    let plugin_hash = plugin.hash()?;
 
-                    plugin_hashes.push(PluginHash {
-                        plugin_authorities_hash,
-                        plugin_hash,
-                    });
+                    let hashable_plugin_schema = HashablePluginSchema {
+                        index: i,
+                        authorities: record.authorities,
+                        plugin,
+                    };
+
+                    let plugin_hash = hashable_plugin_schema.hash()?;
+                    plugin_hashes.push(plugin_hash);
                 }
             }
 

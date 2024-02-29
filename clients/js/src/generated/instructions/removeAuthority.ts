@@ -96,7 +96,7 @@ export function removeAuthority(
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
-    'mplCoreProgram',
+    'mplCore',
     'CoREzp6dAdLVRKf3EM5tWrsXM2jQwRFeu5uhzsAyjYXL'
   );
 

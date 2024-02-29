@@ -6,12 +6,12 @@ const clientDir = path.join(__dirname, "..", "clients");
 const idlDir = path.join(__dirname, "..", "idls");
 
 // Instanciate Kinobi.
-const kinobi = k.createFromIdls([path.join(idlDir, "mpl_core_program.json")]);
+const kinobi = k.createFromIdls([path.join(idlDir, "mpl_core.json")]);
 
 // Update programs.
 kinobi.update(
   new k.UpdateProgramsVisitor({
-    mplAssetProgram: { name: "mplAsset" },
+    mplCoreProgram: { name: "mplCore" },
   })
 );
 

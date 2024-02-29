@@ -5,12 +5,15 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::Authority;
+use crate::generated::types::Plugin;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct PluginHash {
-    pub plugin_authorities_hash: [u8; 32],
-    pub plugin_hash: [u8; 32],
+pub struct HashablePluginSchema {
+    pub index: u64,
+    pub authorities: Vec<Authority>,
+    pub plugin: Plugin,
 }

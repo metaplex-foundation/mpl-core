@@ -43,7 +43,7 @@ impl Compress {
             accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -58,7 +58,7 @@ impl Compress {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -66,7 +66,7 @@ impl Compress {
         let data = CompressInstructionData::new().try_to_vec().unwrap();
 
         solana_program::instruction::Instruction {
-            program_id: crate::MPL_CORE_PROGRAM_ID,
+            program_id: crate::MPL_CORE_ID,
             accounts,
             data,
         }
@@ -261,7 +261,7 @@ impl<'a, 'b> CompressCpi<'a, 'b> {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -276,7 +276,7 @@ impl<'a, 'b> CompressCpi<'a, 'b> {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -290,7 +290,7 @@ impl<'a, 'b> CompressCpi<'a, 'b> {
         let data = CompressInstructionData::new().try_to_vec().unwrap();
 
         let instruction = solana_program::instruction::Instruction {
-            program_id: crate::MPL_CORE_PROGRAM_ID,
+            program_id: crate::MPL_CORE_ID,
             accounts,
             data,
         };

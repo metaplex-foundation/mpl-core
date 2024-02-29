@@ -5,7 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::PluginHash;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -13,5 +12,5 @@ use borsh::BorshSerialize;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct HashedAssetSchema {
     pub asset_hash: [u8; 32],
-    pub plugin_hashes: Vec<PluginHash>,
+    pub plugin_hashes: Vec<[u8; 32]>,
 }

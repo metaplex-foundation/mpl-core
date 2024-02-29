@@ -50,7 +50,7 @@ impl RemoveAuthority {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -62,7 +62,7 @@ impl RemoveAuthority {
             accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -77,7 +77,7 @@ impl RemoveAuthority {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -87,7 +87,7 @@ impl RemoveAuthority {
         data.append(&mut args);
 
         solana_program::instruction::Instruction {
-            program_id: crate::MPL_CORE_PROGRAM_ID,
+            program_id: crate::MPL_CORE_ID,
             accounts,
             data,
         }
@@ -323,7 +323,7 @@ impl<'a, 'b> RemoveAuthorityCpi<'a, 'b> {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -337,7 +337,7 @@ impl<'a, 'b> RemoveAuthorityCpi<'a, 'b> {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -352,7 +352,7 @@ impl<'a, 'b> RemoveAuthorityCpi<'a, 'b> {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -368,7 +368,7 @@ impl<'a, 'b> RemoveAuthorityCpi<'a, 'b> {
         data.append(&mut args);
 
         let instruction = solana_program::instruction::Instruction {
-            program_id: crate::MPL_CORE_PROGRAM_ID,
+            program_id: crate::MPL_CORE_ID,
             accounts,
             data,
         };

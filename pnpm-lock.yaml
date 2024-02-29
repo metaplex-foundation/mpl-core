@@ -12,8 +12,8 @@ devDependencies:
     specifier: ^0.16.0
     version: 0.16.0
   '@metaplex-foundation/shank-js':
-    specifier: ^0.1.0
-    version: 0.1.0
+    specifier: ^0.1.7
+    version: 0.1.7
   typescript:
     specifier: ^4.9.4
     version: 4.9.4
@@ -111,8 +111,8 @@ packages:
       - supports-color
     dev: true
 
-  /@metaplex-foundation/shank-js@0.1.0:
-    resolution: {integrity: sha512-ExTOIIZFJw8WNHfv+anJifP6/Al9gcWJaUXMifGOB6BxV/J0+jfMg13sm0uMlovU7/tiZSPboS09HXnKaykETg==}
+  /@metaplex-foundation/shank-js@0.1.7:
+    resolution: {integrity: sha512-tSAipn8Ho1UxlMC3jwJ5Opl+Y3lRm60VTkgRDfvzydb57lXW5G+K5MrZhEmhrFUuRYziV+e34CTo+ybpMp1Eqg==}
     dependencies:
       '@metaplex-foundation/rustbin': 0.3.5
       ansi-colors: 4.1.3
@@ -822,6 +822,7 @@ packages:
   /node-gyp-build@4.8.0:
     resolution: {integrity: sha512-u6fs2AEUljNho3EYTJNBfImO5QTo/J/1Etd+NVdCj7qWKUSN/bSLkZwhDv7I+w/MSC6qJ4cknepkAYykDdK8og==}
     hasBin: true
+    requiresBuild: true
     dev: true
 
   /npm-run-path@4.0.1:
