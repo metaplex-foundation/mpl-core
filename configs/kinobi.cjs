@@ -11,7 +11,7 @@ const kinobi = k.createFromIdls([path.join(idlDir, "mpl_core.json")]);
 // Update programs.
 kinobi.update(
   new k.UpdateProgramsVisitor({
-    mplAssetProgram: { name: "mplAsset" },
+    mplCoreProgram: { name: "mplCore" },
   })
 );
 

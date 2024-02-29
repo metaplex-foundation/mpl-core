@@ -49,7 +49,7 @@ impl Transfer {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -61,7 +61,7 @@ impl Transfer {
             accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -76,7 +76,7 @@ impl Transfer {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -86,7 +86,7 @@ impl Transfer {
         data.append(&mut args);
 
         solana_program::instruction::Instruction {
-            program_id: crate::MPL_CORE_PROGRAM_ID,
+            program_id: crate::MPL_CORE_ID,
             accounts,
             data,
         }
@@ -309,7 +309,7 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -323,7 +323,7 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -338,7 +338,7 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -354,7 +354,7 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
         data.append(&mut args);
 
         let instruction = solana_program::instruction::Instruction {
-            program_id: crate::MPL_CORE_PROGRAM_ID,
+            program_id: crate::MPL_CORE_ID,
             accounts,
             data,
         };

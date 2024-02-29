@@ -12,23 +12,20 @@ import {
   Program,
   PublicKey,
 } from '@metaplex-foundation/umi';
-import {
-  getMplCoreProgramErrorFromCode,
-  getMplCoreProgramErrorFromName,
-} from '../errors';
+import { getMplCoreErrorFromCode, getMplCoreErrorFromName } from '../errors';
 
-export const MPL_CORE_PROGRAM_PROGRAM_ID =
+export const MPL_CORE_PROGRAM_ID =
   'CoREzp6dAdLVRKf3EM5tWrsXM2jQwRFeu5uhzsAyjYXL' as PublicKey<'CoREzp6dAdLVRKf3EM5tWrsXM2jQwRFeu5uhzsAyjYXL'>;
 
-export function createMplCoreProgramProgram(): Program {
+export function createMplCoreProgram(): Program {
   return {
-    name: 'mplCoreProgram',
-    publicKey: MPL_CORE_PROGRAM_PROGRAM_ID,
+    name: 'mplCore',
+    publicKey: MPL_CORE_PROGRAM_ID,
     getErrorFromCode(code: number, cause?: Error) {
-      return getMplCoreProgramErrorFromCode(code, this, cause);
+      return getMplCoreErrorFromCode(code, this, cause);
     },
     getErrorFromName(name: string, cause?: Error) {
-      return getMplCoreProgramErrorFromName(name, this, cause);
+      return getMplCoreErrorFromName(name, this, cause);
     },
     isOnCluster() {
       return true;
@@ -36,20 +33,20 @@ export function createMplCoreProgramProgram(): Program {
   };
 }
 
-export function getMplCoreProgramProgram<T extends Program = Program>(
+export function getMplCoreProgram<T extends Program = Program>(
   context: Pick<Context, 'programs'>,
   clusterFilter?: ClusterFilter
 ): T {
-  return context.programs.get<T>('mplCoreProgram', clusterFilter);
+  return context.programs.get<T>('mplCore', clusterFilter);
 }
 
-export function getMplCoreProgramProgramId(
+export function getMplCoreProgramId(
   context: Pick<Context, 'programs'>,
   clusterFilter?: ClusterFilter
 ): PublicKey {
   return context.programs.getPublicKey(
-    'mplCoreProgram',
-    MPL_CORE_PROGRAM_PROGRAM_ID,
+    'mplCore',
+    MPL_CORE_PROGRAM_ID,
     clusterFilter
   );
 }

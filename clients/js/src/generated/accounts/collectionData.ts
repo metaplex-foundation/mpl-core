@@ -134,7 +134,7 @@ export function getCollectionDataGpaBuilder(
   context: Pick<Context, 'rpc' | 'programs'>
 ) {
   const programId = context.programs.getPublicKey(
-    'mplCoreProgram',
+    'mplCore',
     'CoREzp6dAdLVRKf3EM5tWrsXM2jQwRFeu5uhzsAyjYXL'
   );
   return gpaBuilder(context, programId)
