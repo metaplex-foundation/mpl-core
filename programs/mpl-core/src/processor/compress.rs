@@ -8,19 +8,16 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::CompressAccounts,
-    plugins::{fetch_plugins, Plugin, RegistryRecord},
-    state::{
-        Asset, Compressible, DataBlob, HashablePluginSchema, HashedAsset, HashedAssetSchema, Key,
-        SolanaAccount,
-    },
-    utils::load_key,
+    plugins::{CheckResult, Plugin, RegistryRecord, ValidationResult},
+    state::{Asset, Compressible, HashablePluginSchema, HashedAsset, HashedAssetSchema, Key},
+    utils::{fetch_core_data, load_key},
 };
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub struct CompressArgs {}
 
-pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs) -> ProgramResult {
+pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], args: CompressArgs) -> ProgramResult {
     // Accounts.
     let ctx = CompressAccounts::context(accounts)?;
 
@@ -35,17 +32,48 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
 
     match load_key(ctx.accounts.asset_address, 0)? {
         Key::Asset => {
-            let asset = Asset::load(ctx.accounts.asset_address, 0)?;
+            let (asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset_address)?;
 
-            if ctx.accounts.owner.key != &asset.owner {
+            let mut approved = false;
+            match Asset::check_compress() {
+                CheckResult::CanApprove | CheckResult::CanReject => {
+                    match asset.validate_compress(&ctx.accounts)? {
+                        ValidationResult::Approved => {
+                            approved = true;
+                        }
+                        ValidationResult::Rejected => {
+                            return Err(MplCoreError::InvalidAuthority.into())
+                        }
+                        ValidationResult::Pass => (),
+                    }
+                }
+                CheckResult::None => (),
+            };
+
+            if let Some(plugin_registry) = &plugin_registry {
+                for record in &plugin_registry.registry {
+                    if matches!(
+                        record.plugin_type.check_compress(),
+                        CheckResult::CanApprove | CheckResult::CanReject
+                    ) {
+                        let result = Plugin::load(ctx.accounts.asset_address, record.offset)?
+                            .validate_compress(&ctx.accounts, &args, &record.authorities)?;
+                        if result == ValidationResult::Rejected {
+                            return Err(MplCoreError::InvalidAuthority.into());
+                        } else if result == ValidationResult::Approved {
+                            approved = true;
+                        }
+                    }
+                }
+            };
+
+            if !approved {
                 return Err(MplCoreError::InvalidAuthority.into());
             }
 
-            // TODO: Delegated compress/decompress authority.
-
             let mut plugin_hashes = vec![];
-            if asset.get_size() != ctx.accounts.asset_address.data_len() {
-                let mut registry_records = fetch_plugins(ctx.accounts.asset_address)?;
+            if let Some(plugin_registry) = plugin_registry {
+                let mut registry_records = plugin_registry.registry;
 
                 // It should already be sorted but we just want to make sure.
                 registry_records.sort_by(RegistryRecord::compare_offsets);
