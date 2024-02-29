@@ -78,7 +78,6 @@ pub enum MplAssetInstruction {
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     RemoveAuthority(RemoveAuthorityArgs),
 
-    //TODO: Implement this instruction
     /// Burn an mpl-core.
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
@@ -106,7 +105,6 @@ pub enum MplAssetInstruction {
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Update(UpdateArgs),
 
-    //TODO: Implement this instruction
     /// Create a new mpl-core.
     /// This function creates the initial mpl-core
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]
@@ -117,7 +115,6 @@ pub enum MplAssetInstruction {
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Compress(CompressArgs),
 
-    //TODO: Implement this instruction
     /// Create a new mpl-core.
     /// This function creates the initial mpl-core
     #[account(0, writable, name="asset_address", desc = "The address of the asset")]

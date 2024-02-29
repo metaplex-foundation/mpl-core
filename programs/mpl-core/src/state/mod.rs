@@ -100,7 +100,6 @@ impl Key {
     }
 }
 
-//TODO: Implement this struct
 /// A simple struct to store the compression proof of an asset.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
