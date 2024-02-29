@@ -7,7 +7,7 @@ use crate::{
     instruction::accounts::TransferAccounts,
     plugins::{CheckResult, Plugin, ValidationResult},
     state::{Asset, Compressible, CompressionProof, HashedAsset, Key, SolanaAccount},
-    utils::{fetch_core_data, load_key},
+    utils::{fetch_core_data, load_key, verify_proof},
 };
 
 #[repr(C)]
@@ -31,7 +31,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             let compression_proof = args
                 .compression_proof
                 .ok_or(MplCoreError::MissingCompressionProof)?;
-            let mut asset = Asset::verify_proof(ctx.accounts.asset_address, compression_proof)?;
+            let (mut asset, _) = verify_proof(ctx.accounts.asset_address, &compression_proof)?;
 
             if ctx.accounts.authority.key != &asset.owner {
                 return Err(MplCoreError::InvalidAuthority.into());

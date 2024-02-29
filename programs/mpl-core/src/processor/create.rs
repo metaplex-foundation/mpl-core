@@ -107,7 +107,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
         for plugin in &args.plugins {
             initialize_plugin(
                 plugin,
-                &plugin.default_authority()?,
+                &[plugin.default_authority()?],
                 ctx.accounts.asset_address,
                 ctx.accounts.payer,
                 ctx.accounts.system_program,

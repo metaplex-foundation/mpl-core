@@ -105,8 +105,6 @@ impl Key {
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub struct CompressionProof {
-    /// The discriminator of the account.
-    pub key: Key, //1
     /// The owner of the asset.
     pub owner: Pubkey, //32
     /// The update authority of the asset.
@@ -115,4 +113,6 @@ pub struct CompressionProof {
     pub name: String, //4
     /// The URI of the asset that points to the off-chain data.
     pub uri: String, //4
+    /// The plugins for the asset.
+    pub plugins: Vec<HashablePluginSchema>, //4
 }

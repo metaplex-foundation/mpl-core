@@ -1,17 +1,13 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
-use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
-    error::MplCoreError,
     instruction::accounts::{
         BurnAccounts, CompressAccounts, DecompressAccounts, TransferAccounts, UpdateAccounts,
     },
     plugins::{CheckResult, ValidationResult},
-    state::{
-        Compressible, CompressionProof, DataBlob, HashedAsset, HashedAssetSchema, Key,
-        SolanaAccount,
-    },
+    state::{Compressible, CompressionProof, DataBlob, Key, SolanaAccount},
 };
 
 use super::{CoreAsset, UpdateAuthority};
@@ -35,30 +31,6 @@ impl Asset {
     /// The base length of the asset account with an empty name and uri.
     pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4;
 
-    /// Check that a compression proof results in same on-chain hash.
-    pub fn verify_proof(
-        hashed_asset: &AccountInfo,
-        compression_proof: CompressionProof,
-    ) -> Result<Asset, ProgramError> {
-        let asset = Self::from(compression_proof);
-        let asset_hash = asset.hash()?;
-
-        // TODO: this currently assumes no plugins.
-        let hashed_asset_schema = HashedAssetSchema {
-            asset_hash,
-            plugin_hashes: vec![],
-        };
-
-        let hashed_asset_schema_hash = hashed_asset_schema.hash()?;
-
-        let current_account_hash = HashedAsset::load(hashed_asset, 0)?.hash;
-        if hashed_asset_schema_hash != current_account_hash {
-            return Err(MplCoreError::IncorrectAssetHash.into());
-        }
-
-        Ok(asset)
-    }
-
     /// Check permissions for the transfer lifecycle event.
     pub fn check_transfer() -> CheckResult {
         CheckResult::CanApprove
@@ -66,6 +38,16 @@ impl Asset {
 
     /// Check permissions for the update lifecycle event.
     pub fn check_update() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
+    /// Check permissions for the compress lifecycle event.
+    pub fn check_compress() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
+    /// Check permissions for the decompress lifecycle event.
+    pub fn check_decompress() -> CheckResult {
         CheckResult::CanApprove
     }
 

@@ -134,7 +134,7 @@ pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramErr
 /// Add a plugin to the registry and initialize it.
 pub fn initialize_plugin<'a>(
     plugin: &Plugin,
-    authority: &Authority,
+    authorities: &[Authority],
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
@@ -180,7 +180,7 @@ pub fn initialize_plugin<'a>(
     let new_registry_record = RegistryRecord {
         plugin_type,
         offset: old_registry_offset,
-        authorities: vec![authority.clone()],
+        authorities: authorities.to_vec(),
     };
 
     let size_increase = plugin_size

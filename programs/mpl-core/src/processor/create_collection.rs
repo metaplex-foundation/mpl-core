@@ -89,7 +89,7 @@ pub(crate) fn create_collection<'a>(
     for plugin in args.plugins {
         initialize_plugin(
             &plugin,
-            &plugin.default_authority()?,
+            &[plugin.default_authority()?],
             ctx.accounts.collection_address,
             ctx.accounts.payer,
             ctx.accounts.system_program,

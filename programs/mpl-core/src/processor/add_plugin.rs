@@ -37,7 +37,7 @@ pub(crate) fn add_plugin<'a>(
 
     initialize_plugin(
         &args.plugin,
-        &args.plugin.default_authority()?,
+        &[args.plugin.default_authority()?],
         ctx.accounts.asset_address,
         payer,
         ctx.accounts.system_program,

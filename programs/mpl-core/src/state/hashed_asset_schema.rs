@@ -1,8 +1,10 @@
+use borsh::{BorshDeserialize, BorshSerialize};
+use std::cmp::Ordering;
+
 use crate::{
     plugins::Plugin,
     state::{Authority, Compressible},
 };
-use borsh::{BorshDeserialize, BorshSerialize};
 
 /// A type that stores a plugin's authorities and deserialized data into a
 /// schema that will be later hashed into a hashed asset.
@@ -15,6 +17,13 @@ pub struct HashablePluginSchema {
     pub authorities: Vec<Authority>,
     /// The deserialized plugin.
     pub plugin: Plugin,
+}
+
+impl HashablePluginSchema {
+    /// Associated function for sorting `RegistryRecords` by offset.
+    pub fn compare_indeces(a: &HashablePluginSchema, b: &HashablePluginSchema) -> Ordering {
+        a.index.cmp(&b.index)
+    }
 }
 
 impl Compressible for HashablePluginSchema {}

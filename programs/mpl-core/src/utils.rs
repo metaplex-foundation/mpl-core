@@ -7,7 +7,10 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     plugins::{PluginHeader, PluginRegistry},
-    state::{Asset, Authority, CollectionData, CoreAsset, DataBlob, Key, SolanaAccount},
+    state::{
+        Asset, Authority, CollectionData, Compressible, CompressionProof, CoreAsset, DataBlob,
+        HashablePluginSchema, HashedAsset, HashedAssetSchema, Key, SolanaAccount,
+    },
 };
 
 /// Load the one byte key from the account data at the given offset.
@@ -108,6 +111,37 @@ pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
     } else {
         Ok((asset, None, None))
     }
+}
+
+/// Check that a compression proof results in same on-chain hash.
+pub fn verify_proof(
+    hashed_asset: &AccountInfo,
+    compression_proof: &CompressionProof,
+) -> Result<(Asset, Vec<HashablePluginSchema>), ProgramError> {
+    let asset = Asset::from(compression_proof.clone());
+    let asset_hash = asset.hash()?;
+
+    let mut sorted_plugins = compression_proof.plugins.clone();
+    sorted_plugins.sort_by(HashablePluginSchema::compare_indeces);
+
+    let plugin_hashes = sorted_plugins
+        .iter()
+        .map(|plugin| plugin.hash())
+        .collect::<Result<Vec<[u8; 32]>, ProgramError>>()?;
+
+    let hashed_asset_schema = HashedAssetSchema {
+        asset_hash,
+        plugin_hashes,
+    };
+
+    let hashed_asset_schema_hash = hashed_asset_schema.hash()?;
+
+    let current_account_hash = HashedAsset::load(hashed_asset, 0)?.hash;
+    if hashed_asset_schema_hash != current_account_hash {
+        return Err(MplCoreError::IncorrectAssetHash.into());
+    }
+
+    Ok((asset, sorted_plugins))
 }
 
 pub(crate) fn close_program_account<'a>(

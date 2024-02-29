@@ -7,7 +7,7 @@ use crate::{
     instruction::accounts::BurnAccounts,
     plugins::{CheckResult, Plugin, ValidationResult},
     state::{Asset, Compressible, CompressionProof, Key},
-    utils::{close_program_account, fetch_core_data, load_key},
+    utils::{close_program_account, fetch_core_data, load_key, verify_proof},
 };
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
@@ -30,7 +30,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
             let compression_proof = args
                 .compression_proof
                 .ok_or(MplCoreError::MissingCompressionProof)?;
-            let asset = Asset::verify_proof(ctx.accounts.asset_address, compression_proof)?;
+            let (asset, _) = verify_proof(ctx.accounts.asset_address, &compression_proof)?;
 
             if ctx.accounts.authority.key != &asset.owner {
                 return Err(MplCoreError::InvalidAuthority.into());
