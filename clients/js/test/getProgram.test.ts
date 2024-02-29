@@ -7,7 +7,7 @@ test('it registers the program', async (t) => {
   const umi = await createUmi();
 
   // When we fetch the registered program.
-  const program = umi.programs.get('mplCoreProgram');
+  const program = umi.programs.get('mplCore');
 
   // Then we expect it to be the same as the program ID constant.
   t.true(program.publicKey === MPL_CORE_PROGRAM_ID);

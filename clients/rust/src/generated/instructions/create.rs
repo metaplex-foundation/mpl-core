@@ -60,7 +60,7 @@ impl Create {
         }
         if let Some(authority) = self.authority {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                authority, false,
+                authority, true,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -88,7 +88,7 @@ impl Create {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }
@@ -400,7 +400,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
         if let Some(authority) = self.authority {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 *authority.key,
-                false,
+                true,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -429,7 +429,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_PROGRAM_ID,
+                crate::MPL_CORE_ID,
                 false,
             ));
         }

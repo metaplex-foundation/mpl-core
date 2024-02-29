@@ -16,7 +16,7 @@ pub enum MplAssetInstruction {
     /// This function creates the initial Asset, with or without plugins.
     #[account(0, writable, signer, name="asset_address", desc = "The address of the new asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, optional, name="authority", desc = "The authority signing for creation")]
+    #[account(2, optional, signer, name="authority", desc = "The authority signing for creation")]
     #[account(3, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, optional, name="owner", desc = "The owner of the new asset. Defaults to the authority if not present.")]
     #[account(5, optional, name="update_authority", desc = "The authority on the new asset")]

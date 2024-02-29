@@ -43,7 +43,7 @@ export type CreateInstructionAccounts = {
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
   /** The authority signing for creation */
-  authority?: PublicKey | Pda;
+  authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The owner of the new asset. Defaults to the authority if not present. */

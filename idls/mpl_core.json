@@ -25,7 +25,7 @@
         {
           "name": "authority",
           "isMut": false,
-          "isSigner": false,
+          "isSigner": true,
           "isOptional": true,
           "docs": [
             "The authority signing for creation"
