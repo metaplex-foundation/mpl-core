@@ -42,12 +42,14 @@ export type CreateInstructionAccounts = {
   assetAddress: Signer;
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
-  /** The authority of the new asset */
-  updateAuthority?: PublicKey | Pda;
+  /** The authority signing for creation */
+  authority?: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The owner of the new asset. Defaults to the authority if not present. */
   owner?: PublicKey | Pda;
+  /** The authority on the new asset */
+  updateAuthority?: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
@@ -111,20 +113,21 @@ export function create(
       value: input.assetAddress ?? null,
     },
     collection: { index: 1, isWritable: true, value: input.collection ?? null },
+    authority: { index: 2, isWritable: false, value: input.authority ?? null },
+    payer: { index: 3, isWritable: true, value: input.payer ?? null },
+    owner: { index: 4, isWritable: false, value: input.owner ?? null },
     updateAuthority: {
-      index: 2,
+      index: 5,
       isWritable: false,
       value: input.updateAuthority ?? null,
     },
-    payer: { index: 3, isWritable: true, value: input.payer ?? null },
-    owner: { index: 4, isWritable: false, value: input.owner ?? null },
     systemProgram: {
-      index: 5,
+      index: 6,
       isWritable: false,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
-      index: 6,
+      index: 7,
       isWritable: false,
       value: input.logWrapper ?? null,
     },

@@ -60,17 +60,23 @@ impl UpdateAuthority {
                 let collection = CollectionData::load(collection_info, 0)?;
                 solana_program::msg!("Collection: {:?}", collection);
 
-                assert_signer(ctx.payer)?;
+                let authority = match ctx.authority {
+                    Some(authority) => {
+                        assert_signer(authority)?;
+                        authority
+                    }
+                    None => ctx.payer,
+                };
 
                 let maybe_update_delegate =
                     fetch_plugin(collection_info, PluginType::UpdateDelegate);
 
                 if let Ok((mut authorities, _, _)) = maybe_update_delegate {
                     authorities.push(Authority::UpdateAuthority);
-                    if assert_collection_authority(&collection, ctx.payer, &authorities).is_err() {
+                    if assert_collection_authority(&collection, authority, &authorities).is_err() {
                         return Ok(ValidationResult::Rejected);
                     }
-                } else if ctx.payer.key != &collection.update_authority {
+                } else if authority.key != &collection.update_authority {
                     return Ok(ValidationResult::Rejected);
                 }
 
@@ -118,7 +124,7 @@ impl UpdateAuthority {
     /// Validate the transfer lifecycle event.
     pub fn validate_transfer(
         &self,
-        ctx: &TransferAccounts,
+        _ctx: &TransferAccounts,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

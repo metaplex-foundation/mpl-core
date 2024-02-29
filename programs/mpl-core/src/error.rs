@@ -88,6 +88,10 @@ pub enum MplCoreError {
     /// 19 - Invalid Collection passed in
     #[error("Invalid Collection passed in")]
     InvalidCollection,
+
+    /// 20 - Missing update authority
+    #[error("Missing update authority")]
+    MissingUpdateAuthority,
 }
 
 impl PrintProgramError for MplCoreError {

@@ -13,8 +13,6 @@ use crate::{
     utils::fetch_core_data,
 };
 
-use super::update;
-
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub struct CreateArgs {

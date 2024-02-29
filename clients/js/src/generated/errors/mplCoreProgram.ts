@@ -278,6 +278,19 @@ export class InvalidCollectionError extends ProgramError {
 codeToErrorMap.set(0x13, InvalidCollectionError);
 nameToErrorMap.set('InvalidCollection', InvalidCollectionError);
 
+/** MissingUpdateAuthority: Missing update authority */
+export class MissingUpdateAuthorityError extends ProgramError {
+  readonly name: string = 'MissingUpdateAuthority';
+
+  readonly code: number = 0x14; // 20
+
+  constructor(program: Program, cause?: Error) {
+    super('Missing update authority', program, cause);
+  }
+}
+codeToErrorMap.set(0x14, MissingUpdateAuthorityError);
+nameToErrorMap.set('MissingUpdateAuthority', MissingUpdateAuthorityError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

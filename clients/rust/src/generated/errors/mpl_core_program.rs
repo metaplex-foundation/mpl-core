@@ -70,6 +70,9 @@ pub enum MplCoreProgramError {
     /// 19 (0x13) - Invalid Collection passed in
     #[error("Invalid Collection passed in")]
     InvalidCollection,
+    /// 20 (0x14) - Missing update authority
+    #[error("Missing update authority")]
+    MissingUpdateAuthority,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreProgramError {

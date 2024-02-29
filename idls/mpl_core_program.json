@@ -23,12 +23,12 @@
           ]
         },
         {
-          "name": "updateAuthority",
+          "name": "authority",
           "isMut": false,
           "isSigner": false,
           "isOptional": true,
           "docs": [
-            "The authority of the new asset"
+            "The authority signing for creation"
           ]
         },
         {
@@ -46,6 +46,15 @@
           "isOptional": true,
           "docs": [
             "The owner of the new asset. Defaults to the authority if not present."
+          ]
+        },
+        {
+          "name": "updateAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The authority on the new asset"
           ]
         },
         {
@@ -1687,6 +1696,11 @@
       "code": 19,
       "name": "InvalidCollection",
       "msg": "Invalid Collection passed in"
+    },
+    {
+      "code": 20,
+      "name": "MissingUpdateAuthority",
+      "msg": "Missing update authority"
     }
   ],
   "metadata": {
