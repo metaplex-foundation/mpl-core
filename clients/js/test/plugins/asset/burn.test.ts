@@ -13,8 +13,8 @@ import {
   burn,
   Key,
   updateAuthority,
-} from '../../src';
-import { createUmi } from '../_setup';
+} from '../../../src';
+import { createUmi } from '../../_setup';
 
 test('it can burn an asset as the owner', async (t) => {
   // Given a Umi instance and a new signer.

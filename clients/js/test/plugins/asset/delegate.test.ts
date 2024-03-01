@@ -11,8 +11,8 @@ import {
   fetchAssetWithPlugins,
   updateAuthority,
   updatePlugin,
-} from '../../src';
-import { createUmi } from '../_setup';
+} from '../../../src';
+import { createUmi } from '../../_setup';
 
 test('it can delegate a new authority', async (t) => {
   // Given a Umi instance and a new signer.

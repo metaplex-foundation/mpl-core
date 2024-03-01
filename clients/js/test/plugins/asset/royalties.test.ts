@@ -15,8 +15,8 @@ import {
   ruleSet,
   transfer,
   updateAuthority,
-} from '../../src';
-import { createUmi } from '../_setup';
+} from '../../../src';
+import { createUmi } from '../../_setup';
 
 test('it can transfer an asset with royalties', async (t) => {
   // Given a Umi instance and a new signer.

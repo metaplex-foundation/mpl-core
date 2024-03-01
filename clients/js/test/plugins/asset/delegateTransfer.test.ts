@@ -10,8 +10,8 @@ import {
   fetchAssetWithPlugins,
   transfer,
   updateAuthority,
-} from '../../src';
-import { createUmi } from '../_setup';
+} from '../../../src';
+import { createUmi } from '../../_setup';
 
 test('a delegate can transfer the asset', async (t) => {
   // Given a Umi instance and a new signer.

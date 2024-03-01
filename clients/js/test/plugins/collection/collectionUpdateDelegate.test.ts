@@ -12,8 +12,8 @@ import {
   fetchAssetWithPlugins,
   fetchCollectionWithPlugins,
   updateAuthority,
-} from '../../src';
-import { createUmi } from '../_setup';
+} from '../../../src';
+import { createUmi } from '../../_setup';
 
 test('it can create a new asset with a collection if it is the collection update delegate', async (t) => {
   // Given a Umi instance and a new signer.
