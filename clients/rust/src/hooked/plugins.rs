@@ -1,72 +1,58 @@
-use std::{io::Error, io::ErrorKind};
-
 use borsh::BorshDeserialize;
+use solana_program::account_info::AccountInfo;
 
 use crate::{
-    accounts::{Asset, CollectionData, PluginHeader, PluginRegistry},
+    accounts::{Asset, PluginHeader, PluginRegistry},
     errors::MplCoreError,
     types::{Authority, Plugin, PluginType, RegistryRecord},
+    DataBlob, SolanaAccount,
 };
 
 /// Fetch the plugin from the registry.
-pub fn fetch_plugin(
-    account: &[u8],
+pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
+    account: &AccountInfo,
     plugin_type: PluginType,
-) -> Result<(Vec<Authority>, Plugin, u64), std::io::Error> {
-    let asset = Asset::from_bytes(account)?;
+) -> Result<(Vec<Authority>, U, usize), std::io::Error> {
+    let asset = T::load(account, 0)?;
 
-    let header = PluginHeader::from_bytes(&account[asset.get_size()..])?;
+    let header = PluginHeader::load(account, asset.get_size())?;
     let PluginRegistry { registry, .. } =
-        PluginRegistry::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
+        PluginRegistry::load(account, header.plugin_registry_offset as usize)?;
 
     // Find the plugin in the registry.
     let registry_record = registry
         .iter()
         .find(|record| record.plugin_type == plugin_type)
-        .ok_or(Error::new(
-            ErrorKind::Other,
+        .ok_or(std::io::Error::new(
+            std::io::ErrorKind::Other,
             MplCoreError::PluginNotFound.to_string(),
         ))?;
 
     // Deserialize the plugin.
-    let plugin = Plugin::deserialize(&mut &account[(registry_record.offset as usize)..])?;
+    let plugin =
+        Plugin::deserialize(&mut &(*account.data).borrow()[(registry_record.offset as usize)..])?;
 
-    // Return the plugin and its authorities.
-    Ok((
-        registry_record.authorities.clone(),
-        plugin,
-        registry_record.offset,
-    ))
-}
-
-/// Fetch the collection plugin from the registry.
-pub fn fetch_collection_plugin(
-    account: &[u8],
-    plugin_type: PluginType,
-) -> Result<(Vec<Authority>, Plugin, u64), std::io::Error> {
-    let collection = CollectionData::from_bytes(account)?;
-
-    let header = PluginHeader::from_bytes(&account[collection.get_size()..])?;
-    let PluginRegistry { registry, .. } =
-        PluginRegistry::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
-
-    // Find the plugin in the registry.
-    let registry_record = registry
-        .iter()
-        .find(|record| record.plugin_type == plugin_type)
-        .ok_or(Error::new(
-            ErrorKind::Other,
+    if PluginType::from(&plugin) != plugin_type {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
             MplCoreError::PluginNotFound.to_string(),
-        ))?;
+        ));
+    }
 
-    // Deserialize the plugin.
-    let plugin = Plugin::deserialize(&mut &account[(registry_record.offset as usize)..])?;
+    let inner = U::deserialize(
+        &mut &(*account.data).borrow()[registry_record.offset.checked_add(1).ok_or(
+            std::io::Error::new(
+                std::io::ErrorKind::Other,
+                MplCoreError::NumericalOverflow.to_string(),
+            ),
+        )? as usize..],
+    )?;
 
     // Return the plugin and its authorities.
     Ok((
         registry_record.authorities.clone(),
-        plugin,
-        registry_record.offset,
+        inner,
+        registry_record.offset as usize,
     ))
 }
 

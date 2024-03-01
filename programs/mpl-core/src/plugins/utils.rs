@@ -117,40 +117,6 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
     ))
 }
 
-/// Fetch the collection plugin from the registry.
-pub fn fetch_collection_plugin<T: BorshDeserialize>(
-    account: &AccountInfo,
-    plugin_type: PluginType,
-) -> Result<(Vec<Authority>, T, usize), ProgramError> {
-    let collection = CollectionData::load(account, 0)?;
-
-    let header = PluginHeader::load(account, collection.get_size())?;
-    let PluginRegistry { registry, .. } =
-        PluginRegistry::load(account, header.plugin_registry_offset)?;
-
-    // Find the plugin in the registry.
-    let registry_record = registry
-        .iter()
-        .find(|record| record.plugin_type == plugin_type)
-        .ok_or(MplCoreError::PluginNotFound)?;
-
-    // Deserialize the plugin.
-    let plugin = Plugin::deserialize(&mut &(*account.data).borrow()[registry_record.offset..])?;
-
-    if PluginType::from(&plugin) != plugin_type {
-        return Err(MplCoreError::PluginNotFound.into());
-    }
-
-    let inner = T::deserialize(&mut &(*account.data).borrow()[registry_record.offset..])?;
-
-    // Return the plugin and its authorities.
-    Ok((
-        registry_record.authorities.clone(),
-        inner,
-        registry_record.offset,
-    ))
-}
-
 /// Fetch the plugin registry.
 pub fn fetch_plugins(account: &AccountInfo) -> Result<Vec<RegistryRecord>, ProgramError> {
     let asset = Asset::load(account, 0)?;
