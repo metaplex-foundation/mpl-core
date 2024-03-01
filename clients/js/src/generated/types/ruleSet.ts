@@ -16,9 +16,11 @@ import {
   publicKey as publicKeySerializer,
   struct,
   tuple,
+  unit,
 } from '@metaplex-foundation/umi/serializers';
 
 export type RuleSet =
+  | { __kind: 'None' }
   | { __kind: 'ProgramAllowList'; fields: [Array<PublicKey>] }
   | { __kind: 'ProgramDenyList'; fields: [Array<PublicKey>] };
 
@@ -27,6 +29,7 @@ export type RuleSetArgs = RuleSet;
 export function getRuleSetSerializer(): Serializer<RuleSetArgs, RuleSet> {
   return dataEnum<RuleSet>(
     [
+      ['None', unit()],
       [
         'ProgramAllowList',
         struct<GetDataEnumKindContent<RuleSet, 'ProgramAllowList'>>([
@@ -45,6 +48,7 @@ export function getRuleSetSerializer(): Serializer<RuleSetArgs, RuleSet> {
 }
 
 // Data Enum Helpers.
+export function ruleSet(kind: 'None'): GetDataEnumKind<RuleSetArgs, 'None'>;
 export function ruleSet(
   kind: 'ProgramAllowList',
   data: GetDataEnumKindContent<RuleSetArgs, 'ProgramAllowList'>['fields']

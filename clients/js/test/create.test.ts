@@ -78,7 +78,7 @@ test('it can create a new asset in ledger state', async (t) => {
   }
 });
 
-test('it can create a new asset with plugins', async (t) => {
+test('it can create a new asset in account state with plugins', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
@@ -125,4 +125,29 @@ test('it can create a new asset with plugins', async (t) => {
       },
     ],
   });
+});
+
+// TODO: Add test
+test('it can create a new asset in account state with a different update authority', async (t) => {
+  t.pass();
+});
+
+// TODO: Add test
+test('it can create a new asset in account state with plugins with a different update authority', async (t) => {
+  t.pass();
+});
+
+// TODO: Add test
+test('it can create a new asset in ledger state with plugins', async (t) => {
+  t.pass();
+});
+
+// TODO: Add test
+test('it can create a new asset in ledger state with a different update authority', async (t) => {
+  t.pass();
+});
+
+// TODO: Add test
+test('it can create a new asset in ledger state with plugins with a different update authority', async (t) => {
+  t.pass();
 });

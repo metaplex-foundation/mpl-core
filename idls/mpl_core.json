@@ -1459,6 +1459,9 @@
         "kind": "enum",
         "variants": [
           {
+            "name": "None"
+          },
+          {
             "name": "ProgramAllowList",
             "fields": [
               {

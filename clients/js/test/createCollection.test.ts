@@ -139,6 +139,11 @@ test('it can create a new asset with a collection', async (t) => {
   t.assert(asset.plugins?.length === 0);
 });
 
+// TODO: Add test
+test('it cannot create a new asset with an update authority that is not the collection', async (t) => {
+  t.pass();
+});
+
 test('it cannot create a new asset with a collection if it is not the collection auth', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();

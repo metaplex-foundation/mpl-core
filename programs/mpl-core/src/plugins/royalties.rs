@@ -10,7 +10,7 @@ use crate::{
     state::Authority,
 };
 
-use super::PluginValidation;
+use super::{PluginValidation, ValidationResult};
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
@@ -22,6 +22,8 @@ pub struct Creator {
 /// The rule set for an asset indicating where it is allowed to be transferred.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub enum RuleSet {
+    /// No rules are enforced.
+    None,
     /// Allow list of programs that are allowed to transfer, receive, or send the asset.
     ProgramAllowList(Vec<Pubkey>),
     /// Deny list of programs that are not allowed to transfer, receive, or send the asset.
@@ -46,7 +48,7 @@ impl PluginValidation for Royalties {
         _args: &CreateArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        todo!()
+        Ok(ValidationResult::Pass)
     }
 
     fn validate_update(
@@ -55,7 +57,7 @@ impl PluginValidation for Royalties {
         _args: &UpdateArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        todo!()
+        Ok(ValidationResult::Pass)
     }
 
     fn validate_burn(
@@ -64,16 +66,36 @@ impl PluginValidation for Royalties {
         _args: &BurnArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        todo!()
+        Ok(ValidationResult::Pass)
     }
 
     fn validate_transfer(
         &self,
-        _ctx: &TransferAccounts,
+        ctx: &TransferAccounts,
         _args: &TransferArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        todo!()
+        match &self.rule_set {
+            RuleSet::None => Ok(ValidationResult::Pass),
+            RuleSet::ProgramAllowList(allow_list) => {
+                if allow_list.contains(ctx.authority.owner)
+                    || allow_list.contains(ctx.new_owner.owner)
+                {
+                    Ok(ValidationResult::Pass)
+                } else {
+                    Ok(ValidationResult::Rejected)
+                }
+            }
+            RuleSet::ProgramDenyList(deny_list) => {
+                if deny_list.contains(ctx.authority.owner)
+                    || deny_list.contains(ctx.new_owner.owner)
+                {
+                    Ok(ValidationResult::Rejected)
+                } else {
+                    Ok(ValidationResult::Pass)
+                }
+            }
+        }
     }
 
     fn validate_compress(
@@ -82,7 +104,7 @@ impl PluginValidation for Royalties {
         _args: &CompressArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        todo!()
+        Ok(ValidationResult::Pass)
     }
 
     fn validate_decompress(
@@ -91,6 +113,6 @@ impl PluginValidation for Royalties {
         _args: &DecompressArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
-        todo!()
+        Ok(ValidationResult::Pass)
     }
 }
