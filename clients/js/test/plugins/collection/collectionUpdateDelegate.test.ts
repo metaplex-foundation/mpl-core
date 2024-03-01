@@ -1,5 +1,6 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
+import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import {
   AssetWithPlugins,
   CollectionWithPlugins,
@@ -20,7 +21,7 @@ test('it can create a new asset with a collection if it is the collection update
   const umi = await createUmi();
   const collectionAddress = generateSigner(umi);
   const assetAddress = generateSigner(umi);
-  const updateDelegate = generateSigner(umi);
+  const updateDelegate = await generateSignerWithSol(umi);
 
   // When we create a new account.
   await createCollection(umi, {
@@ -90,8 +91,12 @@ test('it can create a new asset with a collection if it is the collection update
     ],
   });
 
+  umi.identity = updateDelegate;
+  umi.payer = updateDelegate;
+  const owner = generateSigner(umi);
   // When we create a new account.
   await create(umi, {
+    owner: owner.publicKey,
     dataState: DataState.AccountState,
     assetAddress,
     name: 'Test Bread',
@@ -107,7 +112,7 @@ test('it can create a new asset with a collection if it is the collection update
     updateAuthority: updateAuthority('Collection', [
       collectionAddress.publicKey,
     ]),
-    owner: umi.identity.publicKey,
+    owner: owner.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     pluginHeader: {

@@ -1,6 +1,7 @@
-import { generateSigner, publicKey } from '@metaplex-foundation/umi';
+import { generateSigner, publicKey, sol } from '@metaplex-foundation/umi';
 import test from 'ava';
 // import { base58 } from '@metaplex-foundation/umi/serializers';
+import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import {
   Asset,
   AssetWithPlugins,
@@ -34,6 +35,35 @@ test('it can create a new asset in account state', async (t) => {
   t.like(asset, <Asset>{
     publicKey: assetAddress.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    owner: umi.identity.publicKey,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+  });
+});
+
+test('it can create a new asset with a different payer', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const payer = await generateSignerWithSol(umi, sol(1));
+  const assetAddress = generateSigner(umi);
+
+  // When we create a new account.
+  await create(umi, {
+    owner: umi.identity.publicKey,
+    payer,
+    dataState: DataState.AccountState,
+    assetAddress,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+    plugins: [],
+  }).sendAndConfirm(umi);
+
+  // Then an account was created with the correct data.
+  const asset = await fetchAsset(umi, assetAddress.publicKey);
+  // console.log("Account State:", asset);
+  t.like(asset, <Asset>{
+    publicKey: assetAddress.publicKey,
+    updateAuthority: updateAuthority("Address", [payer.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
