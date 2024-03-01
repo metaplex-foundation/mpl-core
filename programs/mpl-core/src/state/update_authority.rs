@@ -8,7 +8,7 @@ use crate::{
         BurnAccounts, CompressAccounts, CreateAccounts, DecompressAccounts, TransferAccounts,
         UpdateAccounts,
     },
-    plugins::{fetch_collection_plugin, CheckResult, PluginType, ValidationResult},
+    plugins::{fetch_plugin, CheckResult, PluginType, UpdateDelegate, ValidationResult},
     processor::CreateArgs,
     state::{Authority, CollectionData, SolanaAccount},
     utils::assert_collection_authority,
@@ -68,8 +68,10 @@ impl UpdateAuthority {
                     None => ctx.payer,
                 };
 
-                let maybe_update_delegate =
-                    fetch_collection_plugin(collection_info, PluginType::UpdateDelegate);
+                let maybe_update_delegate = fetch_plugin::<CollectionData, UpdateDelegate>(
+                    collection_info,
+                    PluginType::UpdateDelegate,
+                );
 
                 if let Ok((mut authorities, _, _)) = maybe_update_delegate {
                     authorities.push(Authority::UpdateAuthority);

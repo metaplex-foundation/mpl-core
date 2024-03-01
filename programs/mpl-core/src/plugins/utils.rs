@@ -79,11 +79,11 @@ pub fn assert_plugins_initialized(account: &AccountInfo) -> ProgramResult {
 }
 
 /// Fetch the plugin from the registry.
-pub fn fetch_plugin(
+pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
     account: &AccountInfo,
     plugin_type: PluginType,
-) -> Result<(Vec<Authority>, Plugin, usize), ProgramError> {
-    let asset = Asset::load(account, 0)?;
+) -> Result<(Vec<Authority>, U, usize), ProgramError> {
+    let asset = T::load(account, 0)?;
 
     let header = PluginHeader::load(account, asset.get_size())?;
     let PluginRegistry { registry, .. } =
@@ -98,19 +98,30 @@ pub fn fetch_plugin(
     // Deserialize the plugin.
     let plugin = Plugin::deserialize(&mut &(*account.data).borrow()[registry_record.offset..])?;
 
+    if PluginType::from(&plugin) != plugin_type {
+        return Err(MplCoreError::PluginNotFound.into());
+    }
+
+    let inner = U::deserialize(
+        &mut &(*account.data).borrow()[registry_record
+            .offset
+            .checked_add(1)
+            .ok_or(MplCoreError::NumericalOverflow)?..],
+    )?;
+
     // Return the plugin and its authorities.
     Ok((
         registry_record.authorities.clone(),
-        plugin,
+        inner,
         registry_record.offset,
     ))
 }
 
 /// Fetch the collection plugin from the registry.
-pub fn fetch_collection_plugin(
+pub fn fetch_collection_plugin<T: BorshDeserialize>(
     account: &AccountInfo,
     plugin_type: PluginType,
-) -> Result<(Vec<Authority>, Plugin, usize), ProgramError> {
+) -> Result<(Vec<Authority>, T, usize), ProgramError> {
     let collection = CollectionData::load(account, 0)?;
 
     let header = PluginHeader::load(account, collection.get_size())?;
@@ -126,10 +137,16 @@ pub fn fetch_collection_plugin(
     // Deserialize the plugin.
     let plugin = Plugin::deserialize(&mut &(*account.data).borrow()[registry_record.offset..])?;
 
+    if PluginType::from(&plugin) != plugin_type {
+        return Err(MplCoreError::PluginNotFound.into());
+    }
+
+    let inner = T::deserialize(&mut &(*account.data).borrow()[registry_record.offset..])?;
+
     // Return the plugin and its authorities.
     Ok((
         registry_record.authorities.clone(),
-        plugin,
+        inner,
         registry_record.offset,
     ))
 }
