@@ -69,13 +69,17 @@ impl PluginValidation for Freeze {
         _args: &crate::processor::UpdatePluginArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, solana_program::program_error::ProgramError> {
-        if !self.frozen
-            && ((ctx.authority.key == &asset.owner && authorities.contains(&Authority::Owner))
-                || (ctx.authority.key == &asset.update_authority.key()
-                    && authorities.contains(&Authority::UpdateAuthority))
-                || authorities.contains(&Authority::Pubkey {
-                    address: *ctx.authority.key,
-                }))
+        // The owner can't update the freeze status.
+        if (ctx.authority.key != &asset.owner
+            && (ctx.authority.key == &asset.update_authority.key()
+                && authorities.contains(&Authority::UpdateAuthority))
+            || authorities.contains(&Authority::Pubkey {
+                address: *ctx.authority.key,
+            }))
+            // Unless the owner is the only authority.
+            || (ctx.authority.key == &asset.owner
+                && authorities.contains(&Authority::Owner)
+                && authorities.len() == 1)
         {
             Ok(ValidationResult::Approved)
         } else {

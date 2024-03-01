@@ -123,6 +123,7 @@ test('a delegate can freeze the token', async (t) => {
       __kind: 'Freeze',
       fields: [{ frozen: true }],
     },
+    authority: delegateAddress,
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);

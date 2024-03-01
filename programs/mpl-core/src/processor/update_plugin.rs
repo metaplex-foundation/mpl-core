@@ -46,6 +46,8 @@ pub(crate) fn update_plugin<'a>(
         //TODO: Handle plugins that are dynamically sized.
         args.plugin
             .save(ctx.accounts.asset_address, registry_record.offset)?;
+    } else {
+        return Err(MplCoreError::InvalidAuthority.into());
     }
 
     Ok(())
