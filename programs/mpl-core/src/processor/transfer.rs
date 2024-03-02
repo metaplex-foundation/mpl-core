@@ -5,8 +5,8 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use crate::{
     error::MplCoreError,
     instruction::accounts::TransferAccounts,
-    plugins::{CheckResult, Plugin, ValidationResult},
-    state::{Asset, Compressible, CompressionProof, HashedAsset, Key, SolanaAccount},
+    plugins::{CheckResult, Plugin, PluginType, ValidationResult},
+    state::{Asset, Authority, Compressible, CompressionProof, HashedAsset, Key, SolanaAccount},
     utils::{fetch_core_data, load_key, verify_proof},
 };
 
@@ -26,100 +26,89 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
         assert_signer(payer)?;
     }
 
-    match load_key(ctx.accounts.asset_address, 0)? {
-        Key::HashedAsset => {
-            let compression_proof = args
-                .compression_proof
-                .ok_or(MplCoreError::MissingCompressionProof)?;
-            let (mut asset, _) = verify_proof(ctx.accounts.asset_address, &compression_proof)?;
-
-            if ctx.accounts.authority.key != &asset.owner {
-                return Err(MplCoreError::InvalidAuthority.into());
-            }
-
-            // TODO: Check delegates in compressed case.
-
-            asset.owner = *ctx.accounts.new_owner.key;
-
-            asset.wrap()?;
-
-            // Make a new hashed asset with updated owner and save to account.
-            HashedAsset::new(asset.hash()?).save(ctx.accounts.asset_address, 0)
-        }
-        Key::Asset => {
-            // let mut asset = Asset::load(ctx.accounts.asset_address, 0)?;
-
-            // let mut authority_check: Result<(), ProgramError> =
-            //     Err(MplCoreError::InvalidAuthority.into());
-            // if asset.get_size() != ctx.accounts.asset_address.data_len() {
-            //     solana_program::msg!("Fetch Plugin");
-            //     let (authorities, plugin, _) =
-            //         fetch_plugin(ctx.accounts.asset_address, PluginType::Delegate)?;
-
-            //     solana_program::msg!("Assert authority");
-            //     authority_check = assert_authority(&asset, ctx.accounts.authority, &authorities);
-
-            //     if let Plugin::Delegate(delegate) = plugin {
-            //         if delegate.frozen {
-            //             return Err(MplCoreError::AssetIsFrozen.into());
-            //         }
-            //     }
-            // }
-
-            // match authority_check {
-            //     Ok(_) => Ok::<(), ProgramError>(()),
-            //     Err(_) => {
-            //         if ctx.accounts.authority.key != &asset.owner {
-            //             Err(MplCoreError::InvalidAuthority.into())
-            //         } else {
-            //             Ok(())
-            //         }
-            //     }
-            // }?;
-
-            let (mut asset, _, plugin_registry) =
-                fetch_core_data::<Asset>(ctx.accounts.asset_address)?;
-
-            let mut approved = false;
-            match Asset::check_transfer() {
-                CheckResult::CanApprove | CheckResult::CanReject => {
-                    match asset.validate_transfer(&ctx.accounts)? {
-                        ValidationResult::Approved => {
-                            approved = true;
-                        }
-                        ValidationResult::Rejected => {
-                            return Err(MplCoreError::InvalidAuthority.into())
-                        }
-                        ValidationResult::Pass => (),
-                    }
+    let mut approved = false;
+    let (mut asset_outer, mut key_type) = (None, Key::HashedAsset);
+    let plugins: Option<Vec<(Plugin, PluginType, Vec<Authority>)>> =
+        match load_key(ctx.accounts.asset_address, 0)? {
+            Key::HashedAsset => {
+                let compression_proof = args
+                    .compression_proof
+                    .as_ref()
+                    .ok_or(MplCoreError::MissingCompressionProof)?;
+                let (asset, plugin_schemes) =
+                    verify_proof(ctx.accounts.asset_address, compression_proof)?;
+                if ctx.accounts.authority.key != &asset.owner {
+                    return Err(MplCoreError::InvalidAuthority.into());
                 }
-                CheckResult::None => (),
-            };
+                asset_outer = Some(asset);
 
-            if let Some(plugin_registry) = plugin_registry {
-                for record in plugin_registry.registry {
-                    if matches!(
-                        record.plugin_type.check_transfer(),
-                        CheckResult::CanApprove | CheckResult::CanReject
-                    ) {
-                        let result = Plugin::load(ctx.accounts.asset_address, record.offset)?
-                            .validate_transfer(&ctx.accounts, &args, &record.authorities)?;
-                        if result == ValidationResult::Rejected {
-                            return Err(MplCoreError::InvalidAuthority.into());
-                        } else if result == ValidationResult::Approved {
-                            approved = true;
-                        }
-                    }
-                }
-            };
-
-            if !approved {
-                return Err(MplCoreError::InvalidAuthority.into());
+                Some(
+                    plugin_schemes
+                        .into_iter()
+                        .map(|plugin_schema| {
+                            (
+                                plugin_schema.plugin.clone(),
+                                PluginType::from(&plugin_schema.plugin),
+                                plugin_schema.authorities,
+                            )
+                        })
+                        .collect(),
+                )
             }
+            Key::Asset => {
+                let (asset, _, plugin_registry) =
+                    fetch_core_data::<Asset>(ctx.accounts.asset_address)?;
+                match asset.validate_transfer(&ctx.accounts)? {
+                    ValidationResult::Approved => {
+                        approved = true;
+                    }
+                    ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
+                    ValidationResult::Pass => (),
+                }
+                (asset_outer, key_type) = (Some(asset), Key::Asset);
 
-            asset.owner = *ctx.accounts.new_owner.key;
-            asset.save(ctx.accounts.asset_address, 0)
+                if let Some(plugin_registry) = plugin_registry {
+                    let mut plugins = vec![];
+
+                    for record in plugin_registry.registry {
+                        let plugin = Plugin::load(ctx.accounts.asset_address, record.offset)?;
+                        plugins.push((plugin, record.plugin_type, record.authorities))
+                    }
+                    Some(plugins)
+                } else {
+                    None
+                }
+            }
+            _ => return Err(MplCoreError::IncorrectAccount.into()),
+        };
+
+    if plugins.is_some() {
+        for (plugin, plugin_type, authorities) in plugins.unwrap() {
+            if matches!(
+                plugin_type.check_transfer(),
+                CheckResult::CanApprove | CheckResult::CanReject
+            ) {
+                let result = plugin.validate_transfer(&ctx.accounts, &args, &authorities)?;
+
+                match result {
+                    ValidationResult::Approved => approved = true,
+                    ValidationResult::Pass => (),
+                    ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
+                }
+            }
         }
-        _ => Err(MplCoreError::IncorrectAccount.into()),
+    }
+
+    if !approved {
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
+
+    // cannot be None
+    let mut asset = asset_outer.unwrap();
+    asset.owner = *ctx.accounts.new_owner.key;
+    match key_type {
+        Key::Asset => asset.save(ctx.accounts.asset_address, 0),
+        Key::HashedAsset => HashedAsset::new(asset.hash()?).save(ctx.accounts.asset_address, 0),
+        _ => unreachable!()
     }
 }
