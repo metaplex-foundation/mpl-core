@@ -355,7 +355,13 @@ pub fn remove_authority_from_plugin<'a>(
         .ok_or(MplCoreError::PluginNotFound)?;
 
     let resolved_authority = resolve_authority_to_default(asset, authority);
-    if resolved_authority != registry_record.authorities[0] {
+
+    // TODO inspect this logic
+    if resolved_authority != registry_record.authorities[0]
+        && ( // pubkey authorities can remove themselves if they are a signer
+            Authority::Pubkey { address: authority.key.clone() } == authority_to_remove.clone() &&
+            !registry_record.authorities.contains(authority_to_remove)
+        ) {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
