@@ -1,5 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use mpl_utils::{assert_signer, resize_or_reallocate_account_raw};
+use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_memory::sol_memcpy,
 };
@@ -9,7 +9,7 @@ use crate::{
     instruction::accounts::{UpdateAccounts, UpdateCollectionAccounts},
     plugins::{CheckResult, Plugin, RegistryRecord, ValidationResult},
     state::{Asset, CollectionData, DataBlob, SolanaAccount, UpdateAuthority},
-    utils::fetch_core_data,
+    utils::{fetch_core_data, resize_or_reallocate_account},
 };
 
 #[repr(C)]
@@ -112,7 +112,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
             let src = ctx.accounts.asset.data.borrow()[(plugin_offset as usize)..registry_offset]
                 .to_vec();
 
-            resize_or_reallocate_account_raw(
+            resize_or_reallocate_account(
                 ctx.accounts.asset,
                 payer,
                 ctx.accounts.system_program,
@@ -142,7 +142,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
                 .collect::<Result<Vec<_>, MplCoreError>>()?;
             plugin_registry.save(ctx.accounts.asset, new_registry_offset as usize)?;
         } else {
-            resize_or_reallocate_account_raw(
+            resize_or_reallocate_account(
                 ctx.accounts.asset,
                 payer,
                 ctx.accounts.system_program,
@@ -251,7 +251,7 @@ pub(crate) fn update_collection<'a>(
                 [(plugin_offset as usize)..registry_offset]
                 .to_vec();
 
-            resize_or_reallocate_account_raw(
+            resize_or_reallocate_account(
                 ctx.accounts.collection,
                 payer,
                 ctx.accounts.system_program,
@@ -281,7 +281,7 @@ pub(crate) fn update_collection<'a>(
                 .collect::<Result<Vec<_>, MplCoreError>>()?;
             plugin_registry.save(ctx.accounts.collection, new_registry_offset as usize)?;
         } else {
-            resize_or_reallocate_account_raw(
+            resize_or_reallocate_account(
                 ctx.accounts.collection,
                 payer,
                 ctx.accounts.system_program,

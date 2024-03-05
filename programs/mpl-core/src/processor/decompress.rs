@@ -1,6 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use mpl_utils::resize_or_reallocate_account_raw;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_memory::sol_memcpy,
     system_program,
@@ -11,8 +10,7 @@ use crate::{
     instruction::accounts::DecompressAccounts,
     plugins::{create_meta_idempotent, initialize_plugin, CheckResult, Plugin, ValidationResult},
     state::{Asset, CompressionProof, Key},
-    utils::fetch_core_data,
-    utils::{load_key, verify_proof},
+    utils::{fetch_core_data, load_key, resize_or_reallocate_account, verify_proof},
 };
 
 #[repr(C)]
@@ -46,7 +44,7 @@ pub(crate) fn decompress<'a>(
             let (asset, plugins) = verify_proof(ctx.accounts.asset, &args.compression_proof)?;
 
             let serialized_data = asset.try_to_vec()?;
-            resize_or_reallocate_account_raw(
+            resize_or_reallocate_account(
                 ctx.accounts.asset,
                 payer,
                 ctx.accounts.system_program,

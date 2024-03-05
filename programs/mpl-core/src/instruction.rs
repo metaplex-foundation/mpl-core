@@ -180,4 +180,9 @@ pub enum MplAssetInstruction {
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Decompress(DecompressArgs),
+
+    /// Collect
+    /// This function creates the initial mpl-core
+    #[account(0, writable, name="recipient", desc = "The address of the recipient")]
+    Collect,
 }

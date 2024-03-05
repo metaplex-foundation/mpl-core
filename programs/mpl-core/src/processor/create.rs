@@ -9,7 +9,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::CreateAccounts,
     plugins::{create_meta_idempotent, initialize_plugin, CheckResult, Plugin, ValidationResult},
-    state::{Asset, Compressible, DataState, HashedAsset, Key, UpdateAuthority},
+    state::{Asset, Compressible, DataState, HashedAsset, Key, UpdateAuthority, COLLECT_AMOUNT},
     utils::fetch_core_data,
 };
 
@@ -72,7 +72,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
         }
     };
 
-    let lamports = rent.minimum_balance(serialized_data.len());
+    let lamports = rent.minimum_balance(serialized_data.len()) + COLLECT_AMOUNT;
 
     // CPI to the System Program.
     invoke(

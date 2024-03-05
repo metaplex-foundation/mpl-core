@@ -12,6 +12,7 @@ export * from './addPlugin';
 export * from './addPluginAuthority';
 export * from './burn';
 export * from './burnCollection';
+export * from './collect';
 export * from './compress';
 export * from './create';
 export * from './createCollection';

@@ -50,7 +50,7 @@ test('it can burn an asset as the owner', async (t) => {
   const afterAsset = await umi.rpc.getAccount(assetAddress.publicKey);
   t.true(afterAsset.exists);
   assertAccountExists(afterAsset);
-  t.deepEqual(afterAsset.lamports, sol(0.00089784));
+  t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
   t.is(afterAsset.data.length, 1);
   t.is(afterAsset.data[0], Key.Uninitialized);
 });

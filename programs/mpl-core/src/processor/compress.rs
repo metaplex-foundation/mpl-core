@@ -1,6 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use mpl_utils::resize_or_reallocate_account_raw;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_memory::sol_memcpy,
 };
@@ -10,7 +9,7 @@ use crate::{
     instruction::accounts::CompressAccounts,
     plugins::{CheckResult, Plugin, RegistryRecord, ValidationResult},
     state::{Asset, Compressible, HashablePluginSchema, HashedAsset, HashedAssetSchema, Key},
-    utils::{fetch_core_data, load_key},
+    utils::{fetch_core_data, load_key, resize_or_reallocate_account},
 };
 
 #[repr(C)]
@@ -103,7 +102,7 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], args: CompressArgs) 
             let hashed_asset = HashedAsset::new(hashed_asset_schema.hash()?);
             let serialized_data = hashed_asset.try_to_vec()?;
 
-            resize_or_reallocate_account_raw(
+            resize_or_reallocate_account(
                 ctx.accounts.asset,
                 payer,
                 ctx.accounts.system_program,
