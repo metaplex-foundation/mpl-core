@@ -6,7 +6,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{BurnAccounts, BurnCollectionAccounts},
     plugins::{CheckResult, Plugin, ValidationResult},
-    state::{Asset, CollectionData, Compressible, CompressionProof, Key},
+    state::{Asset, Collection, Compressible, CompressionProof, Key},
     utils::{close_program_account, fetch_core_data, load_key, verify_proof},
 };
 
@@ -105,10 +105,10 @@ pub(crate) fn burn_collection<'a>(
     }
 
     let (collection, _, plugin_registry) =
-        fetch_core_data::<CollectionData>(ctx.accounts.collection)?;
+        fetch_core_data::<Collection>(ctx.accounts.collection)?;
 
     let mut approved = false;
-    match CollectionData::check_burn() {
+    match Collection::check_burn() {
         CheckResult::CanApprove | CheckResult::CanReject => {
             match collection.validate_burn(&ctx.accounts)? {
                 ValidationResult::Approved => {

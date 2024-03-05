@@ -8,7 +8,7 @@ use crate::{
     error::MplCoreError,
     plugins::{PluginHeader, PluginRegistry},
     state::{
-        Asset, Authority, CollectionData, Compressible, CompressionProof, CoreAsset, DataBlob,
+        Asset, Authority, Collection, Compressible, CompressionProof, CoreAsset, DataBlob,
         HashablePluginSchema, HashedAsset, HashedAssetSchema, Key, SolanaAccount,
     },
 };
@@ -60,7 +60,7 @@ pub fn assert_authority<T: CoreAsset>(
 
 /// Assert that the account info address is in the authorities array.
 pub fn assert_collection_authority(
-    asset: &CollectionData,
+    asset: &Collection,
     authority: &AccountInfo,
     authorities: &[Authority],
 ) -> ProgramResult {

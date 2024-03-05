@@ -21,6 +21,7 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  mapSerializer,
   publicKey as publicKeySerializer,
   string,
   struct,
@@ -28,9 +29,9 @@ import {
 } from '@metaplex-foundation/umi/serializers';
 import { Key, KeyArgs, getKeySerializer } from '../types';
 
-export type CollectionData = Account<CollectionDataAccountData>;
+export type Collection = Account<CollectionAccountData>;
 
-export type CollectionDataAccountData = {
+export type CollectionAccountData = {
   key: Key;
   updateAuthority: PublicKey;
   name: string;
@@ -39,8 +40,7 @@ export type CollectionDataAccountData = {
   currentSize: number;
 };
 
-export type CollectionDataAccountDataArgs = {
-  key: KeyArgs;
+export type CollectionAccountDataArgs = {
   updateAuthority: PublicKey;
   name: string;
   uri: string;
@@ -48,89 +48,85 @@ export type CollectionDataAccountDataArgs = {
   currentSize: number;
 };
 
-export function getCollectionDataAccountDataSerializer(): Serializer<
-  CollectionDataAccountDataArgs,
-  CollectionDataAccountData
+export function getCollectionAccountDataSerializer(): Serializer<
+  CollectionAccountDataArgs,
+  CollectionAccountData
 > {
-  return struct<CollectionDataAccountData>(
-    [
-      ['key', getKeySerializer()],
-      ['updateAuthority', publicKeySerializer()],
-      ['name', string()],
-      ['uri', string()],
-      ['numMinted', u32()],
-      ['currentSize', u32()],
-    ],
-    { description: 'CollectionDataAccountData' }
-  ) as Serializer<CollectionDataAccountDataArgs, CollectionDataAccountData>;
+  return mapSerializer<CollectionAccountDataArgs, any, CollectionAccountData>(
+    struct<CollectionAccountData>(
+      [
+        ['key', getKeySerializer()],
+        ['updateAuthority', publicKeySerializer()],
+        ['name', string()],
+        ['uri', string()],
+        ['numMinted', u32()],
+        ['currentSize', u32()],
+      ],
+      { description: 'CollectionAccountData' }
+    ),
+    (value) => ({ ...value, key: Key.Collection })
+  ) as Serializer<CollectionAccountDataArgs, CollectionAccountData>;
 }
 
-export function deserializeCollectionData(
-  rawAccount: RpcAccount
-): CollectionData {
-  return deserializeAccount(
-    rawAccount,
-    getCollectionDataAccountDataSerializer()
-  );
+export function deserializeCollection(rawAccount: RpcAccount): Collection {
+  return deserializeAccount(rawAccount, getCollectionAccountDataSerializer());
 }
 
-export async function fetchCollectionData(
+export async function fetchCollection(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<CollectionData> {
+): Promise<Collection> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  assertAccountExists(maybeAccount, 'CollectionData');
-  return deserializeCollectionData(maybeAccount);
+  assertAccountExists(maybeAccount, 'Collection');
+  return deserializeCollection(maybeAccount);
 }
 
-export async function safeFetchCollectionData(
+export async function safeFetchCollection(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<CollectionData | null> {
+): Promise<Collection | null> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  return maybeAccount.exists ? deserializeCollectionData(maybeAccount) : null;
+  return maybeAccount.exists ? deserializeCollection(maybeAccount) : null;
 }
 
-export async function fetchAllCollectionData(
+export async function fetchAllCollection(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions
-): Promise<CollectionData[]> {
+): Promise<Collection[]> {
   const maybeAccounts = await context.rpc.getAccounts(
     publicKeys.map((key) => toPublicKey(key, false)),
     options
   );
   return maybeAccounts.map((maybeAccount) => {
-    assertAccountExists(maybeAccount, 'CollectionData');
-    return deserializeCollectionData(maybeAccount);
+    assertAccountExists(maybeAccount, 'Collection');
+    return deserializeCollection(maybeAccount);
   });
 }
 
-export async function safeFetchAllCollectionData(
+export async function safeFetchAllCollection(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions
-): Promise<CollectionData[]> {
+): Promise<Collection[]> {
   const maybeAccounts = await context.rpc.getAccounts(
     publicKeys.map((key) => toPublicKey(key, false)),
     options
   );
   return maybeAccounts
     .filter((maybeAccount) => maybeAccount.exists)
-    .map((maybeAccount) =>
-      deserializeCollectionData(maybeAccount as RpcAccount)
-    );
+    .map((maybeAccount) => deserializeCollection(maybeAccount as RpcAccount));
 }
 
-export function getCollectionDataGpaBuilder(
+export function getCollectionGpaBuilder(
   context: Pick<Context, 'rpc' | 'programs'>
 ) {
   const programId = context.programs.getPublicKey(
@@ -153,7 +149,6 @@ export function getCollectionDataGpaBuilder(
       numMinted: [null, u32()],
       currentSize: [null, u32()],
     })
-    .deserializeUsing<CollectionData>((account) =>
-      deserializeCollectionData(account)
-    );
+    .deserializeUsing<Collection>((account) => deserializeCollection(account))
+    .whereField('key', Key.Collection);
 }

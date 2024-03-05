@@ -6,7 +6,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{RemoveCollectionPluginAccounts, RemovePluginAccounts},
     plugins::{delete_plugin, PluginType},
-    state::{Asset, Authority, CollectionData, SolanaAccount, UpdateAuthority},
+    state::{Asset, Authority, Collection, SolanaAccount, UpdateAuthority},
     utils::fetch_core_data,
 };
 
@@ -54,7 +54,7 @@ pub(crate) fn remove_plugin<'a>(
                 if collection_info.key != &collection_address {
                     return Err(MplCoreError::InvalidCollection.into());
                 }
-                let collection = CollectionData::load(collection_info, 0)?;
+                let collection = Collection::load(collection_info, 0)?;
                 if ctx.accounts.authority.key == &collection.update_authority {
                     Authority::UpdateAuthority
                 } else {
@@ -102,7 +102,7 @@ pub(crate) fn remove_collection_plugin<'a>(
     };
 
     let (collection, plugin_header, plugin_registry) =
-        fetch_core_data::<CollectionData>(ctx.accounts.collection)?;
+        fetch_core_data::<Collection>(ctx.accounts.collection)?;
 
     // We don't have anything to delete if there's no plugin meta.
     if plugin_header.is_none() || plugin_registry.is_none() {

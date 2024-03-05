@@ -2,13 +2,13 @@ import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   AssetWithPlugins,
-  CollectionData,
+  Collection,
   CollectionWithPlugins,
   DataState,
   create,
   createCollection,
   fetchAssetWithPlugins,
-  fetchCollectionData,
+  fetchCollection,
   fetchCollectionWithPlugins,
   updateAuthority,
 } from '../src';
@@ -28,12 +28,12 @@ test('it can create a new collection', async (t) => {
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
-  const collection = await fetchCollectionData(
+  const collection = await fetchCollection(
     umi,
     collectionAddress.publicKey
   );
   // console.log("Account State:", collection);
-  t.like(collection, <CollectionData>{
+  t.like(collection, <Collection>{
     publicKey: collectionAddress.publicKey,
     updateAuthority: umi.identity.publicKey,
     name: 'Test Bread Collection',

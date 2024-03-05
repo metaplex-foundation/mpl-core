@@ -9,7 +9,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::CreateCollectionAccounts,
     plugins::{create_meta_idempotent, initialize_plugin, Plugin},
-    state::{CollectionData, Key},
+    state::{Collection, Key},
 };
 
 #[repr(C)]
@@ -36,7 +36,7 @@ pub(crate) fn create_collection<'a>(
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
-    let new_collection = CollectionData {
+    let new_collection = Collection {
         key: Key::Collection,
         update_authority: *ctx
             .accounts

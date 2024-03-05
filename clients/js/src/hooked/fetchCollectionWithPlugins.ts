@@ -7,18 +7,18 @@ import {
   publicKey as toPublicKey,
 } from '@metaplex-foundation/umi';
 import {
-  CollectionData,
+  Collection,
   PluginHeaderAccountData,
   PluginRegistryAccountData,
-  deserializeCollectionData,
-  getCollectionDataAccountDataSerializer,
+  deserializeCollection,
+  getCollectionAccountDataSerializer,
   getPluginHeaderAccountDataSerializer,
   getPluginRegistryAccountDataSerializer,
   getPluginSerializer,
 } from '../generated';
 import { PluginList, PluginWithAuthorities } from '.';
 
-export type CollectionWithPlugins = CollectionData & PluginList;
+export type CollectionWithPlugins = Collection & PluginList;
 
 export async function fetchCollectionWithPlugins(
   context: Pick<Context, 'rpc'>,
@@ -30,9 +30,9 @@ export async function fetchCollectionWithPlugins(
     options
   );
   assertAccountExists(maybeAccount, 'Collection');
-  const collection = deserializeCollectionData(maybeAccount);
+  const collection = deserializeCollection(maybeAccount);
   const collectionData =
-    getCollectionDataAccountDataSerializer().serialize(collection);
+    getCollectionAccountDataSerializer().serialize(collection);
 
   let pluginHeader: PluginHeaderAccountData | undefined;
   let pluginRegistry: PluginRegistryAccountData | undefined;

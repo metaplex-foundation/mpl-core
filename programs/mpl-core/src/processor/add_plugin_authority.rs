@@ -6,7 +6,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{AddCollectionPluginAuthorityAccounts, AddPluginAuthorityAccounts},
     plugins::{add_authority_to_plugin, PluginType},
-    state::{Asset, Authority, CollectionData, CoreAsset, DataBlob, SolanaAccount},
+    state::{Asset, Authority, Collection, CoreAsset, DataBlob, SolanaAccount},
     utils::fetch_core_data,
 };
 
@@ -66,7 +66,7 @@ pub(crate) fn add_collection_plugin_authority<'a>(
         None => ctx.accounts.authority,
     };
 
-    process_add_plugin_authority::<CollectionData>(
+    process_add_plugin_authority::<Collection>(
         ctx.accounts.collection,
         ctx.accounts.authority,
         payer,

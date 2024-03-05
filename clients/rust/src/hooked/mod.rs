@@ -4,7 +4,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub use plugins::*;
 
 use crate::{
-    accounts::{Asset, PluginHeader, PluginRegistry},
+    accounts::{Asset, Collection, PluginHeader, PluginRegistry},
     errors::MplCoreError,
     types::{Key, Plugin, PluginType},
 };
@@ -28,6 +28,11 @@ impl Asset {
     pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4;
 }
 
+impl Collection {
+    /// The base length of the collection account with an empty name and uri.
+    pub const BASE_LENGTH: usize = 1 + 32 + 4 + 4 + 4 + 4;
+}
+
 impl DataBlob for Asset {
     fn get_initial_size() -> usize {
         Asset::BASE_LENGTH
@@ -41,6 +46,22 @@ impl DataBlob for Asset {
 impl SolanaAccount for Asset {
     fn key() -> Key {
         Key::Asset
+    }
+}
+
+impl DataBlob for Collection {
+    fn get_initial_size() -> usize {
+        Self::BASE_LENGTH
+    }
+
+    fn get_size(&self) -> usize {
+        Self::BASE_LENGTH + self.name.len() + self.uri.len()
+    }
+}
+
+impl SolanaAccount for Collection {
+    fn key() -> Key {
+        Key::Collection
     }
 }
 

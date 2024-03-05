@@ -6,7 +6,7 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    state::{Asset, Authority, CollectionData, CoreAsset, DataBlob, Key, SolanaAccount},
+    state::{Asset, Authority, Collection, CoreAsset, DataBlob, Key, SolanaAccount},
     utils::{assert_authority, load_key, resize_or_reallocate_account},
 };
 
@@ -30,7 +30,7 @@ pub fn create_meta_idempotent<'a>(
         Key::Collection => {
             let collection = {
                 let mut bytes: &[u8] = &(*account.data).borrow();
-                CollectionData::deserialize(&mut bytes)?
+                Collection::deserialize(&mut bytes)?
             };
 
             collection.get_size()
@@ -194,7 +194,7 @@ pub fn initialize_plugin<'a>(
         Key::Collection => {
             let collection = {
                 let mut bytes: &[u8] = &(*account.data).borrow();
-                CollectionData::deserialize(&mut bytes)?
+                Collection::deserialize(&mut bytes)?
             };
 
             collection.get_size()

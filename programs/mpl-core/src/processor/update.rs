@@ -8,7 +8,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateAccounts, UpdateCollectionAccounts},
     plugins::{CheckResult, Plugin, RegistryRecord, ValidationResult},
-    state::{Asset, CollectionData, DataBlob, SolanaAccount, UpdateAuthority},
+    state::{Asset, Collection, DataBlob, SolanaAccount, UpdateAuthority},
     utils::{fetch_core_data, resize_or_reallocate_account},
 };
 
@@ -178,7 +178,7 @@ pub(crate) fn update_collection<'a>(
     };
 
     let (mut asset, plugin_header, plugin_registry) =
-        fetch_core_data::<CollectionData>(ctx.accounts.collection)?;
+        fetch_core_data::<Collection>(ctx.accounts.collection)?;
     let asset_size = asset.get_size() as isize;
 
     let mut approved = false;

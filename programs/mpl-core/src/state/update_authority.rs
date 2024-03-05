@@ -10,7 +10,7 @@ use crate::{
     },
     plugins::{fetch_plugin, CheckResult, PluginType, UpdateDelegate, ValidationResult},
     processor::CreateArgs,
-    state::{Authority, CollectionData, SolanaAccount},
+    state::{Authority, Collection, SolanaAccount},
     utils::assert_collection_authority,
 };
 
@@ -57,7 +57,7 @@ impl UpdateAuthority {
                 if collection_info.key != collection_address {
                     return Err(MplCoreError::InvalidCollection.into());
                 }
-                let collection = CollectionData::load(collection_info, 0)?;
+                let collection = Collection::load(collection_info, 0)?;
                 solana_program::msg!("Collection: {:?}", collection);
 
                 let authority = match ctx.authority {
@@ -68,7 +68,7 @@ impl UpdateAuthority {
                     None => ctx.payer,
                 };
 
-                let maybe_update_delegate = fetch_plugin::<CollectionData, UpdateDelegate>(
+                let maybe_update_delegate = fetch_plugin::<Collection, UpdateDelegate>(
                     collection_info,
                     PluginType::UpdateDelegate,
                 );

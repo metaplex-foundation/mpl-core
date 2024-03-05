@@ -11,7 +11,7 @@ use super::{CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
 
 /// The representation of a collection of assets.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
-pub struct CollectionData {
+pub struct Collection {
     /// The account discriminator.
     pub key: Key, //1
     /// The update authority of the collection.
@@ -26,7 +26,7 @@ pub struct CollectionData {
     pub current_size: u32, //4
 }
 
-impl CollectionData {
+impl Collection {
     /// The base length of the collection account with an empty name and uri.
     pub const BASE_LENGTH: usize = 1 + 32 + 4 + 4 + 4 + 4;
 
@@ -98,7 +98,7 @@ impl CollectionData {
     }
 }
 
-impl DataBlob for CollectionData {
+impl DataBlob for Collection {
     fn get_initial_size() -> usize {
         Self::BASE_LENGTH
     }
@@ -108,13 +108,13 @@ impl DataBlob for CollectionData {
     }
 }
 
-impl SolanaAccount for CollectionData {
+impl SolanaAccount for Collection {
     fn key() -> Key {
         Key::Collection
     }
 }
 
-impl CoreAsset for CollectionData {
+impl CoreAsset for Collection {
     fn update_authority(&self) -> UpdateAuthority {
         UpdateAuthority::Collection(self.update_authority)
     }

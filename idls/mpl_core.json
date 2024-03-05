@@ -1334,7 +1334,7 @@
       }
     },
     {
-      "name": "CollectionData",
+      "name": "Collection",
       "type": {
         "kind": "struct",
         "fields": [
