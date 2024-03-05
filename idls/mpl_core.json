@@ -818,6 +818,24 @@
         "type": "u8",
         "value": 11
       }
+    },
+    {
+      "name": "Collect",
+      "accounts": [
+        {
+          "name": "recipient",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the recipient"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 12
+      }
     }
   ],
   "accounts": [

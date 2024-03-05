@@ -13,6 +13,9 @@ pub use traits::*;
 mod collection;
 pub use collection::*;
 
+mod collect;
+pub use collect::*;
+
 mod update_authority;
 pub use update_authority::*;
 

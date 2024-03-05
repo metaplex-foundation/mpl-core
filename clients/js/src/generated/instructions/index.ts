@@ -9,6 +9,7 @@
 export * from './addAuthority';
 export * from './addPlugin';
 export * from './burn';
+export * from './collect';
 export * from './compress';
 export * from './create';
 export * from './createCollection';
