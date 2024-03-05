@@ -1,5 +1,4 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use mpl_utils::resize_or_reallocate_account_raw;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
     program_memory::sol_memcpy,
@@ -8,7 +7,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     state::{Asset, Authority, CollectionData, CoreAsset, DataBlob, Key, SolanaAccount},
-    utils::{assert_authority, load_key, resolve_authority_to_default},
+    utils::{assert_authority, load_key, resize_or_reallocate_account, resolve_authority_to_default},
 };
 
 use super::{Plugin, PluginHeader, PluginRegistry, PluginType, RegistryRecord};
@@ -52,7 +51,7 @@ pub fn create_meta_idempotent<'a>(
             external_plugins: vec![],
         };
 
-        resize_or_reallocate_account_raw(
+        resize_or_reallocate_account(
             account,
             payer,
             system_program,
@@ -214,7 +213,7 @@ pub fn initialize_plugin<'a>(
         .checked_add(size_increase)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
-    resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
+    resize_or_reallocate_account(account, payer, system_program, new_size)?;
     header.save(account, header_offset)?;
     plugin.save(account, old_registry_offset)?;
     plugin_registry.save(account, new_registry_offset)?;
@@ -290,7 +289,7 @@ pub fn delete_plugin<'a>(
 
         plugin_registry.save(account, new_offset)?;
 
-        resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
+        resize_or_reallocate_account(account, payer, system_program, new_size)?;
     } else {
         return Err(MplCoreError::PluginNotFound.into());
     }
@@ -328,7 +327,7 @@ pub fn add_authority_to_plugin<'a, T: CoreAsset>(
         .data_len()
         .checked_add(authority_bytes.len())
         .ok_or(MplCoreError::NumericalOverflow)?;
-    resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
+    resize_or_reallocate_account(account, payer, system_program, new_size)?;
 
     plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
 
@@ -384,7 +383,7 @@ pub fn remove_authority_from_plugin<'a>(
             .data_len()
             .checked_sub(authority_bytes.len())
             .ok_or(MplCoreError::NumericalOverflow)?;
-        resize_or_reallocate_account_raw(account, payer, system_program, new_size)?;
+        resize_or_reallocate_account(account, payer, system_program, new_size)?;
 
         plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
     }

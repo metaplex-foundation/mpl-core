@@ -8,6 +8,7 @@
 pub(crate) mod add_authority;
 pub(crate) mod add_plugin;
 pub(crate) mod burn;
+pub(crate) mod collect;
 pub(crate) mod compress;
 pub(crate) mod create;
 pub(crate) mod create_collection;
@@ -21,6 +22,7 @@ pub(crate) mod update_plugin;
 pub use self::add_authority::*;
 pub use self::add_plugin::*;
 pub use self::burn::*;
+pub use self::collect::*;
 pub use self::compress::*;
 pub use self::create::*;
 pub use self::create_collection::*;

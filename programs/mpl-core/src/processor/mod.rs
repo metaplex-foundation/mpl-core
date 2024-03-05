@@ -38,6 +38,9 @@ pub(crate) use decompress::*;
 mod update_plugin;
 pub(crate) use update_plugin::*;
 
+mod collect;
+pub(crate) use collect::*;
+
 /// Standard processor that deserializes and instruction and routes it to the appropriate handler.
 pub fn process_instruction<'a>(
     _program_id: &Pubkey,
@@ -93,6 +96,10 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::Decompress(args) => {
             msg!("Instruction: Decompress");
             decompress(accounts, args)
+        }
+
+        MplAssetInstruction::Collect => {
+            collect(accounts)
         }
     }
 }
