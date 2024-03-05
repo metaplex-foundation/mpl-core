@@ -5,6 +5,8 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+pub(crate) mod add_plugin_args;
+pub(crate) mod add_plugin_authority_args;
 pub(crate) mod authority;
 pub(crate) mod burn;
 pub(crate) mod compression_proof;
@@ -19,12 +21,18 @@ pub(crate) mod key;
 pub(crate) mod plugin;
 pub(crate) mod plugin_type;
 pub(crate) mod registry_record;
+pub(crate) mod remove_plugin_args;
+pub(crate) mod remove_plugin_authority_args;
 pub(crate) mod royalties;
 pub(crate) mod rule_set;
 pub(crate) mod transfer;
+pub(crate) mod update_args;
 pub(crate) mod update_authority;
 pub(crate) mod update_delegate;
+pub(crate) mod update_plugin_args;
 
+pub use self::add_plugin_args::*;
+pub use self::add_plugin_authority_args::*;
 pub use self::authority::*;
 pub use self::burn::*;
 pub use self::compression_proof::*;
@@ -39,8 +47,12 @@ pub use self::key::*;
 pub use self::plugin::*;
 pub use self::plugin_type::*;
 pub use self::registry_record::*;
+pub use self::remove_plugin_args::*;
+pub use self::remove_plugin_authority_args::*;
 pub use self::royalties::*;
 pub use self::rule_set::*;
 pub use self::transfer::*;
+pub use self::update_args::*;
 pub use self::update_authority::*;
 pub use self::update_delegate::*;
+pub use self::update_plugin_args::*;

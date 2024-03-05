@@ -6,15 +6,22 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-export * from './addAuthority';
+export * from './addCollectionPlugin';
+export * from './addCollectionPluginAuthority';
 export * from './addPlugin';
+export * from './addPluginAuthority';
 export * from './burn';
+export * from './burnCollection';
 export * from './compress';
 export * from './create';
 export * from './createCollection';
 export * from './decompress';
-export * from './removeAuthority';
+export * from './removeCollectionPlugin';
+export * from './removeCollectionPluginAuthority';
 export * from './removePlugin';
+export * from './removePluginAuthority';
 export * from './transfer';
 export * from './update';
+export * from './updateCollection';
+export * from './updateCollectionPlugin';
 export * from './updatePlugin';

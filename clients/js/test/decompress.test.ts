@@ -24,7 +24,7 @@ test('it can decompress a previously compressed asset as the owner', async (t) =
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -43,7 +43,7 @@ test('it can decompress a previously compressed asset as the owner', async (t) =
 
   // And when we compress the asset.
   await compress(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     owner: umi.identity,
   }).sendAndConfirm(umi);
 
@@ -66,7 +66,7 @@ test('it can decompress a previously compressed asset as the owner', async (t) =
 
   // And when we decompress the asset.
   await decompress(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     owner: umi.identity,
     compressionProof: {
       updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),

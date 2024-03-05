@@ -20,7 +20,7 @@ test('it can transfer an asset as the owner', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -38,7 +38,7 @@ test('it can transfer an asset as the owner', async (t) => {
   });
 
   await transfer(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     newOwner: newOwner.publicKey,
     compressionProof: null,
   }).sendAndConfirm(umi);
@@ -64,7 +64,7 @@ test('it cannot transfer an asset if not the owner', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -82,7 +82,7 @@ test('it cannot transfer an asset if not the owner', async (t) => {
   });
 
   const result = transfer(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     newOwner: newOwner.publicKey,
     compressionProof: null,
     authority: attacker,

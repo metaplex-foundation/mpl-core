@@ -39,7 +39,7 @@ import {
 // Accounts.
 export type CreateInstructionAccounts = {
   /** The address of the new asset */
-  assetAddress: Signer;
+  asset: Signer;
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
   /** The authority signing for creation */
@@ -107,11 +107,7 @@ export function create(
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    assetAddress: {
-      index: 0,
-      isWritable: true,
-      value: input.assetAddress ?? null,
-    },
+    asset: { index: 0, isWritable: true, value: input.asset ?? null },
     collection: { index: 1, isWritable: true, value: input.collection ?? null },
     authority: { index: 2, isWritable: false, value: input.authority ?? null },
     payer: { index: 3, isWritable: true, value: input.payer ?? null },

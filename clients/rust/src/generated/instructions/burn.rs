@@ -12,7 +12,7 @@ use borsh::BorshSerialize;
 /// Accounts.
 pub struct Burn {
     /// The address of the asset
-    pub asset_address: solana_program::pubkey::Pubkey,
+    pub asset: solana_program::pubkey::Pubkey,
     /// The collection to which the asset belongs
     pub collection: Option<solana_program::pubkey::Pubkey>,
     /// The owner or delegate of the asset
@@ -38,8 +38,7 @@ impl Burn {
     ) -> solana_program::instruction::Instruction {
         let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.asset_address,
-            false,
+            self.asset, false,
         ));
         if let Some(collection) = self.collection {
             accounts.push(solana_program::instruction::AccountMeta::new(
@@ -94,7 +93,7 @@ struct BurnInstructionData {
 
 impl BurnInstructionData {
     fn new() -> Self {
-        Self { discriminator: 7 }
+        Self { discriminator: 12 }
     }
 }
 
@@ -107,7 +106,7 @@ pub struct BurnInstructionArgs {
 /// Instruction builder.
 #[derive(Default)]
 pub struct BurnBuilder {
-    asset_address: Option<solana_program::pubkey::Pubkey>,
+    asset: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
@@ -122,8 +121,8 @@ impl BurnBuilder {
     }
     /// The address of the asset
     #[inline(always)]
-    pub fn asset_address(&mut self, asset_address: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.asset_address = Some(asset_address);
+    pub fn asset(&mut self, asset: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.asset = Some(asset);
         self
     }
     /// `[optional account]`
@@ -183,7 +182,7 @@ impl BurnBuilder {
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = Burn {
-            asset_address: self.asset_address.expect("asset_address is not set"),
+            asset: self.asset.expect("asset is not set"),
             collection: self.collection,
             authority: self.authority.expect("authority is not set"),
             payer: self.payer,
@@ -200,7 +199,7 @@ impl BurnBuilder {
 /// `burn` CPI accounts.
 pub struct BurnCpiAccounts<'a, 'b> {
     /// The address of the asset
-    pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The owner or delegate of the asset
@@ -216,7 +215,7 @@ pub struct BurnCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The address of the asset
-    pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The owner or delegate of the asset
@@ -237,7 +236,7 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
     ) -> Self {
         Self {
             __program: program,
-            asset_address: accounts.asset_address,
+            asset: accounts.asset,
             collection: accounts.collection,
             authority: accounts.authority,
             payer: accounts.payer,
@@ -280,7 +279,7 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
     ) -> solana_program::entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.asset_address.key,
+            *self.asset.key,
             false,
         ));
         if let Some(collection) = self.collection {
@@ -337,7 +336,7 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
         };
         let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.asset_address.clone());
+        account_infos.push(self.asset.clone());
         if let Some(collection) = self.collection {
             account_infos.push(collection.clone());
         }
@@ -369,7 +368,7 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(BurnCpiBuilderInstruction {
             __program: program,
-            asset_address: None,
+            asset: None,
             collection: None,
             authority: None,
             payer: None,
@@ -381,11 +380,8 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
     }
     /// The address of the asset
     #[inline(always)]
-    pub fn asset_address(
-        &mut self,
-        asset_address: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.asset_address = Some(asset_address);
+    pub fn asset(&mut self, asset: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.asset = Some(asset);
         self
     }
     /// `[optional account]`
@@ -480,10 +476,7 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
         let instruction = BurnCpi {
             __program: self.instruction.__program,
 
-            asset_address: self
-                .instruction
-                .asset_address
-                .expect("asset_address is not set"),
+            asset: self.instruction.asset.expect("asset is not set"),
 
             collection: self.instruction.collection,
 
@@ -503,7 +496,7 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
 
 struct BurnCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
-    asset_address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,

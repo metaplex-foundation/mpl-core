@@ -6,13 +6,13 @@ import {
   CollectionWithPlugins,
   DataState,
   PluginType,
-  addAuthority,
-  addPlugin,
   create,
   createCollection,
   fetchAssetWithPlugins,
   fetchCollectionWithPlugins,
   updateAuthority,
+  addCollectionPlugin,
+  addCollectionPluginAuthority,
 } from '../../../src';
 import { createUmi } from '../../_setup';
 
@@ -25,29 +25,33 @@ test('it can create a new asset with a collection if it is the collection update
 
   // When we create a new account.
   await createCollection(umi, {
-    collectionAddress,
+    collection: collectionAddress,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
     plugins: [],
   }).sendAndConfirm(umi);
 
-  await addPlugin(umi, {
-    assetAddress: collectionAddress.publicKey,
-    plugin: {
-      __kind: 'UpdateDelegate',
-      fields: [{}],
-    },
+  await addCollectionPlugin(umi, {
+    collection: collectionAddress.publicKey,
+    addPluginArgs: {
+      plugin: {
+        __kind: 'UpdateDelegate',
+        fields: [{}],
+      },
+    }
   }).sendAndConfirm(umi);
 
   // console.log(JSON.stringify(await fetchCollectionWithPlugins(umi, collectionAddress.publicKey), (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
 
-  await addAuthority(umi, {
-    assetAddress: collectionAddress.publicKey,
-    pluginType: PluginType.UpdateDelegate,
-    newAuthority: {
-      __kind: 'Pubkey',
-      address: updateDelegate.publicKey,
-    },
+  await addCollectionPluginAuthority(umi, {
+    collection: collectionAddress.publicKey,
+    addPluginAuthorityArgs: {
+      pluginType: PluginType.UpdateDelegate,
+      newAuthority: {
+        __kind: 'Pubkey',
+        address: updateDelegate.publicKey,
+      },
+    }
   }).sendAndConfirm(umi);
 
   const collection = await fetchCollectionWithPlugins(
@@ -98,7 +102,7 @@ test('it can create a new asset with a collection if it is the collection update
   await create(umi, {
     owner: owner.publicKey,
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     collection: collectionAddress.publicKey,

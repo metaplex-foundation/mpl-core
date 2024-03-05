@@ -1,6 +1,11 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
-use solana_program::pubkey::Pubkey;
+use solana_program::{program_error::ProgramError, pubkey::Pubkey};
+
+use crate::{
+    instruction::accounts::{BurnCollectionAccounts, UpdateCollectionAccounts},
+    plugins::{CheckResult, ValidationResult},
+};
 
 use super::{CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
 
@@ -40,6 +45,55 @@ impl CollectionData {
             uri,
             num_minted,
             current_size,
+        }
+    }
+
+    /// Check permissions for the transfer lifecycle event.
+    pub fn check_transfer() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
+    /// Check permissions for the burn lifecycle event.
+    pub fn check_burn() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
+    /// Check permissions for the update lifecycle event.
+    pub fn check_update() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
+    /// Check permissions for the compress lifecycle event.
+    pub fn check_compress() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
+    /// Check permissions for the decompress lifecycle event.
+    pub fn check_decompress() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
+    /// Validate the update lifecycle event.
+    pub fn validate_update(
+        &self,
+        ctx: &UpdateCollectionAccounts,
+    ) -> Result<ValidationResult, ProgramError> {
+        if ctx.authority.key == &self.update_authority {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
+    /// Validate the burn lifecycle event.
+    pub fn validate_burn(
+        &self,
+        ctx: &BurnCollectionAccounts,
+    ) -> Result<ValidationResult, ProgramError> {
+        if ctx.authority.key == &self.update_authority {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
         }
     }
 }

@@ -8,8 +8,6 @@
 
 import {
   Context,
-  Option,
-  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -19,8 +17,6 @@ import {
 import {
   Serializer,
   mapSerializer,
-  option,
-  string,
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
@@ -29,11 +25,12 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import { UpdateArgs, UpdateArgsArgs, getUpdateArgsSerializer } from '../types';
 
 // Accounts.
 export type UpdateInstructionAccounts = {
   /** The address of the asset */
-  assetAddress: PublicKey | Pda;
+  asset: PublicKey | Pda;
   /** The update authority or update authority delegate of the asset */
   authority?: Signer;
   /** The account paying for the storage fees */
@@ -49,14 +46,10 @@ export type UpdateInstructionAccounts = {
 // Data.
 export type UpdateInstructionData = {
   discriminator: number;
-  newName: Option<string>;
-  newUri: Option<string>;
+  updateArgs: UpdateArgs;
 };
 
-export type UpdateInstructionDataArgs = {
-  newName: OptionOrNullable<string>;
-  newUri: OptionOrNullable<string>;
-};
+export type UpdateInstructionDataArgs = { updateArgs: UpdateArgsArgs };
 
 export function getUpdateInstructionDataSerializer(): Serializer<
   UpdateInstructionDataArgs,
@@ -66,12 +59,11 @@ export function getUpdateInstructionDataSerializer(): Serializer<
     struct<UpdateInstructionData>(
       [
         ['discriminator', u8()],
-        ['newName', option(string())],
-        ['newUri', option(string())],
+        ['updateArgs', getUpdateArgsSerializer()],
       ],
       { description: 'UpdateInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 9 })
+    (value) => ({ ...value, discriminator: 15 })
   ) as Serializer<UpdateInstructionDataArgs, UpdateInstructionData>;
 }
 
@@ -91,11 +83,7 @@ export function update(
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    assetAddress: {
-      index: 0,
-      isWritable: true,
-      value: input.assetAddress ?? null,
-    },
+    asset: { index: 0, isWritable: true, value: input.asset ?? null },
     authority: { index: 1, isWritable: false, value: input.authority ?? null },
     payer: { index: 2, isWritable: true, value: input.payer ?? null },
     newUpdateAuthority: {

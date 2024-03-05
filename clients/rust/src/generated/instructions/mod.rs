@@ -5,28 +5,42 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub(crate) mod add_authority;
+pub(crate) mod add_collection_plugin;
+pub(crate) mod add_collection_plugin_authority;
 pub(crate) mod add_plugin;
+pub(crate) mod add_plugin_authority;
 pub(crate) mod burn;
+pub(crate) mod burn_collection;
 pub(crate) mod compress;
 pub(crate) mod create;
 pub(crate) mod create_collection;
 pub(crate) mod decompress;
-pub(crate) mod remove_authority;
+pub(crate) mod remove_collection_plugin;
+pub(crate) mod remove_collection_plugin_authority;
 pub(crate) mod remove_plugin;
+pub(crate) mod remove_plugin_authority;
 pub(crate) mod transfer;
 pub(crate) mod update;
+pub(crate) mod update_collection;
+pub(crate) mod update_collection_plugin;
 pub(crate) mod update_plugin;
 
-pub use self::add_authority::*;
+pub use self::add_collection_plugin::*;
+pub use self::add_collection_plugin_authority::*;
 pub use self::add_plugin::*;
+pub use self::add_plugin_authority::*;
 pub use self::burn::*;
+pub use self::burn_collection::*;
 pub use self::compress::*;
 pub use self::create::*;
 pub use self::create_collection::*;
 pub use self::decompress::*;
-pub use self::remove_authority::*;
+pub use self::remove_collection_plugin::*;
+pub use self::remove_collection_plugin_authority::*;
 pub use self::remove_plugin::*;
+pub use self::remove_plugin_authority::*;
 pub use self::transfer::*;
 pub use self::update::*;
+pub use self::update_collection::*;
+pub use self::update_collection_plugin::*;
 pub use self::update_plugin::*;

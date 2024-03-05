@@ -19,15 +19,15 @@ test('it can freeze and unfreeze an asset', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
   }).sendAndConfirm(umi);
 
   await addPlugin(umi, {
-    assetAddress: assetAddress.publicKey,
-    plugin: plugin('Freeze', [{ frozen: true }]),
+    asset: assetAddress.publicKey,
+    addPluginArgs: { plugin: plugin('Freeze', [{ frozen: true }]), }
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -67,8 +67,8 @@ test('it can freeze and unfreeze an asset', async (t) => {
   });
 
   await updatePlugin(umi, {
-    assetAddress: assetAddress.publicKey,
-    plugin: plugin('Freeze', [{ frozen: false }]),
+    asset: assetAddress.publicKey,
+    updatePluginArgs: { plugin: plugin('Freeze', [{ frozen: false }]), }
   }).sendAndConfirm(umi);
 
 

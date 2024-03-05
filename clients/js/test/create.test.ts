@@ -23,7 +23,7 @@ test('it can create a new asset in account state', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -52,7 +52,7 @@ test('it can create a new asset with a different payer', async (t) => {
     owner: umi.identity.publicKey,
     payer,
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -78,7 +78,7 @@ test('it can create a new asset in ledger state', async (t) => {
   // When we create a new account.
   const txResult = await create(umi, {
     dataState: DataState.LedgerState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
@@ -116,7 +116,7 @@ test('it can create a new asset in account state with plugins', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }],

@@ -6,7 +6,7 @@
       "name": "Create",
       "accounts": [
         {
-          "name": "assetAddress",
+          "name": "asset",
           "isMut": true,
           "isSigner": true,
           "docs": [
@@ -92,7 +92,7 @@
       "name": "CreateCollection",
       "accounts": [
         {
-          "name": "collectionAddress",
+          "name": "collection",
           "isMut": true,
           "isSigner": true,
           "docs": [
@@ -151,7 +151,7 @@
       "name": "AddPlugin",
       "accounts": [
         {
-          "name": "assetAddress",
+          "name": "asset",
           "isMut": true,
           "isSigner": false,
           "docs": [
@@ -216,10 +216,69 @@
       }
     },
     {
+      "name": "AddCollectionPlugin",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addPluginArgs",
+          "type": {
+            "defined": "AddPluginArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 3
+      }
+    },
+    {
       "name": "RemovePlugin",
       "accounts": [
         {
-          "name": "assetAddress",
+          "name": "asset",
           "isMut": true,
           "isSigner": false,
           "docs": [
@@ -280,14 +339,73 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 3
+        "value": 4
+      }
+    },
+    {
+      "name": "RemoveCollectionPlugin",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removePluginArgs",
+          "type": {
+            "defined": "RemovePluginArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 5
       }
     },
     {
       "name": "UpdatePlugin",
       "accounts": [
         {
-          "name": "assetAddress",
+          "name": "asset",
           "isMut": true,
           "isSigner": false,
           "docs": [
@@ -348,150 +466,327 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 4
-      }
-    },
-    {
-      "name": "AddAuthority",
-      "accounts": [
-        {
-          "name": "assetAddress",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The address of the asset"
-          ]
-        },
-        {
-          "name": "collection",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The collection to which the asset belongs"
-          ]
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true,
-          "isOptional": true,
-          "docs": [
-            "The account paying for the storage fees"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The system program"
-          ]
-        },
-        {
-          "name": "logWrapper",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The SPL Noop Program"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "addAuthorityArgs",
-          "type": {
-            "defined": "AddAuthorityArgs"
-          }
-        }
-      ],
-      "discriminant": {
-        "type": "u8",
-        "value": 5
-      }
-    },
-    {
-      "name": "RemoveAuthority",
-      "accounts": [
-        {
-          "name": "assetAddress",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The address of the asset"
-          ]
-        },
-        {
-          "name": "collection",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The collection to which the asset belongs"
-          ]
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true,
-          "isOptional": true,
-          "docs": [
-            "The account paying for the storage fees"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The system program"
-          ]
-        },
-        {
-          "name": "logWrapper",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The SPL Noop Program"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "removeAuthorityArgs",
-          "type": {
-            "defined": "RemoveAuthorityArgs"
-          }
-        }
-      ],
-      "discriminant": {
-        "type": "u8",
         "value": 6
+      }
+    },
+    {
+      "name": "UpdateCollectionPlugin",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updatePluginArgs",
+          "type": {
+            "defined": "UpdatePluginArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 7
+      }
+    },
+    {
+      "name": "AddPluginAuthority",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addPluginAuthorityArgs",
+          "type": {
+            "defined": "AddPluginAuthorityArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 8
+      }
+    },
+    {
+      "name": "AddCollectionPluginAuthority",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addPluginAuthorityArgs",
+          "type": {
+            "defined": "AddPluginAuthorityArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 9
+      }
+    },
+    {
+      "name": "RemovePluginAuthority",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removePluginAuthorityArgs",
+          "type": {
+            "defined": "RemovePluginAuthorityArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 10
+      }
+    },
+    {
+      "name": "RemoveCollectionPluginAuthority",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removePluginAuthorityArgs",
+          "type": {
+            "defined": "RemovePluginAuthorityArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 11
       }
     },
     {
       "name": "Burn",
       "accounts": [
         {
-          "name": "assetAddress",
+          "name": "asset",
           "isMut": true,
           "isSigner": false,
           "docs": [
@@ -544,14 +839,58 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 7
+        "value": 12
+      }
+    },
+    {
+      "name": "BurnCollection",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 13
       }
     },
     {
       "name": "Transfer",
       "accounts": [
         {
-          "name": "assetAddress",
+          "name": "asset",
           "isMut": true,
           "isSigner": false,
           "docs": [
@@ -612,14 +951,14 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 8
+        "value": 14
       }
     },
     {
       "name": "Update",
       "accounts": [
         {
-          "name": "assetAddress",
+          "name": "asset",
           "isMut": true,
           "isSigner": false,
           "docs": [
@@ -680,14 +1019,82 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 9
+        "value": 15
+      }
+    },
+    {
+      "name": "UpdateCollection",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The update authority or update authority delegate of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "newUpdateAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The new update authority of the asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updateArgs",
+          "type": {
+            "defined": "UpdateArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 16
       }
     },
     {
       "name": "Compress",
       "accounts": [
         {
-          "name": "assetAddress",
+          "name": "asset",
           "isMut": true,
           "isSigner": false,
           "docs": [
@@ -748,14 +1155,14 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 10
+        "value": 17
       }
     },
     {
       "name": "Decompress",
       "accounts": [
         {
-          "name": "assetAddress",
+          "name": "asset",
           "isMut": true,
           "isSigner": false,
           "docs": [
@@ -816,7 +1223,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 11
+        "value": 18
       }
     }
   ],
@@ -1080,7 +1487,21 @@
       }
     },
     {
-      "name": "AddAuthorityArgs",
+      "name": "AddPluginArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plugin",
+            "type": {
+              "defined": "Plugin"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddPluginAuthorityArgs",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1094,20 +1515,6 @@
             "name": "newAuthority",
             "type": {
               "defined": "Authority"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "AddPluginArgs",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "plugin",
-            "type": {
-              "defined": "Plugin"
             }
           }
         ]
@@ -1205,7 +1612,21 @@
       }
     },
     {
-      "name": "RemoveAuthorityArgs",
+      "name": "RemovePluginArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pluginType",
+            "type": {
+              "defined": "PluginType"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemovePluginAuthorityArgs",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1219,20 +1640,6 @@
             "name": "authorityToRemove",
             "type": {
               "defined": "Authority"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "RemovePluginArgs",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "pluginType",
-            "type": {
-              "defined": "PluginType"
             }
           }
         ]

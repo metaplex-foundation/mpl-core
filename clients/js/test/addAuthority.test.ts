@@ -6,12 +6,13 @@ import {
   AssetWithPlugins,
   DataState,
   PluginType,
-  addAuthority,
+  addPluginAuthority,
   addPlugin,
   create,
   fetchAsset,
   fetchAssetWithPlugins,
   updateAuthority,
+  plugin,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -24,7 +25,7 @@ test('it can add an authority to a plugin', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -42,19 +43,18 @@ test('it can add an authority to a plugin', async (t) => {
   });
 
   await addPlugin(umi, {
-    assetAddress: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
+    asset: assetAddress.publicKey,
+    addPluginArgs: { plugin: plugin('Freeze', [{ frozen: false }]) }
   })
     .append(
-      addAuthority(umi, {
-        assetAddress: assetAddress.publicKey,
-        pluginType: PluginType.Freeze,
-        newAuthority: {
-          __kind: 'Pubkey',
-          address: delegateAddress.publicKey,
+      addPluginAuthority(umi, {
+        asset: assetAddress.publicKey,
+        addPluginAuthorityArgs: {
+          pluginType: PluginType.Freeze,
+          newAuthority: {
+            __kind: 'Pubkey',
+            address: delegateAddress.publicKey,
+          },
         },
       })
     )

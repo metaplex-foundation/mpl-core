@@ -12,7 +12,7 @@ use borsh::BorshSerialize;
 /// Accounts.
 pub struct CreateCollection {
     /// The address of the new asset
-    pub collection_address: solana_program::pubkey::Pubkey,
+    pub collection: solana_program::pubkey::Pubkey,
     /// The authority of the new asset
     pub update_authority: Option<solana_program::pubkey::Pubkey>,
     /// The account paying for the storage fees
@@ -38,7 +38,7 @@ impl CreateCollection {
     ) -> solana_program::instruction::Instruction {
         let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.collection_address,
+            self.collection,
             true,
         ));
         if let Some(update_authority) = self.update_authority {
@@ -104,7 +104,7 @@ pub struct CreateCollectionInstructionArgs {
 /// Instruction builder.
 #[derive(Default)]
 pub struct CreateCollectionBuilder {
-    collection_address: Option<solana_program::pubkey::Pubkey>,
+    collection: Option<solana_program::pubkey::Pubkey>,
     update_authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     owner: Option<solana_program::pubkey::Pubkey>,
@@ -121,11 +121,8 @@ impl CreateCollectionBuilder {
     }
     /// The address of the new asset
     #[inline(always)]
-    pub fn collection_address(
-        &mut self,
-        collection_address: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
-        self.collection_address = Some(collection_address);
+    pub fn collection(&mut self, collection: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.collection = Some(collection);
         self
     }
     /// `[optional account]`
@@ -194,9 +191,7 @@ impl CreateCollectionBuilder {
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = CreateCollection {
-            collection_address: self
-                .collection_address
-                .expect("collection_address is not set"),
+            collection: self.collection.expect("collection is not set"),
             update_authority: self.update_authority,
             payer: self.payer.expect("payer is not set"),
             owner: self.owner,
@@ -217,7 +212,7 @@ impl CreateCollectionBuilder {
 /// `create_collection` CPI accounts.
 pub struct CreateCollectionCpiAccounts<'a, 'b> {
     /// The address of the new asset
-    pub collection_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub collection: &'b solana_program::account_info::AccountInfo<'a>,
     /// The authority of the new asset
     pub update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
@@ -233,7 +228,7 @@ pub struct CreateCollectionCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The address of the new asset
-    pub collection_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub collection: &'b solana_program::account_info::AccountInfo<'a>,
     /// The authority of the new asset
     pub update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
@@ -254,7 +249,7 @@ impl<'a, 'b> CreateCollectionCpi<'a, 'b> {
     ) -> Self {
         Self {
             __program: program,
-            collection_address: accounts.collection_address,
+            collection: accounts.collection,
             update_authority: accounts.update_authority,
             payer: accounts.payer,
             owner: accounts.owner,
@@ -297,7 +292,7 @@ impl<'a, 'b> CreateCollectionCpi<'a, 'b> {
     ) -> solana_program::entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.collection_address.key,
+            *self.collection.key,
             true,
         ));
         if let Some(update_authority) = self.update_authority {
@@ -347,7 +342,7 @@ impl<'a, 'b> CreateCollectionCpi<'a, 'b> {
         };
         let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.collection_address.clone());
+        account_infos.push(self.collection.clone());
         if let Some(update_authority) = self.update_authority {
             account_infos.push(update_authority.clone());
         }
@@ -377,7 +372,7 @@ impl<'a, 'b> CreateCollectionCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(CreateCollectionCpiBuilderInstruction {
             __program: program,
-            collection_address: None,
+            collection: None,
             update_authority: None,
             payer: None,
             owner: None,
@@ -391,11 +386,11 @@ impl<'a, 'b> CreateCollectionCpiBuilder<'a, 'b> {
     }
     /// The address of the new asset
     #[inline(always)]
-    pub fn collection_address(
+    pub fn collection(
         &mut self,
-        collection_address: &'b solana_program::account_info::AccountInfo<'a>,
+        collection: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.collection_address = Some(collection_address);
+        self.instruction.collection = Some(collection);
         self
     }
     /// `[optional account]`
@@ -501,10 +496,7 @@ impl<'a, 'b> CreateCollectionCpiBuilder<'a, 'b> {
         let instruction = CreateCollectionCpi {
             __program: self.instruction.__program,
 
-            collection_address: self
-                .instruction
-                .collection_address
-                .expect("collection_address is not set"),
+            collection: self.instruction.collection.expect("collection is not set"),
 
             update_authority: self.instruction.update_authority,
 
@@ -527,7 +519,7 @@ impl<'a, 'b> CreateCollectionCpiBuilder<'a, 'b> {
 
 struct CreateCollectionCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
-    collection_address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,

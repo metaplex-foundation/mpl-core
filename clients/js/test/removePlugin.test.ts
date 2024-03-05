@@ -23,7 +23,7 @@ test('it can remove a plugin from an asset', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -41,11 +41,13 @@ test('it can remove a plugin from an asset', async (t) => {
   });
 
   await addPlugin(umi, {
-    assetAddress: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
+    asset: assetAddress.publicKey,
+    addPluginArgs: {
+      plugin: {
+        __kind: 'Freeze',
+        fields: [{ frozen: false }],
+      },
+    }
   }).sendAndConfirm(umi);
 
   const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -82,8 +84,8 @@ test('it can remove a plugin from an asset', async (t) => {
   });
 
   await removePlugin(umi, {
-    assetAddress: assetAddress.publicKey,
-    pluginType: PluginType.Freeze,
+    asset: assetAddress.publicKey,
+    removePluginArgs: { pluginType: PluginType.Freeze, }
   }).sendAndConfirm(umi);
 
   const asset2 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);

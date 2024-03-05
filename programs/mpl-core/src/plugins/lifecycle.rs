@@ -1,14 +1,10 @@
-use solana_program::program_error::ProgramError;
+use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::{
-        BurnAccounts, CompressAccounts, CreateAccounts, DecompressAccounts, TransferAccounts,
-        UpdateAccounts, UpdatePluginAccounts,
-    },
     processor::{
-        BurnArgs, CompressArgs, CreateArgs, DecompressArgs, TransferArgs, UpdateArgs,
-        UpdatePluginArgs,
+        AddPluginAuthorityArgs, CompressArgs, CreateArgs, DecompressArgs,
+        RemovePluginAuthorityArgs, TransferArgs, UpdateArgs, UpdatePluginArgs,
     },
     state::{Asset, Authority},
 };
@@ -85,18 +81,18 @@ impl Plugin {
     /// Route the validation of the create action to the appropriate plugin.
     pub fn validate_create(
         &self,
-        ctx: &CreateAccounts,
+        authority: &AccountInfo,
         args: &CreateArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
         match self {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => royalties.validate_create(ctx, args, authorities),
-            Plugin::Freeze(freeze) => freeze.validate_create(ctx, args, authorities),
-            Plugin::Burn(burn) => burn.validate_create(ctx, args, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_create(ctx, args, authorities),
+            Plugin::Royalties(royalties) => royalties.validate_create(authority, args, authorities),
+            Plugin::Freeze(freeze) => freeze.validate_create(authority, args, authorities),
+            Plugin::Burn(burn) => burn.validate_create(authority, args, authorities),
+            Plugin::Transfer(transfer) => transfer.validate_create(authority, args, authorities),
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_create(ctx, args, authorities)
+                update_delegate.validate_create(authority, args, authorities)
             }
         }
     }
@@ -104,18 +100,18 @@ impl Plugin {
     /// Route the validation of the update action to the appropriate plugin.
     pub fn validate_update(
         &self,
-        ctx: &UpdateAccounts,
+        authority: &AccountInfo,
         args: &UpdateArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
         match self {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => royalties.validate_update(ctx, args, authorities),
-            Plugin::Freeze(freeze) => freeze.validate_update(ctx, args, authorities),
-            Plugin::Burn(burn) => burn.validate_update(ctx, args, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_update(ctx, args, authorities),
+            Plugin::Royalties(royalties) => royalties.validate_update(authority, args, authorities),
+            Plugin::Freeze(freeze) => freeze.validate_update(authority, args, authorities),
+            Plugin::Burn(burn) => burn.validate_update(authority, args, authorities),
+            Plugin::Transfer(transfer) => transfer.validate_update(authority, args, authorities),
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_update(ctx, args, authorities)
+                update_delegate.validate_update(authority, args, authorities)
             }
         }
     }
@@ -125,22 +121,24 @@ impl Plugin {
     pub fn validate_update_plugin(
         &self,
         asset: &Asset,
-        ctx: &UpdatePluginAccounts,
+        authority: &AccountInfo,
         args: &UpdatePluginArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
         match self {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
-                royalties.validate_update_plugin(asset, ctx, args, authorities)
+                royalties.validate_update_plugin(asset, authority, args, authorities)
             }
-            Plugin::Freeze(freeze) => freeze.validate_update_plugin(asset, ctx, args, authorities),
-            Plugin::Burn(burn) => burn.validate_update_plugin(asset, ctx, args, authorities),
+            Plugin::Freeze(freeze) => {
+                freeze.validate_update_plugin(asset, authority, args, authorities)
+            }
+            Plugin::Burn(burn) => burn.validate_update_plugin(asset, authority, args, authorities),
             Plugin::Transfer(transfer) => {
-                transfer.validate_update_plugin(asset, ctx, args, authorities)
+                transfer.validate_update_plugin(asset, authority, args, authorities)
             }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_update_plugin(asset, ctx, args, authorities)
+                update_delegate.validate_update_plugin(asset, authority, args, authorities)
             }
         }
     }
@@ -148,18 +146,17 @@ impl Plugin {
     /// Route the validation of the burn action to the appropriate plugin.
     pub fn validate_burn(
         &self,
-        ctx: &BurnAccounts,
-        args: &BurnArgs,
+        authority: &AccountInfo,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
         match self {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => royalties.validate_burn(ctx, args, authorities),
-            Plugin::Freeze(freeze) => freeze.validate_burn(ctx, args, authorities),
-            Plugin::Burn(burn) => burn.validate_burn(ctx, args, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_burn(ctx, args, authorities),
+            Plugin::Royalties(royalties) => royalties.validate_burn(authority, authorities),
+            Plugin::Freeze(freeze) => freeze.validate_burn(authority, authorities),
+            Plugin::Burn(burn) => burn.validate_burn(authority, authorities),
+            Plugin::Transfer(transfer) => transfer.validate_burn(authority, authorities),
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_burn(ctx, args, authorities)
+                update_delegate.validate_burn(authority, authorities)
             }
         }
     }
@@ -167,18 +164,25 @@ impl Plugin {
     /// Route the validation of the transfer action to the appropriate plugin.
     pub fn validate_transfer(
         &self,
-        ctx: &TransferAccounts,
+        authority: &AccountInfo,
+        new_owner: &AccountInfo,
         args: &TransferArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
         match self {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => royalties.validate_transfer(ctx, args, authorities),
-            Plugin::Freeze(freeze) => freeze.validate_transfer(ctx, args, authorities),
-            Plugin::Burn(burn) => burn.validate_transfer(ctx, args, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_transfer(ctx, args, authorities),
+            Plugin::Royalties(royalties) => {
+                royalties.validate_transfer(authority, new_owner, args, authorities)
+            }
+            Plugin::Freeze(freeze) => {
+                freeze.validate_transfer(authority, new_owner, args, authorities)
+            }
+            Plugin::Burn(burn) => burn.validate_transfer(authority, new_owner, args, authorities),
+            Plugin::Transfer(transfer) => {
+                transfer.validate_transfer(authority, new_owner, args, authorities)
+            }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_transfer(ctx, args, authorities)
+                update_delegate.validate_transfer(authority, new_owner, args, authorities)
             }
         }
     }
@@ -186,18 +190,20 @@ impl Plugin {
     /// Route the validation of the compress action to the appropriate plugin.
     pub fn validate_compress(
         &self,
-        ctx: &CompressAccounts,
+        authority: &AccountInfo,
         args: &CompressArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
         match self {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => royalties.validate_compress(ctx, args, authorities),
-            Plugin::Freeze(freeze) => freeze.validate_compress(ctx, args, authorities),
-            Plugin::Burn(burn) => burn.validate_compress(ctx, args, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_compress(ctx, args, authorities),
+            Plugin::Royalties(royalties) => {
+                royalties.validate_compress(authority, args, authorities)
+            }
+            Plugin::Freeze(freeze) => freeze.validate_compress(authority, args, authorities),
+            Plugin::Burn(burn) => burn.validate_compress(authority, args, authorities),
+            Plugin::Transfer(transfer) => transfer.validate_compress(authority, args, authorities),
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_compress(ctx, args, authorities)
+                update_delegate.validate_compress(authority, args, authorities)
             }
         }
     }
@@ -205,18 +211,72 @@ impl Plugin {
     /// Route the validation of the decompress action to the appropriate plugin.
     pub fn validate_decompress(
         &self,
-        ctx: &DecompressAccounts,
+        authority: &AccountInfo,
         args: &DecompressArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
         match self {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => royalties.validate_decompress(ctx, args, authorities),
-            Plugin::Freeze(freeze) => freeze.validate_decompress(ctx, args, authorities),
-            Plugin::Burn(burn) => burn.validate_decompress(ctx, args, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_decompress(ctx, args, authorities),
+            Plugin::Royalties(royalties) => {
+                royalties.validate_decompress(authority, args, authorities)
+            }
+            Plugin::Freeze(freeze) => freeze.validate_decompress(authority, args, authorities),
+            Plugin::Burn(burn) => burn.validate_decompress(authority, args, authorities),
+            Plugin::Transfer(transfer) => {
+                transfer.validate_decompress(authority, args, authorities)
+            }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_decompress(ctx, args, authorities)
+                update_delegate.validate_decompress(authority, args, authorities)
+            }
+        }
+    }
+
+    /// Route the validation of the add_authority action to the appropriate plugin.
+    /// There is no check for adding to a plugin because the plugin itself MUST validate the change.
+    pub fn validate_add_authority(
+        &self,
+        authority: &AccountInfo,
+        args: &AddPluginAuthorityArgs,
+        authorities: &[Authority],
+    ) -> Result<ValidationResult, ProgramError> {
+        match self {
+            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
+            Plugin::Royalties(royalties) => {
+                royalties.validate_add_authority(authority, args, authorities)
+            }
+            Plugin::Freeze(freeze) => freeze.validate_add_authority(authority, args, authorities),
+            Plugin::Burn(burn) => burn.validate_add_authority(authority, args, authorities),
+            Plugin::Transfer(transfer) => {
+                transfer.validate_add_authority(authority, args, authorities)
+            }
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_add_authority(authority, args, authorities)
+            }
+        }
+    }
+
+    /// Route the validation of the add_authority action to the appropriate plugin.
+    /// There is no check for adding to a plugin because the plugin itself MUST validate the change.
+    pub fn validate_remove_authority(
+        &self,
+        authority: &AccountInfo,
+        args: &RemovePluginAuthorityArgs,
+        authorities: &[Authority],
+    ) -> Result<ValidationResult, ProgramError> {
+        match self {
+            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
+            Plugin::Royalties(royalties) => {
+                royalties.validate_remove_authority(authority, args, authorities)
+            }
+            Plugin::Freeze(freeze) => {
+                freeze.validate_remove_authority(authority, args, authorities)
+            }
+            Plugin::Burn(burn) => burn.validate_remove_authority(authority, args, authorities),
+            Plugin::Transfer(transfer) => {
+                transfer.validate_remove_authority(authority, args, authorities)
+            }
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_remove_authority(authority, args, authorities)
             }
         }
     }
@@ -239,7 +299,7 @@ pub trait PluginValidation {
     /// Validate the create lifecycle action.
     fn validate_create(
         &self,
-        ctx: &CreateAccounts,
+        authority: &AccountInfo,
         args: &CreateArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError>;
@@ -247,7 +307,7 @@ pub trait PluginValidation {
     /// Validate the update lifecycle action.
     fn validate_update(
         &self,
-        ctx: &UpdateAccounts,
+        authority: &AccountInfo,
         args: &UpdateArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError>;
@@ -256,15 +316,15 @@ pub trait PluginValidation {
     fn validate_update_plugin(
         &self,
         asset: &Asset,
-        ctx: &UpdatePluginAccounts,
+        authority: &AccountInfo,
         _args: &UpdatePluginArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
-        if (ctx.authority.key == &asset.owner && authorities.contains(&Authority::Owner))
-            || (ctx.authority.key == &asset.update_authority.key()
+        if (authority.key == &asset.owner && authorities.contains(&Authority::Owner))
+            || (authority.key == &asset.update_authority.key()
                 && authorities.contains(&Authority::UpdateAuthority))
             || authorities.contains(&Authority::Pubkey {
-                address: *ctx.authority.key,
+                address: *authority.key,
             })
         {
             Ok(ValidationResult::Approved)
@@ -276,15 +336,15 @@ pub trait PluginValidation {
     /// Validate the burn lifecycle action.
     fn validate_burn(
         &self,
-        ctx: &BurnAccounts,
-        args: &BurnArgs,
+        authority: &AccountInfo,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError>;
 
     /// Validate the transfer lifecycle action.
     fn validate_transfer(
         &self,
-        ctx: &TransferAccounts,
+        authority: &AccountInfo,
+        new_owner: &AccountInfo,
         args: &TransferArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError>;
@@ -292,7 +352,7 @@ pub trait PluginValidation {
     /// Validate the compress lifecycle action.
     fn validate_compress(
         &self,
-        ctx: &CompressAccounts,
+        authority: &AccountInfo,
         args: &CompressArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError>;
@@ -300,8 +360,28 @@ pub trait PluginValidation {
     /// Validate the decompress lifecycle action.
     fn validate_decompress(
         &self,
-        ctx: &DecompressAccounts,
+        authority: &AccountInfo,
         args: &DecompressArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError>;
+
+    /// Validate the add_authority lifecycle action.
+    fn validate_add_authority(
+        &self,
+        _authority: &AccountInfo,
+        _args: &crate::processor::AddPluginAuthorityArgs,
+        _authorities: &[Authority],
+    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    /// Validate the add_authority lifecycle action.
+    fn validate_remove_authority(
+        &self,
+        _authority: &AccountInfo,
+        _args: &crate::processor::RemovePluginAuthorityArgs,
+        _authorities: &[Authority],
+    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 }

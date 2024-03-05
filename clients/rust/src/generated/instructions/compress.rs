@@ -11,7 +11,7 @@ use borsh::BorshSerialize;
 /// Accounts.
 pub struct Compress {
     /// The address of the asset
-    pub asset_address: solana_program::pubkey::Pubkey,
+    pub asset: solana_program::pubkey::Pubkey,
     /// The collection to which the asset belongs
     pub collection: Option<solana_program::pubkey::Pubkey>,
     /// The owner or delegate of the asset
@@ -35,8 +35,7 @@ impl Compress {
     ) -> solana_program::instruction::Instruction {
         let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.asset_address,
-            false,
+            self.asset, false,
         ));
         if let Some(collection) = self.collection {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -92,14 +91,14 @@ struct CompressInstructionData {
 
 impl CompressInstructionData {
     fn new() -> Self {
-        Self { discriminator: 10 }
+        Self { discriminator: 17 }
     }
 }
 
 /// Instruction builder.
 #[derive(Default)]
 pub struct CompressBuilder {
-    asset_address: Option<solana_program::pubkey::Pubkey>,
+    asset: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
     owner: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
@@ -114,8 +113,8 @@ impl CompressBuilder {
     }
     /// The address of the asset
     #[inline(always)]
-    pub fn asset_address(&mut self, asset_address: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.asset_address = Some(asset_address);
+    pub fn asset(&mut self, asset: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.asset = Some(asset);
         self
     }
     /// `[optional account]`
@@ -176,7 +175,7 @@ impl CompressBuilder {
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = Compress {
-            asset_address: self.asset_address.expect("asset_address is not set"),
+            asset: self.asset.expect("asset is not set"),
             collection: self.collection,
             owner: self.owner.expect("owner is not set"),
             payer: self.payer,
@@ -193,7 +192,7 @@ impl CompressBuilder {
 /// `compress` CPI accounts.
 pub struct CompressCpiAccounts<'a, 'b> {
     /// The address of the asset
-    pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The owner or delegate of the asset
@@ -211,7 +210,7 @@ pub struct CompressCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The address of the asset
-    pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The owner or delegate of the asset
@@ -231,7 +230,7 @@ impl<'a, 'b> CompressCpi<'a, 'b> {
     ) -> Self {
         Self {
             __program: program,
-            asset_address: accounts.asset_address,
+            asset: accounts.asset,
             collection: accounts.collection,
             owner: accounts.owner,
             payer: accounts.payer,
@@ -274,7 +273,7 @@ impl<'a, 'b> CompressCpi<'a, 'b> {
     ) -> solana_program::entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.asset_address.key,
+            *self.asset.key,
             false,
         ));
         if let Some(collection) = self.collection {
@@ -333,7 +332,7 @@ impl<'a, 'b> CompressCpi<'a, 'b> {
         };
         let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.asset_address.clone());
+        account_infos.push(self.asset.clone());
         if let Some(collection) = self.collection {
             account_infos.push(collection.clone());
         }
@@ -366,7 +365,7 @@ impl<'a, 'b> CompressCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(CompressCpiBuilderInstruction {
             __program: program,
-            asset_address: None,
+            asset: None,
             collection: None,
             owner: None,
             payer: None,
@@ -378,11 +377,8 @@ impl<'a, 'b> CompressCpiBuilder<'a, 'b> {
     }
     /// The address of the asset
     #[inline(always)]
-    pub fn asset_address(
-        &mut self,
-        asset_address: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.asset_address = Some(asset_address);
+    pub fn asset(&mut self, asset: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.asset = Some(asset);
         self
     }
     /// `[optional account]`
@@ -474,10 +470,7 @@ impl<'a, 'b> CompressCpiBuilder<'a, 'b> {
         let instruction = CompressCpi {
             __program: self.instruction.__program,
 
-            asset_address: self
-                .instruction
-                .asset_address
-                .expect("asset_address is not set"),
+            asset: self.instruction.asset.expect("asset is not set"),
 
             collection: self.instruction.collection,
 
@@ -501,7 +494,7 @@ impl<'a, 'b> CompressCpiBuilder<'a, 'b> {
 
 struct CompressCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
-    asset_address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,

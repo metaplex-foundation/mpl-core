@@ -34,7 +34,7 @@ import {
 // Accounts.
 export type DecompressInstructionAccounts = {
   /** The address of the asset */
-  assetAddress: PublicKey | Pda;
+  asset: PublicKey | Pda;
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
   /** The owner or delegate of the asset */
@@ -73,7 +73,7 @@ export function getDecompressInstructionDataSerializer(): Serializer<
       ],
       { description: 'DecompressInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 11 })
+    (value) => ({ ...value, discriminator: 18 })
   ) as Serializer<DecompressInstructionDataArgs, DecompressInstructionData>;
 }
 
@@ -93,11 +93,7 @@ export function decompress(
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    assetAddress: {
-      index: 0,
-      isWritable: true,
-      value: input.assetAddress ?? null,
-    },
+    asset: { index: 0, isWritable: true, value: input.asset ?? null },
     collection: {
       index: 1,
       isWritable: false,

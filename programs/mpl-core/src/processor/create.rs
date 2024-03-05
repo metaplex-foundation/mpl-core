@@ -28,7 +28,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
     let rent = Rent::get()?;
 
     // Guards.
-    assert_signer(ctx.accounts.asset_address)?;
+    assert_signer(ctx.accounts.asset)?;
     assert_signer(ctx.accounts.payer)?;
 
     if *ctx.accounts.system_program.key != system_program::id() {
@@ -78,20 +78,20 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
     invoke(
         &system_instruction::create_account(
             ctx.accounts.payer.key,
-            ctx.accounts.asset_address.key,
+            ctx.accounts.asset.key,
             lamports,
             serialized_data.len() as u64,
             &crate::id(),
         ),
         &[
             ctx.accounts.payer.clone(),
-            ctx.accounts.asset_address.clone(),
+            ctx.accounts.asset.clone(),
             ctx.accounts.system_program.clone(),
         ],
     )?;
 
     sol_memcpy(
-        &mut ctx.accounts.asset_address.try_borrow_mut_data()?,
+        &mut ctx.accounts.asset.try_borrow_mut_data()?,
         &serialized_data,
         serialized_data.len(),
     );
@@ -99,7 +99,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
     //TODO: Do compressed state
     if args.data_state == DataState::AccountState {
         create_meta_idempotent(
-            ctx.accounts.asset_address,
+            ctx.accounts.asset,
             ctx.accounts.payer,
             ctx.accounts.system_program,
         )?;
@@ -108,13 +108,13 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
             initialize_plugin(
                 plugin,
                 &[plugin.default_authority()?],
-                ctx.accounts.asset_address,
+                ctx.accounts.asset,
                 ctx.accounts.payer,
                 ctx.accounts.system_program,
             )?;
         }
 
-        let (_, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset_address)?;
+        let (_, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
 
         let mut approved = true;
         // match Asset::check_create() {
@@ -136,8 +136,13 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
                     record.plugin_type.check_create(),
                     CheckResult::CanApprove | CheckResult::CanReject
                 ) {
-                    let result = Plugin::load(ctx.accounts.asset_address, record.offset)?
-                        .validate_create(&ctx.accounts, &args, &record.authorities)?;
+                    let result = Plugin::load(ctx.accounts.asset, record.offset)?.validate_create(
+                        ctx.accounts
+                            .owner
+                            .unwrap_or(ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer)),
+                        &args,
+                        &record.authorities,
+                    )?;
                     if result == ValidationResult::Rejected {
                         return Err(MplCoreError::InvalidAuthority.into());
                     } else if result == ValidationResult::Approved {

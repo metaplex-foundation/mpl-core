@@ -41,44 +41,39 @@ pub(crate) fn decompress<'a>(
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
-    match load_key(ctx.accounts.asset_address, 0)? {
+    match load_key(ctx.accounts.asset, 0)? {
         Key::HashedAsset => {
-            let (asset, plugins) =
-                verify_proof(ctx.accounts.asset_address, &args.compression_proof)?;
+            let (asset, plugins) = verify_proof(ctx.accounts.asset, &args.compression_proof)?;
 
             let serialized_data = asset.try_to_vec()?;
             resize_or_reallocate_account_raw(
-                ctx.accounts.asset_address,
+                ctx.accounts.asset,
                 payer,
                 ctx.accounts.system_program,
                 serialized_data.len(),
             )?;
 
             sol_memcpy(
-                &mut ctx.accounts.asset_address.try_borrow_mut_data()?,
+                &mut ctx.accounts.asset.try_borrow_mut_data()?,
                 &serialized_data,
                 serialized_data.len(),
             );
 
             if !plugins.is_empty() {
-                create_meta_idempotent(
-                    ctx.accounts.asset_address,
-                    payer,
-                    ctx.accounts.system_program,
-                )?;
+                create_meta_idempotent(ctx.accounts.asset, payer, ctx.accounts.system_program)?;
 
                 for plugin in plugins {
                     initialize_plugin(
                         &plugin.plugin,
                         &plugin.authorities,
-                        ctx.accounts.asset_address,
+                        ctx.accounts.asset,
                         payer,
                         ctx.accounts.system_program,
                     )?;
                 }
             }
 
-            let (asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset_address)?;
+            let (asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
 
             let mut approved = false;
             match Asset::check_decompress() {
@@ -102,8 +97,8 @@ pub(crate) fn decompress<'a>(
                         record.plugin_type.check_decompress(),
                         CheckResult::CanApprove | CheckResult::CanReject
                     ) {
-                        let result = Plugin::load(ctx.accounts.asset_address, record.offset)?
-                            .validate_decompress(&ctx.accounts, &args, &record.authorities)?;
+                        let result = Plugin::load(ctx.accounts.asset, record.offset)?
+                            .validate_decompress(ctx.accounts.owner, &args, &record.authorities)?;
                         if result == ValidationResult::Rejected {
                             return Err(MplCoreError::InvalidAuthority.into());
                         } else if result == ValidationResult::Approved {

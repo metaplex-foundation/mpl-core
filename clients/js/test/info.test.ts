@@ -11,7 +11,7 @@ test('fetch account info for account state', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -38,7 +38,7 @@ test('fetch account info for ledger state', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.LedgerState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),

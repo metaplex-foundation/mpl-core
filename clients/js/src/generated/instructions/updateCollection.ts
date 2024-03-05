@@ -25,25 +25,18 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import {
-  Authority,
-  AuthorityArgs,
-  PluginType,
-  PluginTypeArgs,
-  getAuthoritySerializer,
-  getPluginTypeSerializer,
-} from '../types';
+import { UpdateArgs, UpdateArgsArgs, getUpdateArgsSerializer } from '../types';
 
 // Accounts.
-export type RemoveAuthorityInstructionAccounts = {
+export type UpdateCollectionInstructionAccounts = {
   /** The address of the asset */
-  assetAddress: PublicKey | Pda;
-  /** The collection to which the asset belongs */
-  collection?: PublicKey | Pda;
-  /** The owner or delegate of the asset */
+  collection: PublicKey | Pda;
+  /** The update authority or update authority delegate of the asset */
   authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
+  /** The new update authority of the asset */
+  newUpdateAuthority?: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
@@ -51,48 +44,46 @@ export type RemoveAuthorityInstructionAccounts = {
 };
 
 // Data.
-export type RemoveAuthorityInstructionData = {
+export type UpdateCollectionInstructionData = {
   discriminator: number;
-  pluginType: PluginType;
-  authorityToRemove: Authority;
+  updateArgs: UpdateArgs;
 };
 
-export type RemoveAuthorityInstructionDataArgs = {
-  pluginType: PluginTypeArgs;
-  authorityToRemove: AuthorityArgs;
+export type UpdateCollectionInstructionDataArgs = {
+  updateArgs: UpdateArgsArgs;
 };
 
-export function getRemoveAuthorityInstructionDataSerializer(): Serializer<
-  RemoveAuthorityInstructionDataArgs,
-  RemoveAuthorityInstructionData
+export function getUpdateCollectionInstructionDataSerializer(): Serializer<
+  UpdateCollectionInstructionDataArgs,
+  UpdateCollectionInstructionData
 > {
   return mapSerializer<
-    RemoveAuthorityInstructionDataArgs,
+    UpdateCollectionInstructionDataArgs,
     any,
-    RemoveAuthorityInstructionData
+    UpdateCollectionInstructionData
   >(
-    struct<RemoveAuthorityInstructionData>(
+    struct<UpdateCollectionInstructionData>(
       [
         ['discriminator', u8()],
-        ['pluginType', getPluginTypeSerializer()],
-        ['authorityToRemove', getAuthoritySerializer()],
+        ['updateArgs', getUpdateArgsSerializer()],
       ],
-      { description: 'RemoveAuthorityInstructionData' }
+      { description: 'UpdateCollectionInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 6 })
+    (value) => ({ ...value, discriminator: 16 })
   ) as Serializer<
-    RemoveAuthorityInstructionDataArgs,
-    RemoveAuthorityInstructionData
+    UpdateCollectionInstructionDataArgs,
+    UpdateCollectionInstructionData
   >;
 }
 
 // Args.
-export type RemoveAuthorityInstructionArgs = RemoveAuthorityInstructionDataArgs;
+export type UpdateCollectionInstructionArgs =
+  UpdateCollectionInstructionDataArgs;
 
 // Instruction.
-export function removeAuthority(
+export function updateCollection(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: RemoveAuthorityInstructionAccounts & RemoveAuthorityInstructionArgs
+  input: UpdateCollectionInstructionAccounts & UpdateCollectionInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -102,14 +93,14 @@ export function removeAuthority(
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    assetAddress: {
-      index: 0,
-      isWritable: true,
-      value: input.assetAddress ?? null,
+    collection: { index: 0, isWritable: true, value: input.collection ?? null },
+    authority: { index: 1, isWritable: false, value: input.authority ?? null },
+    payer: { index: 2, isWritable: true, value: input.payer ?? null },
+    newUpdateAuthority: {
+      index: 3,
+      isWritable: false,
+      value: input.newUpdateAuthority ?? null,
     },
-    collection: { index: 1, isWritable: true, value: input.collection ?? null },
-    authority: { index: 2, isWritable: false, value: input.authority ?? null },
-    payer: { index: 3, isWritable: true, value: input.payer ?? null },
     systemProgram: {
       index: 4,
       isWritable: false,
@@ -123,7 +114,7 @@ export function removeAuthority(
   };
 
   // Arguments.
-  const resolvedArgs: RemoveAuthorityInstructionArgs = { ...input };
+  const resolvedArgs: UpdateCollectionInstructionArgs = { ...input };
 
   // Default values.
   if (!resolvedAccounts.authority.value) {
@@ -150,8 +141,8 @@ export function removeAuthority(
   );
 
   // Data.
-  const data = getRemoveAuthorityInstructionDataSerializer().serialize(
-    resolvedArgs as RemoveAuthorityInstructionDataArgs
+  const data = getUpdateCollectionInstructionDataSerializer().serialize(
+    resolvedArgs as UpdateCollectionInstructionDataArgs
   );
 
   // Bytes Created On Chain.

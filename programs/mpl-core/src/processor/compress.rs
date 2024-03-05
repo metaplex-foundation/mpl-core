@@ -30,9 +30,9 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], args: CompressArgs) 
         ctx.accounts.owner
     };
 
-    match load_key(ctx.accounts.asset_address, 0)? {
+    match load_key(ctx.accounts.asset, 0)? {
         Key::Asset => {
-            let (asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset_address)?;
+            let (asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
 
             let mut approved = false;
             match Asset::check_compress() {
@@ -56,8 +56,8 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], args: CompressArgs) 
                         record.plugin_type.check_compress(),
                         CheckResult::CanApprove | CheckResult::CanReject
                     ) {
-                        let result = Plugin::load(ctx.accounts.asset_address, record.offset)?
-                            .validate_compress(&ctx.accounts, &args, &record.authorities)?;
+                        let result = Plugin::load(ctx.accounts.asset, record.offset)?
+                            .validate_compress(ctx.accounts.owner, &args, &record.authorities)?;
                         if result == ValidationResult::Rejected {
                             return Err(MplCoreError::InvalidAuthority.into());
                         } else if result == ValidationResult::Approved {
@@ -80,7 +80,7 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], args: CompressArgs) 
 
                 for (i, record) in registry_records.into_iter().enumerate() {
                     let plugin = Plugin::deserialize(
-                        &mut &(*ctx.accounts.asset_address.data).borrow()[record.offset..],
+                        &mut &(*ctx.accounts.asset.data).borrow()[record.offset..],
                     )?;
 
                     let hashable_plugin_schema = HashablePluginSchema {
@@ -104,14 +104,14 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], args: CompressArgs) 
             let serialized_data = hashed_asset.try_to_vec()?;
 
             resize_or_reallocate_account_raw(
-                ctx.accounts.asset_address,
+                ctx.accounts.asset,
                 payer,
                 ctx.accounts.system_program,
                 serialized_data.len(),
             )?;
 
             sol_memcpy(
-                &mut ctx.accounts.asset_address.try_borrow_mut_data()?,
+                &mut ctx.accounts.asset.try_borrow_mut_data()?,
                 &serialized_data,
                 serialized_data.len(),
             );

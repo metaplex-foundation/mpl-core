@@ -8,6 +8,7 @@ import {
   CollectionWithPlugins,
   DataState,
   PluginType,
+  addCollectionPlugin,
   addPlugin,
   create,
   createCollection,
@@ -27,7 +28,7 @@ test('it can add a plugin to an asset', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -45,11 +46,13 @@ test('it can add a plugin to an asset', async (t) => {
   });
 
   await addPlugin(umi, {
-    assetAddress: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
+    asset: assetAddress.publicKey,
+    addPluginArgs: {
+      plugin: {
+        __kind: 'Freeze',
+        fields: [{ frozen: false }],
+      },
+    }
   }).sendAndConfirm(umi);
 
   const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -93,7 +96,7 @@ test('it can add a plugin to a collection', async (t) => {
 
   // When we create a new account.
   await createCollection(umi, {
-    collectionAddress,
+    collection: collectionAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -109,12 +112,14 @@ test('it can add a plugin to a collection', async (t) => {
     uri: 'https://example.com/bread',
   });
 
-  await addPlugin(umi, {
-    assetAddress: collectionAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
+  await addCollectionPlugin(umi, {
+    collection: collectionAddress.publicKey,
+    addPluginArgs: {
+      plugin: {
+        __kind: 'Freeze',
+        fields: [{ frozen: false }],
+      },
+    }
   }).sendAndConfirm(umi);
 
   const asset1 = await fetchCollectionWithPlugins(umi, collectionAddress.publicKey);

@@ -29,7 +29,7 @@ pub(crate) fn create_collection<'a>(
     let rent = Rent::get()?;
 
     // Guards.
-    assert_signer(ctx.accounts.collection_address)?;
+    assert_signer(ctx.accounts.collection)?;
     assert_signer(ctx.accounts.payer)?;
 
     if *ctx.accounts.system_program.key != system_program::id() {
@@ -57,20 +57,20 @@ pub(crate) fn create_collection<'a>(
     invoke(
         &system_instruction::create_account(
             ctx.accounts.payer.key,
-            ctx.accounts.collection_address.key,
+            ctx.accounts.collection.key,
             lamports,
             serialized_data.len() as u64,
             &crate::id(),
         ),
         &[
             ctx.accounts.payer.clone(),
-            ctx.accounts.collection_address.clone(),
+            ctx.accounts.collection.clone(),
             ctx.accounts.system_program.clone(),
         ],
     )?;
 
     sol_memcpy(
-        &mut ctx.accounts.collection_address.try_borrow_mut_data()?,
+        &mut ctx.accounts.collection.try_borrow_mut_data()?,
         &serialized_data,
         serialized_data.len(),
     );
@@ -79,7 +79,7 @@ pub(crate) fn create_collection<'a>(
 
     solana_program::msg!("Collection created.");
     create_meta_idempotent(
-        ctx.accounts.collection_address,
+        ctx.accounts.collection,
         ctx.accounts.payer,
         ctx.accounts.system_program,
     )?;
@@ -90,7 +90,7 @@ pub(crate) fn create_collection<'a>(
         initialize_plugin(
             &plugin,
             &[plugin.default_authority()?],
-            ctx.accounts.collection_address,
+            ctx.accounts.collection,
             ctx.accounts.payer,
             ctx.accounts.system_program,
         )?;

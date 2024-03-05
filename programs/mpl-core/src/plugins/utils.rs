@@ -8,7 +8,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     state::{Asset, Authority, CollectionData, CoreAsset, DataBlob, Key, SolanaAccount},
-    utils::{assert_authority, load_key, resolve_authority_to_default},
+    utils::{assert_authority, load_key},
 };
 
 use super::{Plugin, PluginHeader, PluginRegistry, PluginType, RegistryRecord};
@@ -64,6 +64,39 @@ pub fn create_meta_idempotent<'a>(
     }
 
     Ok(())
+}
+
+/// Create plugin header and registry if it doesn't exist
+pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
+    asset: T,
+    account: &AccountInfo<'a>,
+    payer: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+) -> Result<(PluginHeader, PluginRegistry), ProgramError> {
+    let header_offset = asset.get_size();
+
+    // They don't exist, so create them.
+    let header = PluginHeader {
+        key: Key::PluginHeader,
+        plugin_registry_offset: header_offset + PluginHeader::get_initial_size(),
+    };
+    let registry = PluginRegistry {
+        key: Key::PluginRegistry,
+        registry: vec![],
+        external_plugins: vec![],
+    };
+
+    resize_or_reallocate_account_raw(
+        account,
+        payer,
+        system_program,
+        header.plugin_registry_offset + PluginRegistry::get_initial_size(),
+    )?;
+
+    header.save(account, header_offset)?;
+    registry.save(account, header.plugin_registry_offset)?;
+
+    Ok((header, registry))
 }
 
 /// Assert that the Plugin metadata has been initialized.
@@ -224,10 +257,10 @@ pub fn initialize_plugin<'a>(
 
 /// Remove a plugin from the registry and delete it.
 //TODO: Do the work to prevent deleting a plugin with other authorities.
-pub fn delete_plugin<'a>(
+pub fn delete_plugin<'a, T: DataBlob>(
     plugin_type: &PluginType,
-    asset: &Asset,
-    authority: &AccountInfo<'a>,
+    asset: &T,
+    authority_type: &Authority,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
@@ -247,8 +280,7 @@ pub fn delete_plugin<'a>(
         // Only allow the default authority to delete the plugin.
         let authorities = registry_record.authorities;
 
-        let resolved_authority = resolve_authority_to_default(asset, authority);
-        if resolved_authority != authorities[0] {
+        if authority_type != &authorities[0] {
             return Err(MplCoreError::InvalidAuthority.into());
         }
 
@@ -339,9 +371,8 @@ pub fn add_authority_to_plugin<'a, T: CoreAsset>(
 #[allow(clippy::too_many_arguments)]
 pub fn remove_authority_from_plugin<'a>(
     plugin_type: &PluginType,
-    authority: &AccountInfo<'a>,
+    authority_type: &Authority,
     authority_to_remove: &Authority,
-    asset: &Asset,
     account: &AccountInfo<'a>,
     plugin_header: &PluginHeader,
     plugin_registry: &mut PluginRegistry,
@@ -354,14 +385,12 @@ pub fn remove_authority_from_plugin<'a>(
         .find(|record| record.plugin_type == *plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
 
-    let resolved_authority = resolve_authority_to_default(asset, authority);
-
     // TODO inspect this logic
-    if resolved_authority != registry_record.authorities[0]
-        && ( // pubkey authorities can remove themselves if they are a signer
-            Authority::Pubkey { address: authority.key.clone() } == authority_to_remove.clone() &&
-            !registry_record.authorities.contains(authority_to_remove)
-        ) {
+    if *authority_type != registry_record.authorities[0] &&
+        // pubkey authorities can remove themselves if they are a signer
+        authority_type != authority_to_remove &&
+        registry_record.authorities.contains(authority_to_remove)
+    {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 

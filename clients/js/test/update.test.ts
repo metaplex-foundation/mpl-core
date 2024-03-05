@@ -21,16 +21,18 @@ test('it can update an asset to be larger', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
   }).sendAndConfirm(umi);
 
   await update(umi, {
-    assetAddress: assetAddress.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+    asset: assetAddress.publicKey,
+    updateArgs: {
+      newName: 'Test Bread 2',
+      newUri: 'https://example.com/bread2',
+    }
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -52,16 +54,18 @@ test('it can update an asset to be smaller', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
   }).sendAndConfirm(umi);
 
   await update(umi, {
-    assetAddress: assetAddress.publicKey,
-    newName: '',
-    newUri: '',
+    asset: assetAddress.publicKey,
+    updateArgs: {
+      newName: '',
+      newUri: '',
+    }
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -83,24 +87,28 @@ test('it can update an asset with plugins to be larger', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
   }).sendAndConfirm(umi);
 
   await addPlugin(umi, {
-    assetAddress: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
+    asset: assetAddress.publicKey,
+    addPluginArgs: {
+      plugin: {
+        __kind: 'Freeze',
+        fields: [{ frozen: false }],
+      },
+    }
   }).sendAndConfirm(umi);
 
   await update(umi, {
-    assetAddress: assetAddress.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+    asset: assetAddress.publicKey,
+    updateArgs: {
+      newName: 'Test Bread 2',
+      newUri: 'https://example.com/bread2',
+    }
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -146,24 +154,28 @@ test('it can update an asset with plugins to be smaller', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
   }).sendAndConfirm(umi);
 
   await addPlugin(umi, {
-    assetAddress: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
+    asset: assetAddress.publicKey,
+    addPluginArgs: {
+      plugin: {
+        __kind: 'Freeze',
+        fields: [{ frozen: false }],
+      },
+    }
   }).sendAndConfirm(umi);
 
   await update(umi, {
-    assetAddress: assetAddress.publicKey,
-    newName: '',
-    newUri: '',
+    asset: assetAddress.publicKey,
+    updateArgs: {
+      newName: '',
+      newUri: '',
+    }
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.

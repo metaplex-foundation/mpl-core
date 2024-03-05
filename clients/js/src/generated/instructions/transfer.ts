@@ -37,7 +37,7 @@ import {
 // Accounts.
 export type TransferInstructionAccounts = {
   /** The address of the asset */
-  assetAddress: PublicKey | Pda;
+  asset: PublicKey | Pda;
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
   /** The owner or delegate of the asset */
@@ -76,7 +76,7 @@ export function getTransferInstructionDataSerializer(): Serializer<
       ],
       { description: 'TransferInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 8 })
+    (value) => ({ ...value, discriminator: 14 })
   ) as Serializer<TransferInstructionDataArgs, TransferInstructionData>;
 }
 
@@ -96,11 +96,7 @@ export function transfer(
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    assetAddress: {
-      index: 0,
-      isWritable: true,
-      value: input.assetAddress ?? null,
-    },
+    asset: { index: 0, isWritable: true, value: input.asset ?? null },
     collection: {
       index: 1,
       isWritable: false,

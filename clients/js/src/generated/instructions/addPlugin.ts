@@ -25,12 +25,16 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import { Plugin, PluginArgs, getPluginSerializer } from '../types';
+import {
+  AddPluginArgs,
+  AddPluginArgsArgs,
+  getAddPluginArgsSerializer,
+} from '../types';
 
 // Accounts.
 export type AddPluginInstructionAccounts = {
   /** The address of the asset */
-  assetAddress: PublicKey | Pda;
+  asset: PublicKey | Pda;
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
   /** The owner or delegate of the asset */
@@ -46,10 +50,10 @@ export type AddPluginInstructionAccounts = {
 // Data.
 export type AddPluginInstructionData = {
   discriminator: number;
-  plugin: Plugin;
+  addPluginArgs: AddPluginArgs;
 };
 
-export type AddPluginInstructionDataArgs = { plugin: PluginArgs };
+export type AddPluginInstructionDataArgs = { addPluginArgs: AddPluginArgsArgs };
 
 export function getAddPluginInstructionDataSerializer(): Serializer<
   AddPluginInstructionDataArgs,
@@ -63,7 +67,7 @@ export function getAddPluginInstructionDataSerializer(): Serializer<
     struct<AddPluginInstructionData>(
       [
         ['discriminator', u8()],
-        ['plugin', getPluginSerializer()],
+        ['addPluginArgs', getAddPluginArgsSerializer()],
       ],
       { description: 'AddPluginInstructionData' }
     ),
@@ -87,11 +91,7 @@ export function addPlugin(
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    assetAddress: {
-      index: 0,
-      isWritable: true,
-      value: input.assetAddress ?? null,
-    },
+    asset: { index: 0, isWritable: true, value: input.asset ?? null },
     collection: { index: 1, isWritable: true, value: input.collection ?? null },
     authority: { index: 2, isWritable: false, value: input.authority ?? null },
     payer: { index: 3, isWritable: true, value: input.payer ?? null },

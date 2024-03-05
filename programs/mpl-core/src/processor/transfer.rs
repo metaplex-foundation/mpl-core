@@ -26,12 +26,12 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
         assert_signer(payer)?;
     }
 
-    match load_key(ctx.accounts.asset_address, 0)? {
+    match load_key(ctx.accounts.asset, 0)? {
         Key::HashedAsset => {
             let compression_proof = args
                 .compression_proof
                 .ok_or(MplCoreError::MissingCompressionProof)?;
-            let (mut asset, _) = verify_proof(ctx.accounts.asset_address, &compression_proof)?;
+            let (mut asset, _) = verify_proof(ctx.accounts.asset, &compression_proof)?;
 
             if ctx.accounts.authority.key != &asset.owner {
                 return Err(MplCoreError::InvalidAuthority.into());
@@ -44,17 +44,17 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             asset.wrap()?;
 
             // Make a new hashed asset with updated owner and save to account.
-            HashedAsset::new(asset.hash()?).save(ctx.accounts.asset_address, 0)
+            HashedAsset::new(asset.hash()?).save(ctx.accounts.asset, 0)
         }
         Key::Asset => {
-            // let mut asset = Asset::load(ctx.accounts.asset_address, 0)?;
+            // let mut asset = Asset::load(ctx.accounts.asset, 0)?;
 
             // let mut authority_check: Result<(), ProgramError> =
             //     Err(MplCoreError::InvalidAuthority.into());
-            // if asset.get_size() != ctx.accounts.asset_address.data_len() {
+            // if asset.get_size() != ctx.accounts.asset.data_len() {
             //     solana_program::msg!("Fetch Plugin");
             //     let (authorities, plugin, _) =
-            //         fetch_plugin(ctx.accounts.asset_address, PluginType::Delegate)?;
+            //         fetch_plugin(ctx.accounts.asset, PluginType::Delegate)?;
 
             //     solana_program::msg!("Assert authority");
             //     authority_check = assert_authority(&asset, ctx.accounts.authority, &authorities);
@@ -77,8 +77,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             //     }
             // }?;
 
-            let (mut asset, _, plugin_registry) =
-                fetch_core_data::<Asset>(ctx.accounts.asset_address)?;
+            let (mut asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
 
             let mut approved = false;
             match Asset::check_transfer() {
@@ -102,8 +101,13 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                         record.plugin_type.check_transfer(),
                         CheckResult::CanApprove | CheckResult::CanReject
                     ) {
-                        let result = Plugin::load(ctx.accounts.asset_address, record.offset)?
-                            .validate_transfer(&ctx.accounts, &args, &record.authorities)?;
+                        let result = Plugin::load(ctx.accounts.asset, record.offset)?
+                            .validate_transfer(
+                                ctx.accounts.authority,
+                                ctx.accounts.new_owner,
+                                &args,
+                                &record.authorities,
+                            )?;
                         if result == ValidationResult::Rejected {
                             return Err(MplCoreError::InvalidAuthority.into());
                         } else if result == ValidationResult::Approved {
@@ -118,7 +122,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             }
 
             asset.owner = *ctx.accounts.new_owner.key;
-            asset.save(ctx.accounts.asset_address, 0)
+            asset.save(ctx.accounts.asset, 0)
         }
         _ => Err(MplCoreError::IncorrectAccount.into()),
     }

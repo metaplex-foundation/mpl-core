@@ -26,20 +26,15 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  Authority,
-  AuthorityArgs,
-  PluginType,
-  PluginTypeArgs,
-  getAuthoritySerializer,
-  getPluginTypeSerializer,
+  UpdatePluginArgs,
+  UpdatePluginArgsArgs,
+  getUpdatePluginArgsSerializer,
 } from '../types';
 
 // Accounts.
-export type AddAuthorityInstructionAccounts = {
+export type UpdateCollectionPluginInstructionAccounts = {
   /** The address of the asset */
-  assetAddress: PublicKey | Pda;
-  /** The collection to which the asset belongs */
-  collection?: PublicKey | Pda;
+  collection: PublicKey | Pda;
   /** The owner or delegate of the asset */
   authority?: Signer;
   /** The account paying for the storage fees */
@@ -51,45 +46,47 @@ export type AddAuthorityInstructionAccounts = {
 };
 
 // Data.
-export type AddAuthorityInstructionData = {
+export type UpdateCollectionPluginInstructionData = {
   discriminator: number;
-  pluginType: PluginType;
-  newAuthority: Authority;
+  updatePluginArgs: UpdatePluginArgs;
 };
 
-export type AddAuthorityInstructionDataArgs = {
-  pluginType: PluginTypeArgs;
-  newAuthority: AuthorityArgs;
+export type UpdateCollectionPluginInstructionDataArgs = {
+  updatePluginArgs: UpdatePluginArgsArgs;
 };
 
-export function getAddAuthorityInstructionDataSerializer(): Serializer<
-  AddAuthorityInstructionDataArgs,
-  AddAuthorityInstructionData
+export function getUpdateCollectionPluginInstructionDataSerializer(): Serializer<
+  UpdateCollectionPluginInstructionDataArgs,
+  UpdateCollectionPluginInstructionData
 > {
   return mapSerializer<
-    AddAuthorityInstructionDataArgs,
+    UpdateCollectionPluginInstructionDataArgs,
     any,
-    AddAuthorityInstructionData
+    UpdateCollectionPluginInstructionData
   >(
-    struct<AddAuthorityInstructionData>(
+    struct<UpdateCollectionPluginInstructionData>(
       [
         ['discriminator', u8()],
-        ['pluginType', getPluginTypeSerializer()],
-        ['newAuthority', getAuthoritySerializer()],
+        ['updatePluginArgs', getUpdatePluginArgsSerializer()],
       ],
-      { description: 'AddAuthorityInstructionData' }
+      { description: 'UpdateCollectionPluginInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 5 })
-  ) as Serializer<AddAuthorityInstructionDataArgs, AddAuthorityInstructionData>;
+    (value) => ({ ...value, discriminator: 7 })
+  ) as Serializer<
+    UpdateCollectionPluginInstructionDataArgs,
+    UpdateCollectionPluginInstructionData
+  >;
 }
 
 // Args.
-export type AddAuthorityInstructionArgs = AddAuthorityInstructionDataArgs;
+export type UpdateCollectionPluginInstructionArgs =
+  UpdateCollectionPluginInstructionDataArgs;
 
 // Instruction.
-export function addAuthority(
+export function updateCollectionPlugin(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: AddAuthorityInstructionAccounts & AddAuthorityInstructionArgs
+  input: UpdateCollectionPluginInstructionAccounts &
+    UpdateCollectionPluginInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -99,28 +96,23 @@ export function addAuthority(
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    assetAddress: {
-      index: 0,
-      isWritable: true,
-      value: input.assetAddress ?? null,
-    },
-    collection: { index: 1, isWritable: true, value: input.collection ?? null },
-    authority: { index: 2, isWritable: false, value: input.authority ?? null },
-    payer: { index: 3, isWritable: true, value: input.payer ?? null },
+    collection: { index: 0, isWritable: true, value: input.collection ?? null },
+    authority: { index: 1, isWritable: false, value: input.authority ?? null },
+    payer: { index: 2, isWritable: true, value: input.payer ?? null },
     systemProgram: {
-      index: 4,
+      index: 3,
       isWritable: false,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
-      index: 5,
+      index: 4,
       isWritable: false,
       value: input.logWrapper ?? null,
     },
   };
 
   // Arguments.
-  const resolvedArgs: AddAuthorityInstructionArgs = { ...input };
+  const resolvedArgs: UpdateCollectionPluginInstructionArgs = { ...input };
 
   // Default values.
   if (!resolvedAccounts.authority.value) {
@@ -147,8 +139,8 @@ export function addAuthority(
   );
 
   // Data.
-  const data = getAddAuthorityInstructionDataSerializer().serialize(
-    resolvedArgs as AddAuthorityInstructionDataArgs
+  const data = getUpdateCollectionPluginInstructionDataSerializer().serialize(
+    resolvedArgs as UpdateCollectionPluginInstructionDataArgs
   );
 
   // Bytes Created On Chain.

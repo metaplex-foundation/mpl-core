@@ -50,14 +50,33 @@ pub enum Plugin {
 impl Plugin {
     /// Get the default authority for a plugin which defines who must allow the plugin to be created.
     pub fn default_authority(&self) -> Result<Authority, ProgramError> {
-        match self {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(_) => Ok(Authority::UpdateAuthority),
-            Plugin::Freeze(_) => Ok(Authority::Owner),
-            Plugin::Burn(_) => Ok(Authority::Owner),
-            Plugin::Transfer(_) => Ok(Authority::Owner),
-            Plugin::UpdateDelegate(_) => Ok(Authority::UpdateAuthority),
-        }
+        // match self {
+        //     Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
+        //     Plugin::Royalties(_) => Ok(Authority::UpdateAuthority),
+        //     Plugin::Freeze(_) => Ok(Authority::Owner),
+        //     Plugin::Burn(_) => Ok(Authority::Owner),
+        //     Plugin::Transfer(_) => Ok(Authority::Owner),
+        //     Plugin::UpdateDelegate(_) => Ok(Authority::UpdateAuthority),
+        // }
+
+        PluginType::from(self).default_authority()
+    }
+
+    /// Load and deserialize a plugin from an offset in the account.
+    pub fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
+        let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
+        Self::deserialize(&mut bytes).map_err(|error| {
+            msg!("Error: {}", error);
+            MplCoreError::DeserializationError.into()
+        })
+    }
+
+    /// Save and serialize a plugin to an offset in the account.
+    pub fn save(&self, account: &AccountInfo, offset: usize) -> ProgramResult {
+        borsh::to_writer(&mut account.data.borrow_mut()[offset..], self).map_err(|error| {
+            msg!("Error: {}", error);
+            MplCoreError::SerializationError.into()
+        })
     }
 }
 
@@ -104,21 +123,16 @@ impl From<&Plugin> for PluginType {
     }
 }
 
-impl Plugin {
-    /// Load and deserialize a plugin from an offset in the account.
-    pub fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
-        let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
-        Self::deserialize(&mut bytes).map_err(|error| {
-            msg!("Error: {}", error);
-            MplCoreError::DeserializationError.into()
-        })
-    }
-
-    /// Save and serialize a plugin to an offset in the account.
-    pub fn save(&self, account: &AccountInfo, offset: usize) -> ProgramResult {
-        borsh::to_writer(&mut account.data.borrow_mut()[offset..], self).map_err(|error| {
-            msg!("Error: {}", error);
-            MplCoreError::SerializationError.into()
-        })
+impl PluginType {
+    /// Get the default authority for a plugin which defines who must allow the plugin to be created.
+    pub fn default_authority(&self) -> Result<Authority, ProgramError> {
+        match self {
+            PluginType::Reserved => Err(MplCoreError::InvalidPlugin.into()),
+            PluginType::Royalties => Ok(Authority::UpdateAuthority),
+            PluginType::Freeze => Ok(Authority::Owner),
+            PluginType::Burn => Ok(Authority::Owner),
+            PluginType::Transfer => Ok(Authority::Owner),
+            PluginType::UpdateDelegate => Ok(Authority::UpdateAuthority),
+        }
     }
 }

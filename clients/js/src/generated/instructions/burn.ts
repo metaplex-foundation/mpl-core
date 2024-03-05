@@ -37,7 +37,7 @@ import {
 // Accounts.
 export type BurnInstructionAccounts = {
   /** The address of the asset */
-  assetAddress: PublicKey | Pda;
+  asset: PublicKey | Pda;
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
   /** The owner or delegate of the asset */
@@ -70,7 +70,7 @@ export function getBurnInstructionDataSerializer(): Serializer<
       ],
       { description: 'BurnInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 7 })
+    (value) => ({ ...value, discriminator: 12 })
   ) as Serializer<BurnInstructionDataArgs, BurnInstructionData>;
 }
 
@@ -90,11 +90,7 @@ export function burn(
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    assetAddress: {
-      index: 0,
-      isWritable: true,
-      value: input.assetAddress ?? null,
-    },
+    asset: { index: 0, isWritable: true, value: input.asset ?? null },
     collection: { index: 1, isWritable: true, value: input.collection ?? null },
     authority: { index: 2, isWritable: false, value: input.authority ?? null },
     payer: { index: 3, isWritable: true, value: input.payer ?? null },

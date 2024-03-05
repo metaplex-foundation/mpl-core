@@ -4,7 +4,7 @@ import {
   AssetWithPlugins,
   DataState,
   PluginType,
-  addAuthority,
+  addPluginAuthority,
   addPlugin,
   create,
   fetchAssetWithPlugins,
@@ -23,31 +23,35 @@ test('a delegate can transfer the asset', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
   }).sendAndConfirm(umi);
 
   await addPlugin(umi, {
-    assetAddress: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Transfer',
-      fields: [{}],
-    },
+    asset: assetAddress.publicKey,
+    addPluginArgs: {
+      plugin: {
+        __kind: 'Transfer',
+        fields: [{}],
+      },
+    }
   }).sendAndConfirm(umi);
 
-  await addAuthority(umi, {
-    assetAddress: assetAddress.publicKey,
-    pluginType: PluginType.Transfer,
-    newAuthority: {
-      __kind: 'Pubkey',
-      address: delegateAddress.publicKey,
-    },
+  await addPluginAuthority(umi, {
+    asset: assetAddress.publicKey,
+    addPluginAuthorityArgs: {
+      pluginType: PluginType.Transfer,
+      newAuthority: {
+        __kind: 'Pubkey',
+        address: delegateAddress.publicKey,
+      },
+    }
   }).sendAndConfirm(umi);
 
   await transfer(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     newOwner: newOwnerAddress.publicKey,
     authority: delegateAddress,
     compressionProof: null,

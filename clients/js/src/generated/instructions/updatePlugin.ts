@@ -25,12 +25,16 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import { Plugin, PluginArgs, getPluginSerializer } from '../types';
+import {
+  UpdatePluginArgs,
+  UpdatePluginArgsArgs,
+  getUpdatePluginArgsSerializer,
+} from '../types';
 
 // Accounts.
 export type UpdatePluginInstructionAccounts = {
   /** The address of the asset */
-  assetAddress: PublicKey | Pda;
+  asset: PublicKey | Pda;
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
   /** The owner or delegate of the asset */
@@ -46,10 +50,12 @@ export type UpdatePluginInstructionAccounts = {
 // Data.
 export type UpdatePluginInstructionData = {
   discriminator: number;
-  plugin: Plugin;
+  updatePluginArgs: UpdatePluginArgs;
 };
 
-export type UpdatePluginInstructionDataArgs = { plugin: PluginArgs };
+export type UpdatePluginInstructionDataArgs = {
+  updatePluginArgs: UpdatePluginArgsArgs;
+};
 
 export function getUpdatePluginInstructionDataSerializer(): Serializer<
   UpdatePluginInstructionDataArgs,
@@ -63,11 +69,11 @@ export function getUpdatePluginInstructionDataSerializer(): Serializer<
     struct<UpdatePluginInstructionData>(
       [
         ['discriminator', u8()],
-        ['plugin', getPluginSerializer()],
+        ['updatePluginArgs', getUpdatePluginArgsSerializer()],
       ],
       { description: 'UpdatePluginInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 4 })
+    (value) => ({ ...value, discriminator: 6 })
   ) as Serializer<UpdatePluginInstructionDataArgs, UpdatePluginInstructionData>;
 }
 
@@ -87,11 +93,7 @@ export function updatePlugin(
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    assetAddress: {
-      index: 0,
-      isWritable: true,
-      value: input.assetAddress ?? null,
-    },
+    asset: { index: 0, isWritable: true, value: input.asset ?? null },
     collection: { index: 1, isWritable: true, value: input.collection ?? null },
     authority: { index: 2, isWritable: false, value: input.authority ?? null },
     payer: { index: 3, isWritable: true, value: input.payer ?? null },

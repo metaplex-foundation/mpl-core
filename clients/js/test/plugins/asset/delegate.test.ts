@@ -5,7 +5,7 @@ import {
   AssetWithPlugins,
   DataState,
   PluginType,
-  addAuthority,
+  addPluginAuthority,
   addPlugin,
   create,
   fetchAssetWithPlugins,
@@ -23,27 +23,31 @@ test('it can delegate a new authority', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
   }).sendAndConfirm(umi);
 
   await addPlugin(umi, {
-    assetAddress: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
+    asset: assetAddress.publicKey,
+    addPluginArgs: {
+      plugin: {
+        __kind: 'Freeze',
+        fields: [{ frozen: false }],
+      },
+    }
   }).sendAndConfirm(umi);
 
-  await addAuthority(umi, {
-    assetAddress: assetAddress.publicKey,
-    pluginType: PluginType.Freeze,
-    newAuthority: {
-      __kind: 'Pubkey',
-      address: delegateAddress.publicKey,
-    },
+  await addPluginAuthority(umi, {
+    asset: assetAddress.publicKey,
+    addPluginAuthorityArgs: {
+      pluginType: PluginType.Freeze,
+      newAuthority: {
+        __kind: 'Pubkey',
+        address: delegateAddress.publicKey,
+      },
+    }
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -94,36 +98,42 @@ test('a delegate can freeze the token', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
   }).sendAndConfirm(umi);
 
   await addPlugin(umi, {
-    assetAddress: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
+    asset: assetAddress.publicKey,
+    addPluginArgs: {
+      plugin: {
+        __kind: 'Freeze',
+        fields: [{ frozen: false }],
+      },
+    }
   }).sendAndConfirm(umi);
 
-  await addAuthority(umi, {
-    assetAddress: assetAddress.publicKey,
-    pluginType: PluginType.Freeze,
-    newAuthority: {
-      __kind: 'Pubkey',
-      address: delegateAddress.publicKey,
-    },
+  await addPluginAuthority(umi, {
+    asset: assetAddress.publicKey,
+    addPluginAuthorityArgs: {
+      pluginType: PluginType.Freeze,
+      newAuthority: {
+        __kind: 'Pubkey',
+        address: delegateAddress.publicKey,
+      },
+    }
   }).sendAndConfirm(umi);
 
   await updatePlugin(umi, {
-    assetAddress: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: true }],
-    },
+    asset: assetAddress.publicKey,
     authority: delegateAddress,
+    updatePluginArgs: {
+      plugin: {
+        __kind: 'Freeze',
+        fields: [{ frozen: true }],
+      },
+    }
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);

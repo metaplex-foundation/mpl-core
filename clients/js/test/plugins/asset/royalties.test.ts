@@ -27,7 +27,7 @@ test('it can transfer an asset with royalties', async (t) => {
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress: newOwner,
+    asset: newOwner,
     name: 'Owner',
     uri: '',
     plugins: [],
@@ -36,7 +36,7 @@ test('it can transfer an asset with royalties', async (t) => {
   // Creating a new asset to transfer.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [
@@ -62,7 +62,7 @@ test('it can transfer an asset with royalties', async (t) => {
   });
 
   await transfer(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     newOwner: newOwner.publicKey,
     compressionProof: null,
   }).sendAndConfirm(umi);
@@ -87,7 +87,7 @@ test('it can transfer an asset with royalties to an allowlisted program address'
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress: newOwner,
+    asset: newOwner,
     name: 'Owner',
     uri: '',
     plugins: [],
@@ -96,7 +96,7 @@ test('it can transfer an asset with royalties to an allowlisted program address'
   // Creating a new asset to transfer.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [
@@ -122,7 +122,7 @@ test('it can transfer an asset with royalties to an allowlisted program address'
   });
 
   await transfer(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     newOwner: newOwner.publicKey,
     compressionProof: null,
   }).sendAndConfirm(umi);
@@ -148,7 +148,7 @@ test('it cannot transfer an asset with royalties to a program address not on the
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress: newOwner,
+    asset: newOwner,
     name: 'Owner',
     uri: '',
     plugins: [],
@@ -157,7 +157,7 @@ test('it cannot transfer an asset with royalties to a program address not on the
   // Create a second one because allowlist needs both to be off the allowlist.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress: newerOwner,
+    asset: newerOwner,
     name: 'Owner',
     uri: '',
     plugins: [],
@@ -166,7 +166,7 @@ test('it cannot transfer an asset with royalties to a program address not on the
   // Creating a new asset to transfer.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [
@@ -192,13 +192,13 @@ test('it cannot transfer an asset with royalties to a program address not on the
   });
 
   await transfer(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     newOwner: newOwner.publicKey,
     compressionProof: null,
   }).sendAndConfirm(umi);
 
   const result = transfer(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     newOwner: newerOwner.publicKey,
     authority: newOwner,
     compressionProof: null,
@@ -216,7 +216,7 @@ test('it can transfer an asset with royalties to a program address not on the de
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress: newOwner,
+    asset: newOwner,
     name: 'Owner',
     uri: '',
     plugins: [],
@@ -225,7 +225,7 @@ test('it can transfer an asset with royalties to a program address not on the de
   // Creating a new asset to transfer.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [
@@ -251,7 +251,7 @@ test('it can transfer an asset with royalties to a program address not on the de
   });
 
   await transfer(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     newOwner: newOwner.publicKey,
     compressionProof: null,
   }).sendAndConfirm(umi);
@@ -276,7 +276,7 @@ test('it cannot transfer an asset with royalties to a denylisted program', async
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress: newOwner,
+    asset: newOwner,
     name: 'Owner',
     uri: '',
     plugins: [],
@@ -285,7 +285,7 @@ test('it cannot transfer an asset with royalties to a denylisted program', async
   // Creating a new asset to transfer.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [
@@ -311,7 +311,7 @@ test('it cannot transfer an asset with royalties to a denylisted program', async
   });
 
   const result = transfer(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     newOwner: newOwner.publicKey,
     compressionProof: null,
   }).sendAndConfirm(umi);

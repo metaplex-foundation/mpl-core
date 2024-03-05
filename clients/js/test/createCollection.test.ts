@@ -21,7 +21,7 @@ test('it can create a new collection', async (t) => {
 
   // When we create a new account.
   await createCollection(umi, {
-    collectionAddress,
+    collection: collectionAddress,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -48,7 +48,7 @@ test('it can create a new collection with plugins', async (t) => {
 
   // When we create a new account.
   await createCollection(umi, {
-    collectionAddress,
+    collection: collectionAddress,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
     plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }],
@@ -99,7 +99,7 @@ test('it can create a new asset with a collection', async (t) => {
 
   // When we create a new account.
   await createCollection(umi, {
-    collectionAddress,
+    collection: collectionAddress,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
     plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }],
@@ -108,7 +108,7 @@ test('it can create a new asset with a collection', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     collection: collectionAddress.publicKey,
@@ -153,7 +153,7 @@ test('it cannot create a new asset with a collection if it is not the collection
 
   // When we create a new account.
   await createCollection(umi, {
-    collectionAddress,
+    collection: collectionAddress,
     updateAuthority: collectionAuth.publicKey,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
@@ -198,7 +198,7 @@ test('it cannot create a new asset with a collection if it is not the collection
   // When we create a new account.
   const result = create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     collection: collectionAddress.publicKey,

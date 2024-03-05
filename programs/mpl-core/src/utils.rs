@@ -88,15 +88,6 @@ pub fn assert_collection_authority(
     Err(MplCoreError::InvalidAuthority.into())
 }
 
-/// Resolve the key to one of the two default authorities; owner or update authority.
-pub fn resolve_authority_to_default(asset: &Asset, authority: &AccountInfo) -> Authority {
-    if authority.key == &asset.owner {
-        Authority::Owner
-    } else {
-        Authority::UpdateAuthority
-    }
-}
-
 /// Fetch the core data from the account; asset, plugin header (if present), and plugin registry (if present).
 pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,

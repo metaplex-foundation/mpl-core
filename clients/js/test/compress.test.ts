@@ -24,7 +24,7 @@ test('it can compress an asset without any plugins as the owner', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -43,7 +43,7 @@ test('it can compress an asset without any plugins as the owner', async (t) => {
 
   // And when we compress the asset.
   await compress(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     owner: umi.identity,
   }).sendAndConfirm(umi);
   // console.log('Compress signature: ', bs58.encode(tx.signature));
@@ -73,7 +73,7 @@ test('it cannot compress an asset if not the owner', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -91,7 +91,7 @@ test('it cannot compress an asset if not the owner', async (t) => {
   });
 
   const result = compress(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     owner: attacker,
   }).sendAndConfirm(umi);
 

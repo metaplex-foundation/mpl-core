@@ -29,7 +29,7 @@ import {
 // Accounts.
 export type CompressInstructionAccounts = {
   /** The address of the asset */
-  assetAddress: PublicKey | Pda;
+  asset: PublicKey | Pda;
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
   /** The owner or delegate of the asset */
@@ -59,7 +59,7 @@ export function getCompressInstructionDataSerializer(): Serializer<
     struct<CompressInstructionData>([['discriminator', u8()]], {
       description: 'CompressInstructionData',
     }),
-    (value) => ({ ...value, discriminator: 10 })
+    (value) => ({ ...value, discriminator: 17 })
   ) as Serializer<CompressInstructionDataArgs, CompressInstructionData>;
 }
 
@@ -76,11 +76,7 @@ export function compress(
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    assetAddress: {
-      index: 0,
-      isWritable: true,
-      value: input.assetAddress ?? null,
-    },
+    asset: { index: 0, isWritable: true, value: input.asset ?? null },
     collection: {
       index: 1,
       isWritable: false,

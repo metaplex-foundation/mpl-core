@@ -24,7 +24,7 @@ test('it can burn an asset as the owner', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -42,7 +42,7 @@ test('it can burn an asset as the owner', async (t) => {
   });
 
   await burn(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     compressionProof: null,
   }).sendAndConfirm(umi);
 
@@ -64,7 +64,7 @@ test('it cannot burn an asset if not the owner', async (t) => {
   // When we create a new account.
   await create(umi, {
     dataState: DataState.AccountState,
-    assetAddress,
+    asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
@@ -82,7 +82,7 @@ test('it cannot burn an asset if not the owner', async (t) => {
   });
 
   const result = burn(umi, {
-    assetAddress: assetAddress.publicKey,
+    asset: assetAddress.publicKey,
     compressionProof: null,
     authority: attacker,
   }).sendAndConfirm(umi);

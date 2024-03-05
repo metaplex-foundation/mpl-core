@@ -13,7 +13,7 @@ use borsh::BorshSerialize;
 /// Accounts.
 pub struct Create {
     /// The address of the new asset
-    pub asset_address: solana_program::pubkey::Pubkey,
+    pub asset: solana_program::pubkey::Pubkey,
     /// The collection to which the asset belongs
     pub collection: Option<solana_program::pubkey::Pubkey>,
     /// The authority signing for creation
@@ -45,8 +45,7 @@ impl Create {
     ) -> solana_program::instruction::Instruction {
         let mut accounts = Vec::with_capacity(8 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.asset_address,
-            true,
+            self.asset, true,
         ));
         if let Some(collection) = self.collection {
             accounts.push(solana_program::instruction::AccountMeta::new(
@@ -143,7 +142,7 @@ pub struct CreateInstructionArgs {
 /// Instruction builder.
 #[derive(Default)]
 pub struct CreateBuilder {
-    asset_address: Option<solana_program::pubkey::Pubkey>,
+    asset: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
@@ -164,8 +163,8 @@ impl CreateBuilder {
     }
     /// The address of the new asset
     #[inline(always)]
-    pub fn asset_address(&mut self, asset_address: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.asset_address = Some(asset_address);
+    pub fn asset(&mut self, asset: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.asset = Some(asset);
         self
     }
     /// `[optional account]`
@@ -263,7 +262,7 @@ impl CreateBuilder {
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = Create {
-            asset_address: self.asset_address.expect("asset_address is not set"),
+            asset: self.asset.expect("asset is not set"),
             collection: self.collection,
             authority: self.authority,
             payer: self.payer.expect("payer is not set"),
@@ -288,7 +287,7 @@ impl CreateBuilder {
 /// `create` CPI accounts.
 pub struct CreateCpiAccounts<'a, 'b> {
     /// The address of the new asset
-    pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The authority signing for creation
@@ -310,7 +309,7 @@ pub struct CreateCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The address of the new asset
-    pub asset_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The authority signing for creation
@@ -337,7 +336,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
     ) -> Self {
         Self {
             __program: program,
-            asset_address: accounts.asset_address,
+            asset: accounts.asset,
             collection: accounts.collection,
             authority: accounts.authority,
             payer: accounts.payer,
@@ -383,7 +382,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
     ) -> solana_program::entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(8 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.asset_address.key,
+            *self.asset.key,
             true,
         ));
         if let Some(collection) = self.collection {
@@ -466,7 +465,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
         };
         let mut account_infos = Vec::with_capacity(8 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.asset_address.clone());
+        account_infos.push(self.asset.clone());
         if let Some(collection) = self.collection {
             account_infos.push(collection.clone());
         }
@@ -505,7 +504,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(CreateCpiBuilderInstruction {
             __program: program,
-            asset_address: None,
+            asset: None,
             collection: None,
             authority: None,
             payer: None,
@@ -523,11 +522,8 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
     }
     /// The address of the new asset
     #[inline(always)]
-    pub fn asset_address(
-        &mut self,
-        asset_address: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.asset_address = Some(asset_address);
+    pub fn asset(&mut self, asset: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.asset = Some(asset);
         self
     }
     /// `[optional account]`
@@ -673,10 +669,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         let instruction = CreateCpi {
             __program: self.instruction.__program,
 
-            asset_address: self
-                .instruction
-                .asset_address
-                .expect("asset_address is not set"),
+            asset: self.instruction.asset.expect("asset is not set"),
 
             collection: self.instruction.collection,
 
@@ -705,7 +698,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
 
 struct CreateCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
-    asset_address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,

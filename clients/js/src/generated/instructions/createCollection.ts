@@ -32,7 +32,7 @@ import { Plugin, PluginArgs, getPluginSerializer } from '../types';
 // Accounts.
 export type CreateCollectionInstructionAccounts = {
   /** The address of the new asset */
-  collectionAddress: Signer;
+  collection: Signer;
   /** The authority of the new asset */
   updateAuthority?: PublicKey | Pda;
   /** The account paying for the storage fees */
@@ -99,11 +99,7 @@ export function createCollection(
 
   // Accounts.
   const resolvedAccounts: ResolvedAccountsWithIndices = {
-    collectionAddress: {
-      index: 0,
-      isWritable: true,
-      value: input.collectionAddress ?? null,
-    },
+    collection: { index: 0, isWritable: true, value: input.collection ?? null },
     updateAuthority: {
       index: 1,
       isWritable: false,

@@ -1,11 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use solana_program::account_info::AccountInfo;
 
 use crate::{
-    instruction::accounts::{
-        BurnAccounts, CompressAccounts, CreateAccounts, DecompressAccounts, TransferAccounts,
-        UpdateAccounts,
-    },
-    processor::{BurnArgs, CompressArgs, CreateArgs, DecompressArgs, TransferArgs, UpdateArgs},
+    processor::{CompressArgs, CreateArgs, DecompressArgs, TransferArgs, UpdateArgs},
     state::{Authority, DataBlob},
 };
 
@@ -43,7 +40,7 @@ impl DataBlob for Transfer {
 impl PluginValidation for Transfer {
     fn validate_create(
         &self,
-        _ctx: &CreateAccounts,
+        _authority: &AccountInfo,
         _args: &CreateArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
@@ -52,7 +49,7 @@ impl PluginValidation for Transfer {
 
     fn validate_update(
         &self,
-        _ctx: &UpdateAccounts,
+        _authority: &AccountInfo,
         _args: &UpdateArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
@@ -61,12 +58,11 @@ impl PluginValidation for Transfer {
 
     fn validate_burn(
         &self,
-        ctx: &BurnAccounts,
-        _args: &BurnArgs,
+        authority: &AccountInfo,
         authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
         if authorities.contains(&Authority::Pubkey {
-            address: *ctx.authority.key,
+            address: *authority.key,
         }) {
             Ok(ValidationResult::Approved)
         } else {
@@ -76,12 +72,13 @@ impl PluginValidation for Transfer {
 
     fn validate_transfer(
         &self,
-        ctx: &TransferAccounts,
+        authority: &AccountInfo,
+        _new_owner: &AccountInfo,
         _args: &TransferArgs,
         authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
         if authorities.contains(&Authority::Pubkey {
-            address: *ctx.authority.key,
+            address: *authority.key,
         }) {
             Ok(ValidationResult::Approved)
         } else {
@@ -91,7 +88,7 @@ impl PluginValidation for Transfer {
 
     fn validate_compress(
         &self,
-        _ctx: &CompressAccounts,
+        _authority: &AccountInfo,
         _args: &CompressArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
@@ -100,7 +97,7 @@ impl PluginValidation for Transfer {
 
     fn validate_decompress(
         &self,
-        _ctx: &DecompressAccounts,
+        _authority: &AccountInfo,
         _args: &DecompressArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
