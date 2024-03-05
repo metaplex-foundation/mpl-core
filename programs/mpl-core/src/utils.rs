@@ -163,7 +163,7 @@ pub(crate) fn close_program_account<'a>(
     **funds_dest_account_info.lamports.borrow_mut() = dest_starting_lamports
         .checked_add(amount_to_return)
         .ok_or(MplCoreError::NumericalOverflowError)?;
-    **account_to_close_info.lamports.borrow_mut() = one_byte_rent;
+    **account_to_close_info.try_borrow_mut_lamports()? -= amount_to_return;
 
     account_to_close_info.realloc(1, false)?;
     account_to_close_info.data.borrow_mut()[0] = Key::Uninitialized.to_u8().unwrap();
