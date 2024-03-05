@@ -26,9 +26,12 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  AddPluginAuthorityArgs,
-  AddPluginAuthorityArgsArgs,
-  getAddPluginAuthorityArgsSerializer,
+  Authority,
+  AuthorityArgs,
+  PluginType,
+  PluginTypeArgs,
+  getAuthoritySerializer,
+  getPluginTypeSerializer,
 } from '../types';
 
 // Accounts.
@@ -50,11 +53,13 @@ export type AddPluginAuthorityInstructionAccounts = {
 // Data.
 export type AddPluginAuthorityInstructionData = {
   discriminator: number;
-  addPluginAuthorityArgs: AddPluginAuthorityArgs;
+  pluginType: PluginType;
+  newAuthority: Authority;
 };
 
 export type AddPluginAuthorityInstructionDataArgs = {
-  addPluginAuthorityArgs: AddPluginAuthorityArgsArgs;
+  pluginType: PluginTypeArgs;
+  newAuthority: AuthorityArgs;
 };
 
 export function getAddPluginAuthorityInstructionDataSerializer(): Serializer<
@@ -69,7 +74,8 @@ export function getAddPluginAuthorityInstructionDataSerializer(): Serializer<
     struct<AddPluginAuthorityInstructionData>(
       [
         ['discriminator', u8()],
-        ['addPluginAuthorityArgs', getAddPluginAuthorityArgsSerializer()],
+        ['pluginType', getPluginTypeSerializer()],
+        ['newAuthority', getAuthoritySerializer()],
       ],
       { description: 'AddPluginAuthorityInstructionData' }
     ),

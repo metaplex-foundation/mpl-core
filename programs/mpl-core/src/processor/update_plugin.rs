@@ -11,7 +11,7 @@ use crate::{
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct UpdatePluginArgs {
+pub(crate) struct UpdatePluginArgs {
     pub plugin: Plugin,
 }
 
@@ -41,7 +41,6 @@ pub(crate) fn update_plugin<'a>(
     let result = Plugin::load(ctx.accounts.asset, registry_record.offset)?.validate_update_plugin(
         &asset,
         ctx.accounts.authority,
-        &args,
         &registry_record.authorities,
     )?;
     if result == ValidationResult::Rejected {
@@ -57,9 +56,15 @@ pub(crate) fn update_plugin<'a>(
     process_update_plugin()
 }
 
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct UpdateCollectionPluginArgs {
+    pub plugin: Plugin,
+}
+
 pub(crate) fn update_collection_plugin<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: UpdatePluginArgs,
+    args: UpdateCollectionPluginArgs,
 ) -> ProgramResult {
     // Accounts.
     let ctx = UpdateCollectionPluginAccounts::context(accounts)?;
@@ -81,12 +86,7 @@ pub(crate) fn update_collection_plugin<'a>(
         .ok_or(MplCoreError::PluginNotFound)?;
 
     let result = Plugin::load(ctx.accounts.collection, registry_record.offset)?
-        .validate_update_plugin(
-            &asset,
-            ctx.accounts.authority,
-            &args,
-            &registry_record.authorities,
-        )?;
+        .validate_update_plugin(&asset, ctx.accounts.authority, &registry_record.authorities)?;
     if result == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());
     } else if result == ValidationResult::Approved {

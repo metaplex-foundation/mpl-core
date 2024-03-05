@@ -68,7 +68,7 @@ test('it can add asset plugin with collect amount', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    addPluginArgs: { plugin: plugin('Freeze', [{ frozen: true }]) }
+    plugin: plugin('Freeze', [{ frozen: true }])
   }).sendAndConfirm(umi);
 
   t.assert(await hasCollectAmount(umi, assetAddress.publicKey), 'Collect amount not found')
@@ -93,7 +93,7 @@ test('it can add remove asset plugin with collect amount', async (t) => {
 
   await removePlugin(umi, {
     asset: assetAddress.publicKey,
-    removePluginArgs: { pluginType: PluginType.Freeze, }
+    pluginType: PluginType.Freeze,
   }).sendAndConfirm(umi);
   t.assert(await hasCollectAmount(umi, assetAddress.publicKey), 'Collect amount not found')
 });

@@ -9,7 +9,7 @@ use crate::{
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct AddPluginArgs {
+pub(crate) struct AddPluginArgs {
     plugin: Plugin,
 }
 
@@ -44,9 +44,15 @@ pub(crate) fn add_plugin<'a>(
     process_add_plugin()
 }
 
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct AddCollectionPluginArgs {
+    plugin: Plugin,
+}
+
 pub(crate) fn add_collection_plugin<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: AddPluginArgs,
+    args: AddCollectionPluginArgs,
 ) -> ProgramResult {
     let ctx = AddCollectionPluginAccounts::context(accounts)?;
 

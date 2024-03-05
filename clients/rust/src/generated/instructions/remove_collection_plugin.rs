@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::RemovePluginArgs;
+use crate::generated::types::PluginType;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -97,7 +97,7 @@ impl RemoveCollectionPluginInstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RemoveCollectionPluginInstructionArgs {
-    pub remove_plugin_args: RemovePluginArgs,
+    pub plugin_type: PluginType,
 }
 
 /// Instruction builder.
@@ -108,7 +108,7 @@ pub struct RemoveCollectionPluginBuilder {
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
-    remove_plugin_args: Option<RemovePluginArgs>,
+    plugin_type: Option<PluginType>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -153,8 +153,8 @@ impl RemoveCollectionPluginBuilder {
         self
     }
     #[inline(always)]
-    pub fn remove_plugin_args(&mut self, remove_plugin_args: RemovePluginArgs) -> &mut Self {
-        self.remove_plugin_args = Some(remove_plugin_args);
+    pub fn plugin_type(&mut self, plugin_type: PluginType) -> &mut Self {
+        self.plugin_type = Some(plugin_type);
         self
     }
     /// Add an aditional account to the instruction.
@@ -187,10 +187,7 @@ impl RemoveCollectionPluginBuilder {
             log_wrapper: self.log_wrapper,
         };
         let args = RemoveCollectionPluginInstructionArgs {
-            remove_plugin_args: self
-                .remove_plugin_args
-                .clone()
-                .expect("remove_plugin_args is not set"),
+            plugin_type: self.plugin_type.clone().expect("plugin_type is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -367,7 +364,7 @@ impl<'a, 'b> RemoveCollectionPluginCpiBuilder<'a, 'b> {
             payer: None,
             system_program: None,
             log_wrapper: None,
-            remove_plugin_args: None,
+            plugin_type: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -420,8 +417,8 @@ impl<'a, 'b> RemoveCollectionPluginCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn remove_plugin_args(&mut self, remove_plugin_args: RemovePluginArgs) -> &mut Self {
-        self.instruction.remove_plugin_args = Some(remove_plugin_args);
+    pub fn plugin_type(&mut self, plugin_type: PluginType) -> &mut Self {
+        self.instruction.plugin_type = Some(plugin_type);
         self
     }
     /// Add an additional account to the instruction.
@@ -466,11 +463,11 @@ impl<'a, 'b> RemoveCollectionPluginCpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = RemoveCollectionPluginInstructionArgs {
-            remove_plugin_args: self
+            plugin_type: self
                 .instruction
-                .remove_plugin_args
+                .plugin_type
                 .clone()
-                .expect("remove_plugin_args is not set"),
+                .expect("plugin_type is not set"),
         };
         let instruction = RemoveCollectionPluginCpi {
             __program: self.instruction.__program,
@@ -503,7 +500,7 @@ struct RemoveCollectionPluginCpiBuilderInstruction<'a, 'b> {
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    remove_plugin_args: Option<RemovePluginArgs>,
+    plugin_type: Option<PluginType>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

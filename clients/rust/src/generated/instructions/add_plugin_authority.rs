@@ -5,7 +5,8 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::AddPluginAuthorityArgs;
+use crate::generated::types::Authority;
+use crate::generated::types::PluginType;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -108,7 +109,8 @@ impl AddPluginAuthorityInstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AddPluginAuthorityInstructionArgs {
-    pub add_plugin_authority_args: AddPluginAuthorityArgs,
+    pub plugin_type: PluginType,
+    pub new_authority: Authority,
 }
 
 /// Instruction builder.
@@ -120,7 +122,8 @@ pub struct AddPluginAuthorityBuilder {
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
-    add_plugin_authority_args: Option<AddPluginAuthorityArgs>,
+    plugin_type: Option<PluginType>,
+    new_authority: Option<Authority>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -172,11 +175,13 @@ impl AddPluginAuthorityBuilder {
         self
     }
     #[inline(always)]
-    pub fn add_plugin_authority_args(
-        &mut self,
-        add_plugin_authority_args: AddPluginAuthorityArgs,
-    ) -> &mut Self {
-        self.add_plugin_authority_args = Some(add_plugin_authority_args);
+    pub fn plugin_type(&mut self, plugin_type: PluginType) -> &mut Self {
+        self.plugin_type = Some(plugin_type);
+        self
+    }
+    #[inline(always)]
+    pub fn new_authority(&mut self, new_authority: Authority) -> &mut Self {
+        self.new_authority = Some(new_authority);
         self
     }
     /// Add an aditional account to the instruction.
@@ -210,10 +215,11 @@ impl AddPluginAuthorityBuilder {
             log_wrapper: self.log_wrapper,
         };
         let args = AddPluginAuthorityInstructionArgs {
-            add_plugin_authority_args: self
-                .add_plugin_authority_args
+            plugin_type: self.plugin_type.clone().expect("plugin_type is not set"),
+            new_authority: self
+                .new_authority
                 .clone()
-                .expect("add_plugin_authority_args is not set"),
+                .expect("new_authority is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -410,7 +416,8 @@ impl<'a, 'b> AddPluginAuthorityCpiBuilder<'a, 'b> {
             payer: None,
             system_program: None,
             log_wrapper: None,
-            add_plugin_authority_args: None,
+            plugin_type: None,
+            new_authority: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -470,11 +477,13 @@ impl<'a, 'b> AddPluginAuthorityCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn add_plugin_authority_args(
-        &mut self,
-        add_plugin_authority_args: AddPluginAuthorityArgs,
-    ) -> &mut Self {
-        self.instruction.add_plugin_authority_args = Some(add_plugin_authority_args);
+    pub fn plugin_type(&mut self, plugin_type: PluginType) -> &mut Self {
+        self.instruction.plugin_type = Some(plugin_type);
+        self
+    }
+    #[inline(always)]
+    pub fn new_authority(&mut self, new_authority: Authority) -> &mut Self {
+        self.instruction.new_authority = Some(new_authority);
         self
     }
     /// Add an additional account to the instruction.
@@ -519,11 +528,16 @@ impl<'a, 'b> AddPluginAuthorityCpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = AddPluginAuthorityInstructionArgs {
-            add_plugin_authority_args: self
+            plugin_type: self
                 .instruction
-                .add_plugin_authority_args
+                .plugin_type
                 .clone()
-                .expect("add_plugin_authority_args is not set"),
+                .expect("plugin_type is not set"),
+            new_authority: self
+                .instruction
+                .new_authority
+                .clone()
+                .expect("new_authority is not set"),
         };
         let instruction = AddPluginAuthorityCpi {
             __program: self.instruction.__program,
@@ -559,7 +573,8 @@ struct AddPluginAuthorityCpiBuilderInstruction<'a, 'b> {
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    add_plugin_authority_args: Option<AddPluginAuthorityArgs>,
+    plugin_type: Option<PluginType>,
+    new_authority: Option<Authority>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

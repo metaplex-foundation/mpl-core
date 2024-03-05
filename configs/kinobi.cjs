@@ -59,6 +59,7 @@ const key = (name) => ({ field: "key", value: k.vEnum("Key", name) });
 kinobi.update(
   new k.SetAccountDiscriminatorFromFieldVisitor({
     asset: key("Asset"),
+    collection: key("Collection"),
     // myPdaAccount: key("MyPdaAccount"),
   })
 );

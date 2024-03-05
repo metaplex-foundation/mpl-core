@@ -5,7 +5,8 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::RemovePluginAuthorityArgs;
+use crate::generated::types::Authority;
+use crate::generated::types::PluginType;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -108,7 +109,8 @@ impl RemovePluginAuthorityInstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RemovePluginAuthorityInstructionArgs {
-    pub remove_plugin_authority_args: RemovePluginAuthorityArgs,
+    pub plugin_type: PluginType,
+    pub authority_to_remove: Authority,
 }
 
 /// Instruction builder.
@@ -120,7 +122,8 @@ pub struct RemovePluginAuthorityBuilder {
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
-    remove_plugin_authority_args: Option<RemovePluginAuthorityArgs>,
+    plugin_type: Option<PluginType>,
+    authority_to_remove: Option<Authority>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -172,11 +175,13 @@ impl RemovePluginAuthorityBuilder {
         self
     }
     #[inline(always)]
-    pub fn remove_plugin_authority_args(
-        &mut self,
-        remove_plugin_authority_args: RemovePluginAuthorityArgs,
-    ) -> &mut Self {
-        self.remove_plugin_authority_args = Some(remove_plugin_authority_args);
+    pub fn plugin_type(&mut self, plugin_type: PluginType) -> &mut Self {
+        self.plugin_type = Some(plugin_type);
+        self
+    }
+    #[inline(always)]
+    pub fn authority_to_remove(&mut self, authority_to_remove: Authority) -> &mut Self {
+        self.authority_to_remove = Some(authority_to_remove);
         self
     }
     /// Add an aditional account to the instruction.
@@ -210,10 +215,11 @@ impl RemovePluginAuthorityBuilder {
             log_wrapper: self.log_wrapper,
         };
         let args = RemovePluginAuthorityInstructionArgs {
-            remove_plugin_authority_args: self
-                .remove_plugin_authority_args
+            plugin_type: self.plugin_type.clone().expect("plugin_type is not set"),
+            authority_to_remove: self
+                .authority_to_remove
                 .clone()
-                .expect("remove_plugin_authority_args is not set"),
+                .expect("authority_to_remove is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -410,7 +416,8 @@ impl<'a, 'b> RemovePluginAuthorityCpiBuilder<'a, 'b> {
             payer: None,
             system_program: None,
             log_wrapper: None,
-            remove_plugin_authority_args: None,
+            plugin_type: None,
+            authority_to_remove: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -470,11 +477,13 @@ impl<'a, 'b> RemovePluginAuthorityCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn remove_plugin_authority_args(
-        &mut self,
-        remove_plugin_authority_args: RemovePluginAuthorityArgs,
-    ) -> &mut Self {
-        self.instruction.remove_plugin_authority_args = Some(remove_plugin_authority_args);
+    pub fn plugin_type(&mut self, plugin_type: PluginType) -> &mut Self {
+        self.instruction.plugin_type = Some(plugin_type);
+        self
+    }
+    #[inline(always)]
+    pub fn authority_to_remove(&mut self, authority_to_remove: Authority) -> &mut Self {
+        self.instruction.authority_to_remove = Some(authority_to_remove);
         self
     }
     /// Add an additional account to the instruction.
@@ -519,11 +528,16 @@ impl<'a, 'b> RemovePluginAuthorityCpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = RemovePluginAuthorityInstructionArgs {
-            remove_plugin_authority_args: self
+            plugin_type: self
                 .instruction
-                .remove_plugin_authority_args
+                .plugin_type
                 .clone()
-                .expect("remove_plugin_authority_args is not set"),
+                .expect("plugin_type is not set"),
+            authority_to_remove: self
+                .instruction
+                .authority_to_remove
+                .clone()
+                .expect("authority_to_remove is not set"),
         };
         let instruction = RemovePluginAuthorityCpi {
             __program: self.instruction.__program,
@@ -559,7 +573,8 @@ struct RemovePluginAuthorityCpiBuilderInstruction<'a, 'b> {
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    remove_plugin_authority_args: Option<RemovePluginAuthorityArgs>,
+    plugin_type: Option<PluginType>,
+    authority_to_remove: Option<Authority>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::CompressionProof;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -21,12 +22,16 @@ pub struct BurnCollection {
 }
 
 impl BurnCollection {
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        self.instruction_with_remaining_accounts(&[])
+    pub fn instruction(
+        &self,
+        args: BurnCollectionInstructionArgs,
+    ) -> solana_program::instruction::Instruction {
+        self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
+        args: BurnCollectionInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
         let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
@@ -58,7 +63,9 @@ impl BurnCollection {
             ));
         }
         accounts.extend_from_slice(remaining_accounts);
-        let data = BurnCollectionInstructionData::new().try_to_vec().unwrap();
+        let mut data = BurnCollectionInstructionData::new().try_to_vec().unwrap();
+        let mut args = args.try_to_vec().unwrap();
+        data.append(&mut args);
 
         solana_program::instruction::Instruction {
             program_id: crate::MPL_CORE_ID,
@@ -79,6 +86,12 @@ impl BurnCollectionInstructionData {
     }
 }
 
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct BurnCollectionInstructionArgs {
+    pub compression_proof: Option<CompressionProof>,
+}
+
 /// Instruction builder.
 #[derive(Default)]
 pub struct BurnCollectionBuilder {
@@ -86,6 +99,7 @@ pub struct BurnCollectionBuilder {
     authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
+    compression_proof: Option<CompressionProof>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -122,6 +136,12 @@ impl BurnCollectionBuilder {
         self.log_wrapper = log_wrapper;
         self
     }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn compression_proof(&mut self, compression_proof: CompressionProof) -> &mut Self {
+        self.compression_proof = Some(compression_proof);
+        self
+    }
     /// Add an aditional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -148,8 +168,11 @@ impl BurnCollectionBuilder {
             payer: self.payer,
             log_wrapper: self.log_wrapper,
         };
+        let args = BurnCollectionInstructionArgs {
+            compression_proof: self.compression_proof.clone(),
+        };
 
-        accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
+        accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
     }
 }
 
@@ -177,12 +200,15 @@ pub struct BurnCollectionCpi<'a, 'b> {
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The arguments for the instruction.
+    pub __args: BurnCollectionInstructionArgs,
 }
 
 impl<'a, 'b> BurnCollectionCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
         accounts: BurnCollectionCpiAccounts<'a, 'b>,
+        args: BurnCollectionInstructionArgs,
     ) -> Self {
         Self {
             __program: program,
@@ -190,6 +216,7 @@ impl<'a, 'b> BurnCollectionCpi<'a, 'b> {
             authority: accounts.authority,
             payer: accounts.payer,
             log_wrapper: accounts.log_wrapper,
+            __args: args,
         }
     }
     #[inline(always)]
@@ -262,7 +289,9 @@ impl<'a, 'b> BurnCollectionCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = BurnCollectionInstructionData::new().try_to_vec().unwrap();
+        let mut data = BurnCollectionInstructionData::new().try_to_vec().unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
+        data.append(&mut args);
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::MPL_CORE_ID,
@@ -304,6 +333,7 @@ impl<'a, 'b> BurnCollectionCpiBuilder<'a, 'b> {
             authority: None,
             payer: None,
             log_wrapper: None,
+            compression_proof: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -344,6 +374,12 @@ impl<'a, 'b> BurnCollectionCpiBuilder<'a, 'b> {
         log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
         self.instruction.log_wrapper = log_wrapper;
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn compression_proof(&mut self, compression_proof: CompressionProof) -> &mut Self {
+        self.instruction.compression_proof = Some(compression_proof);
         self
     }
     /// Add an additional account to the instruction.
@@ -387,6 +423,9 @@ impl<'a, 'b> BurnCollectionCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
+        let args = BurnCollectionInstructionArgs {
+            compression_proof: self.instruction.compression_proof.clone(),
+        };
         let instruction = BurnCollectionCpi {
             __program: self.instruction.__program,
 
@@ -397,6 +436,7 @@ impl<'a, 'b> BurnCollectionCpiBuilder<'a, 'b> {
             payer: self.instruction.payer,
 
             log_wrapper: self.instruction.log_wrapper,
+            __args: args,
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -411,6 +451,7 @@ struct BurnCollectionCpiBuilderInstruction<'a, 'b> {
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    compression_proof: Option<CompressionProof>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

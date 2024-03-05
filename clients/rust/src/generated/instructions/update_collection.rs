@@ -5,7 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::UpdateArgs;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -108,7 +107,8 @@ impl UpdateCollectionInstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UpdateCollectionInstructionArgs {
-    pub update_args: UpdateArgs,
+    pub new_name: Option<String>,
+    pub new_uri: Option<String>,
 }
 
 /// Instruction builder.
@@ -120,7 +120,8 @@ pub struct UpdateCollectionBuilder {
     new_update_authority: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
-    update_args: Option<UpdateArgs>,
+    new_name: Option<String>,
+    new_uri: Option<String>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -174,9 +175,16 @@ impl UpdateCollectionBuilder {
         self.log_wrapper = log_wrapper;
         self
     }
+    /// `[optional argument]`
     #[inline(always)]
-    pub fn update_args(&mut self, update_args: UpdateArgs) -> &mut Self {
-        self.update_args = Some(update_args);
+    pub fn new_name(&mut self, new_name: String) -> &mut Self {
+        self.new_name = Some(new_name);
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn new_uri(&mut self, new_uri: String) -> &mut Self {
+        self.new_uri = Some(new_uri);
         self
     }
     /// Add an aditional account to the instruction.
@@ -210,7 +218,8 @@ impl UpdateCollectionBuilder {
             log_wrapper: self.log_wrapper,
         };
         let args = UpdateCollectionInstructionArgs {
-            update_args: self.update_args.clone().expect("update_args is not set"),
+            new_name: self.new_name.clone(),
+            new_uri: self.new_uri.clone(),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -405,7 +414,8 @@ impl<'a, 'b> UpdateCollectionCpiBuilder<'a, 'b> {
             new_update_authority: None,
             system_program: None,
             log_wrapper: None,
-            update_args: None,
+            new_name: None,
+            new_uri: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -467,9 +477,16 @@ impl<'a, 'b> UpdateCollectionCpiBuilder<'a, 'b> {
         self.instruction.log_wrapper = log_wrapper;
         self
     }
+    /// `[optional argument]`
     #[inline(always)]
-    pub fn update_args(&mut self, update_args: UpdateArgs) -> &mut Self {
-        self.instruction.update_args = Some(update_args);
+    pub fn new_name(&mut self, new_name: String) -> &mut Self {
+        self.instruction.new_name = Some(new_name);
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn new_uri(&mut self, new_uri: String) -> &mut Self {
+        self.instruction.new_uri = Some(new_uri);
         self
     }
     /// Add an additional account to the instruction.
@@ -514,11 +531,8 @@ impl<'a, 'b> UpdateCollectionCpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = UpdateCollectionInstructionArgs {
-            update_args: self
-                .instruction
-                .update_args
-                .clone()
-                .expect("update_args is not set"),
+            new_name: self.instruction.new_name.clone(),
+            new_uri: self.instruction.new_uri.clone(),
         };
         let instruction = UpdateCollectionCpi {
             __program: self.instruction.__program,
@@ -554,7 +568,8 @@ struct UpdateCollectionCpiBuilderInstruction<'a, 'b> {
     new_update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    update_args: Option<UpdateArgs>,
+    new_name: Option<String>,
+    new_uri: Option<String>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

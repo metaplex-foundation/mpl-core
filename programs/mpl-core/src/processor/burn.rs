@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct BurnArgs {
+pub(crate) struct BurnArgs {
     compression_proof: Option<CompressionProof>,
 }
 
@@ -86,7 +86,15 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
     process_burn(ctx.accounts.asset, ctx.accounts.authority)
 }
 
-pub(crate) fn burn_collection<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResult {
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct BurnCollectionArgs {
+    compression_proof: Option<CompressionProof>,
+}
+
+pub(crate) fn burn_collection<'a>(
+    accounts: &'a [AccountInfo<'a>],
+    _args: BurnCollectionArgs,
+) -> ProgramResult {
     // Accounts.
     let ctx = BurnCollectionAccounts::context(accounts)?;
 

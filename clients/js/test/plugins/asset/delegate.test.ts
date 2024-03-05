@@ -31,23 +31,19 @@ test('it can delegate a new authority', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    addPluginArgs: {
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
-      },
-    }
+    plugin: {
+      __kind: 'Freeze',
+      fields: [{ frozen: false }],
+    },
   }).sendAndConfirm(umi);
 
   await addPluginAuthority(umi, {
     asset: assetAddress.publicKey,
-    addPluginAuthorityArgs: {
-      pluginType: PluginType.Freeze,
-      newAuthority: {
-        __kind: 'Pubkey',
-        address: delegateAddress.publicKey,
-      },
-    }
+    pluginType: PluginType.Freeze,
+    newAuthority: {
+      __kind: 'Pubkey',
+      address: delegateAddress.publicKey,
+    },
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -106,34 +102,28 @@ test('a delegate can freeze the token', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    addPluginArgs: {
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
-      },
-    }
+    plugin: {
+      __kind: 'Freeze',
+      fields: [{ frozen: false }],
+    },
   }).sendAndConfirm(umi);
 
   await addPluginAuthority(umi, {
     asset: assetAddress.publicKey,
-    addPluginAuthorityArgs: {
-      pluginType: PluginType.Freeze,
-      newAuthority: {
-        __kind: 'Pubkey',
-        address: delegateAddress.publicKey,
-      },
-    }
+    pluginType: PluginType.Freeze,
+    newAuthority: {
+      __kind: 'Pubkey',
+      address: delegateAddress.publicKey,
+    },
   }).sendAndConfirm(umi);
 
   await updatePlugin(umi, {
     asset: assetAddress.publicKey,
     authority: delegateAddress,
-    updatePluginArgs: {
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: true }],
-      },
-    }
+    plugin: {
+      __kind: 'Freeze',
+      fields: [{ frozen: true }],
+    },
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);

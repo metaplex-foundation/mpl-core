@@ -1,8 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::account_info::AccountInfo;
+use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::{
-    processor::{CompressArgs, CreateArgs, DecompressArgs, TransferArgs, UpdateArgs},
+    processor::{CompressArgs, CreateArgs, DecompressArgs, TransferArgs},
     state::{Authority, DataBlob},
 };
 
@@ -43,16 +43,15 @@ impl PluginValidation for Transfer {
         _authority: &AccountInfo,
         _args: &CreateArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_update(
         &self,
         _authority: &AccountInfo,
-        _args: &UpdateArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -60,7 +59,7 @@ impl PluginValidation for Transfer {
         &self,
         authority: &AccountInfo,
         authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         if authorities.contains(&Authority::Pubkey {
             address: *authority.key,
         }) {
@@ -76,7 +75,7 @@ impl PluginValidation for Transfer {
         _new_owner: &AccountInfo,
         _args: &TransferArgs,
         authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         if authorities.contains(&Authority::Pubkey {
             address: *authority.key,
         }) {
@@ -91,7 +90,7 @@ impl PluginValidation for Transfer {
         _authority: &AccountInfo,
         _args: &CompressArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -100,7 +99,7 @@ impl PluginValidation for Transfer {
         _authority: &AccountInfo,
         _args: &DecompressArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 }

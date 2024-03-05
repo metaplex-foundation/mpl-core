@@ -263,9 +263,9 @@
       ],
       "args": [
         {
-          "name": "addPluginArgs",
+          "name": "addCollectionPluginArgs",
           "type": {
-            "defined": "AddPluginArgs"
+            "defined": "AddCollectionPluginArgs"
           }
         }
       ],
@@ -390,9 +390,9 @@
       ],
       "args": [
         {
-          "name": "removePluginArgs",
+          "name": "removeCollectionPluginArgs",
           "type": {
-            "defined": "RemovePluginArgs"
+            "defined": "RemoveCollectionPluginArgs"
           }
         }
       ],
@@ -517,9 +517,9 @@
       ],
       "args": [
         {
-          "name": "updatePluginArgs",
+          "name": "updateCollectionPluginArgs",
           "type": {
-            "defined": "UpdatePluginArgs"
+            "defined": "UpdateCollectionPluginArgs"
           }
         }
       ],
@@ -644,9 +644,9 @@
       ],
       "args": [
         {
-          "name": "addPluginAuthorityArgs",
+          "name": "addCollectionPluginAuthorityArgs",
           "type": {
-            "defined": "AddPluginAuthorityArgs"
+            "defined": "AddCollectionPluginAuthorityArgs"
           }
         }
       ],
@@ -771,9 +771,9 @@
       ],
       "args": [
         {
-          "name": "removePluginAuthorityArgs",
+          "name": "removeCollectionPluginAuthorityArgs",
           "type": {
-            "defined": "RemovePluginAuthorityArgs"
+            "defined": "RemoveCollectionPluginAuthorityArgs"
           }
         }
       ],
@@ -880,7 +880,14 @@
           ]
         }
       ],
-      "args": [],
+      "args": [
+        {
+          "name": "burnCollectionArgs",
+          "type": {
+            "defined": "BurnCollectionArgs"
+          }
+        }
+      ],
       "discriminant": {
         "type": "u8",
         "value": 13
@@ -1079,9 +1086,9 @@
       ],
       "args": [
         {
-          "name": "updateArgs",
+          "name": "updateCollectionArgs",
           "type": {
-            "defined": "UpdateArgs"
+            "defined": "UpdateCollectionArgs"
           }
         }
       ],
@@ -1519,6 +1526,20 @@
       }
     },
     {
+      "name": "AddCollectionPluginArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plugin",
+            "type": {
+              "defined": "Plugin"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "AddPluginAuthorityArgs",
       "type": {
         "kind": "struct",
@@ -1539,7 +1560,43 @@
       }
     },
     {
+      "name": "AddCollectionPluginAuthorityArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pluginType",
+            "type": {
+              "defined": "PluginType"
+            }
+          },
+          {
+            "name": "newAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "BurnArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "compressionProof",
+            "type": {
+              "option": {
+                "defined": "CompressionProof"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "BurnCollectionArgs",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1644,7 +1701,41 @@
       }
     },
     {
+      "name": "RemoveCollectionPluginArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pluginType",
+            "type": {
+              "defined": "PluginType"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "RemovePluginAuthorityArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pluginType",
+            "type": {
+              "defined": "PluginType"
+            }
+          },
+          {
+            "name": "authorityToRemove",
+            "type": {
+              "defined": "Authority"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveCollectionPluginAuthorityArgs",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1700,7 +1791,41 @@
       }
     },
     {
+      "name": "UpdateCollectionArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "newName",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "newUri",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "UpdatePluginArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plugin",
+            "type": {
+              "defined": "Plugin"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateCollectionPluginArgs",
       "type": {
         "kind": "struct",
         "fields": [

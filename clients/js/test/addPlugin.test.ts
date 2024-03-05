@@ -47,11 +47,9 @@ test('it can add a plugin to an asset', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    addPluginArgs: {
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
-      },
+    plugin: {
+      __kind: 'Freeze',
+      fields: [{ frozen: false }],
     }
   }).sendAndConfirm(umi);
 
@@ -114,11 +112,9 @@ test('it can add a plugin to a collection', async (t) => {
 
   await addCollectionPlugin(umi, {
     collection: collectionAddress.publicKey,
-    addPluginArgs: {
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
-      },
+    plugin: {
+      __kind: 'Freeze',
+      fields: [{ frozen: false }],
     }
   }).sendAndConfirm(umi);
 

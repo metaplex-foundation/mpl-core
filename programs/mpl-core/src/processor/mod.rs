@@ -101,9 +101,9 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Burn");
             burn(accounts, args)
         }
-        MplAssetInstruction::BurnCollection => {
+        MplAssetInstruction::BurnCollection(args) => {
             msg!("Instruction: BurnCollection");
-            burn_collection(accounts)
+            burn_collection(accounts, args)
         }
         MplAssetInstruction::Transfer(args) => {
             msg!("Instruction: Transfer");
@@ -126,8 +126,6 @@ pub fn process_instruction<'a>(
             decompress(accounts, args)
         }
 
-        MplAssetInstruction::Collect => {
-            collect(accounts)
-        }
+        MplAssetInstruction::Collect => collect(accounts),
     }
 }

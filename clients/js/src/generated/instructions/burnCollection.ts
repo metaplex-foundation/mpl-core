@@ -8,6 +8,8 @@
 
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -17,6 +19,7 @@ import {
 import {
   Serializer,
   mapSerializer,
+  option,
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
@@ -25,6 +28,11 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import {
+  CompressionProof,
+  CompressionProofArgs,
+  getCompressionProofSerializer,
+} from '../types';
 
 // Accounts.
 export type BurnCollectionInstructionAccounts = {
@@ -39,9 +47,14 @@ export type BurnCollectionInstructionAccounts = {
 };
 
 // Data.
-export type BurnCollectionInstructionData = { discriminator: number };
+export type BurnCollectionInstructionData = {
+  discriminator: number;
+  compressionProof: Option<CompressionProof>;
+};
 
-export type BurnCollectionInstructionDataArgs = {};
+export type BurnCollectionInstructionDataArgs = {
+  compressionProof: OptionOrNullable<CompressionProofArgs>;
+};
 
 export function getBurnCollectionInstructionDataSerializer(): Serializer<
   BurnCollectionInstructionDataArgs,
@@ -52,9 +65,13 @@ export function getBurnCollectionInstructionDataSerializer(): Serializer<
     any,
     BurnCollectionInstructionData
   >(
-    struct<BurnCollectionInstructionData>([['discriminator', u8()]], {
-      description: 'BurnCollectionInstructionData',
-    }),
+    struct<BurnCollectionInstructionData>(
+      [
+        ['discriminator', u8()],
+        ['compressionProof', option(getCompressionProofSerializer())],
+      ],
+      { description: 'BurnCollectionInstructionData' }
+    ),
     (value) => ({ ...value, discriminator: 13 })
   ) as Serializer<
     BurnCollectionInstructionDataArgs,
@@ -62,10 +79,13 @@ export function getBurnCollectionInstructionDataSerializer(): Serializer<
   >;
 }
 
+// Args.
+export type BurnCollectionInstructionArgs = BurnCollectionInstructionDataArgs;
+
 // Instruction.
 export function burnCollection(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: BurnCollectionInstructionAccounts
+  input: BurnCollectionInstructionAccounts & BurnCollectionInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -85,6 +105,9 @@ export function burnCollection(
     },
   };
 
+  // Arguments.
+  const resolvedArgs: BurnCollectionInstructionArgs = { ...input };
+
   // Default values.
   if (!resolvedAccounts.authority.value) {
     resolvedAccounts.authority.value = context.identity;
@@ -103,7 +126,9 @@ export function burnCollection(
   );
 
   // Data.
-  const data = getBurnCollectionInstructionDataSerializer().serialize({});
+  const data = getBurnCollectionInstructionDataSerializer().serialize(
+    resolvedArgs as BurnCollectionInstructionDataArgs
+  );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

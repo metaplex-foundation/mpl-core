@@ -1,8 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{account_info::AccountInfo, pubkey::Pubkey};
+use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
-    processor::{CompressArgs, CreateArgs, DecompressArgs, TransferArgs, UpdateArgs},
+    processor::{CompressArgs, CreateArgs, DecompressArgs, TransferArgs},
     state::Authority,
 };
 
@@ -43,16 +43,15 @@ impl PluginValidation for Royalties {
         _authority: &AccountInfo,
         _args: &CreateArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_update(
         &self,
         _authority: &AccountInfo,
-        _args: &UpdateArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -60,7 +59,7 @@ impl PluginValidation for Royalties {
         &self,
         _authority: &AccountInfo,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -70,7 +69,7 @@ impl PluginValidation for Royalties {
         new_owner: &AccountInfo,
         _args: &TransferArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         match &self.rule_set {
             RuleSet::None => Ok(ValidationResult::Pass),
             RuleSet::ProgramAllowList(allow_list) => {
@@ -95,7 +94,7 @@ impl PluginValidation for Royalties {
         _authority: &AccountInfo,
         _args: &CompressArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -104,7 +103,7 @@ impl PluginValidation for Royalties {
         _authority: &AccountInfo,
         _args: &DecompressArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 }

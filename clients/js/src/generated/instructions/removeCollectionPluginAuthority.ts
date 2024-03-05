@@ -26,9 +26,12 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  RemovePluginAuthorityArgs,
-  RemovePluginAuthorityArgsArgs,
-  getRemovePluginAuthorityArgsSerializer,
+  Authority,
+  AuthorityArgs,
+  PluginType,
+  PluginTypeArgs,
+  getAuthoritySerializer,
+  getPluginTypeSerializer,
 } from '../types';
 
 // Accounts.
@@ -48,11 +51,13 @@ export type RemoveCollectionPluginAuthorityInstructionAccounts = {
 // Data.
 export type RemoveCollectionPluginAuthorityInstructionData = {
   discriminator: number;
-  removePluginAuthorityArgs: RemovePluginAuthorityArgs;
+  pluginType: PluginType;
+  authorityToRemove: Authority;
 };
 
 export type RemoveCollectionPluginAuthorityInstructionDataArgs = {
-  removePluginAuthorityArgs: RemovePluginAuthorityArgsArgs;
+  pluginType: PluginTypeArgs;
+  authorityToRemove: AuthorityArgs;
 };
 
 export function getRemoveCollectionPluginAuthorityInstructionDataSerializer(): Serializer<
@@ -67,7 +72,8 @@ export function getRemoveCollectionPluginAuthorityInstructionDataSerializer(): S
     struct<RemoveCollectionPluginAuthorityInstructionData>(
       [
         ['discriminator', u8()],
-        ['removePluginAuthorityArgs', getRemovePluginAuthorityArgsSerializer()],
+        ['pluginType', getPluginTypeSerializer()],
+        ['authorityToRemove', getAuthoritySerializer()],
       ],
       { description: 'RemoveCollectionPluginAuthorityInstructionData' }
     ),

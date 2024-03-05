@@ -6,8 +6,6 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-export * from './addPluginArgs';
-export * from './addPluginAuthorityArgs';
 export * from './authority';
 export * from './burn';
 export * from './compressionProof';
@@ -22,12 +20,8 @@ export * from './key';
 export * from './plugin';
 export * from './pluginType';
 export * from './registryRecord';
-export * from './removePluginArgs';
-export * from './removePluginAuthorityArgs';
 export * from './royalties';
 export * from './ruleSet';
 export * from './transfer';
-export * from './updateArgs';
 export * from './updateAuthority';
 export * from './updateDelegate';
-export * from './updatePluginArgs';

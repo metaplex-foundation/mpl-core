@@ -2,7 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::{
-    processor::{CompressArgs, CreateArgs, DecompressArgs, TransferArgs, UpdateArgs},
+    processor::{CompressArgs, CreateArgs, DecompressArgs, TransferArgs},
     state::{Authority, DataBlob},
 };
 
@@ -50,7 +50,6 @@ impl PluginValidation for Burn {
     fn validate_update(
         &self,
         _authority: &AccountInfo,
-        _args: &UpdateArgs,
         _authorities: &[Authority],
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)

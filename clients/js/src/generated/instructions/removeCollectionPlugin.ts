@@ -25,11 +25,7 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import {
-  RemovePluginArgs,
-  RemovePluginArgsArgs,
-  getRemovePluginArgsSerializer,
-} from '../types';
+import { PluginType, PluginTypeArgs, getPluginTypeSerializer } from '../types';
 
 // Accounts.
 export type RemoveCollectionPluginInstructionAccounts = {
@@ -48,11 +44,11 @@ export type RemoveCollectionPluginInstructionAccounts = {
 // Data.
 export type RemoveCollectionPluginInstructionData = {
   discriminator: number;
-  removePluginArgs: RemovePluginArgs;
+  pluginType: PluginType;
 };
 
 export type RemoveCollectionPluginInstructionDataArgs = {
-  removePluginArgs: RemovePluginArgsArgs;
+  pluginType: PluginTypeArgs;
 };
 
 export function getRemoveCollectionPluginInstructionDataSerializer(): Serializer<
@@ -67,7 +63,7 @@ export function getRemoveCollectionPluginInstructionDataSerializer(): Serializer
     struct<RemoveCollectionPluginInstructionData>(
       [
         ['discriminator', u8()],
-        ['removePluginArgs', getRemovePluginArgsSerializer()],
+        ['pluginType', getPluginTypeSerializer()],
       ],
       { description: 'RemoveCollectionPluginInstructionData' }
     ),

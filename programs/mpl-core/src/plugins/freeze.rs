@@ -1,10 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::account_info::AccountInfo;
+use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::{
-    processor::{
-        CompressArgs, CreateArgs, DecompressArgs, TransferArgs, UpdateArgs, UpdatePluginArgs,
-    },
+    processor::{CompressArgs, CreateArgs, DecompressArgs, TransferArgs},
     state::{Asset, Authority, DataBlob},
 };
 
@@ -48,16 +46,15 @@ impl PluginValidation for Freeze {
         _authority: &AccountInfo,
         _args: &CreateArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_update(
         &self,
         _authority: &AccountInfo,
-        _args: &UpdateArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -65,9 +62,8 @@ impl PluginValidation for Freeze {
         &self,
         asset: &Asset,
         authority: &AccountInfo,
-        _args: &UpdatePluginArgs,
         authorities: &[Authority],
-    ) -> Result<ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         // The owner can't update the freeze status.
         if (authority.key != &asset.owner
             && (authority.key == &asset.update_authority.key()
@@ -90,7 +86,7 @@ impl PluginValidation for Freeze {
         &self,
         _authority: &AccountInfo,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         if self.frozen {
             Ok(ValidationResult::Rejected)
         } else {
@@ -104,7 +100,7 @@ impl PluginValidation for Freeze {
         _new_owner: &AccountInfo,
         _args: &TransferArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         if self.frozen {
             Ok(ValidationResult::Rejected)
         } else {
@@ -117,7 +113,7 @@ impl PluginValidation for Freeze {
         _authority: &AccountInfo,
         _args: &CompressArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -126,7 +122,7 @@ impl PluginValidation for Freeze {
         _authority: &AccountInfo,
         _args: &DecompressArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -135,7 +131,7 @@ impl PluginValidation for Freeze {
         _authority: &AccountInfo,
         _args: &crate::processor::AddPluginAuthorityArgs,
         _authorities: &[Authority],
-    ) -> Result<super::ValidationResult, solana_program::program_error::ProgramError> {
+    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 }

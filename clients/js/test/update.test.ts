@@ -29,10 +29,8 @@ test('it can update an asset to be larger', async (t) => {
 
   await update(umi, {
     asset: assetAddress.publicKey,
-    updateArgs: {
-      newName: 'Test Bread 2',
-      newUri: 'https://example.com/bread2',
-    }
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -62,10 +60,8 @@ test('it can update an asset to be smaller', async (t) => {
 
   await update(umi, {
     asset: assetAddress.publicKey,
-    updateArgs: {
-      newName: '',
-      newUri: '',
-    }
+    newName: '',
+    newUri: '',
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -95,20 +91,16 @@ test('it can update an asset with plugins to be larger', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    addPluginArgs: {
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
-      },
-    }
+    plugin: {
+      __kind: 'Freeze',
+      fields: [{ frozen: false }],
+    },
   }).sendAndConfirm(umi);
 
   await update(umi, {
     asset: assetAddress.publicKey,
-    updateArgs: {
-      newName: 'Test Bread 2',
-      newUri: 'https://example.com/bread2',
-    }
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -162,20 +154,16 @@ test('it can update an asset with plugins to be smaller', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    addPluginArgs: {
-      plugin: {
-        __kind: 'Freeze',
-        fields: [{ frozen: false }],
-      },
-    }
+    plugin: {
+      __kind: 'Freeze',
+      fields: [{ frozen: false }],
+    },
   }).sendAndConfirm(umi);
 
   await update(umi, {
     asset: assetAddress.publicKey,
-    updateArgs: {
-      newName: '',
-      newUri: '',
-    }
+    newName: '',
+    newUri: '',
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.

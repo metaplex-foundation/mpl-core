@@ -25,11 +25,7 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import {
-  AddPluginArgs,
-  AddPluginArgsArgs,
-  getAddPluginArgsSerializer,
-} from '../types';
+import { Plugin, PluginArgs, getPluginSerializer } from '../types';
 
 // Accounts.
 export type AddPluginInstructionAccounts = {
@@ -50,10 +46,10 @@ export type AddPluginInstructionAccounts = {
 // Data.
 export type AddPluginInstructionData = {
   discriminator: number;
-  addPluginArgs: AddPluginArgs;
+  plugin: Plugin;
 };
 
-export type AddPluginInstructionDataArgs = { addPluginArgs: AddPluginArgsArgs };
+export type AddPluginInstructionDataArgs = { plugin: PluginArgs };
 
 export function getAddPluginInstructionDataSerializer(): Serializer<
   AddPluginInstructionDataArgs,
@@ -67,7 +63,7 @@ export function getAddPluginInstructionDataSerializer(): Serializer<
     struct<AddPluginInstructionData>(
       [
         ['discriminator', u8()],
-        ['addPluginArgs', getAddPluginArgsSerializer()],
+        ['plugin', getPluginSerializer()],
       ],
       { description: 'AddPluginInstructionData' }
     ),

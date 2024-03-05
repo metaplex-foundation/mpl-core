@@ -3,15 +3,17 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
 use crate::processor::{
-    AddPluginArgs, AddPluginAuthorityArgs, BurnArgs, CompressArgs, CreateArgs,
-    CreateCollectionArgs, DecompressArgs, RemovePluginArgs, RemovePluginAuthorityArgs,
-    TransferArgs, UpdateArgs, UpdatePluginArgs,
+    AddCollectionPluginArgs, AddCollectionPluginAuthorityArgs, AddPluginArgs,
+    AddPluginAuthorityArgs, BurnArgs, BurnCollectionArgs, CompressArgs, CreateArgs,
+    CreateCollectionArgs, DecompressArgs, RemoveCollectionPluginArgs,
+    RemoveCollectionPluginAuthorityArgs, RemovePluginArgs, RemovePluginAuthorityArgs, TransferArgs,
+    UpdateArgs, UpdateCollectionArgs, UpdateCollectionPluginArgs, UpdatePluginArgs,
 };
 
 /// Instructions supported by the mpl-core program.
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 #[rustfmt::skip]
-pub enum MplAssetInstruction {
+pub(crate) enum MplAssetInstruction {
     /// Create a new mpl-core Asset.
     /// This function creates the initial Asset, with or without plugins.
     #[account(0, writable, signer, name="asset", desc = "The address of the new asset")]
@@ -48,7 +50,7 @@ pub enum MplAssetInstruction {
     #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    AddCollectionPlugin(AddPluginArgs),
+    AddCollectionPlugin(AddCollectionPluginArgs),
 
     /// Remove a plugin from an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
@@ -65,7 +67,7 @@ pub enum MplAssetInstruction {
     #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    RemoveCollectionPlugin(RemovePluginArgs),
+    RemoveCollectionPlugin(RemoveCollectionPluginArgs),
 
     /// Update a plugin of an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
@@ -82,7 +84,7 @@ pub enum MplAssetInstruction {
     #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    UpdateCollectionPlugin(UpdatePluginArgs),
+    UpdateCollectionPlugin(UpdateCollectionPluginArgs),
 
     /// Add an authority to an mpl-core plugin.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
@@ -99,7 +101,7 @@ pub enum MplAssetInstruction {
     #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    AddCollectionPluginAuthority(AddPluginAuthorityArgs),
+    AddCollectionPluginAuthority(AddCollectionPluginAuthorityArgs),
 
     /// Remove an authority from an mpl-core plugin.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
@@ -116,7 +118,7 @@ pub enum MplAssetInstruction {
     #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    RemoveCollectionPluginAuthority(RemovePluginAuthorityArgs),
+    RemoveCollectionPluginAuthority(RemoveCollectionPluginAuthorityArgs),
 
     /// Burn an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
@@ -131,7 +133,7 @@ pub enum MplAssetInstruction {
     #[account(1, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    BurnCollection,
+    BurnCollection(BurnCollectionArgs),
 
     // Transfer an asset.
     /// Transfer an asset by changing its owner.
@@ -159,7 +161,7 @@ pub enum MplAssetInstruction {
     #[account(3, optional, name="new_update_authority", desc = "The new update authority of the asset")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    UpdateCollection(UpdateArgs),
+    UpdateCollection(UpdateCollectionArgs),
 
     /// Create a new mpl-core.
     /// This function creates the initial mpl-core

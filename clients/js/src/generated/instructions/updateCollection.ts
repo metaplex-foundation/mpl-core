@@ -8,6 +8,8 @@
 
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -17,6 +19,8 @@ import {
 import {
   Serializer,
   mapSerializer,
+  option,
+  string,
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
@@ -25,7 +29,6 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import { UpdateArgs, UpdateArgsArgs, getUpdateArgsSerializer } from '../types';
 
 // Accounts.
 export type UpdateCollectionInstructionAccounts = {
@@ -46,11 +49,13 @@ export type UpdateCollectionInstructionAccounts = {
 // Data.
 export type UpdateCollectionInstructionData = {
   discriminator: number;
-  updateArgs: UpdateArgs;
+  newName: Option<string>;
+  newUri: Option<string>;
 };
 
 export type UpdateCollectionInstructionDataArgs = {
-  updateArgs: UpdateArgsArgs;
+  newName: OptionOrNullable<string>;
+  newUri: OptionOrNullable<string>;
 };
 
 export function getUpdateCollectionInstructionDataSerializer(): Serializer<
@@ -65,7 +70,8 @@ export function getUpdateCollectionInstructionDataSerializer(): Serializer<
     struct<UpdateCollectionInstructionData>(
       [
         ['discriminator', u8()],
-        ['updateArgs', getUpdateArgsSerializer()],
+        ['newName', option(string())],
+        ['newUri', option(string())],
       ],
       { description: 'UpdateCollectionInstructionData' }
     ),

@@ -14,7 +14,7 @@ use crate::{
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct UpdateArgs {
+pub(crate) struct UpdateArgs {
     pub new_name: Option<String>,
     pub new_uri: Option<String>,
 }
@@ -53,11 +53,8 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
                 record.plugin_type.check_transfer(),
                 CheckResult::CanApprove | CheckResult::CanReject
             ) {
-                let result = Plugin::load(ctx.accounts.asset, record.offset)?.validate_update(
-                    ctx.accounts.authority,
-                    &args,
-                    &record.authorities,
-                )?;
+                let result = Plugin::load(ctx.accounts.asset, record.offset)?
+                    .validate_update(ctx.accounts.authority, &record.authorities)?;
                 if result == ValidationResult::Rejected {
                     return Err(MplCoreError::InvalidAuthority.into());
                 } else if result == ValidationResult::Approved {
@@ -156,9 +153,16 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
     Ok(())
 }
 
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct UpdateCollectionArgs {
+    pub new_name: Option<String>,
+    pub new_uri: Option<String>,
+}
+
 pub(crate) fn update_collection<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: UpdateArgs,
+    args: UpdateCollectionArgs,
 ) -> ProgramResult {
     // Accounts.
     let ctx = UpdateCollectionAccounts::context(accounts)?;
@@ -195,7 +199,7 @@ pub(crate) fn update_collection<'a>(
                 CheckResult::CanApprove | CheckResult::CanReject
             ) {
                 let result = Plugin::load(ctx.accounts.collection, record.offset)?
-                    .validate_update(ctx.accounts.authority, &args, &record.authorities)?;
+                    .validate_update(ctx.accounts.authority, &record.authorities)?;
                 if result == ValidationResult::Rejected {
                     return Err(MplCoreError::InvalidAuthority.into());
                 } else if result == ValidationResult::Approved {

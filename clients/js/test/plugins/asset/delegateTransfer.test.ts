@@ -31,23 +31,19 @@ test('a delegate can transfer the asset', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    addPluginArgs: {
-      plugin: {
-        __kind: 'Transfer',
-        fields: [{}],
-      },
-    }
+    plugin: {
+      __kind: 'Transfer',
+      fields: [{}],
+    },
   }).sendAndConfirm(umi);
 
   await addPluginAuthority(umi, {
     asset: assetAddress.publicKey,
-    addPluginAuthorityArgs: {
-      pluginType: PluginType.Transfer,
-      newAuthority: {
-        __kind: 'Pubkey',
-        address: delegateAddress.publicKey,
-      },
-    }
+    pluginType: PluginType.Transfer,
+    newAuthority: {
+      __kind: 'Pubkey',
+      address: delegateAddress.publicKey,
+    },
   }).sendAndConfirm(umi);
 
   await transfer(umi, {

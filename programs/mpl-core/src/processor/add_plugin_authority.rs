@@ -12,7 +12,7 @@ use crate::{
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct AddPluginAuthorityArgs {
+pub(crate) struct AddPluginAuthorityArgs {
     pub plugin_type: PluginType,
     pub new_authority: Authority,
 }
@@ -43,9 +43,16 @@ pub(crate) fn add_plugin_authority<'a>(
     )
 }
 
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct AddCollectionPluginAuthorityArgs {
+    pub plugin_type: PluginType,
+    pub new_authority: Authority,
+}
+
 pub(crate) fn add_collection_plugin_authority<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: AddPluginAuthorityArgs,
+    args: AddCollectionPluginAuthorityArgs,
 ) -> ProgramResult {
     let ctx = AddCollectionPluginAuthorityAccounts::context(accounts)?;
 

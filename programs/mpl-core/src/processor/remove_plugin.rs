@@ -12,7 +12,7 @@ use crate::{
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct RemovePluginArgs {
+pub(crate) struct RemovePluginArgs {
     plugin_type: PluginType,
 }
 
@@ -79,9 +79,15 @@ pub(crate) fn remove_plugin<'a>(
     process_remove_plugin()
 }
 
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct RemoveCollectionPluginArgs {
+    plugin_type: PluginType,
+}
+
 pub(crate) fn remove_collection_plugin<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: RemovePluginArgs,
+    args: RemoveCollectionPluginArgs,
 ) -> ProgramResult {
     let ctx = RemoveCollectionPluginAccounts::context(accounts)?;
 

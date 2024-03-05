@@ -33,25 +33,21 @@ test('it can create a new asset with a collection if it is the collection update
 
   await addCollectionPlugin(umi, {
     collection: collectionAddress.publicKey,
-    addPluginArgs: {
-      plugin: {
-        __kind: 'UpdateDelegate',
-        fields: [{}],
-      },
-    }
+    plugin: {
+      __kind: 'UpdateDelegate',
+      fields: [{}],
+    },
   }).sendAndConfirm(umi);
 
   // console.log(JSON.stringify(await fetchCollectionWithPlugins(umi, collectionAddress.publicKey), (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
 
   await addCollectionPluginAuthority(umi, {
     collection: collectionAddress.publicKey,
-    addPluginAuthorityArgs: {
-      pluginType: PluginType.UpdateDelegate,
-      newAuthority: {
-        __kind: 'Pubkey',
-        address: updateDelegate.publicKey,
-      },
-    }
+    pluginType: PluginType.UpdateDelegate,
+    newAuthority: {
+      __kind: 'Pubkey',
+      address: updateDelegate.publicKey,
+    },
   }).sendAndConfirm(umi);
 
   const collection = await fetchCollectionWithPlugins(

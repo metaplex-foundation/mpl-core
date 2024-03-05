@@ -27,7 +27,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    addPluginArgs: { plugin: plugin('Freeze', [{ frozen: true }]), }
+    plugin: plugin('Freeze', [{ frozen: true }]),
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -68,7 +68,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
 
   await updatePlugin(umi, {
     asset: assetAddress.publicKey,
-    updatePluginArgs: { plugin: plugin('Freeze', [{ frozen: false }]), }
+    plugin: plugin('Freeze', [{ frozen: false }]),
   }).sendAndConfirm(umi);
 
 

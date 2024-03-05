@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::UpdatePluginArgs;
+use crate::generated::types::Plugin;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -106,7 +106,7 @@ impl UpdatePluginInstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UpdatePluginInstructionArgs {
-    pub update_plugin_args: UpdatePluginArgs,
+    pub plugin: Plugin,
 }
 
 /// Instruction builder.
@@ -118,7 +118,7 @@ pub struct UpdatePluginBuilder {
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
-    update_plugin_args: Option<UpdatePluginArgs>,
+    plugin: Option<Plugin>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -170,8 +170,8 @@ impl UpdatePluginBuilder {
         self
     }
     #[inline(always)]
-    pub fn update_plugin_args(&mut self, update_plugin_args: UpdatePluginArgs) -> &mut Self {
-        self.update_plugin_args = Some(update_plugin_args);
+    pub fn plugin(&mut self, plugin: Plugin) -> &mut Self {
+        self.plugin = Some(plugin);
         self
     }
     /// Add an aditional account to the instruction.
@@ -205,10 +205,7 @@ impl UpdatePluginBuilder {
             log_wrapper: self.log_wrapper,
         };
         let args = UpdatePluginInstructionArgs {
-            update_plugin_args: self
-                .update_plugin_args
-                .clone()
-                .expect("update_plugin_args is not set"),
+            plugin: self.plugin.clone().expect("plugin is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -403,7 +400,7 @@ impl<'a, 'b> UpdatePluginCpiBuilder<'a, 'b> {
             payer: None,
             system_program: None,
             log_wrapper: None,
-            update_plugin_args: None,
+            plugin: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -463,8 +460,8 @@ impl<'a, 'b> UpdatePluginCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn update_plugin_args(&mut self, update_plugin_args: UpdatePluginArgs) -> &mut Self {
-        self.instruction.update_plugin_args = Some(update_plugin_args);
+    pub fn plugin(&mut self, plugin: Plugin) -> &mut Self {
+        self.instruction.plugin = Some(plugin);
         self
     }
     /// Add an additional account to the instruction.
@@ -509,11 +506,7 @@ impl<'a, 'b> UpdatePluginCpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = UpdatePluginInstructionArgs {
-            update_plugin_args: self
-                .instruction
-                .update_plugin_args
-                .clone()
-                .expect("update_plugin_args is not set"),
+            plugin: self.instruction.plugin.clone().expect("plugin is not set"),
         };
         let instruction = UpdatePluginCpi {
             __program: self.instruction.__program,
@@ -549,7 +542,7 @@ struct UpdatePluginCpiBuilderInstruction<'a, 'b> {
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    update_plugin_args: Option<UpdatePluginArgs>,
+    plugin: Option<Plugin>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,
