@@ -109,7 +109,16 @@ pub struct RemovePluginInstructionArgs {
     pub plugin_type: PluginType,
 }
 
-/// Instruction builder.
+/// Instruction builder for `RemovePlugin`.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[writable, optional]` collection
+///   2. `[signer]` authority
+///   3. `[writable, signer, optional]` payer
+///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   5. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct RemovePluginBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
@@ -385,7 +394,16 @@ impl<'a, 'b> RemovePluginCpi<'a, 'b> {
     }
 }
 
-/// `remove_plugin` CPI instruction builder.
+/// Instruction builder for `RemovePlugin` via CPI.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[writable, optional]` collection
+///   2. `[signer]` authority
+///   3. `[writable, signer, optional]` payer
+///   4. `[]` system_program
+///   5. `[optional]` log_wrapper
 pub struct RemovePluginCpiBuilder<'a, 'b> {
     instruction: Box<RemovePluginCpiBuilderInstruction<'a, 'b>>,
 }

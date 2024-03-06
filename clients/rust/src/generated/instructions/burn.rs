@@ -103,7 +103,15 @@ pub struct BurnInstructionArgs {
     pub compression_proof: Option<CompressionProof>,
 }
 
-/// Instruction builder.
+/// Instruction builder for `Burn`.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[writable, optional]` collection
+///   2. `[signer]` authority
+///   3. `[writable, signer, optional]` payer
+///   4. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct BurnBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
@@ -359,7 +367,15 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
     }
 }
 
-/// `burn` CPI instruction builder.
+/// Instruction builder for `Burn` via CPI.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[writable, optional]` collection
+///   2. `[signer]` authority
+///   3. `[writable, signer, optional]` payer
+///   4. `[optional]` log_wrapper
 pub struct BurnCpiBuilder<'a, 'b> {
     instruction: Box<BurnCpiBuilderInstruction<'a, 'b>>,
 }

@@ -106,28 +106,48 @@ export function create(
   );
 
   // Accounts.
-  const resolvedAccounts: ResolvedAccountsWithIndices = {
-    asset: { index: 0, isWritable: true, value: input.asset ?? null },
-    collection: { index: 1, isWritable: true, value: input.collection ?? null },
-    authority: { index: 2, isWritable: false, value: input.authority ?? null },
-    payer: { index: 3, isWritable: true, value: input.payer ?? null },
-    owner: { index: 4, isWritable: false, value: input.owner ?? null },
+  const resolvedAccounts = {
+    asset: {
+      index: 0,
+      isWritable: true as boolean,
+      value: input.asset ?? null,
+    },
+    collection: {
+      index: 1,
+      isWritable: true as boolean,
+      value: input.collection ?? null,
+    },
+    authority: {
+      index: 2,
+      isWritable: false as boolean,
+      value: input.authority ?? null,
+    },
+    payer: {
+      index: 3,
+      isWritable: true as boolean,
+      value: input.payer ?? null,
+    },
+    owner: {
+      index: 4,
+      isWritable: false as boolean,
+      value: input.owner ?? null,
+    },
     updateAuthority: {
       index: 5,
-      isWritable: false,
+      isWritable: false as boolean,
       value: input.updateAuthority ?? null,
     },
     systemProgram: {
       index: 6,
-      isWritable: false,
+      isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
       index: 7,
-      isWritable: false,
+      isWritable: false as boolean,
       value: input.logWrapper ?? null,
     },
-  };
+  } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
   const resolvedArgs: CreateInstructionArgs = { ...input };

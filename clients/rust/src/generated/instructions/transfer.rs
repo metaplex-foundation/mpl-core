@@ -109,7 +109,16 @@ pub struct TransferInstructionArgs {
     pub compression_proof: Option<CompressionProof>,
 }
 
-/// Instruction builder.
+/// Instruction builder for `Transfer`.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[optional]` collection
+///   2. `[signer]` authority
+///   3. `[writable, signer, optional]` payer
+///   4. `[]` new_owner
+///   5. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct TransferBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
@@ -383,7 +392,16 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
     }
 }
 
-/// `transfer` CPI instruction builder.
+/// Instruction builder for `Transfer` via CPI.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[optional]` collection
+///   2. `[signer]` authority
+///   3. `[writable, signer, optional]` payer
+///   4. `[]` new_owner
+///   5. `[optional]` log_wrapper
 pub struct TransferCpiBuilder<'a, 'b> {
     instruction: Box<TransferCpiBuilderInstruction<'a, 'b>>,
 }

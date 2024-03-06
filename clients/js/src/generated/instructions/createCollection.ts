@@ -98,21 +98,33 @@ export function createCollection(
   );
 
   // Accounts.
-  const resolvedAccounts: ResolvedAccountsWithIndices = {
-    collection: { index: 0, isWritable: true, value: input.collection ?? null },
+  const resolvedAccounts = {
+    collection: {
+      index: 0,
+      isWritable: true as boolean,
+      value: input.collection ?? null,
+    },
     updateAuthority: {
       index: 1,
-      isWritable: false,
+      isWritable: false as boolean,
       value: input.updateAuthority ?? null,
     },
-    payer: { index: 2, isWritable: true, value: input.payer ?? null },
-    owner: { index: 3, isWritable: false, value: input.owner ?? null },
+    payer: {
+      index: 2,
+      isWritable: true as boolean,
+      value: input.payer ?? null,
+    },
+    owner: {
+      index: 3,
+      isWritable: false as boolean,
+      value: input.owner ?? null,
+    },
     systemProgram: {
       index: 4,
-      isWritable: false,
+      isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
-  };
+  } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
   const resolvedArgs: CreateCollectionInstructionArgs = { ...input };

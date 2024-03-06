@@ -60,9 +60,13 @@ export function collect(
   );
 
   // Accounts.
-  const resolvedAccounts: ResolvedAccountsWithIndices = {
-    recipient: { index: 0, isWritable: true, value: input.recipient ?? null },
-  };
+  const resolvedAccounts = {
+    recipient: {
+      index: 0,
+      isWritable: true as boolean,
+      value: input.recipient ?? null,
+    },
+  } satisfies ResolvedAccountsWithIndices;
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(
