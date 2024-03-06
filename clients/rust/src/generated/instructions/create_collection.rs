@@ -101,7 +101,15 @@ pub struct CreateCollectionInstructionArgs {
     pub plugins: Vec<Plugin>,
 }
 
-/// Instruction builder.
+/// Instruction builder for `CreateCollection`.
+///
+/// ### Accounts:
+///
+///   0. `[writable, signer]` collection
+///   1. `[optional]` update_authority
+///   2. `[writable, signer]` payer
+///   3. `[optional]` owner
+///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Default)]
 pub struct CreateCollectionBuilder {
     collection: Option<solana_program::pubkey::Pubkey>,
@@ -363,7 +371,15 @@ impl<'a, 'b> CreateCollectionCpi<'a, 'b> {
     }
 }
 
-/// `create_collection` CPI instruction builder.
+/// Instruction builder for `CreateCollection` via CPI.
+///
+/// ### Accounts:
+///
+///   0. `[writable, signer]` collection
+///   1. `[optional]` update_authority
+///   2. `[writable, signer]` payer
+///   3. `[optional]` owner
+///   4. `[]` system_program
 pub struct CreateCollectionCpiBuilder<'a, 'b> {
     instruction: Box<CreateCollectionCpiBuilderInstruction<'a, 'b>>,
 }

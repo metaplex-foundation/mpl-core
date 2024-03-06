@@ -95,7 +95,16 @@ impl CompressInstructionData {
     }
 }
 
-/// Instruction builder.
+/// Instruction builder for `Compress`.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[optional]` collection
+///   2. `[signer]` owner
+///   3. `[writable, signer, optional]` payer
+///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   5. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct CompressBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
@@ -356,7 +365,16 @@ impl<'a, 'b> CompressCpi<'a, 'b> {
     }
 }
 
-/// `compress` CPI instruction builder.
+/// Instruction builder for `Compress` via CPI.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[optional]` collection
+///   2. `[signer]` owner
+///   3. `[writable, signer, optional]` payer
+///   4. `[]` system_program
+///   5. `[optional]` log_wrapper
 pub struct CompressCpiBuilder<'a, 'b> {
     instruction: Box<CompressCpiBuilderInstruction<'a, 'b>>,
 }

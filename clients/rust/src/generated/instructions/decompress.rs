@@ -108,7 +108,16 @@ pub struct DecompressInstructionArgs {
     pub compression_proof: CompressionProof,
 }
 
-/// Instruction builder.
+/// Instruction builder for `Decompress`.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[optional]` collection
+///   2. `[signer]` owner
+///   3. `[writable, signer, optional]` payer
+///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   5. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct DecompressBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
@@ -387,7 +396,16 @@ impl<'a, 'b> DecompressCpi<'a, 'b> {
     }
 }
 
-/// `decompress` CPI instruction builder.
+/// Instruction builder for `Decompress` via CPI.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[optional]` collection
+///   2. `[signer]` owner
+///   3. `[writable, signer, optional]` payer
+///   4. `[]` system_program
+///   5. `[optional]` log_wrapper
 pub struct DecompressCpiBuilder<'a, 'b> {
     instruction: Box<DecompressCpiBuilderInstruction<'a, 'b>>,
 }

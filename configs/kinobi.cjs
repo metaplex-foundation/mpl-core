@@ -10,7 +10,7 @@ const kinobi = k.createFromIdls([path.join(idlDir, "mpl_core.json")]);
 
 // Update programs.
 kinobi.update(
-  new k.UpdateProgramsVisitor({
+  k.updateProgramsVisitor({
     mplCoreProgram: { name: "mplCore" },
   })
 );
@@ -47,7 +47,7 @@ kinobi.update(
 
 // Update instructions.
 kinobi.update(
-  new k.UpdateInstructionsVisitor({
+  k.updateInstructionsVisitor({
     // create: {
     //   bytesCreatedOnChain: k.bytesFromAccount("assetAccount"),
     // },
@@ -55,9 +55,9 @@ kinobi.update(
 );
 
 // Set ShankAccount discriminator.
-const key = (name) => ({ field: "key", value: k.vEnum("Key", name) });
+const key = (name) => ({ field: "key", value: k.enumValueNode("Key", name) });
 kinobi.update(
-  new k.SetAccountDiscriminatorFromFieldVisitor({
+  k.setAccountDiscriminatorFromFieldVisitor({
     asset: key("Asset"),
     collection: key("Collection"),
     // myPdaAccount: key("MyPdaAccount"),
@@ -67,13 +67,13 @@ kinobi.update(
 // Render JavaScript.
 const jsDir = path.join(clientDir, "js", "src", "generated");
 const prettier = require(path.join(clientDir, "js", ".prettierrc.json"));
-kinobi.accept(new k.RenderJavaScriptVisitor(jsDir, { prettier }));
+kinobi.accept(k.renderJavaScriptVisitor(jsDir, { prettier }));
 
 // Render Rust.
 const crateDir = path.join(clientDir, "rust");
 const rustDir = path.join(clientDir, "rust", "src", "generated");
 kinobi.accept(
-  new k.RenderRustVisitor(rustDir, {
+  k.renderRustVisitor(rustDir, {
     formatCode: true,
     crateFolder: crateDir,
   })

@@ -90,26 +90,38 @@ export function update(
   );
 
   // Accounts.
-  const resolvedAccounts: ResolvedAccountsWithIndices = {
-    asset: { index: 0, isWritable: true, value: input.asset ?? null },
-    authority: { index: 1, isWritable: false, value: input.authority ?? null },
-    payer: { index: 2, isWritable: true, value: input.payer ?? null },
+  const resolvedAccounts = {
+    asset: {
+      index: 0,
+      isWritable: true as boolean,
+      value: input.asset ?? null,
+    },
+    authority: {
+      index: 1,
+      isWritable: false as boolean,
+      value: input.authority ?? null,
+    },
+    payer: {
+      index: 2,
+      isWritable: true as boolean,
+      value: input.payer ?? null,
+    },
     newUpdateAuthority: {
       index: 3,
-      isWritable: false,
+      isWritable: false as boolean,
       value: input.newUpdateAuthority ?? null,
     },
     systemProgram: {
       index: 4,
-      isWritable: false,
+      isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
       index: 5,
-      isWritable: false,
+      isWritable: false as boolean,
       value: input.logWrapper ?? null,
     },
-  };
+  } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
   const resolvedArgs: UpdateInstructionArgs = { ...input };
