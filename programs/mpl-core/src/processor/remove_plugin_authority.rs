@@ -36,6 +36,35 @@ pub(crate) fn remove_plugin_authority<'a>(
     };
 
     let (asset, plugin_header, mut plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
+    
+    // pubkey authorities can remove themselves if they are a signer, skip subsequent checks
+    // TODO refactor this, duplicate code
+    let plugin_registry_some = match plugin_registry.as_ref() {
+        Some(registry) => registry,
+        None => return Err(MplCoreError::PluginsNotInitialized.into()),
+    };
+
+    let registry_record = &plugin_registry_some
+        .registry
+        .iter()
+        .find(|record| record.plugin_type == args.plugin_type)
+        .ok_or(MplCoreError::PluginNotFound)?;
+    if (Authority::Pubkey { address: ctx.accounts.authority.key.clone() } == args.authority_to_remove.clone() &&
+    registry_record.authorities.contains(&args.authority_to_remove)) {
+        return process_remove_plugin_authority(
+            ctx.accounts.asset,
+            payer,
+            ctx.accounts.system_program,
+            &Authority::Pubkey {
+                address: *ctx.accounts.authority.key,
+            },
+            &args.plugin_type,
+            &args.authority_to_remove,
+            plugin_header.as_ref(),
+            plugin_registry.as_mut(),
+        );
+    }
+    // End really bad code
 
     //TODO: Make this better.
     let authority_type = if ctx.accounts.authority.key == &asset.owner {
