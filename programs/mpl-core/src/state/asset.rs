@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
-use solana_program::{program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
     instruction::accounts::{
@@ -36,6 +36,11 @@ impl Asset {
         CheckResult::CanApprove
     }
 
+    /// Check permissions for the burn lifecycle event.
+    pub fn check_burn() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
     /// Check permissions for the update lifecycle event.
     pub fn check_update() -> CheckResult {
         CheckResult::CanApprove
@@ -61,8 +66,8 @@ impl Asset {
     }
 
     /// Validate the burn lifecycle event.
-    pub fn validate_burn(&self, ctx: &BurnAccounts) -> Result<ValidationResult, ProgramError> {
-        if ctx.authority.key == &self.owner {
+    pub fn validate_burn(&self, authority: &AccountInfo) -> Result<ValidationResult, ProgramError> {
+        if authority.key == &self.owner {
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)

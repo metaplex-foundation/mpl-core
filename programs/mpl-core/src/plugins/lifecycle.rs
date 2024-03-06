@@ -14,6 +14,7 @@ use super::{Plugin, PluginType};
 /// Lifecycle permissions
 /// Plugins use this field to indicate their permission to approve or deny
 /// a lifecycle action.
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum CheckResult {
     /// A plugin is permitted to approve a lifecycle action.
     CanApprove,

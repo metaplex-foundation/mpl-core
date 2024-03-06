@@ -1,9 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
-use solana_program::{program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
-    instruction::accounts::{BurnCollectionAccounts, UpdateCollectionAccounts},
+    instruction::accounts::UpdateCollectionAccounts,
     plugins::{CheckResult, ValidationResult},
 };
 
@@ -86,11 +86,8 @@ impl Collection {
     }
 
     /// Validate the burn lifecycle event.
-    pub fn validate_burn(
-        &self,
-        ctx: &BurnCollectionAccounts,
-    ) -> Result<ValidationResult, ProgramError> {
-        if ctx.authority.key == &self.update_authority {
+    pub fn validate_burn(&self, authority: &AccountInfo) -> Result<ValidationResult, ProgramError> {
+        if authority.key == &self.update_authority {
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
