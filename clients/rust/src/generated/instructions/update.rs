@@ -110,7 +110,16 @@ pub struct UpdateInstructionArgs {
     pub new_uri: Option<String>,
 }
 
-/// Instruction builder.
+/// Instruction builder for `Update`.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[signer]` authority
+///   2. `[writable, signer, optional]` payer
+///   3. `[optional]` new_update_authority
+///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   5. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct UpdateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
@@ -398,7 +407,16 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
     }
 }
 
-/// `update` CPI instruction builder.
+/// Instruction builder for `Update` via CPI.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[signer]` authority
+///   2. `[writable, signer, optional]` payer
+///   3. `[optional]` new_update_authority
+///   4. `[]` system_program
+///   5. `[optional]` log_wrapper
 pub struct UpdateCpiBuilder<'a, 'b> {
     instruction: Box<UpdateCpiBuilderInstruction<'a, 'b>>,
 }

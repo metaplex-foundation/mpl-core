@@ -92,26 +92,38 @@ export function decompress(
   );
 
   // Accounts.
-  const resolvedAccounts: ResolvedAccountsWithIndices = {
-    asset: { index: 0, isWritable: true, value: input.asset ?? null },
+  const resolvedAccounts = {
+    asset: {
+      index: 0,
+      isWritable: true as boolean,
+      value: input.asset ?? null,
+    },
     collection: {
       index: 1,
-      isWritable: false,
+      isWritable: false as boolean,
       value: input.collection ?? null,
     },
-    owner: { index: 2, isWritable: false, value: input.owner ?? null },
-    payer: { index: 3, isWritable: true, value: input.payer ?? null },
+    owner: {
+      index: 2,
+      isWritable: false as boolean,
+      value: input.owner ?? null,
+    },
+    payer: {
+      index: 3,
+      isWritable: true as boolean,
+      value: input.payer ?? null,
+    },
     systemProgram: {
       index: 4,
-      isWritable: false,
+      isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
       index: 5,
-      isWritable: false,
+      isWritable: false as boolean,
       value: input.logWrapper ?? null,
     },
-  };
+  } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
   const resolvedArgs: DecompressInstructionArgs = { ...input };

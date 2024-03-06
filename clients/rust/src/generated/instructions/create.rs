@@ -139,7 +139,18 @@ pub struct CreateInstructionArgs {
     pub plugins: Vec<Plugin>,
 }
 
-/// Instruction builder.
+/// Instruction builder for `Create`.
+///
+/// ### Accounts:
+///
+///   0. `[writable, signer]` asset
+///   1. `[writable, optional]` collection
+///   2. `[signer, optional]` authority
+///   3. `[writable, signer]` payer
+///   4. `[optional]` owner
+///   5. `[optional]` update_authority
+///   6. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   7. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct CreateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
@@ -495,7 +506,18 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
     }
 }
 
-/// `create` CPI instruction builder.
+/// Instruction builder for `Create` via CPI.
+///
+/// ### Accounts:
+///
+///   0. `[writable, signer]` asset
+///   1. `[writable, optional]` collection
+///   2. `[signer, optional]` authority
+///   3. `[writable, signer]` payer
+///   4. `[optional]` owner
+///   5. `[optional]` update_authority
+///   6. `[]` system_program
+///   7. `[optional]` log_wrapper
 pub struct CreateCpiBuilder<'a, 'b> {
     instruction: Box<CreateCpiBuilderInstruction<'a, 'b>>,
 }

@@ -100,7 +100,15 @@ pub struct UpdateCollectionPluginInstructionArgs {
     pub plugin: Plugin,
 }
 
-/// Instruction builder.
+/// Instruction builder for `UpdateCollectionPlugin`.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` collection
+///   1. `[signer]` authority
+///   2. `[writable, signer, optional]` payer
+///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   4. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct UpdateCollectionPluginBuilder {
     collection: Option<solana_program::pubkey::Pubkey>,
@@ -350,7 +358,15 @@ impl<'a, 'b> UpdateCollectionPluginCpi<'a, 'b> {
     }
 }
 
-/// `update_collection_plugin` CPI instruction builder.
+/// Instruction builder for `UpdateCollectionPlugin` via CPI.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` collection
+///   1. `[signer]` authority
+///   2. `[writable, signer, optional]` payer
+///   3. `[]` system_program
+///   4. `[optional]` log_wrapper
 pub struct UpdateCollectionPluginCpiBuilder<'a, 'b> {
     instruction: Box<UpdateCollectionPluginCpiBuilderInstruction<'a, 'b>>,
 }

@@ -17,7 +17,7 @@ const nameToErrorMap: Map<string, ProgramErrorConstructor> = new Map();
 
 /** InvalidSystemProgram: Invalid System Program */
 export class InvalidSystemProgramError extends ProgramError {
-  readonly name: string = 'InvalidSystemProgram';
+  override readonly name: string = 'InvalidSystemProgram';
 
   readonly code: number = 0x0; // 0
 
@@ -30,7 +30,7 @@ nameToErrorMap.set('InvalidSystemProgram', InvalidSystemProgramError);
 
 /** DeserializationError: Error deserializing account */
 export class DeserializationErrorError extends ProgramError {
-  readonly name: string = 'DeserializationError';
+  override readonly name: string = 'DeserializationError';
 
   readonly code: number = 0x1; // 1
 
@@ -43,7 +43,7 @@ nameToErrorMap.set('DeserializationError', DeserializationErrorError);
 
 /** SerializationError: Error serializing account */
 export class SerializationErrorError extends ProgramError {
-  readonly name: string = 'SerializationError';
+  override readonly name: string = 'SerializationError';
 
   readonly code: number = 0x2; // 2
 
@@ -56,7 +56,7 @@ nameToErrorMap.set('SerializationError', SerializationErrorError);
 
 /** PluginsNotInitialized: Plugins not initialized */
 export class PluginsNotInitializedError extends ProgramError {
-  readonly name: string = 'PluginsNotInitialized';
+  override readonly name: string = 'PluginsNotInitialized';
 
   readonly code: number = 0x3; // 3
 
@@ -69,7 +69,7 @@ nameToErrorMap.set('PluginsNotInitialized', PluginsNotInitializedError);
 
 /** PluginNotFound: Plugin not found */
 export class PluginNotFoundError extends ProgramError {
-  readonly name: string = 'PluginNotFound';
+  override readonly name: string = 'PluginNotFound';
 
   readonly code: number = 0x4; // 4
 
@@ -82,7 +82,7 @@ nameToErrorMap.set('PluginNotFound', PluginNotFoundError);
 
 /** NumericalOverflow: Numerical Overflow */
 export class NumericalOverflowError extends ProgramError {
-  readonly name: string = 'NumericalOverflow';
+  override readonly name: string = 'NumericalOverflow';
 
   readonly code: number = 0x5; // 5
 
@@ -95,7 +95,7 @@ nameToErrorMap.set('NumericalOverflow', NumericalOverflowError);
 
 /** IncorrectAccount: Incorrect account */
 export class IncorrectAccountError extends ProgramError {
-  readonly name: string = 'IncorrectAccount';
+  override readonly name: string = 'IncorrectAccount';
 
   readonly code: number = 0x6; // 6
 
@@ -108,7 +108,7 @@ nameToErrorMap.set('IncorrectAccount', IncorrectAccountError);
 
 /** IncorrectAssetHash: Incorrect asset hash */
 export class IncorrectAssetHashError extends ProgramError {
-  readonly name: string = 'IncorrectAssetHash';
+  override readonly name: string = 'IncorrectAssetHash';
 
   readonly code: number = 0x7; // 7
 
@@ -121,7 +121,7 @@ nameToErrorMap.set('IncorrectAssetHash', IncorrectAssetHashError);
 
 /** InvalidPlugin: Invalid Plugin */
 export class InvalidPluginError extends ProgramError {
-  readonly name: string = 'InvalidPlugin';
+  override readonly name: string = 'InvalidPlugin';
 
   readonly code: number = 0x8; // 8
 
@@ -134,7 +134,7 @@ nameToErrorMap.set('InvalidPlugin', InvalidPluginError);
 
 /** InvalidAuthority: Invalid Authority */
 export class InvalidAuthorityError extends ProgramError {
-  readonly name: string = 'InvalidAuthority';
+  override readonly name: string = 'InvalidAuthority';
 
   readonly code: number = 0x9; // 9
 
@@ -147,7 +147,7 @@ nameToErrorMap.set('InvalidAuthority', InvalidAuthorityError);
 
 /** AssetIsFrozen: Cannot transfer a frozen asset */
 export class AssetIsFrozenError extends ProgramError {
-  readonly name: string = 'AssetIsFrozen';
+  override readonly name: string = 'AssetIsFrozen';
 
   readonly code: number = 0xa; // 10
 
@@ -160,7 +160,7 @@ nameToErrorMap.set('AssetIsFrozen', AssetIsFrozenError);
 
 /** MissingCompressionProof: Missing compression proof */
 export class MissingCompressionProofError extends ProgramError {
-  readonly name: string = 'MissingCompressionProof';
+  override readonly name: string = 'MissingCompressionProof';
 
   readonly code: number = 0xb; // 11
 
@@ -173,7 +173,7 @@ nameToErrorMap.set('MissingCompressionProof', MissingCompressionProofError);
 
 /** CannotMigrateMasterWithSupply: Cannot migrate a master edition used for prints */
 export class CannotMigrateMasterWithSupplyError extends ProgramError {
-  readonly name: string = 'CannotMigrateMasterWithSupply';
+  override readonly name: string = 'CannotMigrateMasterWithSupply';
 
   readonly code: number = 0xc; // 12
 
@@ -189,7 +189,7 @@ nameToErrorMap.set(
 
 /** CannotMigratePrints: Cannot migrate a print edition */
 export class CannotMigratePrintsError extends ProgramError {
-  readonly name: string = 'CannotMigratePrints';
+  override readonly name: string = 'CannotMigratePrints';
 
   readonly code: number = 0xd; // 13
 
@@ -202,7 +202,7 @@ nameToErrorMap.set('CannotMigratePrints', CannotMigratePrintsError);
 
 /** CannotBurnCollection: Cannot burn a collection NFT */
 export class CannotBurnCollectionError extends ProgramError {
-  readonly name: string = 'CannotBurnCollection';
+  override readonly name: string = 'CannotBurnCollection';
 
   readonly code: number = 0xe; // 14
 
@@ -215,7 +215,7 @@ nameToErrorMap.set('CannotBurnCollection', CannotBurnCollectionError);
 
 /** PluginAlreadyExists: Plugin already exists */
 export class PluginAlreadyExistsError extends ProgramError {
-  readonly name: string = 'PluginAlreadyExists';
+  override readonly name: string = 'PluginAlreadyExists';
 
   readonly code: number = 0xf; // 15
 
@@ -228,7 +228,7 @@ nameToErrorMap.set('PluginAlreadyExists', PluginAlreadyExistsError);
 
 /** NumericalOverflowError: Numerical overflow */
 export class NumericalOverflowErrorError extends ProgramError {
-  readonly name: string = 'NumericalOverflowError';
+  override readonly name: string = 'NumericalOverflowError';
 
   readonly code: number = 0x10; // 16
 
@@ -241,7 +241,7 @@ nameToErrorMap.set('NumericalOverflowError', NumericalOverflowErrorError);
 
 /** AlreadyCompressed: Already compressed account */
 export class AlreadyCompressedError extends ProgramError {
-  readonly name: string = 'AlreadyCompressed';
+  override readonly name: string = 'AlreadyCompressed';
 
   readonly code: number = 0x11; // 17
 
@@ -254,7 +254,7 @@ nameToErrorMap.set('AlreadyCompressed', AlreadyCompressedError);
 
 /** AlreadyDecompressed: Already decompressed account */
 export class AlreadyDecompressedError extends ProgramError {
-  readonly name: string = 'AlreadyDecompressed';
+  override readonly name: string = 'AlreadyDecompressed';
 
   readonly code: number = 0x12; // 18
 
@@ -267,7 +267,7 @@ nameToErrorMap.set('AlreadyDecompressed', AlreadyDecompressedError);
 
 /** InvalidCollection: Invalid Collection passed in */
 export class InvalidCollectionError extends ProgramError {
-  readonly name: string = 'InvalidCollection';
+  override readonly name: string = 'InvalidCollection';
 
   readonly code: number = 0x13; // 19
 
@@ -280,7 +280,7 @@ nameToErrorMap.set('InvalidCollection', InvalidCollectionError);
 
 /** MissingUpdateAuthority: Missing update authority */
 export class MissingUpdateAuthorityError extends ProgramError {
-  readonly name: string = 'MissingUpdateAuthority';
+  override readonly name: string = 'MissingUpdateAuthority';
 
   readonly code: number = 0x14; // 20
 

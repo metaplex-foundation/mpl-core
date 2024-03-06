@@ -113,7 +113,16 @@ pub struct RemovePluginAuthorityInstructionArgs {
     pub authority_to_remove: Authority,
 }
 
-/// Instruction builder.
+/// Instruction builder for `RemovePluginAuthority`.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[writable, optional]` collection
+///   2. `[signer]` authority
+///   3. `[writable, signer, optional]` payer
+///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   5. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct RemovePluginAuthorityBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
@@ -401,7 +410,16 @@ impl<'a, 'b> RemovePluginAuthorityCpi<'a, 'b> {
     }
 }
 
-/// `remove_plugin_authority` CPI instruction builder.
+/// Instruction builder for `RemovePluginAuthority` via CPI.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[writable, optional]` collection
+///   2. `[signer]` authority
+///   3. `[writable, signer, optional]` payer
+///   4. `[]` system_program
+///   5. `[optional]` log_wrapper
 pub struct RemovePluginAuthorityCpiBuilder<'a, 'b> {
     instruction: Box<RemovePluginAuthorityCpiBuilderInstruction<'a, 'b>>,
 }
