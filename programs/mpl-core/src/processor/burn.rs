@@ -7,7 +7,10 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{BurnAccounts, BurnCollectionAccounts},
-    plugins::{CheckResult, Plugin, PluginType, RegistryRecord, ValidationResult},
+    plugins::{
+        validate_plugin_checks, CheckResult, Plugin, PluginType, RegistryRecord, ValidationResult,
+    },
+    processor::collect,
     state::{Asset, Collection, Compressible, CompressionProof, Key, SolanaAccount},
     utils::{close_program_account, fetch_core_data, load_key, verify_proof},
 };
@@ -50,115 +53,71 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
 
             // The asset approval overrides the collection approval.
             let asset_approval = Asset::check_burn();
-            let core_check = if asset_approval != CheckResult::None {
-                (Key::Asset, asset_approval)
-            } else {
-                (Key::Collection, Collection::check_burn())
+            let core_check = match asset_approval {
+                CheckResult::None => (Key::Collection, Collection::check_burn()),
+                _ => (Key::Asset, asset_approval),
             };
 
             // Check the collection plugins first.
-            let collection_plugin_registry = if let Some(collection_info) = ctx.accounts.collection
-            {
-                let (_, _, collection_plugin_registry) =
-                    fetch_core_data::<Collection>(collection_info)?;
-
-                if let Some(collection_plugin_registry) = collection_plugin_registry {
-                    collection_plugin_registry.check_burn(Key::Collection, &mut checks);
-
-                    Some(collection_plugin_registry)
-                } else {
-                    None
-                }
-            } else {
-                None
-            };
+            ctx.accounts.collection.and_then(|collection_info| {
+                fetch_core_data::<Collection>(collection_info)
+                    .map(|(_, _, registry)| {
+                        registry.map(|r| {
+                            r.check_burn(Key::Collection, &mut checks);
+                            r
+                        })
+                    })
+                    .ok()?
+            });
 
             // Next check the asset plugins. Plugins on the asset override the collection plugins,
             // so we don't need to validate the collection plugins if the asset has a plugin.
-            if let Some(plugin_registry) = &plugin_registry {
-                plugin_registry.check_burn(Key::Asset, &mut checks);
-            };
+            if let Some(registry) = plugin_registry.as_ref() {
+                registry.check_burn(Key::Asset, &mut checks);
+            }
 
             solana_program::msg!("checks: {:#?}", checks);
 
-            let mut approved = false;
-
-            // Do the core check.
-            match core_check.0 {
-                Key::Collection => match core_check.1 {
-                    CheckResult::CanApprove | CheckResult::CanReject => match Collection::load(
+            // Do the core validation.
+            let mut approved = matches!(
+                core_check,
+                (
+                    Key::Asset | Key::Collection,
+                    CheckResult::CanApprove | CheckResult::CanReject
+                )
+            ) && {
+                (match core_check.0 {
+                    Key::Collection => Collection::load(
                         ctx.accounts
                             .collection
                             .ok_or(MplCoreError::InvalidCollection)?,
                         0,
                     )?
-                    .validate_burn(ctx.accounts.authority)?
-                    {
-                        ValidationResult::Approved => {
-                            approved = true;
-                        }
-                        ValidationResult::Rejected => {
-                            return Err(MplCoreError::InvalidAuthority.into())
-                        }
-                        ValidationResult::Pass => (),
-                    },
-                    CheckResult::None => (),
-                },
-                Key::Asset => match core_check.1 {
-                    CheckResult::CanApprove | CheckResult::CanReject => {
-                        match Asset::load(ctx.accounts.asset, 0)?
-                            .validate_burn(ctx.accounts.authority)?
-                        {
-                            ValidationResult::Approved => {
-                                approved = true;
-                            }
-                            ValidationResult::Rejected => {
-                                return Err(MplCoreError::InvalidAuthority.into())
-                            }
-                            ValidationResult::Pass => (),
-                        }
+                    .validate_burn(ctx.accounts.authority)?,
+                    Key::Asset => {
+                        Asset::load(ctx.accounts.asset, 0)?.validate_burn(ctx.accounts.authority)?
                     }
-                    CheckResult::None => (),
-                },
-                _ => return Err(MplCoreError::IncorrectAccount.into()),
-            }
-
-            if let Some(collection_plugin_registry) = collection_plugin_registry {
-                for check in &checks {
-                    if check.1 .0 == Key::Collection
-                        && matches!(check.1 .1, CheckResult::CanApprove | CheckResult::CanReject)
-                    {
-                        let result = Plugin::load(
-                            ctx.accounts
-                                .collection
-                                .ok_or(MplCoreError::InvalidCollection)?,
-                            check.1 .2.offset,
-                        )?
-                        .validate_burn(ctx.accounts.authority, &check.1 .2.authorities)?;
-                        if result == ValidationResult::Rejected {
-                            return Err(MplCoreError::InvalidAuthority.into());
-                        } else if result == ValidationResult::Approved {
-                            approved = true;
-                        }
-                    }
-                }
+                    _ => return Err(MplCoreError::IncorrectAccount.into()),
+                }) == ValidationResult::Approved
             };
 
-            if let Some(plugin_registry) = &plugin_registry {
-                for check in &checks {
-                    if check.1 .0 == Key::Asset
-                        && matches!(check.1 .1, CheckResult::CanApprove | CheckResult::CanReject)
-                    {
-                        let result = Plugin::load(ctx.accounts.asset, check.1 .2.offset)?
-                            .validate_burn(ctx.accounts.authority, &check.1 .2.authorities)?;
-                        if result == ValidationResult::Rejected {
-                            return Err(MplCoreError::InvalidAuthority.into());
-                        } else if result == ValidationResult::Approved {
-                            approved = true;
-                        }
-                    }
-                }
-            };
+            approved = approved
+                || validate_plugin_checks(
+                    Key::Collection,
+                    &checks,
+                    ctx.accounts.authority,
+                    ctx.accounts.asset,
+                    ctx.accounts.collection,
+                )?;
+
+            approved = approved
+                || validate_plugin_checks(
+                    Key::Asset,
+                    &checks,
+                    ctx.accounts.authority,
+                    ctx.accounts.asset,
+                    ctx.accounts.collection,
+                )?;
 
             if !approved {
                 return Err(MplCoreError::InvalidAuthority.into());

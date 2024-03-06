@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::{
@@ -6,10 +8,10 @@ use crate::{
         AddPluginAuthorityArgs, CompressArgs, CreateArgs, DecompressArgs,
         RemovePluginAuthorityArgs, TransferArgs,
     },
-    state::{Asset, Authority},
+    state::{Asset, Authority, Collection, Key},
 };
 
-use super::{Plugin, PluginType};
+use super::{Plugin, PluginType, RegistryRecord};
 
 /// Lifecycle permissions
 /// Plugins use this field to indicate their permission to approve or deny
@@ -379,4 +381,35 @@ pub(crate) trait PluginValidation {
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
+}
+
+pub(crate) fn validate_plugin_checks<'a>(
+    key: Key,
+    checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
+    authority: &AccountInfo<'a>,
+    asset: &AccountInfo<'a>,
+    collection: Option<&AccountInfo<'a>>,
+) -> Result<bool, ProgramError> {
+    for (_, (check_key, check_result, registry_record)) in checks {
+        if *check_key == key
+            && matches!(
+                check_result,
+                CheckResult::CanApprove | CheckResult::CanReject
+            )
+        {
+            let account = match key {
+                Key::Collection => collection.ok_or(MplCoreError::InvalidCollection)?,
+                Key::Asset => asset,
+                _ => unreachable!(),
+            };
+            let result = Plugin::load(account, registry_record.offset)?
+                .validate_burn(authority, &registry_record.authorities)?;
+            match result {
+                ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
+                ValidationResult::Approved => return Ok(true),
+                ValidationResult::Pass => continue,
+            }
+        }
+    }
+    Ok(false)
 }
