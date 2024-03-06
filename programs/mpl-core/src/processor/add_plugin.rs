@@ -5,6 +5,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use crate::{
     instruction::accounts::{AddCollectionPluginAccounts, AddPluginAccounts},
     plugins::{create_meta_idempotent, initialize_plugin, Plugin},
+    state::{Asset, Collection},
 };
 
 #[repr(C)]
@@ -33,7 +34,7 @@ pub(crate) fn add_plugin<'a>(
 
     create_meta_idempotent(ctx.accounts.asset, payer, ctx.accounts.system_program)?;
 
-    initialize_plugin(
+    initialize_plugin::<Asset>(
         &args.plugin,
         &[args.plugin.default_authority()?],
         ctx.accounts.asset,
@@ -70,7 +71,7 @@ pub(crate) fn add_collection_plugin<'a>(
 
     create_meta_idempotent(ctx.accounts.collection, payer, ctx.accounts.system_program)?;
 
-    initialize_plugin(
+    initialize_plugin::<Collection>(
         &args.plugin,
         &[args.plugin.default_authority()?],
         ctx.accounts.collection,

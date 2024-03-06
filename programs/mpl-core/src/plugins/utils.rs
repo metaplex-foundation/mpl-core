@@ -175,32 +175,15 @@ pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramErr
 }
 
 /// Add a plugin to the registry and initialize it.
-pub fn initialize_plugin<'a>(
+pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     plugin: &Plugin,
     authorities: &[Authority],
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
-    let header_offset = match load_key(account, 0)? {
-        Key::Asset => {
-            let asset = {
-                let mut bytes: &[u8] = &(*account.data).borrow();
-                Asset::deserialize(&mut bytes)?
-            };
-
-            asset.get_size()
-        }
-        Key::Collection => {
-            let collection = {
-                let mut bytes: &[u8] = &(*account.data).borrow();
-                Collection::deserialize(&mut bytes)?
-            };
-
-            collection.get_size()
-        }
-        _ => return Err(MplCoreError::IncorrectAccount.into()),
-    };
+    let core = T::load(account, 0)?;
+    let header_offset = core.get_size();
 
     //TODO: Bytemuck this.
     let mut header = PluginHeader::load(account, header_offset)?;

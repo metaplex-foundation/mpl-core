@@ -11,9 +11,11 @@ mod utils;
 pub use burn::*;
 pub use freeze::*;
 pub use lifecycle::*;
+use num_derive::ToPrimitive;
 pub use plugin_header::*;
 pub use plugin_registry::*;
 pub use royalties::*;
+use strum::EnumCount;
 pub use transfer::*;
 pub use update_delegate::*;
 
@@ -84,7 +86,9 @@ impl Compressible for Plugin {}
 
 /// List of First Party Plugin types.
 #[repr(u16)]
-#[derive(Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
+#[derive(
+    Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq, ToPrimitive, EnumCount,
+)]
 pub enum PluginType {
     /// Reserved plugin.
     Reserved,

@@ -61,7 +61,7 @@ pub(crate) fn decompress<'a>(
                 create_meta_idempotent(ctx.accounts.asset, payer, ctx.accounts.system_program)?;
 
                 for plugin in plugins {
-                    initialize_plugin(
+                    initialize_plugin::<Asset>(
                         &plugin.plugin,
                         &plugin.authorities,
                         ctx.accounts.asset,

@@ -77,17 +77,14 @@ pub(crate) fn create_collection<'a>(
 
     drop(serialized_data);
 
-    solana_program::msg!("Collection created.");
     create_meta_idempotent(
         ctx.accounts.collection,
         ctx.accounts.payer,
         ctx.accounts.system_program,
     )?;
 
-    solana_program::msg!("Meta created.");
-
     for plugin in args.plugins {
-        initialize_plugin(
+        initialize_plugin::<Collection>(
             &plugin,
             &[plugin.default_authority()?],
             ctx.accounts.collection,
@@ -95,8 +92,6 @@ pub(crate) fn create_collection<'a>(
             ctx.accounts.system_program,
         )?;
     }
-
-    solana_program::msg!("Plugins initialized.");
 
     Ok(())
 }

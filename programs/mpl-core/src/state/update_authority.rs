@@ -46,7 +46,7 @@ impl UpdateAuthority {
     }
 
     /// Validate the create lifecycle event.
-    pub fn validate_create(
+    pub(crate) fn validate_create(
         &self,
         ctx: &CreateAccounts,
         _args: &CreateArgs,
@@ -89,18 +89,6 @@ impl UpdateAuthority {
             // Otherwise reject because you're doing something weird.
             _ => Ok(ValidationResult::Rejected),
         }
-
-        // let authority = match self {
-        //     Self::None => return Ok(ValidationResult::Rejected),
-        //     Self::Address(address) => address,
-        //     Self::Collection(address) => address,
-        // };
-
-        // if ctx.authority.key == authority {
-        //     Ok(ValidationResult::Approved)
-        // } else {
-        //     Ok(ValidationResult::Pass)
-        // }
     }
 
     /// Validate the update lifecycle event.

@@ -1,11 +1,12 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use strum::EnumCount;
 
 use crate::{
     error::MplCoreError,
     instruction::accounts::{BurnAccounts, BurnCollectionAccounts},
-    plugins::{CheckResult, Plugin, ValidationResult},
+    plugins::{CheckResult, Plugin, PluginType, ValidationResult},
     state::{Asset, Collection, Compressible, CompressionProof, Key},
     utils::{close_program_account, fetch_core_data, load_key, verify_proof},
 };
@@ -104,8 +105,9 @@ pub(crate) fn burn_collection<'a>(
         assert_signer(payer)?;
     }
 
-    let (collection, _, plugin_registry) =
-        fetch_core_data::<Collection>(ctx.accounts.collection)?;
+    let (collection, _, plugin_registry) = fetch_core_data::<Collection>(ctx.accounts.collection)?;
+
+    // let checks: [(Key, CheckResult); PluginType::COUNT + 2];
 
     let mut approved = false;
     match Collection::check_burn() {

@@ -50,12 +50,12 @@ impl Collection {
 
     /// Check permissions for the transfer lifecycle event.
     pub fn check_transfer() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::None
     }
 
     /// Check permissions for the burn lifecycle event.
     pub fn check_burn() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::None
     }
 
     /// Check permissions for the update lifecycle event.
@@ -65,12 +65,12 @@ impl Collection {
 
     /// Check permissions for the compress lifecycle event.
     pub fn check_compress() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::None
     }
 
     /// Check permissions for the decompress lifecycle event.
     pub fn check_decompress() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::None
     }
 
     /// Validate the update lifecycle event.

@@ -15,7 +15,7 @@ use crate::{
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct CreateArgs {
+pub(crate) struct CreateArgs {
     pub data_state: DataState,
     pub name: String,
     pub uri: String,
@@ -105,7 +105,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
         )?;
 
         for plugin in &args.plugins {
-            initialize_plugin(
+            initialize_plugin::<Asset>(
                 plugin,
                 &[plugin.default_authority()?],
                 ctx.accounts.asset,

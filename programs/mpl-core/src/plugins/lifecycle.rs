@@ -229,7 +229,7 @@ impl Plugin {
 
     /// Route the validation of the add_authority action to the appropriate plugin.
     /// There is no check for adding to a plugin because the plugin itself MUST validate the change.
-    pub(crate) fn validate_add_authority(
+    pub(crate) fn validate_add_plugin_authority(
         &self,
         authority: &AccountInfo,
         args: &AddPluginAuthorityArgs,
@@ -253,7 +253,7 @@ impl Plugin {
 
     /// Route the validation of the add_authority action to the appropriate plugin.
     /// There is no check for adding to a plugin because the plugin itself MUST validate the change.
-    pub(crate) fn validate_remove_authority(
+    pub(crate) fn validate_remove_plugin_authority(
         &self,
         authority: &AccountInfo,
         args: &RemovePluginAuthorityArgs,
