@@ -62,7 +62,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
                 fetch_core_data::<Collection>(collection_info)
                     .map(|(_, _, registry)| {
                         registry.map(|r| {
-                            r.check_burn(Key::Collection, &mut checks);
+                            r.check_registry(Key::Collection, PluginType::check_burn, &mut checks);
                             r
                         })
                     })
@@ -72,7 +72,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
             // Next check the asset plugins. Plugins on the asset override the collection plugins,
             // so we don't need to validate the collection plugins if the asset has a plugin.
             if let Some(registry) = plugin_registry.as_ref() {
-                registry.check_burn(Key::Asset, &mut checks);
+                registry.check_registry(Key::Asset, PluginType::check_burn, &mut checks);
             }
 
             solana_program::msg!("checks: {:#?}", checks);
@@ -167,7 +167,7 @@ pub(crate) fn burn_collection<'a>(
     if let Some(plugin_registry) = plugin_registry {
         for record in plugin_registry.registry {
             if matches!(
-                record.plugin_type.check_transfer(),
+                PluginType::check_burn(&record.plugin_type),
                 CheckResult::CanApprove | CheckResult::CanReject
             ) {
                 let result = Plugin::validate_burn(

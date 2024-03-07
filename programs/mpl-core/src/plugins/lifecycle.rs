@@ -27,25 +27,24 @@ pub enum CheckResult {
 
 impl PluginType {
     /// Check if a plugin is permitted to approve or deny a create action.
-    pub fn check_create(&self) -> CheckResult {
+    pub fn check_create(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
-        match self {
+        match plugin_type {
             _ => CheckResult::None,
         }
     }
 
     /// Check if a plugin is permitted to approve or deny an update action.
-    pub fn check_update(&self) -> CheckResult {
+    pub fn check_update(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
-        match self {
+        match plugin_type {
             _ => CheckResult::None,
         }
     }
 
     /// Check if a plugin is permitted to approve or deny a burn action.
-    pub fn check_burn(&self) -> CheckResult {
-        #[allow(clippy::match_single_binding)]
-        match self {
+    pub fn check_burn(plugin_type: &PluginType) -> CheckResult {
+        match plugin_type {
             PluginType::Freeze => CheckResult::CanReject,
             PluginType::Burn => CheckResult::CanApprove,
             _ => CheckResult::None,
@@ -53,8 +52,8 @@ impl PluginType {
     }
 
     /// Check if a plugin is permitted to approve or deny a transfer action.
-    pub fn check_transfer(&self) -> CheckResult {
-        match self {
+    pub fn check_transfer(plugin_type: &PluginType) -> CheckResult {
+        match plugin_type {
             PluginType::Royalties => CheckResult::CanReject,
             PluginType::Freeze => CheckResult::CanReject,
             PluginType::Transfer => CheckResult::CanApprove,
@@ -63,17 +62,17 @@ impl PluginType {
     }
 
     /// Check if a plugin is permitted to approve or deny a compress action.
-    pub fn check_compress(&self) -> CheckResult {
+    pub fn check_compress(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
-        match self {
+        match plugin_type {
             _ => CheckResult::None,
         }
     }
 
     /// Check if a plugin is permitted to approve or deny a decompress action.
-    pub fn check_decompress(&self) -> CheckResult {
+    pub fn check_decompress(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
-        match self {
+        match plugin_type {
             _ => CheckResult::None,
         }
     }
@@ -417,75 +416,3 @@ where
     }
     Ok(false)
 }
-
-// pub(crate) fn validate_transfer_plugin_checks<'a>(
-//     key: Key,
-//     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
-//     authority: &AccountInfo<'a>,
-//     new_owner: &AccountInfo<'a>,
-//     asset: &AccountInfo<'a>,
-//     collection: Option<&AccountInfo<'a>>,
-// ) -> Result<bool, ProgramError> {
-//     solana_program::msg!("validate_transfer_plugin_checks");
-//     for (_, (check_key, check_result, registry_record)) in checks {
-//         if *check_key == key
-//             && matches!(
-//                 check_result,
-//                 CheckResult::CanApprove | CheckResult::CanReject
-//             )
-//         {
-//             solana_program::msg!("key: {:?}", key);
-//             let account = match key {
-//                 Key::Collection => collection.ok_or(MplCoreError::InvalidCollection)?,
-//                 Key::Asset => asset,
-//                 _ => unreachable!(),
-//             };
-//             let result = Plugin::load(account, registry_record.offset)?.validate_transfer(
-//                 authority,
-//                 new_owner,
-//                 &registry_record.authorities,
-//             )?;
-//             solana_program::msg!("result: {:?}", result);
-//             match result {
-//                 ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
-//                 ValidationResult::Approved => return Ok(true),
-//                 ValidationResult::Pass => continue,
-//             }
-//         }
-//     }
-//     Ok(false)
-// }
-
-// pub(crate) fn validate_update_plugin_checks<'a>(
-//     key: Key,
-//     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
-//     authority: &AccountInfo<'a>,
-//     asset: &AccountInfo<'a>,
-//     collection: Option<&AccountInfo<'a>>,
-// ) -> Result<bool, ProgramError> {
-//     solana_program::msg!("validate_update_plugin_checks");
-//     for (_, (check_key, check_result, registry_record)) in checks {
-//         if *check_key == key
-//             && matches!(
-//                 check_result,
-//                 CheckResult::CanApprove | CheckResult::CanReject
-//             )
-//         {
-//             solana_program::msg!("key: {:?}", key);
-//             let account = match key {
-//                 Key::Collection => collection.ok_or(MplCoreError::InvalidCollection)?,
-//                 Key::Asset => asset,
-//                 _ => unreachable!(),
-//             };
-//             let result = Plugin::load(account, registry_record.offset)?
-//                 .validate_update(authority, &registry_record.authorities)?;
-//             solana_program::msg!("result: {:?}", result);
-//             match result {
-//                 ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
-//                 ValidationResult::Approved => return Ok(true),
-//                 ValidationResult::Pass => continue,
-//             }
-//         }
-//     }
-//     Ok(false)
-// }
