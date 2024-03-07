@@ -136,7 +136,8 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
                     record.plugin_type.check_create(),
                     CheckResult::CanApprove | CheckResult::CanReject
                 ) {
-                    let result = Plugin::load(ctx.accounts.asset, record.offset)?.validate_create(
+                    let result = Plugin::validate_create(
+                        &Plugin::load(ctx.accounts.asset, record.offset)?,
                         ctx.accounts
                             .owner
                             .unwrap_or(ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer)),

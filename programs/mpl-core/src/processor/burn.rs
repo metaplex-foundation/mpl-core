@@ -8,8 +8,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{BurnAccounts, BurnCollectionAccounts},
     plugins::{
-        validate_burn_plugin_checks, CheckResult, Plugin, PluginType, RegistryRecord,
-        ValidationResult,
+        validate_plugin_checks, CheckResult, Plugin, PluginType, RegistryRecord, ValidationResult,
     },
     state::{Asset, Collection, Compressible, CompressionProof, Key, SolanaAccount},
     utils::{close_program_account, fetch_core_data, load_key, verify_proof},
@@ -101,20 +100,22 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
                 }) == ValidationResult::Approved
             };
 
-            approved = validate_burn_plugin_checks(
+            approved = validate_plugin_checks(
                 Key::Collection,
                 &checks,
                 ctx.accounts.authority,
                 ctx.accounts.asset,
                 ctx.accounts.collection,
+                Box::new(Plugin::validate_burn),
             )? || approved;
 
-            approved = validate_burn_plugin_checks(
+            approved = validate_plugin_checks(
                 Key::Asset,
                 &checks,
                 ctx.accounts.authority,
                 ctx.accounts.asset,
                 ctx.accounts.collection,
+                Box::new(Plugin::validate_burn),
             )? || approved;
 
             if !approved {
@@ -169,8 +170,11 @@ pub(crate) fn burn_collection<'a>(
                 record.plugin_type.check_transfer(),
                 CheckResult::CanApprove | CheckResult::CanReject
             ) {
-                let result = Plugin::load(ctx.accounts.collection, record.offset)?
-                    .validate_burn(ctx.accounts.authority, &record.authorities)?;
+                let result = Plugin::validate_burn(
+                    &Plugin::load(ctx.accounts.collection, record.offset)?,
+                    ctx.accounts.authority,
+                    &record.authorities,
+                )?;
                 if result == ValidationResult::Rejected {
                     return Err(MplCoreError::InvalidAuthority.into());
                 } else if result == ValidationResult::Approved {

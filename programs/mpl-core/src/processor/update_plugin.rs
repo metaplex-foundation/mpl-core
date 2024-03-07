@@ -38,7 +38,8 @@ pub(crate) fn update_plugin<'a>(
         .find(|record| record.plugin_type == plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
 
-    let result = Plugin::load(ctx.accounts.asset, registry_record.offset)?.validate_update_plugin(
+    let result = Plugin::validate_update_plugin(
+        &Plugin::load(ctx.accounts.asset, registry_record.offset)?,
         &asset,
         ctx.accounts.authority,
         &registry_record.authorities,
@@ -85,8 +86,12 @@ pub(crate) fn update_collection_plugin<'a>(
         .find(|record| record.plugin_type == plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
 
-    let result = Plugin::load(ctx.accounts.collection, registry_record.offset)?
-        .validate_update_plugin(&asset, ctx.accounts.authority, &registry_record.authorities)?;
+    let result = Plugin::validate_update_plugin(
+        &Plugin::load(ctx.accounts.collection, registry_record.offset)?,
+        &asset,
+        ctx.accounts.authority,
+        &registry_record.authorities,
+    )?;
     if result == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());
     } else if result == ValidationResult::Approved {

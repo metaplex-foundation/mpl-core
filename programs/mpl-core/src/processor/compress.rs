@@ -55,8 +55,12 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], args: CompressArgs) 
                         record.plugin_type.check_compress(),
                         CheckResult::CanApprove | CheckResult::CanReject
                     ) {
-                        let result = Plugin::load(ctx.accounts.asset, record.offset)?
-                            .validate_compress(ctx.accounts.owner, &args, &record.authorities)?;
+                        let result = Plugin::validate_compress(
+                            &Plugin::load(ctx.accounts.asset, record.offset)?,
+                            ctx.accounts.owner,
+                            &args,
+                            &record.authorities,
+                        )?;
                         if result == ValidationResult::Rejected {
                             return Err(MplCoreError::InvalidAuthority.into());
                         } else if result == ValidationResult::Approved {

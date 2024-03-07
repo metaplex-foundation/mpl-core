@@ -8,9 +8,12 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::TransferAccounts,
     plugins::{
-        validate_transfer_plugin_checks, CheckResult, PluginType, RegistryRecord, ValidationResult,
+        validate_plugin_checks, CheckResult, Plugin, PluginType, RegistryRecord, ValidationResult,
     },
-    state::{Asset, Collection, Compressible, CompressionProof, HashedAsset, Key, SolanaAccount},
+    state::{
+        Asset, Authority, Collection, Compressible, CompressionProof, HashedAsset, Key,
+        SolanaAccount,
+    },
     utils::{fetch_core_data, load_key, verify_proof},
 };
 
@@ -64,16 +67,14 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             };
 
             // Check the collection plugins first.
-            ctx.accounts.collection.and_then(|collection_info| {
-                fetch_core_data::<Collection>(collection_info)
-                    .map(|(_, _, registry)| {
-                        registry.map(|r| {
-                            r.check_transfer(Key::Collection, &mut checks);
-                            r
-                        })
+            if let Some(collection_info) = ctx.accounts.collection {
+                fetch_core_data::<Collection>(collection_info).map(|(_, _, registry)| {
+                    registry.map(|r| {
+                        r.check_transfer(Key::Collection, &mut checks);
+                        r
                     })
-                    .ok()?
-            });
+                })?;
+            }
 
             // Next check the asset plugins. Plugins on the asset override the collection plugins,
             // so we don't need to validate the collection plugins if the asset has a plugin.
@@ -106,22 +107,28 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             };
             solana_program::msg!("approved: {:#?}", approved);
 
-            approved = validate_transfer_plugin_checks(
+            let custom_args = |plugin: &Plugin,
+                               authority: &AccountInfo<'a>,
+                               authorities: &[Authority]| {
+                Plugin::validate_transfer(plugin, authority, ctx.accounts.new_owner, authorities)
+            };
+
+            approved = validate_plugin_checks(
                 Key::Collection,
                 &checks,
                 ctx.accounts.authority,
-                ctx.accounts.new_owner,
                 ctx.accounts.asset,
                 ctx.accounts.collection,
+                Box::new(custom_args),
             )? || approved;
 
-            approved = validate_transfer_plugin_checks(
+            approved = validate_plugin_checks(
                 Key::Asset,
                 &checks,
                 ctx.accounts.authority,
-                ctx.accounts.new_owner,
                 ctx.accounts.asset,
                 ctx.accounts.collection,
+                Box::new(custom_args),
             )? || approved;
 
             if !approved {

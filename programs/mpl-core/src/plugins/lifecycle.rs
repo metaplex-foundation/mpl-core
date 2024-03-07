@@ -82,12 +82,12 @@ impl PluginType {
 impl Plugin {
     /// Route the validation of the create action to the appropriate plugin.
     pub(crate) fn validate_create(
-        &self,
+        plugin: &Plugin,
         authority: &AccountInfo,
         args: &CreateArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
-        match self {
+        match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_create(authority, args, authorities),
             Plugin::Freeze(freeze) => freeze.validate_create(authority, args, authorities),
@@ -101,11 +101,11 @@ impl Plugin {
 
     /// Route the validation of the update action to the appropriate plugin.
     pub(crate) fn validate_update(
-        &self,
+        plugin: &Plugin,
         authority: &AccountInfo,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
-        match self {
+        match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_update(authority, authorities),
             Plugin::Freeze(freeze) => freeze.validate_update(authority, authorities),
@@ -120,12 +120,12 @@ impl Plugin {
     /// Route the validation of the update_plugin action to the appropriate plugin.
     /// There is no check for updating a plugin because the plugin itself MUST validate the change.
     pub(crate) fn validate_update_plugin(
-        &self,
+        plugin: &Plugin,
         asset: &Asset,
         authority: &AccountInfo,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
-        match self {
+        match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_update_plugin(asset, authority, authorities)
@@ -143,11 +143,11 @@ impl Plugin {
 
     /// Route the validation of the burn action to the appropriate plugin.
     pub(crate) fn validate_burn(
-        &self,
+        plugin: &Plugin,
         authority: &AccountInfo,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
-        match self {
+        match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_burn(authority, authorities),
             Plugin::Freeze(freeze) => freeze.validate_burn(authority, authorities),
@@ -160,13 +160,13 @@ impl Plugin {
     }
 
     /// Route the validation of the transfer action to the appropriate plugin.
-    pub(crate) fn validate_transfer(
-        &self,
-        authority: &AccountInfo,
-        new_owner: &AccountInfo,
+    pub(crate) fn validate_transfer<'a>(
+        plugin: &Plugin,
+        authority: &AccountInfo<'a>,
+        new_owner: &AccountInfo<'a>,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
-        match self {
+        match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_transfer(authority, new_owner, authorities)
@@ -184,12 +184,12 @@ impl Plugin {
 
     /// Route the validation of the compress action to the appropriate plugin.
     pub(crate) fn validate_compress(
-        &self,
+        plugin: &Plugin,
         authority: &AccountInfo,
         args: &CompressArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
-        match self {
+        match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_compress(authority, args, authorities)
@@ -205,12 +205,12 @@ impl Plugin {
 
     /// Route the validation of the decompress action to the appropriate plugin.
     pub(crate) fn validate_decompress(
-        &self,
+        plugin: &Plugin,
         authority: &AccountInfo,
         args: &DecompressArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
-        match self {
+        match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_decompress(authority, args, authorities)
@@ -229,12 +229,12 @@ impl Plugin {
     /// Route the validation of the add_authority action to the appropriate plugin.
     /// There is no check for adding to a plugin because the plugin itself MUST validate the change.
     pub(crate) fn validate_add_plugin_authority(
-        &self,
+        plugin: &Plugin,
         authority: &AccountInfo,
         args: &AddPluginAuthorityArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
-        match self {
+        match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_add_authority(authority, args, authorities)
@@ -253,12 +253,12 @@ impl Plugin {
     /// Route the validation of the add_authority action to the appropriate plugin.
     /// There is no check for adding to a plugin because the plugin itself MUST validate the change.
     pub(crate) fn validate_remove_plugin_authority(
-        &self,
+        plugin: &Plugin,
         authority: &AccountInfo,
         args: &RemovePluginAuthorityArgs,
         authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
-        match self {
+        match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_remove_authority(authority, args, authorities)
@@ -378,13 +378,17 @@ pub(crate) trait PluginValidation {
     }
 }
 
-pub(crate) fn validate_burn_plugin_checks<'a>(
+pub(crate) fn validate_plugin_checks<'a, F>(
     key: Key,
     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &AccountInfo<'a>,
     asset: &AccountInfo<'a>,
     collection: Option<&AccountInfo<'a>>,
-) -> Result<bool, ProgramError> {
+    validate_fp: F,
+) -> Result<bool, ProgramError>
+where
+    F: Fn(&Plugin, &AccountInfo<'a>, &[Authority]) -> Result<ValidationResult, ProgramError>,
+{
     for (_, (check_key, check_result, registry_record)) in checks {
         if *check_key == key
             && matches!(
@@ -397,46 +401,13 @@ pub(crate) fn validate_burn_plugin_checks<'a>(
                 Key::Asset => asset,
                 _ => unreachable!(),
             };
-            let result = Plugin::load(account, registry_record.offset)?
-                .validate_burn(authority, &registry_record.authorities)?;
-            match result {
-                ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
-                ValidationResult::Approved => return Ok(true),
-                ValidationResult::Pass => continue,
-            }
-        }
-    }
-    Ok(false)
-}
-
-pub(crate) fn validate_transfer_plugin_checks<'a>(
-    key: Key,
-    checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
-    authority: &AccountInfo<'a>,
-    new_owner: &AccountInfo<'a>,
-    asset: &AccountInfo<'a>,
-    collection: Option<&AccountInfo<'a>>,
-) -> Result<bool, ProgramError> {
-    solana_program::msg!("validate_transfer_plugin_checks");
-    for (_, (check_key, check_result, registry_record)) in checks {
-        if *check_key == key
-            && matches!(
-                check_result,
-                CheckResult::CanApprove | CheckResult::CanReject
-            )
-        {
-            solana_program::msg!("key: {:?}", key);
-            let account = match key {
-                Key::Collection => collection.ok_or(MplCoreError::InvalidCollection)?,
-                Key::Asset => asset,
-                _ => unreachable!(),
-            };
-            let result = Plugin::load(account, registry_record.offset)?.validate_transfer(
+            // let result = Plugin::load(account, registry_record.offset)?
+            //     .validate_burn(authority, &registry_record.authorities)?;
+            let result = validate_fp(
+                &Plugin::load(account, registry_record.offset)?,
                 authority,
-                new_owner,
                 &registry_record.authorities,
             )?;
-            solana_program::msg!("result: {:?}", result);
             match result {
                 ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
                 ValidationResult::Approved => return Ok(true),
@@ -447,36 +418,74 @@ pub(crate) fn validate_transfer_plugin_checks<'a>(
     Ok(false)
 }
 
-pub(crate) fn validate_update_plugin_checks<'a>(
-    key: Key,
-    checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
-    authority: &AccountInfo<'a>,
-    asset: &AccountInfo<'a>,
-    collection: Option<&AccountInfo<'a>>,
-) -> Result<bool, ProgramError> {
-    solana_program::msg!("validate_update_plugin_checks");
-    for (_, (check_key, check_result, registry_record)) in checks {
-        if *check_key == key
-            && matches!(
-                check_result,
-                CheckResult::CanApprove | CheckResult::CanReject
-            )
-        {
-            solana_program::msg!("key: {:?}", key);
-            let account = match key {
-                Key::Collection => collection.ok_or(MplCoreError::InvalidCollection)?,
-                Key::Asset => asset,
-                _ => unreachable!(),
-            };
-            let result = Plugin::load(account, registry_record.offset)?
-                .validate_update(authority, &registry_record.authorities)?;
-            solana_program::msg!("result: {:?}", result);
-            match result {
-                ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
-                ValidationResult::Approved => return Ok(true),
-                ValidationResult::Pass => continue,
-            }
-        }
-    }
-    Ok(false)
-}
+// pub(crate) fn validate_transfer_plugin_checks<'a>(
+//     key: Key,
+//     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
+//     authority: &AccountInfo<'a>,
+//     new_owner: &AccountInfo<'a>,
+//     asset: &AccountInfo<'a>,
+//     collection: Option<&AccountInfo<'a>>,
+// ) -> Result<bool, ProgramError> {
+//     solana_program::msg!("validate_transfer_plugin_checks");
+//     for (_, (check_key, check_result, registry_record)) in checks {
+//         if *check_key == key
+//             && matches!(
+//                 check_result,
+//                 CheckResult::CanApprove | CheckResult::CanReject
+//             )
+//         {
+//             solana_program::msg!("key: {:?}", key);
+//             let account = match key {
+//                 Key::Collection => collection.ok_or(MplCoreError::InvalidCollection)?,
+//                 Key::Asset => asset,
+//                 _ => unreachable!(),
+//             };
+//             let result = Plugin::load(account, registry_record.offset)?.validate_transfer(
+//                 authority,
+//                 new_owner,
+//                 &registry_record.authorities,
+//             )?;
+//             solana_program::msg!("result: {:?}", result);
+//             match result {
+//                 ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
+//                 ValidationResult::Approved => return Ok(true),
+//                 ValidationResult::Pass => continue,
+//             }
+//         }
+//     }
+//     Ok(false)
+// }
+
+// pub(crate) fn validate_update_plugin_checks<'a>(
+//     key: Key,
+//     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
+//     authority: &AccountInfo<'a>,
+//     asset: &AccountInfo<'a>,
+//     collection: Option<&AccountInfo<'a>>,
+// ) -> Result<bool, ProgramError> {
+//     solana_program::msg!("validate_update_plugin_checks");
+//     for (_, (check_key, check_result, registry_record)) in checks {
+//         if *check_key == key
+//             && matches!(
+//                 check_result,
+//                 CheckResult::CanApprove | CheckResult::CanReject
+//             )
+//         {
+//             solana_program::msg!("key: {:?}", key);
+//             let account = match key {
+//                 Key::Collection => collection.ok_or(MplCoreError::InvalidCollection)?,
+//                 Key::Asset => asset,
+//                 _ => unreachable!(),
+//             };
+//             let result = Plugin::load(account, registry_record.offset)?
+//                 .validate_update(authority, &registry_record.authorities)?;
+//             solana_program::msg!("result: {:?}", result);
+//             match result {
+//                 ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
+//                 ValidationResult::Approved => return Ok(true),
+//                 ValidationResult::Pass => continue,
+//             }
+//         }
+//     }
+//     Ok(false)
+// }

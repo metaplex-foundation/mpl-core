@@ -95,8 +95,12 @@ pub(crate) fn decompress<'a>(
                         record.plugin_type.check_decompress(),
                         CheckResult::CanApprove | CheckResult::CanReject
                     ) {
-                        let result = Plugin::load(ctx.accounts.asset, record.offset)?
-                            .validate_decompress(ctx.accounts.owner, &args, &record.authorities)?;
+                        let result = Plugin::validate_decompress(
+                            &Plugin::load(ctx.accounts.asset, record.offset)?,
+                            ctx.accounts.owner,
+                            &args,
+                            &record.authorities,
+                        )?;
                         if result == ValidationResult::Rejected {
                             return Err(MplCoreError::InvalidAuthority.into());
                         } else if result == ValidationResult::Approved {
