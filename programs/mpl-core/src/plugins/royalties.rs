@@ -2,7 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
-    processor::{CompressArgs, CreateArgs, DecompressArgs, TransferArgs},
+    processor::{CompressArgs, CreateArgs, DecompressArgs},
     state::Authority,
 };
 
@@ -67,12 +67,12 @@ impl PluginValidation for Royalties {
         &self,
         authority: &AccountInfo,
         new_owner: &AccountInfo,
-        _args: &TransferArgs,
         _authorities: &[Authority],
     ) -> Result<ValidationResult, ProgramError> {
         match &self.rule_set {
             RuleSet::None => Ok(ValidationResult::Pass),
             RuleSet::ProgramAllowList(allow_list) => {
+                solana_program::msg!("Evaluating royalties");
                 if allow_list.contains(authority.owner) || allow_list.contains(new_owner.owner) {
                     Ok(ValidationResult::Pass)
                 } else {

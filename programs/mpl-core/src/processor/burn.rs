@@ -8,9 +8,9 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{BurnAccounts, BurnCollectionAccounts},
     plugins::{
-        validate_plugin_checks, CheckResult, Plugin, PluginType, RegistryRecord, ValidationResult,
+        validate_burn_plugin_checks, CheckResult, Plugin, PluginType, RegistryRecord,
+        ValidationResult,
     },
-    processor::collect,
     state::{Asset, Collection, Compressible, CompressionProof, Key, SolanaAccount},
     utils::{close_program_account, fetch_core_data, load_key, verify_proof},
 };
@@ -101,23 +101,21 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
                 }) == ValidationResult::Approved
             };
 
-            approved = approved
-                || validate_plugin_checks(
-                    Key::Collection,
-                    &checks,
-                    ctx.accounts.authority,
-                    ctx.accounts.asset,
-                    ctx.accounts.collection,
-                )?;
+            approved = validate_burn_plugin_checks(
+                Key::Collection,
+                &checks,
+                ctx.accounts.authority,
+                ctx.accounts.asset,
+                ctx.accounts.collection,
+            )? || approved;
 
-            approved = approved
-                || validate_plugin_checks(
-                    Key::Asset,
-                    &checks,
-                    ctx.accounts.authority,
-                    ctx.accounts.asset,
-                    ctx.accounts.collection,
-                )?;
+            approved = validate_burn_plugin_checks(
+                Key::Asset,
+                &checks,
+                ctx.accounts.authority,
+                ctx.accounts.asset,
+                ctx.accounts.collection,
+            )? || approved;
 
             if !approved {
                 return Err(MplCoreError::InvalidAuthority.into());

@@ -973,6 +973,15 @@
           ]
         },
         {
+          "name": "collection",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
           "name": "authority",
           "isMut": false,
           "isSigner": true,

@@ -48,11 +48,13 @@ pub(crate) fn remove_plugin_authority<'a>(
                 if collection_info.key != &collection_address {
                     return Err(MplCoreError::InvalidCollection.into());
                 }
-                let collection = Collection::load(collection_info, 0)?;
+                let collection: Collection = Collection::load(collection_info, 0)?;
                 if ctx.accounts.authority.key == &collection.update_authority {
                     Authority::UpdateAuthority
                 } else {
-                    return Err(MplCoreError::InvalidAuthority.into());
+                    Authority::Pubkey {
+                        address: *ctx.accounts.authority.key,
+                    }
                 }
             }
             None => return Err(MplCoreError::InvalidCollection.into()),

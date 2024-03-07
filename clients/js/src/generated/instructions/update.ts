@@ -34,6 +34,8 @@ import {
 export type UpdateInstructionAccounts = {
   /** The address of the asset */
   asset: PublicKey | Pda;
+  /** The collection to which the asset belongs */
+  collection?: PublicKey | Pda;
   /** The update authority or update authority delegate of the asset */
   authority?: Signer;
   /** The account paying for the storage fees */
@@ -96,28 +98,33 @@ export function update(
       isWritable: true as boolean,
       value: input.asset ?? null,
     },
-    authority: {
+    collection: {
       index: 1,
+      isWritable: false as boolean,
+      value: input.collection ?? null,
+    },
+    authority: {
+      index: 2,
       isWritable: false as boolean,
       value: input.authority ?? null,
     },
     payer: {
-      index: 2,
+      index: 3,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     newUpdateAuthority: {
-      index: 3,
+      index: 4,
       isWritable: false as boolean,
       value: input.newUpdateAuthority ?? null,
     },
     systemProgram: {
-      index: 4,
+      index: 5,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
-      index: 5,
+      index: 6,
       isWritable: false as boolean,
       value: input.logWrapper ?? null,
     },
