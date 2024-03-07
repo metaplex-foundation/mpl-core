@@ -12,7 +12,7 @@ use crate::{
 pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
     account: &AccountInfo,
     plugin_type: PluginType,
-) -> Result<(Vec<Authority>, U, usize), std::io::Error> {
+) -> Result<(Authority, U, usize), std::io::Error> {
     let asset = T::load(account, 0)?;
 
     let header = PluginHeader::load(account, asset.get_size())?;
@@ -50,7 +50,7 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
 
     // Return the plugin and its authorities.
     Ok((
-        registry_record.authorities.clone(),
+        registry_record.authority.clone(),
         inner,
         registry_record.offset as usize,
     ))
