@@ -8,7 +8,10 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::DecompressAccounts,
-    plugins::{create_meta_idempotent, initialize_plugin, CheckResult, Plugin, ValidationResult},
+    plugins::{
+        create_meta_idempotent, initialize_plugin, CheckResult, Plugin, PluginType,
+        ValidationResult,
+    },
     state::{Asset, CompressionProof, Key},
     utils::{fetch_core_data, load_key, resize_or_reallocate_account, verify_proof},
 };
@@ -92,7 +95,7 @@ pub(crate) fn decompress<'a>(
             if let Some(plugin_registry) = plugin_registry {
                 for record in plugin_registry.registry {
                     if matches!(
-                        record.plugin_type.check_decompress(),
+                        PluginType::check_decompress(&record.plugin_type),
                         CheckResult::CanApprove | CheckResult::CanReject
                     ) {
                         let result = Plugin::validate_decompress(

@@ -7,7 +7,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::CompressAccounts,
-    plugins::{CheckResult, Plugin, RegistryRecord, ValidationResult},
+    plugins::{CheckResult, Plugin, PluginType, RegistryRecord, ValidationResult},
     state::{Asset, Compressible, HashablePluginSchema, HashedAsset, HashedAssetSchema, Key},
     utils::{fetch_core_data, load_key, resize_or_reallocate_account},
 };
@@ -52,7 +52,7 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], args: CompressArgs) 
             if let Some(plugin_registry) = &plugin_registry {
                 for record in &plugin_registry.registry {
                     if matches!(
-                        record.plugin_type.check_compress(),
+                        PluginType::check_compress(&record.plugin_type),
                         CheckResult::CanApprove | CheckResult::CanReject
                     ) {
                         let result = Plugin::validate_compress(

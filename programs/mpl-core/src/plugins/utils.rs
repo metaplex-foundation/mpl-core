@@ -193,6 +193,7 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     let plugin_data = plugin.try_to_vec()?;
     let plugin_size = plugin_data.len();
 
+    // You cannot add a duplicate plugin.
     if plugin_registry
         .registry
         .iter_mut()

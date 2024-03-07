@@ -19,86 +19,17 @@ pub struct PluginRegistry {
 }
 
 impl PluginRegistry {
-    /// Evaluate create checks for all plugins.
-    pub fn check_create(
+    /// Evaluate checks for all plugins in the registry.
+    pub fn check_registry(
         &self,
         key: Key,
+        check_fp: fn(&PluginType) -> CheckResult,
         result: &mut BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     ) {
         for record in &self.registry {
             result.insert(
                 record.plugin_type,
-                (key, record.plugin_type.check_create(), record.clone()),
-            );
-        }
-    }
-
-    /// Evaluate update checks for all plugins.
-    pub fn check_update(
-        &self,
-        key: Key,
-        result: &mut BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
-    ) {
-        for record in &self.registry {
-            result.insert(
-                record.plugin_type,
-                (key, record.plugin_type.check_update(), record.clone()),
-            );
-        }
-    }
-
-    /// Evaluate delete checks for all plugins.
-    pub fn check_burn(
-        &self,
-        key: Key,
-        result: &mut BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
-    ) {
-        for record in &self.registry {
-            result.insert(
-                record.plugin_type,
-                (key, record.plugin_type.check_burn(), record.clone()),
-            );
-        }
-    }
-
-    /// Evaluate transfer checks for all plugins.
-    pub fn check_transfer(
-        &self,
-        key: Key,
-        result: &mut BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
-    ) {
-        for record in &self.registry {
-            result.insert(
-                record.plugin_type,
-                (key, record.plugin_type.check_transfer(), record.clone()),
-            );
-        }
-    }
-
-    /// Evaluate the compress checks for all plugins.
-    pub fn check_compress(
-        &self,
-        key: Key,
-        result: &mut BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
-    ) {
-        for record in &self.registry {
-            result.insert(
-                record.plugin_type,
-                (key, record.plugin_type.check_compress(), record.clone()),
-            );
-        }
-    }
-
-    /// Evaluate the decompress checks for all plugins.
-    pub fn check_decompress(
-        &self,
-        key: Key,
-        result: &mut BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
-    ) {
-        for record in &self.registry {
-            result.insert(
-                record.plugin_type,
-                (key, record.plugin_type.check_decompress(), record.clone()),
+                (key, check_fp(&record.plugin_type), record.clone()),
             );
         }
     }

@@ -70,7 +70,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             if let Some(collection_info) = ctx.accounts.collection {
                 fetch_core_data::<Collection>(collection_info).map(|(_, _, registry)| {
                     registry.map(|r| {
-                        r.check_transfer(Key::Collection, &mut checks);
+                        r.check_registry(Key::Collection, PluginType::check_transfer, &mut checks);
                         r
                     })
                 })?;
@@ -79,7 +79,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             // Next check the asset plugins. Plugins on the asset override the collection plugins,
             // so we don't need to validate the collection plugins if the asset has a plugin.
             if let Some(registry) = plugin_registry.as_ref() {
-                registry.check_transfer(Key::Asset, &mut checks);
+                registry.check_registry(Key::Asset, PluginType::check_transfer, &mut checks);
             }
 
             solana_program::msg!("checks: {:#?}", checks);

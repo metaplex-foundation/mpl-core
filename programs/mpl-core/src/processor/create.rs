@@ -8,7 +8,10 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateAccounts,
-    plugins::{create_meta_idempotent, initialize_plugin, CheckResult, Plugin, ValidationResult},
+    plugins::{
+        create_meta_idempotent, initialize_plugin, CheckResult, Plugin, PluginType,
+        ValidationResult,
+    },
     state::{Asset, Compressible, DataState, HashedAsset, Key, UpdateAuthority, COLLECT_AMOUNT},
     utils::fetch_core_data,
 };
@@ -133,7 +136,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
         if let Some(plugin_registry) = plugin_registry {
             for record in plugin_registry.registry {
                 if matches!(
-                    record.plugin_type.check_create(),
+                    PluginType::check_create(&record.plugin_type),
                     CheckResult::CanApprove | CheckResult::CanReject
                 ) {
                     let result = Plugin::validate_create(
