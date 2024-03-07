@@ -177,7 +177,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
                     Ok(RegistryRecord {
                         plugin_type: record.plugin_type,
                         offset: new_offset as usize,
-                        authorities: record.authorities.clone(),
+                        authority: record.authority.clone(),
                     })
                 })
                 .collect::<Result<Vec<_>, MplCoreError>>()?;
@@ -245,7 +245,7 @@ pub(crate) fn update_collection<'a>(
                 let result = Plugin::validate_update(
                     &Plugin::load(ctx.accounts.collection, record.offset)?,
                     ctx.accounts.authority,
-                    &record.authorities,
+                    &record.authority,
                 )?;
                 if result == ValidationResult::Rejected {
                     return Err(MplCoreError::InvalidAuthority.into());
@@ -326,7 +326,7 @@ pub(crate) fn update_collection<'a>(
                     Ok(RegistryRecord {
                         plugin_type: record.plugin_type,
                         offset: new_offset as usize,
-                        authorities: record.authorities.clone(),
+                        authority: record.authority.clone(),
                     })
                 })
                 .collect::<Result<Vec<_>, MplCoreError>>()?;

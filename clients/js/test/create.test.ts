@@ -141,13 +141,13 @@ test('it can create a new asset in account state with plugins', async (t) => {
         {
           pluginType: 2,
           offset: BigInt(118),
-          authorities: [{ __kind: 'Owner' }],
+          authority: { __kind: 'Owner' },
         },
       ],
     },
     plugins: [
       {
-        authorities: [{ __kind: 'Owner' }],
+        authority: { __kind: 'Owner' },
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],

@@ -14,7 +14,7 @@ pub struct HashablePluginSchema {
     /// to keep track of their order in the hashing.
     pub index: usize,
     /// The authorities who have permission to utilize a plugin.
-    pub authorities: Vec<Authority>,
+    pub authority: Authority,
     /// The deserialized plugin.
     pub plugin: Plugin,
 }

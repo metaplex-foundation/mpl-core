@@ -4,7 +4,7 @@ import {
   AssetWithPlugins,
   DataState,
   PluginType,
-  addPluginAuthority,
+  approvePluginAuthority,
   addPlugin,
   create,
   fetchAssetWithPlugins,
@@ -37,7 +37,7 @@ test('a delegate can transfer the asset', async (t) => {
     },
   }).sendAndConfirm(umi);
 
-  await addPluginAuthority(umi, {
+  await approvePluginAuthority(umi, {
     asset: assetAddress.publicKey,
     pluginType: PluginType.Transfer,
     newAuthority: {
@@ -71,19 +71,15 @@ test('a delegate can transfer the asset', async (t) => {
         {
           pluginType: PluginType.Transfer,
           offset: BigInt(118),
-          authorities: [
-            { __kind: 'Owner' },
+          authority:
             { __kind: 'Pubkey', address: delegateAddress.publicKey },
-          ],
         },
       ],
     },
     plugins: [
       {
-        authorities: [
-          { __kind: 'Owner' },
+        authority:
           { __kind: 'Pubkey', address: delegateAddress.publicKey },
-        ],
         plugin: {
           __kind: 'Transfer',
           fields: [{}],

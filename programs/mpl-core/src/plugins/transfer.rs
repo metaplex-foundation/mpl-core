@@ -40,29 +40,31 @@ impl DataBlob for Transfer {
 impl PluginValidation for Transfer {
     fn validate_create(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _args: &CreateArgs,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_update(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &[Authority],
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_burn(
         &self,
-        authority: &AccountInfo,
-        authorities: &[Authority],
+        authority_info: &AccountInfo,
+        authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
-        if authorities.contains(&Authority::Pubkey {
-            address: *authority.key,
-        }) {
+        if authority
+            == (&Authority::Pubkey {
+                address: *authority_info.key,
+            })
+        {
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -71,13 +73,15 @@ impl PluginValidation for Transfer {
 
     fn validate_transfer(
         &self,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         _new_owner: &AccountInfo,
-        authorities: &[Authority],
+        authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
-        if authorities.contains(&Authority::Pubkey {
-            address: *authority.key,
-        }) {
+        if authority
+            == (&Authority::Pubkey {
+                address: *authority_info.key,
+            })
+        {
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -86,18 +90,18 @@ impl PluginValidation for Transfer {
 
     fn validate_compress(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _args: &CompressArgs,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_decompress(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _args: &DecompressArgs,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

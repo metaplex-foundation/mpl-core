@@ -12,7 +12,7 @@ import {
   fetchCollectionWithPlugins,
   updateAuthority,
   addCollectionPlugin,
-  addCollectionPluginAuthority,
+  approveCollectionPluginAuthority,
 } from '../../../src';
 import { createUmi } from '../../_setup';
 
@@ -41,7 +41,7 @@ test('it can create a new asset with a collection if it is the collection update
 
   // console.log(JSON.stringify(await fetchCollectionWithPlugins(umi, collectionAddress.publicKey), (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
 
-  await addCollectionPluginAuthority(umi, {
+  await approveCollectionPluginAuthority(umi, {
     collection: collectionAddress.publicKey,
     pluginType: PluginType.UpdateDelegate,
     newAuthority: {
@@ -70,19 +70,15 @@ test('it can create a new asset with a collection if it is the collection update
         {
           pluginType: PluginType.UpdateDelegate,
           offset: BigInt(104),
-          authorities: [
-            { __kind: 'UpdateAuthority' },
+          authority:
             { __kind: 'Pubkey', address: updateDelegate.publicKey },
-          ],
         },
       ],
     },
     plugins: [
       {
-        authorities: [
-          { __kind: 'UpdateAuthority' },
+        authority:
           { __kind: 'Pubkey', address: updateDelegate.publicKey },
-        ],
         plugin: {
           __kind: 'UpdateDelegate',
           fields: [{}],

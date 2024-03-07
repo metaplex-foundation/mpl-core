@@ -4,24 +4,26 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::{AddCollectionPluginAuthorityAccounts, AddPluginAuthorityAccounts},
-    plugins::{add_authority_to_plugin, PluginType},
+    instruction::accounts::{
+        ApproveCollectionPluginAuthorityAccounts, ApprovePluginAuthorityAccounts,
+    },
+    plugins::{approve_authority_on_plugin, PluginType},
     state::{Asset, Authority, Collection, CoreAsset, DataBlob, SolanaAccount},
     utils::fetch_core_data,
 };
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct AddPluginAuthorityArgs {
+pub(crate) struct ApprovePluginAuthorityArgs {
     pub plugin_type: PluginType,
     pub new_authority: Authority,
 }
 
-pub(crate) fn add_plugin_authority<'a>(
+pub(crate) fn approve_plugin_authority<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: AddPluginAuthorityArgs,
+    args: ApprovePluginAuthorityArgs,
 ) -> ProgramResult {
-    let ctx = AddPluginAuthorityAccounts::context(accounts)?;
+    let ctx = ApprovePluginAuthorityAccounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
@@ -33,7 +35,7 @@ pub(crate) fn add_plugin_authority<'a>(
         None => ctx.accounts.authority,
     };
 
-    process_add_plugin_authority::<Asset>(
+    process_approve_plugin_authority::<Asset>(
         ctx.accounts.asset,
         ctx.accounts.authority,
         payer,
@@ -45,16 +47,16 @@ pub(crate) fn add_plugin_authority<'a>(
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct AddCollectionPluginAuthorityArgs {
+pub(crate) struct ApproveCollectionPluginAuthorityArgs {
     pub plugin_type: PluginType,
     pub new_authority: Authority,
 }
 
-pub(crate) fn add_collection_plugin_authority<'a>(
+pub(crate) fn approve_collection_plugin_authority<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: AddCollectionPluginAuthorityArgs,
+    args: ApproveCollectionPluginAuthorityArgs,
 ) -> ProgramResult {
-    let ctx = AddCollectionPluginAuthorityAccounts::context(accounts)?;
+    let ctx = ApproveCollectionPluginAuthorityAccounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
@@ -66,7 +68,7 @@ pub(crate) fn add_collection_plugin_authority<'a>(
         None => ctx.accounts.authority,
     };
 
-    process_add_plugin_authority::<Collection>(
+    process_approve_plugin_authority::<Collection>(
         ctx.accounts.collection,
         ctx.accounts.authority,
         payer,
@@ -76,7 +78,7 @@ pub(crate) fn add_collection_plugin_authority<'a>(
     )
 }
 
-fn process_add_plugin_authority<'a, T: CoreAsset + DataBlob + SolanaAccount>(
+fn process_approve_plugin_authority<'a, T: CoreAsset + DataBlob + SolanaAccount>(
     core_info: &AccountInfo<'a>,
     authority: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
@@ -96,7 +98,7 @@ fn process_add_plugin_authority<'a, T: CoreAsset + DataBlob + SolanaAccount>(
         None => return Err(MplCoreError::PluginsNotInitialized.into()),
     };
 
-    add_authority_to_plugin(
+    approve_authority_on_plugin(
         plugin_type,
         authority,
         new_authority,

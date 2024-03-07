@@ -6,12 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import {
-  Serializer,
-  array,
-  struct,
-  u64,
-} from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
 import {
   Authority,
   AuthorityArgs,
@@ -23,13 +18,13 @@ import {
 
 export type HashablePluginSchema = {
   index: bigint;
-  authorities: Array<Authority>;
+  authority: Authority;
   plugin: Plugin;
 };
 
 export type HashablePluginSchemaArgs = {
   index: number | bigint;
-  authorities: Array<AuthorityArgs>;
+  authority: AuthorityArgs;
   plugin: PluginArgs;
 };
 
@@ -40,7 +35,7 @@ export function getHashablePluginSchemaSerializer(): Serializer<
   return struct<HashablePluginSchema>(
     [
       ['index', u64()],
-      ['authorities', array(getAuthoritySerializer())],
+      ['authority', getAuthoritySerializer()],
       ['plugin', getPluginSerializer()],
     ],
     { description: 'HashablePluginSchema' }

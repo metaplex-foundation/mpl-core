@@ -3,13 +3,13 @@ import { Authority, PluginHeader, PluginRegistry, Plugin } from 'src/generated';
 export * from './fetchAssetWithPlugins';
 export * from './fetchCollectionWithPlugins';
 
-export type PluginWithAuthorities = {
+export type PluginWithAuthority = {
   plugin: Plugin;
-  authorities: Authority[];
+  authority: Authority;
 };
 
 export type PluginList = {
   pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>;
-  plugins?: PluginWithAuthorities[];
+  plugins?: PluginWithAuthority[];
   pluginRegistry?: Omit<PluginRegistry, 'publicKey' | 'header'>;
 };

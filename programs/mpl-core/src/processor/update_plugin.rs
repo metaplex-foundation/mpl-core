@@ -42,7 +42,7 @@ pub(crate) fn update_plugin<'a>(
         &Plugin::load(ctx.accounts.asset, registry_record.offset)?,
         &asset,
         ctx.accounts.authority,
-        &registry_record.authorities,
+        &registry_record.authority,
     )?;
     if result == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());
@@ -90,7 +90,7 @@ pub(crate) fn update_collection_plugin<'a>(
         &Plugin::load(ctx.accounts.collection, registry_record.offset)?,
         &asset,
         ctx.accounts.authority,
-        &registry_record.authorities,
+        &registry_record.authority,
     )?;
     if result == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());

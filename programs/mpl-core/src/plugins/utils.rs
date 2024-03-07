@@ -114,7 +114,7 @@ pub fn assert_plugins_initialized(account: &AccountInfo) -> ProgramResult {
 pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
     account: &AccountInfo,
     plugin_type: PluginType,
-) -> Result<(Vec<Authority>, U, usize), ProgramError> {
+) -> Result<(Authority, U, usize), ProgramError> {
     let asset = T::load(account, 0)?;
 
     let header = PluginHeader::load(account, asset.get_size())?;
@@ -143,7 +143,7 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
 
     // Return the plugin and its authorities.
     Ok((
-        registry_record.authorities.clone(),
+        registry_record.authority.clone(),
         inner,
         registry_record.offset,
     ))
@@ -177,7 +177,7 @@ pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramErr
 /// Add a plugin to the registry and initialize it.
 pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     plugin: &Plugin,
-    authorities: &[Authority],
+    authority: &Authority,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
@@ -207,7 +207,7 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     let new_registry_record = RegistryRecord {
         plugin_type,
         offset: old_registry_offset,
-        authorities: authorities.to_vec(),
+        authority: authority.clone(),
     };
 
     let size_increase = plugin_size
@@ -261,9 +261,7 @@ pub fn delete_plugin<'a, T: DataBlob>(
         let serialized_registry_record = registry_record.try_to_vec()?;
 
         // Only allow the default authority to delete the plugin.
-        let authorities = registry_record.authorities;
-
-        if authority_type != &authorities[0] {
+        if authority_type != &registry_record.plugin_type.default_authority() {
             return Err(MplCoreError::InvalidAuthority.into());
         }
 
@@ -316,7 +314,7 @@ pub fn delete_plugin<'a, T: DataBlob>(
 /// Add an authority to a plugin.
 //TODO: Prevent duplicate authorities.
 #[allow(clippy::too_many_arguments)]
-pub fn add_authority_to_plugin<'a, T: CoreAsset>(
+pub fn approve_authority_on_plugin<'a, T: CoreAsset>(
     plugin_type: &PluginType,
     authority: &AccountInfo<'a>,
     new_authority: &Authority,
@@ -333,9 +331,9 @@ pub fn add_authority_to_plugin<'a, T: CoreAsset>(
         .find(|record| record.plugin_type == *plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
 
-    assert_authority(asset, authority, &registry_record.authorities)?;
+    assert_authority(asset, authority, &registry_record.authority)?;
 
-    registry_record.authorities.push(new_authority.clone());
+    registry_record.authority = new_authority.clone();
 
     let authority_bytes = new_authority.try_to_vec()?;
 
@@ -352,10 +350,9 @@ pub fn add_authority_to_plugin<'a, T: CoreAsset>(
 
 /// Remove an authority from a plugin.
 #[allow(clippy::too_many_arguments)]
-pub fn remove_authority_from_plugin<'a>(
+pub fn revoke_authority_on_plugin<'a>(
     plugin_type: &PluginType,
     authority_type: &Authority,
-    authority_to_remove: &Authority,
     account: &AccountInfo<'a>,
     plugin_header: &PluginHeader,
     plugin_registry: &mut PluginRegistry,
@@ -369,37 +366,23 @@ pub fn remove_authority_from_plugin<'a>(
         .ok_or(MplCoreError::PluginNotFound)?;
 
     // TODO inspect this logic
-    if *authority_type != registry_record.authorities[0] &&
+    if *authority_type != registry_record.plugin_type.default_authority() &&
         // pubkey authorities can remove themselves if they are a signer
-        authority_type != authority_to_remove &&
-        registry_record.authorities.contains(authority_to_remove)
+        authority_type != &registry_record.authority
     {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
-    let index = registry_record
-        .authorities
-        .iter()
-        .position(|auth| auth == authority_to_remove)
-        .ok_or(MplCoreError::InvalidAuthority)?;
+    let authority_bytes = registry_record.authority.try_to_vec()?;
+    registry_record.authority = registry_record.plugin_type.default_authority();
 
-    // Here we replace the default authority with None to indicate it's been removed.
-    if index == 0 {
-        registry_record.authorities[0] = Authority::None;
-        plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
-    } else {
-        registry_record.authorities.swap_remove(index);
+    let new_size = account
+        .data_len()
+        .checked_sub(authority_bytes.len())
+        .ok_or(MplCoreError::NumericalOverflow)?;
+    resize_or_reallocate_account(account, payer, system_program, new_size)?;
 
-        let authority_bytes = authority_to_remove.try_to_vec()?;
-
-        let new_size = account
-            .data_len()
-            .checked_sub(authority_bytes.len())
-            .ok_or(MplCoreError::NumericalOverflow)?;
-        resize_or_reallocate_account(account, payer, system_program, new_size)?;
-
-        plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
-    }
+    plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
 
     Ok(())
 }

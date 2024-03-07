@@ -59,7 +59,7 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], args: CompressArgs) 
                             &Plugin::load(ctx.accounts.asset, record.offset)?,
                             ctx.accounts.owner,
                             &args,
-                            &record.authorities,
+                            &record.authority,
                         )?;
                         if result == ValidationResult::Rejected {
                             return Err(MplCoreError::InvalidAuthority.into());
@@ -88,7 +88,7 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], args: CompressArgs) 
 
                     let hashable_plugin_schema = HashablePluginSchema {
                         index: i,
-                        authorities: record.authorities,
+                        authority: record.authority,
                         plugin,
                     };
 

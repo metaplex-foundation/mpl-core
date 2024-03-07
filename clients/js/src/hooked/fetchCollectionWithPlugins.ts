@@ -16,7 +16,7 @@ import {
   getPluginRegistryAccountDataSerializer,
   getPluginSerializer,
 } from '../generated';
-import { PluginList, PluginWithAuthorities } from '.';
+import { PluginList, PluginWithAuthority } from '.';
 
 export type CollectionWithPlugins = Collection & PluginList;
 
@@ -36,7 +36,7 @@ export async function fetchCollectionWithPlugins(
 
   let pluginHeader: PluginHeaderAccountData | undefined;
   let pluginRegistry: PluginRegistryAccountData | undefined;
-  let plugins: PluginWithAuthorities[] | undefined;
+  let plugins: PluginWithAuthority[] | undefined;
   if (maybeAccount.data.length !== collectionData.length) {
     [pluginHeader] = getPluginHeaderAccountDataSerializer().deserialize(
       maybeAccount.data,
@@ -51,7 +51,7 @@ export async function fetchCollectionWithPlugins(
         maybeAccount.data,
         Number(record.offset)
       )[0],
-      authorities: record.authorities,
+      authority: record.authority,
     }));
   }
 

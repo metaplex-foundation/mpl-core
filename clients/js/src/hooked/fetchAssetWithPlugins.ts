@@ -8,11 +8,7 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Asset,
-  Authority,
-  Plugin,
-  PluginHeader,
   PluginHeaderAccountData,
-  PluginRegistry,
   PluginRegistryAccountData,
   deserializeAsset,
   getAssetAccountDataSerializer,
@@ -20,17 +16,8 @@ import {
   getPluginRegistryAccountDataSerializer,
   getPluginSerializer,
 } from '../generated';
+import { PluginList, PluginWithAuthority } from '.';
 
-export type PluginWithAuthorities = {
-  plugin: Plugin;
-  authorities: Authority[];
-};
-
-export type PluginList = {
-  pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>;
-  plugins?: PluginWithAuthorities[];
-  pluginRegistry?: Omit<PluginRegistry, 'publicKey' | 'header'>;
-};
 export type AssetWithPlugins = Asset & PluginList;
 
 export async function fetchAssetWithPlugins(
@@ -48,7 +35,7 @@ export async function fetchAssetWithPlugins(
 
   let pluginHeader: PluginHeaderAccountData | undefined;
   let pluginRegistry: PluginRegistryAccountData | undefined;
-  let plugins: PluginWithAuthorities[] | undefined;
+  let plugins: PluginWithAuthority[] | undefined;
   if (maybeAccount.data.length !== assetData.length) {
     [pluginHeader] = getPluginHeaderAccountDataSerializer().deserialize(
       maybeAccount.data,
@@ -63,7 +50,7 @@ export async function fetchAssetWithPlugins(
         maybeAccount.data,
         Number(record.offset)
       )[0],
-      authorities: record.authorities,
+      authority: record.authority,
     }));
   }
 

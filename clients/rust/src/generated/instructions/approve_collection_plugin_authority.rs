@@ -11,11 +11,9 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct AddPluginAuthority {
+pub struct ApproveCollectionPluginAuthority {
     /// The address of the asset
-    pub asset: solana_program::pubkey::Pubkey,
-    /// The collection to which the asset belongs
-    pub collection: Option<solana_program::pubkey::Pubkey>,
+    pub collection: solana_program::pubkey::Pubkey,
     /// The owner or delegate of the asset
     pub authority: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
@@ -26,33 +24,24 @@ pub struct AddPluginAuthority {
     pub log_wrapper: Option<solana_program::pubkey::Pubkey>,
 }
 
-impl AddPluginAuthority {
+impl ApproveCollectionPluginAuthority {
     pub fn instruction(
         &self,
-        args: AddPluginAuthorityInstructionArgs,
+        args: ApproveCollectionPluginAuthorityInstructionArgs,
     ) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        args: AddPluginAuthorityInstructionArgs,
+        args: ApproveCollectionPluginAuthorityInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.asset, false,
+            self.collection,
+            false,
         ));
-        if let Some(collection) = self.collection {
-            accounts.push(solana_program::instruction::AccountMeta::new(
-                collection, false,
-            ));
-        } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_ID,
-                false,
-            ));
-        }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.authority,
             true,
@@ -81,7 +70,7 @@ impl AddPluginAuthority {
             ));
         }
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = AddPluginAuthorityInstructionData::new()
+        let mut data = ApproveCollectionPluginAuthorityInstructionData::new()
             .try_to_vec()
             .unwrap();
         let mut args = args.try_to_vec().unwrap();
@@ -96,36 +85,34 @@ impl AddPluginAuthority {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct AddPluginAuthorityInstructionData {
+struct ApproveCollectionPluginAuthorityInstructionData {
     discriminator: u8,
 }
 
-impl AddPluginAuthorityInstructionData {
+impl ApproveCollectionPluginAuthorityInstructionData {
     fn new() -> Self {
-        Self { discriminator: 8 }
+        Self { discriminator: 9 }
     }
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AddPluginAuthorityInstructionArgs {
+pub struct ApproveCollectionPluginAuthorityInstructionArgs {
     pub plugin_type: PluginType,
     pub new_authority: Authority,
 }
 
-/// Instruction builder for `AddPluginAuthority`.
+/// Instruction builder for `ApproveCollectionPluginAuthority`.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` asset
-///   1. `[writable, optional]` collection
-///   2. `[signer]` authority
-///   3. `[writable, signer, optional]` payer
-///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
-///   5. `[optional]` log_wrapper
+///   0. `[writable]` collection
+///   1. `[signer]` authority
+///   2. `[writable, signer, optional]` payer
+///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   4. `[optional]` log_wrapper
 #[derive(Default)]
-pub struct AddPluginAuthorityBuilder {
-    asset: Option<solana_program::pubkey::Pubkey>,
+pub struct ApproveCollectionPluginAuthorityBuilder {
     collection: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
@@ -136,21 +123,14 @@ pub struct AddPluginAuthorityBuilder {
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl AddPluginAuthorityBuilder {
+impl ApproveCollectionPluginAuthorityBuilder {
     pub fn new() -> Self {
         Self::default()
     }
     /// The address of the asset
     #[inline(always)]
-    pub fn asset(&mut self, asset: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.asset = Some(asset);
-        self
-    }
-    /// `[optional account]`
-    /// The collection to which the asset belongs
-    #[inline(always)]
-    pub fn collection(&mut self, collection: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
-        self.collection = collection;
+    pub fn collection(&mut self, collection: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.collection = Some(collection);
         self
     }
     /// The owner or delegate of the asset
@@ -213,9 +193,8 @@ impl AddPluginAuthorityBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = AddPluginAuthority {
-            asset: self.asset.expect("asset is not set"),
-            collection: self.collection,
+        let accounts = ApproveCollectionPluginAuthority {
+            collection: self.collection.expect("collection is not set"),
             authority: self.authority.expect("authority is not set"),
             payer: self.payer,
             system_program: self
@@ -223,7 +202,7 @@ impl AddPluginAuthorityBuilder {
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
             log_wrapper: self.log_wrapper,
         };
-        let args = AddPluginAuthorityInstructionArgs {
+        let args = ApproveCollectionPluginAuthorityInstructionArgs {
             plugin_type: self.plugin_type.clone().expect("plugin_type is not set"),
             new_authority: self
                 .new_authority
@@ -235,12 +214,10 @@ impl AddPluginAuthorityBuilder {
     }
 }
 
-/// `add_plugin_authority` CPI accounts.
-pub struct AddPluginAuthorityCpiAccounts<'a, 'b> {
+/// `approve_collection_plugin_authority` CPI accounts.
+pub struct ApproveCollectionPluginAuthorityCpiAccounts<'a, 'b> {
     /// The address of the asset
-    pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The collection to which the asset belongs
-    pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub collection: &'b solana_program::account_info::AccountInfo<'a>,
     /// The owner or delegate of the asset
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
@@ -251,14 +228,12 @@ pub struct AddPluginAuthorityCpiAccounts<'a, 'b> {
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-/// `add_plugin_authority` CPI instruction.
-pub struct AddPluginAuthorityCpi<'a, 'b> {
+/// `approve_collection_plugin_authority` CPI instruction.
+pub struct ApproveCollectionPluginAuthorityCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The address of the asset
-    pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The collection to which the asset belongs
-    pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub collection: &'b solana_program::account_info::AccountInfo<'a>,
     /// The owner or delegate of the asset
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
@@ -268,18 +243,17 @@ pub struct AddPluginAuthorityCpi<'a, 'b> {
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The arguments for the instruction.
-    pub __args: AddPluginAuthorityInstructionArgs,
+    pub __args: ApproveCollectionPluginAuthorityInstructionArgs,
 }
 
-impl<'a, 'b> AddPluginAuthorityCpi<'a, 'b> {
+impl<'a, 'b> ApproveCollectionPluginAuthorityCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: AddPluginAuthorityCpiAccounts<'a, 'b>,
-        args: AddPluginAuthorityInstructionArgs,
+        accounts: ApproveCollectionPluginAuthorityCpiAccounts<'a, 'b>,
+        args: ApproveCollectionPluginAuthorityInstructionArgs,
     ) -> Self {
         Self {
             __program: program,
-            asset: accounts.asset,
             collection: accounts.collection,
             authority: accounts.authority,
             payer: accounts.payer,
@@ -321,22 +295,11 @@ impl<'a, 'b> AddPluginAuthorityCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.asset.key,
+            *self.collection.key,
             false,
         ));
-        if let Some(collection) = self.collection {
-            accounts.push(solana_program::instruction::AccountMeta::new(
-                *collection.key,
-                false,
-            ));
-        } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_ID,
-                false,
-            ));
-        }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.authority.key,
             true,
@@ -373,7 +336,7 @@ impl<'a, 'b> AddPluginAuthorityCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = AddPluginAuthorityInstructionData::new()
+        let mut data = ApproveCollectionPluginAuthorityInstructionData::new()
             .try_to_vec()
             .unwrap();
         let mut args = self.__args.try_to_vec().unwrap();
@@ -384,12 +347,9 @@ impl<'a, 'b> AddPluginAuthorityCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.asset.clone());
-        if let Some(collection) = self.collection {
-            account_infos.push(collection.clone());
-        }
+        account_infos.push(self.collection.clone());
         account_infos.push(self.authority.clone());
         if let Some(payer) = self.payer {
             account_infos.push(payer.clone());
@@ -410,25 +370,23 @@ impl<'a, 'b> AddPluginAuthorityCpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `AddPluginAuthority` via CPI.
+/// Instruction builder for `ApproveCollectionPluginAuthority` via CPI.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` asset
-///   1. `[writable, optional]` collection
-///   2. `[signer]` authority
-///   3. `[writable, signer, optional]` payer
-///   4. `[]` system_program
-///   5. `[optional]` log_wrapper
-pub struct AddPluginAuthorityCpiBuilder<'a, 'b> {
-    instruction: Box<AddPluginAuthorityCpiBuilderInstruction<'a, 'b>>,
+///   0. `[writable]` collection
+///   1. `[signer]` authority
+///   2. `[writable, signer, optional]` payer
+///   3. `[]` system_program
+///   4. `[optional]` log_wrapper
+pub struct ApproveCollectionPluginAuthorityCpiBuilder<'a, 'b> {
+    instruction: Box<ApproveCollectionPluginAuthorityCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> AddPluginAuthorityCpiBuilder<'a, 'b> {
+impl<'a, 'b> ApproveCollectionPluginAuthorityCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(AddPluginAuthorityCpiBuilderInstruction {
+        let instruction = Box::new(ApproveCollectionPluginAuthorityCpiBuilderInstruction {
             __program: program,
-            asset: None,
             collection: None,
             authority: None,
             payer: None,
@@ -442,18 +400,11 @@ impl<'a, 'b> AddPluginAuthorityCpiBuilder<'a, 'b> {
     }
     /// The address of the asset
     #[inline(always)]
-    pub fn asset(&mut self, asset: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.asset = Some(asset);
-        self
-    }
-    /// `[optional account]`
-    /// The collection to which the asset belongs
-    #[inline(always)]
     pub fn collection(
         &mut self,
-        collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+        collection: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.collection = collection;
+        self.instruction.collection = Some(collection);
         self
     }
     /// The owner or delegate of the asset
@@ -545,7 +496,7 @@ impl<'a, 'b> AddPluginAuthorityCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let args = AddPluginAuthorityInstructionArgs {
+        let args = ApproveCollectionPluginAuthorityInstructionArgs {
             plugin_type: self
                 .instruction
                 .plugin_type
@@ -557,12 +508,10 @@ impl<'a, 'b> AddPluginAuthorityCpiBuilder<'a, 'b> {
                 .clone()
                 .expect("new_authority is not set"),
         };
-        let instruction = AddPluginAuthorityCpi {
+        let instruction = ApproveCollectionPluginAuthorityCpi {
             __program: self.instruction.__program,
 
-            asset: self.instruction.asset.expect("asset is not set"),
-
-            collection: self.instruction.collection,
+            collection: self.instruction.collection.expect("collection is not set"),
 
             authority: self.instruction.authority.expect("authority is not set"),
 
@@ -583,9 +532,8 @@ impl<'a, 'b> AddPluginAuthorityCpiBuilder<'a, 'b> {
     }
 }
 
-struct AddPluginAuthorityCpiBuilderInstruction<'a, 'b> {
+struct ApproveCollectionPluginAuthorityCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
-    asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,

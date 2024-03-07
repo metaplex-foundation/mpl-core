@@ -7,15 +7,14 @@ import {
   AssetWithPlugins,
   DataState,
   PluginType,
-  addPluginAuthority,
+  approvePluginAuthority,
   addPlugin,
   create,
   fetchAsset,
   fetchAssetWithPlugins,
   plugin,
-  removePluginAuthority,
+  revokePluginAuthority,
   updateAuthority,
-  authority,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -53,7 +52,7 @@ test('it can remove an authority from a plugin', async (t) => {
     },
   })
     .append(
-      addPluginAuthority(umi, {
+      approvePluginAuthority(umi, {
         asset: assetAddress.publicKey,
         pluginType: PluginType.Freeze,
         newAuthority: {
@@ -82,19 +81,15 @@ test('it can remove an authority from a plugin', async (t) => {
         {
           pluginType: 2,
           offset: BigInt(118),
-          authorities: [
-            { __kind: 'Owner' },
+          authority:
             { __kind: 'Pubkey', address: delegateAddress.publicKey },
-          ],
         },
       ],
     },
     plugins: [
       {
-        authorities: [
-          { __kind: 'Owner' },
+        authority:
           { __kind: 'Pubkey', address: delegateAddress.publicKey },
-        ],
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],
@@ -103,13 +98,9 @@ test('it can remove an authority from a plugin', async (t) => {
     ],
   });
 
-  await removePluginAuthority(umi, {
+  await revokePluginAuthority(umi, {
     asset: assetAddress.publicKey,
     pluginType: PluginType.Freeze,
-    authorityToRemove: {
-      __kind: 'Pubkey',
-      address: delegateAddress.publicKey,
-    },
   }).sendAndConfirm(umi);
 
   const asset2 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -130,13 +121,13 @@ test('it can remove an authority from a plugin', async (t) => {
         {
           pluginType: 2,
           offset: BigInt(118),
-          authorities: [{ __kind: 'Owner' }],
+          authority: { __kind: 'Owner' },
         },
       ],
     },
     plugins: [
       {
-        authorities: [{ __kind: 'Owner' }],
+        authority: { __kind: 'Owner' },
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],
@@ -179,12 +170,9 @@ test('it can remove the default authority from a plugin to make it immutable', a
     },
   }).sendAndConfirm(umi);
 
-  await removePluginAuthority(umi, {
+  await revokePluginAuthority(umi, {
     asset: assetAddress.publicKey,
     pluginType: PluginType.Freeze,
-    authorityToRemove: {
-      __kind: 'Owner',
-    },
   }).sendAndConfirm(umi);
 
   const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -205,13 +193,13 @@ test('it can remove the default authority from a plugin to make it immutable', a
         {
           pluginType: 2,
           offset: BigInt(118),
-          authorities: [{ __kind: 'None' }],
+          authority: { __kind: 'None' },
         },
       ],
     },
     plugins: [
       {
-        authorities: [{ __kind: 'None' }],
+        authority: { __kind: 'None' },
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],
@@ -241,7 +229,7 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
     plugin: plugin('Freeze', [{ frozen: false }]),
   }).sendAndConfirm(umi);
 
-  await addPluginAuthority(umi, {
+  await approvePluginAuthority(umi, {
     asset: assetAddress.publicKey,
     pluginType: PluginType.Freeze,
     newAuthority: {
@@ -260,10 +248,8 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
     uri: 'https://example.com/bread',
     plugins: [
       {
-        authorities: [
-          { __kind: 'Owner' },
+        authority:
           { __kind: 'Pubkey', address: pubkeyAuth.publicKey },
-        ],
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],
@@ -274,15 +260,11 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
 
   const umi2 = await createUmi();
 
-  await removePluginAuthority(umi2, {
+  await revokePluginAuthority(umi2, {
     payer: umi2.identity,
     asset: assetAddress.publicKey,
     authority: pubkeyAuth,
     pluginType: PluginType.Freeze,
-    authorityToRemove: {
-      __kind: 'Pubkey',
-      address: pubkeyAuth.publicKey,
-    },
   }).sendAndConfirm(umi);
 
   const asset2 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -295,7 +277,7 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
     uri: 'https://example.com/bread',
     plugins: [
       {
-        authorities: [{ __kind: 'Owner' }],
+        authority: { __kind: 'Owner' },
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],
@@ -325,7 +307,7 @@ test('it can remove a owner authority from a plugin with other authority', async
     plugin: plugin('Freeze', [{ frozen: false }]),
   }).sendAndConfirm(umi);
 
-  await addPluginAuthority(umi, {
+  await approvePluginAuthority(umi, {
     asset: assetAddress.publicKey,
     pluginType: PluginType.Freeze,
     newAuthority: {
@@ -344,10 +326,8 @@ test('it can remove a owner authority from a plugin with other authority', async
     uri: 'https://example.com/bread',
     plugins: [
       {
-        authorities: [
-          { __kind: 'Owner' },
+        authority:
           { __kind: 'Pubkey', address: pubkeyAuth.publicKey },
-        ],
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],
@@ -356,12 +336,11 @@ test('it can remove a owner authority from a plugin with other authority', async
     ],
   });
 
-  await removePluginAuthority(umi, {
+  await revokePluginAuthority(umi, {
     payer: umi.identity,
     asset: assetAddress.publicKey,
     authority: umi.identity,
     pluginType: PluginType.Freeze,
-    authorityToRemove: authority('Owner'),
   }).sendAndConfirm(umi);
 
   const asset2 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -374,10 +353,8 @@ test('it can remove a owner authority from a plugin with other authority', async
     uri: 'https://example.com/bread',
     plugins: [
       {
-        authorities: [
-          authority('None'),
+        authority:
           { __kind: 'Pubkey', address: pubkeyAuth.publicKey },
-        ],
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],
@@ -406,21 +383,19 @@ test('it cannot remove a none authority from a plugin', async (t) => {
     plugin: plugin('Freeze', [{ frozen: false }]),
   }).sendAndConfirm(umi);
 
-  await removePluginAuthority(umi, {
+  await revokePluginAuthority(umi, {
     payer: umi.identity,
     asset: assetAddress.publicKey,
     authority: umi.identity,
     pluginType: PluginType.Freeze,
-    authorityToRemove: authority('Owner'),
   }).sendAndConfirm(umi);
 
-  const err = await t.throwsAsync(() => removePluginAuthority(umi, {
-      payer: umi.identity,
-      asset: assetAddress.publicKey,
-      authority: umi.identity,
-      pluginType: PluginType.Freeze,
-      authorityToRemove: authority('None'),
-    }).sendAndConfirm(umi));
+  const err = await t.throwsAsync(() => revokePluginAuthority(umi, {
+    payer: umi.identity,
+    asset: assetAddress.publicKey,
+    authority: umi.identity,
+    pluginType: PluginType.Freeze,
+  }).sendAndConfirm(umi));
 
   t.true(err?.message.startsWith('Invalid Authority'));
 });

@@ -5,25 +5,24 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{
-        RemoveCollectionPluginAuthorityAccounts, RemovePluginAuthorityAccounts,
+        RevokeCollectionPluginAuthorityAccounts, RevokePluginAuthorityAccounts,
     },
-    plugins::{remove_authority_from_plugin, PluginHeader, PluginRegistry, PluginType},
+    plugins::{revoke_authority_on_plugin, PluginHeader, PluginRegistry, PluginType},
     state::{Asset, Authority, Collection, SolanaAccount, UpdateAuthority},
     utils::fetch_core_data,
 };
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct RemovePluginAuthorityArgs {
+pub(crate) struct RevokePluginAuthorityArgs {
     pub plugin_type: PluginType,
-    pub authority_to_remove: Authority,
 }
 
-pub(crate) fn remove_plugin_authority<'a>(
+pub(crate) fn revoke_plugin_authority<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: RemovePluginAuthorityArgs,
+    args: RevokePluginAuthorityArgs,
 ) -> ProgramResult {
-    let ctx = RemovePluginAuthorityAccounts::context(accounts)?;
+    let ctx = RevokePluginAuthorityAccounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
@@ -65,13 +64,12 @@ pub(crate) fn remove_plugin_authority<'a>(
         }
     };
 
-    process_remove_plugin_authority(
+    process_revoke_plugin_authority(
         ctx.accounts.asset,
         payer,
         ctx.accounts.system_program,
         &authority_type,
         &args.plugin_type,
-        &args.authority_to_remove,
         plugin_header.as_ref(),
         plugin_registry.as_mut(),
     )
@@ -79,16 +77,15 @@ pub(crate) fn remove_plugin_authority<'a>(
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct RemoveCollectionPluginAuthorityArgs {
+pub(crate) struct RevokeCollectionPluginAuthorityArgs {
     pub plugin_type: PluginType,
-    pub authority_to_remove: Authority,
 }
 
-pub(crate) fn remove_collection_plugin_authority<'a>(
+pub(crate) fn revoke_collection_plugin_authority<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: RemoveCollectionPluginAuthorityArgs,
+    args: RevokeCollectionPluginAuthorityArgs,
 ) -> ProgramResult {
-    let ctx = RemoveCollectionPluginAuthorityAccounts::context(accounts)?;
+    let ctx = RevokeCollectionPluginAuthorityAccounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
@@ -103,26 +100,24 @@ pub(crate) fn remove_collection_plugin_authority<'a>(
     let (_, plugin_header, mut plugin_registry) =
         fetch_core_data::<Collection>(ctx.accounts.collection)?;
 
-    process_remove_plugin_authority(
+    process_revoke_plugin_authority(
         ctx.accounts.collection,
         payer,
         ctx.accounts.system_program,
         &Authority::UpdateAuthority,
         &args.plugin_type,
-        &args.authority_to_remove,
         plugin_header.as_ref(),
         plugin_registry.as_mut(),
     )
 }
 
 #[allow(clippy::too_many_arguments)]
-fn process_remove_plugin_authority<'a>(
+fn process_revoke_plugin_authority<'a>(
     core_info: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
     authority_type: &Authority,
     plugin_type: &PluginType,
-    authority_to_remove: &Authority,
     plugin_header: Option<&PluginHeader>,
     plugin_registry: Option<&mut PluginRegistry>,
 ) -> ProgramResult {
@@ -136,10 +131,9 @@ fn process_remove_plugin_authority<'a>(
         None => return Err(MplCoreError::PluginsNotInitialized.into()),
     };
 
-    remove_authority_from_plugin(
+    revoke_authority_on_plugin(
         plugin_type,
         authority_type,
-        authority_to_remove,
         core_info,
         plugin_header,
         plugin_registry,

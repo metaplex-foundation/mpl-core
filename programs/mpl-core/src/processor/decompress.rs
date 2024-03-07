@@ -66,7 +66,7 @@ pub(crate) fn decompress<'a>(
                 for plugin in plugins {
                     initialize_plugin::<Asset>(
                         &plugin.plugin,
-                        &plugin.authorities,
+                        &plugin.authority,
                         ctx.accounts.asset,
                         payer,
                         ctx.accounts.system_program,
@@ -102,7 +102,7 @@ pub(crate) fn decompress<'a>(
                             &Plugin::load(ctx.accounts.asset, record.offset)?,
                             ctx.accounts.owner,
                             &args,
-                            &record.authorities,
+                            &record.authority,
                         )?;
                         if result == ValidationResult::Rejected {
                             return Err(MplCoreError::InvalidAuthority.into());

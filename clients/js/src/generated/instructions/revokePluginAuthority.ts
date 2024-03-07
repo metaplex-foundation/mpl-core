@@ -25,17 +25,10 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import {
-  Authority,
-  AuthorityArgs,
-  PluginType,
-  PluginTypeArgs,
-  getAuthoritySerializer,
-  getPluginTypeSerializer,
-} from '../types';
+import { PluginType, PluginTypeArgs, getPluginTypeSerializer } from '../types';
 
 // Accounts.
-export type AddPluginAuthorityInstructionAccounts = {
+export type RevokePluginAuthorityInstructionAccounts = {
   /** The address of the asset */
   asset: PublicKey | Pda;
   /** The collection to which the asset belongs */
@@ -51,50 +44,47 @@ export type AddPluginAuthorityInstructionAccounts = {
 };
 
 // Data.
-export type AddPluginAuthorityInstructionData = {
+export type RevokePluginAuthorityInstructionData = {
   discriminator: number;
   pluginType: PluginType;
-  newAuthority: Authority;
 };
 
-export type AddPluginAuthorityInstructionDataArgs = {
+export type RevokePluginAuthorityInstructionDataArgs = {
   pluginType: PluginTypeArgs;
-  newAuthority: AuthorityArgs;
 };
 
-export function getAddPluginAuthorityInstructionDataSerializer(): Serializer<
-  AddPluginAuthorityInstructionDataArgs,
-  AddPluginAuthorityInstructionData
+export function getRevokePluginAuthorityInstructionDataSerializer(): Serializer<
+  RevokePluginAuthorityInstructionDataArgs,
+  RevokePluginAuthorityInstructionData
 > {
   return mapSerializer<
-    AddPluginAuthorityInstructionDataArgs,
+    RevokePluginAuthorityInstructionDataArgs,
     any,
-    AddPluginAuthorityInstructionData
+    RevokePluginAuthorityInstructionData
   >(
-    struct<AddPluginAuthorityInstructionData>(
+    struct<RevokePluginAuthorityInstructionData>(
       [
         ['discriminator', u8()],
         ['pluginType', getPluginTypeSerializer()],
-        ['newAuthority', getAuthoritySerializer()],
       ],
-      { description: 'AddPluginAuthorityInstructionData' }
+      { description: 'RevokePluginAuthorityInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 8 })
+    (value) => ({ ...value, discriminator: 10 })
   ) as Serializer<
-    AddPluginAuthorityInstructionDataArgs,
-    AddPluginAuthorityInstructionData
+    RevokePluginAuthorityInstructionDataArgs,
+    RevokePluginAuthorityInstructionData
   >;
 }
 
 // Args.
-export type AddPluginAuthorityInstructionArgs =
-  AddPluginAuthorityInstructionDataArgs;
+export type RevokePluginAuthorityInstructionArgs =
+  RevokePluginAuthorityInstructionDataArgs;
 
 // Instruction.
-export function addPluginAuthority(
+export function revokePluginAuthority(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: AddPluginAuthorityInstructionAccounts &
-    AddPluginAuthorityInstructionArgs
+  input: RevokePluginAuthorityInstructionAccounts &
+    RevokePluginAuthorityInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -137,7 +127,7 @@ export function addPluginAuthority(
   } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
-  const resolvedArgs: AddPluginAuthorityInstructionArgs = { ...input };
+  const resolvedArgs: RevokePluginAuthorityInstructionArgs = { ...input };
 
   // Default values.
   if (!resolvedAccounts.authority.value) {
@@ -164,8 +154,8 @@ export function addPluginAuthority(
   );
 
   // Data.
-  const data = getAddPluginAuthorityInstructionDataSerializer().serialize(
-    resolvedArgs as AddPluginAuthorityInstructionDataArgs
+  const data = getRevokePluginAuthorityInstructionDataSerializer().serialize(
+    resolvedArgs as RevokePluginAuthorityInstructionDataArgs
   );
 
   // Bytes Created On Chain.

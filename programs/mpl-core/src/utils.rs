@@ -24,33 +24,35 @@ pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, ProgramErro
 /// Assert that the account info address is in the authorities array.
 pub fn assert_authority<T: CoreAsset>(
     asset: &T,
-    authority: &AccountInfo,
-    authorities: &[Authority],
+    authority_info: &AccountInfo,
+    authorities: &Authority,
 ) -> ProgramResult {
     solana_program::msg!("Update authority: {:?}", asset.update_authority());
-    for auth_iter in authorities {
-        solana_program::msg!("Check if {:?} matches {:?}", authority.key, auth_iter);
-        match auth_iter {
-            Authority::None => (),
-            Authority::Owner => {
-                if asset.owner() == authority.key {
-                    return Ok(());
-                }
+    solana_program::msg!(
+        "Check if {:?} matches {:?}",
+        authority_info.key,
+        authorities
+    );
+    match authorities {
+        Authority::None => (),
+        Authority::Owner => {
+            if asset.owner() == authority_info.key {
+                return Ok(());
             }
-            Authority::UpdateAuthority => {
-                if asset.update_authority().key() == *authority.key {
-                    return Ok(());
-                }
+        }
+        Authority::UpdateAuthority => {
+            if asset.update_authority().key() == *authority_info.key {
+                return Ok(());
             }
-            Authority::Pubkey { address } => {
-                if authority.key == address {
-                    return Ok(());
-                }
+        }
+        Authority::Pubkey { address } => {
+            if authority_info.key == address {
+                return Ok(());
             }
-            Authority::Permanent { address } => {
-                if authority.key == address {
-                    return Ok(());
-                }
+        }
+        Authority::Permanent { address } => {
+            if authority_info.key == address {
+                return Ok(());
             }
         }
     }
@@ -61,26 +63,24 @@ pub fn assert_authority<T: CoreAsset>(
 /// Assert that the account info address is in the authorities array.
 pub fn assert_collection_authority(
     asset: &Collection,
-    authority: &AccountInfo,
-    authorities: &[Authority],
+    authority_info: &AccountInfo,
+    authority: &Authority,
 ) -> ProgramResult {
-    for auth_iter in authorities {
-        match auth_iter {
-            Authority::None | Authority::Owner => (),
-            Authority::UpdateAuthority => {
-                if &asset.update_authority == authority.key {
-                    return Ok(());
-                }
+    match authority {
+        Authority::None | Authority::Owner => (),
+        Authority::UpdateAuthority => {
+            if &asset.update_authority == authority_info.key {
+                return Ok(());
             }
-            Authority::Pubkey { address } => {
-                if authority.key == address {
-                    return Ok(());
-                }
+        }
+        Authority::Pubkey { address } => {
+            if authority_info.key == address {
+                return Ok(());
             }
-            Authority::Permanent { address } => {
-                if authority.key == address {
-                    return Ok(());
-                }
+        }
+        Authority::Permanent { address } => {
+            if authority_info.key == address {
+                return Ok(());
             }
         }
     }
@@ -182,7 +182,7 @@ pub(crate) fn resize_or_reallocate_account<'a>(
         let lamports_diff = new_minimum_balance.saturating_sub(current_minimum_balance);
         invoke(
             &system_instruction::transfer(funding_account.key, target_account.key, lamports_diff),
-            account_infos
+            account_infos,
         )?;
     } else {
         // return lamports to the compressor

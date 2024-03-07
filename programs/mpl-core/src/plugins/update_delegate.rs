@@ -40,52 +40,52 @@ impl DataBlob for UpdateDelegate {
 impl PluginValidation for UpdateDelegate {
     fn validate_create(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _args: &CreateArgs,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_update(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &[Authority],
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_burn(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &[Authority],
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_transfer(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _new_owner: &AccountInfo,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_compress(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _args: &CompressArgs,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_decompress(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _args: &DecompressArgs,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

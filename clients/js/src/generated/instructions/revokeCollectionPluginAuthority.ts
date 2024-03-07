@@ -25,21 +25,12 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import {
-  Authority,
-  AuthorityArgs,
-  PluginType,
-  PluginTypeArgs,
-  getAuthoritySerializer,
-  getPluginTypeSerializer,
-} from '../types';
+import { PluginType, PluginTypeArgs, getPluginTypeSerializer } from '../types';
 
 // Accounts.
-export type RemovePluginAuthorityInstructionAccounts = {
+export type RevokeCollectionPluginAuthorityInstructionAccounts = {
   /** The address of the asset */
-  asset: PublicKey | Pda;
-  /** The collection to which the asset belongs */
-  collection?: PublicKey | Pda;
+  collection: PublicKey | Pda;
   /** The owner or delegate of the asset */
   authority?: Signer;
   /** The account paying for the storage fees */
@@ -51,50 +42,47 @@ export type RemovePluginAuthorityInstructionAccounts = {
 };
 
 // Data.
-export type RemovePluginAuthorityInstructionData = {
+export type RevokeCollectionPluginAuthorityInstructionData = {
   discriminator: number;
   pluginType: PluginType;
-  authorityToRemove: Authority;
 };
 
-export type RemovePluginAuthorityInstructionDataArgs = {
+export type RevokeCollectionPluginAuthorityInstructionDataArgs = {
   pluginType: PluginTypeArgs;
-  authorityToRemove: AuthorityArgs;
 };
 
-export function getRemovePluginAuthorityInstructionDataSerializer(): Serializer<
-  RemovePluginAuthorityInstructionDataArgs,
-  RemovePluginAuthorityInstructionData
+export function getRevokeCollectionPluginAuthorityInstructionDataSerializer(): Serializer<
+  RevokeCollectionPluginAuthorityInstructionDataArgs,
+  RevokeCollectionPluginAuthorityInstructionData
 > {
   return mapSerializer<
-    RemovePluginAuthorityInstructionDataArgs,
+    RevokeCollectionPluginAuthorityInstructionDataArgs,
     any,
-    RemovePluginAuthorityInstructionData
+    RevokeCollectionPluginAuthorityInstructionData
   >(
-    struct<RemovePluginAuthorityInstructionData>(
+    struct<RevokeCollectionPluginAuthorityInstructionData>(
       [
         ['discriminator', u8()],
         ['pluginType', getPluginTypeSerializer()],
-        ['authorityToRemove', getAuthoritySerializer()],
       ],
-      { description: 'RemovePluginAuthorityInstructionData' }
+      { description: 'RevokeCollectionPluginAuthorityInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 10 })
+    (value) => ({ ...value, discriminator: 11 })
   ) as Serializer<
-    RemovePluginAuthorityInstructionDataArgs,
-    RemovePluginAuthorityInstructionData
+    RevokeCollectionPluginAuthorityInstructionDataArgs,
+    RevokeCollectionPluginAuthorityInstructionData
   >;
 }
 
 // Args.
-export type RemovePluginAuthorityInstructionArgs =
-  RemovePluginAuthorityInstructionDataArgs;
+export type RevokeCollectionPluginAuthorityInstructionArgs =
+  RevokeCollectionPluginAuthorityInstructionDataArgs;
 
 // Instruction.
-export function removePluginAuthority(
+export function revokeCollectionPluginAuthority(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: RemovePluginAuthorityInstructionAccounts &
-    RemovePluginAuthorityInstructionArgs
+  input: RevokeCollectionPluginAuthorityInstructionAccounts &
+    RevokeCollectionPluginAuthorityInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -104,40 +92,37 @@ export function removePluginAuthority(
 
   // Accounts.
   const resolvedAccounts = {
-    asset: {
-      index: 0,
-      isWritable: true as boolean,
-      value: input.asset ?? null,
-    },
     collection: {
-      index: 1,
+      index: 0,
       isWritable: true as boolean,
       value: input.collection ?? null,
     },
     authority: {
-      index: 2,
+      index: 1,
       isWritable: false as boolean,
       value: input.authority ?? null,
     },
     payer: {
-      index: 3,
+      index: 2,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     systemProgram: {
-      index: 4,
+      index: 3,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
-      index: 5,
+      index: 4,
       isWritable: false as boolean,
       value: input.logWrapper ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
-  const resolvedArgs: RemovePluginAuthorityInstructionArgs = { ...input };
+  const resolvedArgs: RevokeCollectionPluginAuthorityInstructionArgs = {
+    ...input,
+  };
 
   // Default values.
   if (!resolvedAccounts.authority.value) {
@@ -164,9 +149,10 @@ export function removePluginAuthority(
   );
 
   // Data.
-  const data = getRemovePluginAuthorityInstructionDataSerializer().serialize(
-    resolvedArgs as RemovePluginAuthorityInstructionDataArgs
-  );
+  const data =
+    getRevokeCollectionPluginAuthorityInstructionDataSerializer().serialize(
+      resolvedArgs as RevokeCollectionPluginAuthorityInstructionDataArgs
+    );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

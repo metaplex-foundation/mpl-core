@@ -3,11 +3,11 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
 use crate::processor::{
-    AddCollectionPluginArgs, AddCollectionPluginAuthorityArgs, AddPluginArgs,
-    AddPluginAuthorityArgs, BurnArgs, BurnCollectionArgs, CompressArgs, CreateArgs,
-    CreateCollectionArgs, DecompressArgs, RemoveCollectionPluginArgs,
-    RemoveCollectionPluginAuthorityArgs, RemovePluginArgs, RemovePluginAuthorityArgs, TransferArgs,
-    UpdateArgs, UpdateCollectionArgs, UpdateCollectionPluginArgs, UpdatePluginArgs,
+    AddCollectionPluginArgs, AddPluginArgs, ApproveCollectionPluginAuthorityArgs,
+    ApprovePluginAuthorityArgs, BurnArgs, BurnCollectionArgs, CompressArgs, CreateArgs,
+    CreateCollectionArgs, DecompressArgs, RemoveCollectionPluginArgs, RemovePluginArgs,
+    RevokeCollectionPluginAuthorityArgs, RevokePluginAuthorityArgs, TransferArgs, UpdateArgs,
+    UpdateCollectionArgs, UpdateCollectionPluginArgs, UpdatePluginArgs,
 };
 
 /// Instructions supported by the mpl-core program.
@@ -86,39 +86,39 @@ pub(crate) enum MplAssetInstruction {
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     UpdateCollectionPlugin(UpdateCollectionPluginArgs),
 
-    /// Add an authority to an mpl-core plugin.
+    /// Approve an authority to an mpl-core plugin.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    AddPluginAuthority(AddPluginAuthorityArgs),
+    ApprovePluginAuthority(ApprovePluginAuthorityArgs),
 
-    /// Add an authority to an mpl-core plugin.
+    /// Approve an authority to an mpl-core plugin.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
     #[account(1, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    AddCollectionPluginAuthority(AddCollectionPluginAuthorityArgs),
+    ApproveCollectionPluginAuthority(ApproveCollectionPluginAuthorityArgs),
 
-    /// Remove an authority from an mpl-core plugin.
+    /// Revoke an authority from an mpl-core plugin.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    RemovePluginAuthority(RemovePluginAuthorityArgs),
+    RevokePluginAuthority(RevokePluginAuthorityArgs),
 
-    /// Remove an authority from an mpl-core plugin.
+    /// Revoke an authority from an mpl-core plugin.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
     #[account(1, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    RemoveCollectionPluginAuthority(RemoveCollectionPluginAuthorityArgs),
+    RevokeCollectionPluginAuthority(RevokeCollectionPluginAuthorityArgs),
 
     /// Burn an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]

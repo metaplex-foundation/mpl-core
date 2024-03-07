@@ -66,13 +66,13 @@ test('it can remove a plugin from an asset', async (t) => {
         {
           pluginType: 2,
           offset: BigInt(118),
-          authorities: [{ __kind: 'Owner' }],
+          authority: { __kind: 'Owner' },
         },
       ],
     },
     plugins: [
       {
-        authorities: [{ __kind: 'Owner' }],
+        authority: { __kind: 'Owner' },
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],

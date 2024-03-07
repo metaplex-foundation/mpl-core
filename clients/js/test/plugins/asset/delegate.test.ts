@@ -5,7 +5,7 @@ import {
   AssetWithPlugins,
   DataState,
   PluginType,
-  addPluginAuthority,
+  approvePluginAuthority,
   addPlugin,
   create,
   fetchAssetWithPlugins,
@@ -37,7 +37,7 @@ test('it can delegate a new authority', async (t) => {
     },
   }).sendAndConfirm(umi);
 
-  await addPluginAuthority(umi, {
+  await approvePluginAuthority(umi, {
     asset: assetAddress.publicKey,
     pluginType: PluginType.Freeze,
     newAuthority: {
@@ -63,19 +63,15 @@ test('it can delegate a new authority', async (t) => {
         {
           pluginType: 2,
           offset: BigInt(118),
-          authorities: [
-            { __kind: 'Owner' },
+          authority:
             { __kind: 'Pubkey', address: delegateAddress.publicKey },
-          ],
         },
       ],
     },
     plugins: [
       {
-        authorities: [
-          { __kind: 'Owner' },
+        authority:
           { __kind: 'Pubkey', address: delegateAddress.publicKey },
-        ],
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],
@@ -108,7 +104,7 @@ test('a delegate can freeze the token', async (t) => {
     },
   }).sendAndConfirm(umi);
 
-  await addPluginAuthority(umi, {
+  await approvePluginAuthority(umi, {
     asset: assetAddress.publicKey,
     pluginType: PluginType.Freeze,
     newAuthority: {
@@ -144,19 +140,15 @@ test('a delegate can freeze the token', async (t) => {
         {
           pluginType: 2,
           offset: BigInt(118),
-          authorities: [
-            { __kind: 'Owner' },
+          authority:
             { __kind: 'Pubkey', address: delegateAddress.publicKey },
-          ],
         },
       ],
     },
     plugins: [
       {
-        authorities: [
-          { __kind: 'Owner' },
+        authority:
           { __kind: 'Pubkey', address: delegateAddress.publicKey },
-        ],
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: true }],

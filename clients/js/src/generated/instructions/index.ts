@@ -7,9 +7,9 @@
  */
 
 export * from './addCollectionPlugin';
-export * from './addCollectionPluginAuthority';
 export * from './addPlugin';
-export * from './addPluginAuthority';
+export * from './approveCollectionPluginAuthority';
+export * from './approvePluginAuthority';
 export * from './burn';
 export * from './burnCollection';
 export * from './collect';
@@ -18,9 +18,9 @@ export * from './create';
 export * from './createCollection';
 export * from './decompress';
 export * from './removeCollectionPlugin';
-export * from './removeCollectionPluginAuthority';
 export * from './removePlugin';
-export * from './removePluginAuthority';
+export * from './revokeCollectionPluginAuthority';
+export * from './revokePluginAuthority';
 export * from './transfer';
 export * from './update';
 export * from './updateCollection';

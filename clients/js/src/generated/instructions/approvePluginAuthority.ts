@@ -35,9 +35,11 @@ import {
 } from '../types';
 
 // Accounts.
-export type AddCollectionPluginAuthorityInstructionAccounts = {
+export type ApprovePluginAuthorityInstructionAccounts = {
   /** The address of the asset */
-  collection: PublicKey | Pda;
+  asset: PublicKey | Pda;
+  /** The collection to which the asset belongs */
+  collection?: PublicKey | Pda;
   /** The owner or delegate of the asset */
   authority?: Signer;
   /** The account paying for the storage fees */
@@ -49,50 +51,50 @@ export type AddCollectionPluginAuthorityInstructionAccounts = {
 };
 
 // Data.
-export type AddCollectionPluginAuthorityInstructionData = {
+export type ApprovePluginAuthorityInstructionData = {
   discriminator: number;
   pluginType: PluginType;
   newAuthority: Authority;
 };
 
-export type AddCollectionPluginAuthorityInstructionDataArgs = {
+export type ApprovePluginAuthorityInstructionDataArgs = {
   pluginType: PluginTypeArgs;
   newAuthority: AuthorityArgs;
 };
 
-export function getAddCollectionPluginAuthorityInstructionDataSerializer(): Serializer<
-  AddCollectionPluginAuthorityInstructionDataArgs,
-  AddCollectionPluginAuthorityInstructionData
+export function getApprovePluginAuthorityInstructionDataSerializer(): Serializer<
+  ApprovePluginAuthorityInstructionDataArgs,
+  ApprovePluginAuthorityInstructionData
 > {
   return mapSerializer<
-    AddCollectionPluginAuthorityInstructionDataArgs,
+    ApprovePluginAuthorityInstructionDataArgs,
     any,
-    AddCollectionPluginAuthorityInstructionData
+    ApprovePluginAuthorityInstructionData
   >(
-    struct<AddCollectionPluginAuthorityInstructionData>(
+    struct<ApprovePluginAuthorityInstructionData>(
       [
         ['discriminator', u8()],
         ['pluginType', getPluginTypeSerializer()],
         ['newAuthority', getAuthoritySerializer()],
       ],
-      { description: 'AddCollectionPluginAuthorityInstructionData' }
+      { description: 'ApprovePluginAuthorityInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 9 })
+    (value) => ({ ...value, discriminator: 8 })
   ) as Serializer<
-    AddCollectionPluginAuthorityInstructionDataArgs,
-    AddCollectionPluginAuthorityInstructionData
+    ApprovePluginAuthorityInstructionDataArgs,
+    ApprovePluginAuthorityInstructionData
   >;
 }
 
 // Args.
-export type AddCollectionPluginAuthorityInstructionArgs =
-  AddCollectionPluginAuthorityInstructionDataArgs;
+export type ApprovePluginAuthorityInstructionArgs =
+  ApprovePluginAuthorityInstructionDataArgs;
 
 // Instruction.
-export function addCollectionPluginAuthority(
+export function approvePluginAuthority(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: AddCollectionPluginAuthorityInstructionAccounts &
-    AddCollectionPluginAuthorityInstructionArgs
+  input: ApprovePluginAuthorityInstructionAccounts &
+    ApprovePluginAuthorityInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -102,37 +104,40 @@ export function addCollectionPluginAuthority(
 
   // Accounts.
   const resolvedAccounts = {
-    collection: {
+    asset: {
       index: 0,
+      isWritable: true as boolean,
+      value: input.asset ?? null,
+    },
+    collection: {
+      index: 1,
       isWritable: true as boolean,
       value: input.collection ?? null,
     },
     authority: {
-      index: 1,
+      index: 2,
       isWritable: false as boolean,
       value: input.authority ?? null,
     },
     payer: {
-      index: 2,
+      index: 3,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     systemProgram: {
-      index: 3,
+      index: 4,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
-      index: 4,
+      index: 5,
       isWritable: false as boolean,
       value: input.logWrapper ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
-  const resolvedArgs: AddCollectionPluginAuthorityInstructionArgs = {
-    ...input,
-  };
+  const resolvedArgs: ApprovePluginAuthorityInstructionArgs = { ...input };
 
   // Default values.
   if (!resolvedAccounts.authority.value) {
@@ -159,10 +164,9 @@ export function addCollectionPluginAuthority(
   );
 
   // Data.
-  const data =
-    getAddCollectionPluginAuthorityInstructionDataSerializer().serialize(
-      resolvedArgs as AddCollectionPluginAuthorityInstructionDataArgs
-    );
+  const data = getApprovePluginAuthorityInstructionDataSerializer().serialize(
+    resolvedArgs as ApprovePluginAuthorityInstructionDataArgs
+  );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

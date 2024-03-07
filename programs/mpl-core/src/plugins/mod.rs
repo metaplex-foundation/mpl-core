@@ -51,7 +51,7 @@ pub enum Plugin {
 
 impl Plugin {
     /// Get the default authority for a plugin which defines who must allow the plugin to be created.
-    pub fn default_authority(&self) -> Result<Authority, ProgramError> {
+    pub fn default_authority(&self) -> Authority {
         // match self {
         //     Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
         //     Plugin::Royalties(_) => Ok(Authority::UpdateAuthority),
@@ -141,14 +141,14 @@ impl From<&Plugin> for PluginType {
 
 impl PluginType {
     /// Get the default authority for a plugin which defines who must allow the plugin to be created.
-    pub fn default_authority(&self) -> Result<Authority, ProgramError> {
+    pub fn default_authority(&self) -> Authority {
         match self {
-            PluginType::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            PluginType::Royalties => Ok(Authority::UpdateAuthority),
-            PluginType::Freeze => Ok(Authority::Owner),
-            PluginType::Burn => Ok(Authority::Owner),
-            PluginType::Transfer => Ok(Authority::Owner),
-            PluginType::UpdateDelegate => Ok(Authority::UpdateAuthority),
+            PluginType::Reserved => Authority::None,
+            PluginType::Royalties => Authority::UpdateAuthority,
+            PluginType::Freeze => Authority::Owner,
+            PluginType::Burn => Authority::Owner,
+            PluginType::Transfer => Authority::Owner,
+            PluginType::UpdateDelegate => Authority::UpdateAuthority,
         }
     }
 }

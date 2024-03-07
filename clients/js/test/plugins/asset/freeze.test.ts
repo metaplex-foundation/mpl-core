@@ -47,17 +47,15 @@ test('it can freeze and unfreeze an asset', async (t) => {
         {
           pluginType: 2,
           offset: BigInt(118),
-          authorities: [
+          authority:
             { __kind: 'Owner' },
-          ],
         },
       ],
     },
     plugins: [
       {
-        authorities: [
+        authority:
           { __kind: 'Owner' },
-        ],
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: true }],
@@ -88,17 +86,15 @@ test('it can freeze and unfreeze an asset', async (t) => {
         {
           pluginType: 2,
           offset: BigInt(118),
-          authorities: [
+          authority:
             { __kind: 'Owner' },
-          ],
         },
       ],
     },
     plugins: [
       {
-        authorities: [
+        authority:
           { __kind: 'Owner' },
-        ],
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],

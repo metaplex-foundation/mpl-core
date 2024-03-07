@@ -14,6 +14,6 @@ use borsh::BorshSerialize;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct HashablePluginSchema {
     pub index: u64,
-    pub authorities: Vec<Authority>,
+    pub authority: Authority,
     pub plugin: Plugin,
 }

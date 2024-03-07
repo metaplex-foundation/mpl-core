@@ -122,13 +122,13 @@ test('it can update an asset with plugins to be larger', async (t) => {
         {
           pluginType: 2,
           offset: BigInt(121),
-          authorities: [{ __kind: 'Owner' }],
+          authority: { __kind: 'Owner' },
         },
       ],
     },
     plugins: [
       {
-        authorities: [{ __kind: 'Owner' }],
+        authority: { __kind: 'Owner' },
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],
@@ -184,13 +184,13 @@ test('it can update an asset with plugins to be smaller', async (t) => {
         {
           pluginType: 2,
           offset: BigInt(83),
-          authorities: [{ __kind: 'Owner' }],
+          authority: { __kind: 'Owner' },
         },
       ],
     },
     plugins: [
       {
-        authorities: [{ __kind: 'Owner' }],
+        authority: { __kind: 'Owner' },
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],

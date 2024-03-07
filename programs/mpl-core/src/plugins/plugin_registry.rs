@@ -53,12 +53,12 @@ impl SolanaAccount for PluginRegistry {
 
 /// A simple type to store the mapping of Plugin type to Plugin data.
 #[repr(C)]
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Default)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct RegistryRecord {
     /// The type of plugin.
     pub plugin_type: PluginType,
     /// The authorities who have permission to utilize a plugin.
-    pub authorities: Vec<Authority>,
+    pub authority: Authority,
     /// The offset to the plugin in the account.
     pub offset: usize,
 }

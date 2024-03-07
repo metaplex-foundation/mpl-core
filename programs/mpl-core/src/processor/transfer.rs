@@ -108,9 +108,9 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             solana_program::msg!("approved: {:#?}", approved);
 
             let custom_args = |plugin: &Plugin,
-                               authority: &AccountInfo<'a>,
-                               authorities: &[Authority]| {
-                Plugin::validate_transfer(plugin, authority, ctx.accounts.new_owner, authorities)
+                               authority_info: &AccountInfo<'a>,
+                               authority: &Authority| {
+                Plugin::validate_transfer(plugin, authority_info, ctx.accounts.new_owner, authority)
             };
 
             approved = validate_plugin_checks(

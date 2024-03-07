@@ -40,47 +40,48 @@ pub struct Royalties {
 impl PluginValidation for Royalties {
     fn validate_create(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _args: &CreateArgs,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_update(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &[Authority],
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_burn(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &[Authority],
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_transfer(
         &self,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         new_owner: &AccountInfo,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match &self.rule_set {
             RuleSet::None => Ok(ValidationResult::Pass),
             RuleSet::ProgramAllowList(allow_list) => {
                 solana_program::msg!("Evaluating royalties");
-                if allow_list.contains(authority.owner) || allow_list.contains(new_owner.owner) {
+                if allow_list.contains(authority_info.owner) || allow_list.contains(new_owner.owner)
+                {
                     Ok(ValidationResult::Pass)
                 } else {
                     Ok(ValidationResult::Rejected)
                 }
             }
             RuleSet::ProgramDenyList(deny_list) => {
-                if deny_list.contains(authority.owner) || deny_list.contains(new_owner.owner) {
+                if deny_list.contains(authority_info.owner) || deny_list.contains(new_owner.owner) {
                     Ok(ValidationResult::Rejected)
                 } else {
                     Ok(ValidationResult::Pass)
@@ -91,18 +92,18 @@ impl PluginValidation for Royalties {
 
     fn validate_compress(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _args: &CompressArgs,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_decompress(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _args: &DecompressArgs,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

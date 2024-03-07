@@ -6,7 +6,7 @@ import {
   AssetWithPlugins,
   DataState,
   PluginType,
-  addPluginAuthority,
+  approvePluginAuthority,
   addPlugin,
   create,
   fetchAsset,
@@ -47,7 +47,7 @@ test('it can add an authority to a plugin', async (t) => {
     plugin: plugin('Freeze', [{ frozen: false }])
   })
     .append(
-      addPluginAuthority(umi, {
+      approvePluginAuthority(umi, {
         asset: assetAddress.publicKey,
         pluginType: PluginType.Freeze,
         newAuthority: {
@@ -76,19 +76,15 @@ test('it can add an authority to a plugin', async (t) => {
         {
           pluginType: 2,
           offset: BigInt(118),
-          authorities: [
-            { __kind: 'Owner' },
+          authority:
             { __kind: 'Pubkey', address: delegateAddress.publicKey },
-          ],
         },
       ],
     },
     plugins: [
       {
-        authorities: [
-          { __kind: 'Owner' },
+        authority:
           { __kind: 'Pubkey', address: delegateAddress.publicKey },
-        ],
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],

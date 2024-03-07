@@ -529,7 +529,7 @@
       }
     },
     {
-      "name": "AddPluginAuthority",
+      "name": "ApprovePluginAuthority",
       "accounts": [
         {
           "name": "asset",
@@ -585,9 +585,9 @@
       ],
       "args": [
         {
-          "name": "addPluginAuthorityArgs",
+          "name": "approvePluginAuthorityArgs",
           "type": {
-            "defined": "AddPluginAuthorityArgs"
+            "defined": "ApprovePluginAuthorityArgs"
           }
         }
       ],
@@ -597,7 +597,7 @@
       }
     },
     {
-      "name": "AddCollectionPluginAuthority",
+      "name": "ApproveCollectionPluginAuthority",
       "accounts": [
         {
           "name": "collection",
@@ -644,9 +644,9 @@
       ],
       "args": [
         {
-          "name": "addCollectionPluginAuthorityArgs",
+          "name": "approveCollectionPluginAuthorityArgs",
           "type": {
-            "defined": "AddCollectionPluginAuthorityArgs"
+            "defined": "ApproveCollectionPluginAuthorityArgs"
           }
         }
       ],
@@ -656,7 +656,7 @@
       }
     },
     {
-      "name": "RemovePluginAuthority",
+      "name": "RevokePluginAuthority",
       "accounts": [
         {
           "name": "asset",
@@ -712,9 +712,9 @@
       ],
       "args": [
         {
-          "name": "removePluginAuthorityArgs",
+          "name": "revokePluginAuthorityArgs",
           "type": {
-            "defined": "RemovePluginAuthorityArgs"
+            "defined": "RevokePluginAuthorityArgs"
           }
         }
       ],
@@ -724,7 +724,7 @@
       }
     },
     {
-      "name": "RemoveCollectionPluginAuthority",
+      "name": "RevokeCollectionPluginAuthority",
       "accounts": [
         {
           "name": "collection",
@@ -771,9 +771,9 @@
       ],
       "args": [
         {
-          "name": "removeCollectionPluginAuthorityArgs",
+          "name": "revokeCollectionPluginAuthorityArgs",
           "type": {
-            "defined": "RemoveCollectionPluginAuthorityArgs"
+            "defined": "RevokeCollectionPluginAuthorityArgs"
           }
         }
       ],
@@ -1432,11 +1432,9 @@
             }
           },
           {
-            "name": "authorities",
+            "name": "authority",
             "type": {
-              "vec": {
-                "defined": "Authority"
-              }
+              "defined": "Authority"
             }
           },
           {
@@ -1549,7 +1547,7 @@
       }
     },
     {
-      "name": "AddPluginAuthorityArgs",
+      "name": "ApprovePluginAuthorityArgs",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1569,7 +1567,7 @@
       }
     },
     {
-      "name": "AddCollectionPluginAuthorityArgs",
+      "name": "ApproveCollectionPluginAuthorityArgs",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1724,7 +1722,7 @@
       }
     },
     {
-      "name": "RemovePluginAuthorityArgs",
+      "name": "RevokePluginAuthorityArgs",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1732,19 +1730,13 @@
             "name": "pluginType",
             "type": {
               "defined": "PluginType"
-            }
-          },
-          {
-            "name": "authorityToRemove",
-            "type": {
-              "defined": "Authority"
             }
           }
         ]
       }
     },
     {
-      "name": "RemoveCollectionPluginAuthorityArgs",
+      "name": "RevokeCollectionPluginAuthorityArgs",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1752,12 +1744,6 @@
             "name": "pluginType",
             "type": {
               "defined": "PluginType"
-            }
-          },
-          {
-            "name": "authorityToRemove",
-            "type": {
-              "defined": "Authority"
             }
           }
         ]
@@ -1891,11 +1877,9 @@
             "type": "u64"
           },
           {
-            "name": "authorities",
+            "name": "authority",
             "type": {
-              "vec": {
-                "defined": "Authority"
-              }
+              "defined": "Authority"
             }
           },
           {

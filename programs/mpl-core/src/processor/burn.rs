@@ -173,7 +173,7 @@ pub(crate) fn burn_collection<'a>(
                 let result = Plugin::validate_burn(
                     &Plugin::load(ctx.accounts.collection, record.offset)?,
                     ctx.accounts.authority,
-                    &record.authorities,
+                    &record.authority,
                 )?;
                 if result == ValidationResult::Rejected {
                     return Err(MplCoreError::InvalidAuthority.into());

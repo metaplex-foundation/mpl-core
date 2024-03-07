@@ -5,7 +5,8 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 use crate::{
     error::MplCoreError,
     processor::{
-        AddPluginAuthorityArgs, CompressArgs, CreateArgs, DecompressArgs, RemovePluginAuthorityArgs,
+        ApprovePluginAuthorityArgs, CompressArgs, CreateArgs, DecompressArgs,
+        RevokePluginAuthorityArgs,
     },
     state::{Asset, Authority, Key},
 };
@@ -84,7 +85,7 @@ impl Plugin {
         plugin: &Plugin,
         authority: &AccountInfo,
         args: &CreateArgs,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -102,7 +103,7 @@ impl Plugin {
     pub(crate) fn validate_update(
         plugin: &Plugin,
         authority: &AccountInfo,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -122,7 +123,7 @@ impl Plugin {
         plugin: &Plugin,
         asset: &Asset,
         authority: &AccountInfo,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -144,7 +145,7 @@ impl Plugin {
     pub(crate) fn validate_burn(
         plugin: &Plugin,
         authority: &AccountInfo,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -163,7 +164,7 @@ impl Plugin {
         plugin: &Plugin,
         authority: &AccountInfo<'a>,
         new_owner: &AccountInfo<'a>,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -186,7 +187,7 @@ impl Plugin {
         plugin: &Plugin,
         authority: &AccountInfo,
         args: &CompressArgs,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -207,7 +208,7 @@ impl Plugin {
         plugin: &Plugin,
         authority: &AccountInfo,
         args: &DecompressArgs,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -230,8 +231,8 @@ impl Plugin {
     pub(crate) fn validate_add_plugin_authority(
         plugin: &Plugin,
         authority: &AccountInfo,
-        args: &AddPluginAuthorityArgs,
-        authorities: &[Authority],
+        args: &ApprovePluginAuthorityArgs,
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -254,8 +255,8 @@ impl Plugin {
     pub(crate) fn validate_remove_plugin_authority(
         plugin: &Plugin,
         authority: &AccountInfo,
-        args: &RemovePluginAuthorityArgs,
-        authorities: &[Authority],
+        args: &RevokePluginAuthorityArgs,
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -295,29 +296,30 @@ pub(crate) trait PluginValidation {
         &self,
         authority: &AccountInfo,
         args: &CreateArgs,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError>;
 
     /// Validate the update lifecycle action.
     fn validate_update(
         &self,
         authority: &AccountInfo,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError>;
 
     /// Validate the update_plugin lifecycle action.
     fn validate_update_plugin(
         &self,
         asset: &Asset,
-        authority: &AccountInfo,
-        authorities: &[Authority],
+        authority_info: &AccountInfo,
+        authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
-        if (authority.key == &asset.owner && authorities.contains(&Authority::Owner))
-            || (authority.key == &asset.update_authority.key()
-                && authorities.contains(&Authority::UpdateAuthority))
-            || authorities.contains(&Authority::Pubkey {
-                address: *authority.key,
-            })
+        if (authority_info.key == &asset.owner && authority == &Authority::Owner)
+            || (authority_info.key == &asset.update_authority.key()
+                && authority == &Authority::UpdateAuthority)
+            || authority
+                == (&Authority::Pubkey {
+                    address: *authority_info.key,
+                })
         {
             Ok(ValidationResult::Approved)
         } else {
@@ -329,7 +331,7 @@ pub(crate) trait PluginValidation {
     fn validate_burn(
         &self,
         authority: &AccountInfo,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError>;
 
     /// Validate the transfer lifecycle action.
@@ -337,7 +339,7 @@ pub(crate) trait PluginValidation {
         &self,
         authority: &AccountInfo,
         new_owner: &AccountInfo,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError>;
 
     /// Validate the compress lifecycle action.
@@ -345,7 +347,7 @@ pub(crate) trait PluginValidation {
         &self,
         authority: &AccountInfo,
         args: &CompressArgs,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError>;
 
     /// Validate the decompress lifecycle action.
@@ -353,15 +355,15 @@ pub(crate) trait PluginValidation {
         &self,
         authority: &AccountInfo,
         args: &DecompressArgs,
-        authorities: &[Authority],
+        authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError>;
 
     /// Validate the add_authority lifecycle action.
     fn validate_add_authority(
         &self,
         _authority: &AccountInfo,
-        _args: &crate::processor::AddPluginAuthorityArgs,
-        _authorities: &[Authority],
+        _args: &ApprovePluginAuthorityArgs,
+        _authorities: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -370,8 +372,8 @@ pub(crate) trait PluginValidation {
     fn validate_remove_authority(
         &self,
         _authority: &AccountInfo,
-        _args: &crate::processor::RemovePluginAuthorityArgs,
-        _authorities: &[Authority],
+        _args: &RevokePluginAuthorityArgs,
+        _authorities: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -386,7 +388,7 @@ pub(crate) fn validate_plugin_checks<'a, F>(
     validate_fp: F,
 ) -> Result<bool, ProgramError>
 where
-    F: Fn(&Plugin, &AccountInfo<'a>, &[Authority]) -> Result<ValidationResult, ProgramError>,
+    F: Fn(&Plugin, &AccountInfo<'a>, &Authority) -> Result<ValidationResult, ProgramError>,
 {
     for (_, (check_key, check_result, registry_record)) in checks {
         if *check_key == key
@@ -405,7 +407,7 @@ where
             let result = validate_fp(
                 &Plugin::load(account, registry_record.offset)?,
                 authority,
-                &registry_record.authorities,
+                &registry_record.authority,
             )?;
             match result {
                 ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),

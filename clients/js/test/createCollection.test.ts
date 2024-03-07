@@ -75,13 +75,13 @@ test('it can create a new collection with plugins', async (t) => {
         {
           pluginType: 2,
           offset: BigInt(104),
-          authorities: [{ __kind: 'Owner' }],
+          authority: { __kind: 'Owner' },
         },
       ],
     },
     plugins: [
       {
-        authorities: [{ __kind: 'Owner' }],
+        authority: { __kind: 'Owner' },
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],
@@ -180,13 +180,13 @@ test('it cannot create a new asset with a collection if it is not the collection
         {
           pluginType: 2,
           offset: BigInt(104),
-          authorities: [{ __kind: 'Owner' }],
+          authority: { __kind: 'Owner' },
         },
       ],
     },
     plugins: [
       {
-        authorities: [{ __kind: 'Owner' }],
+        authority: { __kind: 'Owner' },
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],

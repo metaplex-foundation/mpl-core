@@ -60,7 +60,7 @@ impl UpdateAuthority {
                 let collection = Collection::load(collection_info, 0)?;
                 solana_program::msg!("Collection: {:?}", collection);
 
-                let authority = match ctx.authority {
+                let authority_info = match ctx.authority {
                     Some(authority) => {
                         assert_signer(authority)?;
                         authority
@@ -73,12 +73,18 @@ impl UpdateAuthority {
                     PluginType::UpdateDelegate,
                 );
 
-                if let Ok((mut authorities, _, _)) = maybe_update_delegate {
-                    authorities.push(Authority::UpdateAuthority);
-                    if assert_collection_authority(&collection, authority, &authorities).is_err() {
+                if let Ok((authority, _, _)) = maybe_update_delegate {
+                    if assert_collection_authority(&collection, authority_info, &authority).is_err()
+                        || assert_collection_authority(
+                            &collection,
+                            authority_info,
+                            &Authority::UpdateAuthority,
+                        )
+                        .is_err()
+                    {
                         return Ok(ValidationResult::Rejected);
                     }
-                } else if authority.key != &collection.update_authority {
+                } else if authority_info.key != &collection.update_authority {
                     return Ok(ValidationResult::Rejected);
                 }
 

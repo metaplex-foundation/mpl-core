@@ -35,7 +35,7 @@ import {
 } from '../types';
 
 // Accounts.
-export type RemoveCollectionPluginAuthorityInstructionAccounts = {
+export type ApproveCollectionPluginAuthorityInstructionAccounts = {
   /** The address of the asset */
   collection: PublicKey | Pda;
   /** The owner or delegate of the asset */
@@ -49,50 +49,50 @@ export type RemoveCollectionPluginAuthorityInstructionAccounts = {
 };
 
 // Data.
-export type RemoveCollectionPluginAuthorityInstructionData = {
+export type ApproveCollectionPluginAuthorityInstructionData = {
   discriminator: number;
   pluginType: PluginType;
-  authorityToRemove: Authority;
+  newAuthority: Authority;
 };
 
-export type RemoveCollectionPluginAuthorityInstructionDataArgs = {
+export type ApproveCollectionPluginAuthorityInstructionDataArgs = {
   pluginType: PluginTypeArgs;
-  authorityToRemove: AuthorityArgs;
+  newAuthority: AuthorityArgs;
 };
 
-export function getRemoveCollectionPluginAuthorityInstructionDataSerializer(): Serializer<
-  RemoveCollectionPluginAuthorityInstructionDataArgs,
-  RemoveCollectionPluginAuthorityInstructionData
+export function getApproveCollectionPluginAuthorityInstructionDataSerializer(): Serializer<
+  ApproveCollectionPluginAuthorityInstructionDataArgs,
+  ApproveCollectionPluginAuthorityInstructionData
 > {
   return mapSerializer<
-    RemoveCollectionPluginAuthorityInstructionDataArgs,
+    ApproveCollectionPluginAuthorityInstructionDataArgs,
     any,
-    RemoveCollectionPluginAuthorityInstructionData
+    ApproveCollectionPluginAuthorityInstructionData
   >(
-    struct<RemoveCollectionPluginAuthorityInstructionData>(
+    struct<ApproveCollectionPluginAuthorityInstructionData>(
       [
         ['discriminator', u8()],
         ['pluginType', getPluginTypeSerializer()],
-        ['authorityToRemove', getAuthoritySerializer()],
+        ['newAuthority', getAuthoritySerializer()],
       ],
-      { description: 'RemoveCollectionPluginAuthorityInstructionData' }
+      { description: 'ApproveCollectionPluginAuthorityInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 11 })
+    (value) => ({ ...value, discriminator: 9 })
   ) as Serializer<
-    RemoveCollectionPluginAuthorityInstructionDataArgs,
-    RemoveCollectionPluginAuthorityInstructionData
+    ApproveCollectionPluginAuthorityInstructionDataArgs,
+    ApproveCollectionPluginAuthorityInstructionData
   >;
 }
 
 // Args.
-export type RemoveCollectionPluginAuthorityInstructionArgs =
-  RemoveCollectionPluginAuthorityInstructionDataArgs;
+export type ApproveCollectionPluginAuthorityInstructionArgs =
+  ApproveCollectionPluginAuthorityInstructionDataArgs;
 
 // Instruction.
-export function removeCollectionPluginAuthority(
+export function approveCollectionPluginAuthority(
   context: Pick<Context, 'identity' | 'programs'>,
-  input: RemoveCollectionPluginAuthorityInstructionAccounts &
-    RemoveCollectionPluginAuthorityInstructionArgs
+  input: ApproveCollectionPluginAuthorityInstructionAccounts &
+    ApproveCollectionPluginAuthorityInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -130,7 +130,7 @@ export function removeCollectionPluginAuthority(
   } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
-  const resolvedArgs: RemoveCollectionPluginAuthorityInstructionArgs = {
+  const resolvedArgs: ApproveCollectionPluginAuthorityInstructionArgs = {
     ...input,
   };
 
@@ -160,8 +160,8 @@ export function removeCollectionPluginAuthority(
 
   // Data.
   const data =
-    getRemoveCollectionPluginAuthorityInstructionDataSerializer().serialize(
-      resolvedArgs as RemoveCollectionPluginAuthorityInstructionDataArgs
+    getApproveCollectionPluginAuthorityInstructionDataSerializer().serialize(
+      resolvedArgs as ApproveCollectionPluginAuthorityInstructionDataArgs
     );
 
   // Bytes Created On Chain.

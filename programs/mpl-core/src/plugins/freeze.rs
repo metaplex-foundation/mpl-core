@@ -2,7 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::{
-    processor::{CompressArgs, CreateArgs, DecompressArgs},
+    processor::{ApprovePluginAuthorityArgs, CompressArgs, CreateArgs, DecompressArgs},
     state::{Asset, Authority, DataBlob},
 };
 
@@ -43,17 +43,17 @@ impl DataBlob for Freeze {
 impl PluginValidation for Freeze {
     fn validate_create(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _args: &CreateArgs,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_update(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &[Authority],
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -61,20 +61,19 @@ impl PluginValidation for Freeze {
     fn validate_update_plugin(
         &self,
         asset: &Asset,
-        authority: &AccountInfo,
-        authorities: &[Authority],
+        authority_info: &AccountInfo,
+        authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         // The owner can't update the freeze status.
-        if (authority.key != &asset.owner
-            && (authority.key == &asset.update_authority.key()
-                && authorities.contains(&Authority::UpdateAuthority))
-            || authorities.contains(&Authority::Pubkey {
-                address: *authority.key,
+        if (authority_info.key != &asset.owner
+            && (authority_info.key == &asset.update_authority.key()
+                && authority == (&Authority::UpdateAuthority))
+            || authority == (&Authority::Pubkey {
+                address: *authority_info.key,
             }))
             // Unless the owner is the only authority.
-            || (authority.key == &asset.owner
-                && authorities.contains(&Authority::Owner)
-                && authorities.len() == 1)
+            || (authority_info.key == &asset.owner
+                && authority == (&Authority::Owner))
         {
             Ok(ValidationResult::Approved)
         } else {
@@ -84,8 +83,8 @@ impl PluginValidation for Freeze {
 
     fn validate_burn(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &[Authority],
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         if self.frozen {
             Ok(ValidationResult::Rejected)
@@ -96,9 +95,9 @@ impl PluginValidation for Freeze {
 
     fn validate_transfer(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _new_owner: &AccountInfo,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         if self.frozen {
             Ok(ValidationResult::Rejected)
@@ -109,27 +108,27 @@ impl PluginValidation for Freeze {
 
     fn validate_compress(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _args: &CompressArgs,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_decompress(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _args: &DecompressArgs,
-        _authorities: &[Authority],
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     fn validate_add_authority(
         &self,
-        _authority: &AccountInfo,
-        _args: &crate::processor::AddPluginAuthorityArgs,
-        _authorities: &[Authority],
+        _authority_info: &AccountInfo,
+        _args: &ApprovePluginAuthorityArgs,
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

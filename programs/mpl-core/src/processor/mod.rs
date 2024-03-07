@@ -14,11 +14,11 @@ pub(crate) use add_plugin::*;
 mod remove_plugin;
 pub(crate) use remove_plugin::*;
 
-mod add_plugin_authority;
-pub(crate) use add_plugin_authority::*;
+mod approve_plugin_authority;
+pub(crate) use approve_plugin_authority::*;
 
-mod remove_plugin_authority;
-pub(crate) use remove_plugin_authority::*;
+mod revoke_plugin_authority;
+pub(crate) use revoke_plugin_authority::*;
 
 mod burn;
 pub(crate) use burn::*;
@@ -81,21 +81,21 @@ pub fn process_instruction<'a>(
             msg!("Instruction: UpdateCollectionPlugin");
             update_collection_plugin(accounts, args)
         }
-        MplAssetInstruction::AddPluginAuthority(args) => {
-            msg!("Instruction: AddPluginAuthority");
-            add_plugin_authority(accounts, args)
+        MplAssetInstruction::ApprovePluginAuthority(args) => {
+            msg!("Instruction: ApprovePluginAuthority");
+            approve_plugin_authority(accounts, args)
         }
-        MplAssetInstruction::AddCollectionPluginAuthority(args) => {
-            msg!("Instruction: AddCollectionPluginAuthority");
-            add_collection_plugin_authority(accounts, args)
+        MplAssetInstruction::ApproveCollectionPluginAuthority(args) => {
+            msg!("Instruction: ApproveCollectionPluginAuthority");
+            approve_collection_plugin_authority(accounts, args)
         }
-        MplAssetInstruction::RemovePluginAuthority(args) => {
-            msg!("Instruction: RemovePluginAuthority");
-            remove_plugin_authority(accounts, args)
+        MplAssetInstruction::RevokePluginAuthority(args) => {
+            msg!("Instruction: RevokePluginAuthority");
+            revoke_plugin_authority(accounts, args)
         }
-        MplAssetInstruction::RemoveCollectionPluginAuthority(args) => {
-            msg!("Instruction: RemoveCollectionPluginAuthority");
-            remove_collection_plugin_authority(accounts, args)
+        MplAssetInstruction::RevokeCollectionPluginAuthority(args) => {
+            msg!("Instruction: RevokeCollectionPluginAuthority");
+            revoke_collection_plugin_authority(accounts, args)
         }
         MplAssetInstruction::Burn(args) => {
             msg!("Instruction: Burn");

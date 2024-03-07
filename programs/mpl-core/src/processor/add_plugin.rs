@@ -30,13 +30,13 @@ pub(crate) fn add_plugin<'a>(
         None => ctx.accounts.authority,
     };
 
-    let _default_auth = args.plugin.default_authority()?;
+    let _default_auth = args.plugin.default_authority();
 
     create_meta_idempotent(ctx.accounts.asset, payer, ctx.accounts.system_program)?;
 
     initialize_plugin::<Asset>(
         &args.plugin,
-        &[args.plugin.default_authority()?],
+        &args.plugin.default_authority(),
         ctx.accounts.asset,
         payer,
         ctx.accounts.system_program,
@@ -67,13 +67,13 @@ pub(crate) fn add_collection_plugin<'a>(
         None => ctx.accounts.authority,
     };
 
-    let _default_auth = args.plugin.default_authority()?;
+    let _default_auth = args.plugin.default_authority();
 
     create_meta_idempotent(ctx.accounts.collection, payer, ctx.accounts.system_program)?;
 
     initialize_plugin::<Collection>(
         &args.plugin,
-        &[args.plugin.default_authority()?],
+        &args.plugin.default_authority(),
         ctx.accounts.collection,
         payer,
         ctx.accounts.system_program,
