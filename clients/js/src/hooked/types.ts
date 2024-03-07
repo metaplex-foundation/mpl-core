@@ -19,9 +19,9 @@ export type BaseAuthorities = {
 
 export type BasePlugin = {
   authorities: BaseAuthorities;
+  offset: bigint;
 };
 
-export type ReservedPlugin = BasePlugin;
 export type RoyaltiesPlugin = BasePlugin & Royalties;
 export type FreezePlugin = BasePlugin & Freeze;
 export type BurnPlugin = BasePlugin & Burn;
@@ -29,7 +29,6 @@ export type TransferPlugin = BasePlugin & Transfer;
 export type UpdateDelegatePlugin = BasePlugin & UpdateDelegate;
 
 export type PluginsList = {
-  reserved?: ReservedPlugin;
   royalties?: RoyaltiesPlugin;
   freeze?: FreezePlugin;
   burn?: BurnPlugin;

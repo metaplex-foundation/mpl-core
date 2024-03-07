@@ -1,6 +1,5 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-// import { base58 } from '@metaplex-foundation/umi/serializers';
 import {
   Asset,
   DataState,
@@ -70,6 +69,7 @@ test('TEST it can add an authority to a plugin TEST', async (t) => {
         pubkey: [delegateAddress.publicKey],
       },
       frozen: false,
+      offset: BigInt(118),
     },
   });
 });
