@@ -12,6 +12,8 @@ use borsh::BorshSerialize;
 pub struct Update {
     /// The address of the asset
     pub asset: solana_program::pubkey::Pubkey,
+    /// The collection to which the asset belongs
+    pub collection: Option<solana_program::pubkey::Pubkey>,
     /// The update authority or update authority delegate of the asset
     pub authority: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
@@ -37,10 +39,20 @@ impl Update {
         args: UpdateInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset, false,
         ));
+        if let Some(collection) = self.collection {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                collection, false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_CORE_ID,
+                false,
+            ));
+        }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.authority,
             true,
@@ -115,14 +127,16 @@ pub struct UpdateInstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable]` asset
-///   1. `[signer]` authority
-///   2. `[writable, signer, optional]` payer
-///   3. `[optional]` new_update_authority
-///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
-///   5. `[optional]` log_wrapper
+///   1. `[optional]` collection
+///   2. `[signer]` authority
+///   3. `[writable, signer, optional]` payer
+///   4. `[optional]` new_update_authority
+///   5. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   6. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct UpdateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
+    collection: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     new_update_authority: Option<solana_program::pubkey::Pubkey>,
@@ -141,6 +155,13 @@ impl UpdateBuilder {
     #[inline(always)]
     pub fn asset(&mut self, asset: solana_program::pubkey::Pubkey) -> &mut Self {
         self.asset = Some(asset);
+        self
+    }
+    /// `[optional account]`
+    /// The collection to which the asset belongs
+    #[inline(always)]
+    pub fn collection(&mut self, collection: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.collection = collection;
         self
     }
     /// The update authority or update authority delegate of the asset
@@ -217,6 +238,7 @@ impl UpdateBuilder {
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = Update {
             asset: self.asset.expect("asset is not set"),
+            collection: self.collection,
             authority: self.authority.expect("authority is not set"),
             payer: self.payer,
             new_update_authority: self.new_update_authority,
@@ -238,6 +260,8 @@ impl UpdateBuilder {
 pub struct UpdateCpiAccounts<'a, 'b> {
     /// The address of the asset
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The collection to which the asset belongs
+    pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The update authority or update authority delegate of the asset
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
@@ -256,6 +280,8 @@ pub struct UpdateCpi<'a, 'b> {
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The address of the asset
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The collection to which the asset belongs
+    pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The update authority or update authority delegate of the asset
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
@@ -279,6 +305,7 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
         Self {
             __program: program,
             asset: accounts.asset,
+            collection: accounts.collection,
             authority: accounts.authority,
             payer: accounts.payer,
             new_update_authority: accounts.new_update_authority,
@@ -320,11 +347,22 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset.key,
             false,
         ));
+        if let Some(collection) = self.collection {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *collection.key,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_CORE_ID,
+                false,
+            ));
+        }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.authority.key,
             true,
@@ -381,9 +419,12 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(7 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
+        if let Some(collection) = self.collection {
+            account_infos.push(collection.clone());
+        }
         account_infos.push(self.authority.clone());
         if let Some(payer) = self.payer {
             account_infos.push(payer.clone());
@@ -412,11 +453,12 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable]` asset
-///   1. `[signer]` authority
-///   2. `[writable, signer, optional]` payer
-///   3. `[optional]` new_update_authority
-///   4. `[]` system_program
-///   5. `[optional]` log_wrapper
+///   1. `[optional]` collection
+///   2. `[signer]` authority
+///   3. `[writable, signer, optional]` payer
+///   4. `[optional]` new_update_authority
+///   5. `[]` system_program
+///   6. `[optional]` log_wrapper
 pub struct UpdateCpiBuilder<'a, 'b> {
     instruction: Box<UpdateCpiBuilderInstruction<'a, 'b>>,
 }
@@ -426,6 +468,7 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
         let instruction = Box::new(UpdateCpiBuilderInstruction {
             __program: program,
             asset: None,
+            collection: None,
             authority: None,
             payer: None,
             new_update_authority: None,
@@ -441,6 +484,16 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn asset(&mut self, asset: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.asset = Some(asset);
+        self
+    }
+    /// `[optional account]`
+    /// The collection to which the asset belongs
+    #[inline(always)]
+    pub fn collection(
+        &mut self,
+        collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.collection = collection;
         self
     }
     /// The update authority or update authority delegate of the asset
@@ -553,6 +606,8 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
 
             asset: self.instruction.asset.expect("asset is not set"),
 
+            collection: self.instruction.collection,
+
             authority: self.instruction.authority.expect("authority is not set"),
 
             payer: self.instruction.payer,
@@ -577,6 +632,7 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
 struct UpdateCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     new_update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,

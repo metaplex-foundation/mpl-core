@@ -13,8 +13,9 @@ import {
   burn,
   Key,
   updateAuthority,
-} from '../../../src';
-import { createUmi } from '../../_setup';
+  plugin,
+} from '../src';
+import { createUmi } from './_setup';
 
 test('it can burn an asset as the owner', async (t) => {
   // Given a Umi instance and a new signer.
@@ -68,6 +69,53 @@ test('it cannot burn an asset if not the owner', async (t) => {
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     plugins: [],
+  }).sendAndConfirm(umi);
+
+  // Then an account was created with the correct data.
+  const beforeAsset = await fetchAsset(umi, assetAddress.publicKey);
+  // console.log("Account State:", beforeAsset);
+  t.like(beforeAsset, <Asset>{
+    publicKey: assetAddress.publicKey,
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    owner: umi.identity.publicKey,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+  });
+
+  const result = burn(umi, {
+    asset: assetAddress.publicKey,
+    compressionProof: null,
+    authority: attacker,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  const afterAsset = await fetchAsset(umi, assetAddress.publicKey);
+  // console.log("Account State:", afterAsset);
+  t.like(afterAsset, <Asset>{
+    publicKey: assetAddress.publicKey,
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    owner: umi.identity.publicKey,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+  });
+});
+
+test('it cannot burn an asset if it is frozen', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+  const attacker = generateSigner(umi);
+
+  // When we create a new account.
+  await create(umi, {
+    dataState: DataState.AccountState,
+    asset: assetAddress,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+    plugins: [
+      plugin('Freeze', [{ frozen: true }]),
+    ],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.

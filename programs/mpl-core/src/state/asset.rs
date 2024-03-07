@@ -1,11 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
-use solana_program::{program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
-    instruction::accounts::{
-        BurnAccounts, CompressAccounts, DecompressAccounts, TransferAccounts, UpdateAccounts,
-    },
+    instruction::accounts::{CompressAccounts, DecompressAccounts},
     plugins::{CheckResult, ValidationResult},
     state::{Compressible, CompressionProof, DataBlob, Key, SolanaAccount},
 };
@@ -36,6 +34,11 @@ impl Asset {
         CheckResult::CanApprove
     }
 
+    /// Check permissions for the burn lifecycle event.
+    pub fn check_burn() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
     /// Check permissions for the update lifecycle event.
     pub fn check_update() -> CheckResult {
         CheckResult::CanApprove
@@ -52,8 +55,11 @@ impl Asset {
     }
 
     /// Validate the update lifecycle event.
-    pub fn validate_update(&self, ctx: &UpdateAccounts) -> Result<ValidationResult, ProgramError> {
-        if ctx.authority.key == &self.update_authority.key() {
+    pub fn validate_update(
+        &self,
+        authority: &AccountInfo,
+    ) -> Result<ValidationResult, ProgramError> {
+        if authority.key == &self.update_authority.key() {
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -61,8 +67,8 @@ impl Asset {
     }
 
     /// Validate the burn lifecycle event.
-    pub fn validate_burn(&self, ctx: &BurnAccounts) -> Result<ValidationResult, ProgramError> {
-        if ctx.authority.key == &self.owner {
+    pub fn validate_burn(&self, authority: &AccountInfo) -> Result<ValidationResult, ProgramError> {
+        if authority.key == &self.owner {
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -72,9 +78,9 @@ impl Asset {
     /// Validate the transfer lifecycle event.
     pub fn validate_transfer(
         &self,
-        ctx: &TransferAccounts,
+        authority: &AccountInfo,
     ) -> Result<ValidationResult, ProgramError> {
-        if ctx.authority.key == &self.owner {
+        if authority.key == &self.owner {
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)

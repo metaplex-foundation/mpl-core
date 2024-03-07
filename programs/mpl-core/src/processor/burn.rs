@@ -1,13 +1,17 @@
+use std::collections::BTreeMap;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
-use strum::EnumCount;
 
 use crate::{
     error::MplCoreError,
     instruction::accounts::{BurnAccounts, BurnCollectionAccounts},
-    plugins::{CheckResult, Plugin, PluginType, ValidationResult},
-    state::{Asset, Collection, Compressible, CompressionProof, Key},
+    plugins::{
+        validate_burn_plugin_checks, CheckResult, Plugin, PluginType, RegistryRecord,
+        ValidationResult,
+    },
+    state::{Asset, Collection, Compressible, CompressionProof, Key, SolanaAccount},
     utils::{close_program_account, fetch_core_data, load_key, verify_proof},
 };
 
@@ -42,40 +46,76 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
             asset.wrap()?;
         }
         Key::Asset => {
-            let (asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
+            let (_, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
 
-            let mut approved = false;
-            match Asset::check_transfer() {
-                CheckResult::CanApprove | CheckResult::CanReject => {
-                    match asset.validate_burn(&ctx.accounts)? {
-                        ValidationResult::Approved => {
-                            approved = true;
-                        }
-                        ValidationResult::Rejected => {
-                            return Err(MplCoreError::InvalidAuthority.into())
-                        }
-                        ValidationResult::Pass => (),
-                    }
-                }
-                CheckResult::None => (),
+            let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> =
+                BTreeMap::new();
+
+            // The asset approval overrides the collection approval.
+            let asset_approval = Asset::check_burn();
+            let core_check = match asset_approval {
+                CheckResult::None => (Key::Collection, Collection::check_burn()),
+                _ => (Key::Asset, asset_approval),
             };
 
-            if let Some(plugin_registry) = plugin_registry {
-                for record in plugin_registry.registry {
-                    if matches!(
-                        record.plugin_type.check_transfer(),
-                        CheckResult::CanApprove | CheckResult::CanReject
-                    ) {
-                        let result = Plugin::load(ctx.accounts.asset, record.offset)?
-                            .validate_burn(ctx.accounts.authority, &record.authorities)?;
-                        if result == ValidationResult::Rejected {
-                            return Err(MplCoreError::InvalidAuthority.into());
-                        } else if result == ValidationResult::Approved {
-                            approved = true;
-                        }
+            // Check the collection plugins first.
+            ctx.accounts.collection.and_then(|collection_info| {
+                fetch_core_data::<Collection>(collection_info)
+                    .map(|(_, _, registry)| {
+                        registry.map(|r| {
+                            r.check_burn(Key::Collection, &mut checks);
+                            r
+                        })
+                    })
+                    .ok()?
+            });
+
+            // Next check the asset plugins. Plugins on the asset override the collection plugins,
+            // so we don't need to validate the collection plugins if the asset has a plugin.
+            if let Some(registry) = plugin_registry.as_ref() {
+                registry.check_burn(Key::Asset, &mut checks);
+            }
+
+            solana_program::msg!("checks: {:#?}", checks);
+
+            // Do the core validation.
+            let mut approved = matches!(
+                core_check,
+                (
+                    Key::Asset | Key::Collection,
+                    CheckResult::CanApprove | CheckResult::CanReject
+                )
+            ) && {
+                (match core_check.0 {
+                    Key::Collection => Collection::load(
+                        ctx.accounts
+                            .collection
+                            .ok_or(MplCoreError::InvalidCollection)?,
+                        0,
+                    )?
+                    .validate_burn(ctx.accounts.authority)?,
+                    Key::Asset => {
+                        Asset::load(ctx.accounts.asset, 0)?.validate_burn(ctx.accounts.authority)?
                     }
-                }
+                    _ => return Err(MplCoreError::IncorrectAccount.into()),
+                }) == ValidationResult::Approved
             };
+
+            approved = validate_burn_plugin_checks(
+                Key::Collection,
+                &checks,
+                ctx.accounts.authority,
+                ctx.accounts.asset,
+                ctx.accounts.collection,
+            )? || approved;
+
+            approved = validate_burn_plugin_checks(
+                Key::Asset,
+                &checks,
+                ctx.accounts.authority,
+                ctx.accounts.asset,
+                ctx.accounts.collection,
+            )? || approved;
 
             if !approved {
                 return Err(MplCoreError::InvalidAuthority.into());
@@ -112,7 +152,7 @@ pub(crate) fn burn_collection<'a>(
     let mut approved = false;
     match Collection::check_burn() {
         CheckResult::CanApprove | CheckResult::CanReject => {
-            match collection.validate_burn(&ctx.accounts)? {
+            match collection.validate_burn(ctx.accounts.authority)? {
                 ValidationResult::Approved => {
                     approved = true;
                 }

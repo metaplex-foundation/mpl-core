@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
@@ -7,8 +9,11 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateAccounts, UpdateCollectionAccounts},
-    plugins::{CheckResult, Plugin, RegistryRecord, ValidationResult},
-    state::{Asset, Collection, DataBlob, SolanaAccount, UpdateAuthority},
+    plugins::{
+        validate_update_plugin_checks, CheckResult, Plugin, PluginType, RegistryRecord,
+        ValidationResult,
+    },
+    state::{Asset, Collection, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{fetch_core_data, resize_or_reallocate_account},
 };
 
@@ -36,33 +41,73 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
     let (mut asset, plugin_header, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
     let asset_size = asset.get_size() as isize;
 
-    let mut approved = false;
-    match Asset::check_update() {
-        CheckResult::CanApprove => {
-            if asset.validate_update(&ctx.accounts)? == ValidationResult::Approved {
-                approved = true;
-            }
-        }
-        CheckResult::CanReject => return Err(MplCoreError::InvalidAuthority.into()),
-        CheckResult::None => (),
+    let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
+
+    // The asset approval overrides the collection approval.
+    let asset_approval = Asset::check_update();
+    let core_check = match asset_approval {
+        CheckResult::None => (Key::Collection, Collection::check_update()),
+        _ => (Key::Asset, asset_approval),
     };
 
-    if let Some(plugin_registry) = plugin_registry.clone() {
-        for record in plugin_registry.registry {
-            if matches!(
-                record.plugin_type.check_transfer(),
-                CheckResult::CanApprove | CheckResult::CanReject
-            ) {
-                let result = Plugin::load(ctx.accounts.asset, record.offset)?
-                    .validate_update(ctx.accounts.authority, &record.authorities)?;
-                if result == ValidationResult::Rejected {
-                    return Err(MplCoreError::InvalidAuthority.into());
-                } else if result == ValidationResult::Approved {
-                    approved = true;
-                }
+    // Check the collection plugins first.
+    ctx.accounts.collection.and_then(|collection_info| {
+        fetch_core_data::<Collection>(collection_info)
+            .map(|(_, _, registry)| {
+                registry.map(|r| {
+                    r.check_update(Key::Collection, &mut checks);
+                    r
+                })
+            })
+            .ok()?
+    });
+
+    // Next check the asset plugins. Plugins on the asset override the collection plugins,
+    // so we don't need to validate the collection plugins if the asset has a plugin.
+    if let Some(registry) = plugin_registry.as_ref() {
+        registry.check_update(Key::Asset, &mut checks);
+    }
+
+    solana_program::msg!("checks: {:#?}", checks);
+
+    // Do the core validation.
+    let mut approved = matches!(
+        core_check,
+        (
+            Key::Asset | Key::Collection,
+            CheckResult::CanApprove | CheckResult::CanReject
+        )
+    ) && {
+        (match core_check.0 {
+            Key::Collection => Collection::load(
+                ctx.accounts
+                    .collection
+                    .ok_or(MplCoreError::InvalidCollection)?,
+                0,
+            )?
+            .validate_update(ctx.accounts.authority)?,
+            Key::Asset => {
+                Asset::load(ctx.accounts.asset, 0)?.validate_update(ctx.accounts.authority)?
             }
-        }
+            _ => return Err(MplCoreError::IncorrectAccount.into()),
+        }) == ValidationResult::Approved
     };
+
+    approved = validate_update_plugin_checks(
+        Key::Collection,
+        &checks,
+        ctx.accounts.authority,
+        ctx.accounts.asset,
+        ctx.accounts.collection,
+    )? || approved;
+
+    approved = validate_update_plugin_checks(
+        Key::Asset,
+        &checks,
+        ctx.accounts.authority,
+        ctx.accounts.asset,
+        ctx.accounts.collection,
+    )? || approved;
 
     if !approved {
         return Err(MplCoreError::InvalidAuthority.into());
@@ -184,7 +229,7 @@ pub(crate) fn update_collection<'a>(
     let mut approved = false;
     match Asset::check_update() {
         CheckResult::CanApprove => {
-            if asset.validate_update(&ctx.accounts)? == ValidationResult::Approved {
+            if asset.validate_update(&ctx.accounts.authority)? == ValidationResult::Approved {
                 approved = true;
             }
         }

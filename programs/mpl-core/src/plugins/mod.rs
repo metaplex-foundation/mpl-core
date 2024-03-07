@@ -87,10 +87,22 @@ impl Compressible for Plugin {}
 /// List of First Party Plugin types.
 #[repr(u16)]
 #[derive(
-    Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq, ToPrimitive, EnumCount,
+    Clone,
+    Copy,
+    Debug,
+    BorshSerialize,
+    BorshDeserialize,
+    Eq,
+    PartialEq,
+    ToPrimitive,
+    EnumCount,
+    Default,
+    PartialOrd,
+    Ord,
 )]
 pub enum PluginType {
     /// Reserved plugin.
+    #[default]
     Reserved,
     /// Royalties plugin.
     Royalties,
