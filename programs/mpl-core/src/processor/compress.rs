@@ -1,17 +1,13 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program_memory::sol_memcpy,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
 use crate::{
     error::MplCoreError,
     instruction::accounts::CompressAccounts,
-    plugins::{Plugin, PluginType, RegistryRecord},
-    state::{
-        Asset, Collection, Compressible, HashablePluginSchema, HashedAsset, HashedAssetSchema, Key,
-    },
-    utils::{fetch_core_data, load_key, resize_or_reallocate_account, validate_asset_permissions},
+    plugins::{Plugin, PluginType},
+    state::{Asset, Collection, Key, Wrappable},
+    utils::{compress_into_account_space, fetch_core_data, load_key, validate_asset_permissions},
 };
 
 #[repr(C)]
@@ -48,50 +44,15 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
                 Plugin::validate_compress,
             )?;
 
-            let mut plugin_hashes = vec![];
-            if let Some(plugin_registry) = plugin_registry {
-                let mut registry_records = plugin_registry.registry;
-
-                // It should already be sorted but we just want to make sure.
-                registry_records.sort_by(RegistryRecord::compare_offsets);
-
-                for (i, record) in registry_records.into_iter().enumerate() {
-                    let plugin = Plugin::deserialize(
-                        &mut &(*ctx.accounts.asset.data).borrow()[record.offset..],
-                    )?;
-
-                    let hashable_plugin_schema = HashablePluginSchema {
-                        index: i,
-                        authority: record.authority,
-                        plugin,
-                    };
-
-                    let plugin_hash = hashable_plugin_schema.hash()?;
-                    plugin_hashes.push(plugin_hash);
-                }
-            }
-
-            let asset_hash = asset.hash()?;
-            let hashed_asset_schema = HashedAssetSchema {
-                asset_hash,
-                plugin_hashes,
-            };
-
-            let hashed_asset = HashedAsset::new(hashed_asset_schema.hash()?);
-            let serialized_data = hashed_asset.try_to_vec()?;
-
-            resize_or_reallocate_account(
+            let compression_proof = compress_into_account_space(
+                asset,
+                plugin_registry,
                 ctx.accounts.asset,
                 payer,
                 ctx.accounts.system_program,
-                serialized_data.len(),
             )?;
 
-            sol_memcpy(
-                &mut ctx.accounts.asset.try_borrow_mut_data()?,
-                &serialized_data,
-                serialized_data.len(),
-            );
+            compression_proof.wrap()?;
         }
         Key::HashedAsset => return Err(MplCoreError::AlreadyCompressed.into()),
         _ => return Err(MplCoreError::IncorrectAccount.into()),

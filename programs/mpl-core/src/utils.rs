@@ -1,15 +1,17 @@
+use borsh::{BorshDeserialize, BorshSerialize};
 use num_traits::{FromPrimitive, ToPrimitive};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
-    program_error::ProgramError, rent::Rent, system_instruction, sysvar::Sysvar,
+    program_error::ProgramError, program_memory::sol_memcpy, rent::Rent, system_instruction,
+    sysvar::Sysvar,
 };
 use std::collections::BTreeMap;
 
 use crate::{
     error::MplCoreError,
     plugins::{
-        validate_plugin_checks, CheckResult, Plugin, PluginHeader, PluginRegistry, PluginType,
-        RegistryRecord, ValidationResult,
+        create_meta_idempotent, initialize_plugin, validate_plugin_checks, CheckResult, Plugin,
+        PluginHeader, PluginRegistry, PluginType, RegistryRecord, ValidationResult,
     },
     state::{
         Asset, Authority, Collection, Compressible, CompressionProof, CoreAsset, DataBlob,
@@ -202,7 +204,7 @@ pub(crate) fn resize_or_reallocate_account<'a>(
 }
 
 #[allow(clippy::too_many_arguments)]
-/// Validate asset permissions using asset, collection, and plugin lifecycle validations.
+/// Validate asset permissions using lifecycle validations for asset, collection, and plugins.
 pub fn validate_asset_permissions<'a>(
     authority: &AccountInfo<'a>,
     asset: &AccountInfo<'a>,
@@ -268,10 +270,6 @@ pub fn validate_asset_permissions<'a>(
     };
     solana_program::msg!("approved: {:#?}", approved);
 
-    // let custom_args = |plugin: &Plugin, authority_info: &AccountInfo<'a>, authority: &Authority| {
-    //     Plugin::validate_transfer(plugin, authority_info, new_owner, authority)
-    // };
-
     approved = validate_plugin_checks(
         Key::Collection,
         &checks,
@@ -299,7 +297,7 @@ pub fn validate_asset_permissions<'a>(
     Ok((deserialized_asset, plugin_header, plugin_registry))
 }
 
-/// Validate collection permissions using collection and plugin lifecycle validations.
+/// Validate collection permissions using lifecycle validations for collection and plugins.
 pub fn validate_collection_permissions<'a>(
     authority: &AccountInfo<'a>,
     collection: &AccountInfo<'a>,
@@ -358,4 +356,91 @@ pub fn validate_collection_permissions<'a>(
     }
 
     Ok((deserialized_collection, plugin_header, plugin_registry))
+}
+
+/// Take an `Asset` and Vec of `HashablePluginSchema` and rebuild the asset in account space.
+pub fn rebuild_account_state_from_proof_data<'a>(
+    asset: Asset,
+    plugins: Vec<HashablePluginSchema>,
+    asset_info: &AccountInfo<'a>,
+    payer: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+) -> ProgramResult {
+    let serialized_data = asset.try_to_vec()?;
+    resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
+
+    sol_memcpy(
+        &mut asset_info.try_borrow_mut_data()?,
+        &serialized_data,
+        serialized_data.len(),
+    );
+
+    // Add the plugins.
+    if !plugins.is_empty() {
+        create_meta_idempotent(asset_info, payer, system_program)?;
+
+        for plugin in plugins {
+            initialize_plugin::<Asset>(
+                &plugin.plugin,
+                &plugin.authority,
+                asset_info,
+                payer,
+                system_program,
+            )?;
+        }
+    }
+
+    Ok(())
+}
+
+/// Take `Asset` and `PluginRegistry` for a decompressed asset, and compress into account space.
+pub fn compress_into_account_space<'a>(
+    asset: Asset,
+    plugin_registry: Option<PluginRegistry>,
+    asset_info: &AccountInfo<'a>,
+    payer: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+) -> Result<CompressionProof, ProgramError> {
+    let asset_hash = asset.hash()?;
+    let mut compression_proof = CompressionProof::new(asset, vec![]);
+    let mut plugin_hashes = vec![];
+    if let Some(plugin_registry) = plugin_registry {
+        let mut registry_records = plugin_registry.registry;
+
+        // It should already be sorted but we just want to make sure.
+        registry_records.sort_by(RegistryRecord::compare_offsets);
+
+        for (i, record) in registry_records.into_iter().enumerate() {
+            let plugin = Plugin::deserialize(&mut &(*asset_info.data).borrow()[record.offset..])?;
+
+            let hashable_plugin_schema = HashablePluginSchema {
+                index: i,
+                authority: record.authority,
+                plugin,
+            };
+
+            let plugin_hash = hashable_plugin_schema.hash()?;
+            plugin_hashes.push(plugin_hash);
+
+            compression_proof.plugins.push(hashable_plugin_schema);
+        }
+    }
+
+    let hashed_asset_schema = HashedAssetSchema {
+        asset_hash,
+        plugin_hashes,
+    };
+
+    let hashed_asset = HashedAsset::new(hashed_asset_schema.hash()?);
+    let serialized_data = hashed_asset.try_to_vec()?;
+
+    resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
+
+    sol_memcpy(
+        &mut asset_info.try_borrow_mut_data()?,
+        &serialized_data,
+        serialized_data.len(),
+    );
+
+    Ok(compression_proof)
 }

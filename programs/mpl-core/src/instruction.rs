@@ -142,7 +142,8 @@ pub(crate) enum MplAssetInstruction {
     #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, name="new_owner", desc = "The new owner to which to transfer the asset")]
-    #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    #[account(5, optional, name="system_program", desc = "The system program")]
+    #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Transfer(TransferArgs),
 
     /// Update an mpl-core.

@@ -6,7 +6,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{BurnAccounts, BurnCollectionAccounts},
     plugins::{Plugin, PluginType},
-    state::{Asset, Collection, Compressible, CompressionProof, Key},
+    state::{Asset, Collection, CompressionProof, Key},
     utils::{
         close_program_account, load_key, validate_asset_permissions,
         validate_collection_permissions, verify_proof,
@@ -41,7 +41,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
 
             // TODO: Check delegates in compressed case.
 
-            asset.wrap()?;
+            //asset.wrap()?;
         }
         Key::Asset => {
             let _ = validate_asset_permissions(

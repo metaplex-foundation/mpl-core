@@ -1,16 +1,15 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program_memory::sol_memcpy,
-    system_program,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, system_program};
 
 use crate::{
     error::MplCoreError,
     instruction::accounts::DecompressAccounts,
-    plugins::{create_meta_idempotent, initialize_plugin, Plugin, PluginType},
+    plugins::{Plugin, PluginType},
     state::{Asset, Collection, CompressionProof, Key},
-    utils::{load_key, resize_or_reallocate_account, validate_asset_permissions, verify_proof},
+    utils::{
+        load_key, rebuild_account_state_from_proof_data, validate_asset_permissions, verify_proof,
+    },
 };
 
 #[repr(C)]
@@ -41,41 +40,19 @@ pub(crate) fn decompress<'a>(
 
     match load_key(ctx.accounts.asset, 0)? {
         Key::HashedAsset => {
-            // Verify the proof and rebuild Asset struct in account.
+            // Verify the proof and rebuild Asset struct in account space.
             let (asset, plugins) = verify_proof(ctx.accounts.asset, &args.compression_proof)?;
 
-            let serialized_data = asset.try_to_vec()?;
-            resize_or_reallocate_account(
+            // Use the data from the compression proof to rebuild the account.
+            rebuild_account_state_from_proof_data(
+                asset,
+                plugins,
                 ctx.accounts.asset,
                 payer,
                 ctx.accounts.system_program,
-                serialized_data.len(),
             )?;
 
-            sol_memcpy(
-                &mut ctx.accounts.asset.try_borrow_mut_data()?,
-                &serialized_data,
-                serialized_data.len(),
-            );
-
-            // Add the plugins.
-            if !plugins.is_empty() {
-                create_meta_idempotent(ctx.accounts.asset, payer, ctx.accounts.system_program)?;
-
-                for plugin in plugins {
-                    initialize_plugin::<Asset>(
-                        &plugin.plugin,
-                        &plugin.authority,
-                        ctx.accounts.asset,
-                        payer,
-                        ctx.accounts.system_program,
-                    )?;
-                }
-            }
-
-            // Validate permissions.
-            //let (asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
-
+            // Validate asset permissions.
             let _ = validate_asset_permissions(
                 ctx.accounts.authority,
                 ctx.accounts.asset,
