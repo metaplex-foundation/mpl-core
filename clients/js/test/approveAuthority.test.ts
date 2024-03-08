@@ -44,7 +44,8 @@ test('it can add an authority to a plugin', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    plugin: plugin('Freeze', [{ frozen: false }])
+    plugin: plugin('Freeze', [{ frozen: false }]),
+    initAuthority: null
   })
     .append(
       approvePluginAuthority(umi, {

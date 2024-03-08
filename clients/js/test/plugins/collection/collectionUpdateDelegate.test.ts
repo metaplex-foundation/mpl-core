@@ -37,6 +37,7 @@ test('it can create a new asset with a collection if it is the collection update
       __kind: 'UpdateDelegate',
       fields: [{}],
     },
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   // console.log(JSON.stringify(await fetchCollectionWithPlugins(umi, collectionAddress.publicKey), (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));

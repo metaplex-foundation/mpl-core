@@ -68,7 +68,8 @@ test('it can add asset plugin with collect amount', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    plugin: plugin('Freeze', [{ frozen: true }])
+    plugin: plugin('Freeze', [{ frozen: true }]),
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   t.assert(await hasCollectAmount(umi, assetAddress.publicKey), 'Collect amount not found')

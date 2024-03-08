@@ -6,8 +6,8 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{RemoveCollectionPluginAccounts, RemovePluginAccounts},
     plugins::{delete_plugin, PluginType},
-    state::{Asset, Authority, Collection, SolanaAccount, UpdateAuthority},
-    utils::fetch_core_data,
+    state::{Asset, Authority, Collection},
+    utils::{fetch_core_data, resolve_payer, resolve_to_authority},
 };
 
 #[repr(C)]
@@ -24,13 +24,7 @@ pub(crate) fn remove_plugin<'a>(
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    let payer = match ctx.accounts.payer {
-        Some(payer) => {
-            assert_signer(payer)?;
-            payer
-        }
-        None => ctx.accounts.authority,
-    };
+    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
 
     let (asset, plugin_header, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
 
@@ -40,32 +34,8 @@ pub(crate) fn remove_plugin<'a>(
     }
 
     //TODO: Make this better.
-    let authority_type = if ctx.accounts.authority.key == &asset.owner {
-        Authority::Owner
-    } else if let UpdateAuthority::Address(update_authority) = asset.update_authority {
-        if ctx.accounts.authority.key == &update_authority {
-            Authority::UpdateAuthority
-        } else {
-            return Err(MplCoreError::InvalidAuthority.into());
-        }
-    } else if let UpdateAuthority::Collection(collection_address) = asset.update_authority {
-        match ctx.accounts.collection {
-            Some(collection_info) => {
-                if collection_info.key != &collection_address {
-                    return Err(MplCoreError::InvalidCollection.into());
-                }
-                let collection = Collection::load(collection_info, 0)?;
-                if ctx.accounts.authority.key == &collection.update_authority {
-                    Authority::UpdateAuthority
-                } else {
-                    return Err(MplCoreError::InvalidAuthority.into());
-                }
-            }
-            None => return Err(MplCoreError::InvalidAuthority.into()),
-        }
-    } else {
-        return Err(MplCoreError::InvalidAuthority.into());
-    };
+    let authority_type =
+        resolve_to_authority(ctx.accounts.authority, ctx.accounts.collection, &asset)?;
 
     delete_plugin(
         &args.plugin_type,
@@ -93,13 +63,7 @@ pub(crate) fn remove_collection_plugin<'a>(
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    let payer = match ctx.accounts.payer {
-        Some(payer) => {
-            assert_signer(payer)?;
-            payer
-        }
-        None => ctx.accounts.authority,
-    };
+    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
 
     let (collection, plugin_header, plugin_registry) =
         fetch_core_data::<Collection>(ctx.accounts.collection)?;

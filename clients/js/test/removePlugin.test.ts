@@ -46,6 +46,7 @@ test('it can remove a plugin from an asset', async (t) => {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
     },
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);

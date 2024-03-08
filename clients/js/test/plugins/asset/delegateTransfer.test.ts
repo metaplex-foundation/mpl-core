@@ -35,6 +35,7 @@ test('a delegate can transfer the asset', async (t) => {
       __kind: 'Transfer',
       fields: [{}],
     },
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   await approvePluginAuthority(umi, {

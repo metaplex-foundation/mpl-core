@@ -1,11 +1,13 @@
+use std::collections::BTreeMap;
+
 use borsh::{BorshDeserialize, BorshSerialize};
+use mpl_utils::assert_signer;
 use num_traits::{FromPrimitive, ToPrimitive};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
     program_error::ProgramError, program_memory::sol_memcpy, rent::Rent, system_instruction,
     sysvar::Sysvar,
 };
-use std::collections::BTreeMap;
 
 use crate::{
     error::MplCoreError,
@@ -15,7 +17,7 @@ use crate::{
     },
     state::{
         Asset, Authority, Collection, Compressible, CompressionProof, CoreAsset, DataBlob,
-        HashablePluginSchema, HashedAsset, HashedAssetSchema, Key, SolanaAccount,
+        HashablePluginSchema, HashedAsset, HashedAssetSchema, Key, SolanaAccount, UpdateAuthority,
     },
 };
 
@@ -377,7 +379,7 @@ pub fn rebuild_account_state_from_proof_data<'a>(
 
     // Add the plugins.
     if !plugins.is_empty() {
-        create_meta_idempotent(asset_info, payer, system_program)?;
+        create_meta_idempotent::<Asset>(asset_info, payer, system_program)?;
 
         for plugin in plugins {
             initialize_plugin::<Asset>(
@@ -443,4 +445,52 @@ pub fn compress_into_account_space<'a>(
     );
 
     Ok(compression_proof)
+}
+
+pub(crate) fn resolve_to_authority(
+    authority_info: &AccountInfo,
+    maybe_collection_info: Option<&AccountInfo>,
+    asset: &Asset,
+) -> Result<Authority, ProgramError> {
+    let authority_type = if authority_info.key == &asset.owner {
+        Authority::Owner
+    } else if asset.update_authority == UpdateAuthority::Address(*authority_info.key) {
+        Authority::UpdateAuthority
+    } else if let UpdateAuthority::Collection(collection_address) = asset.update_authority {
+        match maybe_collection_info {
+            Some(collection_info) => {
+                if collection_info.key != &collection_address {
+                    return Err(MplCoreError::InvalidCollection.into());
+                }
+                let collection: Collection = Collection::load(collection_info, 0)?;
+                if authority_info.key == &collection.update_authority {
+                    Authority::UpdateAuthority
+                } else {
+                    Authority::Pubkey {
+                        address: *authority_info.key,
+                    }
+                }
+            }
+            None => return Err(MplCoreError::InvalidCollection.into()),
+        }
+    } else {
+        Authority::Pubkey {
+            address: *authority_info.key,
+        }
+    };
+    Ok(authority_type)
+}
+
+/// Resolves the payer for the transaction for an optional payer pattern.
+pub(crate) fn resolve_payer<'a>(
+    authority: &'a AccountInfo<'a>,
+    payer: Option<&'a AccountInfo<'a>>,
+) -> Result<&'a AccountInfo<'a>, ProgramError> {
+    match payer {
+        Some(payer) => {
+            assert_signer(payer).unwrap();
+            Ok(payer)
+        }
+        None => Ok(authority),
+    }
 }

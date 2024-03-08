@@ -35,6 +35,7 @@ test('it can delegate a new authority', async (t) => {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
     },
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   await approvePluginAuthority(umi, {
@@ -102,6 +103,7 @@ test('a delegate can freeze the token', async (t) => {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
     },
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   await approvePluginAuthority(umi, {

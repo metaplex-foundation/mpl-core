@@ -8,8 +8,8 @@ use crate::{
         RevokeCollectionPluginAuthorityAccounts, RevokePluginAuthorityAccounts,
     },
     plugins::{revoke_authority_on_plugin, PluginHeader, PluginRegistry, PluginType},
-    state::{Asset, Authority, Collection, SolanaAccount, UpdateAuthority},
-    utils::fetch_core_data,
+    state::{Asset, Authority, Collection},
+    utils::{fetch_core_data, resolve_payer, resolve_to_authority},
 };
 
 #[repr(C)]
@@ -26,43 +26,13 @@ pub(crate) fn revoke_plugin_authority<'a>(
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    let payer = match ctx.accounts.payer {
-        Some(payer) => {
-            assert_signer(payer)?;
-            payer
-        }
-        None => ctx.accounts.authority,
-    };
+    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
 
     let (asset, plugin_header, mut plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
 
     //TODO: Make this better.
-    let authority_type = if ctx.accounts.authority.key == &asset.owner {
-        Authority::Owner
-    } else if asset.update_authority == UpdateAuthority::Address(*ctx.accounts.authority.key) {
-        Authority::UpdateAuthority
-    } else if let UpdateAuthority::Collection(collection_address) = asset.update_authority {
-        match ctx.accounts.collection {
-            Some(collection_info) => {
-                if collection_info.key != &collection_address {
-                    return Err(MplCoreError::InvalidCollection.into());
-                }
-                let collection: Collection = Collection::load(collection_info, 0)?;
-                if ctx.accounts.authority.key == &collection.update_authority {
-                    Authority::UpdateAuthority
-                } else {
-                    Authority::Pubkey {
-                        address: *ctx.accounts.authority.key,
-                    }
-                }
-            }
-            None => return Err(MplCoreError::InvalidCollection.into()),
-        }
-    } else {
-        Authority::Pubkey {
-            address: *ctx.accounts.authority.key,
-        }
-    };
+    let authority_type =
+        resolve_to_authority(ctx.accounts.authority, ctx.accounts.collection, &asset)?;
 
     process_revoke_plugin_authority(
         ctx.accounts.asset,
@@ -89,13 +59,7 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    let payer = match ctx.accounts.payer {
-        Some(payer) => {
-            assert_signer(payer)?;
-            payer
-        }
-        None => ctx.accounts.authority,
-    };
+    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
 
     let (_, plugin_header, mut plugin_registry) =
         fetch_core_data::<Collection>(ctx.accounts.collection)?;

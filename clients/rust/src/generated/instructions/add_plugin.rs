@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::Authority;
 use crate::generated::types::Plugin;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
@@ -107,6 +108,7 @@ impl AddPluginInstructionData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AddPluginInstructionArgs {
     pub plugin: Plugin,
+    pub init_authority: Option<Authority>,
 }
 
 /// Instruction builder for `AddPlugin`.
@@ -128,6 +130,7 @@ pub struct AddPluginBuilder {
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
     plugin: Option<Plugin>,
+    init_authority: Option<Authority>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -183,6 +186,12 @@ impl AddPluginBuilder {
         self.plugin = Some(plugin);
         self
     }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn init_authority(&mut self, init_authority: Authority) -> &mut Self {
+        self.init_authority = Some(init_authority);
+        self
+    }
     /// Add an aditional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -215,6 +224,7 @@ impl AddPluginBuilder {
         };
         let args = AddPluginInstructionArgs {
             plugin: self.plugin.clone().expect("plugin is not set"),
+            init_authority: self.init_authority.clone(),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -419,6 +429,7 @@ impl<'a, 'b> AddPluginCpiBuilder<'a, 'b> {
             system_program: None,
             log_wrapper: None,
             plugin: None,
+            init_authority: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -482,6 +493,12 @@ impl<'a, 'b> AddPluginCpiBuilder<'a, 'b> {
         self.instruction.plugin = Some(plugin);
         self
     }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn init_authority(&mut self, init_authority: Authority) -> &mut Self {
+        self.instruction.init_authority = Some(init_authority);
+        self
+    }
     /// Add an additional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -525,6 +542,7 @@ impl<'a, 'b> AddPluginCpiBuilder<'a, 'b> {
     ) -> solana_program::entrypoint::ProgramResult {
         let args = AddPluginInstructionArgs {
             plugin: self.instruction.plugin.clone().expect("plugin is not set"),
+            init_authority: self.instruction.init_authority.clone(),
         };
         let instruction = AddPluginCpi {
             __program: self.instruction.__program,
@@ -561,6 +579,7 @@ struct AddPluginCpiBuilderInstruction<'a, 'b> {
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     plugin: Option<Plugin>,
+    init_authority: Option<Authority>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

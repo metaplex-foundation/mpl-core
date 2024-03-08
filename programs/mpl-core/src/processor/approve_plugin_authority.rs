@@ -9,7 +9,7 @@ use crate::{
     },
     plugins::{approve_authority_on_plugin, PluginType},
     state::{Asset, Authority, Collection, CoreAsset, DataBlob, SolanaAccount},
-    utils::fetch_core_data,
+    utils::{fetch_core_data, resolve_payer},
 };
 
 #[repr(C)]
@@ -27,13 +27,7 @@ pub(crate) fn approve_plugin_authority<'a>(
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    let payer = match ctx.accounts.payer {
-        Some(payer) => {
-            assert_signer(payer)?;
-            payer
-        }
-        None => ctx.accounts.authority,
-    };
+    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
 
     process_approve_plugin_authority::<Asset>(
         ctx.accounts.asset,
@@ -60,13 +54,7 @@ pub(crate) fn approve_collection_plugin_authority<'a>(
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    let payer = match ctx.accounts.payer {
-        Some(payer) => {
-            assert_signer(payer)?;
-            payer
-        }
-        None => ctx.accounts.authority,
-    };
+    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
 
     process_approve_plugin_authority::<Collection>(
         ctx.accounts.collection,

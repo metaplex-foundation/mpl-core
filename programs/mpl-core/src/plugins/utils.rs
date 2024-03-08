@@ -6,37 +6,20 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    state::{Asset, Authority, Collection, CoreAsset, DataBlob, Key, SolanaAccount},
-    utils::{assert_authority, load_key, resize_or_reallocate_account},
+    state::{Asset, Authority, CoreAsset, DataBlob, Key, SolanaAccount},
+    utils::{assert_authority, resize_or_reallocate_account},
 };
 
 use super::{Plugin, PluginHeader, PluginRegistry, PluginType, RegistryRecord};
 
 /// Create plugin header and registry if it doesn't exist
-pub fn create_meta_idempotent<'a>(
+pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
-) -> ProgramResult {
-    let header_offset = match load_key(account, 0)? {
-        Key::Asset => {
-            let asset = {
-                let mut bytes: &[u8] = &(*account.data).borrow();
-                Asset::deserialize(&mut bytes)?
-            };
-
-            asset.get_size()
-        }
-        Key::Collection => {
-            let collection = {
-                let mut bytes: &[u8] = &(*account.data).borrow();
-                Collection::deserialize(&mut bytes)?
-            };
-
-            collection.get_size()
-        }
-        _ => return Err(MplCoreError::IncorrectAccount.into()),
-    };
+) -> Result<(T, PluginHeader, PluginRegistry), ProgramError> {
+    let core = T::load(account, 0)?;
+    let header_offset = core.get_size();
 
     // Check if the plugin header and registry exist.
     if header_offset == account.data_len() {
@@ -60,9 +43,15 @@ pub fn create_meta_idempotent<'a>(
 
         header.save(account, header_offset)?;
         registry.save(account, header.plugin_registry_offset)?;
-    }
 
-    Ok(())
+        Ok((core, header, registry))
+    } else {
+        // They exist, so load them.
+        let header = PluginHeader::load(account, header_offset)?;
+        let registry = PluginRegistry::load(account, header.plugin_registry_offset)?;
+
+        Ok((core, header, registry))
+    }
 }
 
 /// Create plugin header and registry if it doesn't exist
@@ -101,7 +90,7 @@ pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
 /// Assert that the Plugin metadata has been initialized.
 pub fn assert_plugins_initialized(account: &AccountInfo) -> ProgramResult {
     let mut bytes: &[u8] = &(*account.data).borrow();
-    let asset = Asset::deserialize(&mut bytes).unwrap();
+    let asset = Asset::deserialize(&mut bytes)?;
 
     if asset.get_size() == account.data_len() {
         return Err(MplCoreError::PluginsNotInitialized.into());
@@ -174,6 +163,7 @@ pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramErr
         .collect())
 }
 
+//TODO: Take in the header and registry so we don't have to reload it.
 /// Add a plugin to the registry and initialize it.
 pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     plugin: &Plugin,
@@ -261,7 +251,7 @@ pub fn delete_plugin<'a, T: DataBlob>(
         let serialized_registry_record = registry_record.try_to_vec()?;
 
         // Only allow the default authority to delete the plugin.
-        if authority_type != &registry_record.plugin_type.default_authority() {
+        if authority_type != &registry_record.plugin_type.manager() {
             return Err(MplCoreError::InvalidAuthority.into());
         }
 
@@ -369,7 +359,7 @@ pub fn revoke_authority_on_plugin<'a>(
     solana_program::msg!("registry_record.authority: {:?}", registry_record.authority);
 
     // TODO inspect this logic
-    if (*authority_type != registry_record.plugin_type.default_authority() &&
+    if (*authority_type != registry_record.plugin_type.manager() &&
         // pubkey authorities can remove themselves if they are a signer
         authority_type != &registry_record.authority) ||
         // Unable to revoke a None authority
@@ -379,7 +369,7 @@ pub fn revoke_authority_on_plugin<'a>(
     }
 
     let authority_bytes = registry_record.authority.try_to_vec()?;
-    registry_record.authority = registry_record.plugin_type.default_authority();
+    registry_record.authority = registry_record.plugin_type.manager();
 
     let new_size = account
         .data_len()
