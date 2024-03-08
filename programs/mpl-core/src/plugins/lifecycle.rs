@@ -103,6 +103,7 @@ impl Plugin {
     pub(crate) fn validate_update(
         plugin: &Plugin,
         authority: &AccountInfo,
+        _unused: Option<&AccountInfo>,
         authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
@@ -145,6 +146,7 @@ impl Plugin {
     pub(crate) fn validate_burn(
         plugin: &Plugin,
         authority: &AccountInfo,
+        _unused: Option<&AccountInfo>,
         authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
@@ -160,12 +162,13 @@ impl Plugin {
     }
 
     /// Route the validation of the transfer action to the appropriate plugin.
-    pub(crate) fn validate_transfer<'a>(
+    pub(crate) fn validate_transfer(
         plugin: &Plugin,
-        authority: &AccountInfo<'a>,
-        new_owner: &AccountInfo<'a>,
+        authority: &AccountInfo,
+        new_owner: Option<&AccountInfo>,
         authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
+        let new_owner = new_owner.ok_or(MplCoreError::MissingNewOwner)?;
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
@@ -383,12 +386,18 @@ pub(crate) fn validate_plugin_checks<'a, F>(
     key: Key,
     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &AccountInfo<'a>,
+    new_owner: Option<&AccountInfo>,
     asset: &AccountInfo<'a>,
     collection: Option<&AccountInfo<'a>>,
     validate_fp: F,
 ) -> Result<bool, ProgramError>
 where
-    F: Fn(&Plugin, &AccountInfo<'a>, &Authority) -> Result<ValidationResult, ProgramError>,
+    F: Fn(
+        &Plugin,
+        &AccountInfo<'a>,
+        Option<&AccountInfo>,
+        &Authority,
+    ) -> Result<ValidationResult, ProgramError>,
 {
     for (_, (check_key, check_result, registry_record)) in checks {
         if *check_key == key
@@ -407,6 +416,7 @@ where
             let result = validate_fp(
                 &Plugin::load(account, registry_record.offset)?,
                 authority,
+                new_owner,
                 &registry_record.authority,
             )?;
             match result {

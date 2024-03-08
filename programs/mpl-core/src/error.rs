@@ -92,6 +92,10 @@ pub enum MplCoreError {
     /// 20 - Missing update authority
     #[error("Missing update authority")]
     MissingUpdateAuthority,
+
+    /// 20 - Missing new owner
+    #[error("Missing new owner")]
+    MissingNewOwner,
 }
 
 impl PrintProgramError for MplCoreError {

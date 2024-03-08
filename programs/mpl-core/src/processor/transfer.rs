@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
@@ -7,14 +5,9 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use crate::{
     error::MplCoreError,
     instruction::accounts::TransferAccounts,
-    plugins::{
-        validate_plugin_checks, CheckResult, Plugin, PluginType, RegistryRecord, ValidationResult,
-    },
-    state::{
-        Asset, Authority, Collection, Compressible, CompressionProof, HashedAsset, Key,
-        SolanaAccount,
-    },
-    utils::{fetch_core_data, load_key, verify_proof},
+    plugins::{Plugin, PluginType},
+    state::{Asset, Collection, Compressible, CompressionProof, HashedAsset, Key, SolanaAccount},
+    utils::{load_key, validate_asset_permissions, verify_proof},
 };
 
 #[repr(C)]
@@ -54,86 +47,19 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             HashedAsset::new(asset.hash()?).save(ctx.accounts.asset, 0)
         }
         Key::Asset => {
-            let (mut asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
-
-            let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> =
-                BTreeMap::new();
-
-            // The asset approval overrides the collection approval.
-            let asset_approval = Asset::check_transfer();
-            let core_check = match asset_approval {
-                CheckResult::None => (Key::Collection, Collection::check_transfer()),
-                _ => (Key::Asset, asset_approval),
-            };
-
-            // Check the collection plugins first.
-            if let Some(collection_info) = ctx.accounts.collection {
-                fetch_core_data::<Collection>(collection_info).map(|(_, _, registry)| {
-                    registry.map(|r| {
-                        r.check_registry(Key::Collection, PluginType::check_transfer, &mut checks);
-                        r
-                    })
-                })?;
-            }
-
-            // Next check the asset plugins. Plugins on the asset override the collection plugins,
-            // so we don't need to validate the collection plugins if the asset has a plugin.
-            if let Some(registry) = plugin_registry.as_ref() {
-                registry.check_registry(Key::Asset, PluginType::check_transfer, &mut checks);
-            }
-
-            solana_program::msg!("checks: {:#?}", checks);
-
-            // Do the core validation.
-            let mut approved = matches!(
-                core_check,
-                (
-                    Key::Asset | Key::Collection,
-                    CheckResult::CanApprove | CheckResult::CanReject
-                )
-            ) && {
-                (match core_check.0 {
-                    Key::Collection => Collection::load(
-                        ctx.accounts
-                            .collection
-                            .ok_or(MplCoreError::InvalidCollection)?,
-                        0,
-                    )?
-                    .validate_transfer()?,
-                    Key::Asset => Asset::load(ctx.accounts.asset, 0)?
-                        .validate_transfer(ctx.accounts.authority)?,
-                    _ => return Err(MplCoreError::IncorrectAccount.into()),
-                }) == ValidationResult::Approved
-            };
-            solana_program::msg!("approved: {:#?}", approved);
-
-            let custom_args = |plugin: &Plugin,
-                               authority_info: &AccountInfo<'a>,
-                               authority: &Authority| {
-                Plugin::validate_transfer(plugin, authority_info, ctx.accounts.new_owner, authority)
-            };
-
-            approved = validate_plugin_checks(
-                Key::Collection,
-                &checks,
+            let (mut asset, _, _) = validate_asset_permissions(
                 ctx.accounts.authority,
                 ctx.accounts.asset,
                 ctx.accounts.collection,
-                Box::new(custom_args),
-            )? || approved;
+                Some(ctx.accounts.new_owner),
+                Asset::check_transfer,
+                Collection::check_transfer,
+                PluginType::check_transfer,
+                Asset::validate_transfer,
+                Collection::validate_transfer,
+                Plugin::validate_transfer,
+            )?;
 
-            approved = validate_plugin_checks(
-                Key::Asset,
-                &checks,
-                ctx.accounts.authority,
-                ctx.accounts.asset,
-                ctx.accounts.collection,
-                Box::new(custom_args),
-            )? || approved;
-
-            if !approved {
-                return Err(MplCoreError::InvalidAuthority.into());
-            }
             asset.owner = *ctx.accounts.new_owner.key;
             asset.save(ctx.accounts.asset, 0)
         }

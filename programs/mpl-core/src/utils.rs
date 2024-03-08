@@ -3,10 +3,14 @@ use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
     program_error::ProgramError, rent::Rent, system_instruction, sysvar::Sysvar,
 };
+use std::collections::BTreeMap;
 
 use crate::{
     error::MplCoreError,
-    plugins::{PluginHeader, PluginRegistry},
+    plugins::{
+        validate_plugin_checks, CheckResult, Plugin, PluginHeader, PluginRegistry, PluginType,
+        RegistryRecord, ValidationResult,
+    },
     state::{
         Asset, Authority, Collection, Compressible, CompressionProof, CoreAsset, DataBlob,
         HashablePluginSchema, HashedAsset, HashedAssetSchema, Key, SolanaAccount,
@@ -195,4 +199,163 @@ pub(crate) fn resize_or_reallocate_account<'a>(
     target_account.realloc(new_size, false)?;
 
     Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+/// Validate asset permissions using asset, collection, and plugin lifecycle validations.
+pub fn validate_asset_permissions<'a>(
+    authority: &AccountInfo<'a>,
+    asset: &AccountInfo<'a>,
+    collection: Option<&AccountInfo<'a>>,
+    new_owner: Option<&AccountInfo<'a>>,
+    asset_check_fp: fn() -> CheckResult,
+    collection_check_fp: fn() -> CheckResult,
+    plugin_check_fp: fn(&PluginType) -> CheckResult,
+    asset_validate_fp: fn(&Asset, &AccountInfo) -> Result<ValidationResult, ProgramError>,
+    collection_validate_fp: fn(&Collection, &AccountInfo) -> Result<ValidationResult, ProgramError>,
+    plugin_validate_fp: fn(
+        &Plugin,
+        &AccountInfo,
+        Option<&AccountInfo>,
+        &Authority,
+    ) -> Result<ValidationResult, ProgramError>,
+) -> Result<(Asset, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
+    let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<Asset>(asset)?;
+
+    let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
+
+    // The asset approval overrides the collection approval.
+    let asset_approval = asset_check_fp();
+    let core_check = match asset_approval {
+        CheckResult::None => (Key::Collection, collection_check_fp()),
+        _ => (Key::Asset, asset_approval),
+    };
+
+    // Check the collection plugins first.
+    if let Some(collection_info) = collection {
+        fetch_core_data::<Collection>(collection_info).map(|(_, _, registry)| {
+            registry.map(|r| {
+                r.check_registry(Key::Collection, plugin_check_fp, &mut checks);
+                r
+            })
+        })?;
+    }
+
+    // Next check the asset plugins. Plugins on the asset override the collection plugins,
+    // so we don't need to validate the collection plugins if the asset has a plugin.
+    if let Some(registry) = plugin_registry.as_ref() {
+        registry.check_registry(Key::Asset, plugin_check_fp, &mut checks);
+    }
+
+    solana_program::msg!("checks: {:#?}", checks);
+
+    // Do the core validation.
+    let mut approved = matches!(
+        core_check,
+        (
+            Key::Asset | Key::Collection,
+            CheckResult::CanApprove | CheckResult::CanReject
+        )
+    ) && {
+        (match core_check.0 {
+            Key::Collection => collection_validate_fp(
+                &Collection::load(collection.ok_or(MplCoreError::InvalidCollection)?, 0)?,
+                authority,
+            )?,
+            Key::Asset => asset_validate_fp(&Asset::load(asset, 0)?, authority)?,
+            _ => return Err(MplCoreError::IncorrectAccount.into()),
+        }) == ValidationResult::Approved
+    };
+    solana_program::msg!("approved: {:#?}", approved);
+
+    // let custom_args = |plugin: &Plugin, authority_info: &AccountInfo<'a>, authority: &Authority| {
+    //     Plugin::validate_transfer(plugin, authority_info, new_owner, authority)
+    // };
+
+    approved = validate_plugin_checks(
+        Key::Collection,
+        &checks,
+        authority,
+        new_owner,
+        asset,
+        collection,
+        plugin_validate_fp,
+    )? || approved;
+
+    approved = validate_plugin_checks(
+        Key::Asset,
+        &checks,
+        authority,
+        new_owner,
+        asset,
+        collection,
+        plugin_validate_fp,
+    )? || approved;
+
+    if !approved {
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
+
+    Ok((deserialized_asset, plugin_header, plugin_registry))
+}
+
+/// Validate collection permissions using collection and plugin lifecycle validations.
+pub fn validate_collection_permissions<'a>(
+    authority: &AccountInfo<'a>,
+    collection: &AccountInfo<'a>,
+    collection_check_fp: fn() -> CheckResult,
+    plugin_check_fp: fn(&PluginType) -> CheckResult,
+    collection_validate_fp: fn(&Collection, &AccountInfo) -> Result<ValidationResult, ProgramError>,
+    plugin_validate_fp: fn(
+        &Plugin,
+        &AccountInfo,
+        Option<&AccountInfo>,
+        &Authority,
+    ) -> Result<ValidationResult, ProgramError>,
+) -> Result<(Collection, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
+    let (deserialized_collection, plugin_header, plugin_registry) =
+        fetch_core_data::<Collection>(collection)?;
+
+    // let checks: [(Key, CheckResult); PluginType::COUNT + 2];
+
+    let mut approved = false;
+    match collection_check_fp() {
+        CheckResult::CanApprove | CheckResult::CanReject => {
+            match collection_validate_fp(&deserialized_collection, authority)? {
+                ValidationResult::Approved => {
+                    approved = true;
+                }
+                ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
+                ValidationResult::Pass => (),
+            }
+        }
+        CheckResult::None => (),
+    };
+
+    if let Some(plugin_registry) = &plugin_registry {
+        for record in plugin_registry.registry.iter() {
+            if matches!(
+                plugin_check_fp(&record.plugin_type),
+                CheckResult::CanApprove | CheckResult::CanReject
+            ) {
+                let result = plugin_validate_fp(
+                    &Plugin::load(collection, record.offset)?,
+                    authority,
+                    None,
+                    &record.authority,
+                )?;
+                if result == ValidationResult::Rejected {
+                    return Err(MplCoreError::InvalidAuthority.into());
+                } else if result == ValidationResult::Approved {
+                    approved = true;
+                }
+            }
+        }
+    };
+
+    if !approved {
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
+
+    Ok((deserialized_collection, plugin_header, plugin_registry))
 }
