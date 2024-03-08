@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
@@ -8,8 +8,8 @@ use crate::{
         ApproveCollectionPluginAuthorityAccounts, ApprovePluginAuthorityAccounts,
     },
     plugins::{approve_authority_on_plugin, PluginType},
-    state::{Asset, Authority, Collection, CoreAsset, DataBlob, SolanaAccount},
-    utils::{fetch_core_data, resolve_payer},
+    state::{Asset, Authority, Collection, CoreAsset, DataBlob, Key, SolanaAccount},
+    utils::{fetch_core_data, load_key, resolve_payer},
 };
 
 #[repr(C)]
@@ -28,6 +28,11 @@ pub(crate) fn approve_plugin_authority<'a>(
     // Guards.
     assert_signer(ctx.accounts.authority)?;
     let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+
+    if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
+        msg!("Error: Approve plugin authority for compressed is not available");
+        return Err(MplCoreError::NotAvailable.into());
+    }
 
     process_approve_plugin_authority::<Asset>(
         ctx.accounts.asset,

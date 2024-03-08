@@ -1,12 +1,13 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionPluginAccounts, UpdatePluginAccounts},
     plugins::{Plugin, PluginType, ValidationResult},
-    utils::fetch_core_data,
+    state::Key,
+    utils::{fetch_core_data, load_key},
 };
 
 #[repr(C)]
@@ -26,6 +27,11 @@ pub(crate) fn update_plugin<'a>(
     assert_signer(ctx.accounts.authority)?;
     if let Some(payer) = ctx.accounts.payer {
         assert_signer(payer)?;
+    }
+
+    if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
+        msg!("Error: Update plugin for compressed is not available");
+        return Err(MplCoreError::NotAvailable.into());
     }
 
     let (asset, _, plugin_registry) = fetch_core_data(ctx.accounts.asset)?;

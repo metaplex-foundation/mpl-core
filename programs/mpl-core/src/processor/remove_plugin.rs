@@ -1,13 +1,13 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
     instruction::accounts::{RemoveCollectionPluginAccounts, RemovePluginAccounts},
     plugins::{delete_plugin, PluginType},
-    state::{Asset, Authority, Collection},
-    utils::{fetch_core_data, resolve_payer, resolve_to_authority},
+    state::{Asset, Authority, Collection, Key},
+    utils::{fetch_core_data, load_key, resolve_payer, resolve_to_authority},
 };
 
 #[repr(C)]
@@ -25,6 +25,11 @@ pub(crate) fn remove_plugin<'a>(
     // Guards.
     assert_signer(ctx.accounts.authority)?;
     let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+
+    if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
+        msg!("Error: Remove plugin for compressed is not available");
+        return Err(MplCoreError::NotAvailable.into());
+    }
 
     let (asset, plugin_header, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
 

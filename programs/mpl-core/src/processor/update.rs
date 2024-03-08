@@ -1,16 +1,16 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program_memory::sol_memcpy,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_memory::sol_memcpy,
 };
 
 use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateAccounts, UpdateCollectionAccounts},
     plugins::{Plugin, PluginType, RegistryRecord},
-    state::{Asset, Collection, DataBlob, SolanaAccount, UpdateAuthority},
+    state::{Asset, Collection, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
-        resize_or_reallocate_account, resolve_payer, validate_asset_permissions,
+        load_key, resize_or_reallocate_account, resolve_payer, validate_asset_permissions,
         validate_collection_permissions,
     },
 };
@@ -29,6 +29,11 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
     // Guards.
     assert_signer(ctx.accounts.authority)?;
     let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+
+    if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
+        msg!("Error: Update for compressed is not available");
+        return Err(MplCoreError::NotAvailable.into());
+    }
 
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
         ctx.accounts.authority,
