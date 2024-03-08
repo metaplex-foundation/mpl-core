@@ -9,6 +9,8 @@ import {
   create,
   fetchAsset,
   fetchAssetWithPlugins,
+  fetchHashedAsset,
+  getAssetAccountDataSerializer,
   updateAuthority,
 } from '../src';
 import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from './_setup';
@@ -30,7 +32,7 @@ test('it can create a new asset in account state', async (t) => {
   })
 });
 
-test('it can create a new asset with a different payer', async (t) => {
+test('it cannot create a new asset with a different payer', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const payer = await generateSignerWithSol(umi, sol(1));
@@ -59,7 +61,45 @@ test('it can create a new asset with a different payer', async (t) => {
   });
 });
 
-test('it can create a new asset in ledger state', async (t) => {
+test.skip('it can create a new asset in ledger state', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+
+  // When we create a new account.
+  const txResult = await create(umi, {
+    dataState: DataState.LedgerState,
+    asset: assetAddress,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
+    plugins: [],
+  }).sendAndConfirm(umi);
+
+  // Then an account was created with the correct data.
+  const asset = await fetchHashedAsset(umi, assetAddress.publicKey);
+  // console.log(asset);
+  t.like(asset, <Asset>{
+    publicKey: assetAddress.publicKey,
+  });
+
+  const tx = await umi.rpc.getTransaction(txResult.signature);
+  if (tx && tx.meta.innerInstructions) {
+    // console.log(tx.meta.innerInstructions[0].instructions);
+    const { data } = tx.meta.innerInstructions[0].instructions[0];
+    // console.log(base58.deserialize(data));
+    const parsed = getAssetAccountDataSerializer().deserialize(data)[0];
+    // console.log("Ledger State:", parsed);
+    t.like(parsed, <Asset>{
+      updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+      owner: umi.identity.publicKey,
+      name: 'Test Bread',
+      uri: 'https://example.com/bread',
+    });
+  }
+});
+
+test('it cannot create a new asset in ledger state because it is not available', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
@@ -74,30 +114,9 @@ test('it can create a new asset in ledger state', async (t) => {
     plugins: [],
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'NotImplemented' });
-
-  // Then an account was created with the correct data.
-  //const asset = await fetchHashedAsset(umi, assetAddress.publicKey);
-  // console.log(asset);
-  // t.like(asset, <Asset>{
-  //   publicKey: assetAddress.publicKey,
-  // });
-
-  // const tx = await umi.rpc.getTransaction(txResult.signature);
-  // if (tx && tx.meta.innerInstructions) {
-  //   // console.log(tx.meta.innerInstructions[0].instructions);
-  //   const { data } = tx.meta.innerInstructions[0].instructions[0];
-  //   // console.log(base58.deserialize(data));
-  //   const parsed = getAssetAccountDataSerializer().deserialize(data)[0];
-  //   // console.log("Ledger State:", parsed);
-  //   t.like(parsed, <Asset>{
-  //     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-  //     owner: umi.identity.publicKey,
-  //     name: 'Test Bread',
-  //     uri: 'https://example.com/bread',
-  //   });
-  // }
+  await t.throwsAsync(result, { name: 'NotAvailable' });
 });
+
 
 test('it can create a new asset in account state with plugins', async (t) => {
   // Given a Umi instance and a new signer.

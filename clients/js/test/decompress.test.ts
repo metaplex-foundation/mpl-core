@@ -16,7 +16,7 @@ import {
 } from '../src';
 import { createUmi } from './_setup';
 
-test('it can decompress a previously compressed asset as the owner', async (t) => {
+test.skip('it can decompress a previously compressed asset as the owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
