@@ -75,7 +75,7 @@ impl UpdateAuthority {
 
                 if let Ok((authority, _, _)) = maybe_update_delegate {
                     if assert_collection_authority(&collection, authority_info, &authority).is_err()
-                        || assert_collection_authority(
+                        && assert_collection_authority(
                             &collection,
                             authority_info,
                             &Authority::UpdateAuthority,
