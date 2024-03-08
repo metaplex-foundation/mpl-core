@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, system_program};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, system_program};
 
 use crate::{
     error::MplCoreError,
@@ -66,7 +66,9 @@ pub(crate) fn decompress<'a>(
                 Plugin::validate_decompress,
             )?;
 
-            Ok(())
+            // TODO Enable compression.
+            msg!("Error: Decompression currently not available");
+            Err(MplCoreError::NotAvailable.into())
         }
         Key::Asset => Err(MplCoreError::AlreadyDecompressed.into()),
         _ => Err(MplCoreError::IncorrectAccount.into()),

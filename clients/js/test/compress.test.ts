@@ -16,7 +16,7 @@ import {
 import { createUmi } from './_setup';
 // import bs58 from 'bs58';
 
-test('it can compress an asset without any plugins as the owner', async (t) => {
+test.skip('it can compress an asset without any plugins as the owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
@@ -65,7 +65,7 @@ test('it can compress an asset without any plugins as the owner', async (t) => {
   t.deepEqual(afterAsset.hash, hashedAsset);
 });
 
-test('it cannot compress an asset if not the owner', async (t) => {
+test.skip('it cannot compress an asset if not the owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
@@ -107,4 +107,39 @@ test('it cannot compress an asset if not the owner', async (t) => {
     name: 'Test Bread',
     uri: 'https://example.com/bread',
   });
+});
+
+test('it cannot compress an asset because it is not available', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+
+  // When we create a new account.
+  await create(umi, {
+    dataState: DataState.AccountState,
+    asset: assetAddress,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+    plugins: [],
+  }).sendAndConfirm(umi);
+
+  // Then an account was created with the correct data.
+  const beforeAsset = await fetchAsset(umi, assetAddress.publicKey);
+  // console.log("Account State:", beforeAsset);
+  t.like(beforeAsset, <Asset>{
+    publicKey: assetAddress.publicKey,
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    owner: umi.identity.publicKey,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+  });
+
+  // And when we compress the asset.
+  const result =  compress(umi, {
+    asset: assetAddress.publicKey,
+    authority: umi.identity,
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NotAvailable' });
 });

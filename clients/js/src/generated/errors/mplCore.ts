@@ -317,18 +317,18 @@ export class MissingSystemProgramError extends ProgramError {
 codeToErrorMap.set(0x16, MissingSystemProgramError);
 nameToErrorMap.set('MissingSystemProgram', MissingSystemProgramError);
 
-/** NotImplemented: Not implemented */
-export class NotImplementedError extends ProgramError {
-  override readonly name: string = 'NotImplemented';
+/** NotAvailable: Feature not available */
+export class NotAvailableError extends ProgramError {
+  override readonly name: string = 'NotAvailable';
 
   readonly code: number = 0x17; // 23
 
   constructor(program: Program, cause?: Error) {
-    super('Not implemented', program, cause);
+    super('Feature not available', program, cause);
   }
 }
-codeToErrorMap.set(0x17, NotImplementedError);
-nameToErrorMap.set('NotImplemented', NotImplementedError);
+codeToErrorMap.set(0x17, NotAvailableError);
+nameToErrorMap.set('NotAvailable', NotAvailableError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

@@ -69,8 +69,9 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
     let serialized_data = match args.data_state {
         DataState::AccountState => serialized_data,
         DataState::LedgerState => {
-            msg!("Error: Minting compressed is not implemented");
-            return Err(MplCoreError::NotImplemented.into());
+            // TODO Enable minting compressed.
+            msg!("Error: Minting compressed currently not available");
+            return Err(MplCoreError::NotAvailable.into());
         }
     };
 
@@ -98,7 +99,6 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
         serialized_data.len(),
     );
 
-    //TODO: Do compressed state
     if args.data_state == DataState::AccountState {
         create_meta_idempotent(
             ctx.accounts.asset,

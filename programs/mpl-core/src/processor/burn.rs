@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
@@ -53,6 +53,10 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
                 payer,
                 system_program,
             )?;
+
+            // TODO Enable compressed burn.
+            msg!("Error: Burning compressed is currently not available");
+            return Err(MplCoreError::NotAvailable.into());
         }
         Key::Asset => (),
         _ => return Err(MplCoreError::IncorrectAccount.into()),

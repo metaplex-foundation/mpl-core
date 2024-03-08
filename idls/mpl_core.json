@@ -2292,8 +2292,8 @@
     },
     {
       "code": 23,
-      "name": "NotImplemented",
-      "msg": "Not implemented"
+      "name": "NotAvailable",
+      "msg": "Feature not available"
     }
   ],
   "metadata": {
