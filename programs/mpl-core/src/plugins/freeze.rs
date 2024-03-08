@@ -1,10 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
-use crate::{
-    processor::{ApprovePluginAuthorityArgs, CompressArgs, CreateArgs, DecompressArgs},
-    state::{Asset, Authority, DataBlob},
-};
+use crate::state::{Asset, Authority, DataBlob};
 
 use super::{PluginValidation, ValidationResult};
 
@@ -44,7 +41,6 @@ impl PluginValidation for Freeze {
     fn validate_create(
         &self,
         _authority_info: &AccountInfo,
-        _args: &CreateArgs,
         _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -109,7 +105,6 @@ impl PluginValidation for Freeze {
     fn validate_compress(
         &self,
         _authority_info: &AccountInfo,
-        _args: &CompressArgs,
         _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -118,7 +113,6 @@ impl PluginValidation for Freeze {
     fn validate_decompress(
         &self,
         _authority_info: &AccountInfo,
-        _args: &DecompressArgs,
         _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -127,7 +121,6 @@ impl PluginValidation for Freeze {
     fn validate_add_authority(
         &self,
         _authority_info: &AccountInfo,
-        _args: &ApprovePluginAuthorityArgs,
         _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)

@@ -1,10 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
-use crate::{
-    processor::{CompressArgs, CreateArgs, DecompressArgs},
-    state::{Authority, DataBlob},
-};
+use crate::state::{Authority, DataBlob};
 
 use super::{PluginValidation, ValidationResult};
 
@@ -41,7 +38,6 @@ impl PluginValidation for Burn {
     fn validate_create(
         &self,
         _authority_info: &AccountInfo,
-        _args: &CreateArgs,
         _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -83,7 +79,6 @@ impl PluginValidation for Burn {
     fn validate_compress(
         &self,
         _authority_info: &AccountInfo,
-        _args: &CompressArgs,
         _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -92,7 +87,6 @@ impl PluginValidation for Burn {
     fn validate_decompress(
         &self,
         _authority_info: &AccountInfo,
-        _args: &DecompressArgs,
         _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)

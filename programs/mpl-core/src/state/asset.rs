@@ -3,7 +3,6 @@ use shank::ShankAccount;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
-    instruction::accounts::{CompressAccounts, DecompressAccounts},
     plugins::{CheckResult, ValidationResult},
     state::{Compressible, CompressionProof, DataBlob, Key, SolanaAccount},
 };
@@ -90,9 +89,9 @@ impl Asset {
     /// Validate the compress lifecycle event.
     pub fn validate_compress(
         &self,
-        ctx: &CompressAccounts,
+        authority: &AccountInfo,
     ) -> Result<ValidationResult, ProgramError> {
-        if ctx.owner.key == &self.owner {
+        if authority.key == &self.owner {
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -102,9 +101,9 @@ impl Asset {
     /// Validate the decompress lifecycle event.
     pub fn validate_decompress(
         &self,
-        ctx: &DecompressAccounts,
+        authority: &AccountInfo,
     ) -> Result<ValidationResult, ProgramError> {
-        if ctx.owner.key == &self.owner {
+        if authority.key == &self.owner {
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)

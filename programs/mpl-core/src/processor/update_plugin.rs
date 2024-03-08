@@ -42,6 +42,7 @@ pub(crate) fn update_plugin<'a>(
         &Plugin::load(ctx.accounts.asset, registry_record.offset)?,
         &asset,
         ctx.accounts.authority,
+        None,
         &registry_record.authority,
     )?;
     if result == ValidationResult::Rejected {
@@ -90,6 +91,7 @@ pub(crate) fn update_collection_plugin<'a>(
         &Plugin::load(ctx.accounts.collection, registry_record.offset)?,
         &asset,
         ctx.accounts.authority,
+        None,
         &registry_record.authority,
     )?;
     if result == ValidationResult::Rejected {

@@ -78,6 +78,14 @@ impl Collection {
         Ok(ValidationResult::Pass)
     }
 
+    /// Validate the burn lifecycle event.
+    pub fn validate_burn(
+        &self,
+        _authority: &AccountInfo,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
     /// Validate the update lifecycle event.
     pub fn validate_update(
         &self,
@@ -90,13 +98,20 @@ impl Collection {
         }
     }
 
-    /// Validate the burn lifecycle event.
-    pub fn validate_burn(&self, authority: &AccountInfo) -> Result<ValidationResult, ProgramError> {
-        if authority.key == &self.update_authority {
-            Ok(ValidationResult::Approved)
-        } else {
-            Ok(ValidationResult::Pass)
-        }
+    /// Validate the compress lifecycle event.
+    pub fn validate_compress(
+        &self,
+        _authority: &AccountInfo,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    /// Validate the decompress lifecycle event.
+    pub fn validate_decompress(
+        &self,
+        _authority: &AccountInfo,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
     }
 }
 

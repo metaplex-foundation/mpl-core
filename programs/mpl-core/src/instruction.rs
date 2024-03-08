@@ -164,21 +164,19 @@ pub(crate) enum MplAssetInstruction {
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     UpdateCollection(UpdateCollectionArgs),
 
-    /// Create a new mpl-core.
-    /// This function creates the initial mpl-core
+    /// Compress an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, signer, name="owner", desc = "The owner or delegate of the asset")]
+    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, optional, writable, signer, name="payer", desc = "The account receiving the storage fees")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Compress(CompressArgs),
 
-    /// Create a new mpl-core.
-    /// This function creates the initial mpl-core
+    /// Decompress an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, signer, name="owner", desc = "The owner or delegate of the asset")]
+    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]

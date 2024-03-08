@@ -144,7 +144,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
                         ctx.accounts
                             .owner
                             .unwrap_or(ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer)),
-                        &args,
+                        None,
                         &record.authority,
                     )?;
                     if result == ValidationResult::Rejected {

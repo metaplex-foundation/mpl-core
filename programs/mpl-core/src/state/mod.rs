@@ -14,7 +14,7 @@ mod collection;
 pub use collection::*;
 
 mod collect;
-pub use collect::*;
+pub(crate) use collect::*;
 
 mod update_authority;
 pub use update_authority::*;
