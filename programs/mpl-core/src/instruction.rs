@@ -125,7 +125,8 @@ pub(crate) enum MplAssetInstruction {
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
-    #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    #[account(4, optional, name="system_program", desc = "The system program")]
+    #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Burn(BurnArgs),
 
     /// Burn an mpl-core.

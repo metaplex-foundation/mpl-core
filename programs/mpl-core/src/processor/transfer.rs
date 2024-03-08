@@ -58,6 +58,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                 system_program,
             )?;
 
+            // Validate asset permissions.
             let (asset, _, plugin_registry) = validate_asset_permissions(
                 ctx.accounts.authority,
                 ctx.accounts.asset,
@@ -71,6 +72,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                 Plugin::validate_transfer,
             )?;
 
+            // Compress the asset and plugin registry into account space.
             let compression_proof = compress_into_account_space(
                 asset,
                 plugin_registry,
@@ -79,9 +81,11 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                 system_program,
             )?;
 
+            // Send the spl-noop event for indexing the compressed asset.
             compression_proof.wrap()
         }
         Key::Asset => {
+            // Validate asset permissions.
             let (mut asset, _, _) = validate_asset_permissions(
                 ctx.accounts.authority,
                 ctx.accounts.asset,

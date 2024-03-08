@@ -31,6 +31,7 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
         Key::Asset => {
             let (asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
 
+            // Validate asset permissions.
             let _ = validate_asset_permissions(
                 ctx.accounts.authority,
                 ctx.accounts.asset,
@@ -44,6 +45,7 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
                 Plugin::validate_compress,
             )?;
 
+            // Compress the asset and plugin registry into account space.
             let compression_proof = compress_into_account_space(
                 asset,
                 plugin_registry,
@@ -52,11 +54,10 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
                 ctx.accounts.system_program,
             )?;
 
-            compression_proof.wrap()?;
+            // Send the spl-noop event for indexing the compressed asset.
+            compression_proof.wrap()
         }
-        Key::HashedAsset => return Err(MplCoreError::AlreadyCompressed.into()),
-        _ => return Err(MplCoreError::IncorrectAccount.into()),
+        Key::HashedAsset => Err(MplCoreError::AlreadyCompressed.into()),
+        _ => Err(MplCoreError::IncorrectAccount.into()),
     }
-
-    Ok(())
 }

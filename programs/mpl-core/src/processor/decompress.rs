@@ -65,10 +65,10 @@ pub(crate) fn decompress<'a>(
                 Collection::validate_decompress,
                 Plugin::validate_decompress,
             )?;
-        }
-        Key::Asset => return Err(MplCoreError::AlreadyDecompressed.into()),
-        _ => return Err(MplCoreError::IncorrectAccount.into()),
-    }
 
-    Ok(())
+            Ok(())
+        }
+        Key::Asset => Err(MplCoreError::AlreadyDecompressed.into()),
+        _ => Err(MplCoreError::IncorrectAccount.into()),
+    }
 }

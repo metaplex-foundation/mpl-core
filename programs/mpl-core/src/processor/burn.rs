@@ -8,8 +8,8 @@ use crate::{
     plugins::{Plugin, PluginType},
     state::{Asset, Collection, CompressionProof, Key},
     utils::{
-        close_program_account, load_key, validate_asset_permissions,
-        validate_collection_permissions, verify_proof,
+        close_program_account, load_key, rebuild_account_state_from_proof_data,
+        validate_asset_permissions, validate_collection_permissions, verify_proof,
     },
 };
 
@@ -24,41 +24,53 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    if let Some(payer) = ctx.accounts.payer {
+    let payer = if let Some(payer) = ctx.accounts.payer {
         assert_signer(payer)?;
-    }
+        payer
+    } else {
+        ctx.accounts.authority
+    };
 
     match load_key(ctx.accounts.asset, 0)? {
         Key::HashedAsset => {
             let compression_proof = args
                 .compression_proof
                 .ok_or(MplCoreError::MissingCompressionProof)?;
-            let (asset, _) = verify_proof(ctx.accounts.asset, &compression_proof)?;
 
-            if ctx.accounts.authority.key != &asset.owner {
-                return Err(MplCoreError::InvalidAuthority.into());
-            }
+            let system_program = ctx
+                .accounts
+                .system_program
+                .ok_or(MplCoreError::MissingSystemProgram)?;
 
-            // TODO: Check delegates in compressed case.
+            // Verify the proof and rebuild Asset struct in account space.
+            let (asset, plugins) = verify_proof(ctx.accounts.asset, &compression_proof)?;
 
-            //asset.wrap()?;
-        }
-        Key::Asset => {
-            let _ = validate_asset_permissions(
-                ctx.accounts.authority,
+            // Use the data from the compression proof to rebuild the account.  Only needed for validation.
+            rebuild_account_state_from_proof_data(
+                asset,
+                plugins,
                 ctx.accounts.asset,
-                ctx.accounts.collection,
-                None,
-                Asset::check_burn,
-                Collection::check_burn,
-                PluginType::check_burn,
-                Asset::validate_burn,
-                Collection::validate_burn,
-                Plugin::validate_burn,
+                payer,
+                system_program,
             )?;
         }
+        Key::Asset => (),
         _ => return Err(MplCoreError::IncorrectAccount.into()),
     }
+
+    // Validate asset permissions.
+    let _ = validate_asset_permissions(
+        ctx.accounts.authority,
+        ctx.accounts.asset,
+        ctx.accounts.collection,
+        None,
+        Asset::check_burn,
+        Collection::check_burn,
+        PluginType::check_burn,
+        Asset::validate_burn,
+        Collection::validate_burn,
+        Plugin::validate_burn,
+    )?;
 
     process_burn(ctx.accounts.asset, ctx.accounts.authority)
 }
@@ -81,6 +93,7 @@ pub(crate) fn burn_collection<'a>(
         assert_signer(payer)?;
     }
 
+    // Validate collection permissions.
     let _ = validate_collection_permissions(
         ctx.accounts.authority,
         ctx.accounts.collection,
