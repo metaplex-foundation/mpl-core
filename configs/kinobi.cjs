@@ -51,6 +51,27 @@ kinobi.update(
     // create: {
     //   bytesCreatedOnChain: k.bytesFromAccount("assetAccount"),
     // },
+    transfer: {
+      arguments: {
+        compressionProof: {
+          defaultValue: k.noneValueNode()
+        }
+      }
+    },
+    addPlugin: {
+      arguments: {
+        initAuthority: {
+          defaultValue: k.noneValueNode()
+        }
+      }
+    },
+    addCollectionPlugin: {
+      arguments: {
+        initAuthority: {
+          defaultValue: k.noneValueNode()
+        }
+      }
+    }
   })
 );
 

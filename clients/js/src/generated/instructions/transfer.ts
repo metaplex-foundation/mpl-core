@@ -14,6 +14,7 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
+  none,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -59,7 +60,7 @@ export type TransferInstructionData = {
 };
 
 export type TransferInstructionDataArgs = {
-  compressionProof: OptionOrNullable<CompressionProofArgs>;
+  compressionProof?: OptionOrNullable<CompressionProofArgs>;
 };
 
 export function getTransferInstructionDataSerializer(): Serializer<
@@ -78,7 +79,11 @@ export function getTransferInstructionDataSerializer(): Serializer<
       ],
       { description: 'TransferInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 14 })
+    (value) => ({
+      ...value,
+      discriminator: 14,
+      compressionProof: value.compressionProof ?? none(),
+    })
   ) as Serializer<TransferInstructionDataArgs, TransferInstructionData>;
 }
 

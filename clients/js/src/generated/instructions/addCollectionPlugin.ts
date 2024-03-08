@@ -14,6 +14,7 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
+  none,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -60,7 +61,7 @@ export type AddCollectionPluginInstructionData = {
 
 export type AddCollectionPluginInstructionDataArgs = {
   plugin: PluginArgs;
-  initAuthority: OptionOrNullable<AuthorityArgs>;
+  initAuthority?: OptionOrNullable<AuthorityArgs>;
 };
 
 export function getAddCollectionPluginInstructionDataSerializer(): Serializer<
@@ -80,7 +81,11 @@ export function getAddCollectionPluginInstructionDataSerializer(): Serializer<
       ],
       { description: 'AddCollectionPluginInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 3 })
+    (value) => ({
+      ...value,
+      discriminator: 3,
+      initAuthority: value.initAuthority ?? none(),
+    })
   ) as Serializer<
     AddCollectionPluginInstructionDataArgs,
     AddCollectionPluginInstructionData
