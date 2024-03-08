@@ -820,6 +820,15 @@
           ]
         },
         {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
           "name": "logWrapper",
           "isMut": false,
           "isSigner": false,

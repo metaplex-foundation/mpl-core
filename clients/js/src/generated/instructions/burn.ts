@@ -44,6 +44,8 @@ export type BurnInstructionAccounts = {
   authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
+  /** The system program */
+  systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
   logWrapper?: PublicKey | Pda;
 };
@@ -110,8 +112,13 @@ export function burn(
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
-    logWrapper: {
+    systemProgram: {
       index: 4,
+      isWritable: false as boolean,
+      value: input.systemProgram ?? null,
+    },
+    logWrapper: {
+      index: 5,
       isWritable: false as boolean,
       value: input.logWrapper ?? null,
     },
