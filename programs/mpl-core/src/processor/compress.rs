@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
@@ -55,7 +55,11 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
             )?;
 
             // Send the spl-noop event for indexing the compressed asset.
-            compression_proof.wrap()
+            compression_proof.wrap()?;
+
+            // TODO Enable compression.
+            msg!("Error: Compression currently not available");
+            Err(MplCoreError::NotAvailable.into())
         }
         Key::HashedAsset => Err(MplCoreError::AlreadyCompressed.into()),
         _ => Err(MplCoreError::IncorrectAccount.into()),

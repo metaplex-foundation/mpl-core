@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
@@ -32,7 +32,9 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
         ctx.accounts.authority
     };
 
-    match load_key(ctx.accounts.asset, 0)? {
+    let key = load_key(ctx.accounts.asset, 0)?;
+
+    match key {
         Key::HashedAsset => {
             let compression_proof = args
                 .compression_proof
@@ -58,19 +60,38 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                 system_program,
             )?;
 
-            // Validate asset permissions.
-            let (asset, _, plugin_registry) = validate_asset_permissions(
-                ctx.accounts.authority,
-                ctx.accounts.asset,
-                ctx.accounts.collection,
-                Some(ctx.accounts.new_owner),
-                Asset::check_transfer,
-                Collection::check_transfer,
-                PluginType::check_transfer,
-                Asset::validate_transfer,
-                Collection::validate_transfer,
-                Plugin::validate_transfer,
-            )?;
+            // TODO Enable compressed transfer.
+            msg!("Error: Transferring compressed is currently not available");
+            return Err(MplCoreError::NotAvailable.into());
+        }
+        Key::Asset => (),
+        _ => return Err(MplCoreError::IncorrectAccount.into()),
+    }
+
+    // Validate asset permissions.
+    let (mut asset, _, plugin_registry) = validate_asset_permissions(
+        ctx.accounts.authority,
+        ctx.accounts.asset,
+        ctx.accounts.collection,
+        Some(ctx.accounts.new_owner),
+        Asset::check_transfer,
+        Collection::check_transfer,
+        PluginType::check_transfer,
+        Asset::validate_transfer,
+        Collection::validate_transfer,
+        Plugin::validate_transfer,
+    )?;
+
+    // Set the new owner.
+    asset.owner = *ctx.accounts.new_owner.key;
+
+    // Reserialize the account into correct format.
+    match key {
+        Key::HashedAsset => {
+            let system_program = ctx
+                .accounts
+                .system_program
+                .ok_or(MplCoreError::MissingSystemProgram)?;
 
             // Compress the asset and plugin registry into account space.
             let compression_proof = compress_into_account_space(
@@ -84,25 +105,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             // Send the spl-noop event for indexing the compressed asset.
             compression_proof.wrap()
         }
-        Key::Asset => {
-            // Validate asset permissions.
-            let (mut asset, _, _) = validate_asset_permissions(
-                ctx.accounts.authority,
-                ctx.accounts.asset,
-                ctx.accounts.collection,
-                Some(ctx.accounts.new_owner),
-                Asset::check_transfer,
-                Collection::check_transfer,
-                PluginType::check_transfer,
-                Asset::validate_transfer,
-                Collection::validate_transfer,
-                Plugin::validate_transfer,
-            )?;
-
-            // Set the new owner.
-            asset.owner = *ctx.accounts.new_owner.key;
-            asset.save(ctx.accounts.asset, 0)
-        }
-        _ => Err(MplCoreError::IncorrectAccount.into()),
+        Key::Asset => asset.save(ctx.accounts.asset, 0),
+        _ => unreachable!(),
     }
 }

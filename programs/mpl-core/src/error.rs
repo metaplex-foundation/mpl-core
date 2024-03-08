@@ -101,9 +101,9 @@ pub enum MplCoreError {
     #[error("Missing system program")]
     MissingSystemProgram,
 
-    /// 22 - Not implemented
-    #[error("Not implemented")]
-    NotImplemented,
+    /// 22 - Feature not available
+    #[error("Feature not available")]
+    NotAvailable,
 }
 
 impl PrintProgramError for MplCoreError {
