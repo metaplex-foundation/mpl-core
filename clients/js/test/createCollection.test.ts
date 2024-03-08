@@ -88,14 +88,17 @@ test('it can create a new asset with a collection', async (t) => {
   const umi = await createUmi();
   const { asset, collection} = await createAssetWithCollection(umi, {
   }, {
-    plugins: [plugin('Freeze', [{ frozen: false }])],
+    plugins: [plugin('UpdateDelegate', [{}])],
   })
 
   await assertCollection(t, umi, {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    plugins: [plugin('Freeze', [{ frozen: false }])]
+    plugins: [{
+      authority: authority('UpdateAuthority'),
+      plugin: plugin('UpdateDelegate', [{}])
+    }]
   })
 
   await assertAsset(t, umi, {

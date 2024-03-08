@@ -77,7 +77,7 @@ test('it can create a new asset in ledger state', async (t) => {
   await t.throwsAsync(result, { name: 'NotImplemented' });
 
   // Then an account was created with the correct data.
-  //const asset = await fetchHashedAsset(umi, assetAddress.publicKey);
+  // const asset = await fetchHashedAsset(umi, assetAddress.publicKey);
   // console.log(asset);
   // t.like(asset, <Asset>{
   //   publicKey: assetAddress.publicKey,

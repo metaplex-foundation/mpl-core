@@ -15,7 +15,7 @@ import {
   CollectionWithPlugins,
   AssetWithPlugins,
   UpdateAuthority,
-  Plugin,
+  PluginWithAuthority,
 } from '../src';
 
 export const createUmi = async () => (await basecreateUmi()).use(mplCore());
@@ -120,7 +120,7 @@ export const assertAsset = async (
     name?: string | RegExp;
     uri?: string | RegExp;
     // TODO replace with remapped PluginList type
-    plugins?: Plugin[]
+    plugins?: PluginWithAuthority[]
   }
 ) => {
   const assetAddress = publicKey(input.asset);
@@ -141,7 +141,7 @@ export const assertAsset = async (
     publicKey: assetAddress,
     owner,
     updateAuthority,
-    // TODO test plugins
+    plugins: input.plugins || [],
   });
 
 };
@@ -157,7 +157,7 @@ export const assertCollection = async (
     numMinted?: number;
     currentSize?: number;
     // TODO replace with remapped PluginList type
-    plugins?: Plugin[]
+    plugins?: PluginWithAuthority[]
   }
 ) => {
   const collectionAddress = publicKey(input.collection);
@@ -177,7 +177,7 @@ export const assertCollection = async (
     key: Key.Collection,
     publicKey: collectionAddress,
     updateAuthority,
-    // TODO test plugins
+    plugins: input.plugins || [],
   }
 
   if(numMinted !== undefined) {
