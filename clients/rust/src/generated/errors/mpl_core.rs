@@ -76,6 +76,12 @@ pub enum MplCoreError {
     /// 21 (0x15) - Missing new owner
     #[error("Missing new owner")]
     MissingNewOwner,
+    /// 22 (0x16) - Missing system program
+    #[error("Missing system program")]
+    MissingSystemProgram,
+    /// 23 (0x17) - Not implemented
+    #[error("Not implemented")]
+    NotImplemented,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

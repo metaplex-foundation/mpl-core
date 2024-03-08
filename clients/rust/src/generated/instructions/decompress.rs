@@ -16,7 +16,7 @@ pub struct Decompress {
     /// The collection to which the asset belongs
     pub collection: Option<solana_program::pubkey::Pubkey>,
     /// The owner or delegate of the asset
-    pub owner: solana_program::pubkey::Pubkey,
+    pub authority: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
     pub payer: Option<solana_program::pubkey::Pubkey>,
     /// The system program
@@ -53,7 +53,8 @@ impl Decompress {
             ));
         }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.owner, true,
+            self.authority,
+            true,
         ));
         if let Some(payer) = self.payer {
             accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
@@ -114,7 +115,7 @@ pub struct DecompressInstructionArgs {
 ///
 ///   0. `[writable]` asset
 ///   1. `[optional]` collection
-///   2. `[signer]` owner
+///   2. `[signer]` authority
 ///   3. `[writable, signer, optional]` payer
 ///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
 ///   5. `[optional]` log_wrapper
@@ -122,7 +123,7 @@ pub struct DecompressInstructionArgs {
 pub struct DecompressBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
-    owner: Option<solana_program::pubkey::Pubkey>,
+    authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
@@ -149,8 +150,8 @@ impl DecompressBuilder {
     }
     /// The owner or delegate of the asset
     #[inline(always)]
-    pub fn owner(&mut self, owner: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.owner = Some(owner);
+    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.authority = Some(authority);
         self
     }
     /// `[optional account]`
@@ -205,7 +206,7 @@ impl DecompressBuilder {
         let accounts = Decompress {
             asset: self.asset.expect("asset is not set"),
             collection: self.collection,
-            owner: self.owner.expect("owner is not set"),
+            authority: self.authority.expect("authority is not set"),
             payer: self.payer,
             system_program: self
                 .system_program
@@ -230,7 +231,7 @@ pub struct DecompressCpiAccounts<'a, 'b> {
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The owner or delegate of the asset
-    pub owner: &'b solana_program::account_info::AccountInfo<'a>,
+    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
@@ -248,7 +249,7 @@ pub struct DecompressCpi<'a, 'b> {
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The owner or delegate of the asset
-    pub owner: &'b solana_program::account_info::AccountInfo<'a>,
+    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
@@ -269,7 +270,7 @@ impl<'a, 'b> DecompressCpi<'a, 'b> {
             __program: program,
             asset: accounts.asset,
             collection: accounts.collection,
-            owner: accounts.owner,
+            authority: accounts.authority,
             payer: accounts.payer,
             system_program: accounts.system_program,
             log_wrapper: accounts.log_wrapper,
@@ -326,7 +327,7 @@ impl<'a, 'b> DecompressCpi<'a, 'b> {
             ));
         }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.owner.key,
+            *self.authority.key,
             true,
         ));
         if let Some(payer) = self.payer {
@@ -376,7 +377,7 @@ impl<'a, 'b> DecompressCpi<'a, 'b> {
         if let Some(collection) = self.collection {
             account_infos.push(collection.clone());
         }
-        account_infos.push(self.owner.clone());
+        account_infos.push(self.authority.clone());
         if let Some(payer) = self.payer {
             account_infos.push(payer.clone());
         }
@@ -402,7 +403,7 @@ impl<'a, 'b> DecompressCpi<'a, 'b> {
 ///
 ///   0. `[writable]` asset
 ///   1. `[optional]` collection
-///   2. `[signer]` owner
+///   2. `[signer]` authority
 ///   3. `[writable, signer, optional]` payer
 ///   4. `[]` system_program
 ///   5. `[optional]` log_wrapper
@@ -416,7 +417,7 @@ impl<'a, 'b> DecompressCpiBuilder<'a, 'b> {
             __program: program,
             asset: None,
             collection: None,
-            owner: None,
+            authority: None,
             payer: None,
             system_program: None,
             log_wrapper: None,
@@ -443,8 +444,11 @@ impl<'a, 'b> DecompressCpiBuilder<'a, 'b> {
     }
     /// The owner or delegate of the asset
     #[inline(always)]
-    pub fn owner(&mut self, owner: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.owner = Some(owner);
+    pub fn authority(
+        &mut self,
+        authority: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.authority = Some(authority);
         self
     }
     /// `[optional account]`
@@ -536,7 +540,7 @@ impl<'a, 'b> DecompressCpiBuilder<'a, 'b> {
 
             collection: self.instruction.collection,
 
-            owner: self.instruction.owner.expect("owner is not set"),
+            authority: self.instruction.authority.expect("authority is not set"),
 
             payer: self.instruction.payer,
 
@@ -559,7 +563,7 @@ struct DecompressCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,

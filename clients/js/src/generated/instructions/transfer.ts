@@ -46,6 +46,8 @@ export type TransferInstructionAccounts = {
   payer?: Signer;
   /** The new owner to which to transfer the asset */
   newOwner: PublicKey | Pda;
+  /** The system program */
+  systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
   logWrapper?: PublicKey | Pda;
 };
@@ -121,8 +123,13 @@ export function transfer(
       isWritable: false as boolean,
       value: input.newOwner ?? null,
     },
-    logWrapper: {
+    systemProgram: {
       index: 5,
+      isWritable: false as boolean,
+      value: input.systemProgram ?? null,
+    },
+    logWrapper: {
+      index: 6,
       isWritable: false as boolean,
       value: input.logWrapper ?? null,
     },
