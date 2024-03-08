@@ -73,6 +73,9 @@ pub enum MplCoreError {
     /// 20 (0x14) - Missing update authority
     #[error("Missing update authority")]
     MissingUpdateAuthority,
+    /// 21 (0x15) - Missing new owner
+    #[error("Missing new owner")]
+    MissingNewOwner,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {
