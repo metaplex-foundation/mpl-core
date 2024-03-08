@@ -1,20 +1,26 @@
 mod asset;
 pub use asset::*;
 
-mod hashed_asset;
-pub use hashed_asset::*;
-
-mod hashed_asset_schema;
-pub use hashed_asset_schema::*;
-
-mod traits;
-pub use traits::*;
+mod collect;
+pub(crate) use collect::*;
 
 mod collection;
 pub use collection::*;
 
-mod collect;
-pub use collect::*;
+mod compression_proof;
+pub use compression_proof::*;
+
+mod hashable_plugin_schema;
+pub use hashable_plugin_schema::*;
+
+mod hashed_asset_schema;
+pub use hashed_asset_schema::*;
+
+mod hashed_asset;
+pub use hashed_asset::*;
+
+mod traits;
+pub use traits::*;
 
 mod update_authority;
 pub use update_authority::*;
@@ -102,20 +108,4 @@ impl Key {
     pub fn get_initial_size() -> usize {
         1
     }
-}
-
-/// A simple struct to store the compression proof of an asset.
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct CompressionProof {
-    /// The owner of the asset.
-    pub owner: Pubkey, //32
-    /// The update authority of the asset.
-    pub update_authority: UpdateAuthority, //33
-    /// The name of the asset.
-    pub name: String, //4
-    /// The URI of the asset that points to the off-chain data.
-    pub uri: String, //4
-    /// The plugins for the asset.
-    pub plugins: Vec<HashablePluginSchema>, //4
 }

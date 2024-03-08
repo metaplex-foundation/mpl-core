@@ -38,7 +38,7 @@ export type DecompressInstructionAccounts = {
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
   /** The owner or delegate of the asset */
-  owner: Signer;
+  authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -82,7 +82,7 @@ export type DecompressInstructionArgs = DecompressInstructionDataArgs;
 
 // Instruction.
 export function decompress(
-  context: Pick<Context, 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: DecompressInstructionAccounts & DecompressInstructionArgs
 ): TransactionBuilder {
   // Program ID.
@@ -103,10 +103,10 @@ export function decompress(
       isWritable: false as boolean,
       value: input.collection ?? null,
     },
-    owner: {
+    authority: {
       index: 2,
       isWritable: false as boolean,
-      value: input.owner ?? null,
+      value: input.authority ?? null,
     },
     payer: {
       index: 3,
@@ -129,6 +129,9 @@ export function decompress(
   const resolvedArgs: DecompressInstructionArgs = { ...input };
 
   // Default values.
+  if (!resolvedAccounts.authority.value) {
+    resolvedAccounts.authority.value = context.identity;
+  }
   if (!resolvedAccounts.systemProgram.value) {
     resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
       'splSystem',

@@ -33,7 +33,7 @@ export type CompressInstructionAccounts = {
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
   /** The owner or delegate of the asset */
-  owner: Signer;
+  authority?: Signer;
   /** The account receiving the storage fees */
   payer?: Signer;
   /** The system program */
@@ -65,7 +65,7 @@ export function getCompressInstructionDataSerializer(): Serializer<
 
 // Instruction.
 export function compress(
-  context: Pick<Context, 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: CompressInstructionAccounts
 ): TransactionBuilder {
   // Program ID.
@@ -86,10 +86,10 @@ export function compress(
       isWritable: false as boolean,
       value: input.collection ?? null,
     },
-    owner: {
+    authority: {
       index: 2,
       isWritable: false as boolean,
-      value: input.owner ?? null,
+      value: input.authority ?? null,
     },
     payer: {
       index: 3,
@@ -109,6 +109,9 @@ export function compress(
   } satisfies ResolvedAccountsWithIndices;
 
   // Default values.
+  if (!resolvedAccounts.authority.value) {
+    resolvedAccounts.authority.value = context.identity;
+  }
   if (!resolvedAccounts.systemProgram.value) {
     resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
       'splSystem',

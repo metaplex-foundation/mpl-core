@@ -44,14 +44,17 @@ pub trait SolanaAccount: BorshSerialize + BorshDeserialize {
     }
 }
 
-/// A trait for assets that can be compressed and hashed.
+/// A trait for data that can be compressed.
 pub trait Compressible: BorshSerialize + BorshDeserialize {
     /// Get the hash of the compressed data.
     fn hash(&self) -> Result<[u8; 32], ProgramError> {
         let serialized_data = self.try_to_vec()?;
         Ok(keccak::hash(serialized_data.as_slice()).to_bytes())
     }
+}
 
+/// A trait for data that can be wrapped by the spl-noop program.
+pub trait Wrappable: BorshSerialize + BorshDeserialize {
     /// Write the data to ledger state by wrapping it in a noop instruction.
     fn wrap(&self) -> ProgramResult {
         let serialized_data = self.try_to_vec()?;

@@ -304,6 +304,32 @@ export class MissingNewOwnerError extends ProgramError {
 codeToErrorMap.set(0x15, MissingNewOwnerError);
 nameToErrorMap.set('MissingNewOwner', MissingNewOwnerError);
 
+/** MissingSystemProgram: Missing system program */
+export class MissingSystemProgramError extends ProgramError {
+  override readonly name: string = 'MissingSystemProgram';
+
+  readonly code: number = 0x16; // 22
+
+  constructor(program: Program, cause?: Error) {
+    super('Missing system program', program, cause);
+  }
+}
+codeToErrorMap.set(0x16, MissingSystemProgramError);
+nameToErrorMap.set('MissingSystemProgram', MissingSystemProgramError);
+
+/** NotImplemented: Not implemented */
+export class NotImplementedError extends ProgramError {
+  override readonly name: string = 'NotImplemented';
+
+  readonly code: number = 0x17; // 23
+
+  constructor(program: Program, cause?: Error) {
+    super('Not implemented', program, cause);
+  }
+}
+codeToErrorMap.set(0x17, NotImplementedError);
+nameToErrorMap.set('NotImplemented', NotImplementedError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

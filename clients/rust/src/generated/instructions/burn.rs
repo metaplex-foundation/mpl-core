@@ -19,6 +19,8 @@ pub struct Burn {
     pub authority: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
     pub payer: Option<solana_program::pubkey::Pubkey>,
+    /// The system program
+    pub system_program: Option<solana_program::pubkey::Pubkey>,
     /// The SPL Noop Program
     pub log_wrapper: Option<solana_program::pubkey::Pubkey>,
 }
@@ -36,7 +38,7 @@ impl Burn {
         args: BurnInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset, false,
         ));
@@ -56,6 +58,17 @@ impl Burn {
         ));
         if let Some(payer) = self.payer {
             accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_CORE_ID,
+                false,
+            ));
+        }
+        if let Some(system_program) = self.system_program {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                system_program,
+                false,
+            ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 crate::MPL_CORE_ID,
@@ -111,13 +124,15 @@ pub struct BurnInstructionArgs {
 ///   1. `[writable, optional]` collection
 ///   2. `[signer]` authority
 ///   3. `[writable, signer, optional]` payer
-///   4. `[optional]` log_wrapper
+///   4. `[optional]` system_program
+///   5. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct BurnBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
+    system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
     compression_proof: Option<CompressionProof>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
@@ -151,6 +166,16 @@ impl BurnBuilder {
     #[inline(always)]
     pub fn payer(&mut self, payer: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.payer = payer;
+        self
+    }
+    /// `[optional account]`
+    /// The system program
+    #[inline(always)]
+    pub fn system_program(
+        &mut self,
+        system_program: Option<solana_program::pubkey::Pubkey>,
+    ) -> &mut Self {
+        self.system_program = system_program;
         self
     }
     /// `[optional account]`
@@ -194,6 +219,7 @@ impl BurnBuilder {
             collection: self.collection,
             authority: self.authority.expect("authority is not set"),
             payer: self.payer,
+            system_program: self.system_program,
             log_wrapper: self.log_wrapper,
         };
         let args = BurnInstructionArgs {
@@ -214,6 +240,8 @@ pub struct BurnCpiAccounts<'a, 'b> {
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The system program
+    pub system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
@@ -230,6 +258,8 @@ pub struct BurnCpi<'a, 'b> {
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The system program
+    pub system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The arguments for the instruction.
@@ -248,6 +278,7 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
             collection: accounts.collection,
             authority: accounts.authority,
             payer: accounts.payer,
+            system_program: accounts.system_program,
             log_wrapper: accounts.log_wrapper,
             __args: args,
         }
@@ -285,7 +316,7 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset.key,
             false,
@@ -308,6 +339,17 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
         if let Some(payer) = self.payer {
             accounts.push(solana_program::instruction::AccountMeta::new(
                 *payer.key, true,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_CORE_ID,
+                false,
+            ));
+        }
+        if let Some(system_program) = self.system_program {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *system_program.key,
+                false,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -342,7 +384,7 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
         if let Some(collection) = self.collection {
@@ -351,6 +393,9 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
         account_infos.push(self.authority.clone());
         if let Some(payer) = self.payer {
             account_infos.push(payer.clone());
+        }
+        if let Some(system_program) = self.system_program {
+            account_infos.push(system_program.clone());
         }
         if let Some(log_wrapper) = self.log_wrapper {
             account_infos.push(log_wrapper.clone());
@@ -375,7 +420,8 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
 ///   1. `[writable, optional]` collection
 ///   2. `[signer]` authority
 ///   3. `[writable, signer, optional]` payer
-///   4. `[optional]` log_wrapper
+///   4. `[optional]` system_program
+///   5. `[optional]` log_wrapper
 pub struct BurnCpiBuilder<'a, 'b> {
     instruction: Box<BurnCpiBuilderInstruction<'a, 'b>>,
 }
@@ -388,6 +434,7 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
             collection: None,
             authority: None,
             payer: None,
+            system_program: None,
             log_wrapper: None,
             compression_proof: None,
             __remaining_accounts: Vec::new(),
@@ -427,6 +474,16 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
         payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
         self.instruction.payer = payer;
+        self
+    }
+    /// `[optional account]`
+    /// The system program
+    #[inline(always)]
+    pub fn system_program(
+        &mut self,
+        system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.system_program = system_program;
         self
     }
     /// `[optional account]`
@@ -500,6 +557,8 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
 
             payer: self.instruction.payer,
 
+            system_program: self.instruction.system_program,
+
             log_wrapper: self.instruction.log_wrapper,
             __args: args,
         };
@@ -516,6 +575,7 @@ struct BurnCpiBuilderInstruction<'a, 'b> {
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     compression_proof: Option<CompressionProof>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.

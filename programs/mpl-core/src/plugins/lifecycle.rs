@@ -4,10 +4,6 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::{
     error::MplCoreError,
-    processor::{
-        ApprovePluginAuthorityArgs, CompressArgs, CreateArgs, DecompressArgs,
-        RevokePluginAuthorityArgs,
-    },
     state::{Asset, Authority, Key},
 };
 
@@ -84,17 +80,17 @@ impl Plugin {
     pub(crate) fn validate_create(
         plugin: &Plugin,
         authority: &AccountInfo,
-        args: &CreateArgs,
+        _unused: Option<&AccountInfo>,
         authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => royalties.validate_create(authority, args, authorities),
-            Plugin::Freeze(freeze) => freeze.validate_create(authority, args, authorities),
-            Plugin::Burn(burn) => burn.validate_create(authority, args, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_create(authority, args, authorities),
+            Plugin::Royalties(royalties) => royalties.validate_create(authority, authorities),
+            Plugin::Freeze(freeze) => freeze.validate_create(authority, authorities),
+            Plugin::Burn(burn) => burn.validate_create(authority, authorities),
+            Plugin::Transfer(transfer) => transfer.validate_create(authority, authorities),
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_create(authority, args, authorities)
+                update_delegate.validate_create(authority, authorities)
             }
         }
     }
@@ -124,6 +120,7 @@ impl Plugin {
         plugin: &Plugin,
         asset: &Asset,
         authority: &AccountInfo,
+        _unused: Option<&AccountInfo>,
         authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
@@ -189,19 +186,17 @@ impl Plugin {
     pub(crate) fn validate_compress(
         plugin: &Plugin,
         authority: &AccountInfo,
-        args: &CompressArgs,
+        _unused: Option<&AccountInfo>,
         authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => {
-                royalties.validate_compress(authority, args, authorities)
-            }
-            Plugin::Freeze(freeze) => freeze.validate_compress(authority, args, authorities),
-            Plugin::Burn(burn) => burn.validate_compress(authority, args, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_compress(authority, args, authorities),
+            Plugin::Royalties(royalties) => royalties.validate_compress(authority, authorities),
+            Plugin::Freeze(freeze) => freeze.validate_compress(authority, authorities),
+            Plugin::Burn(burn) => burn.validate_compress(authority, authorities),
+            Plugin::Transfer(transfer) => transfer.validate_compress(authority, authorities),
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_compress(authority, args, authorities)
+                update_delegate.validate_compress(authority, authorities)
             }
         }
     }
@@ -210,21 +205,17 @@ impl Plugin {
     pub(crate) fn validate_decompress(
         plugin: &Plugin,
         authority: &AccountInfo,
-        args: &DecompressArgs,
+        _unused: Option<&AccountInfo>,
         authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => {
-                royalties.validate_decompress(authority, args, authorities)
-            }
-            Plugin::Freeze(freeze) => freeze.validate_decompress(authority, args, authorities),
-            Plugin::Burn(burn) => burn.validate_decompress(authority, args, authorities),
-            Plugin::Transfer(transfer) => {
-                transfer.validate_decompress(authority, args, authorities)
-            }
+            Plugin::Royalties(royalties) => royalties.validate_decompress(authority, authorities),
+            Plugin::Freeze(freeze) => freeze.validate_decompress(authority, authorities),
+            Plugin::Burn(burn) => burn.validate_decompress(authority, authorities),
+            Plugin::Transfer(transfer) => transfer.validate_decompress(authority, authorities),
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_decompress(authority, args, authorities)
+                update_delegate.validate_decompress(authority, authorities)
             }
         }
     }
@@ -234,21 +225,19 @@ impl Plugin {
     pub(crate) fn validate_add_plugin_authority(
         plugin: &Plugin,
         authority: &AccountInfo,
-        args: &ApprovePluginAuthorityArgs,
+        _unused: Option<&AccountInfo>,
         authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
-                royalties.validate_add_authority(authority, args, authorities)
+                royalties.validate_add_authority(authority, authorities)
             }
-            Plugin::Freeze(freeze) => freeze.validate_add_authority(authority, args, authorities),
-            Plugin::Burn(burn) => burn.validate_add_authority(authority, args, authorities),
-            Plugin::Transfer(transfer) => {
-                transfer.validate_add_authority(authority, args, authorities)
-            }
+            Plugin::Freeze(freeze) => freeze.validate_add_authority(authority, authorities),
+            Plugin::Burn(burn) => burn.validate_add_authority(authority, authorities),
+            Plugin::Transfer(transfer) => transfer.validate_add_authority(authority, authorities),
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_add_authority(authority, args, authorities)
+                update_delegate.validate_add_authority(authority, authorities)
             }
         }
     }
@@ -258,23 +247,21 @@ impl Plugin {
     pub(crate) fn validate_remove_plugin_authority(
         plugin: &Plugin,
         authority: &AccountInfo,
-        args: &RevokePluginAuthorityArgs,
+        _unused: Option<&AccountInfo>,
         authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
-                royalties.validate_remove_authority(authority, args, authorities)
+                royalties.validate_remove_authority(authority, authorities)
             }
-            Plugin::Freeze(freeze) => {
-                freeze.validate_remove_authority(authority, args, authorities)
-            }
-            Plugin::Burn(burn) => burn.validate_remove_authority(authority, args, authorities),
+            Plugin::Freeze(freeze) => freeze.validate_remove_authority(authority, authorities),
+            Plugin::Burn(burn) => burn.validate_remove_authority(authority, authorities),
             Plugin::Transfer(transfer) => {
-                transfer.validate_remove_authority(authority, args, authorities)
+                transfer.validate_remove_authority(authority, authorities)
             }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_remove_authority(authority, args, authorities)
+                update_delegate.validate_remove_authority(authority, authorities)
             }
         }
     }
@@ -298,7 +285,6 @@ pub(crate) trait PluginValidation {
     fn validate_create(
         &self,
         authority: &AccountInfo,
-        args: &CreateArgs,
         authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError>;
 
@@ -349,7 +335,6 @@ pub(crate) trait PluginValidation {
     fn validate_compress(
         &self,
         authority: &AccountInfo,
-        args: &CompressArgs,
         authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError>;
 
@@ -357,7 +342,6 @@ pub(crate) trait PluginValidation {
     fn validate_decompress(
         &self,
         authority: &AccountInfo,
-        args: &DecompressArgs,
         authorities: &Authority,
     ) -> Result<ValidationResult, ProgramError>;
 
@@ -365,7 +349,6 @@ pub(crate) trait PluginValidation {
     fn validate_add_authority(
         &self,
         _authority: &AccountInfo,
-        _args: &ApprovePluginAuthorityArgs,
         _authorities: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -375,7 +358,6 @@ pub(crate) trait PluginValidation {
     fn validate_remove_authority(
         &self,
         _authority: &AccountInfo,
-        _args: &RevokePluginAuthorityArgs,
         _authorities: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)

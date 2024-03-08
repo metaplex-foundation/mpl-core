@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke,
     program_memory::sol_memcpy, rent::Rent, system_instruction, system_program, sysvar::Sysvar,
 };
 
@@ -12,7 +12,7 @@ use crate::{
         create_meta_idempotent, initialize_plugin, CheckResult, Plugin, PluginType,
         ValidationResult,
     },
-    state::{Asset, Compressible, DataState, HashedAsset, Key, UpdateAuthority, COLLECT_AMOUNT},
+    state::{Asset, DataState, Key, UpdateAuthority, COLLECT_AMOUNT},
     utils::fetch_core_data,
 };
 
@@ -69,9 +69,8 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
     let serialized_data = match args.data_state {
         DataState::AccountState => serialized_data,
         DataState::LedgerState => {
-            new_asset.wrap()?;
-            let hashed_asset = HashedAsset::new(new_asset.hash()?);
-            hashed_asset.try_to_vec()?
+            msg!("Error: Minting compressed is not implemented");
+            return Err(MplCoreError::NotImplemented.into());
         }
     };
 
@@ -144,7 +143,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
                         ctx.accounts
                             .owner
                             .unwrap_or(ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer)),
-                        &args,
+                        None,
                         &record.authority,
                     )?;
                     if result == ValidationResult::Rejected {

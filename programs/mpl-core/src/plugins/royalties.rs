@@ -1,10 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{
-    processor::{CompressArgs, CreateArgs, DecompressArgs},
-    state::Authority,
-};
+use crate::state::Authority;
 
 use super::{PluginValidation, ValidationResult};
 
@@ -41,7 +38,6 @@ impl PluginValidation for Royalties {
     fn validate_create(
         &self,
         _authority_info: &AccountInfo,
-        _args: &CreateArgs,
         _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -93,7 +89,6 @@ impl PluginValidation for Royalties {
     fn validate_compress(
         &self,
         _authority_info: &AccountInfo,
-        _args: &CompressArgs,
         _authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -102,7 +97,6 @@ impl PluginValidation for Royalties {
     fn validate_decompress(
         &self,
         _authority_info: &AccountInfo,
-        _args: &DecompressArgs,
         _authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)

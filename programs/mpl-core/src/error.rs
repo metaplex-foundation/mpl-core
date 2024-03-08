@@ -96,6 +96,14 @@ pub enum MplCoreError {
     /// 20 - Missing new owner
     #[error("Missing new owner")]
     MissingNewOwner,
+
+    /// 21 - Missing system program
+    #[error("Missing system program")]
+    MissingSystemProgram,
+
+    /// 22 - Not implemented
+    #[error("Not implemented")]
+    NotImplemented,
 }
 
 impl PrintProgramError for MplCoreError {

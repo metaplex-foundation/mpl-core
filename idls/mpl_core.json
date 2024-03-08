@@ -811,6 +811,15 @@
           ]
         },
         {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
           "name": "logWrapper",
           "isMut": false,
           "isSigner": false,
@@ -927,6 +936,15 @@
           "isSigner": false,
           "docs": [
             "The new owner to which to transfer the asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The system program"
           ]
         },
         {
@@ -1118,7 +1136,7 @@
           ]
         },
         {
-          "name": "owner",
+          "name": "authority",
           "isMut": false,
           "isSigner": true,
           "docs": [
@@ -1186,7 +1204,7 @@
           ]
         },
         {
-          "name": "owner",
+          "name": "authority",
           "isMut": false,
           "isSigner": true,
           "docs": [
@@ -2266,6 +2284,16 @@
       "code": 21,
       "name": "MissingNewOwner",
       "msg": "Missing new owner"
+    },
+    {
+      "code": 22,
+      "name": "MissingSystemProgram",
+      "msg": "Missing system program"
+    },
+    {
+      "code": 23,
+      "name": "NotImplemented",
+      "msg": "Not implemented"
     }
   ],
   "metadata": {
