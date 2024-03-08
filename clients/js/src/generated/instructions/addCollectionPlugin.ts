@@ -8,6 +8,8 @@
 
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -17,6 +19,7 @@ import {
 import {
   Serializer,
   mapSerializer,
+  option,
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
@@ -25,7 +28,14 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import { Plugin, PluginArgs, getPluginSerializer } from '../types';
+import {
+  Authority,
+  AuthorityArgs,
+  Plugin,
+  PluginArgs,
+  getAuthoritySerializer,
+  getPluginSerializer,
+} from '../types';
 
 // Accounts.
 export type AddCollectionPluginInstructionAccounts = {
@@ -45,9 +55,13 @@ export type AddCollectionPluginInstructionAccounts = {
 export type AddCollectionPluginInstructionData = {
   discriminator: number;
   plugin: Plugin;
+  initAuthority: Option<Authority>;
 };
 
-export type AddCollectionPluginInstructionDataArgs = { plugin: PluginArgs };
+export type AddCollectionPluginInstructionDataArgs = {
+  plugin: PluginArgs;
+  initAuthority: OptionOrNullable<AuthorityArgs>;
+};
 
 export function getAddCollectionPluginInstructionDataSerializer(): Serializer<
   AddCollectionPluginInstructionDataArgs,
@@ -62,6 +76,7 @@ export function getAddCollectionPluginInstructionDataSerializer(): Serializer<
       [
         ['discriminator', u8()],
         ['plugin', getPluginSerializer()],
+        ['initAuthority', option(getAuthoritySerializer())],
       ],
       { description: 'AddCollectionPluginInstructionData' }
     ),

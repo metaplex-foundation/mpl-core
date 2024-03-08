@@ -50,6 +50,7 @@ test('it can remove an authority from a plugin', async (t) => {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
     },
+    initAuthority: null
   })
     .append(
       approvePluginAuthority(umi, {
@@ -168,6 +169,7 @@ test('it can remove the default authority from a plugin to make it immutable', a
       __kind: 'Freeze',
       fields: [{ frozen: false }],
     },
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   await approvePluginAuthority(umi, {
@@ -230,6 +232,7 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
     plugin: plugin('Freeze', [{ frozen: false }]),
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   await approvePluginAuthority(umi, {
@@ -308,6 +311,7 @@ test('it can remove a owner authority from a plugin with other authority', async
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
     plugin: plugin('Freeze', [{ frozen: false }]),
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   await approvePluginAuthority(umi, {
@@ -384,6 +388,7 @@ test('it cannot remove a none authority from a plugin', async (t) => {
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
     plugin: plugin('Freeze', [{ frozen: false }]),
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   await approvePluginAuthority(umi, {

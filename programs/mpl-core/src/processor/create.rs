@@ -100,7 +100,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
     );
 
     if args.data_state == DataState::AccountState {
-        create_meta_idempotent(
+        create_meta_idempotent::<Asset>(
             ctx.accounts.asset,
             ctx.accounts.payer,
             ctx.accounts.system_program,
@@ -109,7 +109,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
         for plugin in &args.plugins {
             initialize_plugin::<Asset>(
                 plugin,
-                &plugin.default_authority(),
+                &plugin.manager(),
                 ctx.accounts.asset,
                 ctx.accounts.payer,
                 ctx.accounts.system_program,

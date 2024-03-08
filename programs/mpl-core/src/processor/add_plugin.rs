@@ -5,13 +5,15 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use crate::{
     instruction::accounts::{AddCollectionPluginAccounts, AddPluginAccounts},
     plugins::{create_meta_idempotent, initialize_plugin, Plugin},
-    state::{Asset, Collection},
+    state::{Asset, Authority, Collection, DataBlob, SolanaAccount},
+    utils::resolve_payer,
 };
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct AddPluginArgs {
     plugin: Plugin,
+    init_authority: Option<Authority>,
 }
 
 pub(crate) fn add_plugin<'a>(
@@ -22,33 +24,22 @@ pub(crate) fn add_plugin<'a>(
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    let payer = match ctx.accounts.payer {
-        Some(payer) => {
-            assert_signer(payer)?;
-            payer
-        }
-        None => ctx.accounts.authority,
-    };
+    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
 
-    let _default_auth = args.plugin.default_authority();
-
-    create_meta_idempotent(ctx.accounts.asset, payer, ctx.accounts.system_program)?;
-
-    initialize_plugin::<Asset>(
-        &args.plugin,
-        &args.plugin.default_authority(),
+    process_add_plugin::<Asset>(
         ctx.accounts.asset,
         payer,
         ctx.accounts.system_program,
-    )?;
-
-    process_add_plugin()
+        &args.plugin,
+        &args.init_authority.unwrap_or(args.plugin.manager()),
+    )
 }
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct AddCollectionPluginArgs {
     plugin: Plugin,
+    init_authority: Option<Authority>,
 }
 
 pub(crate) fn add_collection_plugin<'a>(
@@ -59,30 +50,24 @@ pub(crate) fn add_collection_plugin<'a>(
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    let payer = match ctx.accounts.payer {
-        Some(payer) => {
-            assert_signer(payer)?;
-            payer
-        }
-        None => ctx.accounts.authority,
-    };
+    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
 
-    let _default_auth = args.plugin.default_authority();
-
-    create_meta_idempotent(ctx.accounts.collection, payer, ctx.accounts.system_program)?;
-
-    initialize_plugin::<Collection>(
-        &args.plugin,
-        &args.plugin.default_authority(),
+    process_add_plugin::<Collection>(
         ctx.accounts.collection,
         payer,
         ctx.accounts.system_program,
-    )?;
-
-    process_add_plugin()
+        &args.plugin,
+        &args.init_authority.unwrap_or(args.plugin.manager()),
+    )
 }
 
-//TODO
-fn process_add_plugin() -> ProgramResult {
-    Ok(())
+fn process_add_plugin<'a, T: DataBlob + SolanaAccount>(
+    account: &AccountInfo<'a>,
+    payer: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+    plugin: &Plugin,
+    authority: &Authority,
+) -> ProgramResult {
+    create_meta_idempotent::<T>(account, payer, system_program)?;
+    initialize_plugin::<T>(plugin, authority, account, payer, system_program)
 }

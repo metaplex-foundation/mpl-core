@@ -10,7 +10,8 @@ use crate::{
     plugins::{Plugin, PluginType, RegistryRecord},
     state::{Asset, Collection, DataBlob, SolanaAccount, UpdateAuthority},
     utils::{
-        resize_or_reallocate_account, validate_asset_permissions, validate_collection_permissions,
+        resize_or_reallocate_account, resolve_payer, validate_asset_permissions,
+        validate_collection_permissions,
     },
 };
 
@@ -27,13 +28,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    let payer = match ctx.accounts.payer {
-        Some(payer) => {
-            assert_signer(payer)?;
-            payer
-        }
-        None => ctx.accounts.authority,
-    };
+    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
 
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
         ctx.accounts.authority,
@@ -151,13 +146,7 @@ pub(crate) fn update_collection<'a>(
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    let payer = match ctx.accounts.payer {
-        Some(payer) => {
-            assert_signer(payer)?;
-            payer
-        }
-        None => ctx.accounts.authority,
-    };
+    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
 
     let (mut asset, plugin_header, plugin_registry) = validate_collection_permissions(
         ctx.accounts.authority,

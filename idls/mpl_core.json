@@ -1537,6 +1537,14 @@
             "type": {
               "defined": "Plugin"
             }
+          },
+          {
+            "name": "initAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
           }
         ]
       }
@@ -1550,6 +1558,14 @@
             "name": "plugin",
             "type": {
               "defined": "Plugin"
+            }
+          },
+          {
+            "name": "initAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
             }
           }
         ]

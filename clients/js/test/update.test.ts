@@ -95,6 +95,7 @@ test('it can update an asset with plugins to be larger', async (t) => {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
     },
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   await update(umi, {
@@ -158,6 +159,7 @@ test('it can update an asset with plugins to be smaller', async (t) => {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
     },
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   await update(umi, {

@@ -77,7 +77,7 @@ pub(crate) fn create_collection<'a>(
 
     drop(serialized_data);
 
-    create_meta_idempotent(
+    create_meta_idempotent::<Collection>(
         ctx.accounts.collection,
         ctx.accounts.payer,
         ctx.accounts.system_program,
@@ -86,7 +86,7 @@ pub(crate) fn create_collection<'a>(
     for plugin in args.plugins {
         initialize_plugin::<Collection>(
             &plugin,
-            &plugin.default_authority(),
+            &plugin.manager(),
             ctx.accounts.collection,
             ctx.accounts.payer,
             ctx.accounts.system_program,

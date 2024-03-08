@@ -10,6 +10,7 @@ import {
   PluginType,
   addCollectionPlugin,
   addPlugin,
+  authority,
   create,
   createCollection,
   fetchAsset,
@@ -50,7 +51,8 @@ test('it can add a plugin to an asset', async (t) => {
     plugin: {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
-    }
+    },
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -78,6 +80,75 @@ test('it can add a plugin to an asset', async (t) => {
     plugins: [
       {
         authority: { __kind: 'Owner' },
+        plugin: {
+          __kind: 'Freeze',
+          fields: [{ frozen: false }],
+        },
+      },
+    ],
+  });
+});
+
+test('it can add a plugin to an asset with a different authority than the default', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+  const delegateAddress = generateSigner(umi);
+
+  // When we create a new account.
+  await create(umi, {
+    dataState: DataState.AccountState,
+    asset: assetAddress,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+    plugins: [],
+  }).sendAndConfirm(umi);
+
+  // Then an account was created with the correct data.
+  const asset = await fetchAsset(umi, assetAddress.publicKey);
+  // console.log("Account State:", asset);
+  t.like(asset, <Asset>{
+    publicKey: assetAddress.publicKey,
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    owner: umi.identity.publicKey,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+  });
+
+  await addPlugin(umi, {
+    asset: assetAddress.publicKey,
+    plugin: {
+      __kind: 'Freeze',
+      fields: [{ frozen: false }],
+    },
+    initAuthority: authority('Pubkey', { address: delegateAddress.publicKey }),
+  }).sendAndConfirm(umi);
+
+  const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
+  // console.log(JSON.stringify(asset1, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
+  t.like(asset1, <AssetWithPlugins>{
+    publicKey: assetAddress.publicKey,
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    owner: umi.identity.publicKey,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+    pluginHeader: {
+      key: 3,
+      pluginRegistryOffset: BigInt(120),
+    },
+    pluginRegistry: {
+      key: 4,
+      registry: [
+        {
+          pluginType: 2,
+          offset: BigInt(118),
+          authority: authority('Pubkey', { address: delegateAddress.publicKey })
+        },
+      ],
+    },
+    plugins: [
+      {
+        authority: authority('Pubkey', { address: delegateAddress.publicKey }),
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],
@@ -115,7 +186,8 @@ test('it can add a plugin to a collection', async (t) => {
     plugin: {
       __kind: 'Freeze',
       fields: [{ frozen: false }],
-    }
+    },
+    initAuthority: null
   }).sendAndConfirm(umi);
 
   const asset1 = await fetchCollectionWithPlugins(umi, collectionAddress.publicKey);

@@ -130,13 +130,14 @@ test('it can create a new asset with a collection with collection delegate', asy
   await addCollectionPlugin(umi, {
     collection: collectionAddress.publicKey,
     plugin: plugin('UpdateDelegate', [{}]),
+    initAuthority: null
   }).sendAndConfirm(umi);
-  
-await approveCollectionPluginAuthority(umi, {
-  collection: collectionAddress.publicKey,
-  pluginType: PluginType.UpdateDelegate,
-  newAuthority: authority('Pubkey', { address: delegate.publicKey}),
-}).sendAndConfirm(umi);
+
+  await approveCollectionPluginAuthority(umi, {
+    collection: collectionAddress.publicKey,
+    pluginType: PluginType.UpdateDelegate,
+    newAuthority: authority('Pubkey', { address: delegate.publicKey }),
+  }).sendAndConfirm(umi);
 
 
   // When we create a new account.
