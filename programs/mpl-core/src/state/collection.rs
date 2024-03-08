@@ -71,7 +71,10 @@ impl Collection {
     }
 
     /// Validate the transfer lifecycle event.
-    pub fn validate_transfer(&self) -> Result<ValidationResult, ProgramError> {
+    pub fn validate_transfer(
+        &self,
+        _authority: &AccountInfo,
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 

@@ -291,6 +291,19 @@ export class MissingUpdateAuthorityError extends ProgramError {
 codeToErrorMap.set(0x14, MissingUpdateAuthorityError);
 nameToErrorMap.set('MissingUpdateAuthority', MissingUpdateAuthorityError);
 
+/** MissingNewOwner: Missing new owner */
+export class MissingNewOwnerError extends ProgramError {
+  override readonly name: string = 'MissingNewOwner';
+
+  readonly code: number = 0x15; // 21
+
+  constructor(program: Program, cause?: Error) {
+    super('Missing new owner', program, cause);
+  }
+}
+codeToErrorMap.set(0x15, MissingNewOwnerError);
+nameToErrorMap.set('MissingNewOwner', MissingNewOwnerError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

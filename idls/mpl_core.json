@@ -2270,6 +2270,11 @@
       "code": 20,
       "name": "MissingUpdateAuthority",
       "msg": "Missing update authority"
+    },
+    {
+      "code": 21,
+      "name": "MissingNewOwner",
+      "msg": "Missing new owner"
     }
   ],
   "metadata": {
