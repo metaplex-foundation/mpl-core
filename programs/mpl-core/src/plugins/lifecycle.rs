@@ -382,23 +382,20 @@ pub(crate) trait PluginValidation {
     }
 }
 
-pub(crate) fn validate_plugin_checks<'a, F>(
+pub(crate) fn validate_plugin_checks<'a>(
     key: Key,
     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &AccountInfo<'a>,
     new_owner: Option<&AccountInfo>,
     asset: &AccountInfo<'a>,
     collection: Option<&AccountInfo<'a>>,
-    validate_fp: F,
-) -> Result<bool, ProgramError>
-where
-    F: Fn(
+    validate_fp: fn(
         &Plugin,
         &AccountInfo<'a>,
         Option<&AccountInfo>,
         &Authority,
     ) -> Result<ValidationResult, ProgramError>,
-{
+) -> Result<bool, ProgramError> {
     for (_, (check_key, check_result, registry_record)) in checks {
         if *check_key == key
             && matches!(
