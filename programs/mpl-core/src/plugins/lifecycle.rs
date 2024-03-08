@@ -4,7 +4,7 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::{
     error::MplCoreError,
-    state::{Asset, Authority, Key},
+    state::{Authority, CoreAsset, Key},
 };
 
 use super::{Plugin, PluginType, RegistryRecord};
@@ -116,9 +116,9 @@ impl Plugin {
 
     /// Route the validation of the update_plugin action to the appropriate plugin.
     /// There is no check for updating a plugin because the plugin itself MUST validate the change.
-    pub(crate) fn validate_update_plugin(
+    pub(crate) fn validate_update_plugin<T: CoreAsset>(
         plugin: &Plugin,
-        asset: &Asset,
+        core_asset: &T,
         authority: &AccountInfo,
         _unused: Option<&AccountInfo>,
         authorities: &Authority,
@@ -126,15 +126,17 @@ impl Plugin {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
-                royalties.validate_update_plugin(asset, authority, authorities)
+                royalties.validate_update_plugin(core_asset, authority, authorities)
             }
-            Plugin::Freeze(freeze) => freeze.validate_update_plugin(asset, authority, authorities),
-            Plugin::Burn(burn) => burn.validate_update_plugin(asset, authority, authorities),
+            Plugin::Freeze(freeze) => {
+                freeze.validate_update_plugin(core_asset, authority, authorities)
+            }
+            Plugin::Burn(burn) => burn.validate_update_plugin(core_asset, authority, authorities),
             Plugin::Transfer(transfer) => {
-                transfer.validate_update_plugin(asset, authority, authorities)
+                transfer.validate_update_plugin(core_asset, authority, authorities)
             }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_update_plugin(asset, authority, authorities)
+                update_delegate.validate_update_plugin(core_asset, authority, authorities)
             }
         }
     }
@@ -296,14 +298,14 @@ pub(crate) trait PluginValidation {
     ) -> Result<ValidationResult, ProgramError>;
 
     /// Validate the update_plugin lifecycle action.
-    fn validate_update_plugin(
+    fn validate_update_plugin<T: CoreAsset>(
         &self,
-        asset: &Asset,
+        core_asset: &T,
         authority_info: &AccountInfo,
         authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
-        if (authority_info.key == &asset.owner && authority == &Authority::Owner)
-            || (authority_info.key == &asset.update_authority.key()
+        if (authority_info.key == core_asset.owner() && authority == &Authority::Owner)
+            || (authority_info.key == &core_asset.update_authority().key()
                 && authority == &Authority::UpdateAuthority)
             || authority
                 == (&Authority::Pubkey {

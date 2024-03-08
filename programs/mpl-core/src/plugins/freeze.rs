@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
-use crate::state::{Asset, Authority, DataBlob};
+use crate::state::{Authority, CoreAsset, DataBlob};
 
 use super::{PluginValidation, ValidationResult};
 
@@ -54,21 +54,21 @@ impl PluginValidation for Freeze {
         Ok(ValidationResult::Pass)
     }
 
-    fn validate_update_plugin(
+    fn validate_update_plugin<T: CoreAsset>(
         &self,
-        asset: &Asset,
+        core_asset: &T,
         authority_info: &AccountInfo,
         authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         // The owner can't update the freeze status.
-        if (authority_info.key != &asset.owner
-            && (authority_info.key == &asset.update_authority.key()
+        if (authority_info.key != core_asset.owner()
+            && (authority_info.key == &core_asset.update_authority().key()
                 && authority == (&Authority::UpdateAuthority))
             || authority == (&Authority::Pubkey {
                 address: *authority_info.key,
             }))
             // Unless the owner is the only authority.
-            || (authority_info.key == &asset.owner
+            || (authority_info.key == core_asset.owner()
                 && authority == (&Authority::Owner))
         {
             Ok(ValidationResult::Approved)

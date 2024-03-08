@@ -6,7 +6,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionPluginAccounts, UpdatePluginAccounts},
     plugins::{Plugin, PluginType, ValidationResult},
-    state::Key,
+    state::{Asset, Collection, Key},
     utils::{fetch_core_data, load_key},
 };
 
@@ -34,7 +34,7 @@ pub(crate) fn update_plugin<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    let (asset, _, plugin_registry) = fetch_core_data(ctx.accounts.asset)?;
+    let (asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
     let plugin_registry = plugin_registry.ok_or(MplCoreError::PluginsNotInitialized)?;
 
     let plugin_type: PluginType = (&args.plugin).into();
@@ -83,7 +83,7 @@ pub(crate) fn update_collection_plugin<'a>(
         assert_signer(payer)?;
     }
 
-    let (asset, _, plugin_registry) = fetch_core_data(ctx.accounts.collection)?;
+    let (collection, _, plugin_registry) = fetch_core_data::<Collection>(ctx.accounts.collection)?;
     let plugin_registry = plugin_registry.ok_or(MplCoreError::PluginsNotInitialized)?;
 
     let plugin_type: PluginType = (&args.plugin).into();
@@ -95,7 +95,7 @@ pub(crate) fn update_collection_plugin<'a>(
 
     let result = Plugin::validate_update_plugin(
         &Plugin::load(ctx.accounts.collection, registry_record.offset)?,
-        &asset,
+        &collection,
         ctx.accounts.authority,
         None,
         &registry_record.authority,
