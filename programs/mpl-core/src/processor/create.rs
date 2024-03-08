@@ -70,7 +70,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
         DataState::AccountState => serialized_data,
         DataState::LedgerState => {
             // TODO Enable minting compressed.
-            msg!("Error: Minting compressed currently not available");
+            msg!("Error: Minting compressed is currently not available");
             return Err(MplCoreError::NotAvailable.into());
         }
     };

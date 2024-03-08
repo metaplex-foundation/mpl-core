@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
@@ -8,8 +8,8 @@ use crate::{
         RevokeCollectionPluginAuthorityAccounts, RevokePluginAuthorityAccounts,
     },
     plugins::{revoke_authority_on_plugin, PluginHeader, PluginRegistry, PluginType},
-    state::{Asset, Authority, Collection},
-    utils::{fetch_core_data, resolve_payer, resolve_to_authority},
+    state::{Asset, Authority, Collection, Key},
+    utils::{fetch_core_data, load_key, resolve_payer, resolve_to_authority},
 };
 
 #[repr(C)]
@@ -27,6 +27,11 @@ pub(crate) fn revoke_plugin_authority<'a>(
     // Guards.
     assert_signer(ctx.accounts.authority)?;
     let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+
+    if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
+        msg!("Error: Revoke plugin authority for compressed is not available");
+        return Err(MplCoreError::NotAvailable.into());
+    }
 
     let (asset, plugin_header, mut plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
 

@@ -1,12 +1,13 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
+    error::MplCoreError,
     instruction::accounts::{AddCollectionPluginAccounts, AddPluginAccounts},
     plugins::{create_meta_idempotent, initialize_plugin, Plugin},
-    state::{Asset, Authority, Collection, DataBlob, SolanaAccount},
-    utils::resolve_payer,
+    state::{Asset, Authority, Collection, DataBlob, Key, SolanaAccount},
+    utils::{load_key, resolve_payer},
 };
 
 #[repr(C)]
@@ -25,6 +26,11 @@ pub(crate) fn add_plugin<'a>(
     // Guards.
     assert_signer(ctx.accounts.authority)?;
     let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+
+    if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
+        msg!("Error: Adding plugin to compressed is not available");
+        return Err(MplCoreError::NotAvailable.into());
+    }
 
     process_add_plugin::<Asset>(
         ctx.accounts.asset,
