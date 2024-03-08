@@ -1,4 +1,4 @@
-import { generateSigner } from '@metaplex-foundation/umi';
+import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   Asset,
@@ -44,7 +44,8 @@ test('it can decompress a previously compressed asset as the owner', async (t) =
   // And when we compress the asset.
   await compress(umi, {
     asset: assetAddress.publicKey,
-    owner: umi.identity,
+    authority: umi.identity,
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
   }).sendAndConfirm(umi);
 
   // And the asset is now compressed as a hashed asset.
@@ -67,7 +68,7 @@ test('it can decompress a previously compressed asset as the owner', async (t) =
   // And when we decompress the asset.
   await decompress(umi, {
     asset: assetAddress.publicKey,
-    owner: umi.identity,
+    authority: umi.identity,
     compressionProof: {
       updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
       owner: umi.identity.publicKey,

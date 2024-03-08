@@ -1,4 +1,4 @@
-import { generateSigner } from '@metaplex-foundation/umi';
+import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   Asset,
@@ -44,7 +44,8 @@ test('it can compress an asset without any plugins as the owner', async (t) => {
   // And when we compress the asset.
   await compress(umi, {
     asset: assetAddress.publicKey,
-    owner: umi.identity,
+    authority: umi.identity,
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
   }).sendAndConfirm(umi);
   // console.log('Compress signature: ', bs58.encode(tx.signature));
 
@@ -92,7 +93,7 @@ test('it cannot compress an asset if not the owner', async (t) => {
 
   const result = compress(umi, {
     asset: assetAddress.publicKey,
-    owner: attacker,
+    authority: attacker,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
