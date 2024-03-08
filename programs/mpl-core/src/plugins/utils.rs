@@ -365,10 +365,15 @@ pub fn revoke_authority_on_plugin<'a>(
         .find(|record| record.plugin_type == *plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
 
+    solana_program::msg!("authority_type: {:?}", authority_type);
+    solana_program::msg!("registry_record.authority: {:?}", registry_record.authority);
+
     // TODO inspect this logic
-    if *authority_type != registry_record.plugin_type.default_authority() &&
+    if (*authority_type != registry_record.plugin_type.default_authority() &&
         // pubkey authorities can remove themselves if they are a signer
-        authority_type != &registry_record.authority
+        authority_type != &registry_record.authority) ||
+        // Unable to revoke a None authority
+        registry_record.authority == Authority::None
     {
         return Err(MplCoreError::InvalidAuthority.into());
     }

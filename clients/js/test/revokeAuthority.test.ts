@@ -170,9 +170,12 @@ test('it can remove the default authority from a plugin to make it immutable', a
     },
   }).sendAndConfirm(umi);
 
-  await revokePluginAuthority(umi, {
+  await approvePluginAuthority(umi, {
     asset: assetAddress.publicKey,
     pluginType: PluginType.Freeze,
+    newAuthority: {
+      __kind: 'None'
+    }
   }).sendAndConfirm(umi);
 
   const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -354,7 +357,7 @@ test('it can remove a owner authority from a plugin with other authority', async
     plugins: [
       {
         authority:
-          { __kind: 'Pubkey', address: pubkeyAuth.publicKey },
+          { __kind: 'Owner' },
         plugin: {
           __kind: 'Freeze',
           fields: [{ frozen: false }],
@@ -383,11 +386,14 @@ test('it cannot remove a none authority from a plugin', async (t) => {
     plugin: plugin('Freeze', [{ frozen: false }]),
   }).sendAndConfirm(umi);
 
-  await revokePluginAuthority(umi, {
+  await approvePluginAuthority(umi, {
     payer: umi.identity,
     asset: assetAddress.publicKey,
     authority: umi.identity,
     pluginType: PluginType.Freeze,
+    newAuthority: {
+      __kind: 'None'
+    }
   }).sendAndConfirm(umi);
 
   const err = await t.throwsAsync(() => revokePluginAuthority(umi, {
