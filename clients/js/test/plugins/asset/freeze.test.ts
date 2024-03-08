@@ -1,108 +1,49 @@
-import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
-  AssetWithPlugins,
-  DataState,
   addPlugin,
-  create,
-  fetchAssetWithPlugins,
+  authority,
   plugin,
+  updateAuthority,
   updatePlugin,
 } from '../../../src';
-import { createUmi } from '../../_setup';
+import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from '../../_setup';
 
 test('it can freeze and unfreeze an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
 
-  // When we create a new account.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    plugins: [],
-  }).sendAndConfirm(umi);
+  const asset = await createAsset(umi, {})
 
   await addPlugin(umi, {
-    asset: assetAddress.publicKey,
+    asset: asset.publicKey,
     plugin: plugin('Freeze', [{ frozen: true }]),
-    initAuthority: null
   }).sendAndConfirm(umi);
 
-  const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log(asset);
-  t.like(asset, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(120),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(118),
-          authority:
-            { __kind: 'Owner' },
-        },
-      ],
-    },
-    plugins: [
-      {
-        authority:
-          { __kind: 'Owner' },
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: true }],
-        },
-      },
-    ],
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    plugins: [{
+      authority: authority('Owner'),
+      plugin: plugin('Freeze', [{ frozen: true }])
+    }],
   });
 
   await updatePlugin(umi, {
-    asset: assetAddress.publicKey,
+    asset: asset.publicKey,
     plugin: plugin('Freeze', [{ frozen: false }]),
   }).sendAndConfirm(umi);
 
-
-  const asset2 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  t.like(asset2, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(120),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(118),
-          authority:
-            { __kind: 'Owner' },
-        },
-      ],
-    },
-    plugins: [
-      {
-        authority:
-          { __kind: 'Owner' },
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
-      },
-    ],
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    plugins: [{
+      authority: authority('Owner'),
+      plugin: plugin('Freeze', [{ frozen: false }])
+    }],
   });
-
 });
 
