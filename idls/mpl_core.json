@@ -117,15 +117,6 @@
           ]
         },
         {
-          "name": "owner",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The owner of the new asset. Defaults to the authority if not present."
-          ]
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,

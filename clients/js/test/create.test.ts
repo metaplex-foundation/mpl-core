@@ -13,32 +13,23 @@ import {
   getAssetAccountDataSerializer,
   updateAuthority,
 } from '../src';
-import { createUmi } from './_setup';
+import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from './_setup';
 
 test('it can create a new asset in account state', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
 
-  // When we create a new account.
-  await create(umi, {
-    dataState: DataState.AccountState,
+  await createAsset(umi, {
     asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    plugins: [],
-  }).sendAndConfirm(umi);
+  })
 
-  // Then an account was created with the correct data.
-  const asset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log("Account State:", asset);
-  t.like(asset, <Asset>{
-    publicKey: assetAddress.publicKey,
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: assetAddress.publicKey,
+    owner: umi.identity,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-  });
+  })
 });
 
 test('it can create a new asset with a different payer', async (t) => {

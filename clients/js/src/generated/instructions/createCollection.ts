@@ -37,8 +37,6 @@ export type CreateCollectionInstructionAccounts = {
   updateAuthority?: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The owner of the new asset. Defaults to the authority if not present. */
-  owner?: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
 };
@@ -114,13 +112,8 @@ export function createCollection(
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
-    owner: {
-      index: 3,
-      isWritable: false as boolean,
-      value: input.owner ?? null,
-    },
     systemProgram: {
-      index: 4,
+      index: 3,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },

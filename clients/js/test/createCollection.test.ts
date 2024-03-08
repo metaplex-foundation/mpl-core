@@ -2,7 +2,6 @@ import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   AssetWithPlugins,
-  Collection,
   CollectionWithPlugins,
   DataState,
   PluginType,
@@ -10,40 +9,28 @@ import {
   approveCollectionPluginAuthority,
   authority,
   create,
-  createCollection,
   fetchAssetWithPlugins,
-  fetchCollection,
+  createCollection as baseCreateCollection,
   fetchCollectionWithPlugins,
   plugin,
   updateAuthority,
 } from '../src';
-import { createUmi } from './_setup';
+import { DEFAULT_ASSET, DEFAULT_COLLECTION, assertAsset, assertCollection, createAssetWithCollection, createCollection, createUmi } from './_setup';
 
 test('it can create a new collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const collectionAddress = generateSigner(umi);
 
-  // When we create a new account.
   await createCollection(umi, {
     collection: collectionAddress,
-    name: 'Test Bread Collection',
-    uri: 'https://example.com/bread',
-    plugins: [],
-  }).sendAndConfirm(umi);
+  })
 
-  // Then an account was created with the correct data.
-  const collection = await fetchCollection(
-    umi,
-    collectionAddress.publicKey
-  );
-  // console.log("Account State:", collection);
-  t.like(collection, <Collection>{
-    publicKey: collectionAddress.publicKey,
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collectionAddress,
     updateAuthority: umi.identity.publicKey,
-    name: 'Test Bread Collection',
-    uri: 'https://example.com/bread',
-  });
+  })
 });
 
 test('it can create a new collection with plugins', async (t) => {
@@ -52,7 +39,7 @@ test('it can create a new collection with plugins', async (t) => {
   const collectionAddress = generateSigner(umi);
 
   // When we create a new account.
-  await createCollection(umi, {
+  await baseCreateCollection(umi, {
     collection: collectionAddress,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
@@ -99,46 +86,24 @@ test('it can create a new collection with plugins', async (t) => {
 test('it can create a new asset with a collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const collectionAddress = generateSigner(umi);
-  const assetAddress = generateSigner(umi);
+  const { asset, collection} = await createAssetWithCollection(umi, {
+  }, {
+    plugins: [plugin('Freeze', [{ frozen: false }])],
+  })
 
-  // When we create a new account.
-  await createCollection(umi, {
-    collection: collectionAddress,
-    name: 'Test Bread Collection',
-    uri: 'https://example.com/bread',
-    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }],
-  }).sendAndConfirm(umi);
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    plugins: [plugin('Freeze', [{ frozen: false }])]
+  })
 
-  // When we create a new account.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    collection: collectionAddress.publicKey,
-    plugins: [],
-  }).sendAndConfirm(umi);
-
-  // Then an account was created with the correct data.
-  const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log("Account State:", asset);
-  t.like(asset, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Collection', [
-      collectionAddress.publicKey,
-    ]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(118),
-    },
-    pluginRegistry: {
-      key: 4,
-    },
-  });
+    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+  })
 
   t.assert(asset.pluginRegistry?.registry.length === 0);
   t.assert(asset.plugins?.length === 0);
@@ -152,7 +117,7 @@ test('it can create a new asset with a collection with collection delegate', asy
   const delegate = generateSigner(umi);
 
   // When we create a new account.
-  await createCollection(umi, {
+  await baseCreateCollection(umi, {
     collection: collectionAddress,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
@@ -219,7 +184,7 @@ test('it cannot create a new asset with a collection if it is not the collection
   const collectionAuth = generateSigner(umi);
 
   // When we create a new account.
-  await createCollection(umi, {
+  await baseCreateCollection(umi, {
     collection: collectionAddress,
     updateAuthority: collectionAuth.publicKey,
     name: 'Test Bread Collection',

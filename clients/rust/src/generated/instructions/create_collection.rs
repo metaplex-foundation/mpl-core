@@ -17,8 +17,6 @@ pub struct CreateCollection {
     pub update_authority: Option<solana_program::pubkey::Pubkey>,
     /// The account paying for the storage fees
     pub payer: solana_program::pubkey::Pubkey,
-    /// The owner of the new asset. Defaults to the authority if not present.
-    pub owner: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
 }
@@ -36,7 +34,7 @@ impl CreateCollection {
         args: CreateCollectionInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.collection,
             true,
@@ -55,16 +53,6 @@ impl CreateCollection {
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.payer, true,
         ));
-        if let Some(owner) = self.owner {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                owner, false,
-            ));
-        } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_ID,
-                false,
-            ));
-        }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.system_program,
             false,
@@ -108,14 +96,12 @@ pub struct CreateCollectionInstructionArgs {
 ///   0. `[writable, signer]` collection
 ///   1. `[optional]` update_authority
 ///   2. `[writable, signer]` payer
-///   3. `[optional]` owner
-///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Default)]
 pub struct CreateCollectionBuilder {
     collection: Option<solana_program::pubkey::Pubkey>,
     update_authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
-    owner: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     name: Option<String>,
     uri: Option<String>,
@@ -147,13 +133,6 @@ impl CreateCollectionBuilder {
     #[inline(always)]
     pub fn payer(&mut self, payer: solana_program::pubkey::Pubkey) -> &mut Self {
         self.payer = Some(payer);
-        self
-    }
-    /// `[optional account]`
-    /// The owner of the new asset. Defaults to the authority if not present.
-    #[inline(always)]
-    pub fn owner(&mut self, owner: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
-        self.owner = owner;
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
@@ -202,7 +181,6 @@ impl CreateCollectionBuilder {
             collection: self.collection.expect("collection is not set"),
             update_authority: self.update_authority,
             payer: self.payer.expect("payer is not set"),
-            owner: self.owner,
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
@@ -225,8 +203,6 @@ pub struct CreateCollectionCpiAccounts<'a, 'b> {
     pub update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The owner of the new asset. Defaults to the authority if not present.
-    pub owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
 }
@@ -241,8 +217,6 @@ pub struct CreateCollectionCpi<'a, 'b> {
     pub update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The owner of the new asset. Defaults to the authority if not present.
-    pub owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
@@ -260,7 +234,6 @@ impl<'a, 'b> CreateCollectionCpi<'a, 'b> {
             collection: accounts.collection,
             update_authority: accounts.update_authority,
             payer: accounts.payer,
-            owner: accounts.owner,
             system_program: accounts.system_program,
             __args: args,
         }
@@ -298,7 +271,7 @@ impl<'a, 'b> CreateCollectionCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.collection.key,
             true,
@@ -318,16 +291,6 @@ impl<'a, 'b> CreateCollectionCpi<'a, 'b> {
             *self.payer.key,
             true,
         ));
-        if let Some(owner) = self.owner {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                *owner.key, false,
-            ));
-        } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::MPL_CORE_ID,
-                false,
-            ));
-        }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.system_program.key,
             false,
@@ -348,16 +311,13 @@ impl<'a, 'b> CreateCollectionCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(4 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.collection.clone());
         if let Some(update_authority) = self.update_authority {
             account_infos.push(update_authority.clone());
         }
         account_infos.push(self.payer.clone());
-        if let Some(owner) = self.owner {
-            account_infos.push(owner.clone());
-        }
         account_infos.push(self.system_program.clone());
         remaining_accounts
             .iter()
@@ -378,8 +338,7 @@ impl<'a, 'b> CreateCollectionCpi<'a, 'b> {
 ///   0. `[writable, signer]` collection
 ///   1. `[optional]` update_authority
 ///   2. `[writable, signer]` payer
-///   3. `[optional]` owner
-///   4. `[]` system_program
+///   3. `[]` system_program
 pub struct CreateCollectionCpiBuilder<'a, 'b> {
     instruction: Box<CreateCollectionCpiBuilderInstruction<'a, 'b>>,
 }
@@ -391,7 +350,6 @@ impl<'a, 'b> CreateCollectionCpiBuilder<'a, 'b> {
             collection: None,
             update_authority: None,
             payer: None,
-            owner: None,
             system_program: None,
             name: None,
             uri: None,
@@ -423,16 +381,6 @@ impl<'a, 'b> CreateCollectionCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn payer(&mut self, payer: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.payer = Some(payer);
-        self
-    }
-    /// `[optional account]`
-    /// The owner of the new asset. Defaults to the authority if not present.
-    #[inline(always)]
-    pub fn owner(
-        &mut self,
-        owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    ) -> &mut Self {
-        self.instruction.owner = owner;
         self
     }
     /// The system program
@@ -518,8 +466,6 @@ impl<'a, 'b> CreateCollectionCpiBuilder<'a, 'b> {
 
             payer: self.instruction.payer.expect("payer is not set"),
 
-            owner: self.instruction.owner,
-
             system_program: self
                 .instruction
                 .system_program
@@ -538,7 +484,6 @@ struct CreateCollectionCpiBuilderInstruction<'a, 'b> {
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     name: Option<String>,
     uri: Option<String>,
