@@ -3,16 +3,18 @@ import test from 'ava';
 // import { base58 } from '@metaplex-foundation/umi/serializers';
 import {
   Asset,
-  AssetWithPlugins,
   DataState,
   PluginType,
   approvePluginAuthority,
   addPlugin,
   create,
   fetchAsset,
-  fetchAssetWithPlugins,
   updateAuthority,
   plugin,
+  fetchAssetWithPlugins,
+  formPluginHeader,
+  AssetWithPlugins,
+  getPubkeyAuthority,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -45,16 +47,13 @@ test('it can add an authority to a plugin', async (t) => {
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
     plugin: plugin('Freeze', [{ frozen: false }]),
-    initAuthority: null
+    initAuthority: null,
   })
     .append(
       approvePluginAuthority(umi, {
         asset: assetAddress.publicKey,
         pluginType: PluginType.Freeze,
-        newAuthority: {
-          __kind: 'Pubkey',
-          address: delegateAddress.publicKey,
-        },
+        newAuthority: getPubkeyAuthority(delegateAddress.publicKey),
       })
     )
     .sendAndConfirm(umi);
@@ -67,30 +66,13 @@ test('it can add an authority to a plugin', async (t) => {
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(120),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(118),
-          authority:
-            { __kind: 'Pubkey', address: delegateAddress.publicKey },
-        },
-      ],
-    },
-    plugins: [
-      {
-        authority:
-          { __kind: 'Pubkey', address: delegateAddress.publicKey },
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
+    pluginHeader: formPluginHeader(BigInt(120)),
+    freeze: {
+      authority: {
+        pubkey: [delegateAddress.publicKey],
       },
-    ],
+      offset: BigInt(118),
+      frozen: false,
+    },
   });
 });

@@ -7,18 +7,18 @@ import {
   publicKey as toPublicKey,
 } from '@metaplex-foundation/umi';
 import {
-  Collection,
   PluginHeaderAccountData,
   PluginRegistryAccountData,
   deserializeCollection,
   getCollectionAccountDataSerializer,
   getPluginHeaderAccountDataSerializer,
   getPluginRegistryAccountDataSerializer,
-  getPluginSerializer,
 } from '../generated';
-import { PluginList, PluginWithAuthority } from '.';
-
-export type CollectionWithPlugins = Collection & PluginList;
+import {
+  CollectionWithPlugins,
+  PluginsList,
+  registryRecordsToPluginsList,
+} from '.';
 
 export async function fetchCollectionWithPlugins(
   context: Pick<Context, 'rpc'>,
@@ -36,31 +36,28 @@ export async function fetchCollectionWithPlugins(
 
   let pluginHeader: PluginHeaderAccountData | undefined;
   let pluginRegistry: PluginRegistryAccountData | undefined;
-  let plugins: PluginWithAuthority[] | undefined;
+  let pluginsList: PluginsList | undefined;
+
   if (maybeAccount.data.length !== collectionData.length) {
     [pluginHeader] = getPluginHeaderAccountDataSerializer().deserialize(
       maybeAccount.data,
       collectionData.length
     );
+
     [pluginRegistry] = getPluginRegistryAccountDataSerializer().deserialize(
       maybeAccount.data,
       Number(pluginHeader.pluginRegistryOffset)
     );
-    plugins = pluginRegistry.registry.map((record) => ({
-      plugin: getPluginSerializer().deserialize(
-        maybeAccount.data,
-        Number(record.offset)
-      )[0],
-      authority: record.authority,
-    }));
+
+    pluginsList = registryRecordsToPluginsList(
+      pluginRegistry.registry,
+      maybeAccount.data
+    );
   }
 
-  const collectionWithPlugins: CollectionWithPlugins = {
+  return {
     pluginHeader,
-    plugins,
-    pluginRegistry,
+    ...pluginsList,
     ...collection,
   };
-
-  return collectionWithPlugins;
 }

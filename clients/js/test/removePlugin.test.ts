@@ -12,6 +12,8 @@ import {
   fetchAssetWithPlugins,
   removePlugin,
   updateAuthority,
+  formPluginHeader,
+  plugin,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -42,11 +44,8 @@ test('it can remove a plugin from an asset', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
-    initAuthority: null
+    plugin: plugin('Freeze', [{ frozen: false }]),
+    initAuthority: null,
   }).sendAndConfirm(umi);
 
   const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
@@ -57,29 +56,14 @@ test('it can remove a plugin from an asset', async (t) => {
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(120),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(118),
-          authority: { __kind: 'Owner' },
-        },
-      ],
-    },
-    plugins: [
-      {
-        authority: { __kind: 'Owner' },
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
+    pluginHeader: formPluginHeader(BigInt(120)),
+    freeze: {
+      authority: {
+        owner: true,
       },
-    ],
+      offset: BigInt(118),
+      frozen: false,
+    },
   });
 
   await removePlugin(umi, {
@@ -95,14 +79,6 @@ test('it can remove a plugin from an asset', async (t) => {
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(118),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [],
-    },
-    plugins: [],
+    pluginHeader: formPluginHeader(BigInt(118)),
   }));
 });

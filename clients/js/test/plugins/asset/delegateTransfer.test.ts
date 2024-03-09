@@ -8,7 +8,12 @@ import {
   plugin,
   authority,
 } from '../../../src';
-import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from '../../_setup';
+import {
+  DEFAULT_ASSET,
+  assertAsset,
+  createAsset,
+  createUmi,
+} from '../../_setup';
 
 test('a delegate can transfer the asset', async (t) => {
   // Given a Umi instance and a new signer.
@@ -18,7 +23,7 @@ test('a delegate can transfer the asset', async (t) => {
 
   const asset = await createAsset(umi, {
     plugins: [plugin('Transfer', [{}])],
-  })
+  });
 
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
@@ -37,9 +42,12 @@ test('a delegate can transfer the asset', async (t) => {
     asset: asset.publicKey,
     owner: newOwnerAddress.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: [{
-      authority: authority('Pubkey', { address: delegateAddress.publicKey }),
-      plugin: plugin('Transfer', [{}])
-    }],
+    plugins: {
+      transfer: {
+        authority: {
+          pubkey: [delegateAddress.publicKey],
+        },
+      },
+    },
   });
 });
