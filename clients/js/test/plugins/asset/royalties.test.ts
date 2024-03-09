@@ -1,6 +1,5 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-// import { base58 } from '@metaplex-foundation/umi/serializers';
 import {
   SPL_SYSTEM_PROGRAM_ID,
   SPL_TOKEN_PROGRAM_ID,

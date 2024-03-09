@@ -1,224 +1,102 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-// import { base58 } from '@metaplex-foundation/umi/serializers';
+
 import {
-  Asset,
-  AssetWithPlugins,
-  Collection,
-  CollectionWithPlugins,
-  DataState,
-  PluginType,
   addCollectionPlugin,
   addPlugin,
   authority,
-  create,
-  createCollection,
-  fetchAsset,
-  fetchAssetWithPlugins,
-  fetchCollection,
-  fetchCollectionWithPlugins,
+  plugin,
   updateAuthority,
 } from '../src';
-import { createUmi } from './_setup';
+import { DEFAULT_ASSET, DEFAULT_COLLECTION, assertAsset, assertCollection, createAsset, createCollection, createUmi } from './_setup';
 
 test('it can add a plugin to an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
-
-  // When we create a new account.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    plugins: [],
-  }).sendAndConfirm(umi);
+  
+  const asset = await createAsset(umi, {})
 
   // Then an account was created with the correct data.
-  const asset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log("Account State:", asset);
-  t.like(asset, <Asset>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
   });
 
   await addPlugin(umi, {
-    asset: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
-    initAuthority: null
+    asset: asset.publicKey,
+    plugin: plugin('Freeze', [{ frozen: false }]),
   }).sendAndConfirm(umi);
 
-  const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log(JSON.stringify(asset1, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
-  t.like(asset1, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(120),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(118),
-          authority: { __kind: 'Owner' },
-        },
-      ],
-    },
-    plugins: [
-      {
-        authority: { __kind: 'Owner' },
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
-      },
-    ],
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    plugins: [{
+      authority: authority('Owner'),
+      plugin: plugin('Freeze', [{ frozen: false }])
+    }],
   });
 });
 
 test('it can add a plugin to an asset with a different authority than the default', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
   const delegateAddress = generateSigner(umi);
 
-  // When we create a new account.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    plugins: [],
-  }).sendAndConfirm(umi);
+  const asset = await createAsset(umi, {})
 
-  // Then an account was created with the correct data.
-  const asset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log("Account State:", asset);
-  t.like(asset, <Asset>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
   });
 
   await addPlugin(umi, {
-    asset: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
+    asset: asset.publicKey,
+    plugin: plugin('Freeze', [{ frozen: false }]),
     initAuthority: authority('Pubkey', { address: delegateAddress.publicKey }),
   }).sendAndConfirm(umi);
 
-  const asset1 = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log(JSON.stringify(asset1, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
-  t.like(asset1, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(120),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(118),
-          authority: authority('Pubkey', { address: delegateAddress.publicKey })
-        },
-      ],
-    },
-    plugins: [
-      {
-        authority: authority('Pubkey', { address: delegateAddress.publicKey }),
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
-      },
-    ],
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    plugins: [{
+      authority: authority('Pubkey', { address: delegateAddress.publicKey }),
+      plugin: plugin('Freeze', [{ frozen: false }])
+    }],
   });
 });
 
 test('it can add a plugin to a collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const collectionAddress = generateSigner(umi);
+  
+  const collection = await createCollection(umi, {})
 
-  // When we create a new account.
-  await createCollection(umi, {
-    collection: collectionAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    plugins: [],
-  }).sendAndConfirm(umi);
-
-  // Then an account was created with the correct data.
-  const collection = await fetchCollection(umi, collectionAddress.publicKey);
-  // console.log("Account State:", collection);
-  t.like(collection, <Collection>{
-    publicKey: collectionAddress.publicKey,
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
   });
 
   await addCollectionPlugin(umi, {
-    collection: collectionAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
-    initAuthority: null
+    collection: collection.publicKey,
+    plugin: plugin('Freeze', [{ frozen: false }]),
   }).sendAndConfirm(umi);
 
-  const asset1 = await fetchCollectionWithPlugins(umi, collectionAddress.publicKey);
-  // console.log(JSON.stringify(asset1, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
-  t.like(asset1, <CollectionWithPlugins>{
-    publicKey: collectionAddress.publicKey,
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(95),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: PluginType.Freeze,
-          offset: BigInt(93),
-          authority: { __kind: 'Owner' },
-        },
-      ],
-    },
-    plugins: [
-      {
-        authority: { __kind: 'Owner' },
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
-      },
-    ],
+    plugins: [{
+      authority: authority('Owner'),
+      plugin: plugin('Freeze', [{ frozen: false }])
+    }],
   });
 });
