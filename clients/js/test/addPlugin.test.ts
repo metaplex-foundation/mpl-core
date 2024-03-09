@@ -8,13 +8,21 @@ import {
   plugin,
   updateAuthority,
 } from '../src';
-import { DEFAULT_ASSET, DEFAULT_COLLECTION, assertAsset, assertCollection, createAsset, createCollection, createUmi } from './_setup';
+import {
+  DEFAULT_ASSET,
+  DEFAULT_COLLECTION,
+  assertAsset,
+  assertCollection,
+  createAsset,
+  createCollection,
+  createUmi,
+} from './_setup';
 
 test('it can add a plugin to an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  
-  const asset = await createAsset(umi, {})
+
+  const asset = await createAsset(umi, {});
 
   // Then an account was created with the correct data.
   await assertAsset(t, umi, {
@@ -34,10 +42,14 @@ test('it can add a plugin to an asset', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: [{
-      authority: authority('Owner'),
-      plugin: plugin('Freeze', [{ frozen: false }])
-    }],
+    plugins: {
+      freeze: {
+        authority: {
+          owner: true,
+        },
+        frozen: false,
+      },
+    },
   });
 });
 
@@ -46,7 +58,7 @@ test('it can add a plugin to an asset with a different authority than the defaul
   const umi = await createUmi();
   const delegateAddress = generateSigner(umi);
 
-  const asset = await createAsset(umi, {})
+  const asset = await createAsset(umi, {});
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -66,18 +78,22 @@ test('it can add a plugin to an asset with a different authority than the defaul
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: [{
-      authority: authority('Pubkey', { address: delegateAddress.publicKey }),
-      plugin: plugin('Freeze', [{ frozen: false }])
-    }],
+    plugins: {
+      freeze: {
+        authority: {
+          pubkey: [delegateAddress.publicKey],
+        },
+        frozen: false,
+      },
+    },
   });
 });
 
 test('it can add a plugin to a collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  
-  const collection = await createCollection(umi, {})
+
+  const collection = await createCollection(umi, {});
 
   await assertCollection(t, umi, {
     ...DEFAULT_COLLECTION,
@@ -94,9 +110,13 @@ test('it can add a plugin to a collection', async (t) => {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    plugins: [{
-      authority: authority('Owner'),
-      plugin: plugin('Freeze', [{ frozen: false }])
-    }],
+    plugins: {
+      freeze: {
+        authority: {
+          owner: true,
+        },
+        frozen: false,
+      },
+    },
   });
 });

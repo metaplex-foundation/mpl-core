@@ -14,8 +14,17 @@ import {
   fetchCollectionWithPlugins,
   plugin,
   updateAuthority,
+  formPluginHeader,
 } from '../src';
-import { DEFAULT_ASSET, DEFAULT_COLLECTION, assertAsset, assertCollection, createAssetWithCollection, createCollection, createUmi } from './_setup';
+import {
+  DEFAULT_ASSET,
+  DEFAULT_COLLECTION,
+  assertAsset,
+  assertCollection,
+  createAssetWithCollection,
+  createCollection,
+  createUmi,
+} from './_setup';
 
 test('it can create a new collection', async (t) => {
   // Given a Umi instance and a new signer.
@@ -24,13 +33,13 @@ test('it can create a new collection', async (t) => {
 
   await createCollection(umi, {
     collection: collectionAddress,
-  })
+  });
 
   await assertCollection(t, umi, {
     ...DEFAULT_COLLECTION,
     collection: collectionAddress,
     updateAuthority: umi.identity.publicKey,
-  })
+  });
 });
 
 test('it can create a new collection with plugins', async (t) => {
@@ -43,7 +52,7 @@ test('it can create a new collection with plugins', async (t) => {
     collection: collectionAddress,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
-    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }],
+    plugins: [plugin('Freeze', [{ frozen: false }])],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -57,59 +66,47 @@ test('it can create a new collection with plugins', async (t) => {
     updateAuthority: umi.identity.publicKey,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(106),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(104),
-          authority: { __kind: 'Owner' },
-        },
-      ],
-    },
-    plugins: [
-      {
-        authority: { __kind: 'Owner' },
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
+    pluginHeader: formPluginHeader(BigInt(106)),
+    freeze: {
+      authority: {
+        owner: true,
       },
-    ],
+      offset: BigInt(104),
+      frozen: false,
+    },
   });
 });
 
 test('it can create a new asset with a collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const { asset, collection} = await createAssetWithCollection(umi, {
-  }, {
-    plugins: [plugin('UpdateDelegate', [{}])],
-  })
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [plugin('UpdateDelegate', [{}])],
+    }
+  );
 
   await assertCollection(t, umi, {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    plugins: [{
-      authority: authority('UpdateAuthority'),
-      plugin: plugin('UpdateDelegate', [{}])
-    }]
-  })
+    plugins: {
+      updateDelegate: {
+        authority: {
+          update: true,
+        },
+      },
+    },
+  });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Collection', [collection.publicKey]),
-  })
-
-  t.assert(asset.pluginRegistry?.registry.length === 0);
-  t.assert(asset.plugins?.length === 0);
+  });
 });
 
 test('it can create a new asset with a collection with collection delegate', async (t) => {
@@ -130,7 +127,7 @@ test('it can create a new asset with a collection with collection delegate', asy
   await addCollectionPlugin(umi, {
     collection: collectionAddress.publicKey,
     plugin: plugin('UpdateDelegate', [{}]),
-    initAuthority: null
+    initAuthority: null,
   }).sendAndConfirm(umi);
 
   await approveCollectionPluginAuthority(umi, {
@@ -138,7 +135,6 @@ test('it can create a new asset with a collection with collection delegate', asy
     pluginType: PluginType.UpdateDelegate,
     newAuthority: authority('Pubkey', { address: delegate.publicKey }),
   }).sendAndConfirm(umi);
-
 
   // When we create a new account.
   await create(umi, {
@@ -162,17 +158,8 @@ test('it can create a new asset with a collection with collection delegate', asy
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(118),
-    },
-    pluginRegistry: {
-      key: 4,
-    },
+    pluginHeader: formPluginHeader(BigInt(118)),
   });
-
-  t.assert(asset.pluginRegistry?.registry.length === 0);
-  t.assert(asset.plugins?.length === 0);
 });
 
 // TODO: Add test
@@ -206,29 +193,14 @@ test('it cannot create a new asset with a collection if it is not the collection
     updateAuthority: collectionAuth.publicKey,
     name: 'Test Bread Collection',
     uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(106),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(104),
-          authority: { __kind: 'Owner' },
-        },
-      ],
-    },
-    plugins: [
-      {
-        authority: { __kind: 'Owner' },
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
+    pluginHeader: formPluginHeader(BigInt(106)),
+    freeze: {
+      authority: {
+        owner: true,
       },
-    ],
+      offset: BigInt(104),
+      frozen: false,
+    },
   });
 
   // When we create a new account.

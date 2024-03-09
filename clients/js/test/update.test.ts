@@ -10,6 +10,8 @@ import {
   fetchAssetWithPlugins,
   update,
   updateAuthority,
+  plugin,
+  formPluginHeader,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -91,11 +93,8 @@ test('it can update an asset with plugins to be larger', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
-    initAuthority: null
+    plugin: plugin('Freeze', [{ frozen: false }]),
+    initAuthority: null,
   }).sendAndConfirm(umi);
 
   await update(umi, {
@@ -113,29 +112,14 @@ test('it can update an asset with plugins to be larger', async (t) => {
     owner: umi.identity.publicKey,
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(123),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(121),
-          authority: { __kind: 'Owner' },
-        },
-      ],
-    },
-    plugins: [
-      {
-        authority: { __kind: 'Owner' },
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
+    pluginHeader: formPluginHeader(BigInt(123)),
+    freeze: {
+      authority: {
+        owner: true,
       },
-    ],
+      offset: BigInt(121),
+      frozen: false,
+    },
   });
 });
 
@@ -155,11 +139,8 @@ test('it can update an asset with plugins to be smaller', async (t) => {
 
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
-    plugin: {
-      __kind: 'Freeze',
-      fields: [{ frozen: false }],
-    },
-    initAuthority: null
+    plugin: plugin('Freeze', [{ frozen: false }]),
+    initAuthority: null,
   }).sendAndConfirm(umi);
 
   await update(umi, {
@@ -176,28 +157,13 @@ test('it can update an asset with plugins to be smaller', async (t) => {
     owner: umi.identity.publicKey,
     name: '',
     uri: '',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(85),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(83),
-          authority: { __kind: 'Owner' },
-        },
-      ],
-    },
-    plugins: [
-      {
-        authority: { __kind: 'Owner' },
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
+    pluginHeader: formPluginHeader(BigInt(85)),
+    freeze: {
+      authority: {
+        owner: true,
       },
-    ],
+      offset: BigInt(83),
+      frozen: false,
+    },
   });
 });

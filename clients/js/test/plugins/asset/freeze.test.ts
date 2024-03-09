@@ -1,18 +1,17 @@
 import test from 'ava';
+import { addPlugin, plugin, updateAuthority, updatePlugin } from '../../../src';
 import {
-  addPlugin,
-  authority,
-  plugin,
-  updateAuthority,
-  updatePlugin,
-} from '../../../src';
-import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from '../../_setup';
+  DEFAULT_ASSET,
+  assertAsset,
+  createAsset,
+  createUmi,
+} from '../../_setup';
 
 test('it can freeze and unfreeze an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
-  const asset = await createAsset(umi, {})
+  const asset = await createAsset(umi, {});
 
   await addPlugin(umi, {
     asset: asset.publicKey,
@@ -24,10 +23,14 @@ test('it can freeze and unfreeze an asset', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: [{
-      authority: authority('Owner'),
-      plugin: plugin('Freeze', [{ frozen: true }])
-    }],
+    plugins: {
+      freeze: {
+        authority: {
+          owner: true,
+        },
+        frozen: true,
+      },
+    },
   });
 
   await updatePlugin(umi, {
@@ -40,10 +43,13 @@ test('it can freeze and unfreeze an asset', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: [{
-      authority: authority('Owner'),
-      plugin: plugin('Freeze', [{ frozen: false }])
-    }],
+    plugins: {
+      freeze: {
+        authority: {
+          owner: true,
+        },
+        frozen: false,
+      },
+    },
   });
 });
-

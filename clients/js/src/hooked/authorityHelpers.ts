@@ -1,6 +1,6 @@
 import { PublicKey } from '@metaplex-foundation/umi';
 import { Authority, authority as authorityHelper } from '../generated';
-import { BaseAuthorities } from './types';
+import { BaseAuthority } from './types';
 import { toWords } from './utils';
 
 // Authorities data helpers
@@ -24,27 +24,16 @@ export function getPermanentAuthority(address: PublicKey) {
   return authorityHelper('Permanent', { address });
 }
 
-export function mapAuthorities(authorities: Authority[]) {
-  return authorities.reduce((acc: BaseAuthorities, authority: Authority) => {
-    const authorityKey = toWords(authority.__kind)
-      .split(' ')[0]
-      .toLowerCase() as keyof BaseAuthorities;
-    const authorityKeysLen = Object.keys(authority).length;
+export function mapAuthority(authority: Authority): BaseAuthority {
+  const authorityKey = toWords(authority.__kind)
+    .split(' ')[0]
+    .toLowerCase() as keyof BaseAuthority;
 
-    if (authorityKeysLen === 1) {
-      acc = { ...acc, [authorityKey]: true };
-    }
+  if (Object.keys(authority).length > 1) {
+    return {
+      [authorityKey]: Object.values(authority).slice(1),
+    };
+  }
 
-    if (authorityKeysLen > 1) {
-      acc = {
-        ...acc,
-        [authorityKey]: [
-          ...(acc[authorityKey] ? (acc[authorityKey] as any[]) : []),
-          ...Object.values(authority).slice(1),
-        ],
-      };
-    }
-
-    return acc;
-  }, {});
+  return { [authorityKey]: true };
 }

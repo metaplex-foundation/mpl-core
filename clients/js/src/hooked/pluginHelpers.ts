@@ -5,8 +5,8 @@ import {
   getPluginSerializer,
   RegistryRecord,
 } from '../generated';
-import { BaseAuthorities, PluginsList } from './types';
-import { mapAuthorities } from './authorityHelpers';
+import { BaseAuthority, PluginsList } from './types';
+import { mapAuthority } from './authorityHelpers';
 import { toWords } from './utils';
 
 export function formPluginHeader(
@@ -24,11 +24,11 @@ export function mapPluginFields(fields: Array<Record<string, any>>) {
 
 export function mapPlugin({
   plugin,
-  authorities,
+  authority,
   offset,
 }: {
   plugin: Exclude<Plugin, { __kind: 'Reserved' }>;
-  authorities: BaseAuthorities;
+  authority: BaseAuthority;
   offset: bigint;
 }): PluginsList {
   const pluginKey = toWords(plugin.__kind)
@@ -38,7 +38,7 @@ export function mapPlugin({
 
   return {
     [pluginKey]: {
-      authorities,
+      authority,
       offset,
       ...('fields' in plugin ? mapPluginFields(plugin.fields) : {}),
     },
@@ -50,7 +50,7 @@ export function registryRecordsToPluginsList(
   accountData: Uint8Array
 ) {
   return registryRecords.reduce((acc: PluginsList, record) => {
-    const mappedAuthorities = mapAuthorities(record.authorities);
+    const mappedAuthority = mapAuthority(record.authority);
     const deserializedPlugin = getPluginSerializer().deserialize(
       accountData,
       Number(record.offset)
@@ -62,7 +62,7 @@ export function registryRecordsToPluginsList(
       ...acc,
       ...mapPlugin({
         plugin: deserializedPlugin,
-        authorities: mappedAuthorities,
+        authority: mappedAuthority,
         offset: record.offset,
       }),
     };

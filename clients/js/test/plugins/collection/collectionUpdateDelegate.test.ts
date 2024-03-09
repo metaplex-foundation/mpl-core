@@ -8,7 +8,15 @@ import {
   plugin,
   authority,
 } from '../../../src';
-import { DEFAULT_ASSET, DEFAULT_COLLECTION, assertAsset, assertCollection, createAsset, createCollection, createUmi } from '../../_setup';
+import {
+  DEFAULT_ASSET,
+  DEFAULT_COLLECTION,
+  assertAsset,
+  assertCollection,
+  createAsset,
+  createCollection,
+  createUmi,
+} from '../../_setup';
 
 test('it can create a new asset with a collection if it is the collection update delegate', async (t) => {
   // Given a Umi instance and a new signer.
@@ -17,8 +25,8 @@ test('it can create a new asset with a collection if it is the collection update
 
   // When we create a new account.
   const collection = await createCollection(umi, {
-    plugins: [plugin('UpdateDelegate', [{}])]
-  })
+    plugins: [plugin('UpdateDelegate', [{}])],
+  });
 
   await approveCollectionPluginAuthority(umi, {
     collection: collection.publicKey,
@@ -30,12 +38,13 @@ test('it can create a new asset with a collection if it is the collection update
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    plugins: [
-      {
-        authority: authority('Pubkey', { address: updateDelegate.publicKey }),
-        plugin: plugin('UpdateDelegate', [{}]),
+    plugins: {
+      updateDelegate: {
+        authority: {
+          pubkey: [updateDelegate.publicKey],
+        },
       },
-    ],
+    },
   });
 
   umi.identity = updateDelegate;
@@ -46,7 +55,7 @@ test('it can create a new asset with a collection if it is the collection update
     collection: collection.publicKey,
     owner,
     authority: updateDelegate,
-  })
+  });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -54,7 +63,4 @@ test('it can create a new asset with a collection if it is the collection update
     owner: owner.publicKey,
     updateAuthority: updateAuthority('Collection', [collection.publicKey]),
   });
-
-  t.assert(asset.pluginRegistry?.registry.length === 0);
-  t.assert(asset.plugins?.length === 0);
 });

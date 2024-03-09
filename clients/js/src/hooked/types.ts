@@ -2,6 +2,7 @@ import { PublicKey } from '@metaplex-foundation/umi';
 import {
   Asset,
   Burn,
+  Collection,
   Freeze,
   PluginHeader,
   Royalties,
@@ -9,7 +10,7 @@ import {
   UpdateDelegate,
 } from '../generated';
 
-export type BaseAuthorities = {
+export type BaseAuthority = {
   none?: boolean;
   owner?: boolean;
   update?: boolean;
@@ -18,8 +19,8 @@ export type BaseAuthorities = {
 };
 
 export type BasePlugin = {
-  authorities: BaseAuthorities;
-  offset: bigint;
+  authority: BaseAuthority;
+  offset?: bigint;
 };
 
 export type RoyaltiesPlugin = BasePlugin & Royalties;
@@ -36,7 +37,12 @@ export type PluginsList = {
   updateDelegate?: UpdateDelegatePlugin;
 };
 
-export type AssetWithPluginsTest = Asset &
+export type AssetWithPlugins = Asset &
+  PluginsList & {
+    pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>;
+  };
+
+export type CollectionWithPlugins = Collection &
   PluginsList & {
     pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>;
   };
