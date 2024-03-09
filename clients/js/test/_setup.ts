@@ -3,7 +3,6 @@ import { createUmi as basecreateUmi } from '@metaplex-foundation/umi-bundle-test
 import { Assertions } from 'ava';
 import { PublicKey, Signer, Umi, generateSigner, publicKey } from '@metaplex-foundation/umi';
 import {
-  Collection,
   DataState,
   Key,
   create,
@@ -27,6 +26,7 @@ export type CreateAssetHelperArgs = {
   dataState?: DataState;
   name?: string;
   uri?: string;
+  authority?: Signer;
   updateAuthority?: PublicKey | Signer
   collection?: PublicKey
   // TODO use PluginList type here
@@ -61,6 +61,7 @@ export const createAsset = async (
     uri: input.uri || DEFAULT_ASSET.uri,
     plugins: input.plugins || [],
     collection: input.collection,
+    authority: input.authority
   }).sendAndConfirm(umi);
 
   return fetchAssetWithPlugins(umi, publicKey(asset));
@@ -93,10 +94,10 @@ export const createCollection = async (umi: Umi, input:CreateCollectionHelperArg
 
 export const createAssetWithCollection: (
   umi: Umi, 
-  assetInput: CreateAssetHelperArgs & { collection?: Collection }, 
+  assetInput: CreateAssetHelperArgs & { collection?: PublicKey | Signer}, 
   collectionInput?: CreateCollectionHelperArgs
 ) => Promise<{ asset: AssetWithPlugins; collection: CollectionWithPlugins }> = async (umi, assetInput, collectionInput = {}) => {
-  const collection = assetInput.collection ? await fetchCollectionWithPlugins(umi, assetInput.collection.publicKey) : await createCollection(umi, {
+  const collection = assetInput.collection ? await fetchCollectionWithPlugins(umi, publicKey(assetInput.collection)) : await createCollection(umi, {
     payer: assetInput.payer,
     updateAuthority: assetInput.updateAuthority,
     ...collectionInput
@@ -159,7 +160,7 @@ export const assertCollection = async (
   umi: Umi,
   input: {
     collection: PublicKey | Signer;
-    updateAuthority: PublicKey | Signer;
+    updateAuthority?: PublicKey | Signer;
     name?: string | RegExp;
     uri?: string | RegExp;
     numMinted?: number;
@@ -169,8 +170,7 @@ export const assertCollection = async (
   }
 ) => {
   const collectionAddress = publicKey(input.collection);
-  const updateAuthority = publicKey(input.updateAuthority);
-  const { name, uri, numMinted, currentSize } = input;
+  const { name, uri, numMinted, currentSize, updateAuthority } = input;
   const collection = await fetchCollectionWithPlugins(umi, collectionAddress);
 
   // Name.
@@ -194,6 +194,10 @@ export const assertCollection = async (
 
   if(currentSize !== undefined) {
     testObj.currentSize = currentSize;
+  }
+
+  if(updateAuthority) {
+    testObj.updateAuthority = publicKey(updateAuthority);
   }
 
   t.like(collection, testObj);
