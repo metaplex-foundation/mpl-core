@@ -7,18 +7,15 @@ import {
   publicKey as toPublicKey,
 } from '@metaplex-foundation/umi';
 import {
-  Asset,
   PluginHeaderAccountData,
   PluginRegistryAccountData,
   deserializeAsset,
   getAssetAccountDataSerializer,
   getPluginHeaderAccountDataSerializer,
   getPluginRegistryAccountDataSerializer,
-  getPluginSerializer,
 } from '../generated';
-import { PluginList, PluginWithAuthority } from '.';
-
-export type AssetWithPlugins = Asset & PluginList;
+import { AssetWithPlugins, PluginsList } from './types';
+import { registryRecordsToPluginsList } from './pluginHelpers';
 
 export async function fetchAssetWithPlugins(
   context: Pick<Context, 'rpc'>,
@@ -35,31 +32,28 @@ export async function fetchAssetWithPlugins(
 
   let pluginHeader: PluginHeaderAccountData | undefined;
   let pluginRegistry: PluginRegistryAccountData | undefined;
-  let plugins: PluginWithAuthority[] | undefined;
+  let pluginsList: PluginsList | undefined;
+
   if (maybeAccount.data.length !== assetData.length) {
     [pluginHeader] = getPluginHeaderAccountDataSerializer().deserialize(
       maybeAccount.data,
       assetData.length
     );
+
     [pluginRegistry] = getPluginRegistryAccountDataSerializer().deserialize(
       maybeAccount.data,
       Number(pluginHeader.pluginRegistryOffset)
     );
-    plugins = pluginRegistry.registry.map((record) => ({
-      plugin: getPluginSerializer().deserialize(
-        maybeAccount.data,
-        Number(record.offset)
-      )[0],
-      authority: record.authority,
-    }));
+
+    pluginsList = registryRecordsToPluginsList(
+      pluginRegistry.registry,
+      maybeAccount.data
+    );
   }
 
-  const assetWithPlugins: AssetWithPlugins = {
+  return {
     pluginHeader,
-    plugins,
-    pluginRegistry,
+    ...pluginsList,
     ...asset,
   };
-
-  return assetWithPlugins;
 }

@@ -12,6 +12,8 @@ import {
   fetchHashedAsset,
   getAssetAccountDataSerializer,
   updateAuthority,
+  formPluginHeader,
+  plugin,
 } from '../src';
 import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from './_setup';
 
@@ -22,14 +24,14 @@ test('it can create a new asset in account state', async (t) => {
 
   await createAsset(umi, {
     asset: assetAddress,
-  })
+  });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: assetAddress.publicKey,
     owner: umi.identity,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-  })
+  });
 });
 
 test('it cannot create a new asset with a different payer', async (t) => {
@@ -54,7 +56,7 @@ test('it cannot create a new asset with a different payer', async (t) => {
   // console.log("Account State:", asset);
   t.like(asset, <Asset>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority("Address", [payer.publicKey]),
+    updateAuthority: updateAuthority('Address', [payer.publicKey]),
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
@@ -117,7 +119,6 @@ test('it cannot create a new asset in ledger state because it is not available',
   await t.throwsAsync(result, { name: 'NotAvailable' });
 });
 
-
 test('it can create a new asset in account state with plugins', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
@@ -129,7 +130,7 @@ test('it can create a new asset in account state with plugins', async (t) => {
     asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }],
+    plugins: [plugin('Freeze', [{ frozen: false }])],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -141,29 +142,14 @@ test('it can create a new asset in account state with plugins', async (t) => {
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    pluginHeader: {
-      key: 3,
-      pluginRegistryOffset: BigInt(120),
-    },
-    pluginRegistry: {
-      key: 4,
-      registry: [
-        {
-          pluginType: 2,
-          offset: BigInt(118),
-          authority: { __kind: 'Owner' },
-        },
-      ],
-    },
-    plugins: [
-      {
-        authority: { __kind: 'Owner' },
-        plugin: {
-          __kind: 'Freeze',
-          fields: [{ frozen: false }],
-        },
+    pluginHeader: formPluginHeader(BigInt(120)),
+    freeze: {
+      authority: {
+        owner: true,
       },
-    ],
+      offset: BigInt(118),
+      frozen: false,
+    },
   });
 });
 
