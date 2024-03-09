@@ -116,7 +116,7 @@ export const assertAsset = async (
   input: {
     asset: PublicKey | Signer;
     owner: PublicKey | Signer;
-    updateAuthority: UpdateAuthority;
+    updateAuthority?: UpdateAuthority;
     name?: string | RegExp;
     uri?: string | RegExp;
     // TODO replace with remapped PluginList type
@@ -125,7 +125,7 @@ export const assertAsset = async (
 ) => {
   const assetAddress = publicKey(input.asset);
   const owner = publicKey(input.owner);
-  const { name, uri, updateAuthority } = input;
+  const { name, uri, updateAuthority, plugins } = input;
   const asset = await fetchAssetWithPlugins(umi, assetAddress);
 
   // Name.
@@ -136,13 +136,21 @@ export const assertAsset = async (
   if (typeof uri === 'string') t.is(asset.uri, uri);
   else if (uri !== undefined) t.regex(asset.uri, uri);
 
-  t.like(asset, <AssetWithPlugins>{
+  const testObj = <AssetWithPlugins>{
     key: Key.Asset,
     publicKey: assetAddress,
     owner,
-    updateAuthority,
-    plugins: input.plugins || [],
-  });
+  }
+
+  if (plugins) {
+    testObj.plugins = plugins;
+  }
+
+  if (updateAuthority) {
+    testObj.updateAuthority = updateAuthority;
+  }
+
+  t.like(asset, testObj);
 
 };
 

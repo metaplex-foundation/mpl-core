@@ -6,39 +6,24 @@ import {
   SPL_TOKEN_PROGRAM_ID,
 } from '@metaplex-foundation/mpl-toolbox';
 import {
-  AssetWithPlugins,
-  DataState,
   MPL_CORE_PROGRAM_ID,
-  create,
-  fetchAssetWithPlugins,
+  authority,
   plugin,
   ruleSet,
   transfer,
   updateAuthority,
 } from '../../../src';
-import { createUmi } from '../../_setup';
+import {
+  DEFAULT_ASSET,
+  assertAsset,
+  createAsset,
+  createUmi,
+} from '../../_setup';
 
 test('it can transfer an asset with royalties', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
-  const newOwner = generateSigner(umi);
-
-  // Here we're creating a new owner that's program owned, so we're just going to use another asset.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: newOwner,
-    name: 'Owner',
-    uri: '',
-    plugins: [],
-  }).sendAndConfirm(umi);
-
-  // Creating a new asset to transfer.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+  const asset = await createAsset(umi, {
     plugins: [
       plugin('Royalties', [
         {
@@ -48,57 +33,47 @@ test('it can transfer an asset with royalties', async (t) => {
         },
       ]),
     ],
-  }).sendAndConfirm(umi);
+  });
+
+  // Here we're creating a new owner that's program owned, so we're just going to use another asset.
+  const programOwned = await createAsset(umi, {});
 
   // Then an account was created with the correct data.
-  const beforeAsset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    plugins: [
+      {
+        authority: authority('UpdateAuthority'),
+        plugin: plugin('Royalties', [
+          {
+            percentage: 5,
+            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+            ruleSet: ruleSet('None'),
+          },
+        ]),
+      },
+    ],
   });
 
   await transfer(umi, {
-    asset: assetAddress.publicKey,
-    newOwner: newOwner.publicKey,
-    compressionProof: null,
+    asset: asset.publicKey,
+    newOwner: programOwned.publicKey,
   }).sendAndConfirm(umi);
 
-  const afterAsset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log("Account State:", afterAsset);
-  t.like(afterAsset, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    owner: newOwner.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: programOwned.publicKey,
   });
 });
 
 test('it can transfer an asset with royalties to an allowlisted program address', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
-  const newOwner = generateSigner(umi);
 
-  // Here we're creating a new owner that's program owned, so we're just going to use another asset.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: newOwner,
-    name: 'Owner',
-    uri: '',
-    plugins: [],
-  }).sendAndConfirm(umi);
-
-  // Creating a new asset to transfer.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+  const asset = await createAsset(umi, {
     plugins: [
       plugin('Royalties', [
         {
@@ -108,67 +83,59 @@ test('it can transfer an asset with royalties to an allowlisted program address'
         },
       ]),
     ],
-  }).sendAndConfirm(umi);
+  });
+
+  // Here we're creating a new owner that's program owned, so we're just going to use another asset.
+  const programOwned = await createAsset(umi, {});
 
   // Then an account was created with the correct data.
-  const beforeAsset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    plugins: [
+      {
+        authority: authority('UpdateAuthority'),
+        plugin: plugin('Royalties', [
+          {
+            percentage: 5,
+            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+            ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
+          },
+        ]),
+      },
+    ],
   });
 
   await transfer(umi, {
-    asset: assetAddress.publicKey,
-    newOwner: newOwner.publicKey,
+    asset: asset.publicKey,
+    newOwner: programOwned.publicKey,
     compressionProof: null,
   }).sendAndConfirm(umi);
 
-  const afterAsset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log("Account State:", afterAsset);
-  t.like(afterAsset, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    owner: newOwner.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: programOwned.publicKey,
   });
+
 });
 
 test('it cannot transfer an asset with royalties to a program address not on the allowlist', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
-  const newOwner = generateSigner(umi);
-  const newerOwner = generateSigner(umi);
+  const programOwner = generateSigner(umi);
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: newOwner,
-    name: 'Owner',
-    uri: '',
-    plugins: [],
-  }).sendAndConfirm(umi);
+  const programOwned = await createAsset(umi, {
+    owner: programOwner.publicKey,
+  });
 
   // Create a second one because allowlist needs both to be off the allowlist.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: newerOwner,
-    name: 'Owner',
-    uri: '',
-    plugins: [],
-  }).sendAndConfirm(umi);
+  const programOwned2 = await createAsset(umi, {});
 
   // Creating a new asset to transfer.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+  const asset = await createAsset(umi, {
     plugins: [
       plugin('Royalties', [
         {
@@ -178,30 +145,24 @@ test('it cannot transfer an asset with royalties to a program address not on the
         },
       ]),
     ],
-  }).sendAndConfirm(umi);
+  });
 
   // Then an account was created with the correct data.
-  const beforeAsset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
   });
 
   await transfer(umi, {
-    asset: assetAddress.publicKey,
-    newOwner: newOwner.publicKey,
-    compressionProof: null,
+    asset: asset.publicKey,
+    newOwner: programOwned.publicKey,
   }).sendAndConfirm(umi);
 
   const result = transfer(umi, {
-    asset: assetAddress.publicKey,
-    newOwner: newerOwner.publicKey,
-    authority: newOwner,
-    compressionProof: null,
+    asset: asset.publicKey,
+    newOwner: programOwned2.publicKey,
+    authority: programOwner,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
@@ -210,24 +171,12 @@ test('it cannot transfer an asset with royalties to a program address not on the
 test('it can transfer an asset with royalties to a program address not on the denylist', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
-  const newOwner = generateSigner(umi);
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: newOwner,
-    name: 'Owner',
-    uri: '',
-    plugins: [],
-  }).sendAndConfirm(umi);
+  const programOwned = await createAsset(umi, {});
 
   // Creating a new asset to transfer.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+  const asset = await createAsset(umi, {
     plugins: [
       plugin('Royalties', [
         {
@@ -237,57 +186,36 @@ test('it can transfer an asset with royalties to a program address not on the de
         },
       ]),
     ],
-  }).sendAndConfirm(umi);
+  });
 
   // Then an account was created with the correct data.
-  const beforeAsset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
   });
 
   await transfer(umi, {
-    asset: assetAddress.publicKey,
-    newOwner: newOwner.publicKey,
-    compressionProof: null,
+    asset: asset.publicKey,
+    newOwner: programOwned.publicKey,
   }).sendAndConfirm(umi);
 
-  const afterAsset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log("Account State:", afterAsset);
-  t.like(afterAsset, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    owner: newOwner.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: programOwned.publicKey,
   });
 });
 
 test('it cannot transfer an asset with royalties to a denylisted program', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
-  const newOwner = generateSigner(umi);
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: newOwner,
-    name: 'Owner',
-    uri: '',
-    plugins: [],
-  }).sendAndConfirm(umi);
-
+  const programOwned = await createAsset(umi, {});
+  
   // Creating a new asset to transfer.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+  const asset = await createAsset(umi, {
     plugins: [
       plugin('Royalties', [
         {
@@ -297,23 +225,18 @@ test('it cannot transfer an asset with royalties to a denylisted program', async
         },
       ]),
     ],
-  }).sendAndConfirm(umi);
+  });
 
-  // Then an account was created with the correct data.
-  const beforeAsset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
   });
 
   const result = transfer(umi, {
-    asset: assetAddress.publicKey,
-    newOwner: newOwner.publicKey,
-    compressionProof: null,
+    asset: asset.publicKey,
+    newOwner: programOwned.publicKey,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });

@@ -3,7 +3,6 @@ import test from 'ava';
 import {
   PluginType,
   approvePluginAuthority,
-  fetchAssetWithPlugins,
   updateAuthority,
   updatePlugin,
   plugin,
@@ -16,7 +15,7 @@ test('it can delegate a new authority', async (t) => {
   const umi = await createUmi();
   const delegateAddress = generateSigner(umi);
 
-  let asset = await createAsset(umi, {
+  const asset = await createAsset(umi, {
     plugins: [plugin('Freeze', [{ frozen: false }])],
   })
 
@@ -25,8 +24,6 @@ test('it can delegate a new authority', async (t) => {
     pluginType: PluginType.Freeze,
     newAuthority: authority('Pubkey', { address: delegateAddress.publicKey }),
   }).sendAndConfirm(umi);
-
-  asset = await fetchAssetWithPlugins(umi, asset.publicKey);
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -45,7 +42,7 @@ test('a delegate can freeze the token', async (t) => {
   const umi = await createUmi();
   const delegateAddress = generateSigner(umi);
 
-  let asset = await createAsset(umi, {
+  const asset = await createAsset(umi, {
     plugins: [plugin('Freeze', [{ frozen: false }])],
   })
 
@@ -61,8 +58,6 @@ test('a delegate can freeze the token', async (t) => {
     authority: delegateAddress,
     plugin: plugin('Freeze', [{ frozen: true }]),
   }).sendAndConfirm(umi2);
-
-  asset = await fetchAssetWithPlugins(umi, asset.publicKey);
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,

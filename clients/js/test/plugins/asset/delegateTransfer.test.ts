@@ -3,7 +3,6 @@ import test from 'ava';
 import {
   PluginType,
   approvePluginAuthority,
-  fetchAssetWithPlugins,
   transfer,
   updateAuthority,
   plugin,
@@ -17,7 +16,7 @@ test('a delegate can transfer the asset', async (t) => {
   const delegateAddress = generateSigner(umi);
   const newOwnerAddress = generateSigner(umi);
 
-  let asset = await createAsset(umi, {
+  const asset = await createAsset(umi, {
     plugins: [plugin('Transfer', [{}])],
   })
 
@@ -32,8 +31,6 @@ test('a delegate can transfer the asset', async (t) => {
     newOwner: newOwnerAddress.publicKey,
     authority: delegateAddress,
   }).sendAndConfirm(umi);
-
-  asset = await fetchAssetWithPlugins(umi, asset.publicKey);
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
