@@ -58,6 +58,7 @@ pub(crate) fn decompress<'a>(
                 ctx.accounts.asset,
                 ctx.accounts.collection,
                 None,
+                None,
                 Asset::check_decompress,
                 Collection::check_decompress,
                 PluginType::check_decompress,

@@ -50,6 +50,7 @@ pub(crate) fn update_plugin<'a>(
         ctx.accounts.authority,
         None,
         &registry_record.authority,
+        None,
     )?;
     if result == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());
@@ -99,6 +100,7 @@ pub(crate) fn update_collection_plugin<'a>(
         ctx.accounts.authority,
         None,
         &registry_record.authority,
+        None,
     )?;
     if result == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());

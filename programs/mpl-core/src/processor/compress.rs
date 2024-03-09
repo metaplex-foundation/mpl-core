@@ -37,6 +37,7 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
                 ctx.accounts.asset,
                 ctx.accounts.collection,
                 None,
+                None,
                 Asset::check_compress,
                 Collection::check_compress,
                 PluginType::check_compress,

@@ -40,6 +40,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
+        None,
         Asset::check_update,
         Collection::check_update,
         PluginType::check_update,
@@ -156,6 +157,7 @@ pub(crate) fn update_collection<'a>(
     let (mut asset, plugin_header, plugin_registry) = validate_collection_permissions(
         ctx.accounts.authority,
         ctx.accounts.collection,
+        None,
         Collection::check_update,
         PluginType::check_update,
         Collection::validate_update,

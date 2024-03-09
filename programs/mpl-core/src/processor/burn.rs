@@ -8,7 +8,7 @@ use crate::{
     plugins::{Plugin, PluginType},
     state::{Asset, Collection, CompressionProof, Key},
     utils::{
-        close_program_account, load_key, rebuild_account_state_from_proof_data,
+        close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_payer,
         validate_asset_permissions, validate_collection_permissions, verify_proof,
     },
 };
@@ -24,12 +24,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    let payer = if let Some(payer) = ctx.accounts.payer {
-        assert_signer(payer)?;
-        payer
-    } else {
-        ctx.accounts.authority
-    };
+    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
 
     match load_key(ctx.accounts.asset, 0)? {
         Key::HashedAsset => {
@@ -68,6 +63,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
+        None,
         Asset::check_burn,
         Collection::check_burn,
         PluginType::check_burn,
@@ -101,6 +97,7 @@ pub(crate) fn burn_collection<'a>(
     let _ = validate_collection_permissions(
         ctx.accounts.authority,
         ctx.accounts.collection,
+        None,
         Collection::check_burn,
         PluginType::check_burn,
         Collection::validate_burn,

@@ -6,6 +6,7 @@ import {
   addPlugin,
   authority,
   plugin,
+  ruleSet,
   updateAuthority,
 } from '../src';
 import { DEFAULT_ASSET, DEFAULT_COLLECTION, assertAsset, assertCollection, createAsset, createCollection, createUmi } from './_setup';
@@ -13,7 +14,7 @@ import { DEFAULT_ASSET, DEFAULT_COLLECTION, assertAsset, assertCollection, creat
 test('it can add a plugin to an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  
+
   const asset = await createAsset(umi, {})
 
   // Then an account was created with the correct data.
@@ -76,7 +77,7 @@ test('it can add a plugin to an asset with a different authority than the defaul
 test('it can add a plugin to a collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  
+
   const collection = await createCollection(umi, {})
 
   await assertCollection(t, umi, {
@@ -87,7 +88,13 @@ test('it can add a plugin to a collection', async (t) => {
 
   await addCollectionPlugin(umi, {
     collection: collection.publicKey,
-    plugin: plugin('Freeze', [{ frozen: false }]),
+    plugin: plugin('Royalties', [
+      {
+        percentage: 5,
+        creators: [],
+        ruleSet: ruleSet('None'),
+      },
+    ]),
   }).sendAndConfirm(umi);
 
   await assertCollection(t, umi, {
@@ -95,8 +102,36 @@ test('it can add a plugin to a collection', async (t) => {
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
     plugins: [{
-      authority: authority('Owner'),
-      plugin: plugin('Freeze', [{ frozen: false }])
+      authority: authority('UpdateAuthority'),
+      plugin: plugin('Royalties', [
+        {
+          percentage: 5,
+          creators: [],
+          ruleSet: ruleSet('None'),
+        },
+      ]),
     }],
+  });
+});
+
+test('it cannot add an owner-managed plugin to a collection', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+
+  const collection = await createCollection(umi, {})
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+  });
+
+  const result = addCollectionPlugin(umi, {
+    collection: collection.publicKey,
+    plugin: plugin('Freeze', [{ frozen: false }]),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, {
+    name: 'InvalidAuthority',
   });
 });

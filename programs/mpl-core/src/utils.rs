@@ -205,23 +205,33 @@ pub(crate) fn resize_or_reallocate_account<'a>(
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 /// Validate asset permissions using lifecycle validations for asset, collection, and plugins.
 pub fn validate_asset_permissions<'a>(
     authority: &AccountInfo<'a>,
     asset: &AccountInfo<'a>,
     collection: Option<&AccountInfo<'a>>,
     new_owner: Option<&AccountInfo<'a>>,
+    new_plugin: Option<&Plugin>,
     asset_check_fp: fn() -> CheckResult,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
-    asset_validate_fp: fn(&Asset, &AccountInfo) -> Result<ValidationResult, ProgramError>,
-    collection_validate_fp: fn(&Collection, &AccountInfo) -> Result<ValidationResult, ProgramError>,
+    asset_validate_fp: fn(
+        &Asset,
+        &AccountInfo,
+        Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError>,
+    collection_validate_fp: fn(
+        &Collection,
+        &AccountInfo,
+        Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
         &AccountInfo,
         Option<&AccountInfo>,
         &Authority,
+        Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<(Asset, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
     let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<Asset>(asset)?;
@@ -265,8 +275,9 @@ pub fn validate_asset_permissions<'a>(
             Key::Collection => collection_validate_fp(
                 &Collection::load(collection.ok_or(MplCoreError::InvalidCollection)?, 0)?,
                 authority,
+                new_plugin,
             )?,
-            Key::Asset => asset_validate_fp(&Asset::load(asset, 0)?, authority)?,
+            Key::Asset => asset_validate_fp(&Asset::load(asset, 0)?, authority, new_plugin)?,
             _ => return Err(MplCoreError::IncorrectAccount.into()),
         }) == ValidationResult::Approved
     };
@@ -277,6 +288,7 @@ pub fn validate_asset_permissions<'a>(
         &checks,
         authority,
         new_owner,
+        new_plugin,
         asset,
         collection,
         plugin_validate_fp,
@@ -287,6 +299,7 @@ pub fn validate_asset_permissions<'a>(
         &checks,
         authority,
         new_owner,
+        new_plugin,
         asset,
         collection,
         plugin_validate_fp,
@@ -300,17 +313,24 @@ pub fn validate_asset_permissions<'a>(
 }
 
 /// Validate collection permissions using lifecycle validations for collection and plugins.
+#[allow(clippy::type_complexity)]
 pub fn validate_collection_permissions<'a>(
     authority: &AccountInfo<'a>,
     collection: &AccountInfo<'a>,
+    new_plugin: Option<&Plugin>,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
-    collection_validate_fp: fn(&Collection, &AccountInfo) -> Result<ValidationResult, ProgramError>,
+    collection_validate_fp: fn(
+        &Collection,
+        &AccountInfo,
+        Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
         &AccountInfo,
         Option<&AccountInfo>,
         &Authority,
+        Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<(Collection, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
     let (deserialized_collection, plugin_header, plugin_registry) =
@@ -321,7 +341,7 @@ pub fn validate_collection_permissions<'a>(
     let mut approved = false;
     match collection_check_fp() {
         CheckResult::CanApprove | CheckResult::CanReject => {
-            match collection_validate_fp(&deserialized_collection, authority)? {
+            match collection_validate_fp(&deserialized_collection, authority, new_plugin)? {
                 ValidationResult::Approved => {
                     approved = true;
                 }
@@ -343,6 +363,7 @@ pub fn validate_collection_permissions<'a>(
                     authority,
                     None,
                     &record.authority,
+                    new_plugin,
                 )?;
                 if result == ValidationResult::Rejected {
                     return Err(MplCoreError::InvalidAuthority.into());

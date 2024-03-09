@@ -125,4 +125,22 @@ impl PluginValidation for Freeze {
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
+
+    fn validate_add_plugin(
+        &self,
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+        _new_plugin: Option<&super::Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    fn validate_remove_plugin(
+        &self,
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+        _plugin_to_remove: Option<&super::Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 }

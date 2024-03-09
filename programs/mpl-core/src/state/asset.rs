@@ -3,11 +3,12 @@ use shank::ShankAccount;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
-    plugins::{CheckResult, ValidationResult},
+    error::MplCoreError,
+    plugins::{CheckResult, Plugin, ValidationResult},
     state::{Compressible, CompressionProof, DataBlob, Key, SolanaAccount},
 };
 
-use super::{CoreAsset, UpdateAuthority};
+use super::{Authority, CoreAsset, UpdateAuthority};
 
 /// The Core Asset structure that exists at the beginning of every asset account.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount, Eq, PartialEq)]
@@ -27,6 +28,16 @@ pub struct Asset {
 impl Asset {
     /// The base length of the asset account with an empty name and uri.
     pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4;
+
+    /// Check permissions for the add plugin lifecycle event.
+    pub fn check_add_plugin() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
+    /// Check permissions for the remove plugin lifecycle event.
+    pub fn check_remove_plugin() -> CheckResult {
+        CheckResult::CanApprove
+    }
 
     /// Check permissions for the transfer lifecycle event.
     pub fn check_transfer() -> CheckResult {
@@ -53,10 +64,47 @@ impl Asset {
         CheckResult::CanApprove
     }
 
+    /// Validate the add plugin lifecycle event.
+    pub fn validate_add_plugin(
+        &self,
+        authority: &AccountInfo,
+        new_plugin: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        let new_plugin = match new_plugin {
+            Some(plugin) => plugin,
+            None => return Err(MplCoreError::InvalidPlugin.into()),
+        };
+
+        // If it's an owner managed plugin or a UA managed plugin and the asset
+        // is not in a collection, then it can be added.
+        if (authority.key == &self.owner && new_plugin.manager() == Authority::Owner)
+            || (UpdateAuthority::Address(*authority.key) == self.update_authority
+                && new_plugin.manager() == Authority::UpdateAuthority)
+        {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
+    /// Validate the remove plugin lifecycle event.
+    pub fn validate_remove_plugin(
+        &self,
+        authority: &AccountInfo,
+        _plugin_to_remove: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        if authority.key == &self.owner {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
     /// Validate the update lifecycle event.
     pub fn validate_update(
         &self,
         authority: &AccountInfo,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority.key == &self.update_authority.key() {
             Ok(ValidationResult::Approved)
@@ -66,7 +114,11 @@ impl Asset {
     }
 
     /// Validate the burn lifecycle event.
-    pub fn validate_burn(&self, authority: &AccountInfo) -> Result<ValidationResult, ProgramError> {
+    pub fn validate_burn(
+        &self,
+        authority: &AccountInfo,
+        _: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
         if authority.key == &self.owner {
             Ok(ValidationResult::Approved)
         } else {
@@ -78,6 +130,7 @@ impl Asset {
     pub fn validate_transfer(
         &self,
         authority: &AccountInfo,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority.key == &self.owner {
             Ok(ValidationResult::Approved)
@@ -90,6 +143,7 @@ impl Asset {
     pub fn validate_compress(
         &self,
         authority: &AccountInfo,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority.key == &self.owner {
             Ok(ValidationResult::Approved)
@@ -102,6 +156,7 @@ impl Asset {
     pub fn validate_decompress(
         &self,
         authority: &AccountInfo,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority.key == &self.owner {
             Ok(ValidationResult::Approved)

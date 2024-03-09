@@ -2,9 +2,12 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::plugins::{CheckResult, ValidationResult};
+use crate::{
+    error::MplCoreError,
+    plugins::{CheckResult, Plugin, ValidationResult},
+};
 
-use super::{CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
+use super::{Authority, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
 
 /// The representation of a collection of assets.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
@@ -45,6 +48,16 @@ impl Collection {
         }
     }
 
+    /// Check permissions for the add plugin lifecycle event.
+    pub fn check_add_plugin() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
+    /// Check permissions for the remove plugin lifecycle event.
+    pub fn check_remove_plugin() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
     /// Check permissions for the transfer lifecycle event.
     pub fn check_transfer() -> CheckResult {
         CheckResult::None
@@ -70,10 +83,51 @@ impl Collection {
         CheckResult::None
     }
 
+    /// Validate the add plugin lifecycle event.
+    pub fn validate_add_plugin(
+        &self,
+        authority: &AccountInfo,
+        new_plugin: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        let new_plugin = match new_plugin {
+            Some(plugin) => plugin,
+            None => return Err(MplCoreError::InvalidPlugin.into()),
+        };
+
+        if *authority.key == self.update_authority
+            && new_plugin.manager() == Authority::UpdateAuthority
+        {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
+    /// Validate the remove plugin lifecycle event.
+    pub fn validate_remove_plugin(
+        &self,
+        authority: &AccountInfo,
+        plugin_to_remove: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        let plugin_to_remove = match plugin_to_remove {
+            Some(plugin) => plugin,
+            None => return Err(MplCoreError::InvalidPlugin.into()),
+        };
+
+        if *authority.key == self.update_authority
+            && plugin_to_remove.manager() == Authority::UpdateAuthority
+        {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
     /// Validate the transfer lifecycle event.
     pub fn validate_transfer(
         &self,
         _authority: &AccountInfo,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -82,6 +136,7 @@ impl Collection {
     pub fn validate_burn(
         &self,
         _authority: &AccountInfo,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -90,6 +145,7 @@ impl Collection {
     pub fn validate_update(
         &self,
         authority: &AccountInfo,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority.key == &self.update_authority {
             Ok(ValidationResult::Approved)
@@ -102,6 +158,7 @@ impl Collection {
     pub fn validate_compress(
         &self,
         _authority: &AccountInfo,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -110,6 +167,7 @@ impl Collection {
     pub fn validate_decompress(
         &self,
         _authority: &AccountInfo,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

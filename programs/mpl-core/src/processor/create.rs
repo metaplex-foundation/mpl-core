@@ -145,6 +145,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
                             .unwrap_or(ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer)),
                         None,
                         &record.authority,
+                        None,
                     )?;
                     if result == ValidationResult::Rejected {
                         return Err(MplCoreError::InvalidAuthority.into());

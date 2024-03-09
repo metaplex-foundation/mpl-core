@@ -23,6 +23,22 @@ pub enum CheckResult {
 }
 
 impl PluginType {
+    /// Check permissions for the add plugin lifecycle event.
+    pub fn check_add_plugin(plugin_type: &PluginType) -> CheckResult {
+        #[allow(clippy::match_single_binding)]
+        match plugin_type {
+            _ => CheckResult::None,
+        }
+    }
+
+    /// Check permissions for the remove plugin lifecycle event.
+    pub fn check_remove_plugin(plugin_type: &PluginType) -> CheckResult {
+        #[allow(clippy::match_single_binding)]
+        match plugin_type {
+            _ => CheckResult::None,
+        }
+    }
+
     /// Check if a plugin is permitted to approve or deny a create action.
     pub fn check_create(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
@@ -76,12 +92,67 @@ impl PluginType {
 }
 
 impl Plugin {
+    /// Validate the add plugin lifecycle event.
+    pub fn validate_add_plugin(
+        plugin: &Plugin,
+        authority: &AccountInfo,
+        _: Option<&AccountInfo>,
+        authorities: &Authority,
+        new_plugin: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        match plugin {
+            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
+            Plugin::Royalties(royalties) => {
+                royalties.validate_add_plugin(authority, authorities, new_plugin)
+            }
+            Plugin::Freeze(freeze) => {
+                freeze.validate_add_plugin(authority, authorities, new_plugin)
+            }
+            Plugin::Burn(burn) => burn.validate_add_plugin(authority, authorities, new_plugin),
+            Plugin::Transfer(transfer) => {
+                transfer.validate_add_plugin(authority, authorities, new_plugin)
+            }
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_add_plugin(authority, authorities, new_plugin)
+            }
+        }
+    }
+
+    /// Validate the remove plugin lifecycle event.
+    pub fn validate_remove_plugin(
+        plugin: &Plugin,
+        authority: &AccountInfo,
+        _: Option<&AccountInfo>,
+        authorities: &Authority,
+        plugin_to_remove: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        match plugin {
+            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
+            Plugin::Royalties(royalties) => {
+                royalties.validate_remove_plugin(authority, authorities, plugin_to_remove)
+            }
+            Plugin::Freeze(freeze) => {
+                freeze.validate_remove_plugin(authority, authorities, plugin_to_remove)
+            }
+            Plugin::Burn(burn) => {
+                burn.validate_remove_plugin(authority, authorities, plugin_to_remove)
+            }
+            Plugin::Transfer(transfer) => {
+                transfer.validate_remove_plugin(authority, authorities, plugin_to_remove)
+            }
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_remove_plugin(authority, authorities, plugin_to_remove)
+            }
+        }
+    }
+
     /// Route the validation of the create action to the appropriate plugin.
     pub(crate) fn validate_create(
         plugin: &Plugin,
         authority: &AccountInfo,
-        _unused: Option<&AccountInfo>,
+        _: Option<&AccountInfo>,
         authorities: &Authority,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -99,8 +170,9 @@ impl Plugin {
     pub(crate) fn validate_update(
         plugin: &Plugin,
         authority: &AccountInfo,
-        _unused: Option<&AccountInfo>,
+        _: Option<&AccountInfo>,
         authorities: &Authority,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -120,8 +192,9 @@ impl Plugin {
         plugin: &Plugin,
         core_asset: &T,
         authority: &AccountInfo,
-        _unused: Option<&AccountInfo>,
+        _: Option<&AccountInfo>,
         authorities: &Authority,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -145,8 +218,9 @@ impl Plugin {
     pub(crate) fn validate_burn(
         plugin: &Plugin,
         authority: &AccountInfo,
-        _unused: Option<&AccountInfo>,
+        _: Option<&AccountInfo>,
         authorities: &Authority,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -166,6 +240,7 @@ impl Plugin {
         authority: &AccountInfo,
         new_owner: Option<&AccountInfo>,
         authorities: &Authority,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         let new_owner = new_owner.ok_or(MplCoreError::MissingNewOwner)?;
         match plugin {
@@ -188,8 +263,9 @@ impl Plugin {
     pub(crate) fn validate_compress(
         plugin: &Plugin,
         authority: &AccountInfo,
-        _unused: Option<&AccountInfo>,
+        _: Option<&AccountInfo>,
         authorities: &Authority,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -207,8 +283,9 @@ impl Plugin {
     pub(crate) fn validate_decompress(
         plugin: &Plugin,
         authority: &AccountInfo,
-        _unused: Option<&AccountInfo>,
+        _: Option<&AccountInfo>,
         authorities: &Authority,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -227,8 +304,9 @@ impl Plugin {
     pub(crate) fn validate_add_plugin_authority(
         plugin: &Plugin,
         authority: &AccountInfo,
-        _unused: Option<&AccountInfo>,
+        _: Option<&AccountInfo>,
         authorities: &Authority,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -249,8 +327,9 @@ impl Plugin {
     pub(crate) fn validate_remove_plugin_authority(
         plugin: &Plugin,
         authority: &AccountInfo,
-        _unused: Option<&AccountInfo>,
+        _: Option<&AccountInfo>,
         authorities: &Authority,
+        _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -283,6 +362,22 @@ pub enum ValidationResult {
 
 /// Plugin validation trait which is implemented by each plugin.
 pub(crate) trait PluginValidation {
+    /// Validate the add plugin lifecycle action.
+    fn validate_add_plugin(
+        &self,
+        authority: &AccountInfo,
+        authorities: &Authority,
+        new_plugin: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError>;
+
+    /// Validate the remove plugin lifecycle action.
+    fn validate_remove_plugin(
+        &self,
+        authority: &AccountInfo,
+        authorities: &Authority,
+        plugin_to_remove: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError>;
+
     /// Validate the create lifecycle action.
     fn validate_create(
         &self,
@@ -366,11 +461,13 @@ pub(crate) trait PluginValidation {
     }
 }
 
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn validate_plugin_checks<'a>(
     key: Key,
     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &AccountInfo<'a>,
     new_owner: Option<&AccountInfo>,
+    new_plugin: Option<&Plugin>,
     asset: &AccountInfo<'a>,
     collection: Option<&AccountInfo<'a>>,
     validate_fp: fn(
@@ -378,6 +475,7 @@ pub(crate) fn validate_plugin_checks<'a>(
         &AccountInfo<'a>,
         Option<&AccountInfo>,
         &Authority,
+        Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<bool, ProgramError> {
     for (_, (check_key, check_result, registry_record)) in checks {
@@ -399,6 +497,7 @@ pub(crate) fn validate_plugin_checks<'a>(
                 authority,
                 new_owner,
                 &registry_record.authority,
+                new_plugin,
             )?;
             match result {
                 ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
