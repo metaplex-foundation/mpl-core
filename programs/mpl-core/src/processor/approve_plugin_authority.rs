@@ -101,7 +101,5 @@ fn process_approve_plugin_authority<'a, T: CoreAsset + DataBlob + SolanaAccount>
         &mut plugin_registry,
         payer,
         system_program,
-    )?;
-
-    Ok(())
+    )
 }
