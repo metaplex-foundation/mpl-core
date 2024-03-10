@@ -14,6 +14,7 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
+  none,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -57,7 +58,7 @@ export type BurnInstructionData = {
 };
 
 export type BurnInstructionDataArgs = {
-  compressionProof: OptionOrNullable<CompressionProofArgs>;
+  compressionProof?: OptionOrNullable<CompressionProofArgs>;
 };
 
 export function getBurnInstructionDataSerializer(): Serializer<
@@ -72,7 +73,11 @@ export function getBurnInstructionDataSerializer(): Serializer<
       ],
       { description: 'BurnInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 12 })
+    (value) => ({
+      ...value,
+      discriminator: 12,
+      compressionProof: value.compressionProof ?? none(),
+    })
   ) as Serializer<BurnInstructionDataArgs, BurnInstructionData>;
 }
 

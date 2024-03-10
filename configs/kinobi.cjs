@@ -71,6 +71,13 @@ kinobi.update(
           defaultValue: k.noneValueNode()
         }
       }
+    },
+    burn: {
+      arguments: {
+        compressionProof: {
+          defaultValue: k.noneValueNode()
+        }
+      }
     }
   })
 );

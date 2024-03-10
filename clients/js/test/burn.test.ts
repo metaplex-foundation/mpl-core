@@ -4,51 +4,32 @@ import {
   sol,
 } from '@metaplex-foundation/umi';
 import test from 'ava';
-// import { base58 } from '@metaplex-foundation/umi/serializers';
+
 import {
-  Asset,
-  DataState,
-  create,
-  fetchAsset,
   burn,
   Key,
   updateAuthority,
   plugin,
 } from '../src';
-import { createUmi } from './_setup';
+import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from './_setup';
 
 test('it can burn an asset as the owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
-
-  // When we create a new account.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    plugins: [],
-  }).sendAndConfirm(umi);
-
-  // Then an account was created with the correct data.
-  const beforeAsset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <Asset>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  const asset = await createAsset(umi, {});
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-  });
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  })
 
   await burn(umi, {
-    asset: assetAddress.publicKey,
-    compressionProof: null,
+    asset: asset.publicKey,
   }).sendAndConfirm(umi);
 
   // And the asset address still exists but was resized to 1.
-  const afterAsset = await umi.rpc.getAccount(assetAddress.publicKey);
+  const afterAsset = await umi.rpc.getAccount(asset.publicKey);
   t.true(afterAsset.exists);
   assertAccountExists(afterAsset);
   t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
@@ -59,91 +40,66 @@ test('it can burn an asset as the owner', async (t) => {
 test('it cannot burn an asset if not the owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
   const attacker = generateSigner(umi);
 
-  // When we create a new account.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    plugins: [],
-  }).sendAndConfirm(umi);
-
-  // Then an account was created with the correct data.
-  const beforeAsset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <Asset>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  const asset = await createAsset(umi, {});
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-  });
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  })
 
   const result = burn(umi, {
-    asset: assetAddress.publicKey,
-    compressionProof: null,
+    asset: asset.publicKey,
     authority: attacker,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
-
-  const afterAsset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log("Account State:", afterAsset);
-  t.like(afterAsset, <Asset>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-  });
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  })
 });
 
 test('it cannot burn an asset if it is frozen', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
-  const attacker = generateSigner(umi);
 
-  // When we create a new account.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    plugins: [
-      plugin('Freeze', [{ frozen: true }]),
-    ],
-  }).sendAndConfirm(umi);
+  const asset = await createAsset(umi, {
+    plugins: [plugin('Freeze', [{ frozen: true }])],
+  });
 
-  // Then an account was created with the correct data.
-  const beforeAsset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <Asset>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    freeze: {
+      authority: {
+        owner: true,
+      },
+      frozen: true,
+    },
   });
 
   const result = burn(umi, {
-    asset: assetAddress.publicKey,
-    compressionProof: null,
-    authority: attacker,
+    asset: asset.publicKey,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
-
-  const afterAsset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log("Account State:", afterAsset);
-  t.like(afterAsset, <Asset>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    freeze: {
+      authority: {
+        owner: true,
+      },
+      frozen: true,
+    },
   });
 });
