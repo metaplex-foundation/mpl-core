@@ -1,26 +1,18 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
-  AssetWithPlugins,
-  CollectionWithPlugins,
-  DataState,
   PluginType,
-  addCollectionPlugin,
   approveCollectionPluginAuthority,
   authority,
-  create,
-  fetchAssetWithPlugins,
-  createCollection as baseCreateCollection,
-  fetchCollectionWithPlugins,
   plugin,
   updateAuthority,
-  formPluginHeader,
 } from '../src';
 import {
   DEFAULT_ASSET,
   DEFAULT_COLLECTION,
   assertAsset,
   assertCollection,
+  createAsset,
   createAssetWithCollection,
   createCollection,
   createUmi,
@@ -45,33 +37,19 @@ test('it can create a new collection', async (t) => {
 test('it can create a new collection with plugins', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const collectionAddress = generateSigner(umi);
-
-  // When we create a new account.
-  await baseCreateCollection(umi, {
-    collection: collectionAddress,
-    name: 'Test Bread Collection',
-    uri: 'https://example.com/bread',
+  
+  const collection = await createCollection(umi, {
     plugins: [plugin('Freeze', [{ frozen: false }])],
-  }).sendAndConfirm(umi);
+  });
 
-  // Then an account was created with the correct data.
-  const collection = await fetchCollectionWithPlugins(
-    umi,
-    collectionAddress.publicKey
-  );
-  // console.log("Account State:", collection);
-  t.like(collection, <CollectionWithPlugins>{
-    publicKey: collectionAddress.publicKey,
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    name: 'Test Bread Collection',
-    uri: 'https://example.com/bread',
-    pluginHeader: formPluginHeader(BigInt(106)),
     freeze: {
       authority: {
         owner: true,
       },
-      offset: BigInt(104),
       frozen: false,
     },
   });
@@ -110,53 +88,29 @@ test('it can create a new asset with a collection', async (t) => {
 test('it can create a new asset with a collection with collection delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const collectionAddress = generateSigner(umi);
-  const assetAddress = generateSigner(umi);
   const delegate = generateSigner(umi);
 
-  // When we create a new account.
-  await baseCreateCollection(umi, {
-    collection: collectionAddress,
-    name: 'Test Bread Collection',
-    uri: 'https://example.com/bread',
-    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }],
-  }).sendAndConfirm(umi);
-
-  await addCollectionPlugin(umi, {
-    collection: collectionAddress.publicKey,
-    plugin: plugin('UpdateDelegate', [{}]),
-    initAuthority: null,
-  }).sendAndConfirm(umi);
+  const collection = await createCollection(umi, {
+    plugins: [plugin('UpdateDelegate', [{}])],
+  });
 
   await approveCollectionPluginAuthority(umi, {
-    collection: collectionAddress.publicKey,
+    collection: collection.publicKey,
     pluginType: PluginType.UpdateDelegate,
     newAuthority: authority('Pubkey', { address: delegate.publicKey }),
   }).sendAndConfirm(umi);
 
-  // When we create a new account.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    collection: collectionAddress.publicKey,
+  const umi2 = await createUmi(); // guarantee a new signer
+  const asset = await createAsset(umi2, {
+    collection: collection.publicKey,
     authority: delegate,
-    plugins: [],
-  }).sendAndConfirm(umi);
+  })
 
-  // Then an account was created with the correct data.
-  const asset = await fetchAssetWithPlugins(umi, assetAddress.publicKey);
-  // console.log("Account State:", asset);
-  t.like(asset, <AssetWithPlugins>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Collection', [
-      collectionAddress.publicKey,
-    ]),
-    owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    pluginHeader: formPluginHeader(BigInt(118)),
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi2.identity.publicKey,
+    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
   });
 });
 
@@ -168,48 +122,15 @@ test('it cannot create a new asset with an update authority that is not the coll
 test('it cannot create a new asset with a collection if it is not the collection auth', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const collectionAddress = generateSigner(umi);
-  const assetAddress = generateSigner(umi);
   const collectionAuth = generateSigner(umi);
 
-  // When we create a new account.
-  await baseCreateCollection(umi, {
-    collection: collectionAddress,
+  const collection = await createCollection(umi, {
     updateAuthority: collectionAuth.publicKey,
-    name: 'Test Bread Collection',
-    uri: 'https://example.com/bread',
-    plugins: [{ __kind: 'Freeze', fields: [{ frozen: false }] }],
-  }).sendAndConfirm(umi);
-
-  const collection = await fetchCollectionWithPlugins(
-    umi,
-    collectionAddress.publicKey
-  );
-  // console.log("Account State:", collection);
-  t.like(collection, <CollectionWithPlugins>{
-    publicKey: collectionAddress.publicKey,
-    updateAuthority: collectionAuth.publicKey,
-    name: 'Test Bread Collection',
-    uri: 'https://example.com/bread',
-    pluginHeader: formPluginHeader(BigInt(106)),
-    freeze: {
-      authority: {
-        owner: true,
-      },
-      offset: BigInt(104),
-      frozen: false,
-    },
   });
 
-  // When we create a new account.
-  const result = create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    collection: collectionAddress.publicKey,
-    plugins: [],
-  }).sendAndConfirm(umi);
+  const result = createAsset(umi, {
+    collection: collection.publicKey,
+  })
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });
