@@ -43,13 +43,11 @@ test('it can add a plugin to an asset', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: {
-      freeze: {
-        authority: {
-          owner: true,
-        },
-        frozen: false,
+    freeze: {
+      authority: {
+        owner: true,
       },
+      frozen: false,
     },
   });
 });
@@ -79,13 +77,11 @@ test('it can add a plugin to an asset with a different authority than the defaul
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: {
-      freeze: {
-        authority: {
-          pubkey: [delegateAddress.publicKey],
-        },
-        frozen: false,
+    freeze: {
+      authority: {
+        pubkey: [delegateAddress.publicKey],
       },
+      frozen: false,
     },
   });
 });
@@ -117,15 +113,13 @@ test('it can add a plugin to a collection', async (t) => {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    plugins: {
-      royalties: {
-        authority: {
-          update: true,
-        },
-        percentage: 5,
-        creators: [],
-        ruleSet: ruleSet('None'),
+    royalties: {
+      authority: {
+        update: true,
       },
+      percentage: 5,
+      creators: [],
+      ruleSet: ruleSet('None'),
     },
   });
 });
@@ -134,7 +128,7 @@ test('it cannot add an owner-managed plugin to a collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
-  const collection = await createCollection(umi, {})
+  const collection = await createCollection(umi, {});
 
   await assertCollection(t, umi, {
     ...DEFAULT_COLLECTION,

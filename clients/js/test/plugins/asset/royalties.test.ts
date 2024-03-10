@@ -42,15 +42,14 @@ test('it can transfer an asset with royalties', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: {
-      royalties: {
-        authority: {
-          update: true,
-        },
-        percentage: 5,
-        creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-        ruleSet: ruleSet('None'),
+
+    royalties: {
+      authority: {
+        update: true,
       },
+      percentage: 5,
+      creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+      ruleSet: ruleSet('None'),
     },
   });
 
@@ -90,15 +89,13 @@ test('it can transfer an asset with royalties to an allowlisted program address'
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: {
-      royalties: {
-        authority: {
-          update: true,
-        },
-        percentage: 5,
-        creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-        ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
+    royalties: {
+      authority: {
+        update: true,
       },
+      percentage: 5,
+      creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+      ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
     },
   });
 

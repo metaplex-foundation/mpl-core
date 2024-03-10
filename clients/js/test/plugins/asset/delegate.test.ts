@@ -35,13 +35,11 @@ test('it can delegate a new authority', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: {
-      freeze: {
-        authority: {
-          pubkey: [delegateAddress.publicKey],
-        },
-        frozen: false,
+    freeze: {
+      authority: {
+        pubkey: [delegateAddress.publicKey],
       },
+      frozen: false,
     },
   });
 });
@@ -73,13 +71,11 @@ test('a delegate can freeze the token', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: {
-      freeze: {
-        authority: {
-          pubkey: [delegateAddress.publicKey],
-        },
-        frozen: true,
+    freeze: {
+      authority: {
+        pubkey: [delegateAddress.publicKey],
       },
+      frozen: true,
     },
   });
 });

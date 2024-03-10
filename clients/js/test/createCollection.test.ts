@@ -92,11 +92,9 @@ test('it can create a new asset with a collection', async (t) => {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    plugins: {
-      updateDelegate: {
-        authority: {
-          update: true,
-        },
+    updateDelegate: {
+      authority: {
+        update: true,
       },
     },
   });

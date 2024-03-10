@@ -23,13 +23,11 @@ test('it can freeze and unfreeze an asset', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: {
-      freeze: {
-        authority: {
-          owner: true,
-        },
-        frozen: true,
+    freeze: {
+      authority: {
+        owner: true,
       },
+      frozen: true,
     },
   });
 
@@ -43,13 +41,11 @@ test('it can freeze and unfreeze an asset', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    plugins: {
-      freeze: {
-        authority: {
-          owner: true,
-        },
-        frozen: false,
+    freeze: {
+      authority: {
+        owner: true,
       },
+      frozen: false,
     },
   });
 });

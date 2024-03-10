@@ -134,37 +134,28 @@ export const assertAsset = async (
     updateAuthority?: UpdateAuthority;
     name?: string | RegExp;
     uri?: string | RegExp;
-    plugins?: PluginsList;
-  }
+  } & PluginsList
 ) => {
+  const { asset, owner, name, uri, ...rest} = input
   const assetAddress = publicKey(input.asset);
-  const owner = publicKey(input.owner);
-  const { name, uri, updateAuthority, plugins } = input;
-  const asset = await fetchAssetWithPlugins(umi, assetAddress);
+  const assetWithPlugins = await fetchAssetWithPlugins(umi, assetAddress);
 
   // Name.
-  if (typeof name === 'string') t.is(asset.name, name);
-  else if (name !== undefined) t.regex(asset.name, name);
+  if (typeof name === 'string') t.is(assetWithPlugins.name, name);
+  else if (name !== undefined) t.regex(assetWithPlugins.name, name);
 
   // Uri.
-  if (typeof uri === 'string') t.is(asset.uri, uri);
-  else if (uri !== undefined) t.regex(asset.uri, uri);
+  if (typeof uri === 'string') t.is(assetWithPlugins.uri, uri);
+  else if (uri !== undefined) t.regex(assetWithPlugins.uri, uri);
 
-  let testObj = <AssetWithPlugins>{
+  const testObj = <AssetWithPlugins>{
     key: Key.Asset,
     publicKey: assetAddress,
-    owner,
+    owner: publicKey(owner),
+    ...rest
   };
 
-  if (plugins) {
-    testObj = { ...testObj, ...plugins };
-  }
-
-  if (updateAuthority) {
-    testObj.updateAuthority = updateAuthority;
-  }
-
-  t.like(asset, testObj);
+  t.like(assetWithPlugins, testObj);
 };
 
 export const assertCollection = async (
@@ -177,42 +168,30 @@ export const assertCollection = async (
     uri?: string | RegExp;
     numMinted?: number;
     currentSize?: number;
-    plugins?: PluginsList;
-  }
+  } & PluginsList
 ) => {
-  const collectionAddress = publicKey(input.collection);
-  const { name, uri, numMinted, currentSize, updateAuthority, plugins } = input;
-  const collection = await fetchCollectionWithPlugins(umi, collectionAddress);
+  const { collection, name, uri, updateAuthority, ...rest} = input
+
+  const collectionAddress = publicKey(collection);
+  const collectionWithPlugins = await fetchCollectionWithPlugins(umi, collectionAddress);
 
   // Name.
-  if (typeof name === 'string') t.is(collection.name, name);
-  else if (name !== undefined) t.regex(collection.name, name);
+  if (typeof name === 'string') t.is(collectionWithPlugins.name, name);
+  else if (name !== undefined) t.regex(collectionWithPlugins.name, name);
 
   // Uri.
-  if (typeof uri === 'string') t.is(collection.uri, uri);
-  else if (uri !== undefined) t.regex(collection.uri, uri);
+  if (typeof uri === 'string') t.is(collectionWithPlugins.uri, uri);
+  else if (uri !== undefined) t.regex(collectionWithPlugins.uri, uri);
 
-  let testObj = <CollectionWithPlugins>{
+  const testObj = <CollectionWithPlugins>{
     key: Key.Collection,
     publicKey: collectionAddress,
-    updateAuthority,
+    ...rest
   };
-
-  if (plugins) {
-    testObj = { ...testObj, ...plugins };
-  }
-
-  if (numMinted !== undefined) {
-    testObj.numMinted = numMinted;
-  }
-
-  if (currentSize !== undefined) {
-    testObj.currentSize = currentSize;
-  }
 
   if (updateAuthority) {
     testObj.updateAuthority = publicKey(updateAuthority);
   }
 
-  t.like(collection, testObj);
+  t.like(collectionWithPlugins, testObj);
 };
