@@ -58,6 +58,16 @@ impl Collection {
         CheckResult::CanApprove
     }
 
+    /// Check permissions for the approve plugin authority lifecycle event.
+    pub fn check_approve_plugin_authority() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
+    /// Check permissions for the revoke plugin authority lifecycle event.
+    pub fn check_revoke_plugin_authority() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
     /// Check permissions for the transfer lifecycle event.
     pub fn check_transfer() -> CheckResult {
         CheckResult::None
@@ -86,7 +96,7 @@ impl Collection {
     /// Validate the add plugin lifecycle event.
     pub fn validate_add_plugin(
         &self,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         let new_plugin = match new_plugin {
@@ -94,7 +104,7 @@ impl Collection {
             None => return Err(MplCoreError::InvalidPlugin.into()),
         };
 
-        if *authority.key == self.update_authority
+        if *authority_info.key == self.update_authority
             && new_plugin.manager() == Authority::UpdateAuthority
         {
             Ok(ValidationResult::Approved)
@@ -106,7 +116,7 @@ impl Collection {
     /// Validate the remove plugin lifecycle event.
     pub fn validate_remove_plugin(
         &self,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         plugin_to_remove: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         let plugin_to_remove = match plugin_to_remove {
@@ -114,8 +124,48 @@ impl Collection {
             None => return Err(MplCoreError::InvalidPlugin.into()),
         };
 
-        if *authority.key == self.update_authority
+        if *authority_info.key == self.update_authority
             && plugin_to_remove.manager() == Authority::UpdateAuthority
+        {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
+    /// Validate the approve plugin authority lifecycle event.
+    pub fn validate_approve_plugin_authority(
+        &self,
+        authority_info: &AccountInfo,
+        plugin: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        let plugin = match plugin {
+            Some(plugin) => plugin,
+            None => return Err(MplCoreError::InvalidPlugin.into()),
+        };
+
+        if *authority_info.key == self.update_authority
+            && plugin.manager() == Authority::UpdateAuthority
+        {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
+    /// Validate the revoke plugin authority lifecycle event.
+    pub fn validate_revoke_plugin_authority(
+        &self,
+        authority_info: &AccountInfo,
+        plugin: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        let plugin = match plugin {
+            Some(plugin) => plugin,
+            None => return Err(MplCoreError::InvalidPlugin.into()),
+        };
+
+        if *authority_info.key == self.update_authority
+            && plugin.manager() == Authority::UpdateAuthority
         {
             Ok(ValidationResult::Approved)
         } else {
@@ -126,7 +176,7 @@ impl Collection {
     /// Validate the transfer lifecycle event.
     pub fn validate_transfer(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -135,7 +185,7 @@ impl Collection {
     /// Validate the burn lifecycle event.
     pub fn validate_burn(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -144,10 +194,10 @@ impl Collection {
     /// Validate the update lifecycle event.
     pub fn validate_update(
         &self,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        if authority.key == &self.update_authority {
+        if authority_info.key == &self.update_authority {
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -157,7 +207,7 @@ impl Collection {
     /// Validate the compress lifecycle event.
     pub fn validate_compress(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -166,7 +216,7 @@ impl Collection {
     /// Validate the decompress lifecycle event.
     pub fn validate_decompress(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)

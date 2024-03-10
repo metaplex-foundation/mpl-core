@@ -208,7 +208,7 @@ pub(crate) fn resize_or_reallocate_account<'a>(
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 /// Validate asset permissions using lifecycle validations for asset, collection, and plugins.
 pub fn validate_asset_permissions<'a>(
-    authority: &AccountInfo<'a>,
+    authority_info: &AccountInfo<'a>,
     asset: &AccountInfo<'a>,
     collection: Option<&AccountInfo<'a>>,
     new_owner: Option<&AccountInfo<'a>>,
@@ -274,10 +274,10 @@ pub fn validate_asset_permissions<'a>(
         (match core_check.0 {
             Key::Collection => collection_validate_fp(
                 &Collection::load(collection.ok_or(MplCoreError::InvalidCollection)?, 0)?,
-                authority,
+                authority_info,
                 new_plugin,
             )?,
-            Key::Asset => asset_validate_fp(&Asset::load(asset, 0)?, authority, new_plugin)?,
+            Key::Asset => asset_validate_fp(&Asset::load(asset, 0)?, authority_info, new_plugin)?,
             _ => return Err(MplCoreError::IncorrectAccount.into()),
         }) == ValidationResult::Approved
     };
@@ -286,7 +286,7 @@ pub fn validate_asset_permissions<'a>(
     approved = validate_plugin_checks(
         Key::Collection,
         &checks,
-        authority,
+        authority_info,
         new_owner,
         new_plugin,
         asset,
@@ -294,16 +294,20 @@ pub fn validate_asset_permissions<'a>(
         plugin_validate_fp,
     )? || approved;
 
+    solana_program::msg!("approved: {:#?}", approved);
+
     approved = validate_plugin_checks(
         Key::Asset,
         &checks,
-        authority,
+        authority_info,
         new_owner,
         new_plugin,
         asset,
         collection,
         plugin_validate_fp,
     )? || approved;
+
+    solana_program::msg!("approved: {:#?}", approved);
 
     if !approved {
         return Err(MplCoreError::InvalidAuthority.into());
@@ -315,7 +319,7 @@ pub fn validate_asset_permissions<'a>(
 /// Validate collection permissions using lifecycle validations for collection and plugins.
 #[allow(clippy::type_complexity)]
 pub fn validate_collection_permissions<'a>(
-    authority: &AccountInfo<'a>,
+    authority_info: &AccountInfo<'a>,
     collection: &AccountInfo<'a>,
     new_plugin: Option<&Plugin>,
     collection_check_fp: fn() -> CheckResult,
@@ -341,7 +345,7 @@ pub fn validate_collection_permissions<'a>(
     let mut approved = false;
     match collection_check_fp() {
         CheckResult::CanApprove | CheckResult::CanReject => {
-            match collection_validate_fp(&deserialized_collection, authority, new_plugin)? {
+            match collection_validate_fp(&deserialized_collection, authority_info, new_plugin)? {
                 ValidationResult::Approved => {
                     approved = true;
                 }
@@ -360,7 +364,7 @@ pub fn validate_collection_permissions<'a>(
             ) {
                 let result = plugin_validate_fp(
                     &Plugin::load(collection, record.offset)?,
-                    authority,
+                    authority_info,
                     None,
                     &record.authority,
                     new_plugin,

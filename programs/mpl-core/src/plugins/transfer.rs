@@ -1,9 +1,12 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
-use crate::state::{Authority, DataBlob};
+use crate::{
+    plugins::PluginType,
+    state::{Authority, DataBlob},
+};
 
-use super::{PluginValidation, ValidationResult};
+use super::{Plugin, PluginValidation, ValidationResult};
 
 /// This plugin manages the ability to transfer an asset and any authorities
 /// added are permitted to transfer the asset on behalf of the owner.
@@ -116,5 +119,36 @@ impl PluginValidation for Transfer {
         _plugin_to_remove: Option<&super::Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
+    }
+
+    fn validate_approve_plugin_authority(
+        &self,
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+        _new_plugin: Option<&super::Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    /// Validate the revoke plugin authority lifecycle action.
+    fn validate_revoke_plugin_authority(
+        &self,
+        authority: &AccountInfo,
+        authorities: &Authority,
+        plugin_to_revoke: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        solana_program::msg!("Authority: {:?}", authority.key);
+        solana_program::msg!("Authorities: {:?}", authorities);
+        if authorities
+            == &(Authority::Pubkey {
+                address: *authority.key,
+            })
+            && plugin_to_revoke.is_some()
+            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::Transfer
+        {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
     }
 }

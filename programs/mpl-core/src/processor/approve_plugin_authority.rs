@@ -7,9 +7,12 @@ use crate::{
     instruction::accounts::{
         ApproveCollectionPluginAuthorityAccounts, ApprovePluginAuthorityAccounts,
     },
-    plugins::{approve_authority_on_plugin, PluginType},
+    plugins::{approve_authority_on_plugin, fetch_wrapped_plugin, Plugin, PluginType},
     state::{Asset, Authority, Collection, CoreAsset, DataBlob, Key, SolanaAccount},
-    utils::{fetch_core_data, load_key, resolve_payer},
+    utils::{
+        fetch_core_data, load_key, resolve_payer, validate_asset_permissions,
+        validate_collection_permissions,
+    },
 };
 
 #[repr(C)]
@@ -33,6 +36,23 @@ pub(crate) fn approve_plugin_authority<'a>(
         msg!("Error: Approve plugin authority for compressed is not available");
         return Err(MplCoreError::NotAvailable.into());
     }
+
+    let (_, plugin) = fetch_wrapped_plugin::<Asset>(ctx.accounts.asset, args.plugin_type)?;
+
+    // Validate asset permissions.
+    let _ = validate_asset_permissions(
+        ctx.accounts.authority,
+        ctx.accounts.asset,
+        ctx.accounts.collection,
+        None,
+        Some(&plugin),
+        Asset::check_approve_plugin_authority,
+        Collection::check_approve_plugin_authority,
+        PluginType::check_approve_plugin_authority,
+        Asset::validate_approve_plugin_authority,
+        Collection::validate_approve_plugin_authority,
+        Plugin::validate_approve_plugin_authority,
+    )?;
 
     process_approve_plugin_authority::<Asset>(
         ctx.accounts.asset,
@@ -60,6 +80,20 @@ pub(crate) fn approve_collection_plugin_authority<'a>(
     // Guards.
     assert_signer(ctx.accounts.authority)?;
     let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+
+    let (_, plugin) =
+        fetch_wrapped_plugin::<Collection>(ctx.accounts.collection, args.plugin_type)?;
+
+    // Validate collection permissions.
+    let _ = validate_collection_permissions(
+        ctx.accounts.authority,
+        ctx.accounts.collection,
+        Some(&plugin),
+        Collection::check_approve_plugin_authority,
+        PluginType::check_approve_plugin_authority,
+        Collection::validate_approve_plugin_authority,
+        Plugin::validate_approve_plugin_authority,
+    )?;
 
     process_approve_plugin_authority::<Collection>(
         ctx.accounts.collection,

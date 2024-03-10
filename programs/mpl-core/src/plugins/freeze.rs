@@ -1,9 +1,12 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
-use crate::state::{Authority, CoreAsset, DataBlob};
+use crate::{
+    plugins::PluginType,
+    state::{Authority, CoreAsset, DataBlob},
+};
 
-use super::{PluginValidation, ValidationResult};
+use super::{Plugin, PluginValidation, ValidationResult};
 
 /// The freeze plugin allows any authority to lock the asset so it's no longer transferable.
 /// The default authority for this plugin is the owner.
@@ -142,5 +145,36 @@ impl PluginValidation for Freeze {
         _plugin_to_remove: Option<&super::Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
+    }
+
+    fn validate_approve_plugin_authority(
+        &self,
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+        _new_plugin: Option<&super::Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    /// Validate the revoke plugin authority lifecycle action.
+    fn validate_revoke_plugin_authority(
+        &self,
+        authority: &AccountInfo,
+        authorities: &Authority,
+        plugin_to_revoke: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        solana_program::msg!("Authority: {:?}", authority.key);
+        solana_program::msg!("Authorities: {:?}", authorities);
+        if authorities
+            == &(Authority::Pubkey {
+                address: *authority.key,
+            })
+            && plugin_to_revoke.is_some()
+            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::Freeze
+        {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
     }
 }

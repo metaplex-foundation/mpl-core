@@ -7,9 +7,15 @@ use crate::{
     instruction::accounts::{
         RevokeCollectionPluginAuthorityAccounts, RevokePluginAuthorityAccounts,
     },
-    plugins::{revoke_authority_on_plugin, PluginHeader, PluginRegistry, PluginType},
+    plugins::{
+        fetch_wrapped_plugin, revoke_authority_on_plugin, Plugin, PluginHeader, PluginRegistry,
+        PluginType,
+    },
     state::{Asset, Authority, Collection, Key},
-    utils::{fetch_core_data, load_key, resolve_payer, resolve_to_authority},
+    utils::{
+        fetch_core_data, load_key, resolve_payer, resolve_to_authority, validate_asset_permissions,
+        validate_collection_permissions,
+    },
 };
 
 #[repr(C)]
@@ -38,6 +44,23 @@ pub(crate) fn revoke_plugin_authority<'a>(
     //TODO: Make this better.
     let authority_type =
         resolve_to_authority(ctx.accounts.authority, ctx.accounts.collection, &asset)?;
+
+    let (_, plugin) = fetch_wrapped_plugin::<Asset>(ctx.accounts.asset, args.plugin_type)?;
+
+    // Validate asset permissions.
+    let _ = validate_asset_permissions(
+        ctx.accounts.authority,
+        ctx.accounts.asset,
+        ctx.accounts.collection,
+        None,
+        Some(&plugin),
+        Asset::check_revoke_plugin_authority,
+        Collection::check_revoke_plugin_authority,
+        PluginType::check_revoke_plugin_authority,
+        Asset::validate_revoke_plugin_authority,
+        Collection::validate_revoke_plugin_authority,
+        Plugin::validate_revoke_plugin_authority,
+    )?;
 
     process_revoke_plugin_authority(
         ctx.accounts.asset,
@@ -68,6 +91,20 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
 
     let (_, plugin_header, mut plugin_registry) =
         fetch_core_data::<Collection>(ctx.accounts.collection)?;
+
+    let (_, plugin) =
+        fetch_wrapped_plugin::<Collection>(ctx.accounts.collection, args.plugin_type)?;
+
+    // Validate collection permissions.
+    let _ = validate_collection_permissions(
+        ctx.accounts.authority,
+        ctx.accounts.collection,
+        Some(&plugin),
+        Collection::check_revoke_plugin_authority,
+        PluginType::check_revoke_plugin_authority,
+        Collection::validate_revoke_plugin_authority,
+        Plugin::validate_revoke_plugin_authority,
+    )?;
 
     process_revoke_plugin_authority(
         ctx.accounts.collection,

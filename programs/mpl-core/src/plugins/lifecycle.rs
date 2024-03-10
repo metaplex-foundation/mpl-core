@@ -39,6 +39,24 @@ impl PluginType {
         }
     }
 
+    /// Check permissions for the approve plugin authority lifecycle event.
+    pub fn check_approve_plugin_authority(plugin_type: &PluginType) -> CheckResult {
+        #[allow(clippy::match_single_binding)]
+        match plugin_type {
+            _ => CheckResult::None,
+        }
+    }
+
+    /// Check permissions for the revoke plugin authority lifecycle event.
+    pub fn check_revoke_plugin_authority(plugin_type: &PluginType) -> CheckResult {
+        #[allow(clippy::match_single_binding)]
+        match plugin_type {
+            //TODO: This isn't very efficient because it requires every plugin to be deserialized
+            // to check if it's the plugin whose authority is being revoked.
+            _ => CheckResult::CanApprove,
+        }
+    }
+
     /// Check if a plugin is permitted to approve or deny a create action.
     pub fn check_create(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
@@ -143,6 +161,64 @@ impl Plugin {
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_remove_plugin(authority, authorities, plugin_to_remove)
             }
+        }
+    }
+
+    /// Validate the approve plugin authority lifecycle event.
+    pub fn validate_approve_plugin_authority(
+        plugin: &Plugin,
+        authority: &AccountInfo,
+        _: Option<&AccountInfo>,
+        authorities: &Authority,
+        plugin_to_approve: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        match plugin {
+            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
+            Plugin::Royalties(royalties) => royalties.validate_approve_plugin_authority(
+                authority,
+                authorities,
+                plugin_to_approve,
+            ),
+            Plugin::Freeze(freeze) => {
+                freeze.validate_approve_plugin_authority(authority, authorities, plugin_to_approve)
+            }
+            Plugin::Burn(burn) => {
+                burn.validate_approve_plugin_authority(authority, authorities, plugin_to_approve)
+            }
+            Plugin::Transfer(transfer) => transfer.validate_approve_plugin_authority(
+                authority,
+                authorities,
+                plugin_to_approve,
+            ),
+            Plugin::UpdateDelegate(update_delegate) => update_delegate
+                .validate_approve_plugin_authority(authority, authorities, plugin_to_approve),
+        }
+    }
+
+    /// Validate the revoke plugin authority lifecycle event.
+    pub fn validate_revoke_plugin_authority(
+        plugin: &Plugin,
+        authority: &AccountInfo,
+        _: Option<&AccountInfo>,
+        authorities: &Authority,
+        plugin_to_revoke: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        match plugin {
+            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
+            Plugin::Royalties(royalties) => {
+                royalties.validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke)
+            }
+            Plugin::Freeze(freeze) => {
+                freeze.validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke)
+            }
+            Plugin::Burn(burn) => {
+                burn.validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke)
+            }
+            Plugin::Transfer(transfer) => {
+                transfer.validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke)
+            }
+            Plugin::UpdateDelegate(update_delegate) => update_delegate
+                .validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke),
         }
     }
 
@@ -298,54 +374,6 @@ impl Plugin {
             }
         }
     }
-
-    /// Route the validation of the add_authority action to the appropriate plugin.
-    /// There is no check for adding to a plugin because the plugin itself MUST validate the change.
-    pub(crate) fn validate_add_plugin_authority(
-        plugin: &Plugin,
-        authority: &AccountInfo,
-        _: Option<&AccountInfo>,
-        authorities: &Authority,
-        _: Option<&Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => {
-                royalties.validate_add_authority(authority, authorities)
-            }
-            Plugin::Freeze(freeze) => freeze.validate_add_authority(authority, authorities),
-            Plugin::Burn(burn) => burn.validate_add_authority(authority, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_add_authority(authority, authorities),
-            Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_add_authority(authority, authorities)
-            }
-        }
-    }
-
-    /// Route the validation of the add_authority action to the appropriate plugin.
-    /// There is no check for adding to a plugin because the plugin itself MUST validate the change.
-    pub(crate) fn validate_remove_plugin_authority(
-        plugin: &Plugin,
-        authority: &AccountInfo,
-        _: Option<&AccountInfo>,
-        authorities: &Authority,
-        _: Option<&Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => {
-                royalties.validate_remove_authority(authority, authorities)
-            }
-            Plugin::Freeze(freeze) => freeze.validate_remove_authority(authority, authorities),
-            Plugin::Burn(burn) => burn.validate_remove_authority(authority, authorities),
-            Plugin::Transfer(transfer) => {
-                transfer.validate_remove_authority(authority, authorities)
-            }
-            Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_remove_authority(authority, authorities)
-            }
-        }
-    }
 }
 
 /// Lifecycle validations
@@ -376,6 +404,22 @@ pub(crate) trait PluginValidation {
         authority: &AccountInfo,
         authorities: &Authority,
         plugin_to_remove: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError>;
+
+    /// Validate the approve plugin authority lifecycle action.
+    fn validate_approve_plugin_authority(
+        &self,
+        authority: &AccountInfo,
+        authorities: &Authority,
+        plugin_to_approve: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError>;
+
+    /// Validate the revoke plugin authority lifecycle action.
+    fn validate_revoke_plugin_authority(
+        &self,
+        authority: &AccountInfo,
+        authorities: &Authority,
+        plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError>;
 
     /// Validate the create lifecycle action.
@@ -485,13 +529,13 @@ pub(crate) fn validate_plugin_checks<'a>(
                 CheckResult::CanApprove | CheckResult::CanReject
             )
         {
+            solana_program::msg!("Validating plugin checks");
             let account = match key {
                 Key::Collection => collection.ok_or(MplCoreError::InvalidCollection)?,
                 Key::Asset => asset,
                 _ => unreachable!(),
             };
-            // let result = Plugin::load(account, registry_record.offset)?
-            //     .validate_burn(authority, &registry_record.authorities)?;
+
             let result = validate_fp(
                 &Plugin::load(account, registry_record.offset)?,
                 authority,
