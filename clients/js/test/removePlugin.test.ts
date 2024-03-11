@@ -13,7 +13,7 @@ test('it can remove a plugin from an asset', async (t) => {
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [plugin('Freeze', [{ frozen: false }])],
+    plugins: [{ plugin: plugin('Freeze', [{ frozen: false }]), authority: null }],
   });
 
   await assertAsset(t, umi, {
@@ -33,6 +33,6 @@ test('it can remove a plugin from an asset', async (t) => {
   }).sendAndConfirm(umi);
 
   const asset2 = await fetchAssetWithPlugins(umi, asset.publicKey);
-  
+
   t.is(asset2.freeze, undefined);
 });

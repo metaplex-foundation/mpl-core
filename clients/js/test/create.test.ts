@@ -184,7 +184,7 @@ test('it can create a new asset in account state with plugins with a different u
     owner: umi.identity,
     updateAuthority: updateAuthority('Address', [updateAuth.publicKey]),
     freeze: {
-      authority: { owner: true },
+      authority: { type: "Owner" },
       frozen: false,
     },
   });
