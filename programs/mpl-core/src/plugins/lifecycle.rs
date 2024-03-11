@@ -25,8 +25,8 @@ pub enum CheckResult {
 impl PluginType {
     /// Check permissions for the add plugin lifecycle event.
     pub fn check_add_plugin(plugin_type: &PluginType) -> CheckResult {
-        #[allow(clippy::match_single_binding)]
         match plugin_type {
+            PluginType::PermanentFreeze => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -133,6 +133,9 @@ impl Plugin {
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_add_plugin(authority, authorities, new_plugin)
             }
+            Plugin::PermanentFreeze(permanent_freeze) => {
+                permanent_freeze.validate_add_plugin(authority, authorities, new_plugin)
+            }
         }
     }
 
@@ -160,6 +163,9 @@ impl Plugin {
             }
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_remove_plugin(authority, authorities, plugin_to_remove)
+            }
+            Plugin::PermanentFreeze(permanent_freeze) => {
+                permanent_freeze.validate_remove_plugin(authority, authorities, plugin_to_remove)
             }
         }
     }
@@ -192,6 +198,8 @@ impl Plugin {
             ),
             Plugin::UpdateDelegate(update_delegate) => update_delegate
                 .validate_approve_plugin_authority(authority, authorities, plugin_to_approve),
+            Plugin::PermanentFreeze(permanent_freeze) => permanent_freeze
+                .validate_approve_plugin_authority(authority, authorities, plugin_to_approve),
         }
     }
 
@@ -219,6 +227,8 @@ impl Plugin {
             }
             Plugin::UpdateDelegate(update_delegate) => update_delegate
                 .validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke),
+            Plugin::PermanentFreeze(permanent_freeze) => permanent_freeze
+                .validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke),
         }
     }
 
@@ -239,6 +249,9 @@ impl Plugin {
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_create(authority, authorities)
             }
+            Plugin::PermanentFreeze(permanent_freeze) => {
+                permanent_freeze.validate_create(authority, authorities)
+            }
         }
     }
 
@@ -258,6 +271,9 @@ impl Plugin {
             Plugin::Transfer(transfer) => transfer.validate_update(authority, authorities),
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_update(authority, authorities)
+            }
+            Plugin::PermanentFreeze(permanent_freeze) => {
+                permanent_freeze.validate_update(authority, authorities)
             }
         }
     }
@@ -287,6 +303,9 @@ impl Plugin {
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_update_plugin(core_asset, authority, authorities)
             }
+            Plugin::PermanentFreeze(permanent_freeze) => {
+                permanent_freeze.validate_update_plugin(core_asset, authority, authorities)
+            }
         }
     }
 
@@ -306,6 +325,9 @@ impl Plugin {
             Plugin::Transfer(transfer) => transfer.validate_burn(authority, authorities),
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_burn(authority, authorities)
+            }
+            Plugin::PermanentFreeze(permanent_freeze) => {
+                permanent_freeze.validate_burn(authority, authorities)
             }
         }
     }
@@ -332,6 +354,9 @@ impl Plugin {
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_transfer(authority, new_owner, authorities)
             }
+            Plugin::PermanentFreeze(permanent_freeze) => {
+                permanent_freeze.validate_transfer(authority, new_owner, authorities)
+            }
         }
     }
 
@@ -352,6 +377,9 @@ impl Plugin {
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_compress(authority, authorities)
             }
+            Plugin::PermanentFreeze(permanent_freeze) => {
+                permanent_freeze.validate_compress(authority, authorities)
+            }
         }
     }
 
@@ -371,6 +399,9 @@ impl Plugin {
             Plugin::Transfer(transfer) => transfer.validate_decompress(authority, authorities),
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_decompress(authority, authorities)
+            }
+            Plugin::PermanentFreeze(permanent_freeze) => {
+                permanent_freeze.validate_decompress(authority, authorities)
             }
         }
     }

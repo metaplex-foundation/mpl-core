@@ -5,7 +5,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{AddCollectionPluginAccounts, AddPluginAccounts},
-    plugins::{create_meta_idempotent, initialize_plugin, Plugin, PluginType},
+    plugins::{create_meta_idempotent, initialize_plugin, Plugin, PluginType, ValidationResult},
     state::{Asset, Authority, Collection, DataBlob, Key, SolanaAccount},
     utils::{load_key, resolve_payer, validate_asset_permissions, validate_collection_permissions},
 };
@@ -30,6 +30,17 @@ pub(crate) fn add_plugin<'a>(
     if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Adding plugin to compressed is not available");
         return Err(MplCoreError::NotAvailable.into());
+    }
+
+    if Plugin::validate_add_plugin(
+        &args.plugin,
+        ctx.accounts.authority,
+        None,
+        &args.init_authority.unwrap_or(args.plugin.manager()),
+        None,
+    )? == ValidationResult::Rejected
+    {
+        return Err(MplCoreError::InvalidAuthority.into());
     }
 
     // Validate asset permissions.

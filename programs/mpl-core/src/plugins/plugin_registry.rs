@@ -56,11 +56,11 @@ impl SolanaAccount for PluginRegistry {
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct RegistryRecord {
     /// The type of plugin.
-    pub plugin_type: PluginType,
+    pub plugin_type: PluginType, // 2
     /// The authorities who have permission to utilize a plugin.
-    pub authority: Authority,
+    pub authority: Authority, // Variable
     /// The offset to the plugin in the account.
-    pub offset: usize,
+    pub offset: usize, // 8
 }
 
 impl RegistryRecord {

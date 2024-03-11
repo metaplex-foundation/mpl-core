@@ -17,6 +17,7 @@ export * from './freeze';
 export * from './hashablePluginSchema';
 export * from './hashedAssetSchema';
 export * from './key';
+export * from './permanentFreeze';
 export * from './plugin';
 export * from './pluginAuthorityPair';
 export * from './pluginType';

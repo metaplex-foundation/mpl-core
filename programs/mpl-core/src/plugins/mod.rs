@@ -1,6 +1,7 @@
 mod burn;
 mod freeze;
 mod lifecycle;
+mod permanent_freeze;
 mod plugin_header;
 mod plugin_registry;
 mod royalties;
@@ -12,19 +13,20 @@ pub use burn::*;
 pub use freeze::*;
 pub use lifecycle::*;
 use num_derive::ToPrimitive;
+pub use permanent_freeze::*;
 pub use plugin_header::*;
 pub use plugin_registry::*;
 pub use royalties::*;
-use strum::EnumCount;
 pub use transfer::*;
 pub use update_delegate::*;
+pub use utils::*;
 
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
 };
-pub use utils::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
+use strum::EnumCount;
 
 use crate::{
     error::MplCoreError,
@@ -47,6 +49,8 @@ pub enum Plugin {
     Transfer(Transfer),
     /// Update Delegate plugin.
     UpdateDelegate(UpdateDelegate),
+    /// Permanent Freeze authority which allows the creator to freeze
+    PermanentFreeze(PermanentFreeze),
 }
 
 impl Plugin {
@@ -105,6 +109,8 @@ pub enum PluginType {
     Transfer,
     /// Update Delegate plugin.
     UpdateDelegate,
+    /// The Permanent Freeze plugin.
+    PermanentFreeze,
 }
 
 impl DataBlob for PluginType {
@@ -126,6 +132,7 @@ impl From<&Plugin> for PluginType {
             Plugin::Burn(_) => PluginType::Burn,
             Plugin::Transfer(_) => PluginType::Transfer,
             Plugin::UpdateDelegate(_) => PluginType::UpdateDelegate,
+            Plugin::PermanentFreeze(_) => PluginType::PermanentFreeze,
         }
     }
 }
@@ -140,6 +147,7 @@ impl PluginType {
             PluginType::Burn => Authority::Owner,
             PluginType::Transfer => Authority::Owner,
             PluginType::UpdateDelegate => Authority::UpdateAuthority,
+            PluginType::PermanentFreeze => Authority::UpdateAuthority,
         }
     }
 }

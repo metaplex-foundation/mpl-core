@@ -15,6 +15,7 @@ export enum PluginType {
   Burn,
   Transfer,
   UpdateDelegate,
+  PermanentFreeze,
 }
 
 export type PluginTypeArgs = PluginType;

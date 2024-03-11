@@ -5,23 +5,11 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Burn;
-use crate::generated::types::Freeze;
-use crate::generated::types::PermanentFreeze;
-use crate::generated::types::Royalties;
-use crate::generated::types::Transfer;
-use crate::generated::types::UpdateDelegate;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub enum Plugin {
-    Reserved,
-    Royalties(Royalties),
-    Freeze(Freeze),
-    Burn(Burn),
-    Transfer(Transfer),
-    UpdateDelegate(UpdateDelegate),
-    PermanentFreeze(PermanentFreeze),
+pub struct PermanentFreeze {
+    pub frozen: bool,
 }

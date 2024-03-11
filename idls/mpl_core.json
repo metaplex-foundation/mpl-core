@@ -1458,6 +1458,18 @@
       }
     },
     {
+      "name": "PermanentFreeze",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "frozen",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
       "name": "RegistryRecord",
       "type": {
         "kind": "struct",
@@ -2023,6 +2035,14 @@
                 "defined": "UpdateDelegate"
               }
             ]
+          },
+          {
+            "name": "PermanentFreeze",
+            "fields": [
+              {
+                "defined": "PermanentFreeze"
+              }
+            ]
           }
         ]
       }
@@ -2049,6 +2069,9 @@
           },
           {
             "name": "UpdateDelegate"
+          },
+          {
+            "name": "PermanentFreeze"
           }
         ]
       }

@@ -20,6 +20,8 @@ import {
   BurnArgs,
   Freeze,
   FreezeArgs,
+  PermanentFreeze,
+  PermanentFreezeArgs,
   Royalties,
   RoyaltiesArgs,
   Transfer,
@@ -28,6 +30,7 @@ import {
   UpdateDelegateArgs,
   getBurnSerializer,
   getFreezeSerializer,
+  getPermanentFreezeSerializer,
   getRoyaltiesSerializer,
   getTransferSerializer,
   getUpdateDelegateSerializer,
@@ -39,7 +42,8 @@ export type Plugin =
   | { __kind: 'Freeze'; fields: [Freeze] }
   | { __kind: 'Burn'; fields: [Burn] }
   | { __kind: 'Transfer'; fields: [Transfer] }
-  | { __kind: 'UpdateDelegate'; fields: [UpdateDelegate] };
+  | { __kind: 'UpdateDelegate'; fields: [UpdateDelegate] }
+  | { __kind: 'PermanentFreeze'; fields: [PermanentFreeze] };
 
 export type PluginArgs =
   | { __kind: 'Reserved' }
@@ -47,7 +51,8 @@ export type PluginArgs =
   | { __kind: 'Freeze'; fields: [FreezeArgs] }
   | { __kind: 'Burn'; fields: [BurnArgs] }
   | { __kind: 'Transfer'; fields: [TransferArgs] }
-  | { __kind: 'UpdateDelegate'; fields: [UpdateDelegateArgs] };
+  | { __kind: 'UpdateDelegate'; fields: [UpdateDelegateArgs] }
+  | { __kind: 'PermanentFreeze'; fields: [PermanentFreezeArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -83,6 +88,12 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
           ['fields', tuple([getUpdateDelegateSerializer()])],
         ]),
       ],
+      [
+        'PermanentFreeze',
+        struct<GetDataEnumKindContent<Plugin, 'PermanentFreeze'>>([
+          ['fields', tuple([getPermanentFreezeSerializer()])],
+        ]),
+      ],
     ],
     { description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
@@ -112,6 +123,10 @@ export function plugin(
   kind: 'UpdateDelegate',
   data: GetDataEnumKindContent<PluginArgs, 'UpdateDelegate'>['fields']
 ): GetDataEnumKind<PluginArgs, 'UpdateDelegate'>;
+export function plugin(
+  kind: 'PermanentFreeze',
+  data: GetDataEnumKindContent<PluginArgs, 'PermanentFreeze'>['fields']
+): GetDataEnumKind<PluginArgs, 'PermanentFreeze'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any

@@ -5,6 +5,7 @@ import {
   Burn,
   Collection,
   Freeze,
+  PermanentFreeze,
   PluginHeader,
   Royalties,
   Transfer,
@@ -28,6 +29,7 @@ export type FreezePlugin = BasePlugin & Freeze;
 export type BurnPlugin = BasePlugin & Burn;
 export type TransferPlugin = BasePlugin & Transfer;
 export type UpdateDelegatePlugin = BasePlugin & UpdateDelegate;
+export type PermanentFreezePlugin = BasePlugin & PermanentFreeze;
 
 export type PluginsList = {
   royalties?: RoyaltiesPlugin;
@@ -35,6 +37,7 @@ export type PluginsList = {
   burn?: BurnPlugin;
   transfer?: TransferPlugin;
   updateDelegate?: UpdateDelegatePlugin;
+  permanentFreeze?: PermanentFreezePlugin;
 };
 
 export type AssetWithPlugins = Asset &

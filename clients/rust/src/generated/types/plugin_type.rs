@@ -17,4 +17,5 @@ pub enum PluginType {
     Burn,
     Transfer,
     UpdateDelegate,
+    PermanentFreeze,
 }
