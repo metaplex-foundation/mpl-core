@@ -93,15 +93,15 @@ pub enum MplCoreError {
     #[error("Missing update authority")]
     MissingUpdateAuthority,
 
-    /// 20 - Missing new owner
+    /// 21 - Missing new owner
     #[error("Missing new owner")]
     MissingNewOwner,
 
-    /// 21 - Missing system program
+    /// 22 - Missing system program
     #[error("Missing system program")]
     MissingSystemProgram,
 
-    /// 22 - Feature not available
+    /// 23 - Feature not available
     #[error("Feature not available")]
     NotAvailable,
 }
