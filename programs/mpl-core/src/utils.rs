@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use num_traits::{FromPrimitive, ToPrimitive};
@@ -12,8 +10,9 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     plugins::{
-        create_meta_idempotent, initialize_plugin, validate_plugin_checks, CheckResult, Plugin,
-        PluginHeader, PluginRegistry, PluginType, RegistryRecord, ValidationResult,
+        create_meta_idempotent, initialize_plugin, validate_plugin_checks, CheckResult,
+        LifecycleChecks, Plugin, PluginHeader, PluginRegistry, PluginType, RegistryRecord,
+        ValidationResult,
     },
     state::{
         Asset, Authority, Collection, Compressible, CompressionProof, CoreAsset, DataBlob,
@@ -236,7 +235,7 @@ pub fn validate_asset_permissions<'a>(
 ) -> Result<(Asset, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
     let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<Asset>(asset)?;
 
-    let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
+    let mut lifecycle_checks: LifecycleChecks = LifecycleChecks::default();
 
     // The asset approval overrides the collection approval.
     let asset_approval = asset_check_fp();
@@ -249,7 +248,7 @@ pub fn validate_asset_permissions<'a>(
     if let Some(collection_info) = collection {
         fetch_core_data::<Collection>(collection_info).map(|(_, _, registry)| {
             registry.map(|r| {
-                r.check_registry(Key::Collection, plugin_check_fp, &mut checks);
+                r.check_registry(Key::Collection, plugin_check_fp, &mut lifecycle_checks);
                 r
             })
         })?;
@@ -258,10 +257,10 @@ pub fn validate_asset_permissions<'a>(
     // Next check the asset plugins. Plugins on the asset override the collection plugins,
     // so we don't need to validate the collection plugins if the asset has a plugin.
     if let Some(registry) = plugin_registry.as_ref() {
-        registry.check_registry(Key::Asset, plugin_check_fp, &mut checks);
+        registry.check_registry(Key::Asset, plugin_check_fp, &mut lifecycle_checks);
     }
 
-    solana_program::msg!("checks: {:#?}", checks);
+    solana_program::msg!("checks: {:#?}", lifecycle_checks);
 
     // Do the core validation.
     let mut approved = matches!(
@@ -285,7 +284,7 @@ pub fn validate_asset_permissions<'a>(
 
     approved = validate_plugin_checks(
         Key::Collection,
-        &checks,
+        &lifecycle_checks,
         authority_info,
         new_owner,
         new_plugin,
@@ -298,7 +297,7 @@ pub fn validate_asset_permissions<'a>(
 
     approved = validate_plugin_checks(
         Key::Asset,
-        &checks,
+        &lifecycle_checks,
         authority_info,
         new_owner,
         new_plugin,
@@ -344,13 +343,16 @@ pub fn validate_collection_permissions<'a>(
 
     let mut approved = false;
     match collection_check_fp() {
-        CheckResult::CanApprove | CheckResult::CanReject => {
+        CheckResult::CanApprove | CheckResult::CanReject | CheckResult::CanForceApprove => {
             match collection_validate_fp(&deserialized_collection, authority_info, new_plugin)? {
                 ValidationResult::Approved => {
                     approved = true;
                 }
                 ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
                 ValidationResult::Pass => (),
+                ValidationResult::ForceApproved => {
+                    return Ok((deserialized_collection, plugin_header, plugin_registry));
+                }
             }
         }
         CheckResult::None => (),

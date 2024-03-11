@@ -1,10 +1,10 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
-use std::{cmp::Ordering, collections::BTreeMap};
+use std::cmp::Ordering;
 
 use crate::state::{Authority, DataBlob, Key, SolanaAccount};
 
-use super::{CheckResult, PluginType};
+use super::{CheckResult, LifecycleChecks, PluginType};
 
 /// The Plugin Registry stores a record of all plugins, their location, and their authorities.
 #[repr(C)]
@@ -20,14 +20,18 @@ pub struct PluginRegistry {
 
 impl PluginRegistry {
     /// Evaluate checks for all plugins in the registry.
-    pub fn check_registry(
+    pub(crate) fn check_registry(
         &self,
         key: Key,
         check_fp: fn(&PluginType) -> CheckResult,
-        result: &mut BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
+        result: &mut LifecycleChecks,
     ) {
         for record in &self.registry {
-            result.insert(
+            let check_result = check_fp(&record.plugin_type);
+            if check_result == CheckResult::CanForceApprove {
+                result.force_approve = true;
+            }
+            result.checks.insert(
                 record.plugin_type,
                 (key, check_fp(&record.plugin_type), record.clone()),
             );

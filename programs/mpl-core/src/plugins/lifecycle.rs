@@ -20,6 +20,8 @@ pub enum CheckResult {
     CanReject,
     /// A plugin is not permitted to approve or reject a lifecycle action.
     None,
+    /// Certain plugins can force approve a lifecycle action.
+    CanForceApprove,
 }
 
 impl PluginType {
@@ -417,6 +419,8 @@ pub enum ValidationResult {
     Rejected,
     /// The plugin abstains from approving or rejecting the lifecycle action.
     Pass,
+    /// The plugin force approves the lifecycle action.
+    ForceApproved,
 }
 
 /// Plugin validation trait which is implemented by each plugin.
@@ -539,7 +543,7 @@ pub(crate) trait PluginValidation {
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn validate_plugin_checks<'a>(
     key: Key,
-    checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
+    lifecycle_checks: &LifecycleChecks,
     authority: &AccountInfo<'a>,
     new_owner: Option<&AccountInfo>,
     new_plugin: Option<&Plugin>,
@@ -553,11 +557,11 @@ pub(crate) fn validate_plugin_checks<'a>(
         Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<bool, ProgramError> {
-    for (_, (check_key, check_result, registry_record)) in checks {
+    for (check_key, check_result, registry_record) in lifecycle_checks.checks.values() {
         if *check_key == key
             && matches!(
                 check_result,
-                CheckResult::CanApprove | CheckResult::CanReject
+                CheckResult::CanApprove | CheckResult::CanReject | CheckResult::CanForceApprove
             )
         {
             solana_program::msg!("Validating plugin checks");
@@ -582,4 +586,11 @@ pub(crate) fn validate_plugin_checks<'a>(
         }
     }
     Ok(false)
+}
+
+/// A simple type to store the check results for lifecycle events.
+#[derive(Debug, Default)]
+pub(crate) struct LifecycleChecks {
+    pub(crate) force_approve: bool,
+    pub(crate) checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
 }
