@@ -25,7 +25,7 @@ test('it can create a new asset with a collection if it is the collection update
 
   // When we create a new account.
   const collection = await createCollection(umi, {
-    plugins: [plugin('UpdateDelegate', [{}])],
+    plugins: [{ plugin: plugin('UpdateDelegate', [{}]), authority: null }],
   });
 
   await approveCollectionPluginAuthority(umi, {

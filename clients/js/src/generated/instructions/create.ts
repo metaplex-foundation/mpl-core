@@ -30,10 +30,10 @@ import {
 import {
   DataState,
   DataStateArgs,
-  Plugin,
-  PluginArgs,
+  PluginAuthorityPair,
+  PluginAuthorityPairArgs,
   getDataStateSerializer,
-  getPluginSerializer,
+  getPluginAuthorityPairSerializer,
 } from '../types';
 
 // Accounts.
@@ -62,14 +62,14 @@ export type CreateInstructionData = {
   dataState: DataState;
   name: string;
   uri: string;
-  plugins: Array<Plugin>;
+  plugins: Array<PluginAuthorityPair>;
 };
 
 export type CreateInstructionDataArgs = {
   dataState: DataStateArgs;
   name: string;
   uri: string;
-  plugins: Array<PluginArgs>;
+  plugins: Array<PluginAuthorityPairArgs>;
 };
 
 export function getCreateInstructionDataSerializer(): Serializer<
@@ -83,7 +83,7 @@ export function getCreateInstructionDataSerializer(): Serializer<
         ['dataState', getDataStateSerializer()],
         ['name', string()],
         ['uri', string()],
-        ['plugins', array(getPluginSerializer())],
+        ['plugins', array(getPluginAuthorityPairSerializer())],
       ],
       { description: 'CreateInstructionData' }
     ),

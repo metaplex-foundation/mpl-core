@@ -1411,6 +1411,28 @@
   ],
   "types": [
     {
+      "name": "PluginAuthorityPair",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plugin",
+            "type": {
+              "defined": "Plugin"
+            }
+          },
+          {
+            "name": "authority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Burn",
       "type": {
         "kind": "struct",
@@ -1673,7 +1695,7 @@
             "name": "plugins",
             "type": {
               "vec": {
-                "defined": "Plugin"
+                "defined": "PluginAuthorityPair"
               }
             }
           }
@@ -1697,7 +1719,7 @@
             "name": "plugins",
             "type": {
               "vec": {
-                "defined": "Plugin"
+                "defined": "PluginAuthorityPair"
               }
             }
           }

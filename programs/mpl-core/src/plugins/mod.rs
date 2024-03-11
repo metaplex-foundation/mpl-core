@@ -143,3 +143,11 @@ impl PluginType {
         }
     }
 }
+
+/// A pair of a plugin type and an optional authority.
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct PluginAuthorityPair {
+    pub(crate) plugin: Plugin,
+    pub(crate) authority: Option<Authority>,
+}

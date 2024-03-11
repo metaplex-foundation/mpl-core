@@ -27,7 +27,11 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import { Plugin, PluginArgs, getPluginSerializer } from '../types';
+import {
+  PluginAuthorityPair,
+  PluginAuthorityPairArgs,
+  getPluginAuthorityPairSerializer,
+} from '../types';
 
 // Accounts.
 export type CreateCollectionInstructionAccounts = {
@@ -46,13 +50,13 @@ export type CreateCollectionInstructionData = {
   discriminator: number;
   name: string;
   uri: string;
-  plugins: Array<Plugin>;
+  plugins: Array<PluginAuthorityPair>;
 };
 
 export type CreateCollectionInstructionDataArgs = {
   name: string;
   uri: string;
-  plugins: Array<PluginArgs>;
+  plugins: Array<PluginAuthorityPairArgs>;
 };
 
 export function getCreateCollectionInstructionDataSerializer(): Serializer<
@@ -69,7 +73,7 @@ export function getCreateCollectionInstructionDataSerializer(): Serializer<
         ['discriminator', u8()],
         ['name', string()],
         ['uri', string()],
-        ['plugins', array(getPluginSerializer())],
+        ['plugins', array(getPluginAuthorityPairSerializer())],
       ],
       { description: 'CreateCollectionInstructionData' }
     ),

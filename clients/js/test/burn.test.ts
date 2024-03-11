@@ -69,7 +69,7 @@ test('it cannot burn an asset if it is frozen', async (t) => {
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [plugin('Freeze', [{ frozen: true }])],
+    plugins: [{ plugin: plugin('Freeze', [{ frozen: true }]), authority: null }],
   });
 
   await assertAsset(t, umi, {

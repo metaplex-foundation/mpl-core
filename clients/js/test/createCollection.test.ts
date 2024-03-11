@@ -37,9 +37,9 @@ test('it can create a new collection', async (t) => {
 test('it can create a new collection with plugins', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  
+
   const collection = await createCollection(umi, {
-    plugins: [plugin('Freeze', [{ frozen: false }])],
+    plugins: [{ plugin: plugin('Freeze', [{ frozen: false }]), authority: null }],
   });
 
   await assertCollection(t, umi, {
@@ -62,7 +62,7 @@ test('it can create a new asset with a collection', async (t) => {
     umi,
     {},
     {
-      plugins: [plugin('UpdateDelegate', [{}])],
+      plugins: [{ plugin: plugin('UpdateDelegate', [{}]), authority: null }],
     }
   );
 
@@ -91,7 +91,7 @@ test('it can create a new asset with a collection with collection delegate', asy
   const delegate = generateSigner(umi);
 
   const collection = await createCollection(umi, {
-    plugins: [plugin('UpdateDelegate', [{}])],
+    plugins: [{ plugin: plugin('UpdateDelegate', [{}]), authority: null }],
   });
 
   await approveCollectionPluginAuthority(umi, {

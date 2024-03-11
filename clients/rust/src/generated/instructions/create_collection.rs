@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Plugin;
+use crate::generated::types::PluginAuthorityPair;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -86,7 +86,7 @@ impl CreateCollectionInstructionData {
 pub struct CreateCollectionInstructionArgs {
     pub name: String,
     pub uri: String,
-    pub plugins: Vec<Plugin>,
+    pub plugins: Vec<PluginAuthorityPair>,
 }
 
 /// Instruction builder for `CreateCollection`.
@@ -105,7 +105,7 @@ pub struct CreateCollectionBuilder {
     system_program: Option<solana_program::pubkey::Pubkey>,
     name: Option<String>,
     uri: Option<String>,
-    plugins: Option<Vec<Plugin>>,
+    plugins: Option<Vec<PluginAuthorityPair>>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -153,7 +153,7 @@ impl CreateCollectionBuilder {
         self
     }
     #[inline(always)]
-    pub fn plugins(&mut self, plugins: Vec<Plugin>) -> &mut Self {
+    pub fn plugins(&mut self, plugins: Vec<PluginAuthorityPair>) -> &mut Self {
         self.plugins = Some(plugins);
         self
     }
@@ -403,7 +403,7 @@ impl<'a, 'b> CreateCollectionCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn plugins(&mut self, plugins: Vec<Plugin>) -> &mut Self {
+    pub fn plugins(&mut self, plugins: Vec<PluginAuthorityPair>) -> &mut Self {
         self.instruction.plugins = Some(plugins);
         self
     }
@@ -487,7 +487,7 @@ struct CreateCollectionCpiBuilderInstruction<'a, 'b> {
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     name: Option<String>,
     uri: Option<String>,
-    plugins: Option<Vec<Plugin>>,
+    plugins: Option<Vec<PluginAuthorityPair>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

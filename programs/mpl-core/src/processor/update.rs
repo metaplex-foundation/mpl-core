@@ -191,7 +191,7 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
                 Ok(RegistryRecord {
                     plugin_type: record.plugin_type,
                     offset: new_offset as usize,
-                    authority: record.authority.clone(),
+                    authority: record.authority,
                 })
             })
             .collect::<Result<Vec<_>, MplCoreError>>()?;

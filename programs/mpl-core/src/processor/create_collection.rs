@@ -8,16 +8,16 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateCollectionAccounts,
-    plugins::{create_meta_idempotent, initialize_plugin, Plugin},
+    plugins::{create_meta_idempotent, initialize_plugin, PluginAuthorityPair},
     state::{Collection, Key},
 };
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct CreateCollectionArgs {
-    pub name: String,
-    pub uri: String,
-    pub plugins: Vec<Plugin>,
+pub(crate) struct CreateCollectionArgs {
+    pub(crate) name: String,
+    pub(crate) uri: String,
+    pub(crate) plugins: Vec<PluginAuthorityPair>,
 }
 
 pub(crate) fn create_collection<'a>(
@@ -85,8 +85,8 @@ pub(crate) fn create_collection<'a>(
 
     for plugin in args.plugins {
         initialize_plugin::<Collection>(
-            &plugin,
-            &plugin.manager(),
+            &plugin.plugin,
+            &plugin.authority.unwrap_or(plugin.plugin.manager()),
             ctx.accounts.collection,
             ctx.accounts.payer,
             ctx.accounts.system_program,

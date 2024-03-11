@@ -45,7 +45,7 @@ test('it can add remove asset plugin with collect amount', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = await createAsset(umi, {
-    plugins: [plugin('Freeze', [{ frozen: true }])]
+    plugins: [{ plugin: plugin('Freeze', [{ frozen: true }]), authority: null }]
   })
 
   t.assert(await hasCollectAmount(umi, asset.publicKey), 'Collect amount not found')

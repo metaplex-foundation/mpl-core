@@ -131,11 +131,7 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
     )?;
 
     // Return the plugin and its authorities.
-    Ok((
-        registry_record.authority.clone(),
-        inner,
-        registry_record.offset,
-    ))
+    Ok((registry_record.authority, inner, registry_record.offset))
 }
 
 /// Fetch the plugin from the registry.
@@ -159,7 +155,7 @@ pub fn fetch_wrapped_plugin<T: DataBlob + SolanaAccount>(
     let plugin = Plugin::deserialize(&mut &(*account.data).borrow()[registry_record.offset..])?;
 
     // Return the plugin and its authorities.
-    Ok((registry_record.authority.clone(), plugin))
+    Ok((registry_record.authority, plugin))
 }
 
 /// Fetch the plugin registry.
@@ -221,7 +217,7 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     let new_registry_record = RegistryRecord {
         plugin_type,
         offset: old_registry_offset,
-        authority: authority.clone(),
+        authority: *authority,
     };
 
     let size_increase = plugin_size
@@ -347,7 +343,7 @@ pub fn approve_authority_on_plugin<'a, T: CoreAsset>(
 
     assert_authority(asset, authority, &registry_record.authority)?;
 
-    registry_record.authority = new_authority.clone();
+    registry_record.authority = *new_authority;
 
     let authority_bytes = new_authority.try_to_vec()?;
 

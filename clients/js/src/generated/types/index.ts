@@ -18,6 +18,7 @@ export * from './hashablePluginSchema';
 export * from './hashedAssetSchema';
 export * from './key';
 export * from './plugin';
+export * from './pluginAuthorityPair';
 export * from './pluginType';
 export * from './registryRecord';
 export * from './royalties';

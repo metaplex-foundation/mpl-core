@@ -9,8 +9,8 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::CreateAccounts,
     plugins::{
-        create_meta_idempotent, initialize_plugin, CheckResult, Plugin, PluginType,
-        ValidationResult,
+        create_meta_idempotent, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
+        PluginType, ValidationResult,
     },
     state::{Asset, DataState, Key, UpdateAuthority, COLLECT_AMOUNT},
     utils::fetch_core_data,
@@ -19,10 +19,10 @@ use crate::{
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct CreateArgs {
-    pub data_state: DataState,
-    pub name: String,
-    pub uri: String,
-    pub plugins: Vec<Plugin>,
+    pub(crate) data_state: DataState,
+    pub(crate) name: String,
+    pub(crate) uri: String,
+    pub(crate) plugins: Vec<PluginAuthorityPair>,
 }
 
 pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> ProgramResult {
@@ -108,8 +108,8 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
 
         for plugin in &args.plugins {
             initialize_plugin::<Asset>(
-                plugin,
-                &plugin.manager(),
+                &plugin.plugin,
+                &plugin.authority.unwrap_or(plugin.plugin.manager()),
                 ctx.accounts.asset,
                 ctx.accounts.payer,
                 ctx.accounts.system_program,

@@ -15,12 +15,12 @@ import {
   fetchAssetWithPlugins,
   fetchCollectionWithPlugins,
   mplCore,
-  PluginArgs,
   createCollection as baseCreateCollection,
   CollectionWithPlugins,
   AssetWithPlugins,
   UpdateAuthority,
   PluginsList,
+  PluginAuthorityPairArgs,
 } from '../src';
 
 export const createUmi = async () => (await basecreateUmi()).use(mplCore());
@@ -36,7 +36,7 @@ export type CreateAssetHelperArgs = {
   updateAuthority?: PublicKey | Signer;
   collection?: PublicKey;
   // TODO use PluginList type here
-  plugins?: PluginArgs[];
+  plugins?: PluginAuthorityPairArgs[];
 };
 
 export const DEFAULT_ASSET = {
@@ -77,7 +77,7 @@ export type CreateCollectionHelperArgs = {
   uri?: string;
   updateAuthority?: PublicKey | Signer;
   // TODO use CollectionPluginList type here
-  plugins?: PluginArgs[];
+  plugins?: PluginAuthorityPairArgs[];
 };
 
 export const createCollection = async (
@@ -109,10 +109,10 @@ export const createAssetWithCollection: (
   const collection = assetInput.collection
     ? await fetchCollectionWithPlugins(umi, publicKey(assetInput.collection))
     : await createCollection(umi, {
-        payer: assetInput.payer,
-        updateAuthority: assetInput.updateAuthority,
-        ...collectionInput,
-      });
+      payer: assetInput.payer,
+      updateAuthority: assetInput.updateAuthority,
+      ...collectionInput,
+    });
 
   const asset = await createAsset(umi, {
     ...assetInput,
@@ -136,7 +136,7 @@ export const assertAsset = async (
     uri?: string | RegExp;
   } & PluginsList
 ) => {
-  const { asset, owner, name, uri, ...rest} = input
+  const { asset, owner, name, uri, ...rest } = input
   const assetAddress = publicKey(input.asset);
   const assetWithPlugins = await fetchAssetWithPlugins(umi, assetAddress);
 
@@ -170,7 +170,7 @@ export const assertCollection = async (
     currentSize?: number;
   } & PluginsList
 ) => {
-  const { collection, name, uri, updateAuthority, ...rest} = input
+  const { collection, name, uri, updateAuthority, ...rest } = input
 
   const collectionAddress = publicKey(collection);
   const collectionWithPlugins = await fetchCollectionWithPlugins(umi, collectionAddress);

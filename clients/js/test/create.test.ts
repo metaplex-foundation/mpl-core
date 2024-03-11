@@ -124,7 +124,10 @@ test('it can create a new asset in account state with plugins', async (t) => {
     asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    plugins: [plugin('Freeze', [{ frozen: false }])],
+    plugins: [{
+      plugin: plugin('Freeze', [{ frozen: false }]),
+      authority: null
+    }],
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -144,27 +147,96 @@ test('it can create a new asset in account state with plugins', async (t) => {
   })
 });
 
-// TODO: Add test
 test('it can create a new asset in account state with a different update authority', async (t) => {
-  t.pass();
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+  const updateAuth = generateSigner(umi);
+
+  await createAsset(umi, {
+    asset: assetAddress,
+    updateAuthority: updateAuth.publicKey,
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: assetAddress.publicKey,
+    owner: umi.identity,
+    updateAuthority: updateAuthority('Address', [updateAuth.publicKey]),
+  });
 });
 
-// TODO: Add test
 test('it can create a new asset in account state with plugins with a different update authority', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+  const updateAuth = generateSigner(umi);
+
+  await createAsset(umi, {
+    asset: assetAddress,
+    updateAuthority: updateAuth.publicKey,
+    plugins: [{ plugin: plugin('Freeze', [{ frozen: false }]), authority: null }],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: assetAddress.publicKey,
+    owner: umi.identity,
+    updateAuthority: updateAuthority('Address', [updateAuth.publicKey]),
+    freeze: {
+      authority: { owner: true },
+      frozen: false,
+    },
+  });
+});
+
+test('it cannot create a new asset if the address is already in use', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+
+  await createAsset(umi, {
+    asset: assetAddress,
+  });
+
+  const result = create(umi, {
+    dataState: DataState.AccountState,
+    asset: assetAddress,
+    name: DEFAULT_ASSET.name,
+    uri: DEFAULT_ASSET.uri,
+    plugins: [],
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
+})
+
+test.skip('it cannot create a new asset if the address is not owned by the system program', async (t) => {
+  // TODO: Reassign an account to another program.
+})
+
+// TODO
+test('it cannot create a new asset if the asset keypair does not sign', async (t) => { t.pass() })
+
+// TODO
+test('it cannot create a new asset if the payer does not sign', async (t) => { t.pass() })
+
+// TODO
+test('it cannot create a new asset if the payer does not sign, even if the authority does', async (t) => { t.pass() })
+
+// TODO
+test('it cannot create a new asset if the authority does not sign', async (t) => { t.pass() })
+
+// TODO: Add test
+test.skip('it can create a new asset in ledger state with plugins', async (t) => {
   t.pass();
 });
 
 // TODO: Add test
-test('it can create a new asset in ledger state with plugins', async (t) => {
+test.skip('it can create a new asset in ledger state with a different update authority', async (t) => {
   t.pass();
 });
 
 // TODO: Add test
-test('it can create a new asset in ledger state with a different update authority', async (t) => {
-  t.pass();
-});
-
-// TODO: Add test
-test('it can create a new asset in ledger state with plugins with a different update authority', async (t) => {
+test.skip('it can create a new asset in ledger state with plugins with a different update authority', async (t) => {
   t.pass();
 });
