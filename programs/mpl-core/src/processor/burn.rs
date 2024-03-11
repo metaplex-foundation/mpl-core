@@ -6,7 +6,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{BurnAccounts, BurnCollectionAccounts},
     plugins::{Plugin, PluginType},
-    state::{Asset, Collection, CompressionProof, Key},
+    state::{Asset, Collection, CompressionProof, Key, Wrappable},
     utils::{
         close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_payer,
         validate_asset_permissions, validate_collection_permissions, verify_proof,
@@ -28,7 +28,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
 
     match load_key(ctx.accounts.asset, 0)? {
         Key::HashedAsset => {
-            let compression_proof = args
+            let mut compression_proof = args
                 .compression_proof
                 .ok_or(MplCoreError::MissingCompressionProof)?;
 
@@ -48,6 +48,14 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
                 payer,
                 system_program,
             )?;
+
+            // Increment sequence number for the spl-noop event.  Note we don't care about the
+            // sequence number in account state because we are closing the account later in this
+            // instruction.
+            compression_proof.seq = compression_proof.seq.saturating_add(1);
+
+            // Send the spl-noop event for indexing the compressed asset.
+            compression_proof.wrap()?;
 
             // TODO Enable compressed burn.
             msg!("Error: Burning compressed is currently not available");

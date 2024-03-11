@@ -34,7 +34,7 @@ pub(crate) fn update_plugin<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    let (asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
+    let (mut asset, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
     let plugin_registry = plugin_registry.ok_or(MplCoreError::PluginsNotInitialized)?;
 
     let plugin_type: PluginType = (&args.plugin).into();
@@ -61,6 +61,9 @@ pub(crate) fn update_plugin<'a>(
     } else {
         return Err(MplCoreError::InvalidAuthority.into());
     }
+
+    // Increment sequence number and save only if it is `Some(_)`.
+    asset.increment_seq_and_save(ctx.accounts.asset)?;
 
     process_update_plugin()
 }

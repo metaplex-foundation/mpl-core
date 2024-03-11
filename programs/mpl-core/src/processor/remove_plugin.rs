@@ -34,7 +34,7 @@ pub(crate) fn remove_plugin<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    let (asset, plugin_header, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
+    let (mut asset, plugin_header, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
 
     // We don't have anything to delete if there's no plugin meta.
     if plugin_header.is_none() || plugin_registry.is_none() {
@@ -62,6 +62,9 @@ pub(crate) fn remove_plugin<'a>(
         Collection::validate_add_plugin,
         Plugin::validate_add_plugin,
     )?;
+
+    // Increment sequence number and save only if it is `Some(_)`.
+    asset.increment_seq_and_save(ctx.accounts.asset)?;
 
     process_remove_plugin(
         &args.plugin_type,

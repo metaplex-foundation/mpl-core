@@ -1,6 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
-use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+    pubkey::Pubkey,
+};
 
 use crate::{
     error::MplCoreError,
@@ -23,9 +26,38 @@ pub struct Asset {
     pub name: String, //4
     /// The URI of the asset that points to the off-chain data.
     pub uri: String, //4
+    /// The sequence number used for indexing with compression.
+    pub seq: Option<u64>, //1
 }
 
 impl Asset {
+    /// Create a new `Asset` with correct `Key` and `seq` of None.
+    pub fn new(
+        owner: Pubkey,
+        update_authority: UpdateAuthority,
+        name: String,
+        uri: String,
+    ) -> Self {
+        Self {
+            key: Key::Asset,
+            owner,
+            update_authority,
+            name,
+            uri,
+            seq: None,
+        }
+    }
+
+    /// If `asset.seq` is `Some(_)` then increment and save asset to account space.
+    pub fn increment_seq_and_save(&mut self, account: &AccountInfo) -> ProgramResult {
+        if let Some(seq) = &mut self.seq {
+            *seq = seq.saturating_add(1);
+            self.save(account, 0)?;
+        };
+
+        Ok(())
+    }
+
     /// The base length of the asset account with an empty name and uri.
     pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4;
 
@@ -243,6 +275,7 @@ impl From<CompressionProof> for Asset {
             owner: compression_proof.owner,
             name: compression_proof.name,
             uri: compression_proof.uri,
+            seq: Some(compression_proof.seq),
         }
     }
 }
