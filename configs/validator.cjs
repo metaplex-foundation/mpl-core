@@ -12,7 +12,7 @@ module.exports = {
     programs: [
       {
         label: "Mpl Core",
-        programId: "CoREzp6dAdLVRKf3EM5tWrsXM2jQwRFeu5uhzsAyjYXL",
+        programId: "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
         deployPath: getProgram("mpl_core_program.so"),
       },
       // Below are external programs that should be included in the local validator.

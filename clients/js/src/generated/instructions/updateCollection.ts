@@ -94,7 +94,7 @@ export function updateCollection(
   // Program ID.
   const programId = context.programs.getPublicKey(
     'mplCore',
-    'CoREzp6dAdLVRKf3EM5tWrsXM2jQwRFeu5uhzsAyjYXL'
+    'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d'
   );
 
   // Accounts.

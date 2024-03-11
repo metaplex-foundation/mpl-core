@@ -6,7 +6,7 @@ Digital Assets
 
 This project contains the following programs:
 
-- [Mpl Core](./programs/mpl-core/README.md) `CoREzp6dAdLVRKf3EM5tWrsXM2jQwRFeu5uhzsAyjYXL`
+- [Mpl Core](./programs/mpl-core/README.md) `CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d`
 
 You will need a Rust version compatible with BPF to compile the program, currently we recommend using Rust 1.68.0.
 

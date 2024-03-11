@@ -15,7 +15,7 @@ import {
 import { getMplCoreErrorFromCode, getMplCoreErrorFromName } from '../errors';
 
 export const MPL_CORE_PROGRAM_ID =
-  'CoREzp6dAdLVRKf3EM5tWrsXM2jQwRFeu5uhzsAyjYXL' as PublicKey<'CoREzp6dAdLVRKf3EM5tWrsXM2jQwRFeu5uhzsAyjYXL'>;
+  'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d' as PublicKey<'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d'>;
 
 export function createMplCoreProgram(): Program {
   return {
