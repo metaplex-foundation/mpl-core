@@ -78,6 +78,21 @@ kinobi.update(
           defaultValue: k.noneValueNode()
         }
       }
+    },
+    create: {
+      arguments: {
+        plugins: {
+          defaultValue: k.arrayValueNode([])
+        }
+      }
+    },
+    createCollection: {
+      arguments: {
+        plugins: {
+          defaultValue: k.arrayValueNode([])
+
+        }
+      }
     }
   })
 );

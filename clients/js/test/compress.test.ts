@@ -18,7 +18,7 @@ import { createAsset, createUmi } from './_setup';
 test.skip('it can compress an asset without any plugins as the owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const asset = await createAsset(umi, {});
+  const asset = await createAsset(umi);
 
   // And when we compress the asset.
   await compress(umi, {
@@ -56,7 +56,6 @@ test.skip('it cannot compress an asset if not the owner', async (t) => {
     asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -99,7 +98,6 @@ test('it cannot compress an asset because it is not available', async (t) => {
     asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.

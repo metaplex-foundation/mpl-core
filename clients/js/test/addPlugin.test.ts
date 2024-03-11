@@ -23,7 +23,7 @@ test('it can add a plugin to an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
-  const asset = await createAsset(umi, {});
+  const asset = await createAsset(umi);
 
   // Then an account was created with the correct data.
   await assertAsset(t, umi, {
@@ -57,7 +57,7 @@ test('it can add a plugin to an asset with a different authority than the defaul
   const umi = await createUmi();
   const delegateAddress = generateSigner(umi);
 
-  const asset = await createAsset(umi, {});
+  const asset = await createAsset(umi);
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,

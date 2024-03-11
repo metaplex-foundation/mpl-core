@@ -37,7 +37,7 @@ test('it can transfer an asset with royalties', async (t) => {
   });
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
-  const programOwned = await createAsset(umi, {});
+  const programOwned = await createAsset(umi);
 
   // Then an account was created with the correct data.
   await assertAsset(t, umi, {
@@ -87,7 +87,7 @@ test('it can transfer an asset with royalties to an allowlisted program address'
   });
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
-  const programOwned = await createAsset(umi, {});
+  const programOwned = await createAsset(umi);
 
   // Then an account was created with the correct data.
   await assertAsset(t, umi, {
@@ -128,7 +128,7 @@ test('it cannot transfer an asset with royalties to a program address not on the
   });
 
   // Create a second one because allowlist needs both to be off the allowlist.
-  const programOwned2 = await createAsset(umi, {});
+  const programOwned2 = await createAsset(umi);
 
   // Creating a new asset to transfer.
   const asset = await createAsset(umi, {
@@ -172,7 +172,7 @@ test('it can transfer an asset with royalties to a program address not on the de
   const umi = await createUmi();
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
-  const programOwned = await createAsset(umi, {});
+  const programOwned = await createAsset(umi);
 
   // Creating a new asset to transfer.
   const asset = await createAsset(umi, {
@@ -214,7 +214,7 @@ test('it cannot transfer an asset with royalties to a denylisted program', async
   const umi = await createUmi();
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
-  const programOwned = await createAsset(umi, {});
+  const programOwned = await createAsset(umi);
 
   // Creating a new asset to transfer.
   const asset = await createAsset(umi, {

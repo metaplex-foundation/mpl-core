@@ -56,7 +56,7 @@ export type CreateCollectionInstructionData = {
 export type CreateCollectionInstructionDataArgs = {
   name: string;
   uri: string;
-  plugins: Array<PluginAuthorityPairArgs>;
+  plugins?: Array<PluginAuthorityPairArgs>;
 };
 
 export function getCreateCollectionInstructionDataSerializer(): Serializer<
@@ -77,7 +77,7 @@ export function getCreateCollectionInstructionDataSerializer(): Serializer<
       ],
       { description: 'CreateCollectionInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 1 })
+    (value) => ({ ...value, discriminator: 1, plugins: value.plugins ?? [] })
   ) as Serializer<
     CreateCollectionInstructionDataArgs,
     CreateCollectionInstructionData

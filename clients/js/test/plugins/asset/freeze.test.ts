@@ -11,7 +11,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
-  const asset = await createAsset(umi, {});
+  const asset = await createAsset(umi);
 
   await addPlugin(umi, {
     asset: asset.publicKey,

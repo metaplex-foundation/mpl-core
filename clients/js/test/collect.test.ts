@@ -17,7 +17,7 @@ const hasCollectAmount = async (umi: Umi, address: PublicKey) => {
 test('it can create a new asset with collect amount', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const asset = await createAsset(umi, {});
+  const asset = await createAsset(umi);
 
   t.assert(
     await hasCollectAmount(umi, asset.publicKey),
@@ -28,7 +28,7 @@ test('it can create a new asset with collect amount', async (t) => {
 test('it can add asset plugin with collect amount', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const asset = await createAsset(umi, {});
+  const asset = await createAsset(umi);
 
   await addPlugin(umi, {
     asset: asset.publicKey,

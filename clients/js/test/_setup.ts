@@ -49,7 +49,7 @@ export const DEFAULT_COLLECTION = {
   uri: 'https://example.com/collection',
 };
 
-export const createAsset = async (umi: Umi, input: CreateAssetHelperArgs) => {
+export const createAsset = async (umi: Umi, input: CreateAssetHelperArgs = {}) => {
   const payer = input.payer || umi.identity;
   const owner = publicKey(input.owner || input.payer || umi.identity);
   const asset = input.asset || generateSigner(umi);

@@ -11,7 +11,7 @@ import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from './_setup';
 test('it can burn an asset as the owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const asset = await createAsset(umi, {});
+  const asset = await createAsset(umi);
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
@@ -37,7 +37,7 @@ test('it cannot burn an asset if not the owner', async (t) => {
   const umi = await createUmi();
   const attacker = generateSigner(umi);
 
-  const asset = await createAsset(umi, {});
+  const asset = await createAsset(umi);
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,

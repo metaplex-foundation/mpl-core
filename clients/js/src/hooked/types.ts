@@ -17,7 +17,7 @@ export type BaseAuthority = {
   address?: PublicKey;
 };
 
-export type PluginAuthorityType = Pick<Authority, '__kind'>['__kind'];
+export type PluginAuthorityType = Authority['__kind'];
 
 export type BasePlugin = {
   authority: BaseAuthority;
