@@ -15,18 +15,22 @@ pub struct CompressionProof {
     pub name: String, //4
     /// The URI of the asset that points to the off-chain data.
     pub uri: String, //4
+    /// The sequence number used for indexing with compression.
+    pub seq: u64, //8
     /// The plugins for the asset.
     pub plugins: Vec<HashablePluginSchema>, //4
 }
 
 impl CompressionProof {
-    /// Create a new `CompressionProof`.
-    pub fn new(asset: Asset, plugins: Vec<HashablePluginSchema>) -> Self {
+    /// Create a new `CompressionProof`.  Note this uses a passed-in `seq` rather than
+    /// the one contained in `asset` to avoid errors.
+    pub fn new(asset: Asset, seq: u64, plugins: Vec<HashablePluginSchema>) -> Self {
         Self {
             owner: asset.owner,
             update_authority: asset.update_authority,
             name: asset.name,
             uri: asset.uri,
+            seq,
             plugins,
         }
     }

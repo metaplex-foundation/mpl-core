@@ -13,6 +13,7 @@ import {
   publicKey as publicKeySerializer,
   string,
   struct,
+  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
   HashablePluginSchema,
@@ -28,6 +29,7 @@ export type CompressionProof = {
   updateAuthority: UpdateAuthority;
   name: string;
   uri: string;
+  seq: bigint;
   plugins: Array<HashablePluginSchema>;
 };
 
@@ -36,6 +38,7 @@ export type CompressionProofArgs = {
   updateAuthority: UpdateAuthorityArgs;
   name: string;
   uri: string;
+  seq: number | bigint;
   plugins: Array<HashablePluginSchemaArgs>;
 };
 
@@ -49,6 +52,7 @@ export function getCompressionProofSerializer(): Serializer<
       ['updateAuthority', getUpdateAuthoritySerializer()],
       ['name', string()],
       ['uri', string()],
+      ['seq', u64()],
       ['plugins', array(getHashablePluginSchemaSerializer())],
     ],
     { description: 'CompressionProof' }

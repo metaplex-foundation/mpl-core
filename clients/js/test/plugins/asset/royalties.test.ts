@@ -47,7 +47,7 @@ test('it can transfer an asset with royalties', async (t) => {
 
     royalties: {
       authority: {
-        update: true,
+        type: 'UpdateAuthority'
       },
       percentage: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
@@ -94,7 +94,7 @@ test('it can transfer an asset with royalties to an allowlisted program address'
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     royalties: {
       authority: {
-        update: true,
+        type: 'UpdateAuthority'
       },
       percentage: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],

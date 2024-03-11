@@ -45,7 +45,7 @@ test('it can add a plugin to an asset', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     freeze: {
       authority: {
-        owner: true,
+        type: 'Owner',
       },
       frozen: false,
     },
@@ -79,7 +79,8 @@ test('it can add a plugin to an asset with a different authority than the defaul
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     freeze: {
       authority: {
-        pubkey: [delegateAddress.publicKey],
+        type: 'Pubkey',
+        address: delegateAddress.publicKey,
       },
       frozen: false,
     },
@@ -115,7 +116,7 @@ test('it can add a plugin to a collection', async (t) => {
     updateAuthority: umi.identity.publicKey,
     royalties: {
       authority: {
-        update: true,
+        type: 'UpdateAuthority',
       },
       percentage: 5,
       creators: [],

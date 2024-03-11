@@ -79,7 +79,7 @@ test('it cannot burn an asset if it is frozen', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     freeze: {
       authority: {
-        owner: true,
+        type: 'Owner',
       },
       frozen: true,
     },
@@ -97,7 +97,7 @@ test('it cannot burn an asset if it is frozen', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     freeze: {
       authority: {
-        owner: true,
+        type: 'Owner',
       },
       frozen: true,
     },

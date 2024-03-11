@@ -40,7 +40,7 @@ pub(crate) fn approve_plugin_authority<'a>(
     let (_, plugin) = fetch_wrapped_plugin::<Asset>(ctx.accounts.asset, args.plugin_type)?;
 
     // Validate asset permissions.
-    let _ = validate_asset_permissions(
+    let (mut asset, _, _) = validate_asset_permissions(
         ctx.accounts.authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
@@ -53,6 +53,9 @@ pub(crate) fn approve_plugin_authority<'a>(
         Collection::validate_approve_plugin_authority,
         Plugin::validate_approve_plugin_authority,
     )?;
+
+    // Increment sequence number and save only if it is `Some(_)`.
+    asset.increment_seq_and_save(ctx.accounts.asset)?;
 
     process_approve_plugin_authority::<Asset>(
         ctx.accounts.asset,

@@ -1347,6 +1347,12 @@
           {
             "name": "uri",
             "type": "string"
+          },
+          {
+            "name": "seq",
+            "type": {
+              "option": "u64"
+            }
           }
         ]
       }
@@ -1902,6 +1908,10 @@
           {
             "name": "uri",
             "type": "string"
+          },
+          {
+            "name": "seq",
+            "type": "u64"
           },
           {
             "name": "plugins",

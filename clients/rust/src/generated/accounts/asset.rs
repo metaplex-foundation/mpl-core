@@ -23,6 +23,7 @@ pub struct Asset {
     pub update_authority: UpdateAuthority,
     pub name: String,
     pub uri: String,
+    pub seq: Option<u64>,
 }
 
 impl Asset {

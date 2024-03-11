@@ -2,6 +2,7 @@ pub mod plugins;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 pub use plugins::*;
+use std::mem::size_of;
 
 use crate::{
     accounts::{Asset, Collection, PluginHeader, PluginRegistry},
@@ -24,8 +25,8 @@ impl From<&Plugin> for PluginType {
 }
 
 impl Asset {
-    /// The base length of the asset account with an empty name and uri.
-    pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4;
+    /// The base length of the asset account with an empty name and uri and no seq.
+    pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4 + 1;
 }
 
 impl Collection {
@@ -39,7 +40,11 @@ impl DataBlob for Asset {
     }
 
     fn get_size(&self) -> usize {
-        Asset::BASE_LENGTH + self.name.len() + self.uri.len()
+        let mut size = Asset::BASE_LENGTH + self.name.len() + self.uri.len();
+        if self.seq.is_some() {
+            size += size_of::<u64>();
+        }
+        size
     }
 }
 

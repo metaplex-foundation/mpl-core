@@ -48,7 +48,7 @@ test('it can create a new collection with plugins', async (t) => {
     updateAuthority: umi.identity.publicKey,
     freeze: {
       authority: {
-        owner: true,
+        type: 'Owner',
       },
       frozen: false,
     },
@@ -72,7 +72,7 @@ test('it can create a new asset with a collection', async (t) => {
     updateAuthority: umi.identity.publicKey,
     updateDelegate: {
       authority: {
-        update: true,
+        type: 'UpdateAuthority'
       },
     },
   });

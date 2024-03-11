@@ -49,6 +49,9 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
         Plugin::validate_update,
     )?;
 
+    // Increment sequence number and save only if it is `Some(_)`.
+    asset.increment_seq_and_save(ctx.accounts.asset)?;
+
     let asset_size = asset.get_size() as isize;
 
     let mut dirty = false;

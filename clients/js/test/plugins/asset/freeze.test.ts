@@ -25,7 +25,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     freeze: {
       authority: {
-        owner: true,
+        type: 'Owner',
       },
       frozen: true,
     },
@@ -43,7 +43,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     freeze: {
       authority: {
-        owner: true,
+        type: 'Owner',
       },
       frozen: false,
     },

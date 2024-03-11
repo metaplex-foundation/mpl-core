@@ -9,6 +9,8 @@
 import {
   Account,
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   RpcAccount,
@@ -22,9 +24,11 @@ import {
 import {
   Serializer,
   mapSerializer,
+  option,
   publicKey as publicKeySerializer,
   string,
   struct,
+  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
   Key,
@@ -43,6 +47,7 @@ export type AssetAccountData = {
   updateAuthority: UpdateAuthority;
   name: string;
   uri: string;
+  seq: Option<bigint>;
 };
 
 export type AssetAccountDataArgs = {
@@ -50,6 +55,7 @@ export type AssetAccountDataArgs = {
   updateAuthority: UpdateAuthorityArgs;
   name: string;
   uri: string;
+  seq: OptionOrNullable<number | bigint>;
 };
 
 export function getAssetAccountDataSerializer(): Serializer<
@@ -64,6 +70,7 @@ export function getAssetAccountDataSerializer(): Serializer<
         ['updateAuthority', getUpdateAuthoritySerializer()],
         ['name', string()],
         ['uri', string()],
+        ['seq', option(u64())],
       ],
       { description: 'AssetAccountData' }
     ),
@@ -141,12 +148,14 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
       updateAuthority: UpdateAuthorityArgs;
       name: string;
       uri: string;
+      seq: OptionOrNullable<number | bigint>;
     }>({
       key: [0, getKeySerializer()],
       owner: [1, publicKeySerializer()],
       updateAuthority: [33, getUpdateAuthoritySerializer()],
       name: [null, string()],
       uri: [null, string()],
+      seq: [null, option(u64())],
     })
     .deserializeUsing<Asset>((account) => deserializeAsset(account))
     .whereField('key', Key.Asset);

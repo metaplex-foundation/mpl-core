@@ -33,7 +33,7 @@ pub(crate) fn add_plugin<'a>(
     }
 
     // Validate asset permissions.
-    let _ = validate_asset_permissions(
+    let (mut asset, _, _) = validate_asset_permissions(
         ctx.accounts.authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
@@ -46,6 +46,9 @@ pub(crate) fn add_plugin<'a>(
         Collection::validate_add_plugin,
         Plugin::validate_add_plugin,
     )?;
+
+    // Increment sequence number and save only if it is `Some(_)`.
+    asset.increment_seq_and_save(ctx.accounts.asset)?;
 
     process_add_plugin::<Asset>(
         ctx.accounts.asset,

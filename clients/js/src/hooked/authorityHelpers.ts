@@ -1,7 +1,6 @@
 import { PublicKey } from '@metaplex-foundation/umi';
 import { Authority, authority as authorityHelper } from '../generated';
 import { BaseAuthority } from './types';
-import { toWords } from './utils';
 
 // Authorities data helpers
 export function getNoneAuthority() {
@@ -25,15 +24,8 @@ export function getPermanentAuthority(address: PublicKey) {
 }
 
 export function mapAuthority(authority: Authority): BaseAuthority {
-  const authorityKey = toWords(authority.__kind)
-    .split(' ')[0]
-    .toLowerCase() as keyof BaseAuthority;
-
-  if (Object.keys(authority).length > 1) {
-    return {
-      [authorityKey]: Object.values(authority).slice(1),
-    };
-  }
-
-  return { [authorityKey]: true };
+  return {
+    type: authority.__kind,
+    address: (authority as any).address,
+  };
 }

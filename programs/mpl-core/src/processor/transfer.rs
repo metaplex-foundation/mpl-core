@@ -106,7 +106,11 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             // Send the spl-noop event for indexing the compressed asset.
             compression_proof.wrap()
         }
-        Key::Asset => asset.save(ctx.accounts.asset, 0),
+        Key::Asset => {
+            // Increment sequence number only if it is `Some(_)`.
+            asset.seq = asset.seq.map(|seq| seq.saturating_add(1));
+            asset.save(ctx.accounts.asset, 0)
+        }
         _ => unreachable!(),
     }
 }

@@ -43,7 +43,8 @@ test('it can add an authority to a plugin', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     freeze: {
       authority: {
-        pubkey: [delegateAddress.publicKey],
+        type: 'Pubkey',
+        address: delegateAddress.publicKey,
       },
       frozen: false,
     },
