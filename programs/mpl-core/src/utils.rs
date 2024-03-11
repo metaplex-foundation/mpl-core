@@ -422,14 +422,18 @@ pub fn rebuild_account_state_from_proof_data<'a>(
 
 /// Take `Asset` and `PluginRegistry` for a decompressed asset, and compress into account space.
 pub fn compress_into_account_space<'a>(
-    asset: Asset,
+    mut asset: Asset,
     plugin_registry: Option<PluginRegistry>,
     asset_info: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> Result<CompressionProof, ProgramError> {
+    // Initialize or increment the sequence number when compressing.
+    let seq = asset.seq.unwrap_or(0).saturating_add(1);
+    asset.seq = Some(seq);
+
     let asset_hash = asset.hash()?;
-    let mut compression_proof = CompressionProof::new(asset, vec![]);
+    let mut compression_proof = CompressionProof::new(asset, seq, vec![]);
     let mut plugin_hashes = vec![];
     if let Some(plugin_registry) = plugin_registry {
         let mut registry_records = plugin_registry.registry;

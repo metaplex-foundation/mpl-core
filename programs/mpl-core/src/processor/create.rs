@@ -12,7 +12,7 @@ use crate::{
         create_meta_idempotent, initialize_plugin, CheckResult, Plugin, PluginType,
         ValidationResult,
     },
-    state::{Asset, DataState, Key, UpdateAuthority, COLLECT_AMOUNT},
+    state::{Asset, DataState, UpdateAuthority, COLLECT_AMOUNT},
     utils::fetch_core_data,
 };
 
@@ -52,24 +52,22 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
-    let new_asset = Asset {
-        key: Key::Asset,
-        update_authority,
-        owner: *ctx
-            .accounts
+    let new_asset = Asset::new(
+        *ctx.accounts
             .owner
             .unwrap_or(ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer))
             .key,
-        name: args.name.clone(),
-        uri: args.uri.clone(),
-    };
+        update_authority,
+        args.name.clone(),
+        args.uri.clone(),
+    );
 
     let serialized_data = new_asset.try_to_vec()?;
 
     let serialized_data = match args.data_state {
         DataState::AccountState => serialized_data,
         DataState::LedgerState => {
-            // TODO Enable minting compressed.
+            // TODO: Implement minting compressed.
             msg!("Error: Minting compressed is currently not available");
             return Err(MplCoreError::NotAvailable.into());
         }

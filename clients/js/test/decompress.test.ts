@@ -74,6 +74,7 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
       owner: umi.identity.publicKey,
       name: 'Test Bread',
       uri: 'https://example.com/bread',
+      seq: 1,
       plugins: [],
     },
   }).sendAndConfirm(umi);

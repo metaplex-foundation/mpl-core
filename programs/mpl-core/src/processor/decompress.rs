@@ -40,8 +40,12 @@ pub(crate) fn decompress<'a>(
 
     match load_key(ctx.accounts.asset, 0)? {
         Key::HashedAsset => {
-            // Verify the proof and rebuild Asset struct in account space.
-            let (asset, plugins) = verify_proof(ctx.accounts.asset, &args.compression_proof)?;
+            // Verify the proof and rebuild `Asset`` struct in account space.
+            let (mut asset, plugins) = verify_proof(ctx.accounts.asset, &args.compression_proof)?;
+
+            // Increment sequence number.  Note `Asset`` will always be `Some(_)`` here
+            // after rebuilding from a compression proof.
+            asset.seq = asset.seq.map(|seq| seq.saturating_add(1));
 
             // Use the data from the compression proof to rebuild the account.
             rebuild_account_state_from_proof_data(

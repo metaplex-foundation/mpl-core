@@ -39,7 +39,8 @@ pub(crate) fn revoke_plugin_authority<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    let (asset, plugin_header, mut plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
+    let (mut asset, plugin_header, mut plugin_registry) =
+        fetch_core_data::<Asset>(ctx.accounts.asset)?;
 
     //TODO: Make this better.
     let authority_type =
@@ -61,6 +62,9 @@ pub(crate) fn revoke_plugin_authority<'a>(
         Collection::validate_revoke_plugin_authority,
         Plugin::validate_revoke_plugin_authority,
     )?;
+
+    // Increment sequence number and save only if it is `Some(_)`.
+    asset.increment_seq_and_save(ctx.accounts.asset)?;
 
     process_revoke_plugin_authority(
         ctx.accounts.asset,
@@ -145,7 +149,5 @@ fn process_revoke_plugin_authority<'a>(
         plugin_registry,
         payer,
         system_program,
-    )?;
-
-    Ok(())
+    )
 }
