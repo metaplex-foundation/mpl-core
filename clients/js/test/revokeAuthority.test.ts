@@ -4,11 +4,11 @@ import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import {
   PluginType,
   approvePluginAuthority,
-  plugin,
   revokePluginAuthority,
   updateAuthority,
   getPubkeyAuthority,
   getNoneAuthority,
+  pluginAuthorityPair,
 } from '../src';
 import { assertAsset, createAsset, createUmi } from './_setup';
 
@@ -19,7 +19,7 @@ test('it can remove an authority from a plugin', async (t) => {
 
   const asset = await createAsset(umi, {
     plugins: [
-      { plugin: plugin('Freeze', [{ frozen: false }]), authority: null },
+      pluginAuthorityPair({ type: 'Freeze', data: { frozen: false }}),
     ],
   });
 
@@ -65,7 +65,7 @@ test('it can remove the default authority from a plugin to make it immutable', a
   const umi = await createUmi();
   const asset = await createAsset(umi, {
     plugins: [
-      { plugin: plugin('Freeze', [{ frozen: false }]), authority: null },
+      pluginAuthorityPair({ type: 'Freeze', data: { frozen: false }}),
     ],
   });
 
@@ -95,7 +95,7 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
 
   const asset = await createAsset(umi, {
     plugins: [
-      { plugin: plugin('Freeze', [{ frozen: false }]), authority: null },
+      pluginAuthorityPair({ type: 'Freeze', data: { frozen: false }}),
     ],
   });
 
@@ -145,7 +145,7 @@ test('it cannot remove a none authority from a plugin', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi, {
     plugins: [
-      { plugin: plugin('Freeze', [{ frozen: false }]), authority: null },
+      pluginAuthorityPair({ type: 'Freeze', data: { frozen: false }}),
     ],
   });
 

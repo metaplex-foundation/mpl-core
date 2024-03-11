@@ -1,9 +1,19 @@
+import { none, some } from '@metaplex-foundation/umi';
+
 import {
   Key,
   PluginHeader,
   Plugin,
   getPluginSerializer,
   RegistryRecord,
+  PluginAuthorityPair,
+  Authority,
+  RoyaltiesArgs,
+  FreezeArgs,
+  BurnArgs,
+  TransferArgs,
+  UpdateDelegateArgs,
+  PermanentFreezeArgs,
 } from '../generated';
 import { BaseAuthority, PluginsList } from './types';
 import { mapAuthority } from './authorityHelpers';
@@ -18,12 +28,46 @@ export function formPluginHeader(
   };
 }
 
+export type PluginAuthorityPairHelperArgs = {
+  type: 'Royalties'
+  authority?: Authority
+  data: RoyaltiesArgs
+} | {
+  type: 'Freeze'
+  authority?: Authority
+  data: FreezeArgs
+} | {
+  type: 'Burn'
+  authority?: Authority
+  data?: BurnArgs
+} | {
+  type: 'Transfer'
+  authority?: Authority
+  data?: TransferArgs
+} | {
+  type: 'UpdateDelegate'
+  authority?: Authority
+  data?: UpdateDelegateArgs
+} | {
+  type: 'PermanentFreeze'
+  authority?: Authority
+  data: PermanentFreezeArgs
+};
+
+export function pluginAuthorityPair( args: PluginAuthorityPairHelperArgs): PluginAuthorityPair {
+  const { type, authority, data } = args;
+  return {
+    plugin: { __kind: type, fields: [data as any || {}] },
+    authority: authority ? some(authority) : none(),
+  };
+}
+
 export function mapPluginFields(fields: Array<Record<string, any>>) {
   return fields.reduce((acc2, field) => ({ ...acc2, ...field }), {});
 }
 
 export function mapPlugin({
-  plugin,
+  plugin: plug,
   authority,
   offset,
 }: {
@@ -31,7 +75,7 @@ export function mapPlugin({
   authority: BaseAuthority;
   offset: bigint;
 }): PluginsList {
-  const pluginKey = toWords(plugin.__kind)
+  const pluginKey = toWords(plug.__kind)
     .toLowerCase()
     .split(' ')
     .reduce((s, c) => s + (c.charAt(0).toUpperCase() + c.slice(1)));
@@ -40,7 +84,7 @@ export function mapPlugin({
     [pluginKey]: {
       authority,
       offset,
-      ...('fields' in plugin ? mapPluginFields(plugin.fields) : {}),
+      ...('fields' in plug ? mapPluginFields(plug.fields) : {}),
     },
   };
 }

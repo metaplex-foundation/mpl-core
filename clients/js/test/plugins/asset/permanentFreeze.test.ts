@@ -1,6 +1,6 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
-import { addPlugin, plugin, transfer, updateAuthority, updatePlugin } from '../../../src';
+import { addPlugin, plugin, pluginAuthorityPair, transfer, updateAuthority, updatePlugin } from '../../../src';
 import {
   DEFAULT_ASSET,
   assertAsset,
@@ -15,7 +15,9 @@ test('it can freeze and unfreeze an asset', async (t) => {
 
   const asset = await createAsset(umi, {
     owner,
-    plugins: [{ plugin: plugin('PermanentFreeze', [{ frozen: true }]), authority: null }]
+    plugins: [
+      pluginAuthorityPair({ type: 'PermanentFreeze', data: { frozen: true }})
+    ]
   });
 
   await assertAsset(t, umi, {
@@ -58,7 +60,9 @@ test('it cannot be transferred while frozen', async (t) => {
 
   const asset = await createAsset(umi, {
     owner,
-    plugins: [{ plugin: plugin('PermanentFreeze', [{ frozen: true }]), authority: null }]
+    plugins: [
+      pluginAuthorityPair({ type: 'PermanentFreeze', data: { frozen: true }}),
+    ]
   });
 
   await assertAsset(t, umi, {

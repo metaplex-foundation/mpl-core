@@ -5,7 +5,7 @@ import {
 } from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import { burn, Key, updateAuthority, plugin } from '../src';
+import { burn, Key, updateAuthority, pluginAuthorityPair } from '../src';
 import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from './_setup';
 
 test('it can burn an asset as the owner', async (t) => {
@@ -65,7 +65,10 @@ test('it cannot burn an asset if it is frozen', async (t) => {
 
   const asset = await createAsset(umi, {
     plugins: [
-      { plugin: plugin('Freeze', [{ frozen: true }]), authority: null },
+      pluginAuthorityPair({
+        type: 'Freeze',
+        data: { frozen: true }
+      }),
     ],
   });
 

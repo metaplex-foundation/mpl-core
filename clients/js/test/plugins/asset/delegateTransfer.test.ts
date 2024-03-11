@@ -5,8 +5,8 @@ import {
   approvePluginAuthority,
   transfer,
   updateAuthority,
-  plugin,
   authority,
+  pluginAuthorityPair,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -22,7 +22,7 @@ test('a delegate can transfer the asset', async (t) => {
   const newOwnerAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [{ plugin: plugin('Transfer', [{}]), authority: null }],
+    plugins: [pluginAuthorityPair({ type: 'Transfer' }),],
   });
 
   await approvePluginAuthority(umi, {

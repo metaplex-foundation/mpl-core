@@ -4,7 +4,7 @@ import {
   PluginType,
   fetchAssetWithPlugins,
   removePlugin,
-  plugin,
+  pluginAuthorityPair,
 } from '../src';
 import { assertAsset, createAsset, createUmi } from './_setup';
 
@@ -14,7 +14,7 @@ test('it can remove a plugin from an asset', async (t) => {
 
   const asset = await createAsset(umi, {
     plugins: [
-      { plugin: plugin('Freeze', [{ frozen: false }]), authority: null },
+      pluginAuthorityPair({ type: 'Freeze', data: { frozen: false }}),
     ],
   });
 

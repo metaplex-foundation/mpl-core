@@ -5,8 +5,8 @@ import {
   PluginType,
   updateAuthority,
   approveCollectionPluginAuthority,
-  plugin,
   authority,
+  pluginAuthorityPair,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -25,7 +25,9 @@ test('it can create a new asset with a collection if it is the collection update
 
   // When we create a new account.
   const collection = await createCollection(umi, {
-    plugins: [{ plugin: plugin('UpdateDelegate', [{}]), authority: null }],
+    plugins: [
+      pluginAuthorityPair({ type: 'UpdateDelegate' }),
+    ]
   });
 
   await approveCollectionPluginAuthority(umi, {
