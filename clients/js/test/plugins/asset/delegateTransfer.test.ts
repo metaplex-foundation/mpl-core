@@ -44,7 +44,8 @@ test('a delegate can transfer the asset', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     transfer: {
       authority: {
-        pubkey: [delegateAddress.publicKey],
+        type: 'Pubkey',
+        address: delegateAddress.publicKey,
       },
     },
   });

@@ -115,7 +115,7 @@ test('it can update an asset with plugins to be larger', async (t) => {
     pluginHeader: formPluginHeader(BigInt(123)),
     freeze: {
       authority: {
-        owner: true,
+        type: 'Owner',
       },
       offset: BigInt(121),
       frozen: false,
@@ -160,7 +160,7 @@ test('it can update an asset with plugins to be smaller', async (t) => {
     pluginHeader: formPluginHeader(BigInt(85)),
     freeze: {
       authority: {
-        owner: true,
+        type: 'Owner',
       },
       offset: BigInt(83),
       frozen: false,

@@ -1,6 +1,7 @@
 import { PublicKey } from '@metaplex-foundation/umi';
 import {
   Asset,
+  Authority,
   Burn,
   Collection,
   Freeze,
@@ -11,12 +12,11 @@ import {
 } from '../generated';
 
 export type BaseAuthority = {
-  none?: boolean;
-  owner?: boolean;
-  update?: boolean;
-  pubkey?: Array<PublicKey>;
-  permanent?: Array<PublicKey>;
+  type: PluginAuthorityType
+  address?: PublicKey
 };
+
+export type PluginAuthorityType = Pick<Authority, '__kind'>['__kind'];
 
 export type BasePlugin = {
   authority: BaseAuthority;

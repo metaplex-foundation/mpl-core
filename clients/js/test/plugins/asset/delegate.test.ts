@@ -37,7 +37,8 @@ test('it can delegate a new authority', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     freeze: {
       authority: {
-        pubkey: [delegateAddress.publicKey],
+        type: 'Pubkey',
+        address: delegateAddress.publicKey,
       },
       frozen: false,
     },
@@ -73,7 +74,8 @@ test('a delegate can freeze the token', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     freeze: {
       authority: {
-        pubkey: [delegateAddress.publicKey],
+        type: 'Pubkey',
+        address: delegateAddress.publicKey,
       },
       frozen: true,
     },

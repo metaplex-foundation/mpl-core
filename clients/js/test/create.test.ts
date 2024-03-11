@@ -136,7 +136,7 @@ test('it can create a new asset in account state with plugins', async (t) => {
     // pluginHeader: formPluginHeader(BigInt(120)),
     freeze: {
       authority: {
-        owner: true,
+        type: 'Owner',
       },
       offset: BigInt(118),
       frozen: false,

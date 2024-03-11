@@ -40,7 +40,8 @@ test('it can create a new asset with a collection if it is the collection update
     updateAuthority: umi.identity.publicKey,
     updateDelegate: {
       authority: {
-        pubkey: [updateDelegate.publicKey],
+        type: 'Pubkey',
+        address: updateDelegate.publicKey,
       },
     },
   });
