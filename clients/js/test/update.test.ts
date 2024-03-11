@@ -112,12 +112,12 @@ test('it can update an asset with plugins to be larger', async (t) => {
     owner: umi.identity.publicKey,
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
-    pluginHeader: formPluginHeader(BigInt(123)),
+    pluginHeader: formPluginHeader(BigInt(124)),
     freeze: {
       authority: {
         type: 'Owner',
       },
-      offset: BigInt(121),
+      offset: BigInt(122),
       frozen: false,
     },
   });
@@ -157,12 +157,12 @@ test('it can update an asset with plugins to be smaller', async (t) => {
     owner: umi.identity.publicKey,
     name: '',
     uri: '',
-    pluginHeader: formPluginHeader(BigInt(85)),
+    pluginHeader: formPluginHeader(BigInt(86)),
     freeze: {
       authority: {
         type: 'Owner',
       },
-      offset: BigInt(83),
+      offset: BigInt(84),
       frozen: false,
     },
   });

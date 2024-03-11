@@ -59,7 +59,7 @@ impl Asset {
     }
 
     /// The base length of the asset account with an empty name and uri.
-    pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4;
+    pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4 + 1;
 
     /// Check permissions for the add plugin lifecycle event.
     pub fn check_add_plugin() -> CheckResult {

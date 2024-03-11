@@ -138,7 +138,7 @@ test('it can create a new asset in account state with plugins', async (t) => {
       authority: {
         type: 'Owner',
       },
-      offset: BigInt(118),
+      offset: BigInt(119),
       frozen: false,
     },
   })
@@ -155,16 +155,16 @@ test('it can create a new asset in account state with plugins with a different u
 });
 
 // TODO: Add test
-test('it can create a new asset in ledger state with plugins', async (t) => {
+test.skip('it can create a new asset in ledger state with plugins', async (t) => {
   t.pass();
 });
 
 // TODO: Add test
-test('it can create a new asset in ledger state with a different update authority', async (t) => {
+test.skip('it can create a new asset in ledger state with a different update authority', async (t) => {
   t.pass();
 });
 
 // TODO: Add test
-test('it can create a new asset in ledger state with plugins with a different update authority', async (t) => {
+test.skip('it can create a new asset in ledger state with plugins with a different update authority', async (t) => {
   t.pass();
 });
