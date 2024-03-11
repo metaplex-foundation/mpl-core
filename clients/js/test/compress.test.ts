@@ -18,7 +18,7 @@ import { createAsset, createUmi } from './_setup';
 test.skip('it can compress an asset without any plugins as the owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const asset = await createAsset(umi, {}); 
+  const asset = await createAsset(umi, {});
 
   // And when we compress the asset.
   await compress(umi, {
@@ -114,7 +114,7 @@ test('it cannot compress an asset because it is not available', async (t) => {
   });
 
   // And when we compress the asset.
-  const result =  compress(umi, {
+  const result = compress(umi, {
     asset: assetAddress.publicKey,
     authority: umi.identity,
     logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
