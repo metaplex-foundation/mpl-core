@@ -22,5 +22,6 @@ pub struct CompressionProof {
     pub update_authority: UpdateAuthority,
     pub name: String,
     pub uri: String,
+    pub seq: u64,
     pub plugins: Vec<HashablePluginSchema>,
 }
