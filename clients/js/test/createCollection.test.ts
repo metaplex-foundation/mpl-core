@@ -39,7 +39,9 @@ test('it can create a new collection with plugins', async (t) => {
   const umi = await createUmi();
 
   const collection = await createCollection(umi, {
-    plugins: [{ plugin: plugin('Freeze', [{ frozen: false }]), authority: null }],
+    plugins: [
+      { plugin: plugin('Freeze', [{ frozen: false }]), authority: null },
+    ],
   });
 
   await assertCollection(t, umi, {
@@ -72,7 +74,7 @@ test('it can create a new asset with a collection', async (t) => {
     updateAuthority: umi.identity.publicKey,
     updateDelegate: {
       authority: {
-        type: 'UpdateAuthority'
+        type: 'UpdateAuthority',
       },
     },
   });
@@ -104,7 +106,7 @@ test('it can create a new asset with a collection with collection delegate', asy
   const asset = await createAsset(umi2, {
     collection: collection.publicKey,
     authority: delegate,
-  })
+  });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -130,7 +132,7 @@ test('it cannot create a new asset with a collection if it is not the collection
 
   const result = createAsset(umi, {
     collection: collection.publicKey,
-  })
+  });
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });

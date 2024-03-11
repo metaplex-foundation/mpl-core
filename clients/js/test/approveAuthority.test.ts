@@ -15,13 +15,13 @@ test('it can add an authority to a plugin', async (t) => {
   const umi = await createUmi();
   const delegateAddress = generateSigner(umi);
 
-  const asset = await createAsset(umi, {})
+  const asset = await createAsset(umi, {});
 
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-  })
+  });
 
   await addPlugin(umi, {
     asset: asset.publicKey,

@@ -41,13 +41,13 @@ test('it can create a new asset with a different payer', async (t) => {
     dataState: DataState.AccountState,
     asset: assetAddress,
     payer,
-    plugins: []
+    plugins: [],
   }).sendAndConfirm(umi);
 
   const asset = await createAsset(umi, {
     owner: umi.identity,
     payer,
-  })
+  });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -124,10 +124,12 @@ test('it can create a new asset in account state with plugins', async (t) => {
     asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    plugins: [{
-      plugin: plugin('Freeze', [{ frozen: false }]),
-      authority: null
-    }],
+    plugins: [
+      {
+        plugin: plugin('Freeze', [{ frozen: false }]),
+        authority: null,
+      },
+    ],
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -144,7 +146,7 @@ test('it can create a new asset in account state with plugins', async (t) => {
       offset: BigInt(119),
       frozen: false,
     },
-  })
+  });
 });
 
 test('it can create a new asset in account state with a different update authority', async (t) => {
@@ -175,7 +177,9 @@ test('it can create a new asset in account state with plugins with a different u
   await createAsset(umi, {
     asset: assetAddress,
     updateAuthority: updateAuth.publicKey,
-    plugins: [{ plugin: plugin('Freeze', [{ frozen: false }]), authority: null }],
+    plugins: [
+      { plugin: plugin('Freeze', [{ frozen: false }]), authority: null },
+    ],
   });
 
   await assertAsset(t, umi, {
@@ -184,7 +188,7 @@ test('it can create a new asset in account state with plugins with a different u
     owner: umi.identity,
     updateAuthority: updateAuthority('Address', [updateAuth.publicKey]),
     freeze: {
-      authority: { type: "Owner" },
+      authority: { type: 'Owner' },
       frozen: false,
     },
   });
@@ -208,23 +212,31 @@ test('it cannot create a new asset if the address is already in use', async (t) 
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
-})
+});
 
 test.skip('it cannot create a new asset if the address is not owned by the system program', async (t) => {
   // TODO: Reassign an account to another program.
-})
+});
 
 // TODO
-test('it cannot create a new asset if the asset keypair does not sign', async (t) => { t.pass() })
+test('it cannot create a new asset if the asset keypair does not sign', async (t) => {
+  t.pass();
+});
 
 // TODO
-test('it cannot create a new asset if the payer does not sign', async (t) => { t.pass() })
+test('it cannot create a new asset if the payer does not sign', async (t) => {
+  t.pass();
+});
 
 // TODO
-test('it cannot create a new asset if the payer does not sign, even if the authority does', async (t) => { t.pass() })
+test('it cannot create a new asset if the payer does not sign, even if the authority does', async (t) => {
+  t.pass();
+});
 
 // TODO
-test('it cannot create a new asset if the authority does not sign', async (t) => { t.pass() })
+test('it cannot create a new asset if the authority does not sign', async (t) => {
+  t.pass();
+});
 
 // TODO: Add test
 test.skip('it can create a new asset in ledger state with plugins', async (t) => {

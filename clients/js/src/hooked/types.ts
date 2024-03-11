@@ -12,8 +12,8 @@ import {
 } from '../generated';
 
 export type BaseAuthority = {
-  type: PluginAuthorityType
-  address?: PublicKey
+  type: PluginAuthorityType;
+  address?: PublicKey;
 };
 
 export type PluginAuthorityType = Pick<Authority, '__kind'>['__kind'];
