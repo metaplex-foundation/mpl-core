@@ -4,6 +4,7 @@ use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
     pubkey::Pubkey,
 };
+use std::mem::size_of;
 
 use crate::{
     error::MplCoreError,
@@ -58,7 +59,7 @@ impl Asset {
         Ok(())
     }
 
-    /// The base length of the asset account with an empty name and uri.
+    /// The base length of the asset account with an empty name and uri and no seq.
     pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4 + 1;
 
     /// Check permissions for the add plugin lifecycle event.
@@ -257,7 +258,11 @@ impl DataBlob for Asset {
     }
 
     fn get_size(&self) -> usize {
-        Asset::BASE_LENGTH + self.name.len() + self.uri.len()
+        let mut size = Asset::BASE_LENGTH + self.name.len() + self.uri.len();
+        if self.seq.is_some() {
+            size += size_of::<u64>();
+        }
+        size
     }
 }
 
