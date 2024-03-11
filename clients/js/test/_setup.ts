@@ -109,10 +109,10 @@ export const createAssetWithCollection: (
   const collection = assetInput.collection
     ? await fetchCollectionWithPlugins(umi, publicKey(assetInput.collection))
     : await createCollection(umi, {
-      payer: assetInput.payer,
-      updateAuthority: assetInput.updateAuthority,
-      ...collectionInput,
-    });
+        payer: assetInput.payer,
+        updateAuthority: assetInput.updateAuthority,
+        ...collectionInput,
+      });
 
   const asset = await createAsset(umi, {
     ...assetInput,
@@ -136,7 +136,7 @@ export const assertAsset = async (
     uri?: string | RegExp;
   } & PluginsList
 ) => {
-  const { asset, owner, name, uri, ...rest } = input
+  const { asset, owner, name, uri, ...rest } = input;
   const assetAddress = publicKey(input.asset);
   const assetWithPlugins = await fetchAssetWithPlugins(umi, assetAddress);
 
@@ -152,7 +152,7 @@ export const assertAsset = async (
     key: Key.Asset,
     publicKey: assetAddress,
     owner: publicKey(owner),
-    ...rest
+    ...rest,
   };
 
   t.like(assetWithPlugins, testObj);
@@ -170,10 +170,13 @@ export const assertCollection = async (
     currentSize?: number;
   } & PluginsList
 ) => {
-  const { collection, name, uri, updateAuthority, ...rest } = input
+  const { collection, name, uri, updateAuthority, ...rest } = input;
 
   const collectionAddress = publicKey(collection);
-  const collectionWithPlugins = await fetchCollectionWithPlugins(umi, collectionAddress);
+  const collectionWithPlugins = await fetchCollectionWithPlugins(
+    umi,
+    collectionAddress
+  );
 
   // Name.
   if (typeof name === 'string') t.is(collectionWithPlugins.name, name);
@@ -186,7 +189,7 @@ export const assertCollection = async (
   const testObj = <CollectionWithPlugins>{
     key: Key.Collection,
     publicKey: collectionAddress,
-    ...rest
+    ...rest,
   };
 
   if (updateAuthority) {

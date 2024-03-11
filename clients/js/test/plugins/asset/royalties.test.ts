@@ -22,17 +22,18 @@ test('it can transfer an asset with royalties', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = await createAsset(umi, {
-    plugins: [{
-      plugin:
-        plugin('Royalties', [
+    plugins: [
+      {
+        plugin: plugin('Royalties', [
           {
             percentage: 5,
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
             ruleSet: ruleSet('None'),
           },
         ]),
-      authority: null,
-    }],
+        authority: null,
+      },
+    ],
   });
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
@@ -47,7 +48,7 @@ test('it can transfer an asset with royalties', async (t) => {
 
     royalties: {
       authority: {
-        type: 'UpdateAuthority'
+        type: 'UpdateAuthority',
       },
       percentage: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
@@ -71,16 +72,18 @@ test('it can transfer an asset with royalties to an allowlisted program address'
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [{
-      plugin: plugin('Royalties', [
-        {
-          percentage: 5,
-          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-          ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
-        },
-      ]),
-      authority: null
-    }],
+    plugins: [
+      {
+        plugin: plugin('Royalties', [
+          {
+            percentage: 5,
+            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+            ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
+          },
+        ]),
+        authority: null,
+      },
+    ],
   });
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
@@ -94,7 +97,7 @@ test('it can transfer an asset with royalties to an allowlisted program address'
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     royalties: {
       authority: {
-        type: 'UpdateAuthority'
+        type: 'UpdateAuthority',
       },
       percentage: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
@@ -129,16 +132,18 @@ test('it cannot transfer an asset with royalties to a program address not on the
 
   // Creating a new asset to transfer.
   const asset = await createAsset(umi, {
-    plugins: [{
-      plugin: plugin('Royalties', [
-        {
-          percentage: 5,
-          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-          ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID]]),
-        },
-      ]),
-      authority: null
-    }],
+    plugins: [
+      {
+        plugin: plugin('Royalties', [
+          {
+            percentage: 5,
+            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+            ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID]]),
+          },
+        ]),
+        authority: null,
+      },
+    ],
   });
 
   // Then an account was created with the correct data.
@@ -171,17 +176,18 @@ test('it can transfer an asset with royalties to a program address not on the de
 
   // Creating a new asset to transfer.
   const asset = await createAsset(umi, {
-    plugins: [{
-      plugin:
-        plugin('Royalties', [
+    plugins: [
+      {
+        plugin: plugin('Royalties', [
           {
             percentage: 5,
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
             ruleSet: ruleSet('ProgramDenyList', [[SPL_TOKEN_PROGRAM_ID]]),
           },
         ]),
-      authority: null
-    }],
+        authority: null,
+      },
+    ],
   });
 
   // Then an account was created with the correct data.
@@ -212,17 +218,18 @@ test('it cannot transfer an asset with royalties to a denylisted program', async
 
   // Creating a new asset to transfer.
   const asset = await createAsset(umi, {
-    plugins: [{
-      plugin:
-        plugin('Royalties', [
+    plugins: [
+      {
+        plugin: plugin('Royalties', [
           {
             percentage: 5,
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
             ruleSet: ruleSet('ProgramDenyList', [[MPL_CORE_PROGRAM_ID]]),
           },
         ]),
-      authority: null
-    }],
+        authority: null,
+      },
+    ],
   });
 
   await assertAsset(t, umi, {

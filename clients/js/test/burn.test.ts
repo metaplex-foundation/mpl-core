@@ -5,12 +5,7 @@ import {
 } from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import {
-  burn,
-  Key,
-  updateAuthority,
-  plugin,
-} from '../src';
+import { burn, Key, updateAuthority, plugin } from '../src';
 import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from './_setup';
 
 test('it can burn an asset as the owner', async (t) => {
@@ -22,7 +17,7 @@ test('it can burn an asset as the owner', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-  })
+  });
 
   await burn(umi, {
     asset: asset.publicKey,
@@ -48,7 +43,7 @@ test('it cannot burn an asset if not the owner', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-  })
+  });
 
   const result = burn(umi, {
     asset: asset.publicKey,
@@ -61,7 +56,7 @@ test('it cannot burn an asset if not the owner', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-  })
+  });
 });
 
 test('it cannot burn an asset if it is frozen', async (t) => {
@@ -69,7 +64,9 @@ test('it cannot burn an asset if it is frozen', async (t) => {
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [{ plugin: plugin('Freeze', [{ frozen: true }]), authority: null }],
+    plugins: [
+      { plugin: plugin('Freeze', [{ frozen: true }]), authority: null },
+    ],
   });
 
   await assertAsset(t, umi, {
