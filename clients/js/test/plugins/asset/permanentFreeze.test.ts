@@ -285,3 +285,34 @@ test('it can move asset with permanent freeze override in a frozen collection', 
     updateAuthority: updateAuthority('Collection', [collection.publicKey]),
   });
 });
+
+test('it can remove a permanent freeze plugin from an asset', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({ type: 'PermanentFreeze', data: { frozen: true } }),
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    permanentFreeze: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: true,
+    },
+  });
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: plugin('PermanentFreeze', [{ frozen: false }]),
+  }).sendAndConfirm(umi);
+
+  const asset2 = await createAsset(umi, { owner: umi.identity });
+
+  t.is(asset2.permanentFreeze, undefined);
+});

@@ -11,6 +11,7 @@ import {
   Pda,
   PublicKey,
   TransactionBuilder,
+  publicKey,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -28,7 +29,7 @@ import {
 // Accounts.
 export type CollectInstructionAccounts = {
   /** The address of the recipient */
-  recipient: PublicKey | Pda;
+  recipient?: PublicKey | Pda;
 };
 
 // Data.
@@ -67,6 +68,13 @@ export function collect(
       value: input.recipient ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
+
+  // Default values.
+  if (!resolvedAccounts.recipient.value) {
+    resolvedAccounts.recipient.value = publicKey(
+      'Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7'
+    );
+  }
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(

@@ -104,6 +104,13 @@ kinobi.update(
 
         }
       }
+    },
+    collect: {
+      accounts: {
+        recipient: {
+          defaultValue: k.publicKeyValueNode("Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7")
+        }
+      }
     }
   })
 );
