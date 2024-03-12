@@ -82,6 +82,9 @@ pub enum MplCoreError {
     /// 23 (0x17) - Feature not available
     #[error("Feature not available")]
     NotAvailable,
+    /// 24 (0x18) - Missing collection
+    #[error("Missing collection")]
+    MissingCollection,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

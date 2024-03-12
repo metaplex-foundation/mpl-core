@@ -226,6 +226,7 @@ test('it cannot move asset in a permanently frozen collection', async (t) => {
   const result = transfer(umi, {
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
+    collection: collection.publicKey,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -236,7 +237,7 @@ test('it cannot move asset in a permanently frozen collection', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [umi.identity.publicKey]),
+    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
   });
 });
 
@@ -276,6 +277,7 @@ test('it can move asset with permanent freeze override in a frozen collection', 
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
     authority: umi.identity,
+    collection: collection.publicKey,
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {

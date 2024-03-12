@@ -104,6 +104,10 @@ pub enum MplCoreError {
     /// 23 - Feature not available
     #[error("Feature not available")]
     NotAvailable,
+
+    /// 24 - Missing collection
+    #[error("Missing collection")]
+    MissingCollection,
 }
 
 impl PrintProgramError for MplCoreError {

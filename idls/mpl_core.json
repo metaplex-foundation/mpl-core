@@ -2369,6 +2369,11 @@
       "code": 23,
       "name": "NotAvailable",
       "msg": "Feature not available"
+    },
+    {
+      "code": 24,
+      "name": "MissingCollection",
+      "msg": "Missing collection"
     }
   ],
   "metadata": {
