@@ -1,9 +1,9 @@
 import { PublicKey } from '@metaplex-foundation/umi';
 import {
-  Asset,
+  BaseAsset,
   Authority,
   Burn,
-  Collection,
+  BaseCollection,
   Freeze,
   PermanentFreeze,
   PluginHeader,
@@ -40,12 +40,12 @@ export type PluginsList = {
   permanentFreeze?: PermanentFreezePlugin;
 };
 
-export type AssetWithPlugins = Asset &
+export type Asset = BaseAsset &
   PluginsList & {
     pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>;
   };
 
-export type CollectionWithPlugins = Collection &
+export type Collection = BaseCollection &
   PluginsList & {
     pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>;
   };

@@ -7,7 +7,7 @@ import {
   DataState,
   create,
   fetchHashedAsset,
-  getAssetAccountDataSerializer,
+  getBaseAssetAccountDataSerializer,
   updateAuthority,
   pluginAuthorityPair,
 } from '../src';
@@ -82,7 +82,7 @@ test.skip('it can create a new asset in ledger state', async (t) => {
     // console.log(tx.meta.innerInstructions[0].instructions);
     const { data } = tx.meta.innerInstructions[0].instructions[0];
     // console.log(base58.deserialize(data));
-    const parsed = getAssetAccountDataSerializer().deserialize(data)[0];
+    const parsed = getBaseAssetAccountDataSerializer().deserialize(data)[0];
     // console.log("Ledger State:", parsed);
     t.like(parsed, <Asset>{
       updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),

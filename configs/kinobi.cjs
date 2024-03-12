@@ -45,7 +45,18 @@ kinobi.update(
 //   })
 // );
 
-// Update instructions.
+kinobi.update(
+  new k.updateAccountsVisitor({
+    asset: {
+      name: "baseAsset",
+    },
+    collection: {
+      name: "baseCollection",
+    }
+  })
+);
+
+// Update instructions with default values
 kinobi.update(
   k.updateInstructionsVisitor({
     // create: {

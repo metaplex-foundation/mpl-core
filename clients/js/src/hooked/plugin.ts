@@ -16,7 +16,7 @@ import {
   PermanentFreezeArgs,
 } from '../generated';
 import { BaseAuthority, PluginsList } from './types';
-import { mapAuthority } from './authorityHelpers';
+import { mapAuthority } from './authority';
 import { toWords } from './utils';
 
 export function formPluginHeader(

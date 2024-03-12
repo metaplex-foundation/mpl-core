@@ -12,12 +12,12 @@ import {
   DataState,
   Key,
   create,
-  fetchAssetWithPlugins,
-  fetchCollectionWithPlugins,
+  fetchAsset,
+  fetchCollection,
   mplCore,
   createCollection as baseCreateCollection,
-  CollectionWithPlugins,
-  AssetWithPlugins,
+  Collection,
+  Asset,
   UpdateAuthority,
   PluginsList,
   PluginAuthorityPairArgs,
@@ -67,7 +67,7 @@ export const createAsset = async (umi: Umi, input: CreateAssetHelperArgs = {}) =
     authority: input.authority,
   }).sendAndConfirm(umi);
 
-  return fetchAssetWithPlugins(umi, publicKey(asset));
+  return fetchAsset(umi, publicKey(asset));
 };
 
 export type CreateCollectionHelperArgs = {
@@ -95,7 +95,7 @@ export const createCollection = async (
     plugins: input.plugins || [],
   }).sendAndConfirm(umi);
 
-  return fetchCollectionWithPlugins(umi, publicKey(collection));
+  return fetchCollection(umi, publicKey(collection));
 };
 
 export const createAssetWithCollection: (
@@ -103,11 +103,11 @@ export const createAssetWithCollection: (
   assetInput: CreateAssetHelperArgs & { collection?: PublicKey | Signer },
   collectionInput?: CreateCollectionHelperArgs
 ) => Promise<{
-  asset: AssetWithPlugins;
-  collection: CollectionWithPlugins;
+  asset: Asset;
+  collection: Collection;
 }> = async (umi, assetInput, collectionInput = {}) => {
   const collection = assetInput.collection
-    ? await fetchCollectionWithPlugins(umi, publicKey(assetInput.collection))
+    ? await fetchCollection(umi, publicKey(assetInput.collection))
     : await createCollection(umi, {
         payer: assetInput.payer,
         updateAuthority: assetInput.updateAuthority,
@@ -138,7 +138,7 @@ export const assertAsset = async (
 ) => {
   const { asset, owner, name, uri, ...rest } = input;
   const assetAddress = publicKey(input.asset);
-  const assetWithPlugins = await fetchAssetWithPlugins(umi, assetAddress);
+  const assetWithPlugins = await fetchAsset(umi, assetAddress);
 
   // Name.
   if (typeof name === 'string') t.is(assetWithPlugins.name, name);
@@ -148,7 +148,7 @@ export const assertAsset = async (
   if (typeof uri === 'string') t.is(assetWithPlugins.uri, uri);
   else if (uri !== undefined) t.regex(assetWithPlugins.uri, uri);
 
-  const testObj = <AssetWithPlugins>{
+  const testObj = <Asset>{
     key: Key.Asset,
     publicKey: assetAddress,
     owner: publicKey(owner),
@@ -173,7 +173,7 @@ export const assertCollection = async (
   const { collection, name, uri, updateAuthority, ...rest } = input;
 
   const collectionAddress = publicKey(collection);
-  const collectionWithPlugins = await fetchCollectionWithPlugins(
+  const collectionWithPlugins = await fetchCollection(
     umi,
     collectionAddress
   );
@@ -186,7 +186,7 @@ export const assertCollection = async (
   if (typeof uri === 'string') t.is(collectionWithPlugins.uri, uri);
   else if (uri !== undefined) t.regex(collectionWithPlugins.uri, uri);
 
-  const testObj = <CollectionWithPlugins>{
+  const testObj = <Collection>{
     key: Key.Collection,
     publicKey: collectionAddress,
     ...rest,

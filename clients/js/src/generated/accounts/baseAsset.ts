@@ -23,7 +23,6 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
-  mapSerializer,
   option,
   publicKey as publicKeySerializer,
   string,
@@ -39,9 +38,9 @@ import {
   getUpdateAuthoritySerializer,
 } from '../types';
 
-export type Asset = Account<AssetAccountData>;
+export type BaseAsset = Account<BaseAssetAccountData>;
 
-export type AssetAccountData = {
+export type BaseAssetAccountData = {
   key: Key;
   owner: PublicKey;
   updateAuthority: UpdateAuthority;
@@ -50,7 +49,8 @@ export type AssetAccountData = {
   seq: Option<bigint>;
 };
 
-export type AssetAccountDataArgs = {
+export type BaseAssetAccountDataArgs = {
+  key: KeyArgs;
   owner: PublicKey;
   updateAuthority: UpdateAuthorityArgs;
   name: string;
@@ -58,85 +58,84 @@ export type AssetAccountDataArgs = {
   seq: OptionOrNullable<number | bigint>;
 };
 
-export function getAssetAccountDataSerializer(): Serializer<
-  AssetAccountDataArgs,
-  AssetAccountData
+export function getBaseAssetAccountDataSerializer(): Serializer<
+  BaseAssetAccountDataArgs,
+  BaseAssetAccountData
 > {
-  return mapSerializer<AssetAccountDataArgs, any, AssetAccountData>(
-    struct<AssetAccountData>(
-      [
-        ['key', getKeySerializer()],
-        ['owner', publicKeySerializer()],
-        ['updateAuthority', getUpdateAuthoritySerializer()],
-        ['name', string()],
-        ['uri', string()],
-        ['seq', option(u64())],
-      ],
-      { description: 'AssetAccountData' }
-    ),
-    (value) => ({ ...value, key: Key.Asset })
-  ) as Serializer<AssetAccountDataArgs, AssetAccountData>;
+  return struct<BaseAssetAccountData>(
+    [
+      ['key', getKeySerializer()],
+      ['owner', publicKeySerializer()],
+      ['updateAuthority', getUpdateAuthoritySerializer()],
+      ['name', string()],
+      ['uri', string()],
+      ['seq', option(u64())],
+    ],
+    { description: 'BaseAssetAccountData' }
+  ) as Serializer<BaseAssetAccountDataArgs, BaseAssetAccountData>;
 }
 
-export function deserializeAsset(rawAccount: RpcAccount): Asset {
-  return deserializeAccount(rawAccount, getAssetAccountDataSerializer());
+export function deserializeBaseAsset(rawAccount: RpcAccount): BaseAsset {
+  return deserializeAccount(rawAccount, getBaseAssetAccountDataSerializer());
 }
 
-export async function fetchAsset(
+export async function fetchBaseAsset(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<Asset> {
+): Promise<BaseAsset> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  assertAccountExists(maybeAccount, 'Asset');
-  return deserializeAsset(maybeAccount);
+  assertAccountExists(maybeAccount, 'BaseAsset');
+  return deserializeBaseAsset(maybeAccount);
 }
 
-export async function safeFetchAsset(
+export async function safeFetchBaseAsset(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<Asset | null> {
+): Promise<BaseAsset | null> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  return maybeAccount.exists ? deserializeAsset(maybeAccount) : null;
+  return maybeAccount.exists ? deserializeBaseAsset(maybeAccount) : null;
 }
 
-export async function fetchAllAsset(
+export async function fetchAllBaseAsset(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions
-): Promise<Asset[]> {
+): Promise<BaseAsset[]> {
   const maybeAccounts = await context.rpc.getAccounts(
     publicKeys.map((key) => toPublicKey(key, false)),
     options
   );
   return maybeAccounts.map((maybeAccount) => {
-    assertAccountExists(maybeAccount, 'Asset');
-    return deserializeAsset(maybeAccount);
+    assertAccountExists(maybeAccount, 'BaseAsset');
+    return deserializeBaseAsset(maybeAccount);
   });
 }
 
-export async function safeFetchAllAsset(
+export async function safeFetchAllBaseAsset(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions
-): Promise<Asset[]> {
+): Promise<BaseAsset[]> {
   const maybeAccounts = await context.rpc.getAccounts(
     publicKeys.map((key) => toPublicKey(key, false)),
     options
   );
   return maybeAccounts
     .filter((maybeAccount) => maybeAccount.exists)
-    .map((maybeAccount) => deserializeAsset(maybeAccount as RpcAccount));
+    .map((maybeAccount) => deserializeBaseAsset(maybeAccount as RpcAccount));
 }
 
-export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
+export function getBaseAssetGpaBuilder(
+  context: Pick<Context, 'rpc' | 'programs'>
+) {
   const programId = context.programs.getPublicKey(
     'mplCore',
     'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d'
@@ -157,6 +156,5 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
       uri: [null, string()],
       seq: [null, option(u64())],
     })
-    .deserializeUsing<Asset>((account) => deserializeAsset(account))
-    .whereField('key', Key.Asset);
+    .deserializeUsing<BaseAsset>((account) => deserializeBaseAsset(account));
 }

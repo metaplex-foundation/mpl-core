@@ -2,7 +2,7 @@ import test from 'ava';
 
 import {
   PluginType,
-  fetchAssetWithPlugins,
+  fetchAsset,
   removePlugin,
   pluginAuthorityPair,
 } from '../src';
@@ -34,7 +34,7 @@ test('it can remove a plugin from an asset', async (t) => {
     pluginType: PluginType.Freeze,
   }).sendAndConfirm(umi);
 
-  const asset2 = await fetchAssetWithPlugins(umi, asset.publicKey);
+  const asset2 = await fetchAsset(umi, asset.publicKey);
 
   t.is(asset2.freeze, undefined);
 });

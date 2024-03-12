@@ -7,7 +7,7 @@ import {
   DataState,
   fetchAsset,
   fetchHashedAsset,
-  getAssetAccountDataSerializer,
+  getBaseAssetAccountDataSerializer,
   getHashedAssetSchemaSerializer,
   hash,
   HashedAssetSchema,
@@ -34,7 +34,7 @@ test.skip('it can compress an asset without any plugins as the owner', async (t)
 
   // And the hash matches the expected value.
   const hashedAssetSchema: HashedAssetSchema = {
-    assetHash: hash(getAssetAccountDataSerializer().serialize(asset)),
+    assetHash: hash(getBaseAssetAccountDataSerializer().serialize(asset)),
     pluginHashes: [],
   };
 
