@@ -246,6 +246,7 @@ test('it can add an authority-managed plugin to an asset via delegate authority'
 
   await addPlugin(umi, {
     asset: asset.publicKey,
+    collection: collection.publicKey,
     plugin: plugin('Royalties', [
       {
         percentage: 5,
@@ -334,7 +335,7 @@ test('it can add a authority-managed plugin to an asset collection authority', a
 test('it cannot add a authority-managed plugin to an asset via delegate authority with the wrong authority', async (t) => {
   const umi = await createUmi();
   const delegate = generateSigner(umi);
-  const { asset } = await createAssetWithCollection(
+  const { asset, collection } = await createAssetWithCollection(
     umi,
     {},
     {
@@ -349,6 +350,7 @@ test('it cannot add a authority-managed plugin to an asset via delegate authorit
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
+    collection: collection.publicKey,
     plugin: plugin('Royalties', [
       {
         percentage: 5,
@@ -370,10 +372,11 @@ test('it cannot add a authority-managed plugin to an asset via delegate authorit
 
 test('it cannot add authority-managed plugin to an asset by owner', async (t) => {
   const umi = await createUmi();
-  const { asset } = await createAssetWithCollection(umi, {});
+  const { asset, collection } = await createAssetWithCollection(umi, {});
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
+    collection: collection.publicKey,
     plugin: plugin('Royalties', [
       {
         percentage: 5,
