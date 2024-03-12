@@ -22,7 +22,7 @@ pub(crate) struct CreateArgs {
     pub(crate) data_state: DataState,
     pub(crate) name: String,
     pub(crate) uri: String,
-    pub(crate) plugins: Vec<PluginAuthorityPair>,
+    pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
 }
 
 pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> ProgramResult {
@@ -104,7 +104,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
             ctx.accounts.system_program,
         )?;
 
-        for plugin in &args.plugins {
+        for plugin in &args.plugins.unwrap_or(Vec::new()) {
             initialize_plugin::<Asset>(
                 &plugin.plugin,
                 &plugin.authority.unwrap_or(plugin.plugin.manager()),

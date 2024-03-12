@@ -90,6 +90,7 @@ impl PluginType {
             PluginType::Royalties => CheckResult::CanReject,
             PluginType::Freeze => CheckResult::CanReject,
             PluginType::Transfer => CheckResult::CanApprove,
+            PluginType::PermanentFreeze => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }

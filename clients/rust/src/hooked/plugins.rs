@@ -2,7 +2,7 @@ use borsh::BorshDeserialize;
 use solana_program::account_info::AccountInfo;
 
 use crate::{
-    accounts::{Asset, PluginHeader, PluginRegistry},
+    accounts::{BaseAsset, PluginHeader, PluginRegistry},
     errors::MplCoreError,
     types::{Authority, Plugin, PluginType, RegistryRecord},
     DataBlob, SolanaAccount,
@@ -58,7 +58,7 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
 
 /// Fetch the plugin registry.
 pub fn fetch_plugins(account: &[u8]) -> Result<Vec<RegistryRecord>, std::io::Error> {
-    let asset = Asset::from_bytes(account)?;
+    let asset = BaseAsset::from_bytes(account)?;
 
     let header = PluginHeader::from_bytes(&account[asset.get_size()..])?;
     let PluginRegistry { registry, .. } =
@@ -69,7 +69,7 @@ pub fn fetch_plugins(account: &[u8]) -> Result<Vec<RegistryRecord>, std::io::Err
 
 /// Create plugin header and registry if it doesn't exist
 pub fn list_plugins(account: &[u8]) -> Result<Vec<PluginType>, std::io::Error> {
-    let asset = Asset::from_bytes(account)?;
+    let asset = BaseAsset::from_bytes(account)?;
 
     let header = PluginHeader::from_bytes(&account[asset.get_size()..])?;
     let PluginRegistry { registry, .. } =

@@ -85,6 +85,9 @@ pub enum MplCoreError {
     /// 24 (0x18) - Invalid Asset passed in
     #[error("Invalid Asset passed in")]
     InvalidAsset,
+    /// 25 (0x19) - Missing collection
+    #[error("Missing collection")]
+    MissingCollection,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

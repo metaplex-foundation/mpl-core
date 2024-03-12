@@ -8,7 +8,7 @@ import {
   decompress,
   fetchAsset,
   fetchHashedAsset,
-  getAssetAccountDataSerializer,
+  getBaseAssetAccountDataSerializer,
   getHashedAssetSchemaSerializer,
   hash,
   HashedAssetSchema,
@@ -55,7 +55,7 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
 
   // And the hash matches the expected value.
   const hashedAssetSchema: HashedAssetSchema = {
-    assetHash: hash(getAssetAccountDataSerializer().serialize(beforeAsset)),
+    assetHash: hash(getBaseAssetAccountDataSerializer().serialize(beforeAsset)),
     pluginHashes: [],
   };
 

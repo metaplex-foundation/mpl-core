@@ -17,7 +17,7 @@ use crate::{
 pub(crate) struct CreateCollectionArgs {
     pub(crate) name: String,
     pub(crate) uri: String,
-    pub(crate) plugins: Vec<PluginAuthorityPair>,
+    pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
 }
 
 pub(crate) fn create_collection<'a>(
@@ -83,7 +83,7 @@ pub(crate) fn create_collection<'a>(
         ctx.accounts.system_program,
     )?;
 
-    for plugin in args.plugins {
+    for plugin in args.plugins.unwrap_or(Vec::new()) {
         initialize_plugin::<Collection>(
             &plugin.plugin,
             &plugin.authority.unwrap_or(plugin.plugin.manager()),

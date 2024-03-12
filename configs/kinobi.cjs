@@ -45,7 +45,18 @@ kinobi.update(
 //   })
 // );
 
-// Update instructions.
+kinobi.update(
+  new k.updateAccountsVisitor({
+    asset: {
+      name: "baseAsset",
+    },
+    collection: {
+      name: "baseCollection",
+    }
+  })
+);
+
+// Update instructions with default values
 kinobi.update(
   k.updateInstructionsVisitor({
     // create: {
@@ -89,8 +100,15 @@ kinobi.update(
     createCollection: {
       arguments: {
         plugins: {
-          defaultValue: k.arrayValueNode([])
+          defaultValue: k.noneValueNode()
 
+        }
+      }
+    },
+    collect: {
+      accounts: {
+        recipient: {
+          defaultValue: k.publicKeyValueNode("Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7")
         }
       }
     }

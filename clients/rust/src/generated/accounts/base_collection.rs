@@ -6,27 +6,26 @@
 //!
 
 use crate::generated::types::Key;
-use crate::generated::types::UpdateAuthority;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_program::pubkey::Pubkey;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Asset {
+pub struct BaseCollection {
     pub key: Key,
     #[cfg_attr(
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
-    pub owner: Pubkey,
-    pub update_authority: UpdateAuthority,
+    pub update_authority: Pubkey,
     pub name: String,
     pub uri: String,
-    pub seq: Option<u64>,
+    pub num_minted: u32,
+    pub current_size: u32,
 }
 
-impl Asset {
+impl BaseCollection {
     #[inline(always)]
     pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {
         let mut data = data;
@@ -34,7 +33,7 @@ impl Asset {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Asset {
+impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for BaseCollection {
     type Error = std::io::Error;
 
     fn try_from(

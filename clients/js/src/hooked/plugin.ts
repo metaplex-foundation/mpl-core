@@ -16,7 +16,7 @@ import {
   PermanentFreezeArgs,
 } from '../generated';
 import { BaseAuthority, PluginsList } from './types';
-import { mapAuthority } from './authorityHelpers';
+import { mapAuthority } from './authority';
 import { toWords } from './utils';
 
 export function formPluginHeader(
@@ -28,36 +28,44 @@ export function formPluginHeader(
   };
 }
 
-export type PluginAuthorityPairHelperArgs = {
-  type: 'Royalties'
-  authority?: Authority
-  data: RoyaltiesArgs
-} | {
-  type: 'Freeze'
-  authority?: Authority
-  data: FreezeArgs
-} | {
-  type: 'Burn'
-  authority?: Authority
-  data?: BurnArgs
-} | {
-  type: 'Transfer'
-  authority?: Authority
-  data?: TransferArgs
-} | {
-  type: 'UpdateDelegate'
-  authority?: Authority
-  data?: UpdateDelegateArgs
-} | {
-  type: 'PermanentFreeze'
-  authority?: Authority
-  data: PermanentFreezeArgs
-};
+export type PluginAuthorityPairHelperArgs =
+  | {
+      type: 'Royalties';
+      authority?: Authority;
+      data: RoyaltiesArgs;
+    }
+  | {
+      type: 'Freeze';
+      authority?: Authority;
+      data: FreezeArgs;
+    }
+  | {
+      type: 'Burn';
+      authority?: Authority;
+      data?: BurnArgs;
+    }
+  | {
+      type: 'Transfer';
+      authority?: Authority;
+      data?: TransferArgs;
+    }
+  | {
+      type: 'UpdateDelegate';
+      authority?: Authority;
+      data?: UpdateDelegateArgs;
+    }
+  | {
+      type: 'PermanentFreeze';
+      authority?: Authority;
+      data: PermanentFreezeArgs;
+    };
 
-export function pluginAuthorityPair( args: PluginAuthorityPairHelperArgs): PluginAuthorityPair {
+export function pluginAuthorityPair(
+  args: PluginAuthorityPairHelperArgs
+): PluginAuthorityPair {
   const { type, authority, data } = args;
   return {
-    plugin: { __kind: type, fields: [data as any || {}] },
+    plugin: { __kind: type, fields: [(data as any) || {}] },
     authority: authority ? some(authority) : none(),
   };
 }

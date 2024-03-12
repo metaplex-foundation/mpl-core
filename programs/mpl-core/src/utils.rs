@@ -236,6 +236,15 @@ pub fn validate_asset_permissions<'a>(
 ) -> Result<(Asset, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
     let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<Asset>(asset)?;
 
+    // If the asset is part of a collection, the collection must be passed in and it must be correct.
+    if let UpdateAuthority::Collection(collection_address) = deserialized_asset.update_authority {
+        if collection.is_none() {
+            return Err(MplCoreError::MissingCollection.into());
+        } else if collection.unwrap().key != &collection_address {
+            return Err(MplCoreError::InvalidCollection.into());
+        }
+    }
+
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
 
     // The asset approval overrides the collection approval.

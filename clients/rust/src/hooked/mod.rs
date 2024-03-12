@@ -5,7 +5,7 @@ pub use plugins::*;
 use std::mem::size_of;
 
 use crate::{
-    accounts::{Asset, Collection, PluginHeader, PluginRegistry},
+    accounts::{BaseAsset, BaseCollection, PluginHeader, PluginRegistry},
     errors::MplCoreError,
     types::{Key, Plugin, PluginType},
 };
@@ -20,27 +20,28 @@ impl From<&Plugin> for PluginType {
             Plugin::Burn(_) => PluginType::Burn,
             Plugin::Transfer(_) => PluginType::Transfer,
             Plugin::UpdateDelegate(_) => PluginType::UpdateDelegate,
+            Plugin::PermanentFreeze(_) => PluginType::PermanentFreeze,
         }
     }
 }
 
-impl Asset {
+impl BaseAsset {
     /// The base length of the asset account with an empty name and uri and no seq.
     pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4 + 1;
 }
 
-impl Collection {
+impl BaseCollection {
     /// The base length of the collection account with an empty name and uri.
     pub const BASE_LENGTH: usize = 1 + 32 + 4 + 4 + 4 + 4;
 }
 
-impl DataBlob for Asset {
+impl DataBlob for BaseAsset {
     fn get_initial_size() -> usize {
-        Asset::BASE_LENGTH
+        BaseAsset::BASE_LENGTH
     }
 
     fn get_size(&self) -> usize {
-        let mut size = Asset::BASE_LENGTH + self.name.len() + self.uri.len();
+        let mut size = BaseAsset::BASE_LENGTH + self.name.len() + self.uri.len();
         if self.seq.is_some() {
             size += size_of::<u64>();
         }
@@ -48,13 +49,13 @@ impl DataBlob for Asset {
     }
 }
 
-impl SolanaAccount for Asset {
+impl SolanaAccount for BaseAsset {
     fn key() -> Key {
         Key::Asset
     }
 }
 
-impl DataBlob for Collection {
+impl DataBlob for BaseCollection {
     fn get_initial_size() -> usize {
         Self::BASE_LENGTH
     }
@@ -64,7 +65,7 @@ impl DataBlob for Collection {
     }
 }
 
-impl SolanaAccount for Collection {
+impl SolanaAccount for BaseCollection {
     fn key() -> Key {
         Key::Collection
     }

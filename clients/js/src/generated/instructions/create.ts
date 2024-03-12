@@ -8,6 +8,8 @@
 
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -18,6 +20,7 @@ import {
   Serializer,
   array,
   mapSerializer,
+  option,
   string,
   struct,
   u8,
@@ -62,14 +65,14 @@ export type CreateInstructionData = {
   dataState: DataState;
   name: string;
   uri: string;
-  plugins: Array<PluginAuthorityPair>;
+  plugins: Option<Array<PluginAuthorityPair>>;
 };
 
 export type CreateInstructionDataArgs = {
   dataState: DataStateArgs;
   name: string;
   uri: string;
-  plugins?: Array<PluginAuthorityPairArgs>;
+  plugins?: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
 };
 
 export function getCreateInstructionDataSerializer(): Serializer<
@@ -83,7 +86,7 @@ export function getCreateInstructionDataSerializer(): Serializer<
         ['dataState', getDataStateSerializer()],
         ['name', string()],
         ['uri', string()],
-        ['plugins', array(getPluginAuthorityPairSerializer())],
+        ['plugins', option(array(getPluginAuthorityPairSerializer()))],
       ],
       { description: 'CreateInstructionData' }
     ),

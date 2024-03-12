@@ -108,6 +108,10 @@ pub enum MplCoreError {
     /// 24 - Invalid Asset passed in
     #[error("Invalid Asset passed in")]
     InvalidAsset,
+
+    /// 25 - Missing collection
+    #[error("Missing collection")]
+    MissingCollection,
 }
 
 impl PrintProgramError for MplCoreError {

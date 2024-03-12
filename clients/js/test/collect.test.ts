@@ -1,7 +1,20 @@
-import { PublicKey, Umi, sol } from '@metaplex-foundation/umi';
+import {
+  PublicKey,
+  Umi,
+  publicKey,
+  sol,
+  subtractAmounts,
+} from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import { PluginType, addPlugin, plugin, pluginAuthorityPair, removePlugin } from '../src';
+import {
+  PluginType,
+  addPlugin,
+  collect,
+  plugin,
+  pluginAuthorityPair,
+  removePlugin,
+} from '../src';
 import { createAsset, createUmi } from './_setup';
 
 const hasCollectAmount = async (umi: Umi, address: PublicKey) => {
@@ -50,7 +63,7 @@ test('it can add remove asset plugin with collect amount', async (t) => {
       pluginAuthorityPair({
         type: 'Freeze',
         data: { frozen: true },
-      })
+      }),
     ],
   });
 
@@ -67,4 +80,25 @@ test('it can add remove asset plugin with collect amount', async (t) => {
     await hasCollectAmount(umi, asset.publicKey),
     'Collect amount not found'
   );
+});
+
+test('it can collect', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = await createAsset(umi);
+  const balStart = await umi.rpc.getBalance(
+    publicKey('Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7')
+  );
+  await collect(umi, {})
+    .addRemainingAccounts({
+      isSigner: false,
+      isWritable: true,
+      pubkey: asset.publicKey,
+    })
+    .sendAndConfirm(umi);
+  const balEnd = await umi.rpc.getBalance(
+    publicKey('Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7')
+  );
+  t.is(await hasCollectAmount(umi, asset.publicKey), false);
+  t.deepEqual(subtractAmounts(balEnd, balStart), sol(0.0015));
 });

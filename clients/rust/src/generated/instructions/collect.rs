@@ -54,7 +54,7 @@ impl CollectInstructionData {
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` recipient
+///   0. `[writable, optional]` recipient (default to `Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7`)
 #[derive(Default)]
 pub struct CollectBuilder {
     recipient: Option<solana_program::pubkey::Pubkey>,
@@ -65,6 +65,7 @@ impl CollectBuilder {
     pub fn new() -> Self {
         Self::default()
     }
+    /// `[optional account, default to 'Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7']`
     /// The address of the recipient
     #[inline(always)]
     pub fn recipient(&mut self, recipient: solana_program::pubkey::Pubkey) -> &mut Self {
@@ -92,7 +93,9 @@ impl CollectBuilder {
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = Collect {
-            recipient: self.recipient.expect("recipient is not set"),
+            recipient: self.recipient.unwrap_or(solana_program::pubkey!(
+                "Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7"
+            )),
         };
 
         accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)

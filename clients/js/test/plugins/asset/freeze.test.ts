@@ -1,5 +1,16 @@
 import test from 'ava';
-import { addPlugin, plugin, updateAuthority, updatePlugin } from '../../../src';
+import { generateSigner } from '@metaplex-foundation/umi';
+import {
+  PluginType,
+  addPlugin,
+  approvePluginAuthority,
+  authority,
+  plugin,
+  pluginAuthorityPair,
+  revokePluginAuthority,
+  updateAuthority,
+  updatePlugin,
+} from '../../../src';
 import {
   DEFAULT_ASSET,
   assertAsset,
@@ -48,4 +59,63 @@ test('it can freeze and unfreeze an asset', async (t) => {
       frozen: false,
     },
   });
+});
+
+test('it can delegate then freeze an asset', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const delegateAddress = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: false } })],
+  });
+
+  await approvePluginAuthority(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.Freeze,
+    newAuthority: authority('Pubkey', { address: delegateAddress.publicKey }),
+  }).sendAndConfirm(umi);
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: plugin('Freeze', [{ frozen: true }]),
+    authority: delegateAddress,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    freeze: {
+      authority: {
+        type: 'Pubkey',
+        address: delegateAddress.publicKey,
+      },
+      frozen: true,
+    },
+  });
+});
+
+test('owner cannot undelegate a freeze plugin with a delegate', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const delegateAddress = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: true } })],
+  });
+
+  await approvePluginAuthority(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.Freeze,
+    newAuthority: authority('Pubkey', { address: delegateAddress.publicKey }),
+  }).sendAndConfirm(umi);
+
+  const result = revokePluginAuthority(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.Freeze,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });

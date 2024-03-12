@@ -6,8 +6,8 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-export * from './asset';
-export * from './collection';
+export * from './baseAsset';
+export * from './baseCollection';
 export * from './hashedAsset';
 export * from './pluginHeader';
 export * from './pluginRegistry';

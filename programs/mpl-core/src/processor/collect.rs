@@ -1,5 +1,4 @@
-use mpl_utils::assert_signer;
-use solana_program::{account_info::next_account_info, rent::Rent, system_program, sysvar::Sysvar};
+use solana_program::{rent::Rent, system_program, sysvar::Sysvar};
 
 use super::*;
 use crate::state::{DataBlob, COLLECT_RECIPIENT};
@@ -15,16 +14,12 @@ use crate::{
 pub(crate) fn collect<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResult {
     // Accounts.
     let ctx = CollectAccounts::context(accounts)?;
-
-    let account_info_iter = &mut accounts.iter();
-
-    let recipient_info = next_account_info(account_info_iter)?;
-
-    assert_signer(recipient_info)?;
-
+    
     if *ctx.accounts.recipient.key != COLLECT_RECIPIENT {
         return Err(MplCoreError::IncorrectAccount.into());
     }
+
+    let recipient_info = ctx.accounts.recipient;
 
     for account_info in ctx.remaining_accounts {
         if account_info.owner != &ID {
