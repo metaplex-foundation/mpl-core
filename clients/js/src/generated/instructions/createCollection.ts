@@ -8,16 +8,20 @@
 
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
   TransactionBuilder,
+  none,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
   array,
   mapSerializer,
+  option,
   string,
   struct,
   u8,
@@ -50,13 +54,13 @@ export type CreateCollectionInstructionData = {
   discriminator: number;
   name: string;
   uri: string;
-  plugins: Array<PluginAuthorityPair>;
+  plugins: Option<Array<PluginAuthorityPair>>;
 };
 
 export type CreateCollectionInstructionDataArgs = {
   name: string;
   uri: string;
-  plugins?: Array<PluginAuthorityPairArgs>;
+  plugins?: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
 };
 
 export function getCreateCollectionInstructionDataSerializer(): Serializer<
@@ -73,11 +77,15 @@ export function getCreateCollectionInstructionDataSerializer(): Serializer<
         ['discriminator', u8()],
         ['name', string()],
         ['uri', string()],
-        ['plugins', array(getPluginAuthorityPairSerializer())],
+        ['plugins', option(array(getPluginAuthorityPairSerializer()))],
       ],
       { description: 'CreateCollectionInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 1, plugins: value.plugins ?? [] })
+    (value) => ({
+      ...value,
+      discriminator: 1,
+      plugins: value.plugins ?? none(),
+    })
   ) as Serializer<
     CreateCollectionInstructionDataArgs,
     CreateCollectionInstructionData

@@ -1712,8 +1712,10 @@
           {
             "name": "plugins",
             "type": {
-              "vec": {
-                "defined": "PluginAuthorityPair"
+              "option": {
+                "vec": {
+                  "defined": "PluginAuthorityPair"
+                }
               }
             }
           }
@@ -1736,8 +1738,10 @@
           {
             "name": "plugins",
             "type": {
-              "vec": {
-                "defined": "PluginAuthorityPair"
+              "option": {
+                "vec": {
+                  "defined": "PluginAuthorityPair"
+                }
               }
             }
           }

@@ -100,7 +100,7 @@ kinobi.update(
     createCollection: {
       arguments: {
         plugins: {
-          defaultValue: k.arrayValueNode([])
+          defaultValue: k.noneValueNode()
 
         }
       }

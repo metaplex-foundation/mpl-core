@@ -62,7 +62,7 @@ export const createAsset = async (umi: Umi, input: CreateAssetHelperArgs = {}) =
     updateAuthority,
     name: input.name || DEFAULT_ASSET.name,
     uri: input.uri || DEFAULT_ASSET.uri,
-    plugins: input.plugins || [],
+    plugins: input.plugins,
     collection: input.collection,
     authority: input.authority,
   }).sendAndConfirm(umi);
@@ -92,7 +92,7 @@ export const createCollection = async (
     collection,
     payer,
     updateAuthority,
-    plugins: input.plugins || [],
+    plugins: input.plugins,
   }).sendAndConfirm(umi);
 
   return fetchCollection(umi, publicKey(collection));
