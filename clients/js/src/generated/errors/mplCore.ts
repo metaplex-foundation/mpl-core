@@ -330,6 +330,19 @@ export class NotAvailableError extends ProgramError {
 codeToErrorMap.set(0x17, NotAvailableError);
 nameToErrorMap.set('NotAvailable', NotAvailableError);
 
+/** InvalidAsset: Invalid Asset passed in */
+export class InvalidAssetError extends ProgramError {
+  override readonly name: string = 'InvalidAsset';
+
+  readonly code: number = 0x18; // 24
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Asset passed in', program, cause);
+  }
+}
+codeToErrorMap.set(0x18, InvalidAssetError);
+nameToErrorMap.set('InvalidAsset', InvalidAssetError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

@@ -104,6 +104,10 @@ pub enum MplCoreError {
     /// 23 - Feature not available
     #[error("Feature not available")]
     NotAvailable,
+
+    /// 24 - Invalid Asset passed in
+    #[error("Invalid Asset passed in")]
+    InvalidAsset,
 }
 
 impl PrintProgramError for MplCoreError {

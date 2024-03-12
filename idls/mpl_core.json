@@ -2365,6 +2365,11 @@
       "code": 23,
       "name": "NotAvailable",
       "msg": "Feature not available"
+    },
+    {
+      "code": 24,
+      "name": "InvalidAsset",
+      "msg": "Invalid Asset passed in"
     }
   ],
   "metadata": {

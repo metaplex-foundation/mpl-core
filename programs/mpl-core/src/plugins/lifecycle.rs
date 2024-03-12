@@ -540,14 +540,17 @@ pub(crate) trait PluginValidation {
     }
 }
 
+/// This function iterates through all plugin checks passed in and performs the validation
+/// by deserializing and calling validate on the plugin.
+/// The STRONGEST result is returned.
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn validate_plugin_checks<'a>(
     key: Key,
-    lifecycle_checks: &LifecycleChecks,
+    checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &AccountInfo<'a>,
     new_owner: Option<&AccountInfo>,
     new_plugin: Option<&Plugin>,
-    asset: &AccountInfo<'a>,
+    asset: Option<&AccountInfo<'a>>,
     collection: Option<&AccountInfo<'a>>,
     validate_fp: fn(
         &Plugin,
@@ -556,18 +559,20 @@ pub(crate) fn validate_plugin_checks<'a>(
         &Authority,
         Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError>,
-) -> Result<bool, ProgramError> {
-    for (check_key, check_result, registry_record) in lifecycle_checks.checks.values() {
+) -> Result<ValidationResult, ProgramError> {
+    let mut approved = false;
+    let mut rejected = false;
+    for (check_key, check_result, registry_record) in checks.values() {
         if *check_key == key
             && matches!(
                 check_result,
-                CheckResult::CanApprove | CheckResult::CanReject | CheckResult::CanForceApprove
+                CheckResult::CanApprove | CheckResult::CanReject
             )
         {
             solana_program::msg!("Validating plugin checks");
             let account = match key {
                 Key::Collection => collection.ok_or(MplCoreError::InvalidCollection)?,
-                Key::Asset => asset,
+                Key::Asset => asset.ok_or(MplCoreError::InvalidAsset)?,
                 _ => unreachable!(),
             };
 
@@ -579,18 +584,19 @@ pub(crate) fn validate_plugin_checks<'a>(
                 new_plugin,
             )?;
             match result {
-                ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
-                ValidationResult::Approved => return Ok(true),
+                ValidationResult::Rejected => rejected = true,
+                ValidationResult::Approved => approved = true,
                 ValidationResult::Pass => continue,
+                ValidationResult::ForceApproved => return Ok(ValidationResult::ForceApproved),
             }
         }
     }
-    Ok(false)
-}
 
-/// A simple type to store the check results for lifecycle events.
-#[derive(Debug, Default)]
-pub(crate) struct LifecycleChecks {
-    pub(crate) force_approve: bool,
-    pub(crate) checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
+    if rejected {
+        Ok(ValidationResult::Rejected)
+    } else if approved {
+        Ok(ValidationResult::Approved)
+    } else {
+        Ok(ValidationResult::Pass)
+    }
 }

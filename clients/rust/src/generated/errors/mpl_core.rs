@@ -82,6 +82,9 @@ pub enum MplCoreError {
     /// 23 (0x17) - Feature not available
     #[error("Feature not available")]
     NotAvailable,
+    /// 24 (0x18) - Invalid Asset passed in
+    #[error("Invalid Asset passed in")]
+    InvalidAsset,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {
