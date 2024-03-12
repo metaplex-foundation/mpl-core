@@ -6,7 +6,7 @@ import {
 } from '@metaplex-foundation/mpl-toolbox';
 import {
   MPL_CORE_PROGRAM_ID,
-  plugin,
+  pluginAuthorityPair,
   ruleSet,
   transfer,
   updateAuthority,
@@ -23,16 +23,14 @@ test('it can transfer an asset with royalties', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi, {
     plugins: [
-      {
-        plugin: plugin('Royalties', [
-          {
-            percentage: 5,
-            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-            ruleSet: ruleSet('None'),
-          },
-        ]),
-        authority: null,
-      },
+      pluginAuthorityPair({
+        type: 'Royalties',
+        data: {
+          percentage: 5,
+          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+          ruleSet: ruleSet('None'),
+        },
+      }),
     ],
   });
 
@@ -73,16 +71,14 @@ test('it can transfer an asset with royalties to an allowlisted program address'
 
   const asset = await createAsset(umi, {
     plugins: [
-      {
-        plugin: plugin('Royalties', [
-          {
-            percentage: 5,
-            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-            ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
-          },
-        ]),
-        authority: null,
-      },
+      pluginAuthorityPair({
+        type: 'Royalties',
+        data: {
+          percentage: 5,
+          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+          ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
+        },
+      }),
     ],
   });
 
@@ -133,16 +129,14 @@ test('it cannot transfer an asset with royalties to a program address not on the
   // Creating a new asset to transfer.
   const asset = await createAsset(umi, {
     plugins: [
-      {
-        plugin: plugin('Royalties', [
-          {
-            percentage: 5,
-            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-            ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID]]),
-          },
-        ]),
-        authority: null,
-      },
+      pluginAuthorityPair({
+        type: 'Royalties',
+        data: {
+          percentage: 5,
+          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+          ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID]]),
+        },
+      }),
     ],
   });
 
@@ -177,16 +171,14 @@ test('it can transfer an asset with royalties to a program address not on the de
   // Creating a new asset to transfer.
   const asset = await createAsset(umi, {
     plugins: [
-      {
-        plugin: plugin('Royalties', [
-          {
-            percentage: 5,
-            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-            ruleSet: ruleSet('ProgramDenyList', [[SPL_TOKEN_PROGRAM_ID]]),
-          },
-        ]),
-        authority: null,
-      },
+      pluginAuthorityPair({
+        type: 'Royalties',
+        data: {
+          percentage: 5,
+          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+          ruleSet: ruleSet('ProgramDenyList', [[SPL_TOKEN_PROGRAM_ID]]),
+        },
+      }),
     ],
   });
 
@@ -219,16 +211,14 @@ test('it cannot transfer an asset with royalties to a denylisted program', async
   // Creating a new asset to transfer.
   const asset = await createAsset(umi, {
     plugins: [
-      {
-        plugin: plugin('Royalties', [
-          {
-            percentage: 5,
-            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-            ruleSet: ruleSet('ProgramDenyList', [[MPL_CORE_PROGRAM_ID]]),
-          },
-        ]),
-        authority: null,
-      },
+      pluginAuthorityPair({
+        type: 'Royalties',
+        data: {
+          percentage: 5,
+          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+          ruleSet: ruleSet('ProgramDenyList', [[MPL_CORE_PROGRAM_ID]]),
+        },
+      }),
     ],
   });
 

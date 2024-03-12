@@ -3,7 +3,7 @@ import test from 'ava';
 import {
   update,
   updateAuthority,
-  plugin,
+  pluginAuthorityPair,
 } from '../src';
 import { assertAsset, createAsset, createUmi } from './_setup';
 
@@ -53,10 +53,8 @@ test('it can update an asset with plugins to be larger', async (t) => {
   const asset = await createAsset(umi, {
     name: 'short',
     uri: 'https://short.com',
-    plugins: [{
-      plugin: plugin('Freeze', [{ frozen: false }]),
-      authority: null,
-    }],
+    plugins: [
+      pluginAuthorityPair({ type: 'Freeze', data: { frozen: false }}),],
   });
 
   // const asset = await createAsset(umi, {
@@ -95,10 +93,9 @@ test('it can update an asset with plugins to be smaller', async (t) => {
   const asset = await createAsset(umi, {
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
-    plugins: [{
-      plugin: plugin('Freeze', [{ frozen: false }]),
-      authority: null,
-    }],
+    plugins: [
+      pluginAuthorityPair({ type: 'Freeze', data: { frozen: false }}),
+    ],
   });
 
   await update(umi, {

@@ -7,6 +7,7 @@ import {
   updatePlugin,
   plugin,
   authority,
+  pluginAuthorityPair,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -22,7 +23,7 @@ test('it can delegate a new authority', async (t) => {
 
   const asset = await createAsset(umi, {
     plugins: [
-      { plugin: plugin('Freeze', [{ frozen: false }]), authority: null },
+      pluginAuthorityPair({ type: 'Freeze', data: { frozen: false }}),
     ],
   });
 
@@ -54,7 +55,7 @@ test('a delegate can freeze the token', async (t) => {
 
   const asset = await createAsset(umi, {
     plugins: [
-      { plugin: plugin('Freeze', [{ frozen: false }]), authority: null },
+      pluginAuthorityPair({ type: 'Freeze', data: { frozen: false }}),
     ],
   });
 
