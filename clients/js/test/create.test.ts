@@ -2,19 +2,20 @@ import { generateSigner, publicKey, sol } from '@metaplex-foundation/umi';
 import test from 'ava';
 // import { base58 } from '@metaplex-foundation/umi/serializers';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
+import { createAccount } from '@metaplex-foundation/mpl-toolbox';
 import {
   Asset,
-  DataState,
   create,
+  DataState,
   fetchHashedAsset,
   getBaseAssetAccountDataSerializer,
-  updateAuthority,
   pluginAuthorityPair,
+  updateAuthority,
 } from '../src';
-import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from './_setup';
+import { assertAsset, createAsset, createUmi, DEFAULT_ASSET } from './_setup';
 
 test('it can create a new asset in account state', async (t) => {
-  // Given a Umi instance and a new signer.
+  // Given an Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
 
@@ -31,7 +32,7 @@ test('it can create a new asset in account state', async (t) => {
 });
 
 test('it can create a new asset with a different payer', async (t) => {
-  // Given a Umi instance and a new signer.
+  // Given an Umi instance and a new signer.
   const umi = await createUmi();
   const payer = await generateSignerWithSol(umi, sol(1));
   const assetAddress = generateSigner(umi);
@@ -51,7 +52,7 @@ test('it can create a new asset with a different payer', async (t) => {
 });
 
 test.skip('it can create a new asset in ledger state', async (t) => {
-  // Given a Umi instance and a new signer.
+  // Given an Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
 
@@ -88,7 +89,7 @@ test.skip('it can create a new asset in ledger state', async (t) => {
 });
 
 test('it cannot create a new asset in ledger state because it is not available', async (t) => {
-  // Given a Umi instance and a new signer.
+  // Given an Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
 
@@ -105,7 +106,7 @@ test('it cannot create a new asset in ledger state because it is not available',
 });
 
 test('it can create a new asset in account state with plugins', async (t) => {
-  // Given a Umi instance and a new signer.
+  // Given an Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
 
@@ -141,7 +142,7 @@ test('it can create a new asset in account state with plugins', async (t) => {
 });
 
 test('it can create a new asset in account state with a different update authority', async (t) => {
-  // Given a Umi instance and a new signer.
+  // Given an Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
   const updateAuth = generateSigner(umi);
@@ -160,7 +161,7 @@ test('it can create a new asset in account state with a different update authori
 });
 
 test('it can create a new asset in account state with plugins with a different update authority', async (t) => {
-  // Given a Umi instance and a new signer.
+  // Given an Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
   const updateAuth = generateSigner(umi);
@@ -189,7 +190,7 @@ test('it can create a new asset in account state with plugins with a different u
 });
 
 test('it cannot create a new asset if the address is already in use', async (t) => {
-  // Given a Umi instance and a new signer.
+  // Given an Umi instance and a new signer.
   const umi = await createUmi();
   const assetAddress = generateSigner(umi);
 
@@ -207,28 +208,27 @@ test('it cannot create a new asset if the address is already in use', async (t) 
   await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
 });
 
-test.skip('it cannot create a new asset if the address is not owned by the system program', async (t) => {
-  // TODO: Reassign an account to another program.
-});
+test('it cannot create a new asset if the address is not owned by the system program', async (t) => {
+  // Given an Umi instance and a new signer.
+  const umi = await createUmi();
+  const newAccount = generateSigner(umi);
 
-// TODO
-test('it cannot create a new asset if the asset keypair does not sign', async (t) => {
-  t.pass();
-});
+  // Then a new account with a non-system program as an owner is created using the new signer.
+  await createAccount(umi, {
+    newAccount,
+    lamports: sol(0.1),
+    space: 42,
+    programId: umi.programs.get('mplCore').publicKey,
+  }).sendAndConfirm(umi);
 
-// TODO
-test('it cannot create a new asset if the payer does not sign', async (t) => {
-  t.pass();
-});
+  // The invalid system program error is expected.
+  const result = create(umi, {
+    ...DEFAULT_ASSET,
+    dataState: DataState.AccountState,
+    asset: newAccount,
+  }).sendAndConfirm(umi);
 
-// TODO
-test('it cannot create a new asset if the payer does not sign, even if the authority does', async (t) => {
-  t.pass();
-});
-
-// TODO
-test('it cannot create a new asset if the authority does not sign', async (t) => {
-  t.pass();
+  await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
 });
 
 // TODO: Add test
