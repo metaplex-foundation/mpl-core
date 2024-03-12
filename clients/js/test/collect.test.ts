@@ -1,7 +1,7 @@
 import { PublicKey, Umi, sol } from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import { PluginType, addPlugin, plugin, removePlugin } from '../src';
+import { PluginType, addPlugin, plugin, pluginAuthorityPair, removePlugin } from '../src';
 import { createAsset, createUmi } from './_setup';
 
 const hasCollectAmount = async (umi: Umi, address: PublicKey) => {
@@ -17,7 +17,7 @@ const hasCollectAmount = async (umi: Umi, address: PublicKey) => {
 test('it can create a new asset with collect amount', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const asset = await createAsset(umi, {});
+  const asset = await createAsset(umi);
 
   t.assert(
     await hasCollectAmount(umi, asset.publicKey),
@@ -28,7 +28,7 @@ test('it can create a new asset with collect amount', async (t) => {
 test('it can add asset plugin with collect amount', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const asset = await createAsset(umi, {});
+  const asset = await createAsset(umi);
 
   await addPlugin(umi, {
     asset: asset.publicKey,
@@ -47,7 +47,10 @@ test('it can add remove asset plugin with collect amount', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi, {
     plugins: [
-      { plugin: plugin('Freeze', [{ frozen: true }]), authority: null },
+      pluginAuthorityPair({
+        type: 'Freeze',
+        data: { frozen: true },
+      })
     ],
   });
 

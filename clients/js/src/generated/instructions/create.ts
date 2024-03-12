@@ -69,7 +69,7 @@ export type CreateInstructionDataArgs = {
   dataState: DataStateArgs;
   name: string;
   uri: string;
-  plugins: Array<PluginAuthorityPairArgs>;
+  plugins?: Array<PluginAuthorityPairArgs>;
 };
 
 export function getCreateInstructionDataSerializer(): Serializer<
@@ -87,7 +87,7 @@ export function getCreateInstructionDataSerializer(): Serializer<
       ],
       { description: 'CreateInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 0 })
+    (value) => ({ ...value, discriminator: 0, plugins: value.plugins ?? [] })
   ) as Serializer<CreateInstructionDataArgs, CreateInstructionData>;
 }
 

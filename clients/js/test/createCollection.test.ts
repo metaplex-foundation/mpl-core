@@ -4,7 +4,7 @@ import {
   PluginType,
   approveCollectionPluginAuthority,
   authority,
-  plugin,
+  pluginAuthorityPair,
   updateAuthority,
 } from '../src';
 import {
@@ -40,7 +40,10 @@ test('it can create a new collection with plugins', async (t) => {
 
   const collection = await createCollection(umi, {
     plugins: [
-      { plugin: plugin('Freeze', [{ frozen: false }]), authority: null },
+      pluginAuthorityPair({
+        type: 'Freeze',
+        data: { frozen: false },
+      }),
     ],
   });
 
@@ -64,7 +67,7 @@ test('it can create a new asset with a collection', async (t) => {
     umi,
     {},
     {
-      plugins: [{ plugin: plugin('UpdateDelegate', [{}]), authority: null }],
+      plugins: [ pluginAuthorityPair({ type: 'UpdateDelegate' })]
     }
   );
 
@@ -93,7 +96,11 @@ test('it can create a new asset with a collection with collection delegate', asy
   const delegate = generateSigner(umi);
 
   const collection = await createCollection(umi, {
-    plugins: [{ plugin: plugin('UpdateDelegate', [{}]), authority: null }],
+    plugins: [
+      pluginAuthorityPair({
+        type: 'UpdateDelegate',
+      })
+    ]
   });
 
   await approveCollectionPluginAuthority(umi, {

@@ -27,7 +27,6 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
     asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.

@@ -9,7 +9,7 @@ import {
   fetchHashedAsset,
   getAssetAccountDataSerializer,
   updateAuthority,
-  plugin,
+  pluginAuthorityPair,
 } from '../src';
 import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from './_setup';
 
@@ -41,7 +41,6 @@ test('it can create a new asset with a different payer', async (t) => {
     dataState: DataState.AccountState,
     asset: assetAddress,
     payer,
-    plugins: [],
   }).sendAndConfirm(umi);
 
   const asset = await createAsset(umi, {
@@ -69,7 +68,6 @@ test.skip('it can create a new asset in ledger state', async (t) => {
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
-    plugins: [],
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -107,7 +105,6 @@ test('it cannot create a new asset in ledger state because it is not available',
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
-    plugins: [],
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'NotAvailable' });
@@ -124,12 +121,10 @@ test('it can create a new asset in account state with plugins', async (t) => {
     asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    plugins: [
-      {
-        plugin: plugin('Freeze', [{ frozen: false }]),
-        authority: null,
-      },
-    ],
+    plugins: [ pluginAuthorityPair({
+      type: 'Freeze',
+      data: { frozen: false },
+    })],
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -178,7 +173,10 @@ test('it can create a new asset in account state with plugins with a different u
     asset: assetAddress,
     updateAuthority: updateAuth.publicKey,
     plugins: [
-      { plugin: plugin('Freeze', [{ frozen: false }]), authority: null },
+      pluginAuthorityPair({
+        type: 'Freeze',
+        data: { frozen: false },
+      })
     ],
   });
 
@@ -208,7 +206,6 @@ test('it cannot create a new asset if the address is already in use', async (t) 
     asset: assetAddress,
     name: DEFAULT_ASSET.name,
     uri: DEFAULT_ASSET.uri,
-    plugins: [],
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidSystemProgram' });

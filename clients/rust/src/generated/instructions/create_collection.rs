@@ -152,6 +152,7 @@ impl CreateCollectionBuilder {
         self.uri = Some(uri);
         self
     }
+    /// `[optional argument, defaults to '[]']`
     #[inline(always)]
     pub fn plugins(&mut self, plugins: Vec<PluginAuthorityPair>) -> &mut Self {
         self.plugins = Some(plugins);
@@ -188,7 +189,7 @@ impl CreateCollectionBuilder {
         let args = CreateCollectionInstructionArgs {
             name: self.name.clone().expect("name is not set"),
             uri: self.uri.clone().expect("uri is not set"),
-            plugins: self.plugins.clone().expect("plugins is not set"),
+            plugins: self.plugins.clone().unwrap_or([]),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -402,6 +403,7 @@ impl<'a, 'b> CreateCollectionCpiBuilder<'a, 'b> {
         self.instruction.uri = Some(uri);
         self
     }
+    /// `[optional argument, defaults to '[]']`
     #[inline(always)]
     pub fn plugins(&mut self, plugins: Vec<PluginAuthorityPair>) -> &mut Self {
         self.instruction.plugins = Some(plugins);
@@ -451,11 +453,7 @@ impl<'a, 'b> CreateCollectionCpiBuilder<'a, 'b> {
         let args = CreateCollectionInstructionArgs {
             name: self.instruction.name.clone().expect("name is not set"),
             uri: self.instruction.uri.clone().expect("uri is not set"),
-            plugins: self
-                .instruction
-                .plugins
-                .clone()
-                .expect("plugins is not set"),
+            plugins: self.instruction.plugins.clone().unwrap_or([]),
         };
         let instruction = CreateCollectionCpi {
             __program: self.instruction.__program,

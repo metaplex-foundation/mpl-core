@@ -221,8 +221,6 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     };
 
     let size_increase = plugin_size
-        .checked_add(Key::get_initial_size())
-        .ok_or(MplCoreError::NumericalOverflow)?
         .checked_add(new_registry_record.try_to_vec()?.len())
         .ok_or(MplCoreError::NumericalOverflow)?;
 

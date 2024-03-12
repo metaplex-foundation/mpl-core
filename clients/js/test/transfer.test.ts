@@ -1,102 +1,55 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-// import { base58 } from '@metaplex-foundation/umi/serializers';
+
 import {
-  Asset,
-  DataState,
-  create,
-  fetchAsset,
   transfer,
   updateAuthority,
 } from '../src';
-import { createUmi } from './_setup';
+import { assertAsset, createAsset, createUmi } from './_setup';
 
 test('it can transfer an asset as the owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
   const newOwner = generateSigner(umi);
 
-  // When we create a new account.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    plugins: [],
-  }).sendAndConfirm(umi);
-
-  // Then an account was created with the correct data.
-  const beforeAsset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <Asset>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  const asset = await createAsset(umi)
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
   });
 
   await transfer(umi, {
-    asset: assetAddress.publicKey,
+    asset: asset.publicKey,
     newOwner: newOwner.publicKey,
-    compressionProof: null,
   }).sendAndConfirm(umi);
 
-  const afterAsset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log("Account State:", afterAsset);
-  t.like(afterAsset, <Asset>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
     owner: newOwner.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
   });
 });
 
 test('it cannot transfer an asset if not the owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const assetAddress = generateSigner(umi);
   const newOwner = generateSigner(umi);
   const attacker = generateSigner(umi);
 
-  // When we create a new account.
-  await create(umi, {
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-    plugins: [],
-  }).sendAndConfirm(umi);
-
-  // Then an account was created with the correct data.
-  const beforeAsset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <Asset>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
-  });
+  const asset = await createAsset(umi)
 
   const result = transfer(umi, {
-    asset: assetAddress.publicKey,
+    asset: asset.publicKey,
     newOwner: newOwner.publicKey,
-    compressionProof: null,
     authority: attacker,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
 
-  const afterAsset = await fetchAsset(umi, assetAddress.publicKey);
-  // console.log("Account State:", afterAsset);
-  t.like(afterAsset, <Asset>{
-    publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    name: 'Test Bread',
-    uri: 'https://example.com/bread',
+    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
   });
 });

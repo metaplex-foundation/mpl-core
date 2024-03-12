@@ -14,7 +14,6 @@ test('fetch account info for account state', async (t) => {
     asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    plugins: [],
   }).sendAndConfirm(umi);
 
   // Print the size of the account.
@@ -42,7 +41,6 @@ test.skip('fetch account info for ledger state', async (t) => {
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
-    plugins: [],
   }).sendAndConfirm(umi);
 
   // Print the size of the account.
