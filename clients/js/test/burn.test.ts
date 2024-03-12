@@ -6,7 +6,15 @@ import {
 import test from 'ava';
 
 import { burn, Key, updateAuthority, pluginAuthorityPair } from '../src';
-import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from './_setup';
+import {
+  DEFAULT_ASSET,
+  DEFAULT_COLLECTION,
+  assertAsset,
+  assertCollection,
+  createAsset,
+  createAssetWithCollection,
+  createUmi,
+} from './_setup';
 
 test('it can burn an asset as the owner', async (t) => {
   // Given a Umi instance and a new signer.
@@ -101,5 +109,73 @@ test('it cannot burn an asset if it is frozen', async (t) => {
       },
       frozen: true,
     },
+  });
+});
+
+test('it cannot burn asset in collection if no collection specified', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+
+  const { asset, collection } = await createAssetWithCollection(umi, {});
+
+  const result = burn(umi, {
+    asset: asset.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'MissingCollection' });
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+  });
+});
+
+test('it cannot burn an asset if collection permanently frozen', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'PermanentFreeze',
+          data: { frozen: true },
+        }),
+      ],
+    }
+  );
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    permanentFreeze: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: true,
+    },
+  });
+
+  const result = burn(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
   });
 });

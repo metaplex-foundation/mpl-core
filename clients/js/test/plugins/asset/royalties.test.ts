@@ -71,18 +71,22 @@ test('it can transfer an asset with royalties', async (t) => {
 test('it can transfer an asset with collection royalties', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const { asset, collection } = await createAssetWithCollection(umi, {}, {
-    plugins: [
-      pluginAuthorityPair({
-        type: 'Royalties',
-        data: {
-          percentage: 5,
-          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-          ruleSet: ruleSet('None'),
-        },
-      }),
-    ],
-  });
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'Royalties',
+          data: {
+            percentage: 5,
+            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+            ruleSet: ruleSet('None'),
+          },
+        }),
+      ],
+    }
+  );
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
   const programOwned = await createAsset(umi);
@@ -106,7 +110,7 @@ test('it can transfer an asset with collection royalties', async (t) => {
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('None'),
     },
-  })
+  });
 
   await transfer(umi, {
     collection: collection.publicKey,
@@ -170,18 +174,22 @@ test('it can transfer an asset with royalties to an allowlisted program address'
 test('it can transfer an asset with collection royalties to an allowlisted program address', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const { asset, collection } = await createAssetWithCollection(umi, {}, {
-    plugins: [
-      pluginAuthorityPair({
-        type: 'Royalties',
-        data: {
-          percentage: 5,
-          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-          ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
-        },
-      }),
-    ],
-  });
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'Royalties',
+          data: {
+            percentage: 5,
+            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+            ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
+          },
+        }),
+      ],
+    }
+  );
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
   const programOwned = await createAsset(umi);
@@ -205,7 +213,7 @@ test('it can transfer an asset with collection royalties to an allowlisted progr
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
     },
-  })
+  });
 
   await transfer(umi, {
     asset: asset.publicKey,
@@ -258,7 +266,7 @@ test('it cannot transfer an asset with royalties to a program address not on the
       percentage: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID]]),
-    }
+    },
   });
 
   await transfer(umi, {
@@ -279,20 +287,24 @@ test('it cannot transfer an asset with collection royalties to a program address
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const programOwner = generateSigner(umi);
-  const { asset, collection } = await createAssetWithCollection(umi, {
-    owner: programOwner.publicKey,
-  }, {
-    plugins: [
-      pluginAuthorityPair({
-        type: 'Royalties',
-        data: {
-          percentage: 5,
-          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-          ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID]]),
-        },
-      }),
-    ],
-  });
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {
+      owner: programOwner.publicKey,
+    },
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'Royalties',
+          data: {
+            percentage: 5,
+            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+            ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID]]),
+          },
+        }),
+      ],
+    }
+  );
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
   const programOwned = await createAsset(umi);
@@ -318,7 +330,7 @@ test('it cannot transfer an asset with collection royalties to a program address
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID]]),
     },
-  })
+  });
 
   await transfer(umi, {
     asset: asset.publicKey,
@@ -375,7 +387,7 @@ test('it can transfer an asset with royalties to a program address not on the de
       percentage: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramDenyList', [[SPL_TOKEN_PROGRAM_ID]]),
-    }
+    },
   });
 
   await transfer(umi, {
@@ -389,22 +401,25 @@ test('it can transfer an asset with royalties to a program address not on the de
   });
 });
 
-
 test('it can transfer an asset with collection royalties to a program address not on the denylist', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const { asset, collection } = await createAssetWithCollection(umi, {}, {
-    plugins: [
-      pluginAuthorityPair({
-        type: 'Royalties',
-        data: {
-          percentage: 5,
-          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-          ruleSet: ruleSet('ProgramDenyList', [[SPL_TOKEN_PROGRAM_ID]]),
-        },
-      }),
-    ],
-  });
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'Royalties',
+          data: {
+            percentage: 5,
+            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+            ruleSet: ruleSet('ProgramDenyList', [[SPL_TOKEN_PROGRAM_ID]]),
+          },
+        }),
+      ],
+    }
+  );
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
   const programOwned = await createAsset(umi);
@@ -428,7 +443,7 @@ test('it can transfer an asset with collection royalties to a program address no
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramDenyList', [[SPL_TOKEN_PROGRAM_ID]]),
     },
-  })
+  });
 
   await transfer(umi, {
     asset: asset.publicKey,
@@ -481,18 +496,22 @@ test('it cannot transfer an asset with royalties to a denylisted program', async
 test('it cannot transfer an asset with collection royalties to a program address on the denylist', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const { asset, collection } = await createAssetWithCollection(umi, {}, {
-    plugins: [
-      pluginAuthorityPair({
-        type: 'Royalties',
-        data: {
-          percentage: 5,
-          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-          ruleSet: ruleSet('ProgramDenyList', [[MPL_CORE_PROGRAM_ID]]),
-        },
-      }),
-    ],
-  });
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'Royalties',
+          data: {
+            percentage: 5,
+            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+            ruleSet: ruleSet('ProgramDenyList', [[MPL_CORE_PROGRAM_ID]]),
+          },
+        }),
+      ],
+    }
+  );
 
   // Here we're creating a new owner that's program owned, so we're just going to use another asset.
   const programOwned = await createAsset(umi);
@@ -516,7 +535,7 @@ test('it cannot transfer an asset with collection royalties to a program address
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramDenyList', [[MPL_CORE_PROGRAM_ID]]),
     },
-  })
+  });
 
   const result = transfer(umi, {
     asset: asset.publicKey,
