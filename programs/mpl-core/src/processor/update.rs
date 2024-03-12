@@ -152,23 +152,32 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
     if let (Some(mut plugin_header), Some(mut plugin_registry)) =
         (plugin_header.clone(), plugin_registry.clone())
     {
-        let new_asset_size = core.get_size() as isize;
-        let size_diff = new_asset_size
+        // The new size of the asset and new offset of the plugin header.
+        let new_core_size = core.get_size() as isize;
+
+        // The difference is size between the new and old asset which is used to calculate the new size of the account.
+        let size_diff = new_core_size
             .checked_sub(core_size)
             .ok_or(MplCoreError::NumericalOverflow)?;
+
+        // The new size of the account.
         let new_size = (account.data_len() as isize)
             .checked_add(size_diff)
             .ok_or(MplCoreError::NumericalOverflow)?;
-        let new_registry_offset = (plugin_header.plugin_registry_offset as isize)
+
+        // The new offset of the plugin registry is the old offset plus the size difference.
+        let registry_offset = plugin_header.plugin_registry_offset;
+        let new_registry_offset = (registry_offset as isize)
             .checked_add(size_diff)
             .ok_or(MplCoreError::NumericalOverflow)?;
-        let registry_offset = plugin_header.plugin_registry_offset;
         plugin_header.plugin_registry_offset = new_registry_offset as usize;
 
+        // The offset of the first plugin is the core size plus the size of the plugin header.
         let plugin_offset = core_size
-            .checked_add(size_diff)
+            .checked_add(plugin_header.get_size() as isize)
             .ok_or(MplCoreError::NumericalOverflow)?;
-        let new_plugin_offset = new_asset_size
+
+        let new_plugin_offset = plugin_offset
             .checked_add(size_diff)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
@@ -183,7 +192,7 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
             src.len(),
         );
 
-        plugin_header.save(account, new_asset_size as usize)?;
+        plugin_header.save(account, new_core_size as usize)?;
         plugin_registry.registry = plugin_registry
             .registry
             .iter_mut()
