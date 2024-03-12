@@ -291,7 +291,7 @@ test('it can add an authority-managed plugin to an asset with the collection upd
   const { asset, collection } = await createAssetWithCollection(
     umi,
     { authority: collectionAuth },
-    { updateAuthority: collectionAuth, }
+    { updateAuthority: collectionAuth }
   );
 
   await addPlugin(umi, {
