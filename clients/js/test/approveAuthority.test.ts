@@ -165,36 +165,3 @@ test('it can approve to reassign authority back to owner', async (t) => {
     },
   });
 });
-
-test('it cannot add invalid authorities to a plugin', async (t) => {
-  // Given a Umi instance and a new signer.
-  const umi = await createUmi();
-  const delegateAddress = generateSigner(umi);
-
-  const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: false } })],
-  });
-
-  const result = approvePluginAuthority(umi, {
-    asset: asset.publicKey,
-    pluginType: PluginType.Freeze,
-    newAuthority: authority('Permanent', {
-      address: delegateAddress.publicKey,
-    }),
-  }).sendAndConfirm(umi);
-
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
-
-  await assertAsset(t, umi, {
-    ...DEFAULT_ASSET,
-    asset: asset.publicKey,
-    owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
-    freeze: {
-      authority: {
-        type: 'Owner',
-      },
-      frozen: false,
-    },
-  });
-});

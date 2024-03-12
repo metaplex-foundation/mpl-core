@@ -53,7 +53,7 @@ impl ApprovePluginAuthority {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_program::instruction::AccountMeta::new(
             self.authority,
             true,
         ));
@@ -119,7 +119,7 @@ pub struct ApprovePluginAuthorityInstructionArgs {
 ///
 ///   0. `[writable]` asset
 ///   1. `[writable, optional]` collection
-///   2. `[signer]` authority
+///   2. `[writable, signer]` authority
 ///   3. `[writable, signer, optional]` payer
 ///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
 ///   5. `[optional]` log_wrapper
@@ -337,7 +337,7 @@ impl<'a, 'b> ApprovePluginAuthorityCpi<'a, 'b> {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_program::instruction::AccountMeta::new(
             *self.authority.key,
             true,
         ));
@@ -416,7 +416,7 @@ impl<'a, 'b> ApprovePluginAuthorityCpi<'a, 'b> {
 ///
 ///   0. `[writable]` asset
 ///   1. `[writable, optional]` collection
-///   2. `[signer]` authority
+///   2. `[writable, signer]` authority
 ///   3. `[writable, signer, optional]` payer
 ///   4. `[]` system_program
 ///   5. `[optional]` log_wrapper

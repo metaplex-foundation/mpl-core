@@ -19,10 +19,6 @@ export function getPubkeyAuthority(address: PublicKey) {
   return authorityHelper('Pubkey', { address });
 }
 
-export function getPermanentAuthority(address: PublicKey) {
-  return authorityHelper('Permanent', { address });
-}
-
 export function mapAuthority(authority: Authority): BaseAuthority {
   return {
     type: authority.__kind,

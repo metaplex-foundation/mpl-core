@@ -160,7 +160,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -219,7 +219,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -287,7 +287,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -346,7 +346,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -414,7 +414,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -473,7 +473,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -541,7 +541,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -600,7 +600,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -668,7 +668,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -727,7 +727,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -795,7 +795,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -855,7 +855,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -915,7 +915,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -992,7 +992,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The update authority or update authority delegate of the asset"
@@ -1060,7 +1060,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The update authority or update authority delegate of the asset"
@@ -1137,7 +1137,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -1205,7 +1205,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "docs": [
             "The owner or delegate of the asset"
@@ -2137,15 +2137,6 @@
           },
           {
             "name": "Pubkey",
-            "fields": [
-              {
-                "name": "address",
-                "type": "publicKey"
-              }
-            ]
-          },
-          {
-            "name": "Permanent",
             "fields": [
               {
                 "name": "address",

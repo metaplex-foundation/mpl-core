@@ -105,7 +105,7 @@ export function update(
     },
     authority: {
       index: 2,
-      isWritable: false as boolean,
+      isWritable: true as boolean,
       value: input.authority ?? null,
     },
     payer: {

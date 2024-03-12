@@ -21,8 +21,7 @@ export type Authority =
   | { __kind: 'None' }
   | { __kind: 'Owner' }
   | { __kind: 'UpdateAuthority' }
-  | { __kind: 'Pubkey'; address: PublicKey }
-  | { __kind: 'Permanent'; address: PublicKey };
+  | { __kind: 'Pubkey'; address: PublicKey };
 
 export type AuthorityArgs = Authority;
 
@@ -35,12 +34,6 @@ export function getAuthoritySerializer(): Serializer<AuthorityArgs, Authority> {
       [
         'Pubkey',
         struct<GetDataEnumKindContent<Authority, 'Pubkey'>>([
-          ['address', publicKeySerializer()],
-        ]),
-      ],
-      [
-        'Permanent',
-        struct<GetDataEnumKindContent<Authority, 'Permanent'>>([
           ['address', publicKeySerializer()],
         ]),
       ],
@@ -61,10 +54,6 @@ export function authority(
   kind: 'Pubkey',
   data: GetDataEnumKindContent<AuthorityArgs, 'Pubkey'>
 ): GetDataEnumKind<AuthorityArgs, 'Pubkey'>;
-export function authority(
-  kind: 'Permanent',
-  data: GetDataEnumKindContent<AuthorityArgs, 'Permanent'>
-): GetDataEnumKind<AuthorityArgs, 'Permanent'>;
 export function authority<K extends AuthorityArgs['__kind']>(
   kind: K,
   data?: any

@@ -58,11 +58,6 @@ pub fn assert_authority<T: CoreAsset>(
                 return Ok(());
             }
         }
-        Authority::Permanent { address } => {
-            if authority_info.key == address {
-                return Ok(());
-            }
-        }
     }
 
     Err(MplCoreError::InvalidAuthority.into())
@@ -82,11 +77,6 @@ pub fn assert_collection_authority(
             }
         }
         Authority::Pubkey { address } => {
-            if authority_info.key == address {
-                return Ok(());
-            }
-        }
-        Authority::Permanent { address } => {
             if authority_info.key == address {
                 return Ok(());
             }
@@ -188,6 +178,12 @@ pub(crate) fn resize_or_reallocate_account<'a>(
 
     if new_minimum_balance >= current_minimum_balance {
         let lamports_diff = new_minimum_balance.saturating_sub(current_minimum_balance);
+        solana_program::msg!(
+            "Transferring {} from {} to {}.",
+            lamports_diff,
+            funding_account.key,
+            target_account.key
+        );
         invoke(
             &system_instruction::transfer(funding_account.key, target_account.key, lamports_diff),
             account_infos,
@@ -195,6 +191,15 @@ pub(crate) fn resize_or_reallocate_account<'a>(
     } else {
         // return lamports to the compressor
         let lamports_diff = current_minimum_balance.saturating_sub(new_minimum_balance);
+
+        solana_program::msg!(
+            "Transferring {} from {}:{} to {}:{}.",
+            lamports_diff,
+            target_account.key,
+            target_account.lamports(),
+            funding_account.key,
+            funding_account.lamports()
+        );
 
         **funding_account.try_borrow_mut_lamports()? += lamports_diff;
         **target_account.try_borrow_mut_lamports()? -= lamports_diff
@@ -248,10 +253,11 @@ pub fn validate_asset_permissions<'a>(
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
 
     // The asset approval overrides the collection approval.
-    let asset_approval = asset_check_fp();
-    let core_check = match asset_approval {
-        CheckResult::None => (Key::Collection, collection_check_fp()),
-        _ => (Key::Asset, asset_approval),
+    let asset_check = asset_check_fp();
+    let collection_check = if collection.is_some() {
+        collection_check_fp()
+    } else {
+        CheckResult::None
     };
 
     // Check the collection plugins first.
@@ -275,23 +281,24 @@ pub fn validate_asset_permissions<'a>(
     // Do the core validation.
     let mut approved = false;
     let mut rejected = false;
-    if matches!(
-        core_check,
-        (
-            Key::Asset | Key::Collection,
-            CheckResult::CanApprove | CheckResult::CanReject | CheckResult::CanForceApprove
-        )
-    ) {
-        let result = match core_check.0 {
-            Key::Collection => collection_validate_fp(
-                &Collection::load(collection.ok_or(MplCoreError::InvalidCollection)?, 0)?,
-                authority_info,
-                new_plugin,
-            )?,
-            Key::Asset => asset_validate_fp(&Asset::load(asset, 0)?, authority_info, new_plugin)?,
-            _ => return Err(MplCoreError::IncorrectAccount.into()),
-        };
-        match result {
+    if asset_check != CheckResult::None {
+        match asset_validate_fp(&Asset::load(asset, 0)?, authority_info, new_plugin)? {
+            ValidationResult::Approved => approved = true,
+            ValidationResult::Rejected => rejected = true,
+            ValidationResult::Pass => (),
+            ValidationResult::ForceApproved => {
+                return Ok((deserialized_asset, plugin_header, plugin_registry))
+            }
+        }
+    };
+    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
+
+    if collection_check != CheckResult::None {
+        match collection_validate_fp(
+            &Collection::load(collection.ok_or(MplCoreError::MissingCollection)?, 0)?,
+            authority_info,
+            new_plugin,
+        )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
             ValidationResult::Pass => (),
@@ -529,39 +536,39 @@ pub fn compress_into_account_space<'a>(
     Ok(compression_proof)
 }
 
-pub(crate) fn resolve_to_authority(
-    authority_info: &AccountInfo,
-    maybe_collection_info: Option<&AccountInfo>,
-    asset: &Asset,
-) -> Result<Authority, ProgramError> {
-    let authority_type = if authority_info.key == &asset.owner {
-        Authority::Owner
-    } else if asset.update_authority == UpdateAuthority::Address(*authority_info.key) {
-        Authority::UpdateAuthority
-    } else if let UpdateAuthority::Collection(collection_address) = asset.update_authority {
-        match maybe_collection_info {
-            Some(collection_info) => {
-                if collection_info.key != &collection_address {
-                    return Err(MplCoreError::InvalidCollection.into());
-                }
-                let collection: Collection = Collection::load(collection_info, 0)?;
-                if authority_info.key == &collection.update_authority {
-                    Authority::UpdateAuthority
-                } else {
-                    Authority::Pubkey {
-                        address: *authority_info.key,
-                    }
-                }
-            }
-            None => return Err(MplCoreError::InvalidCollection.into()),
-        }
-    } else {
-        Authority::Pubkey {
-            address: *authority_info.key,
-        }
-    };
-    Ok(authority_type)
-}
+// pub(crate) fn resolve_to_authority(
+//     authority_info: &AccountInfo,
+//     maybe_collection_info: Option<&AccountInfo>,
+//     asset: &Asset,
+// ) -> Result<Authority, ProgramError> {
+//     let authority_type = if authority_info.key == &asset.owner {
+//         Authority::Owner
+//     } else if asset.update_authority == UpdateAuthority::Address(*authority_info.key) {
+//         Authority::UpdateAuthority
+//     } else if let UpdateAuthority::Collection(collection_address) = asset.update_authority {
+//         match maybe_collection_info {
+//             Some(collection_info) => {
+//                 if collection_info.key != &collection_address {
+//                     return Err(MplCoreError::InvalidCollection.into());
+//                 }
+//                 let collection: Collection = Collection::load(collection_info, 0)?;
+//                 if authority_info.key == &collection.update_authority {
+//                     Authority::UpdateAuthority
+//                 } else {
+//                     Authority::Pubkey {
+//                         address: *authority_info.key,
+//                     }
+//                 }
+//             }
+//             None => return Err(MplCoreError::InvalidCollection.into()),
+//         }
+//     } else {
+//         Authority::Pubkey {
+//             address: *authority_info.key,
+//         }
+//     };
+//     Ok(authority_type)
+// }
 
 /// Resolves the payer for the transaction for an optional payer pattern.
 pub(crate) fn resolve_payer<'a>(

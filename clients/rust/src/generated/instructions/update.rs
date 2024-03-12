@@ -53,7 +53,7 @@ impl Update {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_program::instruction::AccountMeta::new(
             self.authority,
             true,
         ));
@@ -128,7 +128,7 @@ pub struct UpdateInstructionArgs {
 ///
 ///   0. `[writable]` asset
 ///   1. `[optional]` collection
-///   2. `[signer]` authority
+///   2. `[writable, signer]` authority
 ///   3. `[writable, signer, optional]` payer
 ///   4. `[optional]` new_update_authority
 ///   5. `[optional]` system_program (default to `11111111111111111111111111111111`)
@@ -363,7 +363,7 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_program::instruction::AccountMeta::new(
             *self.authority.key,
             true,
         ));
@@ -454,7 +454,7 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
 ///
 ///   0. `[writable]` asset
 ///   1. `[optional]` collection
-///   2. `[signer]` authority
+///   2. `[writable, signer]` authority
 ///   3. `[writable, signer, optional]` payer
 ///   4. `[optional]` new_update_authority
 ///   5. `[]` system_program

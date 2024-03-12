@@ -22,11 +22,4 @@ pub enum Authority {
         )]
         address: Pubkey,
     },
-    Permanent {
-        #[cfg_attr(
-            feature = "serde",
-            serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
-        )]
-        address: Pubkey,
-    },
 }

@@ -11,9 +11,9 @@ use crate::{
         fetch_wrapped_plugin, revoke_authority_on_plugin, Plugin, PluginHeader, PluginRegistry,
         PluginType,
     },
-    state::{Asset, Authority, Collection, Key},
+    state::{Asset, Collection, Key},
     utils::{
-        fetch_core_data, load_key, resolve_payer, resolve_to_authority, validate_asset_permissions,
+        fetch_core_data, load_key, resolve_payer, validate_asset_permissions,
         validate_collection_permissions,
     },
 };
@@ -42,10 +42,6 @@ pub(crate) fn revoke_plugin_authority<'a>(
     let (mut asset, plugin_header, mut plugin_registry) =
         fetch_core_data::<Asset>(ctx.accounts.asset)?;
 
-    //TODO: Make this better.
-    let authority_type =
-        resolve_to_authority(ctx.accounts.authority, ctx.accounts.collection, &asset)?;
-
     let (_, plugin) = fetch_wrapped_plugin::<Asset>(ctx.accounts.asset, args.plugin_type)?;
 
     // Validate asset permissions.
@@ -70,7 +66,6 @@ pub(crate) fn revoke_plugin_authority<'a>(
         ctx.accounts.asset,
         payer,
         ctx.accounts.system_program,
-        &authority_type,
         &args.plugin_type,
         plugin_header.as_ref(),
         plugin_registry.as_mut(),
@@ -114,7 +109,6 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
         ctx.accounts.collection,
         payer,
         ctx.accounts.system_program,
-        &Authority::UpdateAuthority,
         &args.plugin_type,
         plugin_header.as_ref(),
         plugin_registry.as_mut(),
@@ -126,7 +120,6 @@ fn process_revoke_plugin_authority<'a>(
     core_info: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
-    authority_type: &Authority,
     plugin_type: &PluginType,
     plugin_header: Option<&PluginHeader>,
     plugin_registry: Option<&mut PluginRegistry>,
@@ -143,7 +136,6 @@ fn process_revoke_plugin_authority<'a>(
 
     revoke_authority_on_plugin(
         plugin_type,
-        authority_type,
         core_info,
         plugin_header,
         plugin_registry,

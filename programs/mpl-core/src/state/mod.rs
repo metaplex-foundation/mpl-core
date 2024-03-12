@@ -41,7 +41,7 @@ pub enum DataState {
 
 //TODO: Consider making Permanent a subfield of Pubkey.
 /// Variants representing the different types of authority that can have permissions over plugins.
-#[repr(C)]
+#[repr(u8)]
 #[derive(Copy, Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub enum Authority {
     /// No authority, used for immutability.
@@ -52,11 +52,6 @@ pub enum Authority {
     UpdateAuthority,
     /// A pubkey that is the authority over a plugin.
     Pubkey {
-        /// The address of the authority.
-        address: Pubkey,
-    },
-    /// A pubkey that is the permanent authority over a plugin.
-    Permanent {
         /// The address of the authority.
         address: Pubkey,
     },

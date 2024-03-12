@@ -97,7 +97,7 @@ export function updateCollectionPlugin(
     },
     authority: {
       index: 1,
-      isWritable: false as boolean,
+      isWritable: true as boolean,
       value: input.authority ?? null,
     },
     payer: {
