@@ -2,7 +2,7 @@ import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 
 import { transfer, updateAuthority } from '../src';
-import { assertAsset, createAsset, createUmi } from './_setup';
+import { assertAsset, createAsset, createAssetWithCollection, createUmi } from './_setup';
 
 test('it can transfer an asset as the owner', async (t) => {
   // Given a Umi instance and a new signer.
@@ -50,3 +50,24 @@ test('it cannot transfer an asset if not the owner', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
   });
 });
+
+test('it cannot transfer asset in collection if no collection', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const newOwner = generateSigner(umi);
+
+  const { asset, collection } = await createAssetWithCollection(umi, {});
+
+  const result = transfer(umi, {
+    asset: asset.publicKey,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'MissingCollection' });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+  });
+})
