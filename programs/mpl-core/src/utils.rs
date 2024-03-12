@@ -283,6 +283,9 @@ pub fn validate_asset_permissions<'a>(
     };
     solana_program::msg!("approved: {:#?}", approved);
 
+    // Validations by plugins can both approve and deny an action (e.g. the Freeze plugin can reject
+    // a transfer because the token is frozen) so we always want to evaluate.  That is why existing
+    // `approved` value is second in the OR statement.
     approved = validate_plugin_checks(
         Key::Collection,
         &checks,
@@ -296,6 +299,7 @@ pub fn validate_asset_permissions<'a>(
 
     solana_program::msg!("approved: {:#?}", approved);
 
+    // Again we always want to evaluate the plugin checks so order of operations is important.
     approved = validate_plugin_checks(
         Key::Asset,
         &checks,
