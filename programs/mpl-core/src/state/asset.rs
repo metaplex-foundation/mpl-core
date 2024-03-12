@@ -21,6 +21,7 @@ pub struct Asset {
     pub key: Key, //1
     /// The owner of the asset.
     pub owner: Pubkey, //32
+    //TODO: Fix this for dynamic size
     /// The update authority of the asset.
     pub update_authority: UpdateAuthority, //33
     /// The name of the asset.

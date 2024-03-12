@@ -330,17 +330,30 @@ export class NotAvailableError extends ProgramError {
 codeToErrorMap.set(0x17, NotAvailableError);
 nameToErrorMap.set('NotAvailable', NotAvailableError);
 
+/** InvalidAsset: Invalid Asset passed in */
+export class InvalidAssetError extends ProgramError {
+  override readonly name: string = 'InvalidAsset';
+
+  readonly code: number = 0x18; // 24
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Asset passed in', program, cause);
+  }
+}
+codeToErrorMap.set(0x18, InvalidAssetError);
+nameToErrorMap.set('InvalidAsset', InvalidAssetError);
+
 /** MissingCollection: Missing collection */
 export class MissingCollectionError extends ProgramError {
   override readonly name: string = 'MissingCollection';
 
-  readonly code: number = 0x18; // 24
+  readonly code: number = 0x19; // 25
 
   constructor(program: Program, cause?: Error) {
     super('Missing collection', program, cause);
   }
 }
-codeToErrorMap.set(0x18, MissingCollectionError);
+codeToErrorMap.set(0x19, MissingCollectionError);
 nameToErrorMap.set('MissingCollection', MissingCollectionError);
 
 /**

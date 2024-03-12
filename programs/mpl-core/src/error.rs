@@ -105,7 +105,11 @@ pub enum MplCoreError {
     #[error("Feature not available")]
     NotAvailable,
 
-    /// 24 - Missing collection
+    /// 24 - Invalid Asset passed in
+    #[error("Invalid Asset passed in")]
+    InvalidAsset,
+
+    /// 25 - Missing collection
     #[error("Missing collection")]
     MissingCollection,
 }

@@ -20,6 +20,8 @@ pub enum CheckResult {
     CanReject,
     /// A plugin is not permitted to approve or reject a lifecycle action.
     None,
+    /// Certain plugins can force approve a lifecycle action.
+    CanForceApprove,
 }
 
 impl PluginType {
@@ -418,6 +420,8 @@ pub enum ValidationResult {
     Rejected,
     /// The plugin abstains from approving or rejecting the lifecycle action.
     Pass,
+    /// The plugin force approves the lifecycle action.
+    ForceApproved,
 }
 
 /// Plugin validation trait which is implemented by each plugin.
@@ -537,6 +541,9 @@ pub(crate) trait PluginValidation {
     }
 }
 
+/// This function iterates through all plugin checks passed in and performs the validation
+/// by deserializing and calling validate on the plugin.
+/// The STRONGEST result is returned.
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn validate_plugin_checks<'a>(
     key: Key,
@@ -544,7 +551,7 @@ pub(crate) fn validate_plugin_checks<'a>(
     authority: &AccountInfo<'a>,
     new_owner: Option<&AccountInfo>,
     new_plugin: Option<&Plugin>,
-    asset: &AccountInfo<'a>,
+    asset: Option<&AccountInfo<'a>>,
     collection: Option<&AccountInfo<'a>>,
     validate_fp: fn(
         &Plugin,
@@ -553,8 +560,10 @@ pub(crate) fn validate_plugin_checks<'a>(
         &Authority,
         Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError>,
-) -> Result<bool, ProgramError> {
-    for (_, (check_key, check_result, registry_record)) in checks {
+) -> Result<ValidationResult, ProgramError> {
+    let mut approved = false;
+    let mut rejected = false;
+    for (check_key, check_result, registry_record) in checks.values() {
         if *check_key == key
             && matches!(
                 check_result,
@@ -564,7 +573,7 @@ pub(crate) fn validate_plugin_checks<'a>(
             solana_program::msg!("Validating plugin checks");
             let account = match key {
                 Key::Collection => collection.ok_or(MplCoreError::InvalidCollection)?,
-                Key::Asset => asset,
+                Key::Asset => asset.ok_or(MplCoreError::InvalidAsset)?,
                 _ => unreachable!(),
             };
 
@@ -576,11 +585,19 @@ pub(crate) fn validate_plugin_checks<'a>(
                 new_plugin,
             )?;
             match result {
-                ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
-                ValidationResult::Approved => return Ok(true),
+                ValidationResult::Rejected => rejected = true,
+                ValidationResult::Approved => approved = true,
                 ValidationResult::Pass => continue,
+                ValidationResult::ForceApproved => return Ok(ValidationResult::ForceApproved),
             }
         }
     }
-    Ok(false)
+
+    if rejected {
+        Ok(ValidationResult::Rejected)
+    } else if approved {
+        Ok(ValidationResult::Approved)
+    } else {
+        Ok(ValidationResult::Pass)
+    }
 }

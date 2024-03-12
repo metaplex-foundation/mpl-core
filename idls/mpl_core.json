@@ -2372,6 +2372,11 @@
     },
     {
       "code": 24,
+      "name": "InvalidAsset",
+      "msg": "Invalid Asset passed in"
+    },
+    {
+      "code": 25,
       "name": "MissingCollection",
       "msg": "Missing collection"
     }

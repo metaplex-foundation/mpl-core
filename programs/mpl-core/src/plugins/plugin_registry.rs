@@ -20,7 +20,7 @@ pub struct PluginRegistry {
 
 impl PluginRegistry {
     /// Evaluate checks for all plugins in the registry.
-    pub fn check_registry(
+    pub(crate) fn check_registry(
         &self,
         key: Key,
         check_fp: fn(&PluginType) -> CheckResult,

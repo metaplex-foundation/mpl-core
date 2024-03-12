@@ -82,7 +82,10 @@ pub enum MplCoreError {
     /// 23 (0x17) - Feature not available
     #[error("Feature not available")]
     NotAvailable,
-    /// 24 (0x18) - Missing collection
+    /// 24 (0x18) - Invalid Asset passed in
+    #[error("Invalid Asset passed in")]
+    InvalidAsset,
+    /// 25 (0x19) - Missing collection
     #[error("Missing collection")]
     MissingCollection,
 }

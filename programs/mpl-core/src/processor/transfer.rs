@@ -9,7 +9,7 @@ use crate::{
     state::{Asset, Collection, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         compress_into_account_space, load_key, rebuild_account_state_from_proof_data,
-        validate_asset_permissions, verify_proof,
+        resolve_payer, validate_asset_permissions, verify_proof,
     },
 };
 
@@ -25,12 +25,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
 
     // Guards.
     assert_signer(ctx.accounts.authority)?;
-    let payer = if let Some(payer) = ctx.accounts.payer {
-        assert_signer(payer)?;
-        payer
-    } else {
-        ctx.accounts.authority
-    };
+    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
 
     let key = load_key(ctx.accounts.asset, 0)?;
 
