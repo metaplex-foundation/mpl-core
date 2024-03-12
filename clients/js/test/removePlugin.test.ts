@@ -97,7 +97,7 @@ test('it can remove authority managed plugin from asset using update auth', asyn
           type: 'Royalties',
           data: {
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-            percentage: 5,
+            basisPoints: 5,
             ruleSet: ruleSet('None'),
           },
         }),
@@ -140,7 +140,7 @@ test('it can remove authority managed plugin from collection using delegate auth
           type: 'Royalties',
           data: {
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-            percentage: 5,
+            basisPoints: 5,
             ruleSet: ruleSet('None'),
           },
         }),

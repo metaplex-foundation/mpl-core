@@ -39,7 +39,7 @@ impl BurnCollection {
             self.collection,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.authority,
             true,
         ));
@@ -97,7 +97,7 @@ pub struct BurnCollectionInstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable]` collection
-///   1. `[writable, signer]` authority
+///   1. `[signer]` authority
 ///   2. `[writable, signer, optional]` payer
 ///   3. `[optional]` log_wrapper
 #[derive(Default)]
@@ -264,7 +264,7 @@ impl<'a, 'b> BurnCollectionCpi<'a, 'b> {
             *self.collection.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.authority.key,
             true,
         ));
@@ -332,7 +332,7 @@ impl<'a, 'b> BurnCollectionCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable]` collection
-///   1. `[writable, signer]` authority
+///   1. `[signer]` authority
 ///   2. `[writable, signer, optional]` payer
 ///   3. `[optional]` log_wrapper
 pub struct BurnCollectionCpiBuilder<'a, 'b> {

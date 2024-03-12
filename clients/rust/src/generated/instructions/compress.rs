@@ -47,7 +47,7 @@ impl Compress {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.authority,
             true,
         ));
@@ -102,7 +102,7 @@ impl CompressInstructionData {
 ///
 ///   0. `[writable]` asset
 ///   1. `[optional]` collection
-///   2. `[writable, signer]` authority
+///   2. `[signer]` authority
 ///   3. `[writable, signer, optional]` payer
 ///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
 ///   5. `[optional]` log_wrapper
@@ -297,7 +297,7 @@ impl<'a, 'b> CompressCpi<'a, 'b> {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.authority.key,
             true,
         ));
@@ -372,7 +372,7 @@ impl<'a, 'b> CompressCpi<'a, 'b> {
 ///
 ///   0. `[writable]` asset
 ///   1. `[optional]` collection
-///   2. `[writable, signer]` authority
+///   2. `[signer]` authority
 ///   3. `[writable, signer, optional]` payer
 ///   4. `[]` system_program
 ///   5. `[optional]` log_wrapper

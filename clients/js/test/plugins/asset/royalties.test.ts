@@ -29,7 +29,7 @@ test('it can transfer an asset with royalties', async (t) => {
       pluginAuthorityPair({
         type: 'Royalties',
         data: {
-          percentage: 5,
+          basisPoints: 5,
           creators: [{ address: umi.identity.publicKey, percentage: 100 }],
           ruleSet: ruleSet('None'),
         },
@@ -51,7 +51,7 @@ test('it can transfer an asset with royalties', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('None'),
     },
@@ -79,7 +79,7 @@ test('it can transfer an asset with collection royalties', async (t) => {
         pluginAuthorityPair({
           type: 'Royalties',
           data: {
-            percentage: 5,
+            basisPoints: 5,
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
             ruleSet: ruleSet('None'),
           },
@@ -106,7 +106,7 @@ test('it can transfer an asset with collection royalties', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('None'),
     },
@@ -133,7 +133,7 @@ test('it can transfer an asset with royalties to an allowlisted program address'
       pluginAuthorityPair({
         type: 'Royalties',
         data: {
-          percentage: 5,
+          basisPoints: 5,
           creators: [{ address: umi.identity.publicKey, percentage: 100 }],
           ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
         },
@@ -154,7 +154,7 @@ test('it can transfer an asset with royalties to an allowlisted program address'
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
     },
@@ -182,7 +182,7 @@ test('it can transfer an asset with collection royalties to an allowlisted progr
         pluginAuthorityPair({
           type: 'Royalties',
           data: {
-            percentage: 5,
+            basisPoints: 5,
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
             ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
           },
@@ -209,7 +209,7 @@ test('it can transfer an asset with collection royalties to an allowlisted progr
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramAllowList', [[MPL_CORE_PROGRAM_ID]]),
     },
@@ -246,7 +246,7 @@ test('it cannot transfer an asset with royalties to a program address not on the
       pluginAuthorityPair({
         type: 'Royalties',
         data: {
-          percentage: 5,
+          basisPoints: 5,
           creators: [{ address: umi.identity.publicKey, percentage: 100 }],
           ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID]]),
         },
@@ -263,7 +263,7 @@ test('it cannot transfer an asset with royalties to a program address not on the
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID]]),
     },
@@ -297,7 +297,7 @@ test('it cannot transfer an asset with collection royalties to a program address
         pluginAuthorityPair({
           type: 'Royalties',
           data: {
-            percentage: 5,
+            basisPoints: 5,
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
             ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID]]),
           },
@@ -326,7 +326,7 @@ test('it cannot transfer an asset with collection royalties to a program address
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID]]),
     },
@@ -367,7 +367,7 @@ test('it can transfer an asset with royalties to a program address not on the de
       pluginAuthorityPair({
         type: 'Royalties',
         data: {
-          percentage: 5,
+          basisPoints: 5,
           creators: [{ address: umi.identity.publicKey, percentage: 100 }],
           ruleSet: ruleSet('ProgramDenyList', [[SPL_TOKEN_PROGRAM_ID]]),
         },
@@ -385,7 +385,7 @@ test('it can transfer an asset with royalties to a program address not on the de
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramDenyList', [[SPL_TOKEN_PROGRAM_ID]]),
     },
@@ -413,7 +413,7 @@ test('it can transfer an asset with collection royalties to a program address no
         pluginAuthorityPair({
           type: 'Royalties',
           data: {
-            percentage: 5,
+            basisPoints: 5,
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
             ruleSet: ruleSet('ProgramDenyList', [[SPL_TOKEN_PROGRAM_ID]]),
           },
@@ -440,7 +440,7 @@ test('it can transfer an asset with collection royalties to a program address no
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramDenyList', [[SPL_TOKEN_PROGRAM_ID]]),
     },
@@ -471,7 +471,7 @@ test('it cannot transfer an asset with royalties to a denylisted program', async
       pluginAuthorityPair({
         type: 'Royalties',
         data: {
-          percentage: 5,
+          basisPoints: 5,
           creators: [{ address: umi.identity.publicKey, percentage: 100 }],
           ruleSet: ruleSet('ProgramDenyList', [[MPL_CORE_PROGRAM_ID]]),
         },
@@ -505,7 +505,7 @@ test('it cannot transfer an asset with collection royalties to a program address
         pluginAuthorityPair({
           type: 'Royalties',
           data: {
-            percentage: 5,
+            basisPoints: 5,
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
             ruleSet: ruleSet('ProgramDenyList', [[MPL_CORE_PROGRAM_ID]]),
           },
@@ -532,7 +532,7 @@ test('it cannot transfer an asset with collection royalties to a program address
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('ProgramDenyList', [[MPL_CORE_PROGRAM_ID]]),
     },

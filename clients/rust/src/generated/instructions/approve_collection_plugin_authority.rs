@@ -42,7 +42,7 @@ impl ApproveCollectionPluginAuthority {
             self.collection,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.authority,
             true,
         ));
@@ -107,7 +107,7 @@ pub struct ApproveCollectionPluginAuthorityInstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable]` collection
-///   1. `[writable, signer]` authority
+///   1. `[signer]` authority
 ///   2. `[writable, signer, optional]` payer
 ///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
 ///   4. `[optional]` log_wrapper
@@ -300,7 +300,7 @@ impl<'a, 'b> ApproveCollectionPluginAuthorityCpi<'a, 'b> {
             *self.collection.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.authority.key,
             true,
         ));
@@ -375,7 +375,7 @@ impl<'a, 'b> ApproveCollectionPluginAuthorityCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable]` collection
-///   1. `[writable, signer]` authority
+///   1. `[signer]` authority
 ///   2. `[writable, signer, optional]` payer
 ///   3. `[]` system_program
 ///   4. `[optional]` log_wrapper

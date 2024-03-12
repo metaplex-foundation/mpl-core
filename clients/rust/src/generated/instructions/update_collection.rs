@@ -42,7 +42,7 @@ impl UpdateCollection {
             self.collection,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.authority,
             true,
         ));
@@ -116,7 +116,7 @@ pub struct UpdateCollectionInstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable]` collection
-///   1. `[writable, signer]` authority
+///   1. `[signer]` authority
 ///   2. `[writable, signer, optional]` payer
 ///   3. `[optional]` new_update_authority
 ///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
@@ -326,7 +326,7 @@ impl<'a, 'b> UpdateCollectionCpi<'a, 'b> {
             *self.collection.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.authority.key,
             true,
         ));
@@ -413,7 +413,7 @@ impl<'a, 'b> UpdateCollectionCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable]` collection
-///   1. `[writable, signer]` authority
+///   1. `[signer]` authority
 ///   2. `[writable, signer, optional]` payer
 ///   3. `[optional]` new_update_authority
 ///   4. `[]` system_program

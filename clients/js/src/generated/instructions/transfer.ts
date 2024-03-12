@@ -115,7 +115,7 @@ export function transfer(
     },
     authority: {
       index: 2,
-      isWritable: true as boolean,
+      isWritable: false as boolean,
       value: input.authority ?? null,
     },
     payer: {

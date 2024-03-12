@@ -185,7 +185,7 @@ test('it can add a plugin to a collection', async (t) => {
     collection: collection.publicKey,
     plugin: plugin('Royalties', [
       {
-        percentage: 5,
+        basisPoints: 5,
         creators: [],
         ruleSet: ruleSet('None'),
       },
@@ -200,7 +200,7 @@ test('it can add a plugin to a collection', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [],
       ruleSet: ruleSet('None'),
     },
@@ -250,7 +250,7 @@ test('it can add an authority-managed plugin to an asset via delegate authority'
     collection: collection.publicKey,
     plugin: plugin('Royalties', [
       {
-        percentage: 5,
+        basisPoints: 5,
         creators: [
           {
             address: umi.identity.publicKey,
@@ -273,7 +273,7 @@ test('it can add an authority-managed plugin to an asset via delegate authority'
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [
         {
           address: umi.identity.publicKey,
@@ -299,7 +299,7 @@ test('it can add an authority-managed plugin to an asset with the collection upd
     collection: collection.publicKey,
     plugin: plugin('Royalties', [
       {
-        percentage: 5,
+        basisPoints: 5,
         creators: [
           {
             address: umi.identity.publicKey,
@@ -322,7 +322,7 @@ test('it can add an authority-managed plugin to an asset with the collection upd
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [
         {
           address: umi.identity.publicKey,
@@ -355,7 +355,7 @@ test('it cannot add a authority-managed plugin to an asset via delegate authorit
     collection: collection.publicKey,
     plugin: plugin('Royalties', [
       {
-        percentage: 5,
+        basisPoints: 5,
         creators: [
           {
             address: umi.identity.publicKey,
@@ -383,7 +383,7 @@ test('it cannot add authority-managed plugin to an asset by owner', async (t) =>
     authority: owner,
     plugin: plugin('Royalties', [
       {
-        percentage: 5,
+        basisPoints: 5,
         creators: [
           {
             address: umi.identity.publicKey,
@@ -410,7 +410,7 @@ test('it can add a plugin to a collection with a plugin', async (t) => {
       pluginAuthorityPair({
         type: 'Royalties',
         data: {
-          percentage: 5,
+          basisPoints: 5,
           creators: [
             {
               address: umi.identity.publicKey,
@@ -431,7 +431,7 @@ test('it can add a plugin to a collection with a plugin', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [
         {
           address: umi.identity.publicKey,
@@ -456,7 +456,7 @@ test('it can add a plugin to a collection with a plugin', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      percentage: 5,
+      basisPoints: 5,
       creators: [
         {
           address: umi.identity.publicKey,

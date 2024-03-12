@@ -13,7 +13,7 @@ use borsh::BorshSerialize;
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Royalties {
-    pub percentage: u8,
+    pub basis_points: u16,
     pub creators: Vec<Creator>,
     pub rule_set: RuleSet,
 }
