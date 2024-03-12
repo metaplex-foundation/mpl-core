@@ -1,10 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
-use crate::{
-    plugins::PluginType,
-    state::{Authority, CoreAsset, DataBlob},
-};
+use crate::state::{Authority, CoreAsset, DataBlob};
 
 use super::{Plugin, PluginValidation, ValidationResult};
 

@@ -82,6 +82,7 @@ impl PluginType {
         match plugin_type {
             PluginType::Freeze => CheckResult::CanReject,
             PluginType::Burn => CheckResult::CanApprove,
+            PluginType::PermanentFreeze => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }

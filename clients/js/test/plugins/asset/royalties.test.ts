@@ -336,6 +336,7 @@ test('it cannot transfer an asset with collection royalties to a program address
     asset: asset.publicKey,
     collection: collection.publicKey,
     newOwner: programOwned.publicKey,
+    authority: programOwner,
   }).sendAndConfirm(umi);
 
   const result = transfer(umi, {
