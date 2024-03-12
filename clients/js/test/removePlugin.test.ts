@@ -49,6 +49,7 @@ test('it can remove a plugin from an asset', async (t) => {
 
   t.is(asset2.freeze, undefined);
 });
+
 test('it cannot remove an owner plugin from an asset if not the owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
@@ -96,11 +97,12 @@ test('it can remove authority managed plugin from asset using update auth', asyn
           type: 'Royalties',
           data: {
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-            percentage: 5,
+            basisPoints: 5,
             ruleSet: ruleSet('None'),
           },
         }),
       ],
+      authority: updateAuth,
     },
     {
       updateAuthority: updateAuth,
@@ -117,6 +119,8 @@ test('it can remove authority managed plugin from asset using update auth', asyn
     asset: asset.publicKey,
     pluginType: PluginType.Royalties,
     authority: updateAuth,
+    payer: umi.identity,
+    collection: collection.publicKey,
   }).sendAndConfirm(umi);
 
   const asset2 = await fetchAsset(umi, asset.publicKey);
@@ -136,7 +140,7 @@ test('it can remove authority managed plugin from collection using delegate auth
           type: 'Royalties',
           data: {
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-            percentage: 5,
+            basisPoints: 5,
             ruleSet: ruleSet('None'),
           },
         }),
@@ -162,6 +166,9 @@ test('it can remove authority managed plugin from collection using delegate auth
     asset: asset.publicKey,
     pluginType: PluginType.Royalties,
     authority: delegate,
+    // We provide the payer because an account with 0 lamports cannot receive small SOL payments.
+    payer: umi.identity,
+    collection: collection.publicKey,
   }).sendAndConfirm(umi);
 
   const asset2 = await fetchAsset(umi, asset.publicKey);

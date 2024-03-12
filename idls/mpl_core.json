@@ -1533,8 +1533,8 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "percentage",
-            "type": "u8"
+            "name": "basisPoints",
+            "type": "u16"
           },
           {
             "name": "creators",
@@ -2137,15 +2137,6 @@
           },
           {
             "name": "Pubkey",
-            "fields": [
-              {
-                "name": "address",
-                "type": "publicKey"
-              }
-            ]
-          },
-          {
-            "name": "Permanent",
             "fields": [
               {
                 "name": "address",

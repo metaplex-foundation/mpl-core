@@ -83,7 +83,7 @@ pub(crate) fn create_collection<'a>(
         ctx.accounts.system_program,
     )?;
 
-    for plugin in args.plugins.unwrap_or(Vec::new()) {
+    for plugin in args.plugins.unwrap_or_default() {
         initialize_plugin::<Collection>(
             &plugin.plugin,
             &plugin.authority.unwrap_or(plugin.plugin.manager()),

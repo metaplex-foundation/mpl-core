@@ -1,10 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
-use crate::{
-    plugins::PluginType,
-    state::{Authority, CoreAsset, DataBlob},
-};
+use crate::state::{Authority, CoreAsset, DataBlob};
 
 use super::{Plugin, PluginValidation, ValidationResult};
 
@@ -163,18 +160,18 @@ impl PluginValidation for Freeze {
         authorities: &Authority,
         plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("Authority: {:?}", authority.key);
-        solana_program::msg!("Authorities: {:?}", authorities);
-        if authorities
-            == &(Authority::Pubkey {
-                address: *authority.key,
-            })
-            && plugin_to_revoke.is_some()
-            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::Freeze
-        {
-            Ok(ValidationResult::Approved)
-        } else {
-            Ok(ValidationResult::Pass)
+        if let Some(Plugin::Freeze(freeze)) = plugin_to_revoke {
+            if freeze.frozen {
+                return Ok(ValidationResult::Rejected);
+            } else if authorities
+                == &(Authority::Pubkey {
+                    address: *authority.key,
+                })
+            {
+                return Ok(ValidationResult::Approved);
+            }
         }
+
+        Ok(ValidationResult::Pass)
     }
 }

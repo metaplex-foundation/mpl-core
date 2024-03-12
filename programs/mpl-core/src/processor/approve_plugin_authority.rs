@@ -59,7 +59,6 @@ pub(crate) fn approve_plugin_authority<'a>(
 
     process_approve_plugin_authority::<Asset>(
         ctx.accounts.asset,
-        ctx.accounts.authority,
         payer,
         ctx.accounts.system_program,
         &args.plugin_type,
@@ -100,7 +99,6 @@ pub(crate) fn approve_collection_plugin_authority<'a>(
 
     process_approve_plugin_authority::<Collection>(
         ctx.accounts.collection,
-        ctx.accounts.authority,
         payer,
         ctx.accounts.system_program,
         &args.plugin_type,
@@ -110,13 +108,12 @@ pub(crate) fn approve_collection_plugin_authority<'a>(
 
 fn process_approve_plugin_authority<'a, T: CoreAsset + DataBlob + SolanaAccount>(
     core_info: &AccountInfo<'a>,
-    authority: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
     plugin_type: &PluginType,
     new_authority: &Authority,
 ) -> ProgramResult {
-    let (core, plugin_header, plugin_registry) = fetch_core_data::<T>(core_info)?;
+    let (_, plugin_header, plugin_registry) = fetch_core_data::<T>(core_info)?;
 
     let plugin_header = match plugin_header {
         Some(header) => header,
@@ -128,11 +125,9 @@ fn process_approve_plugin_authority<'a, T: CoreAsset + DataBlob + SolanaAccount>
         None => return Err(MplCoreError::PluginsNotInitialized.into()),
     };
 
-    approve_authority_on_plugin(
+    approve_authority_on_plugin::<T>(
         plugin_type,
-        authority,
         new_authority,
-        &core,
         core_info,
         &plugin_header,
         &mut plugin_registry,

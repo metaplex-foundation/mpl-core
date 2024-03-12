@@ -7,7 +7,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     state::{Asset, Authority, CoreAsset, DataBlob, Key, SolanaAccount},
-    utils::{assert_authority, resize_or_reallocate_account},
+    utils::resize_or_reallocate_account,
 };
 
 use super::{Plugin, PluginHeader, PluginRegistry, PluginType, RegistryRecord};
@@ -251,7 +251,6 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
 pub fn delete_plugin<'a, T: DataBlob>(
     plugin_type: &PluginType,
     asset: &T,
-    authority_type: &Authority,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
@@ -268,19 +267,17 @@ pub fn delete_plugin<'a, T: DataBlob>(
         let registry_record = plugin_registry.registry.remove(index);
         let serialized_registry_record = registry_record.try_to_vec()?;
 
-        // Only allow the default authority to delete the plugin.
-        if authority_type != &registry_record.plugin_type.manager() {
-            return Err(MplCoreError::InvalidAuthority.into());
-        }
-
+        // Fetch the offset of the plugin to be removed.
         let plugin_offset = registry_record.offset;
         let plugin = Plugin::load(account, plugin_offset)?;
         let serialized_plugin = plugin.try_to_vec()?;
 
+        // Get the offset of the plugin after the one being removed.
         let next_plugin_offset = plugin_offset
             .checked_add(serialized_plugin.len())
             .ok_or(MplCoreError::NumericalOverflow)?;
 
+        // Calculate the new size of the account.
         let new_size = account
             .data_len()
             .checked_sub(serialized_registry_record.len())
@@ -288,14 +285,17 @@ pub fn delete_plugin<'a, T: DataBlob>(
             .checked_sub(serialized_plugin.len())
             .ok_or(MplCoreError::NumericalOverflow)?;
 
-        let new_offset = header
+        solana_program::msg!("size: {:?}", account.data_len());
+        solana_program::msg!("new_size: {:?}", new_size);
+
+        let new_registry_offset = header
             .plugin_registry_offset
             .checked_sub(serialized_plugin.len())
             .ok_or(MplCoreError::NumericalOverflow)?;
 
         let data_to_move = header
             .plugin_registry_offset
-            .checked_sub(new_offset)
+            .checked_sub(new_registry_offset)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
         //TODO: This is memory intensive, we should use memmove instead probably.
@@ -306,10 +306,10 @@ pub fn delete_plugin<'a, T: DataBlob>(
             data_to_move,
         );
 
-        header.plugin_registry_offset = new_offset;
+        header.plugin_registry_offset = new_registry_offset;
         header.save(account, asset.get_size())?;
 
-        plugin_registry.save(account, new_offset)?;
+        plugin_registry.save(account, new_registry_offset)?;
 
         resize_or_reallocate_account(account, payer, system_program, new_size)?;
     } else {
@@ -324,9 +324,7 @@ pub fn delete_plugin<'a, T: DataBlob>(
 #[allow(clippy::too_many_arguments)]
 pub fn approve_authority_on_plugin<'a, T: CoreAsset>(
     plugin_type: &PluginType,
-    authority: &AccountInfo<'a>,
     new_authority: &Authority,
-    asset: &T,
     account: &AccountInfo<'a>,
     plugin_header: &PluginHeader,
     plugin_registry: &mut PluginRegistry,
@@ -338,8 +336,6 @@ pub fn approve_authority_on_plugin<'a, T: CoreAsset>(
         .iter_mut()
         .find(|record| record.plugin_type == *plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
-
-    assert_authority(asset, authority, &registry_record.authority)?;
 
     registry_record.authority = *new_authority;
 
@@ -360,7 +356,6 @@ pub fn approve_authority_on_plugin<'a, T: CoreAsset>(
 #[allow(clippy::too_many_arguments)]
 pub fn revoke_authority_on_plugin<'a>(
     plugin_type: &PluginType,
-    authority_type: &Authority,
     account: &AccountInfo<'a>,
     plugin_header: &PluginHeader,
     plugin_registry: &mut PluginRegistry,
@@ -373,27 +368,18 @@ pub fn revoke_authority_on_plugin<'a>(
         .find(|record| record.plugin_type == *plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
 
-    solana_program::msg!("authority_type: {:?}", authority_type);
-    solana_program::msg!("registry_record.authority: {:?}", registry_record.authority);
-
-    // TODO inspect this logic
-    if (*authority_type != registry_record.plugin_type.manager() &&
-        // pubkey authorities can remove themselves if they are a signer
-        authority_type != &registry_record.authority) ||
-        // Unable to revoke a None authority
-        registry_record.authority == Authority::None
-    {
-        return Err(MplCoreError::InvalidAuthority.into());
-    }
-
-    let authority_bytes = registry_record.authority.try_to_vec()?;
+    let old_authority_bytes = registry_record.authority.try_to_vec()?;
     registry_record.authority = registry_record.plugin_type.manager();
+    let new_authority_bytes = registry_record.authority.try_to_vec()?;
 
-    let new_size = account
-        .data_len()
-        .checked_sub(authority_bytes.len())
+    let size_diff = (new_authority_bytes.len() as isize)
+        .checked_sub(old_authority_bytes.len() as isize)
         .ok_or(MplCoreError::NumericalOverflow)?;
-    resize_or_reallocate_account(account, payer, system_program, new_size)?;
+
+    let new_size = (account.data_len() as isize)
+        .checked_add(size_diff)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+    resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
 
     plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
 

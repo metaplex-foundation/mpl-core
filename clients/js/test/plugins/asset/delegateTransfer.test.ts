@@ -153,8 +153,7 @@ test('it cannot transfer after delegate has been revoked', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     transfer: {
       authority: {
-        type: 'Pubkey',
-        address: umi.identity.publicKey,
+        type: 'Owner',
       },
     },
   });

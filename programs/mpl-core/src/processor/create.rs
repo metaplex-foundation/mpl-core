@@ -104,7 +104,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
             ctx.accounts.system_program,
         )?;
 
-        for plugin in &args.plugins.unwrap_or(Vec::new()) {
+        for plugin in &args.plugins.unwrap_or_default() {
             initialize_plugin::<Asset>(
                 &plugin.plugin,
                 &plugin.authority.unwrap_or(plugin.plugin.manager()),

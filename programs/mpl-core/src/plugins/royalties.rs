@@ -27,7 +27,7 @@ pub enum RuleSet {
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct Royalties {
     /// The percentage of royalties to be paid to the creators.
-    percentage: u8,
+    basis_points: u16,
     /// A list of creators to receive royalties.
     creators: Vec<Creator>,
     /// The rule set for the asset to enforce royalties.

@@ -28,6 +28,7 @@ impl PluginType {
     /// Check permissions for the add plugin lifecycle event.
     pub fn check_add_plugin(plugin_type: &PluginType) -> CheckResult {
         match plugin_type {
+            PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::PermanentFreeze => CheckResult::CanReject,
             _ => CheckResult::None,
         }
@@ -37,6 +38,7 @@ impl PluginType {
     pub fn check_remove_plugin(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
+            PluginType::UpdateDelegate => CheckResult::CanApprove,
             _ => CheckResult::None,
         }
     }
@@ -80,6 +82,7 @@ impl PluginType {
         match plugin_type {
             PluginType::Freeze => CheckResult::CanReject,
             PluginType::Burn => CheckResult::CanApprove,
+            PluginType::PermanentFreeze => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -214,6 +217,10 @@ impl Plugin {
         authorities: &Authority,
         plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
+        if authorities == &Authority::None {
+            return Ok(ValidationResult::Rejected);
+        }
+
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
