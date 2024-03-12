@@ -15,12 +15,7 @@ import {
   getPluginHeaderAccountDataSerializer,
   getPluginRegistryAccountDataSerializer,
 } from '../generated';
-import {
-  Collection,
-  PluginsList,
-  registryRecordsToPluginsList,
-} from '.';
-
+import { Collection, PluginsList, registryRecordsToPluginsList } from '.';
 
 export function deserializeCollection(rawAccount: RpcAccount): Collection {
   const collection = deserializeBaseCollection(rawAccount);

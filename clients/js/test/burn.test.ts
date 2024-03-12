@@ -67,7 +67,7 @@ test('it cannot burn an asset if it is frozen', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'Freeze',
-        data: { frozen: true }
+        data: { frozen: true },
       }),
     ],
   });

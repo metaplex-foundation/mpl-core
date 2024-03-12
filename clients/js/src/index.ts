@@ -1,4 +1,4 @@
-// import { 
+// import {
 //   fetchAsset as fetchAssetBase,
 //   fetchCollection as fetchCollectionBase
 // } from './generated'
@@ -7,9 +7,8 @@
 //   fetchCollectionWithPlugins as fetchCollection,
 // } from './hooked';
 
-
 // // Override exports from generated
-// export { 
+// export {
 //   fetchAssetBase,
 //   fetchCollectionBase,
 //   // eslint-disable-next-line import/export

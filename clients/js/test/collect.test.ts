@@ -1,7 +1,13 @@
 import { PublicKey, Umi, sol } from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import { PluginType, addPlugin, plugin, pluginAuthorityPair, removePlugin } from '../src';
+import {
+  PluginType,
+  addPlugin,
+  plugin,
+  pluginAuthorityPair,
+  removePlugin,
+} from '../src';
 import { createAsset, createUmi } from './_setup';
 
 const hasCollectAmount = async (umi: Umi, address: PublicKey) => {
@@ -50,7 +56,7 @@ test('it can add remove asset plugin with collect amount', async (t) => {
       pluginAuthorityPair({
         type: 'Freeze',
         data: { frozen: true },
-      })
+      }),
     ],
   });
 

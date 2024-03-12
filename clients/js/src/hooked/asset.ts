@@ -18,7 +18,6 @@ import {
 import { Asset, PluginsList } from './types';
 import { registryRecordsToPluginsList } from './plugin';
 
-
 export function deserializeAsset(rawAccount: RpcAccount): Asset {
   const asset = deserializeBaseAsset(rawAccount);
   const assetData = getBaseAssetAccountDataSerializer().serialize(asset);

@@ -22,7 +22,7 @@ test('a delegate can transfer the asset', async (t) => {
   const newOwnerAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'Transfer' }),],
+    plugins: [pluginAuthorityPair({ type: 'Transfer' })],
   });
 
   await approvePluginAuthority(umi, {

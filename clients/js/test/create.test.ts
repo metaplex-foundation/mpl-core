@@ -121,10 +121,12 @@ test('it can create a new asset in account state with plugins', async (t) => {
     asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    plugins: [ pluginAuthorityPair({
-      type: 'Freeze',
-      data: { frozen: false },
-    })],
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Freeze',
+        data: { frozen: false },
+      }),
+    ],
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -176,7 +178,7 @@ test('it can create a new asset in account state with plugins with a different u
       pluginAuthorityPair({
         type: 'Freeze',
         data: { frozen: false },
-      })
+      }),
     ],
   });
 

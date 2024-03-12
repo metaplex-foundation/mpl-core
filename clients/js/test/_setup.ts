@@ -49,7 +49,10 @@ export const DEFAULT_COLLECTION = {
   uri: 'https://example.com/collection',
 };
 
-export const createAsset = async (umi: Umi, input: CreateAssetHelperArgs = {}) => {
+export const createAsset = async (
+  umi: Umi,
+  input: CreateAssetHelperArgs = {}
+) => {
   const payer = input.payer || umi.identity;
   const owner = publicKey(input.owner || input.payer || umi.identity);
   const asset = input.asset || generateSigner(umi);
@@ -173,10 +176,7 @@ export const assertCollection = async (
   const { collection, name, uri, updateAuthority, ...rest } = input;
 
   const collectionAddress = publicKey(collection);
-  const collectionWithPlugins = await fetchCollection(
-    umi,
-    collectionAddress
-  );
+  const collectionWithPlugins = await fetchCollection(umi, collectionAddress);
 
   // Name.
   if (typeof name === 'string') t.is(collectionWithPlugins.name, name);

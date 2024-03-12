@@ -1,10 +1,7 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import {
-  transfer,
-  updateAuthority,
-} from '../src';
+import { transfer, updateAuthority } from '../src';
 import { assertAsset, createAsset, createUmi } from './_setup';
 
 test('it can transfer an asset as the owner', async (t) => {
@@ -12,7 +9,7 @@ test('it can transfer an asset as the owner', async (t) => {
   const umi = await createUmi();
   const newOwner = generateSigner(umi);
 
-  const asset = await createAsset(umi)
+  const asset = await createAsset(umi);
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
@@ -37,7 +34,7 @@ test('it cannot transfer an asset if not the owner', async (t) => {
   const newOwner = generateSigner(umi);
   const attacker = generateSigner(umi);
 
-  const asset = await createAsset(umi)
+  const asset = await createAsset(umi);
 
   const result = transfer(umi, {
     asset: asset.publicKey,
