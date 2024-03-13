@@ -1,13 +1,17 @@
 pub mod plugins;
+pub use plugins::*;
+
+pub mod compression_proof;
+pub use compression_proof::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
-pub use plugins::*;
-use std::mem::size_of;
+
+use std::{cmp::Ordering, mem::size_of};
 
 use crate::{
     accounts::{BaseAsset, BaseCollection, PluginHeader, PluginRegistry},
     errors::MplCoreError,
-    types::{Key, Plugin, PluginType},
+    types::{Key, Plugin, PluginType, RegistryRecord},
 };
 use solana_program::account_info::AccountInfo;
 
@@ -138,5 +142,12 @@ pub trait SolanaAccount: BorshSerialize + BorshDeserialize {
     /// Save the account to the given account info starting at the offset.
     fn save(&self, account: &AccountInfo, offset: usize) -> Result<(), std::io::Error> {
         borsh::to_writer(&mut account.data.borrow_mut()[offset..], self)
+    }
+}
+
+impl RegistryRecord {
+    /// Associated function for sorting `RegistryRecords` by offset.
+    pub fn compare_offsets(a: &RegistryRecord, b: &RegistryRecord) -> Ordering {
+        a.offset.cmp(&b.offset)
     }
 }
