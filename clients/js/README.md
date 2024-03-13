@@ -18,6 +18,23 @@ A Umi-compatible JavaScript library for the project.
    umi.use(mplCore());
    ```
 
+   For using on the frontend wallets, see [this React example](https://github.com/metaplex-foundation/inscriptions-ui-mantine/blob/master/providers/UmiProvider.tsx)
+
+   ```ts
+   import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+   import { walletAdapterIdentity } from '@metaplex-foundation/umi-signer-wallet-adapters';
+
+   export function MyComponent() {
+      const wallet = useWallet();
+      const { connection } = useConnection();
+      const umi = createUmi(connection)
+         .use(walletAdapterIdentity(wallet))
+         .use(mplCore())
+
+      // rest of component
+   }
+   ```
+
 4. Examples
    ```ts
    // Create an asset
