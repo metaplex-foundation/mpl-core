@@ -18,12 +18,29 @@ A Umi-compatible JavaScript library for the project.
    umi.use(mplCore());
    ```
 
+   For using on the frontend wallets, see [this React example](https://github.com/metaplex-foundation/inscriptions-ui-mantine/blob/master/providers/UmiProvider.tsx)
+
+   ```ts
+   import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+   import { walletAdapterIdentity } from '@metaplex-foundation/umi-signer-wallet-adapters';
+
+   export function MyComponent() {
+      const wallet = useWallet();
+      const { connection } = useConnection();
+      const umi = createUmi(connection)
+         .use(walletAdapterIdentity(wallet))
+         .use(mplCore())
+
+      // rest of component
+   }
+   ```
+
 4. Examples
    ```ts
    // Create an asset
    const assetAddress = generateSigner(umi);
    const owner = generateSigner(umi);
-   
+
    await create(umi, {
       name: 'Test Asset',
       uri: 'https://example.com/asset.json',
@@ -50,8 +67,22 @@ A Umi-compatible JavaScript library for the project.
       authority: collectionUpdateAuthority, // optional, defaults to payer
    }).sendAndConfirm(umi);
 
+   // Transfer an asset
+   const recipient = generateSigner(umi);
+   await transfer(umi, {
+      asset: assetAddress.publicKey,
+      newOwner: recipient.publicKey,
+   }).sendAndConfirm(umi);
+
+   // Transfer an asset belonging to a collection
+   await transfer(umi, {
+      asset: assetAddress.publicKey,
+      newOwner: recipient.publicKey,
+      collection: collectionAddress.publicKey,
+   }).sendAndConfirm(umi);
+
    // Fetch an asset
-   const asset = await fetchAsset(umi, assetAddress.publicKey)
+   const asset = await fetchAsset(umi, assetAddress.publicKey);
 
    // GPA fetch assets by owner
    const assetsByOwner = await getAssetGpaBuilder(umi)
@@ -60,7 +91,10 @@ A Umi-compatible JavaScript library for the project.
 
    // GPA fetch assets by collection
    const assetsByCollection = await getAssetGpaBuilder(umi)
-      .whereField('updateAuthority', updateAuthority('Collection', [collectionAddress.publicKey]))
+      .whereField(
+         'updateAuthority',
+         updateAuthority('Collection', [collectionAddress.publicKey])
+      )
       .getDeserialized();
 
    // DAS API (RPC based indexing) fetch assets by owner/collection
