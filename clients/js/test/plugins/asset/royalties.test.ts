@@ -551,3 +551,26 @@ test('it cannot transfer an asset with collection royalties to a program address
     owner: umi.identity.publicKey,
   });
 });
+
+test('it cannot add royalty percentages that dont add up to 100', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+
+  const result = createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Royalties',
+        data: {
+          basisPoints: 5,
+          creators: [
+            { address: umi.identity.publicKey, percentage: 20 },
+            { address: umi.identity.publicKey, percentage: 20 },
+          ],
+          ruleSet: ruleSet('None'),
+        },
+      }),
+    ],
+  });
+
+  await t.throwsAsync(result, { name: 'InvalidRoyalties' });
+});

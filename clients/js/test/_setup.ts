@@ -91,8 +91,8 @@ export const createCollection = async (
   const collection = input.collection || generateSigner(umi);
   const updateAuthority = publicKey(input.updateAuthority || payer);
   await baseCreateCollection(umi, {
-    name: input.name || DEFAULT_ASSET.name,
-    uri: input.uri || DEFAULT_ASSET.uri,
+    name: input.name || DEFAULT_COLLECTION.name,
+    uri: input.uri || DEFAULT_COLLECTION.uri,
     collection,
     payer,
     updateAuthority,
