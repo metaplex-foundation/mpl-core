@@ -148,8 +148,13 @@ impl PluginValidation for Freeze {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        plugin_to_approve: Option<&super::Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
+        if let Some(Plugin::Freeze(freeze)) = plugin_to_approve {
+            if freeze.frozen {
+                return Ok(ValidationResult::Rejected);
+            }
+        }
         Ok(ValidationResult::Pass)
     }
 

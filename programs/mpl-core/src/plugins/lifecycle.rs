@@ -48,7 +48,7 @@ impl PluginType {
     pub fn check_approve_plugin_authority(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            _ => CheckResult::None,
+            _ => CheckResult::CanApprove,
         }
     }
 
