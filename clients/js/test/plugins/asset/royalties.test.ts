@@ -6,10 +6,13 @@ import {
 } from '@metaplex-foundation/mpl-toolbox';
 import {
   MPL_CORE_PROGRAM_ID,
+  addPlugin,
+  plugin,
   pluginAuthorityPair,
   ruleSet,
   transfer,
   updateAuthority,
+  updatePlugin,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -552,9 +555,11 @@ test('it cannot transfer an asset with collection royalties to a program address
   });
 });
 
-test('it cannot add royalty percentages that dont add up to 100', async (t) => {
+test('it cannot create royalty percentages that dont add up to 100', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
+  const creator1 = generateSigner(umi);
+  const creator2 = generateSigner(umi);
 
   const result = createAsset(umi, {
     plugins: [
@@ -563,8 +568,8 @@ test('it cannot add royalty percentages that dont add up to 100', async (t) => {
         data: {
           basisPoints: 5,
           creators: [
-            { address: umi.identity.publicKey, percentage: 20 },
-            { address: umi.identity.publicKey, percentage: 20 },
+            { address: creator1.publicKey, percentage: 20 },
+            { address: creator2.publicKey, percentage: 20 },
           ],
           ruleSet: ruleSet('None'),
         },
@@ -572,5 +577,233 @@ test('it cannot add royalty percentages that dont add up to 100', async (t) => {
     ],
   });
 
-  await t.throwsAsync(result, { name: 'InvalidRoyalties' });
+  const error = await t.throwsAsync(result);
+  t.regex(error?.message || '', /invalid program argument/);
+});
+test('it cannot create royalty basis points greater than 10000', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+
+  const result = createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Royalties',
+        data: {
+          basisPoints: 10001,
+          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+          ruleSet: ruleSet('None'),
+        },
+      }),
+    ],
+  });
+
+  const error = await t.throwsAsync(result);
+  t.regex(error?.message || '', /invalid program argument/);
+});
+
+test('it cannot create royalty with duplicate creators', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+
+  const result = createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Royalties',
+        data: {
+          basisPoints: 10001,
+          creators: [
+            {
+              address: umi.identity.publicKey,
+              percentage: 10,
+            },
+            {
+              address: umi.identity.publicKey,
+              percentage: 90,
+            },
+          ],
+          ruleSet: ruleSet('None'),
+        },
+      }),
+    ],
+  });
+
+  const error = await t.throwsAsync(result);
+  t.regex(error?.message || '', /invalid program argument/);
+});
+
+test('it cannot add royalty percentages that dont add up to 100', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = await createAsset(umi, {});
+  const creator1 = generateSigner(umi);
+  const creator2 = generateSigner(umi);
+
+  const result = addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: plugin('Royalties', [
+      {
+        basisPoints: 5,
+        creators: [
+          { address: creator1.publicKey, percentage: 20 },
+          { address: creator2.publicKey, percentage: 20 },
+        ],
+        ruleSet: ruleSet('None'),
+      },
+    ]),
+  }).sendAndConfirm(umi);
+
+  const error = await t.throwsAsync(result);
+  t.regex(error?.message || '', /invalid program argument/);
+});
+
+test('it cannot add royalty percentages that has duplicate creators', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = await createAsset(umi, {});
+  const creator1 = generateSigner(umi);
+
+  const result = addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: plugin('Royalties', [
+      {
+        basisPoints: 5,
+        creators: [
+          { address: creator1.publicKey, percentage: 20 },
+          { address: creator1.publicKey, percentage: 80 },
+        ],
+        ruleSet: ruleSet('None'),
+      },
+    ]),
+  }).sendAndConfirm(umi);
+
+  const error = await t.throwsAsync(result);
+  t.regex(error?.message || '', /invalid program argument/);
+});
+test('it cannot add royalty basis points greater than 10000', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = await createAsset(umi, {});
+
+  const result = addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: plugin('Royalties', [
+      {
+        basisPoints: 10001,
+        creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+        ruleSet: ruleSet('None'),
+      },
+    ]),
+  }).sendAndConfirm(umi);
+
+  const error = await t.throwsAsync(result);
+  t.regex(error?.message || '', /invalid program argument/);
+});
+
+test('it cannot update royalty percentages that dont add up to 100', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const creator1 = generateSigner(umi);
+  const creator2 = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Royalties',
+        data: {
+          basisPoints: 5,
+          creators: [
+            { address: creator1.publicKey, percentage: 20 },
+            { address: creator2.publicKey, percentage: 80 },
+          ],
+          ruleSet: ruleSet('None'),
+        },
+      }),
+    ],
+  });
+
+  const result = updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: plugin('Royalties', [
+      {
+        basisPoints: 5,
+        creators: [
+          { address: creator1.publicKey, percentage: 20 },
+          { address: creator2.publicKey, percentage: 20 },
+        ],
+        ruleSet: ruleSet('None'),
+      },
+    ]),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+});
+test('it cannot update royalty basis points greater than 10000', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Royalties',
+        data: {
+          basisPoints: 100,
+          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+          ruleSet: ruleSet('None'),
+        },
+      }),
+    ],
+  });
+
+  const result = updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: plugin('Royalties', [
+      {
+        basisPoints: 10001,
+        creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+        ruleSet: ruleSet('None'),
+      },
+    ]),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+});
+
+test('it cannot update royalty with duplicate creators', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Royalties',
+        data: {
+          basisPoints: 100,
+          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+          ruleSet: ruleSet('None'),
+        },
+      }),
+    ],
+  });
+
+  const result = updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: plugin('Royalties', [
+      {
+        basisPoints: 10001,
+        creators: [
+          {
+            address: umi.identity.publicKey,
+            percentage: 10,
+          },
+          {
+            address: umi.identity.publicKey,
+            percentage: 90,
+          },
+        ],
+        ruleSet: ruleSet('None'),
+      },
+    ]),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });

@@ -3,7 +3,6 @@ import { createUmi, generateSigner } from '@metaplex-foundation/umi';
 import {
   PluginType,
   addPlugin,
-  approvePluginAuthority,
   create,
   createCollection,
   fetchAsset,
@@ -14,7 +13,7 @@ import {
   revokePluginAuthority,
   ruleSet,
   updateAuthority,
-} from '../src';
+} from './index';
 
 const example = async () => {
   const umi = await createUmi();

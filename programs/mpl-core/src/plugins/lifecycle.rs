@@ -28,6 +28,7 @@ impl PluginType {
     /// Check permissions for the add plugin lifecycle event.
     pub fn check_add_plugin(plugin_type: &PluginType) -> CheckResult {
         match plugin_type {
+            PluginType::Royalties => CheckResult::CanReject,
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::PermanentFreeze => CheckResult::CanReject,
             _ => CheckResult::None,
@@ -65,6 +66,7 @@ impl PluginType {
     pub fn check_create(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
+            PluginType::Royalties => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }

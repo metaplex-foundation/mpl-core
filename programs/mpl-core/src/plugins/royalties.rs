@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
@@ -34,13 +36,32 @@ pub struct Royalties {
     rule_set: RuleSet,
 }
 
+fn validate_royalties(royalties: &Royalties) -> Result<super::ValidationResult, ProgramError> {
+    if royalties.basis_points > 10000 {
+        // TODO propagate a more useful error
+        return Err(ProgramError::InvalidArgument);
+    }
+    if royalties.creators.iter().fold(0u8, |acc, creator| acc.saturating_add(creator.percentage)) != 100 {
+        // TODO propagate a more useful error
+        return Err(ProgramError::InvalidArgument);
+    }
+    // check unique creators array
+    let mut seen_addresses = HashSet::new();
+    if !royalties.creators.iter().all(|creator| seen_addresses.insert(creator.address)) {
+        // If `insert` returns false, it means the address was already in the set, indicating a duplicate
+        return Err(ProgramError::InvalidArgument);
+    }
+
+    Ok(ValidationResult::Pass)
+}
+
 impl PluginValidation for Royalties {
     fn validate_create(
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        validate_royalties(self)
     }
 
     fn validate_update(
@@ -108,7 +129,16 @@ impl PluginValidation for Royalties {
         _authorities: &Authority,
         _new_plugin: Option<&super::Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        validate_royalties(self)
+    }
+
+    fn validate_update_plugin<T: crate::state::CoreAsset>(
+            &self,
+        _core_asset: &T,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
+    ) -> Result<ValidationResult, ProgramError> {
+        validate_royalties(self)
     }
 
     fn validate_remove_plugin(
