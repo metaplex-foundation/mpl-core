@@ -3,6 +3,7 @@ mod burn;
 mod freeze;
 mod lifecycle;
 mod permanent_freeze;
+mod permanent_transfer;
 mod plugin_header;
 mod plugin_registry;
 mod royalties;
@@ -16,6 +17,7 @@ pub use freeze::*;
 pub use lifecycle::*;
 use num_derive::ToPrimitive;
 pub use permanent_freeze::*;
+pub use permanent_transfer::*;
 pub use plugin_header::*;
 pub use plugin_registry::*;
 pub use royalties::*;
@@ -55,6 +57,8 @@ pub enum Plugin {
     PermanentFreeze(PermanentFreeze),
     /// Attributes plugin for arbitrary Key-Value pairs.
     Attributes(Attributes),
+    /// Permanent Transfer authority which allows the creator to become the only person who can transfer an Asset
+    PermanentTransfer(PermanentTransfer),
 }
 
 impl Plugin {
@@ -117,6 +121,8 @@ pub enum PluginType {
     PermanentFreeze,
     /// The Attributes plugin.
     Attributes,
+    /// The Permanent Transfer plugin.
+    PermanentTransfer,
 }
 
 impl DataBlob for PluginType {
@@ -140,6 +146,7 @@ impl From<&Plugin> for PluginType {
             Plugin::UpdateDelegate(_) => PluginType::UpdateDelegate,
             Plugin::PermanentFreeze(_) => PluginType::PermanentFreeze,
             Plugin::Attributes(_) => PluginType::Attributes,
+            Plugin::PermanentTransfer(_) => PluginType::PermanentTransfer,
         }
     }
 }
@@ -156,6 +163,7 @@ impl PluginType {
             PluginType::UpdateDelegate => Authority::UpdateAuthority,
             PluginType::PermanentFreeze => Authority::UpdateAuthority,
             PluginType::Attributes => Authority::UpdateAuthority,
+            PluginType::PermanentTransfer => Authority::UpdateAuthority,
         }
     }
 }

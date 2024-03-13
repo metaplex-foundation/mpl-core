@@ -41,13 +41,22 @@ fn validate_royalties(royalties: &Royalties) -> Result<super::ValidationResult, 
         // TODO propagate a more useful error
         return Err(ProgramError::InvalidArgument);
     }
-    if royalties.creators.iter().fold(0u8, |acc, creator| acc.saturating_add(creator.percentage)) != 100 {
+    if royalties
+        .creators
+        .iter()
+        .fold(0u8, |acc, creator| acc.saturating_add(creator.percentage))
+        != 100
+    {
         // TODO propagate a more useful error
         return Err(ProgramError::InvalidArgument);
     }
     // check unique creators array
     let mut seen_addresses = HashSet::new();
-    if !royalties.creators.iter().all(|creator| seen_addresses.insert(creator.address)) {
+    if !royalties
+        .creators
+        .iter()
+        .all(|creator| seen_addresses.insert(creator.address))
+    {
         // If `insert` returns false, it means the address was already in the set, indicating a duplicate
         return Err(ProgramError::InvalidArgument);
     }
@@ -133,7 +142,7 @@ impl PluginValidation for Royalties {
     }
 
     fn validate_update_plugin<T: crate::state::CoreAsset>(
-            &self,
+        &self,
         _core_asset: &T,
         _authority_info: &AccountInfo,
         _authority: &Authority,

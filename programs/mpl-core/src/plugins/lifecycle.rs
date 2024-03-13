@@ -31,6 +31,7 @@ impl PluginType {
             PluginType::Royalties => CheckResult::CanReject,
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::PermanentFreeze => CheckResult::CanReject,
+            PluginType::PermanentTransfer => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -96,6 +97,7 @@ impl PluginType {
             PluginType::Freeze => CheckResult::CanReject,
             PluginType::Transfer => CheckResult::CanApprove,
             PluginType::PermanentFreeze => CheckResult::CanReject,
+            PluginType::PermanentTransfer => CheckResult::CanApprove,
             _ => CheckResult::None,
         }
     }
@@ -146,6 +148,8 @@ impl Plugin {
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_add_plugin(authority, authorities, new_plugin)
+            Plugin::PermanentTransfer(permanent_transfer) => {
+                permanent_transfer.validate_add_plugin(authority, authorities, new_plugin)
             }
         }
     }
@@ -180,6 +184,8 @@ impl Plugin {
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_remove_plugin(authority, authorities, plugin_to_remove)
+            Plugin::PermanentTransfer(permanent_transfer) => {
+                permanent_transfer.validate_remove_plugin(authority, authorities, plugin_to_remove)
             }
         }
     }
@@ -219,6 +225,8 @@ impl Plugin {
                 authorities,
                 plugin_to_approve,
             ),
+            Plugin::PermanentTransfer(permanent_transfer) => permanent_transfer
+                .validate_approve_plugin_authority(authority, authorities, plugin_to_approve),
         }
     }
 
@@ -257,6 +265,8 @@ impl Plugin {
                 authorities,
                 plugin_to_revoke,
             ),
+            Plugin::PermanentTransfer(permanent_transfer) => permanent_transfer
+                .validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke),
         }
     }
 
@@ -281,6 +291,9 @@ impl Plugin {
                 permanent_freeze.validate_create(authority, authorities)
             }
             Plugin::Attributes(attributes) => attributes.validate_create(authority, authorities),
+            Plugin::PermanentTransfer(permanent_transfer) => {
+                permanent_transfer.validate_create(authority, authorities)
+            }
         }
     }
 
@@ -305,6 +318,9 @@ impl Plugin {
                 permanent_freeze.validate_update(authority, authorities)
             }
             Plugin::Attributes(attributes) => attributes.validate_update(authority, authorities),
+            Plugin::PermanentTransfer(permanent_transfer) => {
+                permanent_transfer.validate_update(authority, authorities)
+            }
         }
     }
 
@@ -338,6 +354,8 @@ impl Plugin {
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_update_plugin(core_asset, authority, authorities)
+            Plugin::PermanentTransfer(permanent_transfer) => {
+                permanent_transfer.validate_update_plugin(core_asset, authority, authorities)
             }
         }
     }
@@ -363,6 +381,9 @@ impl Plugin {
                 permanent_freeze.validate_burn(authority, authorities)
             }
             Plugin::Attributes(attributes) => attributes.validate_burn(authority, authorities),
+            Plugin::PermanentTransfer(permanent_transfer) => {
+                permanent_transfer.validate_burn(authority, authorities)
+            }
         }
     }
 
@@ -393,6 +414,8 @@ impl Plugin {
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_transfer(authority, new_owner, authorities)
+            Plugin::PermanentTransfer(permanent_transfer) => {
+                permanent_transfer.validate_transfer(authority, new_owner, authorities)
             }
         }
     }
@@ -418,6 +441,9 @@ impl Plugin {
                 permanent_freeze.validate_compress(authority, authorities)
             }
             Plugin::Attributes(attributes) => attributes.validate_compress(authority, authorities),
+            Plugin::PermanentTransfer(permanent_transfer) => {
+                permanent_transfer.validate_compress(authority, authorities)
+            }
         }
     }
 
@@ -443,6 +469,8 @@ impl Plugin {
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_decompress(authority, authorities)
+            Plugin::PermanentTransfer(permanent_transfer) => {
+                permanent_transfer.validate_decompress(authority, authorities)
             }
         }
     }
@@ -544,6 +572,7 @@ pub(crate) trait PluginValidation {
         authority: &AccountInfo,
         new_owner: &AccountInfo,
         authorities: &Authority,
+        resolved_authority: &Authority
     ) -> Result<ValidationResult, ProgramError>;
 
     /// Validate the compress lifecycle action.
