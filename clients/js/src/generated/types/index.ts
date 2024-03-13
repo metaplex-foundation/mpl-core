@@ -6,6 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+export * from './attributes';
 export * from './authority';
 export * from './burn';
 export * from './compressionProof';

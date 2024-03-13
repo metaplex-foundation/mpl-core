@@ -16,6 +16,8 @@ import {
   unit,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  Attributes,
+  AttributesArgs,
   Burn,
   BurnArgs,
   Freeze,
@@ -28,6 +30,7 @@ import {
   TransferArgs,
   UpdateDelegate,
   UpdateDelegateArgs,
+  getAttributesSerializer,
   getBurnSerializer,
   getFreezeSerializer,
   getPermanentFreezeSerializer,
@@ -43,7 +46,8 @@ export type Plugin =
   | { __kind: 'Burn'; fields: [Burn] }
   | { __kind: 'Transfer'; fields: [Transfer] }
   | { __kind: 'UpdateDelegate'; fields: [UpdateDelegate] }
-  | { __kind: 'PermanentFreeze'; fields: [PermanentFreeze] };
+  | { __kind: 'PermanentFreeze'; fields: [PermanentFreeze] }
+  | { __kind: 'Attributes'; fields: [Attributes] };
 
 export type PluginArgs =
   | { __kind: 'Reserved' }
@@ -52,7 +56,8 @@ export type PluginArgs =
   | { __kind: 'Burn'; fields: [BurnArgs] }
   | { __kind: 'Transfer'; fields: [TransferArgs] }
   | { __kind: 'UpdateDelegate'; fields: [UpdateDelegateArgs] }
-  | { __kind: 'PermanentFreeze'; fields: [PermanentFreezeArgs] };
+  | { __kind: 'PermanentFreeze'; fields: [PermanentFreezeArgs] }
+  | { __kind: 'Attributes'; fields: [AttributesArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -94,6 +99,12 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
           ['fields', tuple([getPermanentFreezeSerializer()])],
         ]),
       ],
+      [
+        'Attributes',
+        struct<GetDataEnumKindContent<Plugin, 'Attributes'>>([
+          ['fields', tuple([getAttributesSerializer()])],
+        ]),
+      ],
     ],
     { description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
@@ -127,6 +138,10 @@ export function plugin(
   kind: 'PermanentFreeze',
   data: GetDataEnumKindContent<PluginArgs, 'PermanentFreeze'>['fields']
 ): GetDataEnumKind<PluginArgs, 'PermanentFreeze'>;
+export function plugin(
+  kind: 'Attributes',
+  data: GetDataEnumKindContent<PluginArgs, 'Attributes'>['fields']
+): GetDataEnumKind<PluginArgs, 'Attributes'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any

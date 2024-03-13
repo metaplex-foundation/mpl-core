@@ -1439,6 +1439,25 @@
       }
     },
     {
+      "name": "Attributes",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "attributeList",
+            "type": {
+              "vec": {
+                "tuple": [
+                  "string",
+                  "string"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Burn",
       "type": {
         "kind": "struct",
@@ -2047,6 +2066,14 @@
                 "defined": "PermanentFreeze"
               }
             ]
+          },
+          {
+            "name": "Attributes",
+            "fields": [
+              {
+                "defined": "Attributes"
+              }
+            ]
           }
         ]
       }
@@ -2076,6 +2103,9 @@
           },
           {
             "name": "PermanentFreeze"
+          },
+          {
+            "name": "Attributes"
           }
         ]
       }

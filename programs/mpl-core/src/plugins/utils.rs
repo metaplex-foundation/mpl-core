@@ -247,7 +247,6 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
 }
 
 /// Remove a plugin from the registry and delete it.
-//TODO: Do the work to prevent deleting a plugin with other authorities.
 pub fn delete_plugin<'a, T: DataBlob>(
     plugin_type: &PluginType,
     asset: &T,
@@ -320,7 +319,6 @@ pub fn delete_plugin<'a, T: DataBlob>(
 }
 
 /// Add an authority to a plugin.
-//TODO: Prevent duplicate authorities.
 #[allow(clippy::too_many_arguments)]
 pub fn approve_authority_on_plugin<'a, T: CoreAsset>(
     plugin_type: &PluginType,

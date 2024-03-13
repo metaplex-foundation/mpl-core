@@ -10,6 +10,7 @@ import {
   Royalties,
   Transfer,
   UpdateDelegate,
+  Attributes,
 } from '../generated';
 
 export type BaseAuthority = {
@@ -30,6 +31,7 @@ export type BurnPlugin = BasePlugin & Burn;
 export type TransferPlugin = BasePlugin & Transfer;
 export type UpdateDelegatePlugin = BasePlugin & UpdateDelegate;
 export type PermanentFreezePlugin = BasePlugin & PermanentFreeze;
+export type AttributesPlugin = BasePlugin & Attributes;
 
 export type PluginsList = {
   royalties?: RoyaltiesPlugin;
@@ -38,6 +40,7 @@ export type PluginsList = {
   transfer?: TransferPlugin;
   updateDelegate?: UpdateDelegatePlugin;
   permanentFreeze?: PermanentFreezePlugin;
+  attributes?: AttributesPlugin;
 };
 
 export type Asset = BaseAsset &

@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::Attributes;
 use crate::generated::types::Burn;
 use crate::generated::types::Freeze;
 use crate::generated::types::PermanentFreeze;
@@ -24,4 +25,5 @@ pub enum Plugin {
     Transfer(Transfer),
     UpdateDelegate(UpdateDelegate),
     PermanentFreeze(PermanentFreeze),
+    Attributes(Attributes),
 }

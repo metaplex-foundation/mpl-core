@@ -155,7 +155,7 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
         // The new size of the asset and new offset of the plugin header.
         let new_core_size = core.get_size() as isize;
 
-        // The difference is size between the new and old asset which is used to calculate the new size of the account.
+        // The difference in size between the new and old asset which is used to calculate the new size of the account.
         let size_diff = new_core_size
             .checked_sub(core_size)
             .ok_or(MplCoreError::NumericalOverflow)?;

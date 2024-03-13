@@ -144,6 +144,9 @@ impl Plugin {
             Plugin::PermanentFreeze(permanent_freeze) => {
                 permanent_freeze.validate_add_plugin(authority, authorities, new_plugin)
             }
+            Plugin::Attributes(attributes) => {
+                attributes.validate_add_plugin(authority, authorities, new_plugin)
+            }
         }
     }
 
@@ -174,6 +177,9 @@ impl Plugin {
             }
             Plugin::PermanentFreeze(permanent_freeze) => {
                 permanent_freeze.validate_remove_plugin(authority, authorities, plugin_to_remove)
+            }
+            Plugin::Attributes(attributes) => {
+                attributes.validate_remove_plugin(authority, authorities, plugin_to_remove)
             }
         }
     }
@@ -208,6 +214,11 @@ impl Plugin {
                 .validate_approve_plugin_authority(authority, authorities, plugin_to_approve),
             Plugin::PermanentFreeze(permanent_freeze) => permanent_freeze
                 .validate_approve_plugin_authority(authority, authorities, plugin_to_approve),
+            Plugin::Attributes(attributes) => attributes.validate_approve_plugin_authority(
+                authority,
+                authorities,
+                plugin_to_approve,
+            ),
         }
     }
 
@@ -241,6 +252,11 @@ impl Plugin {
                 .validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke),
             Plugin::PermanentFreeze(permanent_freeze) => permanent_freeze
                 .validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke),
+            Plugin::Attributes(attributes) => attributes.validate_revoke_plugin_authority(
+                authority,
+                authorities,
+                plugin_to_revoke,
+            ),
         }
     }
 
@@ -264,6 +280,7 @@ impl Plugin {
             Plugin::PermanentFreeze(permanent_freeze) => {
                 permanent_freeze.validate_create(authority, authorities)
             }
+            Plugin::Attributes(attributes) => attributes.validate_create(authority, authorities),
         }
     }
 
@@ -287,6 +304,7 @@ impl Plugin {
             Plugin::PermanentFreeze(permanent_freeze) => {
                 permanent_freeze.validate_update(authority, authorities)
             }
+            Plugin::Attributes(attributes) => attributes.validate_update(authority, authorities),
         }
     }
 
@@ -318,6 +336,9 @@ impl Plugin {
             Plugin::PermanentFreeze(permanent_freeze) => {
                 permanent_freeze.validate_update_plugin(core_asset, authority, authorities)
             }
+            Plugin::Attributes(attributes) => {
+                attributes.validate_update_plugin(core_asset, authority, authorities)
+            }
         }
     }
 
@@ -341,6 +362,7 @@ impl Plugin {
             Plugin::PermanentFreeze(permanent_freeze) => {
                 permanent_freeze.validate_burn(authority, authorities)
             }
+            Plugin::Attributes(attributes) => attributes.validate_burn(authority, authorities),
         }
     }
 
@@ -369,6 +391,9 @@ impl Plugin {
             Plugin::PermanentFreeze(permanent_freeze) => {
                 permanent_freeze.validate_transfer(authority, new_owner, authorities)
             }
+            Plugin::Attributes(attributes) => {
+                attributes.validate_transfer(authority, new_owner, authorities)
+            }
         }
     }
 
@@ -392,6 +417,7 @@ impl Plugin {
             Plugin::PermanentFreeze(permanent_freeze) => {
                 permanent_freeze.validate_compress(authority, authorities)
             }
+            Plugin::Attributes(attributes) => attributes.validate_compress(authority, authorities),
         }
     }
 
@@ -414,6 +440,9 @@ impl Plugin {
             }
             Plugin::PermanentFreeze(permanent_freeze) => {
                 permanent_freeze.validate_decompress(authority, authorities)
+            }
+            Plugin::Attributes(attributes) => {
+                attributes.validate_decompress(authority, authorities)
             }
         }
     }

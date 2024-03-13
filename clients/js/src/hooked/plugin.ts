@@ -14,6 +14,7 @@ import {
   TransferArgs,
   UpdateDelegateArgs,
   PermanentFreezeArgs,
+  AttributesArgs,
 } from '../generated';
 import { BaseAuthority, PluginsList } from './types';
 import { mapAuthority } from './authority';
@@ -30,35 +31,40 @@ export function formPluginHeader(
 
 export type PluginAuthorityPairHelperArgs =
   | {
-      type: 'Royalties';
-      authority?: Authority;
-      data: RoyaltiesArgs;
-    }
+    type: 'Royalties';
+    authority?: Authority;
+    data: RoyaltiesArgs;
+  }
   | {
-      type: 'Freeze';
-      authority?: Authority;
-      data: FreezeArgs;
-    }
+    type: 'Freeze';
+    authority?: Authority;
+    data: FreezeArgs;
+  }
   | {
-      type: 'Burn';
-      authority?: Authority;
-      data?: BurnArgs;
-    }
+    type: 'Burn';
+    authority?: Authority;
+    data?: BurnArgs;
+  }
   | {
-      type: 'Transfer';
-      authority?: Authority;
-      data?: TransferArgs;
-    }
+    type: 'Transfer';
+    authority?: Authority;
+    data?: TransferArgs;
+  }
   | {
-      type: 'UpdateDelegate';
-      authority?: Authority;
-      data?: UpdateDelegateArgs;
-    }
+    type: 'UpdateDelegate';
+    authority?: Authority;
+    data?: UpdateDelegateArgs;
+  }
   | {
-      type: 'PermanentFreeze';
-      authority?: Authority;
-      data: PermanentFreezeArgs;
-    };
+    type: 'PermanentFreeze';
+    authority?: Authority;
+    data: PermanentFreezeArgs;
+  }
+  | {
+    type: 'Attributes';
+    authority?: Authority;
+    data: AttributesArgs;
+  };
 
 export function pluginAuthorityPair(
   args: PluginAuthorityPairHelperArgs

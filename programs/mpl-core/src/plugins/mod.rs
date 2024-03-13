@@ -1,3 +1,4 @@
+mod attributes;
 mod burn;
 mod freeze;
 mod lifecycle;
@@ -9,6 +10,7 @@ mod transfer;
 mod update_delegate;
 mod utils;
 
+pub use attributes::*;
 pub use burn::*;
 pub use freeze::*;
 pub use lifecycle::*;
@@ -51,6 +53,8 @@ pub enum Plugin {
     UpdateDelegate(UpdateDelegate),
     /// Permanent Freeze authority which allows the creator to freeze
     PermanentFreeze(PermanentFreeze),
+    /// Attributes plugin for arbitrary Key-Value pairs.
+    Attributes(Attributes),
 }
 
 impl Plugin {
@@ -111,6 +115,8 @@ pub enum PluginType {
     UpdateDelegate,
     /// The Permanent Freeze plugin.
     PermanentFreeze,
+    /// The Attributes plugin.
+    Attributes,
 }
 
 impl DataBlob for PluginType {
@@ -133,6 +139,7 @@ impl From<&Plugin> for PluginType {
             Plugin::Transfer(_) => PluginType::Transfer,
             Plugin::UpdateDelegate(_) => PluginType::UpdateDelegate,
             Plugin::PermanentFreeze(_) => PluginType::PermanentFreeze,
+            Plugin::Attributes(_) => PluginType::Attributes,
         }
     }
 }
@@ -148,6 +155,7 @@ impl PluginType {
             PluginType::Transfer => Authority::Owner,
             PluginType::UpdateDelegate => Authority::UpdateAuthority,
             PluginType::PermanentFreeze => Authority::UpdateAuthority,
+            PluginType::Attributes => Authority::UpdateAuthority,
         }
     }
 }
