@@ -232,6 +232,7 @@ impl CreateBuilder {
         self.log_wrapper = log_wrapper;
         self
     }
+    /// `[optional argument, defaults to 'DataState::AccountState']`
     #[inline(always)]
     pub fn data_state(&mut self, data_state: DataState) -> &mut Self {
         self.data_state = Some(data_state);
@@ -286,7 +287,7 @@ impl CreateBuilder {
             log_wrapper: self.log_wrapper,
         };
         let args = CreateInstructionArgs {
-            data_state: self.data_state.clone().expect("data_state is not set"),
+            data_state: self.data_state.clone().unwrap_or(DataState::AccountState),
             name: self.name.clone().expect("name is not set"),
             uri: self.uri.clone().expect("uri is not set"),
             plugins: self.plugins.clone(),
@@ -614,6 +615,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         self.instruction.log_wrapper = log_wrapper;
         self
     }
+    /// `[optional argument, defaults to 'DataState::AccountState']`
     #[inline(always)]
     pub fn data_state(&mut self, data_state: DataState) -> &mut Self {
         self.instruction.data_state = Some(data_state);
@@ -681,7 +683,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
                 .instruction
                 .data_state
                 .clone()
-                .expect("data_state is not set"),
+                .unwrap_or(DataState::AccountState),
             name: self.instruction.name.clone().expect("name is not set"),
             uri: self.instruction.uri.clone().expect("uri is not set"),
             plugins: self.instruction.plugins.clone(),

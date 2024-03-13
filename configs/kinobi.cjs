@@ -94,6 +94,9 @@ kinobi.update(
       arguments: {
         plugins: {
           defaultValue: k.arrayValueNode([])
+        },
+        dataState: {
+          defaultValue: k.enumValueNode('DataState', 'AccountState')
         }
       }
     },

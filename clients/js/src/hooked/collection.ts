@@ -5,13 +5,21 @@ import {
   RpcAccount,
   RpcGetAccountOptions,
   assertAccountExists,
+  gpaBuilder,
   publicKey as toPublicKey,
 } from '@metaplex-foundation/umi';
 import {
+  publicKey as publicKeySerializer,
+  string,
+  u32,
+} from '@metaplex-foundation/umi/serializers';
+import {
+  KeyArgs,
   PluginHeaderAccountData,
   PluginRegistryAccountData,
   deserializeBaseCollection,
   getBaseCollectionAccountDataSerializer,
+  getKeySerializer,
   getPluginHeaderAccountDataSerializer,
   getPluginRegistryAccountDataSerializer,
 } from '../generated';
@@ -73,4 +81,30 @@ export async function fetchCollection(
   );
   assertAccountExists(maybeAccount, 'Collection');
   return deserializeCollection(maybeAccount);
+}
+
+export function getCollectionGpaBuilder(
+  context: Pick<Context, 'rpc' | 'programs'>
+) {
+  const programId = context.programs.getPublicKey(
+    'mplCore',
+    'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d'
+  );
+  return gpaBuilder(context, programId)
+    .registerFields<{
+      key: KeyArgs;
+      updateAuthority: PublicKey;
+      name: string;
+      uri: string;
+      numMinted: number;
+      currentSize: number;
+    }>({
+      key: [0, getKeySerializer()],
+      updateAuthority: [1, publicKeySerializer()],
+      name: [33, string()],
+      uri: [null, string()],
+      numMinted: [null, u32()],
+      currentSize: [null, u32()],
+    })
+    .deserializeUsing<Collection>((account) => deserializeCollection(account));
 }

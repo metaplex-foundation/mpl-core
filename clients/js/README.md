@@ -9,10 +9,126 @@ A Umi-compatible JavaScript library for the project.
    ```sh
    npm install @metaplex-foundation/mpl-core
    ```
-2. Finally, register the library with your Umi instance like so.
+3. Finally, register the library with your Umi instance like so.
    ```ts
-   import { mplAsset } from '@metaplex-foundation/mpl-core';
-   umi.use(mplAsset());
+   import { createUmi } from '@metaplex-foundation/umi';
+   import { mplCore } from '@metaplex-foundation/mpl-core';
+
+   const umi = createUmi('<your rpc endpoint>');
+   umi.use(mplCore());
+   ```
+
+4. Examples
+   ```ts
+   // Create an asset
+   const assetAddress = generateSigner(umi);
+   const owner = generateSigner(umi);
+   
+   await create(umi, {
+      name: 'Test Asset',
+      uri: 'https://example.com/asset.json',
+      asset: assetAddress,
+      owner: owner.publicKey, // optional, will default to payer
+   }).sendAndConfirm(umi);
+
+   // Create a collection
+   const collectionUpdateAuthority = generateSigner(umi);
+   const collectionAddress = generateSigner(umi);
+   await createCollection(umi, {
+      name: 'Test Collection',
+      uri: 'https://example.com/collection.json',
+      collection: collectionAddress,
+      updateAuthority: collectionUpdateAuthority.publicKey, // optional, defaults to payer
+   }).sendAndConfirm(umi);
+
+   // Create an asset in a collection, the authority must be the updateAuthority of the collection
+   await create(umi, {
+      name: 'Test Asset',
+      uri: 'https://example.com/asset.json',
+      asset: assetAddress,
+      collection: collectionAddress.publicKey,
+      authority: collectionUpdateAuthority, // optional, defaults to payer
+   }).sendAndConfirm(umi);
+
+   // Fetch an asset
+   const asset = await fetchAsset(umi, assetAddress.publicKey)
+
+   // GPA fetch assets by owner
+   const assetsByOwner = await getAssetGpaBuilder(umi)
+      .whereField('owner', owner.publicKey)
+      .getDeserialized();
+
+   // GPA fetch assets by collection
+   const assetsByCollection = await getAssetGpaBuilder(umi)
+      .whereField('updateAuthority', updateAuthority('Collection', [collectionAddress.publicKey]))
+      .getDeserialized();
+
+   // DAS API (RPC based indexing) fetch assets by owner/collection
+   // Coming soon
+
+   ```
+5. Some advanced examples
+   ```ts
+   // Freezing an asset
+   const assetAddress = generateSigner(umi);
+   const freezeDelegate = generateSigner(umi);
+
+   await addPlugin(umi, {
+      asset: assetAddress.publicKey,
+      // adds the owner-managed freeze plugin to the asset
+      plugin: plugin('Freeze', [{
+         frozen: true
+      }]),
+      // Optionally set the authority to a delegate who can unfreeze. If unset, this will be the Owner
+      // This is functionally the same as calling addPlugin and approvePluginAuthority separately.
+      // Freezing with a delegate is commonly used for escrowless staking programs.
+      initAuthority: getPubkeyAuthority(freezeDelegate.publicKey)
+   }).sendAndConfirm(umi);
+
+   // Unfreezing an asset with a delegate
+   // Revoking an authority will revert the authority back to the owner for owner-managed plugins
+   await revokePluginAuthority(umi, {
+      asset: assetAddress.publicKey,
+      pluginType: PluginType.Freeze,
+      authority: freezeDelegate
+   }).sendAndConfirm(umi);
+
+
+   // Create a collection with royalties
+   const collectionAddress = generateSigner(umi);
+   const creator1 = generateSigner(umi);
+   const creator2 = generateSigner(umi);
+   
+   await createCollection(umi, {
+      name: 'Test Collection',
+      uri: 'https://example.com/collection.json',
+      collection: collectionAddress,
+      plugins: [
+         pluginAuthorityPair({
+         type: 'Royalties',
+         data: {
+            basisPoints: 500,
+            creators: [{
+               address: creator1.publicKey,
+               percentage: 20
+            }, {
+               address: creator2.publicKey,
+               percentage: 80
+            }],
+            ruleSet: ruleSet('None') // Compatibility rule set
+         }
+         })
+      ]
+   }).sendAndConfirm(umi);
+
+   // Create an asset in a collection.
+   // Assets in a collection will inherit the collection's authority-managed plugins, in this case the royalties plugin
+   await create(umi, {
+      name: 'Test Asset',
+      uri: 'https://example.com/asset.json',
+      asset: assetAddress,
+      collection: collectionAddress.publicKey,
+   }).sendAndConfirm(umi);
    ```
 
 You can learn more about this library's API by reading its generated [TypeDoc documentation](https://mpl-core-js-docs.vercel.app).

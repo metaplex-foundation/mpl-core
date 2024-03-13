@@ -60,7 +60,7 @@ export const createAsset = async (
   await create(umi, {
     owner,
     payer,
-    dataState: input.dataState || DataState.AccountState,
+    dataState: input.dataState,
     asset,
     updateAuthority,
     name: input.name || DEFAULT_ASSET.name,
@@ -85,13 +85,14 @@ export type CreateCollectionHelperArgs = {
 
 export const createCollection = async (
   umi: Umi,
-  input: CreateCollectionHelperArgs
+  input: CreateCollectionHelperArgs = {}
 ) => {
   const payer = input.payer || umi.identity;
   const collection = input.collection || generateSigner(umi);
   const updateAuthority = publicKey(input.updateAuthority || payer);
   await baseCreateCollection(umi, {
-    ...DEFAULT_COLLECTION,
+    name: input.name || DEFAULT_ASSET.name,
+    uri: input.uri || DEFAULT_ASSET.uri,
     collection,
     payer,
     updateAuthority,
