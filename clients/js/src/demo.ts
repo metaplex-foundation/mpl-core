@@ -12,6 +12,7 @@ import {
   pluginAuthorityPair,
   revokePluginAuthority,
   ruleSet,
+  transfer,
   updateAuthority,
 } from './index';
 
@@ -46,6 +47,20 @@ const example = async () => {
     asset: assetAddress,
     collection: collectionAddress.publicKey,
     authority: collectionUpdateAuthority, // optional, defaults to payer
+  }).sendAndConfirm(umi);
+
+  // Transfer an asset
+  const recipient = generateSigner(umi);
+  await transfer(umi, {
+    asset: assetAddress.publicKey,
+    newOwner: recipient.publicKey,
+  }).sendAndConfirm(umi);
+
+  // Transfer an asset in a collection
+  await transfer(umi, {
+    asset: assetAddress.publicKey,
+    newOwner: recipient.publicKey,
+    collection: collectionAddress.publicKey,
   }).sendAndConfirm(umi);
 
   // Fetch an asset
