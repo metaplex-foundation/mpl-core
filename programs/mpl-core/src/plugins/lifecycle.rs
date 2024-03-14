@@ -127,6 +127,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authorities: &Authority,
         new_plugin: Option<&Plugin>,
+        _: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -161,6 +162,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authorities: &Authority,
         plugin_to_remove: Option<&Plugin>,
+        _: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -197,6 +199,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authorities: &Authority,
         plugin_to_approve: Option<&Plugin>,
+        _: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -237,6 +240,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authorities: &Authority,
         plugin_to_revoke: Option<&Plugin>,
+        _: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError> {
         if authorities == &Authority::None {
             return Ok(ValidationResult::Rejected);
@@ -277,6 +281,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authorities: &Authority,
         _: Option<&Plugin>,
+        _: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -304,6 +309,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authorities: &Authority,
         _: Option<&Plugin>,
+        _: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -333,6 +339,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authorities: &Authority,
         _: Option<&Plugin>,
+        _: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -367,6 +374,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authorities: &Authority,
         _: Option<&Plugin>,
+        _: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -394,28 +402,29 @@ impl Plugin {
         new_owner: Option<&AccountInfo>,
         authorities: &Authority,
         _: Option<&Plugin>,
+        resolved_authority: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError> {
         let new_owner = new_owner.ok_or(MplCoreError::MissingNewOwner)?;
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
-                royalties.validate_transfer(authority, new_owner, authorities)
+                royalties.validate_transfer(authority, new_owner, authorities, resolved_authority)
             }
-            Plugin::Freeze(freeze) => freeze.validate_transfer(authority, new_owner, authorities),
-            Plugin::Burn(burn) => burn.validate_transfer(authority, new_owner, authorities),
+            Plugin::Freeze(freeze) => freeze.validate_transfer(authority, new_owner, authorities, resolved_authority),
+            Plugin::Burn(burn) => burn.validate_transfer(authority, new_owner, authorities, resolved_authority),
             Plugin::Transfer(transfer) => {
-                transfer.validate_transfer(authority, new_owner, authorities)
+                transfer.validate_transfer(authority, new_owner, authorities, resolved_authority)
             }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_transfer(authority, new_owner, authorities)
+                update_delegate.validate_transfer(authority, new_owner, authorities, resolved_authority)
             }
             Plugin::PermanentFreeze(permanent_freeze) => {
-                permanent_freeze.validate_transfer(authority, new_owner, authorities)
+                permanent_freeze.validate_transfer(authority, new_owner, authorities, resolved_authority)
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_transfer(authority, new_owner, authorities)
             Plugin::PermanentTransfer(permanent_transfer) => {
-                permanent_transfer.validate_transfer(authority, new_owner, authorities)
+                permanent_transfer.validate_transfer(authority, new_owner, authorities, resolved_authority)
             }
         }
     }
@@ -427,6 +436,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authorities: &Authority,
         _: Option<&Plugin>,
+        _: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -454,6 +464,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authorities: &Authority,
         _: Option<&Plugin>,
+        _: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
@@ -572,7 +583,7 @@ pub(crate) trait PluginValidation {
         authority: &AccountInfo,
         new_owner: &AccountInfo,
         authorities: &Authority,
-        resolved_authority: &Authority
+        resolved_authority: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError>;
 
     /// Validate the compress lifecycle action.
@@ -620,12 +631,14 @@ pub(crate) fn validate_plugin_checks<'a>(
     new_plugin: Option<&Plugin>,
     asset: Option<&AccountInfo<'a>>,
     collection: Option<&AccountInfo<'a>>,
+    resolved_authority: &Authority,
     validate_fp: fn(
         &Plugin,
         &AccountInfo<'a>,
         Option<&AccountInfo>,
         &Authority,
         Option<&Plugin>,
+        Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
@@ -650,6 +663,7 @@ pub(crate) fn validate_plugin_checks<'a>(
                 new_owner,
                 &registry_record.authority,
                 new_plugin,
+                Some(resolved_authority),
             )?;
             match result {
                 ValidationResult::Rejected => rejected = true,

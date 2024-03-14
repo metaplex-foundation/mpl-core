@@ -86,22 +86,12 @@ impl PluginValidation for PermanentTransfer {
 
     fn validate_transfer(
         &self,
-        authority: &AccountInfo,
+        _authority: &AccountInfo,
         _new_owner: &AccountInfo,
         authorities: &Authority,
-        resolved_authority: &Authority
+        resolved_authority: Option<&Authority>
     ) -> Result<ValidationResult, ProgramError> {
-        if resolved_authority == &Authority::Owner && authorities
-            == &(Authority::Pubkey {
-                address: *authority.key,
-            })
-        {
-            Ok(ValidationResult::Approved)
-        } else {
-            Ok(ValidationResult::Pass)
-        }
-
-        todo!()
+        Ok(ValidationResult::Pass)
     }
 
     fn validate_compress(
