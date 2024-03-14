@@ -36,14 +36,8 @@ test('it can create a new asset with a different payer', async (t) => {
   const payer = await generateSignerWithSol(umi, sol(1));
   const assetAddress = generateSigner(umi);
 
-  create(umi, {
-    ...DEFAULT_ASSET,
-    dataState: DataState.AccountState,
-    asset: assetAddress,
-    payer,
-  }).sendAndConfirm(umi);
-
   const asset = await createAsset(umi, {
+    asset: assetAddress,
     owner: umi.identity,
     payer,
   });

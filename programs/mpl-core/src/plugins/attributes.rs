@@ -5,12 +5,22 @@ use crate::state::{Authority, CoreAsset, DataBlob};
 
 use super::{Plugin, PluginValidation, ValidationResult};
 
+/// The Attribute type which represent a Key Value pair.
+#[repr(C)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Default)]
+pub struct Attribute {
+    /// The Key of the attribute.
+    pub key: String, // 4
+    /// The Value of the attribute.
+    pub value: String, // 4
+}
+
 /// The Attributes plugin allows the authority to add arbitrary Key-Value pairs to the asset.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Default)]
 pub struct Attributes {
     /// A vector of Key-Value pairs.
-    pub attribute_list: Vec<(String, String)>, // 4
+    pub attribute_list: Vec<Attribute>, // 4
 }
 
 impl Attributes {

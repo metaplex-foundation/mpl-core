@@ -1439,6 +1439,22 @@
       }
     },
     {
+      "name": "Attribute",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": "string"
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
       "name": "Attributes",
       "type": {
         "kind": "struct",
@@ -1447,10 +1463,7 @@
             "name": "attributeList",
             "type": {
               "vec": {
-                "tuple": [
-                  "string",
-                  "string"
-                ]
+                "defined": "Attribute"
               }
             }
           }

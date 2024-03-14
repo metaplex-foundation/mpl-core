@@ -25,6 +25,7 @@ impl From<&Plugin> for PluginType {
             Plugin::Transfer(_) => PluginType::Transfer,
             Plugin::UpdateDelegate(_) => PluginType::UpdateDelegate,
             Plugin::PermanentFreeze(_) => PluginType::PermanentFreeze,
+            Plugin::Attributes(_) => PluginType::Attributes,
         }
     }
 }

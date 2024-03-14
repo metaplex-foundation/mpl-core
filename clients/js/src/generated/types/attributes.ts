@@ -9,21 +9,20 @@
 import {
   Serializer,
   array,
-  string,
   struct,
-  tuple,
 } from '@metaplex-foundation/umi/serializers';
+import { Attribute, AttributeArgs, getAttributeSerializer } from '.';
 
-export type Attributes = { attributeList: Array<[string, string]> };
+export type Attributes = { attributeList: Array<Attribute> };
 
-export type AttributesArgs = Attributes;
+export type AttributesArgs = { attributeList: Array<AttributeArgs> };
 
 export function getAttributesSerializer(): Serializer<
   AttributesArgs,
   Attributes
 > {
   return struct<Attributes>(
-    [['attributeList', array(tuple([string(), string()]))]],
+    [['attributeList', array(getAttributeSerializer())]],
     { description: 'Attributes' }
   ) as Serializer<AttributesArgs, Attributes>;
 }

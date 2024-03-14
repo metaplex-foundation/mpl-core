@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+pub(crate) mod r#attribute;
 pub(crate) mod r#attributes;
 pub(crate) mod r#authority;
 pub(crate) mod r#burn;
@@ -28,6 +29,7 @@ pub(crate) mod r#transfer;
 pub(crate) mod r#update_authority;
 pub(crate) mod r#update_delegate;
 
+pub use self::r#attribute::*;
 pub use self::r#attributes::*;
 pub use self::r#authority::*;
 pub use self::r#burn::*;
