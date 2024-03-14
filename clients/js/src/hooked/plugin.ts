@@ -15,6 +15,7 @@ import {
   UpdateDelegateArgs,
   PermanentFreezeArgs,
   AttributesArgs,
+  PermanentTransferArgs,
 } from '../generated';
 import { BaseAuthority, PluginsList } from './types';
 import { mapAuthority } from './authority';
@@ -64,7 +65,17 @@ export type PluginAuthorityPairHelperArgs =
     type: 'Attributes';
     authority?: Authority;
     data: AttributesArgs;
-  };
+  }
+  | {
+      type: 'PermanentFreeze';
+      authority?: Authority;
+      data: PermanentFreezeArgs;
+    }
+  | {
+      type: 'PermanentTransfer';
+      authority?: Authority;
+      data?: PermanentTransferArgs;
+    };
 
 export function pluginAuthorityPair(
   args: PluginAuthorityPairHelperArgs

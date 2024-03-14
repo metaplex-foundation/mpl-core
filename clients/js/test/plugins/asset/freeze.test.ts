@@ -104,7 +104,13 @@ test('owner cannot undelegate a freeze plugin with a delegate', async (t) => {
   const delegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: true }, authority: getPubkeyAuthority(delegateAddress.publicKey) })],
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Freeze',
+        data: { frozen: true },
+        authority: getPubkeyAuthority(delegateAddress.publicKey),
+      }),
+    ],
   });
 
   const result = revokePluginAuthority(umi, {
@@ -121,7 +127,13 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
   const delegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: true }, authority: getPubkeyAuthority(delegateAddress.publicKey) })],
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Freeze',
+        data: { frozen: true },
+        authority: getPubkeyAuthority(delegateAddress.publicKey),
+      }),
+    ],
   });
 
   await assertAsset(t, umi, {
