@@ -80,6 +80,7 @@ impl PluginValidation for Attributes {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
+        _resolved_authority: Option<&Authority>,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
