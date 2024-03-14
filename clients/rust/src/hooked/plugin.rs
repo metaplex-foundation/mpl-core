@@ -5,7 +5,9 @@ use crate::{
     accounts::{BaseAsset, PluginHeader, PluginRegistry},
     errors::MplCoreError,
     types::{Authority, Plugin, PluginType, RegistryRecord},
-    DataBlob, SolanaAccount,
+    AttributesPlugin, BaseAuthority, BasePlugin, BurnPlugin, DataBlob, FreezePlugin,
+    PermanentFreezePlugin, PluginsList, RoyaltiesPlugin, SolanaAccount, TransferPlugin,
+    UpdateDelegatePlugin,
 };
 
 /// Fetch the plugin from the registry.
@@ -79,4 +81,55 @@ pub fn list_plugins(account: &[u8]) -> Result<Vec<PluginType>, std::io::Error> {
         .iter()
         .map(|registry_record| registry_record.plugin_type.clone())
         .collect())
+}
+
+pub fn registry_records_to_plugin_list(
+    registry_records: &[RegistryRecord],
+    account_data: &[u8],
+) -> Result<PluginsList, std::io::Error> {
+    let result = registry_records
+        .iter()
+        .try_fold(PluginsList::default(), |mut acc, record| {
+            let authority: BaseAuthority = record.authority.clone().into();
+            let base = BasePlugin {
+                authority,
+                offset: Some(record.offset),
+            };
+            let plugin = Plugin::deserialize(&mut &account_data[record.offset as usize..])?;
+
+            match plugin {
+                Plugin::Reserved => (),
+                Plugin::Royalties(royalties) => {
+                    acc.royalties = Some(RoyaltiesPlugin { base, royalties });
+                }
+                Plugin::Freeze(freeze) => {
+                    acc.freeze = Some(FreezePlugin { base, freeze });
+                }
+                Plugin::Burn(burn) => {
+                    acc.burn = Some(BurnPlugin { base, burn });
+                }
+                Plugin::Transfer(transfer) => {
+                    acc.transfer = Some(TransferPlugin { base, transfer });
+                }
+                Plugin::UpdateDelegate(update_delegate) => {
+                    acc.update_delegate = Some(UpdateDelegatePlugin {
+                        base,
+                        update_delegate,
+                    });
+                }
+                Plugin::PermanentFreeze(permanent_freeze) => {
+                    acc.permanent_freeze = Some(PermanentFreezePlugin {
+                        base,
+                        permanent_freeze,
+                    });
+                }
+                Plugin::Attributes(attributes) => {
+                    acc.attributes = Some(AttributesPlugin { base, attributes });
+                }
+            };
+
+            Ok(acc)
+        });
+
+    result
 }

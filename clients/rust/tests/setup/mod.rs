@@ -1,11 +1,12 @@
 use mpl_core::{
-    accounts::BaseAsset,
     instructions::CreateBuilder,
-    types::{DataState, Key, PluginAuthorityPair, UpdateAuthority},
+    types::{DataState, Key, Plugin, PluginAuthorityPair, UpdateAuthority},
+    Asset,
 };
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
-    pubkey::Pubkey, signature::Keypair, signer::Signer, system_program, transaction::Transaction,
+    pubkey::Pubkey, signature::Keypair, signer::Signer, system_instruction, system_program,
+    transaction::Transaction,
 };
 
 pub fn program_test() -> ProgramTest {
@@ -17,7 +18,7 @@ const DEFAULT_ASSET_URI: &str = "https://example.com/asset";
 
 pub struct CreateAssetHelperArgs<'a> {
     pub owner: Option<Pubkey>,
-    pub payer: Option<Pubkey>,
+    pub payer: Option<&'a Keypair>,
     pub asset: &'a Keypair,
     pub data_state: Option<DataState>,
     pub name: Option<String>,
@@ -33,12 +34,12 @@ pub async fn create_asset<'a>(
     context: &mut ProgramTestContext,
     input: CreateAssetHelperArgs<'a>,
 ) -> Result<(), BanksClientError> {
-    let payer = input.payer.unwrap_or(context.payer.pubkey());
+    let payer = input.payer.unwrap_or(&context.payer);
     let create_ix = CreateBuilder::new()
         .asset(input.asset.pubkey())
         .collection(input.collection)
         .authority(input.authority)
-        .payer(payer)
+        .payer(payer.pubkey())
         .owner(input.owner)
         .update_authority(input.update_authority)
         .system_program(system_program::ID)
@@ -48,10 +49,15 @@ pub async fn create_asset<'a>(
         .plugins(input.plugins)
         .instruction();
 
+    let mut signers = vec![input.asset, &context.payer];
+    if let Some(payer) = input.payer {
+        signers.push(payer);
+    }
+
     let tx = Transaction::new_signed_with_payer(
         &[create_ix],
         Some(&context.payer.pubkey()),
-        &[input.asset, &context.payer],
+        signers.as_slice(),
         context.last_blockhash,
     );
 
@@ -76,15 +82,53 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
         .expect("get_account")
         .expect("asset account not found");
 
-    let asset = BaseAsset::from_bytes(&asset_account.data).unwrap();
-    assert_eq!(asset.key, Key::Asset);
+    let asset = Asset::from_bytes(&asset_account.data).unwrap();
+    assert_eq!(asset.base.key, Key::Asset);
     assert_eq!(
-        asset.name,
+        asset.base.name,
         input.name.unwrap_or(DEFAULT_ASSET_NAME.to_owned())
     );
-    assert_eq!(asset.uri, input.uri.unwrap_or(DEFAULT_ASSET_URI.to_owned()));
-    assert_eq!(asset.owner, input.owner);
+    assert_eq!(
+        asset.base.uri,
+        input.uri.unwrap_or(DEFAULT_ASSET_URI.to_owned())
+    );
+    assert_eq!(asset.base.owner, input.owner);
     if let Some(update_authority) = input.update_authority {
-        assert_eq!(asset.update_authority, update_authority);
+        assert_eq!(asset.base.update_authority, update_authority);
     }
+
+    for plugin in input.plugins {
+        match plugin {
+            PluginAuthorityPair {
+                plugin: Plugin::Freeze(freeze),
+                authority,
+            } => {
+                let plugin = asset.plugin_list.freeze.clone().unwrap();
+                if let Some(authority) = authority {
+                    assert_eq!(plugin.base.authority, authority.into());
+                }
+                assert_eq!(plugin.freeze, freeze);
+            }
+            _ => panic!("unsupported plugin type"),
+        }
+    }
+}
+pub async fn airdrop(
+    context: &mut ProgramTestContext,
+    receiver: &Pubkey,
+    amount: u64,
+) -> Result<(), BanksClientError> {
+    let tx = Transaction::new_signed_with_payer(
+        &[system_instruction::transfer(
+            &context.payer.pubkey(),
+            receiver,
+            amount,
+        )],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+    Ok(())
 }
