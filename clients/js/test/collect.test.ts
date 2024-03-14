@@ -87,7 +87,7 @@ test('it can collect', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi);
   const balStart = await umi.rpc.getBalance(
-    publicKey('Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7')
+    publicKey('8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v')
   );
   await collect(umi, {})
     .addRemainingAccounts({
@@ -97,7 +97,7 @@ test('it can collect', async (t) => {
     })
     .sendAndConfirm(umi);
   const balEnd = await umi.rpc.getBalance(
-    publicKey('Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7')
+    publicKey('8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v')
   );
   t.is(await hasCollectAmount(umi, asset.publicKey), false);
   t.deepEqual(subtractAmounts(balEnd, balStart), sol(0.0015));

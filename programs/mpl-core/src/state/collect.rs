@@ -1,6 +1,6 @@
 use solana_program::pubkey::Pubkey;
 
 pub(crate) const COLLECT_RECIPIENT: Pubkey =
-    solana_program::pubkey!("Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7");
+    solana_program::pubkey!("8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v");
 
 pub(crate) const COLLECT_AMOUNT: u64 = 1_500_000;
