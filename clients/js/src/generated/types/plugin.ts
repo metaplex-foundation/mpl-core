@@ -50,7 +50,7 @@ export type Plugin =
   | { __kind: 'Transfer'; fields: [Transfer] }
   | { __kind: 'UpdateDelegate'; fields: [UpdateDelegate] }
   | { __kind: 'PermanentFreeze'; fields: [PermanentFreeze] }
-  | { __kind: 'Attributes'; fields: [Attributes] };
+  | { __kind: 'Attributes'; fields: [Attributes] }
   | { __kind: 'PermanentTransfer'; fields: [PermanentTransfer] };
 
 export type PluginArgs =
@@ -61,7 +61,7 @@ export type PluginArgs =
   | { __kind: 'Transfer'; fields: [TransferArgs] }
   | { __kind: 'UpdateDelegate'; fields: [UpdateDelegateArgs] }
   | { __kind: 'PermanentFreeze'; fields: [PermanentFreezeArgs] }
-  | { __kind: 'Attributes'; fields: [AttributesArgs] };
+  | { __kind: 'Attributes'; fields: [AttributesArgs] }
   | { __kind: 'PermanentTransfer'; fields: [PermanentTransferArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
@@ -108,6 +108,9 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
         'Attributes',
         struct<GetDataEnumKindContent<Plugin, 'Attributes'>>([
           ['fields', tuple([getAttributesSerializer()])],
+        ]),
+      ],
+      [
         'PermanentTransfer',
         struct<GetDataEnumKindContent<Plugin, 'PermanentTransfer'>>([
           ['fields', tuple([getPermanentTransferSerializer()])],
@@ -150,6 +153,7 @@ export function plugin(
   kind: 'Attributes',
   data: GetDataEnumKindContent<PluginArgs, 'Attributes'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Attributes'>;
+export function plugin(
   kind: 'PermanentTransfer',
   data: GetDataEnumKindContent<PluginArgs, 'PermanentTransfer'>['fields']
 ): GetDataEnumKind<PluginArgs, 'PermanentTransfer'>;

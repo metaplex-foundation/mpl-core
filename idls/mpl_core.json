@@ -2092,6 +2092,10 @@
             "fields": [
               {
                 "defined": "Attributes"
+              }
+            ]
+          },
+          {
             "name": "PermanentTransfer",
             "fields": [
               {
@@ -2130,6 +2134,8 @@
           },
           {
             "name": "Attributes"
+          },
+          {
             "name": "PermanentTransfer"
           }
         ]

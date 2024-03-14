@@ -149,6 +149,7 @@ impl Plugin {
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_add_plugin(authority, authorities, new_plugin)
+            }
             Plugin::PermanentTransfer(permanent_transfer) => {
                 permanent_transfer.validate_add_plugin(authority, authorities, new_plugin)
             }
@@ -186,6 +187,7 @@ impl Plugin {
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_remove_plugin(authority, authorities, plugin_to_remove)
+            }
             Plugin::PermanentTransfer(permanent_transfer) => {
                 permanent_transfer.validate_remove_plugin(authority, authorities, plugin_to_remove)
             }
@@ -361,6 +363,7 @@ impl Plugin {
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_update_plugin(core_asset, authority, authorities)
+            }
             Plugin::PermanentTransfer(permanent_transfer) => {
                 permanent_transfer.validate_update_plugin(core_asset, authority, authorities)
             }
@@ -437,6 +440,12 @@ impl Plugin {
                 authorities,
                 resolved_authority,
             ),
+            Plugin::Attributes(attributes_transfer) => attributes_transfer.validate_transfer(
+                authority,
+                new_owner,
+                authorities,
+                resolved_authority,
+            ),
         }
     }
 
@@ -491,6 +500,7 @@ impl Plugin {
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_decompress(authority, authorities)
+            }
             Plugin::PermanentTransfer(permanent_transfer) => {
                 permanent_transfer.validate_decompress(authority, authorities)
             }
