@@ -1502,6 +1502,13 @@
       }
     },
     {
+      "name": "PermanentTransfer",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
       "name": "RegistryRecord",
       "type": {
         "kind": "struct",
@@ -2085,6 +2092,10 @@
             "fields": [
               {
                 "defined": "Attributes"
+            "name": "PermanentTransfer",
+            "fields": [
+              {
+                "defined": "PermanentTransfer"
               }
             ]
           }
@@ -2119,6 +2130,7 @@
           },
           {
             "name": "Attributes"
+            "name": "PermanentTransfer"
           }
         ]
       }

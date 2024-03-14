@@ -9,6 +9,7 @@ use crate::generated::types::Attributes;
 use crate::generated::types::Burn;
 use crate::generated::types::Freeze;
 use crate::generated::types::PermanentFreeze;
+use crate::generated::types::PermanentTransfer;
 use crate::generated::types::Royalties;
 use crate::generated::types::Transfer;
 use crate::generated::types::UpdateDelegate;
@@ -26,4 +27,5 @@ pub enum Plugin {
     UpdateDelegate(UpdateDelegate),
     PermanentFreeze(PermanentFreeze),
     Attributes(Attributes),
+    PermanentTransfer(PermanentTransfer),
 }
