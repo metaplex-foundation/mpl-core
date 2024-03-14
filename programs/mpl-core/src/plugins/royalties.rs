@@ -94,7 +94,7 @@ impl PluginValidation for Royalties {
         authority_info: &AccountInfo,
         new_owner: &AccountInfo,
         _authority: &Authority,
-        _resolved_authority: Option<&Authority>
+        _resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match &self.rule_set {
             RuleSet::None => Ok(ValidationResult::Pass),

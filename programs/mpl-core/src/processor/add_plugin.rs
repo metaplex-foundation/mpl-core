@@ -38,7 +38,7 @@ pub(crate) fn add_plugin<'a>(
         None,
         &args.init_authority.unwrap_or(args.plugin.manager()),
         None,
-        None
+        None,
     )? == ValidationResult::Rejected
     {
         return Err(MplCoreError::InvalidAuthority.into());

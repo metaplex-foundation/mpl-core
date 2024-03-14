@@ -242,7 +242,7 @@ pub fn validate_asset_permissions<'a>(
 ) -> Result<(Asset, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
     let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<Asset>(asset)?;
     let resolved_authority = resolve_to_authority(authority_info, collection, &deserialized_asset)?;
- 
+
     // If the asset is part of a collection, the collection must be passed in and it must be correct.
     if let UpdateAuthority::Collection(collection_address) = deserialized_asset.update_authority {
         if collection.is_none() {
@@ -384,10 +384,7 @@ pub fn validate_collection_permissions<'a>(
 ) -> Result<(Collection, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
     let (deserialized_collection, plugin_header, plugin_registry) =
         fetch_core_data::<Collection>(collection)?;
-    // NO ASSET
-    // let resolved_authority = resolve_to_authority(authority_info, Some(collection), asset)?;
-    let resolved_authority = todo!();
-
+    let resolved_authority = resolve_collection_authority(authority_info, collection)?;
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
 
     let core_check = (Key::Collection, collection_check_fp());
@@ -434,7 +431,7 @@ pub fn validate_collection_permissions<'a>(
         new_plugin,
         None,
         Some(collection),
-        resolved_authority,
+        &resolved_authority,
         plugin_validate_fp,
     )? {
         ValidationResult::Approved => approved = true,
@@ -577,6 +574,22 @@ pub(crate) fn resolve_to_authority(
         }
     };
     Ok(authority_type)
+}
+
+pub(crate) fn resolve_collection_authority(
+    authority_info: &AccountInfo,
+    collection_info: &AccountInfo,
+) -> Result<Authority, ProgramError> {
+    let collection: Collection = Collection::load(collection_info, 0)?;
+    if authority_info.key == collection.owner() {
+        Ok(Authority::Owner)
+    } else if authority_info.key == &collection.update_authority {
+        Ok(Authority::UpdateAuthority)
+    } else {
+        Ok(Authority::Pubkey {
+            address: *authority_info.key,
+        })
+    }
 }
 
 /// Resolves the payer for the transaction for an optional payer pattern.

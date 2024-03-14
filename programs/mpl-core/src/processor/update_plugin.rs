@@ -182,7 +182,7 @@ pub(crate) fn update_collection_plugin<'a>(
         None,
         &registry_record.authority,
         None,
-        None
+        None,
     )?;
     if result == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());

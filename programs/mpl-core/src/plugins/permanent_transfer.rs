@@ -89,8 +89,14 @@ impl PluginValidation for PermanentTransfer {
         _authority: &AccountInfo,
         _new_owner: &AccountInfo,
         authorities: &Authority,
-        resolved_authority: Option<&Authority>
+        resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
+        if let Some(resolved_authority) = resolved_authority {
+            if resolved_authority == authorities {
+                return Ok(ValidationResult::Approved);
+            }
+        }
+
         Ok(ValidationResult::Pass)
     }
 
