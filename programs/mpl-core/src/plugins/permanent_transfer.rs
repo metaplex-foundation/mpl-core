@@ -5,7 +5,7 @@ use crate::state::{Authority, DataBlob};
 
 use super::{Plugin, PluginValidation, ValidationResult};
 
-/// The permanent freeze plugin allows any authority to lock the asset so it's no longer transferable.
+/// The permanent transfer plugin allows any authority to transfer the asset.
 /// The default authority for this plugin is the update authority.
 #[repr(C)]
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, Default, PartialEq, Eq)]
@@ -93,7 +93,7 @@ impl PluginValidation for PermanentTransfer {
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(resolved_authority) = resolved_authority {
             if resolved_authority == authorities {
-                return Ok(ValidationResult::Approved);
+                return Ok(ValidationResult::ForceApproved);
             }
         }
 

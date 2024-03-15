@@ -16,7 +16,11 @@ test('it can add attributes to an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
-  const asset = await createAsset(umi, { plugins: [pluginAuthorityPair({ type: 'Attributes', data: { attributeList: [] } })] });
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({ type: 'Attributes', data: { attributeList: [] } }),
+    ],
+  });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -33,12 +37,14 @@ test('it can add attributes to an asset', async (t) => {
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Attributes', [{
-      attributeList: [
-        { key: 'key0', value: 'value0' },
-        { key: 'key1', value: 'value1' }
-      ]
-    }]),
+    plugin: plugin('Attributes', [
+      {
+        attributeList: [
+          { key: 'key0', value: 'value0' },
+          { key: 'key1', value: 'value1' },
+        ],
+      },
+    ]),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -50,7 +56,10 @@ test('it can add attributes to an asset', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      attributeList: [{ key: 'key0', value: 'value0' }, { key: 'key1', value: 'value1' }],
+      attributeList: [
+        { key: 'key0', value: 'value0' },
+        { key: 'key1', value: 'value1' },
+      ],
     },
   });
 });
@@ -59,7 +68,19 @@ test('it can remove attributes to an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
-  const asset = await createAsset(umi, { plugins: [pluginAuthorityPair({ type: 'Attributes', data: { attributeList: [{ key: 'key0', value: 'value0' }, { key: 'key1', value: 'value1' }] } })] });
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Attributes',
+        data: {
+          attributeList: [
+            { key: 'key0', value: 'value0' },
+            { key: 'key1', value: 'value1' },
+          ],
+        },
+      }),
+    ],
+  });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -70,13 +91,18 @@ test('it can remove attributes to an asset', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      attributeList: [{ key: 'key0', value: 'value0' }, { key: 'key1', value: 'value1' }],
+      attributeList: [
+        { key: 'key0', value: 'value0' },
+        { key: 'key1', value: 'value1' },
+      ],
     },
   });
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Attributes', [{ attributeList: [{ key: 'key0', value: 'value0' }] }]),
+    plugin: plugin('Attributes', [
+      { attributeList: [{ key: 'key0', value: 'value0' }] },
+    ]),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -97,7 +123,11 @@ test('it can add then remove attributes to an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
-  const asset = await createAsset(umi, { plugins: [pluginAuthorityPair({ type: 'Attributes', data: { attributeList: [] } })] });
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({ type: 'Attributes', data: { attributeList: [] } }),
+    ],
+  });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -114,7 +144,14 @@ test('it can add then remove attributes to an asset', async (t) => {
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Attributes', [{ attributeList: [{ key: 'key0', value: 'value0' }, { key: 'key1', value: 'value1' }] }]),
+    plugin: plugin('Attributes', [
+      {
+        attributeList: [
+          { key: 'key0', value: 'value0' },
+          { key: 'key1', value: 'value1' },
+        ],
+      },
+    ]),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -126,7 +163,10 @@ test('it can add then remove attributes to an asset', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      attributeList: [{ key: 'key0', value: 'value0' }, { key: 'key1', value: 'value1' }],
+      attributeList: [
+        { key: 'key0', value: 'value0' },
+        { key: 'key1', value: 'value1' },
+      ],
     },
   });
 

@@ -1,12 +1,12 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 import {
-  getPubkeyAuthority,
   addPlugin,
   plugin,
   pluginAuthorityPair,
   transfer,
   updateAuthority,
+  getUpdateAuthority,
 } from '../../../src';
 import {
   DEFAULT_COLLECTION,
@@ -26,9 +26,7 @@ test('it cannot add permanentTransfer after creation', async (t) => {
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('PermanentTransfer', [
-      { authority: getPubkeyAuthority(owner.publicKey) },
-    ]),
+    plugin: plugin('PermanentTransfer', [{ authority: getUpdateAuthority() }]),
     authority: owner,
   }).sendAndConfirm(umi);
 
@@ -57,7 +55,7 @@ test('it can transfer an asset as the owner and not the delegate', async (t) => 
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getPubkeyAuthority(owner.publicKey),
+        authority: getUpdateAuthority(),
       }),
     ],
   });
@@ -81,8 +79,7 @@ test('it can transfer an asset as the owner and not the delegate', async (t) => 
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     permanentTransfer: {
       authority: {
-        type: 'Pubkey',
-        address: owner.publicKey,
+        type: 'UpdateAuthority',
       },
     },
   });
@@ -99,7 +96,7 @@ test('it can transfer an asset as the delegate and the owner', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getPubkeyAuthority(owner.publicKey),
+        authority: getUpdateAuthority(),
       }),
     ],
   });
@@ -117,8 +114,7 @@ test('it can transfer an asset as the delegate and the owner', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     permanentTransfer: {
       authority: {
-        type: 'Pubkey',
-        address: owner.publicKey,
+        type: 'UpdateAuthority',
       },
     },
   });
@@ -136,7 +132,7 @@ test('it can transfer an asset as not the owner', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getPubkeyAuthority(owner.publicKey),
+        authority: getUpdateAuthority(),
       }),
     ],
   });
@@ -154,8 +150,7 @@ test('it can transfer an asset as not the owner', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     permanentTransfer: {
       authority: {
-        type: 'Pubkey',
-        address: owner.publicKey,
+        type: 'UpdateAuthority',
       },
     },
   });
@@ -163,7 +158,7 @@ test('it can transfer an asset as not the owner', async (t) => {
   await transfer(umi, {
     asset: asset.publicKey,
     newOwner: brandNewOwner.publicKey,
-    authority: owner,
+    authority: umi.payer,
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -173,8 +168,7 @@ test('it can transfer an asset as not the owner', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     permanentTransfer: {
       authority: {
-        type: 'Pubkey',
-        address: owner.publicKey,
+        type: 'UpdateAuthority',
       },
     },
   });
@@ -191,7 +185,7 @@ test('it cannot delegate its authority', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getPubkeyAuthority(owner.publicKey),
+        authority: getUpdateAuthority(),
       }),
     ],
   });
@@ -209,8 +203,7 @@ test('it cannot delegate its authority', async (t) => {
     updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     permanentTransfer: {
       authority: {
-        type: 'Pubkey',
-        address: owner.publicKey,
+        type: 'UpdateAuthority',
       },
     },
   });
@@ -219,12 +212,11 @@ test('it cannot delegate its authority', async (t) => {
 test('it can transfer a collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const owner = generateSigner(umi);
   const collection = await createCollection(umi, {
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getPubkeyAuthority(owner.publicKey),
+        authority: getUpdateAuthority(),
       }),
     ],
   });
@@ -235,8 +227,7 @@ test('it can transfer a collection', async (t) => {
     updateAuthority: umi.identity.publicKey,
     permanentTransfer: {
       authority: {
-        type: 'Pubkey',
-        address: owner.publicKey,
+        type: 'UpdateAuthority',
       },
     },
   });
@@ -256,21 +247,21 @@ test('it can transfer asset that is a part of a collection forever as a delegate
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getPubkeyAuthority(owner.publicKey),
+        authority: getUpdateAuthority(),
       }),
     ],
     collection: collection.publicKey,
   });
 
   await transfer(umi, {
-    authority: owner,
+    authority: umi.payer,
     asset: asset.publicKey,
     collection: collection.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
   await transfer(umi, {
-    authority: owner,
+    authority: umi.payer,
     asset: asset.publicKey,
     collection: collection.publicKey,
     newOwner: brandNewOwner.publicKey,
@@ -283,8 +274,7 @@ test('it can transfer asset that is a part of a collection forever as a delegate
     updateAuthority: updateAuthority('Collection', [collection.publicKey]),
     permanentTransfer: {
       authority: {
-        type: 'Pubkey',
-        address: owner.publicKey,
+        type: 'UpdateAuthority',
       },
     },
   });
@@ -293,7 +283,6 @@ test('it can transfer asset that is a part of a collection forever as a delegate
 test('it can transfer multiple assets that is a part of a collection forever as a delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const collectionOwner = generateSigner(umi);
   const firstAssetOwner = generateSigner(umi);
   const newOwner = generateSigner(umi);
   const brandNewOwner = generateSigner(umi);
@@ -302,7 +291,7 @@ test('it can transfer multiple assets that is a part of a collection forever as 
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getPubkeyAuthority(collectionOwner.publicKey),
+        authority: getUpdateAuthority(),
       }),
     ],
   });
@@ -319,14 +308,14 @@ test('it can transfer multiple assets that is a part of a collection forever as 
 
   // move asset #1 twice as a delegate for collection
   await transfer(umi, {
-    authority: collectionOwner,
+    authority: umi.payer,
     asset: asset1.publicKey,
     collection: collection.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
   await transfer(umi, {
-    authority: collectionOwner,
+    authority: umi.payer,
     asset: asset1.publicKey,
     collection: collection.publicKey,
     newOwner: brandNewOwner.publicKey,
@@ -342,14 +331,14 @@ test('it can transfer multiple assets that is a part of a collection forever as 
 
   // move asset #2 twice as a delegate for collection
   await transfer(umi, {
-    authority: collectionOwner,
+    authority: umi.payer,
     asset: asset2.publicKey,
     collection: collection.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
   await transfer(umi, {
-    authority: collectionOwner,
+    authority: umi.payer,
     asset: asset2.publicKey,
     collection: collection.publicKey,
     newOwner: brandNewOwner.publicKey,
@@ -369,8 +358,7 @@ test('it can transfer multiple assets that is a part of a collection forever as 
     updateAuthority: umi.payer.publicKey,
     permanentTransfer: {
       authority: {
-        type: 'Pubkey',
-        address: collectionOwner.publicKey,
+        type: 'UpdateAuthority',
       },
     },
   });
