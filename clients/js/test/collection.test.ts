@@ -1,6 +1,6 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { getCollectionGpaBuilder } from '../src';
+import { Key, getCollectionGpaBuilder } from '../src';
 import { createUmi, createCollection } from './_setup';
 
 test('it can gpa fetch collections by updateAuthority', async (t) => {
@@ -19,6 +19,7 @@ test('it can gpa fetch collections by updateAuthority', async (t) => {
 
   const collections = await getCollectionGpaBuilder(umi)
     .whereField('updateAuthority', updateAuthority.publicKey)
+    .whereField('key', Key.Collection)
     .getDeserialized();
   const names = ['collection1', 'collection2'];
 
