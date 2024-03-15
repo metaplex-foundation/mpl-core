@@ -85,6 +85,7 @@ impl PluginValidation for Royalties {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
+        _resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

@@ -58,6 +58,7 @@ impl PluginValidation for Transfer {
         &self,
         authority_info: &AccountInfo,
         authority: &Authority,
+        _resolved_authority: Option<&Authority>,
     ) -> Result<super::ValidationResult, ProgramError> {
         if authority
             == (&Authority::Pubkey {

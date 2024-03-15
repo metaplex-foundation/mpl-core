@@ -5,13 +5,13 @@ use crate::state::{Authority, DataBlob};
 
 use super::{Plugin, PluginValidation, ValidationResult};
 
-/// The permanent transfer plugin allows any authority to transfer the asset.
+/// The permanent burn plugin allows any authority to burn the asset.
 /// The default authority for this plugin is the update authority.
 #[repr(C)]
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, Default, PartialEq, Eq)]
-pub struct PermanentTransfer {}
+pub struct PermanentBurn {}
 
-impl DataBlob for PermanentTransfer {
+impl DataBlob for PermanentBurn {
     fn get_initial_size() -> usize {
         0
     }
@@ -21,7 +21,7 @@ impl DataBlob for PermanentTransfer {
     }
 }
 
-impl PluginValidation for PermanentTransfer {
+impl PluginValidation for PermanentBurn {
     fn validate_add_plugin(
         &self,
         _authority: &AccountInfo,
@@ -79,16 +79,6 @@ impl PluginValidation for PermanentTransfer {
     fn validate_burn(
         &self,
         _authority: &AccountInfo,
-        _authorities: &Authority,
-        _resolved_authority: Option<&Authority>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_transfer(
-        &self,
-        _authority: &AccountInfo,
-        _new_owner: &AccountInfo,
         authorities: &Authority,
         resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
@@ -98,6 +88,16 @@ impl PluginValidation for PermanentTransfer {
             }
         }
 
+        Ok(ValidationResult::Pass)
+    }
+
+    fn validate_transfer(
+        &self,
+        _authority: &AccountInfo,
+        _new_owner: &AccountInfo,
+        _authorities: &Authority,
+        _resolved_authority: Option<&Authority>,
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 

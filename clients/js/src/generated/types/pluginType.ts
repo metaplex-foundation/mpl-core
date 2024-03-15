@@ -18,6 +18,7 @@ export enum PluginType {
   PermanentFreeze,
   Attributes,
   PermanentTransfer,
+  PermanentBurn,
 }
 
 export type PluginTypeArgs = PluginType;
