@@ -4,33 +4,26 @@ import {
   pluginAuthorityPair,
   burn,
   Key,
-  getOwnerAuthority,
   transfer,
+  getUpdateAuthority,
 } from '../../../src';
-import {
-  createAsset,
-  createUmi,
-} from '../../_setup';
+import { createAsset, createCollection, createUmi } from '../../_setup';
 import { assertAccountExists, sol } from '@metaplex-foundation/umi';
 
 test('it can burn an assets as an owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const owner = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    owner: owner,
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentBurn',
-        authority: getOwnerAuthority(),
+        authority: getUpdateAuthority(),
       }),
     ],
   });
 
   await burn(umi, {
-    payer: owner,
-    authority: owner,
     asset: asset.publicKey,
   }).sendAndConfirm(umi);
 
@@ -43,37 +36,177 @@ test('it can burn an assets as an owner', async (t) => {
 });
 
 test('it can burn an assets as a delegate', async (t) => {
-    // Given a Umi instance and a new signer.
-    const umi = await createUmi();
-    const owner = generateSigner(umi);
-    const newOwner = generateSigner(umi);
-  
-    const asset = await createAsset(umi, {
-      owner: owner,
-      plugins: [
-        pluginAuthorityPair({
-          type: 'PermanentBurn',
-          authority: getOwnerAuthority(),
-        }),
-      ],
-    });
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  await umi.rpc.airdrop(owner.publicKey, sol(10));
+  const newOwner = generateSigner(umi);
 
-    await transfer(umi, {
-        authority: owner,
-        asset: asset.publicKey,
-        newOwner: newOwner.publicKey,
-    }).sendAndConfirm(umi);
-  
-    await burn(umi, {
-        payer: owner,
-        authority: owner,
-        asset: asset.publicKey,
-    }).sendAndConfirm(umi);
-  
-    const afterAsset = await umi.rpc.getAccount(asset.publicKey);
-    t.true(afterAsset.exists);
-    assertAccountExists(afterAsset);
-    t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
-    t.is(afterAsset.data.length, 1);
-    t.is(afterAsset.data[0], Key.Uninitialized);
+  const asset = await createAsset(umi, {
+    payer: owner,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentBurn',
+        authority: getUpdateAuthority(),
+      }),
+    ],
   });
+
+  await transfer(umi, {
+    authority: owner,
+    asset: asset.publicKey,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await burn(umi, {
+    payer: owner,
+    asset: asset.publicKey,
+  }).sendAndConfirm(umi);
+
+  const afterAsset = await umi.rpc.getAccount(asset.publicKey);
+  t.true(afterAsset.exists);
+  assertAccountExists(afterAsset);
+  t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
+  t.is(afterAsset.data.length, 1);
+  t.is(afterAsset.data[0], Key.Uninitialized);
+});
+
+test('it can burn an assets as a delegate for a collection', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const firstAssetOwner = generateSigner(umi);
+  await umi.rpc.airdrop(firstAssetOwner.publicKey, sol(10));
+  const newOwner = generateSigner(umi);
+  const brandNewOwner = generateSigner(umi);
+
+  const collection = await createCollection(umi, {
+    payer: firstAssetOwner,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentBurn',
+        authority: getUpdateAuthority(),
+      }),
+    ],
+  });
+
+  const asset1 = await createAsset(umi, {
+    authority: firstAssetOwner,
+    owner: firstAssetOwner,
+    collection: collection.publicKey,
+  });
+
+  const asset2 = await createAsset(umi, {
+    authority: firstAssetOwner,
+    owner: firstAssetOwner,
+    collection: collection.publicKey,
+  });
+
+  // move asset #1 twice as a delegate for collection
+  await transfer(umi, {
+    authority: firstAssetOwner,
+    asset: asset1.publicKey,
+    collection: collection.publicKey,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await transfer(umi, {
+    authority: newOwner,
+    asset: asset1.publicKey,
+    collection: collection.publicKey,
+    newOwner: brandNewOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  // move asset #2 twice as a delegate for collection
+  await transfer(umi, {
+    authority: firstAssetOwner,
+    asset: asset2.publicKey,
+    collection: collection.publicKey,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await transfer(umi, {
+    authority: newOwner,
+    asset: asset2.publicKey,
+    collection: collection.publicKey,
+    newOwner: brandNewOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await burn(umi, {
+    payer: firstAssetOwner,
+    asset: asset1.publicKey,
+    collection: collection.publicKey,
+  }).sendAndConfirm(umi);
+
+  await burn(umi, {
+    payer: firstAssetOwner,
+    asset: asset2.publicKey,
+    collection: collection.publicKey,
+  }).sendAndConfirm(umi);
+
+  const afterAsset1 = await umi.rpc.getAccount(asset1.publicKey);
+  t.true(afterAsset1.exists);
+  assertAccountExists(afterAsset1);
+  t.deepEqual(afterAsset1.lamports, sol(0.00089784 + 0.0015));
+  t.is(afterAsset1.data.length, 1);
+  t.is(afterAsset1.data[0], Key.Uninitialized);
+
+  const afterAsset2 = await umi.rpc.getAccount(asset2.publicKey);
+  t.true(afterAsset2.exists);
+  assertAccountExists(afterAsset2);
+  t.deepEqual(afterAsset2.lamports, sol(0.00089784 + 0.0015));
+  t.is(afterAsset2.data.length, 1);
+  t.is(afterAsset2.data[0], Key.Uninitialized);
+});
+
+test('it can burn an asset which is the part of a collection', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const firstAssetOwner = generateSigner(umi);
+  await umi.rpc.airdrop(firstAssetOwner.publicKey, sol(10));
+  const newOwner = generateSigner(umi);
+  const brandNewOwner = generateSigner(umi);
+
+  const collection = await createCollection(umi, {
+    payer: firstAssetOwner,
+  });
+
+  const asset = await createAsset(umi, {
+    authority: firstAssetOwner,
+    owner: firstAssetOwner,
+    collection: collection.publicKey,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentBurn',
+        authority: getUpdateAuthority(),
+      }),
+    ],
+  });
+
+  // move asset #1 twice as a delegate for collection
+  await transfer(umi, {
+    authority: firstAssetOwner,
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await transfer(umi, {
+    authority: newOwner,
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    newOwner: brandNewOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await burn(umi, {
+    payer: firstAssetOwner,
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+  }).sendAndConfirm(umi);
+
+  const afterAsset = await umi.rpc.getAccount(asset.publicKey);
+  t.true(afterAsset.exists);
+  assertAccountExists(afterAsset);
+  t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
+  t.is(afterAsset.data.length, 1);
+  t.is(afterAsset.data[0], Key.Uninitialized);
+});

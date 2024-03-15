@@ -63,10 +63,10 @@ export type PluginAuthorityPairHelperArgs =
       data: PermanentFreezeArgs;
     }
   | {
-    type: 'Attributes';
-    authority?: Authority;
-    data: AttributesArgs;
-  }
+      type: 'Attributes';
+      authority?: Authority;
+      data: AttributesArgs;
+    }
   | {
       type: 'PermanentFreeze';
       authority?: Authority;
