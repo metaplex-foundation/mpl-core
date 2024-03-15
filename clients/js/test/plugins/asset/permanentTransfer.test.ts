@@ -354,6 +354,7 @@ test('it can transfer multiple assets that is a part of a collection forever as 
 
   await assertCollection(t, umi, {
     ...collection,
+    currentSize: 2,
     collection: collection.publicKey,
     updateAuthority: umi.payer.publicKey,
     permanentTransfer: {
