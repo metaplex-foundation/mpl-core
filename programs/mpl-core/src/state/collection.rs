@@ -221,6 +221,26 @@ impl Collection {
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
+
+    /// Increment size of the Collection
+    pub fn increment(collection_info: &AccountInfo) -> Result<(), ProgramError> {
+        let mut collection: Collection = Collection::load(collection_info, 0)?;
+        collection.current_size = collection
+            .current_size
+            .checked_add(1)
+            .ok_or(MplCoreError::NumericalOverflowError)?;
+        collection.save(collection_info, 0)
+    }
+
+    /// Decrements size of the Collection
+    pub fn decrement(collection_info: &AccountInfo) -> Result<(), ProgramError> {
+        let mut collection: Collection = Collection::load(collection_info, 0)?;
+        collection.current_size = collection
+            .current_size
+            .checked_sub(1)
+            .ok_or(MplCoreError::NumericalOverflowError)?;
+        collection.save(collection_info, 0)
+    }
 }
 
 impl DataBlob for Collection {

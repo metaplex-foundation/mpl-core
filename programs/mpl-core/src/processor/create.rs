@@ -12,7 +12,7 @@ use crate::{
         create_meta_idempotent, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
         PluginType, ValidationResult,
     },
-    state::{Asset, DataState, UpdateAuthority, COLLECT_AMOUNT},
+    state::{Asset, Collection, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT},
     utils::fetch_core_data,
 };
 
@@ -159,6 +159,10 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
             return Err(MplCoreError::InvalidAuthority.into());
         }
     }
+
+    if let Some(collection_info) = ctx.accounts.collection {
+        Collection::increment(collection_info)?;
+    };
 
     Ok(())
 }

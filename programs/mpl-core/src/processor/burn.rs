@@ -80,7 +80,11 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
         Plugin::validate_burn,
     )?;
 
-    process_burn(ctx.accounts.asset, authority)
+    process_burn(ctx.accounts.asset, authority)?;
+    if let Some(collection_info) = ctx.accounts.collection {
+        Collection::decrement(collection_info)?;
+    };
+    Ok(())
 }
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
