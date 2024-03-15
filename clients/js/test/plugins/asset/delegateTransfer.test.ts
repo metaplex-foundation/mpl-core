@@ -4,7 +4,6 @@ import {
   PluginType,
   approvePluginAuthority,
   transfer,
-  updateAuthority,
   authority,
   pluginAuthorityPair,
   revokePluginAuthority,
@@ -42,7 +41,7 @@ test('a delegate can transfer the asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: newOwnerAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     transfer: {
       authority: {
         type: 'Pubkey',
@@ -76,7 +75,7 @@ test('owner can transfer asset with delegate transfer', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: newOwnerAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     transfer: {
       authority: {
         type: 'Pubkey',
@@ -109,7 +108,7 @@ test('it can revoke a delegate transfer plugin', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     transfer: {
       authority: {
         type: 'Owner',
@@ -150,7 +149,7 @@ test('it cannot transfer after delegate has been revoked', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     transfer: {
       authority: {
         type: 'Owner',

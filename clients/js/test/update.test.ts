@@ -1,6 +1,6 @@
 import test from 'ava';
 
-import { update, updateAuthority, pluginAuthorityPair } from '../src';
+import { update, pluginAuthorityPair } from '../src';
 import { assertAsset, createAsset, createUmi } from './_setup';
 
 test('it can update an asset to be larger', async (t) => {
@@ -17,7 +17,7 @@ test('it can update an asset to be larger', async (t) => {
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
   });
@@ -37,7 +37,7 @@ test('it can update an asset to be smaller', async (t) => {
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     name: '',
     uri: '',
   });
@@ -70,7 +70,7 @@ test('it can update an asset with plugins to be larger', async (t) => {
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
     freeze: {
@@ -100,7 +100,7 @@ test('it can update an asset with plugins to be smaller', async (t) => {
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     name: '',
     uri: '',
     freeze: {

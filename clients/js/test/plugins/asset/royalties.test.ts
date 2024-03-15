@@ -11,7 +11,6 @@ import {
   pluginAuthorityPair,
   ruleSet,
   transfer,
-  updateAuthority,
   updatePlugin,
 } from '../../../src';
 import {
@@ -48,7 +47,7 @@ test('it can transfer an asset with royalties', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
 
     royalties: {
       authority: {
@@ -99,7 +98,7 @@ test('it can transfer an asset with collection royalties', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 
   await assertCollection(t, umi, {
@@ -152,7 +151,7 @@ test('it can transfer an asset with royalties to an allowlisted program address'
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     royalties: {
       authority: {
         type: 'UpdateAuthority',
@@ -202,7 +201,7 @@ test('it can transfer an asset with collection royalties to an allowlisted progr
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 
   await assertCollection(t, umi, {
@@ -319,7 +318,7 @@ test('it cannot transfer an asset with collection royalties to a program address
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: programOwner.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 
   await assertCollection(t, umi, {
@@ -383,7 +382,7 @@ test('it can transfer an asset with royalties to a program address not on the de
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     royalties: {
       authority: {
         type: 'UpdateAuthority',
@@ -433,7 +432,7 @@ test('it can transfer an asset with collection royalties to a program address no
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 
   await assertCollection(t, umi, {
@@ -486,7 +485,7 @@ test('it cannot transfer an asset with royalties to a denylisted program', async
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
   const result = transfer(umi, {
@@ -525,7 +524,7 @@ test('it cannot transfer an asset with collection royalties to a program address
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 
   await assertCollection(t, umi, {

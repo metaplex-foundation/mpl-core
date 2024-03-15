@@ -19,6 +19,7 @@ test('it can gpa fetch assets by owner', async (t) => {
 
   const assets = await getAssetGpaBuilder(umi)
     .whereField('owner', owner.publicKey)
+    .whereField('key', Key.Asset)
     .getDeserialized();
   const names = ['asset1', 'asset2'];
 
@@ -55,7 +56,7 @@ test('it can gpa fetch assets by collection', async (t) => {
   assets.forEach((asset) => {
     t.deepEqual(
       asset.updateAuthority,
-      updateAuthority('Collection', [collection.publicKey])
+      { type: 'Collection', address: collection.publicKey}
     );
   });
 });

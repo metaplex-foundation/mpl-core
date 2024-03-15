@@ -5,7 +5,6 @@ import {
   approveCollectionPluginAuthority,
   authority,
   pluginAuthorityPair,
-  updateAuthority,
 } from '../src';
 import {
   DEFAULT_ASSET,
@@ -86,7 +85,7 @@ test('it can create a new asset with a collection', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 });
 
@@ -119,7 +118,7 @@ test('it can create a new asset with a collection with collection delegate', asy
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi2.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 });
 

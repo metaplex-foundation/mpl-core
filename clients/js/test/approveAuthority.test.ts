@@ -4,7 +4,6 @@ import {
   PluginType,
   approvePluginAuthority,
   addPlugin,
-  updateAuthority,
   plugin,
   getPubkeyAuthority,
   pluginAuthorityPair,
@@ -22,7 +21,7 @@ test('it can add an authority to a plugin', async (t) => {
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
   await addPlugin(umi, {
@@ -42,7 +41,7 @@ test('it can add an authority to a plugin', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Pubkey',
@@ -67,7 +66,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Owner',
@@ -86,7 +85,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Pubkey',
@@ -106,7 +105,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Pubkey',
@@ -136,7 +135,7 @@ test('it can approve to reassign authority back to owner', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Pubkey',
@@ -156,7 +155,7 @@ test('it can approve to reassign authority back to owner', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Owner',

@@ -18,9 +18,9 @@ import {
   createCollection as baseCreateCollection,
   Collection,
   Asset,
-  UpdateAuthority,
   PluginsList,
   PluginAuthorityPairArgs,
+  BaseAuthority,
 } from '../src';
 
 export const createUmi = async () => (await basecreateUmi()).use(mplCore());
@@ -135,7 +135,7 @@ export const assertAsset = async (
   input: {
     asset: PublicKey | Signer;
     owner: PublicKey | Signer;
-    updateAuthority?: UpdateAuthority;
+    updateAuthority?: BaseAuthority;
     name?: string | RegExp;
     uri?: string | RegExp;
   } & PluginsList

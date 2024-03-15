@@ -9,7 +9,6 @@ import {
   plugin,
   pluginAuthorityPair,
   revokePluginAuthority,
-  updateAuthority,
   updatePlugin,
 } from '../../../src';
 import {
@@ -34,7 +33,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Owner',
@@ -52,7 +51,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Owner',
@@ -87,7 +86,7 @@ test('it can delegate then freeze an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Pubkey',
@@ -140,7 +139,7 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Pubkey',
@@ -162,7 +161,7 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Pubkey',

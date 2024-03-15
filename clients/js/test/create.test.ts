@@ -10,7 +10,6 @@ import {
   fetchHashedAsset,
   getBaseAssetAccountDataSerializer,
   pluginAuthorityPair,
-  updateAuthority,
 } from '../src';
 import { assertAsset, createAsset, createUmi, DEFAULT_ASSET } from './_setup';
 
@@ -27,7 +26,7 @@ test('it can create a new asset in account state', async (t) => {
     ...DEFAULT_ASSET,
     asset: assetAddress.publicKey,
     owner: umi.identity,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 });
 
@@ -47,7 +46,7 @@ test('it can create a new asset with a different payer', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [payer.publicKey]),
+    updateAuthority: { type: 'Address', address: payer.publicKey },
   });
 });
 
@@ -80,7 +79,7 @@ test.skip('it can create a new asset in ledger state', async (t) => {
     const parsed = getBaseAssetAccountDataSerializer().deserialize(data)[0];
     // console.log("Ledger State:", parsed);
     t.like(parsed, <Asset>{
-      updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+      updateAuthority: { type: 'Address', address: umi.identity.publicKey },
       owner: umi.identity.publicKey,
       name: 'Test Bread',
       uri: 'https://example.com/bread',
@@ -127,7 +126,7 @@ test('it can create a new asset in account state with plugins', async (t) => {
   await assertAsset(t, umi, {
     asset: assetAddress.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     // pluginHeader: formPluginHeader(BigInt(120)),
@@ -156,7 +155,7 @@ test('it can create a new asset in account state with a different update authori
     ...DEFAULT_ASSET,
     asset: assetAddress.publicKey,
     owner: umi.identity,
-    updateAuthority: updateAuthority('Address', [updateAuth.publicKey]),
+    updateAuthority: { type: 'Address', address: updateAuth.publicKey },
   });
 });
 
@@ -181,7 +180,7 @@ test('it can create a new asset in account state with plugins with a different u
     ...DEFAULT_ASSET,
     asset: assetAddress.publicKey,
     owner: umi.identity,
-    updateAuthority: updateAuthority('Address', [updateAuth.publicKey]),
+    updateAuthority: { type: 'Address', address: updateAuth.publicKey },
     freeze: {
       authority: { type: 'Owner' },
       frozen: false,

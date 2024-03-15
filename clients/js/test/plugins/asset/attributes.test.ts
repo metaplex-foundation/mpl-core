@@ -2,7 +2,6 @@ import test from 'ava';
 import {
   plugin,
   pluginAuthorityPair,
-  updateAuthority,
   updatePlugin,
 } from '../../../src';
 import {
@@ -26,7 +25,7 @@ test('it can add attributes to an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     attributes: {
       authority: {
         type: 'UpdateAuthority',
@@ -51,7 +50,7 @@ test('it can add attributes to an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     attributes: {
       authority: {
         type: 'UpdateAuthority',
@@ -86,7 +85,7 @@ test('it can remove attributes to an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     attributes: {
       authority: {
         type: 'UpdateAuthority',
@@ -109,7 +108,7 @@ test('it can remove attributes to an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     attributes: {
       authority: {
         type: 'UpdateAuthority',
@@ -133,7 +132,7 @@ test('it can add then remove attributes to an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     attributes: {
       authority: {
         type: 'UpdateAuthority',
@@ -158,7 +157,7 @@ test('it can add then remove attributes to an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     attributes: {
       authority: {
         type: 'UpdateAuthority',
@@ -179,7 +178,7 @@ test('it can add then remove attributes to an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     attributes: {
       authority: {
         type: 'UpdateAuthority',

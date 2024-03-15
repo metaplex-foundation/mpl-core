@@ -1,7 +1,7 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import { transfer, updateAuthority } from '../src';
+import { transfer } from '../src';
 import {
   assertAsset,
   createAsset,
@@ -18,7 +18,7 @@ test('it can transfer an asset as the owner', async (t) => {
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
   await transfer(umi, {
@@ -29,7 +29,7 @@ test('it can transfer an asset as the owner', async (t) => {
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: newOwner.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 });
 
@@ -52,7 +52,7 @@ test('it cannot transfer an asset if not the owner', async (t) => {
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 });
 
@@ -73,6 +73,6 @@ test('it cannot transfer asset in collection if no collection', async (t) => {
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 });

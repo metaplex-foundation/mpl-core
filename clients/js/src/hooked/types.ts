@@ -12,13 +12,15 @@ import {
   UpdateDelegate,
   Attributes,
   PermanentTransfer,
+  UpdateAuthority,
 } from '../generated';
 
 export type BaseAuthority = {
-  type: PluginAuthorityType;
+  type: PluginAuthorityType | UpdateAuthorityType;
   address?: PublicKey;
 };
 
+export type UpdateAuthorityType = UpdateAuthority['__kind'];
 export type PluginAuthorityType = Authority['__kind'];
 
 export type BasePlugin = {
@@ -46,9 +48,10 @@ export type PluginsList = {
   permanentTransfer?: PermanentTransferPlugin;
 };
 
-export type Asset = BaseAsset &
+export type Asset = Omit<BaseAsset, 'updateAuthority'> &
   PluginsList & {
     pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>;
+    updateAuthority: BaseAuthority;
   };
 
 export type Collection = BaseCollection &

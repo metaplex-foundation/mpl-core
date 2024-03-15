@@ -3,7 +3,6 @@ import test from 'ava';
 import {
   PluginType,
   approvePluginAuthority,
-  updateAuthority,
   updatePlugin,
   plugin,
   authority,
@@ -35,7 +34,7 @@ test('it can delegate a new authority', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Pubkey',
@@ -72,7 +71,7 @@ test('a delegate can freeze the token', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Pubkey',
