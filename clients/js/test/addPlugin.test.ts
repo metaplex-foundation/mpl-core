@@ -396,7 +396,7 @@ test('it cannot add authority-managed plugin to an asset by owner', async (t) =>
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
-    name: 'InvalidAuthority',
+    name: 'NoApprovals',
   });
 });
 

@@ -88,6 +88,9 @@ pub enum MplCoreError {
     /// 25 (0x19) - Missing collection
     #[error("Missing collection")]
     MissingCollection,
+    /// 26 (0x1A) - Neither the asset or any plugins have approved this operation
+    #[error("Neither the asset or any plugins have approved this operation")]
+    NoApprovals,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

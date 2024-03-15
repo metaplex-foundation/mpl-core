@@ -65,7 +65,7 @@ test('it cannot remove an owner plugin from an asset if not the owner', async (t
     authority: attacker,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(result, { name: 'NoApprovals' });
 });
 
 test('it can remove authority managed plugin from collection', async (t) => {

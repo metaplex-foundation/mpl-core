@@ -283,7 +283,7 @@ test('it cannot transfer an asset with royalties to a program address not on the
     authority: programOwner,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(result, { name: 'NoApprovals' });
 });
 
 test('it cannot transfer an asset with collection royalties to a program address not on allowlist', async (t) => {
@@ -349,7 +349,7 @@ test('it cannot transfer an asset with collection royalties to a program address
     authority: programOwner,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(result, { name: 'NoApprovals' });
 
   await assertAsset(t, umi, {
     asset: asset.publicKey,

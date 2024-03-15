@@ -112,6 +112,10 @@ pub enum MplCoreError {
     /// 25 - Missing collection
     #[error("Missing collection")]
     MissingCollection,
+
+    /// 26 - Neither the asset or any plugins have approved this operation.
+    #[error("Neither the asset or any plugins have approved this operation")]
+    NoApprovals,
 }
 
 impl PrintProgramError for MplCoreError {

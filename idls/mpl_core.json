@@ -2431,6 +2431,11 @@
       "code": 25,
       "name": "MissingCollection",
       "msg": "Missing collection"
+    },
+    {
+      "code": 26,
+      "name": "NoApprovals",
+      "msg": "Neither the asset or any plugins have approved this operation"
     }
   ],
   "metadata": {

@@ -47,7 +47,7 @@ test('it cannot transfer an asset if not the owner', async (t) => {
     authority: attacker,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(result, { name: 'NoApprovals' });
 
   await assertAsset(t, umi, {
     asset: asset.publicKey,

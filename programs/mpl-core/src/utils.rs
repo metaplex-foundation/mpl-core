@@ -353,8 +353,10 @@ pub fn validate_asset_permissions<'a>(
 
     solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
 
-    if rejected || !approved {
+    if rejected {
         return Err(MplCoreError::InvalidAuthority.into());
+    } else if !approved {
+        return Err(MplCoreError::NoApprovals.into());
     }
 
     Ok((deserialized_asset, plugin_header, plugin_registry))

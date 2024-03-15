@@ -356,6 +356,23 @@ export class MissingCollectionError extends ProgramError {
 codeToErrorMap.set(0x19, MissingCollectionError);
 nameToErrorMap.set('MissingCollection', MissingCollectionError);
 
+/** NoApprovals: Neither the asset or any plugins have approved this operation */
+export class NoApprovalsError extends ProgramError {
+  override readonly name: string = 'NoApprovals';
+
+  readonly code: number = 0x1a; // 26
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Neither the asset or any plugins have approved this operation',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x1a, NoApprovalsError);
+nameToErrorMap.set('NoApprovals', NoApprovalsError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

@@ -144,7 +144,7 @@ test('it cannot transfer after delegate has been revoked', async (t) => {
     authority: delegateAddress,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(result, { name: 'NoApprovals' });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
