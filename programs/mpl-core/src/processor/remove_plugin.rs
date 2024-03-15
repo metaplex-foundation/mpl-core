@@ -8,7 +8,7 @@ use crate::{
     plugins::{delete_plugin, fetch_wrapped_plugin, Plugin, PluginType},
     state::{Asset, Collection, DataBlob, Key},
     utils::{
-        fetch_core_data, load_key, resolve_payer, validate_asset_permissions,
+        fetch_core_data, load_key, resolve_authority, validate_asset_permissions,
         validate_collection_permissions,
     },
 };
@@ -26,8 +26,8 @@ pub(crate) fn remove_plugin<'a>(
     let ctx = RemovePluginAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Remove plugin for compressed is not available");
@@ -46,7 +46,7 @@ pub(crate) fn remove_plugin<'a>(
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
-        ctx.accounts.authority,
+        authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
@@ -66,7 +66,7 @@ pub(crate) fn remove_plugin<'a>(
         &args.plugin_type,
         &asset,
         ctx.accounts.asset,
-        payer,
+        ctx.accounts.payer,
         ctx.accounts.system_program,
     )
 }
@@ -84,8 +84,8 @@ pub(crate) fn remove_collection_plugin<'a>(
     let ctx = RemoveCollectionPluginAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     let (collection, plugin_header, plugin_registry) =
         fetch_core_data::<Collection>(ctx.accounts.collection)?;
@@ -100,7 +100,7 @@ pub(crate) fn remove_collection_plugin<'a>(
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
-        ctx.accounts.authority,
+        authority,
         ctx.accounts.collection,
         Some(&plugin_to_remove),
         Collection::check_add_plugin,
@@ -113,7 +113,7 @@ pub(crate) fn remove_collection_plugin<'a>(
         &args.plugin_type,
         &collection,
         ctx.accounts.collection,
-        payer,
+        ctx.accounts.payer,
         ctx.accounts.system_program,
     )
 }

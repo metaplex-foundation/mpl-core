@@ -159,20 +159,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -218,20 +218,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -286,20 +286,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -345,20 +345,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -413,20 +413,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -472,20 +472,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -540,20 +540,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -599,20 +599,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -667,20 +667,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -726,20 +726,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -794,20 +794,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -854,20 +854,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -914,20 +914,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -991,20 +991,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The update authority or update authority delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or update authority delegate of the asset"
           ]
         },
         {
@@ -1059,20 +1059,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The update authority or update authority delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or update authority delegate of the asset"
           ]
         },
         {
@@ -1136,20 +1136,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account receiving the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {
@@ -1204,20 +1204,20 @@
           ]
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
           ]
         },
         {

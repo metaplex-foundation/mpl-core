@@ -9,7 +9,7 @@ use crate::{
     state::{Asset, Collection, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         compress_into_account_space, load_key, rebuild_account_state_from_proof_data,
-        resolve_payer, validate_asset_permissions, verify_proof,
+        resolve_authority, validate_asset_permissions, verify_proof,
     },
 };
 
@@ -24,8 +24,8 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
     let ctx = TransferAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     let key = load_key(ctx.accounts.asset, 0)?;
 
@@ -51,7 +51,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                 asset,
                 plugins,
                 ctx.accounts.asset,
-                payer,
+                ctx.accounts.payer,
                 system_program,
             )?;
 
@@ -65,7 +65,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
 
     // Validate asset permissions.
     let (mut asset, _, plugin_registry) = validate_asset_permissions(
-        ctx.accounts.authority,
+        authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
         Some(ctx.accounts.new_owner),
@@ -94,7 +94,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
                 asset,
                 plugin_registry,
                 ctx.accounts.asset,
-                payer,
+                ctx.accounts.payer,
                 system_program,
             )?;
 

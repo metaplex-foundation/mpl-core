@@ -7,7 +7,9 @@ use crate::{
     instruction::accounts::{AddCollectionPluginAccounts, AddPluginAccounts},
     plugins::{create_meta_idempotent, initialize_plugin, Plugin, PluginType, ValidationResult},
     state::{Asset, Authority, Collection, DataBlob, Key, SolanaAccount},
-    utils::{load_key, resolve_payer, validate_asset_permissions, validate_collection_permissions},
+    utils::{
+        load_key, resolve_authority, validate_asset_permissions, validate_collection_permissions,
+    },
 };
 
 #[repr(C)]
@@ -24,8 +26,8 @@ pub(crate) fn add_plugin<'a>(
     let ctx = AddPluginAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Adding plugin to compressed is not available");
@@ -34,7 +36,7 @@ pub(crate) fn add_plugin<'a>(
 
     if Plugin::validate_add_plugin(
         &args.plugin,
-        ctx.accounts.authority,
+        authority,
         None,
         &args.init_authority.unwrap_or(args.plugin.manager()),
         None,
@@ -46,7 +48,7 @@ pub(crate) fn add_plugin<'a>(
 
     // Validate asset permissions.
     let (mut asset, _, _) = validate_asset_permissions(
-        ctx.accounts.authority,
+        authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
@@ -64,7 +66,7 @@ pub(crate) fn add_plugin<'a>(
 
     process_add_plugin::<Asset>(
         ctx.accounts.asset,
-        payer,
+        ctx.accounts.payer,
         ctx.accounts.system_program,
         &args.plugin,
         &args.init_authority.unwrap_or(args.plugin.manager()),
@@ -85,12 +87,12 @@ pub(crate) fn add_collection_plugin<'a>(
     let ctx = AddCollectionPluginAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
-        ctx.accounts.authority,
+        authority,
         ctx.accounts.collection,
         Some(&args.plugin),
         Collection::check_add_plugin,
@@ -101,7 +103,7 @@ pub(crate) fn add_collection_plugin<'a>(
 
     process_add_plugin::<Collection>(
         ctx.accounts.collection,
-        payer,
+        ctx.accounts.payer,
         ctx.accounts.system_program,
         &args.plugin,
         &args.init_authority.unwrap_or(args.plugin.manager()),

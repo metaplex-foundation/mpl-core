@@ -7,7 +7,10 @@ use crate::{
     instruction::accounts::CompressAccounts,
     plugins::{Plugin, PluginType},
     state::{Asset, Collection, Key, Wrappable},
-    utils::{compress_into_account_space, fetch_core_data, load_key, validate_asset_permissions},
+    utils::{
+        compress_into_account_space, fetch_core_data, load_key, resolve_authority,
+        validate_asset_permissions,
+    },
 };
 
 #[repr(C)]
@@ -19,13 +22,8 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
     let ctx = CompressAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    let payer = if let Some(payer) = ctx.accounts.payer {
-        assert_signer(payer)?;
-        payer
-    } else {
-        ctx.accounts.authority
-    };
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     match load_key(ctx.accounts.asset, 0)? {
         Key::Asset => {
@@ -33,7 +31,7 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
 
             // Validate asset permissions.
             let _ = validate_asset_permissions(
-                ctx.accounts.authority,
+                authority,
                 ctx.accounts.asset,
                 ctx.accounts.collection,
                 None,
@@ -51,7 +49,7 @@ pub(crate) fn compress<'a>(accounts: &'a [AccountInfo<'a>], _args: CompressArgs)
                 asset,
                 plugin_registry,
                 ctx.accounts.asset,
-                payer,
+                ctx.accounts.payer,
                 ctx.accounts.system_program,
             )?;
 

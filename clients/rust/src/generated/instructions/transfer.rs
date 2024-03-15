@@ -15,10 +15,10 @@ pub struct Transfer {
     pub asset: solana_program::pubkey::Pubkey,
     /// The collection to which the asset belongs
     pub collection: Option<solana_program::pubkey::Pubkey>,
-    /// The owner or delegate of the asset
-    pub authority: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
-    pub payer: Option<solana_program::pubkey::Pubkey>,
+    pub payer: solana_program::pubkey::Pubkey,
+    /// The owner or delegate of the asset
+    pub authority: Option<solana_program::pubkey::Pubkey>,
     /// The new owner to which to transfer the asset
     pub new_owner: solana_program::pubkey::Pubkey,
     /// The system program
@@ -54,12 +54,13 @@ impl Transfer {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.authority,
-            true,
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.payer, true,
         ));
-        if let Some(payer) = self.payer {
-            accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
+        if let Some(authority) = self.authority {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                authority, true,
+            ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 crate::MPL_CORE_ID,
@@ -128,8 +129,8 @@ pub struct TransferInstructionArgs {
 ///
 ///   0. `[writable]` asset
 ///   1. `[optional]` collection
-///   2. `[signer]` authority
-///   3. `[writable, signer, optional]` payer
+///   2. `[writable, signer]` payer
+///   3. `[signer, optional]` authority
 ///   4. `[]` new_owner
 ///   5. `[optional]` system_program
 ///   6. `[optional]` log_wrapper
@@ -137,8 +138,8 @@ pub struct TransferInstructionArgs {
 pub struct TransferBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
-    authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
+    authority: Option<solana_program::pubkey::Pubkey>,
     new_owner: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
@@ -163,17 +164,17 @@ impl TransferBuilder {
         self.collection = collection;
         self
     }
-    /// The owner or delegate of the asset
+    /// The account paying for the storage fees
     #[inline(always)]
-    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.authority = Some(authority);
+    pub fn payer(&mut self, payer: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.payer = Some(payer);
         self
     }
     /// `[optional account]`
-    /// The account paying for the storage fees
+    /// The owner or delegate of the asset
     #[inline(always)]
-    pub fn payer(&mut self, payer: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
-        self.payer = payer;
+    pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.authority = authority;
         self
     }
     /// The new owner to which to transfer the asset
@@ -231,8 +232,8 @@ impl TransferBuilder {
         let accounts = Transfer {
             asset: self.asset.expect("asset is not set"),
             collection: self.collection,
-            authority: self.authority.expect("authority is not set"),
-            payer: self.payer,
+            payer: self.payer.expect("payer is not set"),
+            authority: self.authority,
             new_owner: self.new_owner.expect("new_owner is not set"),
             system_program: self.system_program,
             log_wrapper: self.log_wrapper,
@@ -251,10 +252,10 @@ pub struct TransferCpiAccounts<'a, 'b> {
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The owner or delegate of the asset
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
-    pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner or delegate of the asset
+    pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The new owner to which to transfer the asset
     pub new_owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// The system program
@@ -271,10 +272,10 @@ pub struct TransferCpi<'a, 'b> {
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The owner or delegate of the asset
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
-    pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner or delegate of the asset
+    pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The new owner to which to transfer the asset
     pub new_owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// The system program
@@ -295,8 +296,8 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
             __program: program,
             asset: accounts.asset,
             collection: accounts.collection,
-            authority: accounts.authority,
             payer: accounts.payer,
+            authority: accounts.authority,
             new_owner: accounts.new_owner,
             system_program: accounts.system_program,
             log_wrapper: accounts.log_wrapper,
@@ -352,13 +353,14 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.authority.key,
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.payer.key,
             true,
         ));
-        if let Some(payer) = self.payer {
-            accounts.push(solana_program::instruction::AccountMeta::new(
-                *payer.key, true,
+        if let Some(authority) = self.authority {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *authority.key,
+                true,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -414,9 +416,9 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
         if let Some(collection) = self.collection {
             account_infos.push(collection.clone());
         }
-        account_infos.push(self.authority.clone());
-        if let Some(payer) = self.payer {
-            account_infos.push(payer.clone());
+        account_infos.push(self.payer.clone());
+        if let Some(authority) = self.authority {
+            account_infos.push(authority.clone());
         }
         account_infos.push(self.new_owner.clone());
         if let Some(system_program) = self.system_program {
@@ -443,8 +445,8 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
 ///
 ///   0. `[writable]` asset
 ///   1. `[optional]` collection
-///   2. `[signer]` authority
-///   3. `[writable, signer, optional]` payer
+///   2. `[writable, signer]` payer
+///   3. `[signer, optional]` authority
 ///   4. `[]` new_owner
 ///   5. `[optional]` system_program
 ///   6. `[optional]` log_wrapper
@@ -458,8 +460,8 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
             __program: program,
             asset: None,
             collection: None,
-            authority: None,
             payer: None,
+            authority: None,
             new_owner: None,
             system_program: None,
             log_wrapper: None,
@@ -484,23 +486,20 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
         self.instruction.collection = collection;
         self
     }
+    /// The account paying for the storage fees
+    #[inline(always)]
+    pub fn payer(&mut self, payer: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.payer = Some(payer);
+        self
+    }
+    /// `[optional account]`
     /// The owner or delegate of the asset
     #[inline(always)]
     pub fn authority(
         &mut self,
-        authority: &'b solana_program::account_info::AccountInfo<'a>,
+        authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
-        self.instruction.authority = Some(authority);
-        self
-    }
-    /// `[optional account]`
-    /// The account paying for the storage fees
-    #[inline(always)]
-    pub fn payer(
-        &mut self,
-        payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    ) -> &mut Self {
-        self.instruction.payer = payer;
+        self.instruction.authority = authority;
         self
     }
     /// The new owner to which to transfer the asset
@@ -589,9 +588,9 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
 
             collection: self.instruction.collection,
 
-            authority: self.instruction.authority.expect("authority is not set"),
+            payer: self.instruction.payer.expect("payer is not set"),
 
-            payer: self.instruction.payer,
+            authority: self.instruction.authority,
 
             new_owner: self.instruction.new_owner.expect("new_owner is not set"),
 
@@ -611,8 +610,8 @@ struct TransferCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     new_owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,

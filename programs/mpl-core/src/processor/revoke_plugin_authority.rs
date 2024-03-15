@@ -13,7 +13,7 @@ use crate::{
     },
     state::{Asset, Collection, Key},
     utils::{
-        fetch_core_data, load_key, resolve_payer, validate_asset_permissions,
+        fetch_core_data, load_key, resolve_authority, validate_asset_permissions,
         validate_collection_permissions,
     },
 };
@@ -31,8 +31,8 @@ pub(crate) fn revoke_plugin_authority<'a>(
     let ctx = RevokePluginAuthorityAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Revoke plugin authority for compressed is not available");
@@ -46,7 +46,7 @@ pub(crate) fn revoke_plugin_authority<'a>(
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
-        ctx.accounts.authority,
+        authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
@@ -64,7 +64,7 @@ pub(crate) fn revoke_plugin_authority<'a>(
 
     process_revoke_plugin_authority(
         ctx.accounts.asset,
-        payer,
+        ctx.accounts.payer,
         ctx.accounts.system_program,
         &args.plugin_type,
         plugin_header.as_ref(),
@@ -85,8 +85,8 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
     let ctx = RevokeCollectionPluginAuthorityAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     let (_, plugin_header, mut plugin_registry) =
         fetch_core_data::<Collection>(ctx.accounts.collection)?;
@@ -96,7 +96,7 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
-        ctx.accounts.authority,
+        authority,
         ctx.accounts.collection,
         Some(&plugin),
         Collection::check_revoke_plugin_authority,
@@ -107,7 +107,7 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
 
     process_revoke_plugin_authority(
         ctx.accounts.collection,
-        payer,
+        ctx.accounts.payer,
         ctx.accounts.system_program,
         &args.plugin_type,
         plugin_header.as_ref(),

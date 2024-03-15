@@ -15,10 +15,10 @@ pub struct Burn {
     pub asset: solana_program::pubkey::Pubkey,
     /// The collection to which the asset belongs
     pub collection: Option<solana_program::pubkey::Pubkey>,
-    /// The owner or delegate of the asset
-    pub authority: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
-    pub payer: Option<solana_program::pubkey::Pubkey>,
+    pub payer: solana_program::pubkey::Pubkey,
+    /// The owner or delegate of the asset
+    pub authority: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: Option<solana_program::pubkey::Pubkey>,
     /// The SPL Noop Program
@@ -52,12 +52,13 @@ impl Burn {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.authority,
-            true,
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.payer, true,
         ));
-        if let Some(payer) = self.payer {
-            accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
+        if let Some(authority) = self.authority {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                authority, true,
+            ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 crate::MPL_CORE_ID,
@@ -122,16 +123,16 @@ pub struct BurnInstructionArgs {
 ///
 ///   0. `[writable]` asset
 ///   1. `[writable, optional]` collection
-///   2. `[signer]` authority
-///   3. `[writable, signer, optional]` payer
+///   2. `[writable, signer]` payer
+///   3. `[signer, optional]` authority
 ///   4. `[optional]` system_program
 ///   5. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct BurnBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
-    authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
+    authority: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
     compression_proof: Option<CompressionProof>,
@@ -155,17 +156,17 @@ impl BurnBuilder {
         self.collection = collection;
         self
     }
-    /// The owner or delegate of the asset
+    /// The account paying for the storage fees
     #[inline(always)]
-    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.authority = Some(authority);
+    pub fn payer(&mut self, payer: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.payer = Some(payer);
         self
     }
     /// `[optional account]`
-    /// The account paying for the storage fees
+    /// The owner or delegate of the asset
     #[inline(always)]
-    pub fn payer(&mut self, payer: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
-        self.payer = payer;
+    pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.authority = authority;
         self
     }
     /// `[optional account]`
@@ -217,8 +218,8 @@ impl BurnBuilder {
         let accounts = Burn {
             asset: self.asset.expect("asset is not set"),
             collection: self.collection,
-            authority: self.authority.expect("authority is not set"),
-            payer: self.payer,
+            payer: self.payer.expect("payer is not set"),
+            authority: self.authority,
             system_program: self.system_program,
             log_wrapper: self.log_wrapper,
         };
@@ -236,10 +237,10 @@ pub struct BurnCpiAccounts<'a, 'b> {
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The owner or delegate of the asset
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
-    pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner or delegate of the asset
+    pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The SPL Noop Program
@@ -254,10 +255,10 @@ pub struct BurnCpi<'a, 'b> {
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The collection to which the asset belongs
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// The owner or delegate of the asset
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
-    pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner or delegate of the asset
+    pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The SPL Noop Program
@@ -276,8 +277,8 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
             __program: program,
             asset: accounts.asset,
             collection: accounts.collection,
-            authority: accounts.authority,
             payer: accounts.payer,
+            authority: accounts.authority,
             system_program: accounts.system_program,
             log_wrapper: accounts.log_wrapper,
             __args: args,
@@ -332,13 +333,14 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
                 false,
             ));
         }
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.authority.key,
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.payer.key,
             true,
         ));
-        if let Some(payer) = self.payer {
-            accounts.push(solana_program::instruction::AccountMeta::new(
-                *payer.key, true,
+        if let Some(authority) = self.authority {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *authority.key,
+                true,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -390,9 +392,9 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
         if let Some(collection) = self.collection {
             account_infos.push(collection.clone());
         }
-        account_infos.push(self.authority.clone());
-        if let Some(payer) = self.payer {
-            account_infos.push(payer.clone());
+        account_infos.push(self.payer.clone());
+        if let Some(authority) = self.authority {
+            account_infos.push(authority.clone());
         }
         if let Some(system_program) = self.system_program {
             account_infos.push(system_program.clone());
@@ -418,8 +420,8 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
 ///
 ///   0. `[writable]` asset
 ///   1. `[writable, optional]` collection
-///   2. `[signer]` authority
-///   3. `[writable, signer, optional]` payer
+///   2. `[writable, signer]` payer
+///   3. `[signer, optional]` authority
 ///   4. `[optional]` system_program
 ///   5. `[optional]` log_wrapper
 pub struct BurnCpiBuilder<'a, 'b> {
@@ -432,8 +434,8 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
             __program: program,
             asset: None,
             collection: None,
-            authority: None,
             payer: None,
+            authority: None,
             system_program: None,
             log_wrapper: None,
             compression_proof: None,
@@ -457,23 +459,20 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
         self.instruction.collection = collection;
         self
     }
+    /// The account paying for the storage fees
+    #[inline(always)]
+    pub fn payer(&mut self, payer: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.payer = Some(payer);
+        self
+    }
+    /// `[optional account]`
     /// The owner or delegate of the asset
     #[inline(always)]
     pub fn authority(
         &mut self,
-        authority: &'b solana_program::account_info::AccountInfo<'a>,
+        authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
-        self.instruction.authority = Some(authority);
-        self
-    }
-    /// `[optional account]`
-    /// The account paying for the storage fees
-    #[inline(always)]
-    pub fn payer(
-        &mut self,
-        payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    ) -> &mut Self {
-        self.instruction.payer = payer;
+        self.instruction.authority = authority;
         self
     }
     /// `[optional account]`
@@ -553,9 +552,9 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
 
             collection: self.instruction.collection,
 
-            authority: self.instruction.authority.expect("authority is not set"),
+            payer: self.instruction.payer.expect("payer is not set"),
 
-            payer: self.instruction.payer,
+            authority: self.instruction.authority,
 
             system_program: self.instruction.system_program,
 
@@ -573,8 +572,8 @@ struct BurnCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     compression_proof: Option<CompressionProof>,

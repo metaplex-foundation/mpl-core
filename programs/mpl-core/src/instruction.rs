@@ -37,16 +37,16 @@ pub(crate) enum MplAssetInstruction {
     /// Add a plugin to an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     AddPlugin(AddPluginArgs),
 
     /// Add a plugin to an mpl-core Collection.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
-    #[account(1, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     AddCollectionPlugin(AddCollectionPluginArgs),
@@ -54,16 +54,16 @@ pub(crate) enum MplAssetInstruction {
     /// Remove a plugin from an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     RemovePlugin(RemovePluginArgs),
 
     /// Remove a plugin from an mpl-core Collection.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
-    #[account(1, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     RemoveCollectionPlugin(RemoveCollectionPluginArgs),
@@ -71,16 +71,16 @@ pub(crate) enum MplAssetInstruction {
     /// Update a plugin of an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     UpdatePlugin(UpdatePluginArgs),
 
     /// Update a plugin of an mpl-core Collection.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
-    #[account(1, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     UpdateCollectionPlugin(UpdateCollectionPluginArgs),
@@ -88,16 +88,16 @@ pub(crate) enum MplAssetInstruction {
     /// Approve an authority to an mpl-core plugin.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     ApprovePluginAuthority(ApprovePluginAuthorityArgs),
 
     /// Approve an authority to an mpl-core plugin.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
-    #[account(1, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     ApproveCollectionPluginAuthority(ApproveCollectionPluginAuthorityArgs),
@@ -105,16 +105,16 @@ pub(crate) enum MplAssetInstruction {
     /// Revoke an authority from an mpl-core plugin.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     RevokePluginAuthority(RevokePluginAuthorityArgs),
 
     /// Revoke an authority from an mpl-core plugin.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
-    #[account(1, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     RevokeCollectionPluginAuthority(RevokeCollectionPluginAuthorityArgs),
@@ -122,16 +122,16 @@ pub(crate) enum MplAssetInstruction {
     /// Burn an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(4, optional, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Burn(BurnArgs),
 
     /// Burn an mpl-core.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
-    #[account(1, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     BurnCollection(BurnCollectionArgs),
 
@@ -139,8 +139,8 @@ pub(crate) enum MplAssetInstruction {
     /// Transfer an asset by changing its owner.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(4, name="new_owner", desc = "The new owner to which to transfer the asset")]
     #[account(5, optional, name="system_program", desc = "The system program")]
     #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
@@ -149,8 +149,8 @@ pub(crate) enum MplAssetInstruction {
     /// Update an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, signer, name="authority", desc = "The update authority or update authority delegate of the asset")]
-    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, signer, name="authority", desc = "The update authority or update authority delegate of the asset")]
     #[account(4, optional, name="new_update_authority", desc = "The new update authority of the asset")]
     #[account(5, name="system_program", desc = "The system program")]
     #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
@@ -158,8 +158,8 @@ pub(crate) enum MplAssetInstruction {
 
     /// Update an mpl-core.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
-    #[account(1, signer, name="authority", desc = "The update authority or update authority delegate of the asset")]
-    #[account(2, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or update authority delegate of the asset")]
     #[account(3, optional, name="new_update_authority", desc = "The new update authority of the asset")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
@@ -168,8 +168,8 @@ pub(crate) enum MplAssetInstruction {
     /// Compress an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(3, optional, writable, signer, name="payer", desc = "The account receiving the storage fees")]
+    #[account(2, writable, signer, name="payer", desc = "The account receiving the storage fees")]
+    #[account(3, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Compress(CompressArgs),
@@ -177,8 +177,8 @@ pub(crate) enum MplAssetInstruction {
     /// Decompress an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
-    #[account(2, signer, name="authority", desc = "The owner or delegate of the asset")]
-    #[account(3, optional, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     Decompress(DecompressArgs),
