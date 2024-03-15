@@ -24,6 +24,7 @@ impl From<&Plugin> for PluginType {
             Plugin::PermanentFreeze(_) => PluginType::PermanentFreeze,
             Plugin::Attributes(_) => PluginType::Attributes,
             Plugin::PermanentTransfer(_) => PluginType::PermanentTransfer,
+            Plugin::PermanentBurn(_) => PluginType::PermanentBurn,
         }
     }
 }

@@ -1490,6 +1490,13 @@
       }
     },
     {
+      "name": "PermanentBurn",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
       "name": "PermanentFreeze",
       "type": {
         "kind": "struct",
@@ -2102,6 +2109,14 @@
                 "defined": "PermanentTransfer"
               }
             ]
+          },
+          {
+            "name": "PermanentBurn",
+            "fields": [
+              {
+                "defined": "PermanentBurn"
+              }
+            ]
           }
         ]
       }
@@ -2137,6 +2152,9 @@
           },
           {
             "name": "PermanentTransfer"
+          },
+          {
+            "name": "PermanentBurn"
           }
         ]
       }

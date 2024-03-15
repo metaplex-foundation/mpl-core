@@ -22,6 +22,8 @@ import {
   BurnArgs,
   Freeze,
   FreezeArgs,
+  PermanentBurn,
+  PermanentBurnArgs,
   PermanentFreeze,
   PermanentFreezeArgs,
   PermanentTransfer,
@@ -35,6 +37,7 @@ import {
   getAttributesSerializer,
   getBurnSerializer,
   getFreezeSerializer,
+  getPermanentBurnSerializer,
   getPermanentFreezeSerializer,
   getPermanentTransferSerializer,
   getRoyaltiesSerializer,
@@ -51,7 +54,8 @@ export type Plugin =
   | { __kind: 'UpdateDelegate'; fields: [UpdateDelegate] }
   | { __kind: 'PermanentFreeze'; fields: [PermanentFreeze] }
   | { __kind: 'Attributes'; fields: [Attributes] }
-  | { __kind: 'PermanentTransfer'; fields: [PermanentTransfer] };
+  | { __kind: 'PermanentTransfer'; fields: [PermanentTransfer] }
+  | { __kind: 'PermanentBurn'; fields: [PermanentBurn] };
 
 export type PluginArgs =
   | { __kind: 'Reserved' }
@@ -62,7 +66,8 @@ export type PluginArgs =
   | { __kind: 'UpdateDelegate'; fields: [UpdateDelegateArgs] }
   | { __kind: 'PermanentFreeze'; fields: [PermanentFreezeArgs] }
   | { __kind: 'Attributes'; fields: [AttributesArgs] }
-  | { __kind: 'PermanentTransfer'; fields: [PermanentTransferArgs] };
+  | { __kind: 'PermanentTransfer'; fields: [PermanentTransferArgs] }
+  | { __kind: 'PermanentBurn'; fields: [PermanentBurnArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -116,6 +121,12 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
           ['fields', tuple([getPermanentTransferSerializer()])],
         ]),
       ],
+      [
+        'PermanentBurn',
+        struct<GetDataEnumKindContent<Plugin, 'PermanentBurn'>>([
+          ['fields', tuple([getPermanentBurnSerializer()])],
+        ]),
+      ],
     ],
     { description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
@@ -157,6 +168,10 @@ export function plugin(
   kind: 'PermanentTransfer',
   data: GetDataEnumKindContent<PluginArgs, 'PermanentTransfer'>['fields']
 ): GetDataEnumKind<PluginArgs, 'PermanentTransfer'>;
+export function plugin(
+  kind: 'PermanentBurn',
+  data: GetDataEnumKindContent<PluginArgs, 'PermanentBurn'>['fields']
+): GetDataEnumKind<PluginArgs, 'PermanentBurn'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any
