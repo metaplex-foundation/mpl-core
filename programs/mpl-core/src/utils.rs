@@ -592,16 +592,16 @@ pub(crate) fn resolve_collection_authority(
     }
 }
 
-/// Resolves the payer for the transaction for an optional payer pattern.
-pub(crate) fn resolve_payer<'a>(
-    authority: &'a AccountInfo<'a>,
-    payer: Option<&'a AccountInfo<'a>>,
+/// Resolves the authority for the transaction for an optional authority pattern.
+pub(crate) fn resolve_authority<'a>(
+    payer: &'a AccountInfo<'a>,
+    authority: Option<&'a AccountInfo<'a>>,
 ) -> Result<&'a AccountInfo<'a>, ProgramError> {
-    match payer {
-        Some(payer) => {
-            assert_signer(payer).unwrap();
-            Ok(payer)
+    match authority {
+        Some(authority) => {
+            assert_signer(authority).unwrap();
+            Ok(authority)
         }
-        None => Ok(authority),
+        None => Ok(payer),
     }
 }

@@ -34,10 +34,10 @@ import {
 export type UpdateCollectionInstructionAccounts = {
   /** The address of the asset */
   collection: PublicKey | Pda;
-  /** The update authority or update authority delegate of the asset */
-  authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
+  /** The update authority or update authority delegate of the asset */
+  authority?: Signer;
   /** The new update authority of the asset */
   newUpdateAuthority?: PublicKey | Pda;
   /** The system program */
@@ -88,7 +88,7 @@ export type UpdateCollectionInstructionArgs =
 
 // Instruction.
 export function updateCollection(
-  context: Pick<Context, 'identity' | 'programs'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   input: UpdateCollectionInstructionAccounts & UpdateCollectionInstructionArgs
 ): TransactionBuilder {
   // Program ID.
@@ -104,15 +104,15 @@ export function updateCollection(
       isWritable: true as boolean,
       value: input.collection ?? null,
     },
-    authority: {
-      index: 1,
-      isWritable: false as boolean,
-      value: input.authority ?? null,
-    },
     payer: {
-      index: 2,
+      index: 1,
       isWritable: true as boolean,
       value: input.payer ?? null,
+    },
+    authority: {
+      index: 2,
+      isWritable: false as boolean,
+      value: input.authority ?? null,
     },
     newUpdateAuthority: {
       index: 3,
@@ -135,8 +135,8 @@ export function updateCollection(
   const resolvedArgs: UpdateCollectionInstructionArgs = { ...input };
 
   // Default values.
-  if (!resolvedAccounts.authority.value) {
-    resolvedAccounts.authority.value = context.identity;
+  if (!resolvedAccounts.payer.value) {
+    resolvedAccounts.payer.value = context.payer;
   }
   if (!resolvedAccounts.systemProgram.value) {
     resolvedAccounts.systemProgram.value = context.programs.getPublicKey(

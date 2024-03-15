@@ -10,7 +10,7 @@ use crate::{
     plugins::{Plugin, PluginHeader, PluginRegistry, PluginType, RegistryRecord},
     state::{Asset, Collection, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
-        load_key, resize_or_reallocate_account, resolve_payer, validate_asset_permissions,
+        load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
         validate_collection_permissions,
     },
 };
@@ -27,8 +27,8 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
     let ctx = UpdateAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Update for compressed is not available");
@@ -36,7 +36,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
     }
 
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
-        ctx.accounts.authority,
+        authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
@@ -74,7 +74,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
             &plugin_registry,
             asset_size,
             ctx.accounts.asset,
-            payer,
+            ctx.accounts.payer,
             ctx.accounts.system_program,
         )?;
     }
@@ -97,11 +97,11 @@ pub(crate) fn update_collection<'a>(
     let ctx = UpdateCollectionAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     let (mut collection, plugin_header, plugin_registry) = validate_collection_permissions(
-        ctx.accounts.authority,
+        authority,
         ctx.accounts.collection,
         None,
         Collection::check_update,
@@ -132,7 +132,7 @@ pub(crate) fn update_collection<'a>(
             &plugin_registry,
             collection_size,
             ctx.accounts.collection,
-            payer,
+            ctx.accounts.payer,
             ctx.accounts.system_program,
         )?;
     }

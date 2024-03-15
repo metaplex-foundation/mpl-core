@@ -31,10 +31,10 @@ import { Plugin, PluginArgs, getPluginSerializer } from '../types';
 export type UpdateCollectionPluginInstructionAccounts = {
   /** The address of the asset */
   collection: PublicKey | Pda;
-  /** The owner or delegate of the asset */
-  authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
+  /** The owner or delegate of the asset */
+  authority?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
@@ -78,7 +78,7 @@ export type UpdateCollectionPluginInstructionArgs =
 
 // Instruction.
 export function updateCollectionPlugin(
-  context: Pick<Context, 'identity' | 'programs'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   input: UpdateCollectionPluginInstructionAccounts &
     UpdateCollectionPluginInstructionArgs
 ): TransactionBuilder {
@@ -95,15 +95,15 @@ export function updateCollectionPlugin(
       isWritable: true as boolean,
       value: input.collection ?? null,
     },
-    authority: {
-      index: 1,
-      isWritable: false as boolean,
-      value: input.authority ?? null,
-    },
     payer: {
-      index: 2,
+      index: 1,
       isWritable: true as boolean,
       value: input.payer ?? null,
+    },
+    authority: {
+      index: 2,
+      isWritable: false as boolean,
+      value: input.authority ?? null,
     },
     systemProgram: {
       index: 3,
@@ -121,8 +121,8 @@ export function updateCollectionPlugin(
   const resolvedArgs: UpdateCollectionPluginInstructionArgs = { ...input };
 
   // Default values.
-  if (!resolvedAccounts.authority.value) {
-    resolvedAccounts.authority.value = context.identity;
+  if (!resolvedAccounts.payer.value) {
+    resolvedAccounts.payer.value = context.payer;
   }
   if (!resolvedAccounts.systemProgram.value) {
     resolvedAccounts.systemProgram.value = context.programs.getPublicKey(

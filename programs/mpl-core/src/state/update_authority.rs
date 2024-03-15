@@ -105,7 +105,7 @@ impl UpdateAuthority {
             Self::Collection(address) => address,
         };
 
-        if ctx.authority.key == authority {
+        if ctx.authority.unwrap_or(ctx.payer).key == authority {
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)

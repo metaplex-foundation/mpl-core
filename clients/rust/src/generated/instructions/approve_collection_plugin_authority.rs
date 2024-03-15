@@ -14,10 +14,10 @@ use borsh::BorshSerialize;
 pub struct ApproveCollectionPluginAuthority {
     /// The address of the asset
     pub collection: solana_program::pubkey::Pubkey,
-    /// The owner or delegate of the asset
-    pub authority: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
-    pub payer: Option<solana_program::pubkey::Pubkey>,
+    pub payer: solana_program::pubkey::Pubkey,
+    /// The owner or delegate of the asset
+    pub authority: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
     /// The SPL Noop Program
@@ -42,12 +42,13 @@ impl ApproveCollectionPluginAuthority {
             self.collection,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.authority,
-            true,
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.payer, true,
         ));
-        if let Some(payer) = self.payer {
-            accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
+        if let Some(authority) = self.authority {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                authority, true,
+            ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 crate::MPL_CORE_ID,
@@ -107,15 +108,15 @@ pub struct ApproveCollectionPluginAuthorityInstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable]` collection
-///   1. `[signer]` authority
-///   2. `[writable, signer, optional]` payer
+///   1. `[writable, signer]` payer
+///   2. `[signer, optional]` authority
 ///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
 ///   4. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct ApproveCollectionPluginAuthorityBuilder {
     collection: Option<solana_program::pubkey::Pubkey>,
-    authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
+    authority: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
     plugin_type: Option<PluginType>,
@@ -133,17 +134,17 @@ impl ApproveCollectionPluginAuthorityBuilder {
         self.collection = Some(collection);
         self
     }
-    /// The owner or delegate of the asset
+    /// The account paying for the storage fees
     #[inline(always)]
-    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.authority = Some(authority);
+    pub fn payer(&mut self, payer: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.payer = Some(payer);
         self
     }
     /// `[optional account]`
-    /// The account paying for the storage fees
+    /// The owner or delegate of the asset
     #[inline(always)]
-    pub fn payer(&mut self, payer: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
-        self.payer = payer;
+    pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.authority = authority;
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
@@ -195,8 +196,8 @@ impl ApproveCollectionPluginAuthorityBuilder {
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = ApproveCollectionPluginAuthority {
             collection: self.collection.expect("collection is not set"),
-            authority: self.authority.expect("authority is not set"),
-            payer: self.payer,
+            payer: self.payer.expect("payer is not set"),
+            authority: self.authority,
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
@@ -218,10 +219,10 @@ impl ApproveCollectionPluginAuthorityBuilder {
 pub struct ApproveCollectionPluginAuthorityCpiAccounts<'a, 'b> {
     /// The address of the asset
     pub collection: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The owner or delegate of the asset
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
-    pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner or delegate of the asset
+    pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The SPL Noop Program
@@ -234,10 +235,10 @@ pub struct ApproveCollectionPluginAuthorityCpi<'a, 'b> {
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The address of the asset
     pub collection: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The owner or delegate of the asset
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
-    pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner or delegate of the asset
+    pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The SPL Noop Program
@@ -255,8 +256,8 @@ impl<'a, 'b> ApproveCollectionPluginAuthorityCpi<'a, 'b> {
         Self {
             __program: program,
             collection: accounts.collection,
-            authority: accounts.authority,
             payer: accounts.payer,
+            authority: accounts.authority,
             system_program: accounts.system_program,
             log_wrapper: accounts.log_wrapper,
             __args: args,
@@ -300,13 +301,14 @@ impl<'a, 'b> ApproveCollectionPluginAuthorityCpi<'a, 'b> {
             *self.collection.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.authority.key,
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.payer.key,
             true,
         ));
-        if let Some(payer) = self.payer {
-            accounts.push(solana_program::instruction::AccountMeta::new(
-                *payer.key, true,
+        if let Some(authority) = self.authority {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *authority.key,
+                true,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -350,9 +352,9 @@ impl<'a, 'b> ApproveCollectionPluginAuthorityCpi<'a, 'b> {
         let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.collection.clone());
-        account_infos.push(self.authority.clone());
-        if let Some(payer) = self.payer {
-            account_infos.push(payer.clone());
+        account_infos.push(self.payer.clone());
+        if let Some(authority) = self.authority {
+            account_infos.push(authority.clone());
         }
         account_infos.push(self.system_program.clone());
         if let Some(log_wrapper) = self.log_wrapper {
@@ -375,8 +377,8 @@ impl<'a, 'b> ApproveCollectionPluginAuthorityCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable]` collection
-///   1. `[signer]` authority
-///   2. `[writable, signer, optional]` payer
+///   1. `[writable, signer]` payer
+///   2. `[signer, optional]` authority
 ///   3. `[]` system_program
 ///   4. `[optional]` log_wrapper
 pub struct ApproveCollectionPluginAuthorityCpiBuilder<'a, 'b> {
@@ -388,8 +390,8 @@ impl<'a, 'b> ApproveCollectionPluginAuthorityCpiBuilder<'a, 'b> {
         let instruction = Box::new(ApproveCollectionPluginAuthorityCpiBuilderInstruction {
             __program: program,
             collection: None,
-            authority: None,
             payer: None,
+            authority: None,
             system_program: None,
             log_wrapper: None,
             plugin_type: None,
@@ -407,23 +409,20 @@ impl<'a, 'b> ApproveCollectionPluginAuthorityCpiBuilder<'a, 'b> {
         self.instruction.collection = Some(collection);
         self
     }
+    /// The account paying for the storage fees
+    #[inline(always)]
+    pub fn payer(&mut self, payer: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.payer = Some(payer);
+        self
+    }
+    /// `[optional account]`
     /// The owner or delegate of the asset
     #[inline(always)]
     pub fn authority(
         &mut self,
-        authority: &'b solana_program::account_info::AccountInfo<'a>,
+        authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
-        self.instruction.authority = Some(authority);
-        self
-    }
-    /// `[optional account]`
-    /// The account paying for the storage fees
-    #[inline(always)]
-    pub fn payer(
-        &mut self,
-        payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    ) -> &mut Self {
-        self.instruction.payer = payer;
+        self.instruction.authority = authority;
         self
     }
     /// The system program
@@ -513,9 +512,9 @@ impl<'a, 'b> ApproveCollectionPluginAuthorityCpiBuilder<'a, 'b> {
 
             collection: self.instruction.collection.expect("collection is not set"),
 
-            authority: self.instruction.authority.expect("authority is not set"),
+            payer: self.instruction.payer.expect("payer is not set"),
 
-            payer: self.instruction.payer,
+            authority: self.instruction.authority,
 
             system_program: self
                 .instruction
@@ -535,8 +534,8 @@ impl<'a, 'b> ApproveCollectionPluginAuthorityCpiBuilder<'a, 'b> {
 struct ApproveCollectionPluginAuthorityCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     plugin_type: Option<PluginType>,
