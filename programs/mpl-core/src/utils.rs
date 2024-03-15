@@ -592,22 +592,6 @@ pub(crate) fn resolve_collection_authority(
     }
 }
 
-pub(crate) fn resolve_collection_authority(
-    authority_info: &AccountInfo,
-    collection_info: &AccountInfo,
-) -> Result<Authority, ProgramError> {
-    let collection: Collection = Collection::load(collection_info, 0)?;
-    if authority_info.key == collection.owner() {
-        Ok(Authority::Owner)
-    } else if authority_info.key == &collection.update_authority {
-        Ok(Authority::UpdateAuthority)
-    } else {
-        Ok(Authority::Pubkey {
-            address: *authority_info.key,
-        })
-    }
-}
-
 /// Resolves the authority for the transaction for an optional authority pattern.
 pub(crate) fn resolve_authority<'a>(
     payer: &'a AccountInfo<'a>,
