@@ -45,7 +45,7 @@ impl PluginValidation for PermanentFreeze {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -53,7 +53,7 @@ impl PluginValidation for PermanentFreeze {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -84,7 +84,7 @@ impl PluginValidation for PermanentFreeze {
         _authority_info: &AccountInfo,
         _authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
             Ok(ValidationResult::Rejected)
         } else {
@@ -98,7 +98,7 @@ impl PluginValidation for PermanentFreeze {
         _new_owner: &AccountInfo,
         _authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
             Ok(ValidationResult::Rejected)
         } else {
@@ -110,7 +110,7 @@ impl PluginValidation for PermanentFreeze {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -118,7 +118,7 @@ impl PluginValidation for PermanentFreeze {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -126,7 +126,7 @@ impl PluginValidation for PermanentFreeze {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -134,7 +134,7 @@ impl PluginValidation for PermanentFreeze {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
         // always reject it.
@@ -145,7 +145,7 @@ impl PluginValidation for PermanentFreeze {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _plugin_to_remove: Option<&super::Plugin>,
+        _plugin_to_remove: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -154,7 +154,7 @@ impl PluginValidation for PermanentFreeze {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

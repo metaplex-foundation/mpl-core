@@ -12,7 +12,7 @@ use crate::{
         create_meta_idempotent, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
         PluginType, ValidationResult,
     },
-    state::{Asset, Collection, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT},
+    state::{Asset, Collection, DataState, UpdateAuthority, COLLECT_AMOUNT},
     utils::fetch_core_data,
 };
 

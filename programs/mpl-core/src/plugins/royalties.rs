@@ -36,7 +36,7 @@ pub struct Royalties {
     rule_set: RuleSet,
 }
 
-fn validate_royalties(royalties: &Royalties) -> Result<super::ValidationResult, ProgramError> {
+fn validate_royalties(royalties: &Royalties) -> Result<ValidationResult, ProgramError> {
     if royalties.basis_points > 10000 {
         // TODO propagate a more useful error
         return Err(ProgramError::InvalidArgument);
@@ -69,7 +69,7 @@ impl PluginValidation for Royalties {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         validate_royalties(self)
     }
 
@@ -138,7 +138,7 @@ impl PluginValidation for Royalties {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         validate_royalties(self)
     }
@@ -156,7 +156,7 @@ impl PluginValidation for Royalties {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _plugin_to_remove: Option<&super::Plugin>,
+        _plugin_to_remove: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -165,7 +165,7 @@ impl PluginValidation for Royalties {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

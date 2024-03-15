@@ -42,7 +42,7 @@ impl PluginValidation for UpdateDelegate {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -50,7 +50,7 @@ impl PluginValidation for UpdateDelegate {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -59,7 +59,7 @@ impl PluginValidation for UpdateDelegate {
         _authority_info: &AccountInfo,
         _authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -69,7 +69,7 @@ impl PluginValidation for UpdateDelegate {
         _new_owner: &AccountInfo,
         _authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -77,7 +77,7 @@ impl PluginValidation for UpdateDelegate {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -85,7 +85,7 @@ impl PluginValidation for UpdateDelegate {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -93,7 +93,7 @@ impl PluginValidation for UpdateDelegate {
         &self,
         authority: &AccountInfo,
         authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authorities
             == (&Authority::Pubkey {
@@ -110,7 +110,7 @@ impl PluginValidation for UpdateDelegate {
         &self,
         authority: &AccountInfo,
         authorities: &Authority,
-        _plugin_to_remove: Option<&super::Plugin>,
+        _plugin_to_remove: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authorities
             == (&Authority::Pubkey {
@@ -127,7 +127,7 @@ impl PluginValidation for UpdateDelegate {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

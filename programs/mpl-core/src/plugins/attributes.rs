@@ -45,7 +45,7 @@ impl PluginValidation for Attributes {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -53,7 +53,7 @@ impl PluginValidation for Attributes {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -81,7 +81,7 @@ impl PluginValidation for Attributes {
         _authority_info: &AccountInfo,
         _authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -91,7 +91,7 @@ impl PluginValidation for Attributes {
         _new_owner: &AccountInfo,
         _authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -99,7 +99,7 @@ impl PluginValidation for Attributes {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -107,7 +107,7 @@ impl PluginValidation for Attributes {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -115,7 +115,7 @@ impl PluginValidation for Attributes {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -123,7 +123,7 @@ impl PluginValidation for Attributes {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -132,7 +132,7 @@ impl PluginValidation for Attributes {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _plugin_to_remove: Option<&super::Plugin>,
+        _plugin_to_remove: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -141,7 +141,7 @@ impl PluginValidation for Attributes {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _plugin_to_approve: Option<&super::Plugin>,
+        _plugin_to_approve: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

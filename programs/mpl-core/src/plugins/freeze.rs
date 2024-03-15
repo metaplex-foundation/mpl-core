@@ -42,7 +42,7 @@ impl PluginValidation for Freeze {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -50,7 +50,7 @@ impl PluginValidation for Freeze {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -82,7 +82,7 @@ impl PluginValidation for Freeze {
         _authority_info: &AccountInfo,
         _authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
             Ok(ValidationResult::Rejected)
         } else {
@@ -96,7 +96,7 @@ impl PluginValidation for Freeze {
         _new_owner: &AccountInfo,
         _authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
             Ok(ValidationResult::Rejected)
         } else {
@@ -108,7 +108,7 @@ impl PluginValidation for Freeze {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -116,7 +116,7 @@ impl PluginValidation for Freeze {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -124,7 +124,7 @@ impl PluginValidation for Freeze {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -132,7 +132,7 @@ impl PluginValidation for Freeze {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -141,7 +141,7 @@ impl PluginValidation for Freeze {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _plugin_to_remove: Option<&super::Plugin>,
+        _plugin_to_remove: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -150,7 +150,7 @@ impl PluginValidation for Freeze {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        plugin_to_approve: Option<&super::Plugin>,
+        plugin_to_approve: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(Plugin::Freeze(freeze)) = plugin_to_approve {
             if freeze.frozen {

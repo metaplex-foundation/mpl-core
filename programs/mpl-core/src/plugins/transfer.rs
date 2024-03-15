@@ -42,7 +42,7 @@ impl PluginValidation for Transfer {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -50,7 +50,7 @@ impl PluginValidation for Transfer {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -59,7 +59,7 @@ impl PluginValidation for Transfer {
         authority_info: &AccountInfo,
         authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if authority
             == (&Authority::Pubkey {
                 address: *authority_info.key,
@@ -77,7 +77,7 @@ impl PluginValidation for Transfer {
         _new_owner: &AccountInfo,
         authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if authority
             == (&Authority::Pubkey {
                 address: *authority_info.key,
@@ -93,7 +93,7 @@ impl PluginValidation for Transfer {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -101,7 +101,7 @@ impl PluginValidation for Transfer {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -109,7 +109,7 @@ impl PluginValidation for Transfer {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -118,7 +118,7 @@ impl PluginValidation for Transfer {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _plugin_to_remove: Option<&super::Plugin>,
+        _plugin_to_remove: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -127,7 +127,7 @@ impl PluginValidation for Transfer {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

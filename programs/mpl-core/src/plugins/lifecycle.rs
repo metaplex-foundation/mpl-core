@@ -670,7 +670,7 @@ pub(crate) trait PluginValidation {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
@@ -679,7 +679,7 @@ pub(crate) trait PluginValidation {
         &self,
         _authority: &AccountInfo,
         _authorities: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 }
