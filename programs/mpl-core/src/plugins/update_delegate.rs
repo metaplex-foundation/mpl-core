@@ -67,6 +67,7 @@ impl PluginValidation for UpdateDelegate {
         _authority_info: &AccountInfo,
         _new_owner: &AccountInfo,
         _authority: &Authority,
+        _resolved_authority: Option<&Authority>,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

@@ -14,7 +14,7 @@ use crate::{
 pub(crate) fn collect<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResult {
     // Accounts.
     let ctx = CollectAccounts::context(accounts)?;
-    
+
     if *ctx.accounts.recipient.key != COLLECT_RECIPIENT {
         return Err(MplCoreError::IncorrectAccount.into());
     }

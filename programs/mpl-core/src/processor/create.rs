@@ -144,6 +144,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
                         None,
                         &record.authority,
                         None,
+                        None,
                     )?;
                     if result == ValidationResult::Rejected {
                         return Err(MplCoreError::InvalidAuthority.into());

@@ -20,6 +20,7 @@ export * from './hashablePluginSchema';
 export * from './hashedAssetSchema';
 export * from './key';
 export * from './permanentFreeze';
+export * from './permanentTransfer';
 export * from './plugin';
 export * from './pluginAuthorityPair';
 export * from './pluginType';
