@@ -38,10 +38,10 @@ import {
 export type BurnCollectionInstructionAccounts = {
   /** The address of the asset */
   collection: PublicKey | Pda;
-  /** The owner or delegate of the asset */
-  authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
+  /** The owner or delegate of the asset */
+  authority?: Signer;
   /** The SPL Noop Program */
   logWrapper?: PublicKey | Pda;
 };
@@ -84,7 +84,7 @@ export type BurnCollectionInstructionArgs = BurnCollectionInstructionDataArgs;
 
 // Instruction.
 export function burnCollection(
-  context: Pick<Context, 'identity' | 'programs'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   input: BurnCollectionInstructionAccounts & BurnCollectionInstructionArgs
 ): TransactionBuilder {
   // Program ID.
@@ -100,15 +100,15 @@ export function burnCollection(
       isWritable: true as boolean,
       value: input.collection ?? null,
     },
-    authority: {
-      index: 1,
-      isWritable: false as boolean,
-      value: input.authority ?? null,
-    },
     payer: {
-      index: 2,
+      index: 1,
       isWritable: true as boolean,
       value: input.payer ?? null,
+    },
+    authority: {
+      index: 2,
+      isWritable: false as boolean,
+      value: input.authority ?? null,
     },
     logWrapper: {
       index: 3,
@@ -121,8 +121,8 @@ export function burnCollection(
   const resolvedArgs: BurnCollectionInstructionArgs = { ...input };
 
   // Default values.
-  if (!resolvedAccounts.authority.value) {
-    resolvedAccounts.authority.value = context.identity;
+  if (!resolvedAccounts.payer.value) {
+    resolvedAccounts.payer.value = context.payer;
   }
 
   // Accounts in order.

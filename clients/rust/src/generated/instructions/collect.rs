@@ -54,7 +54,7 @@ impl CollectInstructionData {
 ///
 /// ### Accounts:
 ///
-///   0. `[writable, optional]` recipient (default to `Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7`)
+///   0. `[writable, optional]` recipient (default to `8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v`)
 #[derive(Default)]
 pub struct CollectBuilder {
     recipient: Option<solana_program::pubkey::Pubkey>,
@@ -65,7 +65,7 @@ impl CollectBuilder {
     pub fn new() -> Self {
         Self::default()
     }
-    /// `[optional account, default to 'Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7']`
+    /// `[optional account, default to '8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v']`
     /// The address of the recipient
     #[inline(always)]
     pub fn recipient(&mut self, recipient: solana_program::pubkey::Pubkey) -> &mut Self {
@@ -94,7 +94,7 @@ impl CollectBuilder {
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = Collect {
             recipient: self.recipient.unwrap_or(solana_program::pubkey!(
-                "Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7"
+                "8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v"
             )),
         };
 

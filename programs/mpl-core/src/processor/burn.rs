@@ -8,7 +8,7 @@ use crate::{
     plugins::{Plugin, PluginType},
     state::{Asset, Collection, CompressionProof, Key, Wrappable},
     utils::{
-        close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_payer,
+        close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_authority,
         validate_asset_permissions, validate_collection_permissions, verify_proof,
     },
 };
@@ -23,8 +23,8 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
     let ctx = BurnAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    let payer = resolve_payer(ctx.accounts.authority, ctx.accounts.payer)?;
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     match load_key(ctx.accounts.asset, 0)? {
         Key::HashedAsset => {
@@ -45,7 +45,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
                 asset,
                 plugins,
                 ctx.accounts.asset,
-                payer,
+                ctx.accounts.payer,
                 system_program,
             )?;
 
@@ -67,7 +67,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
-        ctx.accounts.authority,
+        authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
@@ -80,7 +80,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
         Plugin::validate_burn,
     )?;
 
-    process_burn(ctx.accounts.asset, ctx.accounts.authority)
+    process_burn(ctx.accounts.asset, authority)
 }
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
@@ -96,14 +96,12 @@ pub(crate) fn burn_collection<'a>(
     let ctx = BurnCollectionAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    if let Some(payer) = ctx.accounts.payer {
-        assert_signer(payer)?;
-    }
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
-        ctx.accounts.authority,
+        authority,
         ctx.accounts.collection,
         None,
         Collection::check_burn,
@@ -112,7 +110,7 @@ pub(crate) fn burn_collection<'a>(
         Plugin::validate_burn,
     )?;
 
-    process_burn(ctx.accounts.collection, ctx.accounts.authority)
+    process_burn(ctx.accounts.collection, authority)
 }
 
 fn process_burn<'a>(core_info: &AccountInfo<'a>, authority: &AccountInfo<'a>) -> ProgramResult {

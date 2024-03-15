@@ -72,7 +72,7 @@ export function collect(
   // Default values.
   if (!resolvedAccounts.recipient.value) {
     resolvedAccounts.recipient.value = publicKey(
-      'Levytx9LLPzAtDJJD7q813Zsm8zg9e1pb53mGxTKpD7'
+      '8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v'
     );
   }
 

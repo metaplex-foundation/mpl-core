@@ -8,7 +8,8 @@ use crate::{
     plugins::{Plugin, PluginType},
     state::{Asset, Collection, CompressionProof, Key},
     utils::{
-        load_key, rebuild_account_state_from_proof_data, validate_asset_permissions, verify_proof,
+        load_key, rebuild_account_state_from_proof_data, resolve_authority,
+        validate_asset_permissions, verify_proof,
     },
 };
 
@@ -26,13 +27,8 @@ pub(crate) fn decompress<'a>(
     let ctx = DecompressAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    let payer = if let Some(payer) = ctx.accounts.payer {
-        assert_signer(payer)?;
-        payer
-    } else {
-        ctx.accounts.authority
-    };
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     if *ctx.accounts.system_program.key != system_program::id() {
         return Err(MplCoreError::InvalidSystemProgram.into());
@@ -52,13 +48,13 @@ pub(crate) fn decompress<'a>(
                 asset,
                 plugins,
                 ctx.accounts.asset,
-                payer,
+                ctx.accounts.payer,
                 ctx.accounts.system_program,
             )?;
 
             // Validate asset permissions.
             let _ = validate_asset_permissions(
-                ctx.accounts.authority,
+                authority,
                 ctx.accounts.asset,
                 ctx.accounts.collection,
                 None,

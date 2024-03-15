@@ -9,7 +9,7 @@ use crate::{
     instruction::accounts::{UpdateCollectionPluginAccounts, UpdatePluginAccounts},
     plugins::{Plugin, PluginType, RegistryRecord, ValidationResult},
     state::{Asset, Collection, DataBlob, Key, SolanaAccount},
-    utils::{fetch_core_data, load_key, resize_or_reallocate_account},
+    utils::{fetch_core_data, load_key, resize_or_reallocate_account, resolve_authority},
 };
 
 #[repr(C)]
@@ -26,10 +26,8 @@ pub(crate) fn update_plugin<'a>(
     let ctx = UpdatePluginAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    if let Some(payer) = ctx.accounts.payer {
-        assert_signer(payer)?;
-    }
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Update plugin for compressed is not available");
@@ -52,7 +50,7 @@ pub(crate) fn update_plugin<'a>(
     let result = Plugin::validate_update_plugin(
         &plugin,
         &asset,
-        ctx.accounts.authority,
+        authority,
         None,
         &registry_record.authority,
         None,
@@ -97,7 +95,7 @@ pub(crate) fn update_plugin<'a>(
 
         resize_or_reallocate_account(
             ctx.accounts.asset,
-            ctx.accounts.payer.unwrap_or(ctx.accounts.authority),
+            ctx.accounts.payer,
             ctx.accounts.system_program,
             new_size as usize,
         )?;
@@ -155,10 +153,8 @@ pub(crate) fn update_collection_plugin<'a>(
     let ctx = UpdateCollectionPluginAccounts::context(accounts)?;
 
     // Guards.
-    assert_signer(ctx.accounts.authority)?;
-    if let Some(payer) = ctx.accounts.payer {
-        assert_signer(payer)?;
-    }
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     let (collection, plugin_header, plugin_registry) =
         fetch_core_data::<Collection>(ctx.accounts.collection)?;
@@ -177,7 +173,7 @@ pub(crate) fn update_collection_plugin<'a>(
     let result = Plugin::validate_update_plugin(
         &plugin,
         &collection,
-        ctx.accounts.authority,
+        authority,
         None,
         &registry_record.authority,
         None,
@@ -224,7 +220,7 @@ pub(crate) fn update_collection_plugin<'a>(
 
         resize_or_reallocate_account(
             ctx.accounts.collection,
-            ctx.accounts.payer.unwrap_or(ctx.accounts.authority),
+            ctx.accounts.payer,
             ctx.accounts.system_program,
             new_size as usize,
         )?;
