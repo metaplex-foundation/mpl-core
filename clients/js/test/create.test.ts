@@ -116,7 +116,7 @@ test('it can create a new asset in account state with plugins', async (t) => {
     uri: 'https://example.com/bread',
     plugins: [
       pluginAuthorityPair({
-        type: 'Freeze',
+        type: 'FreezeDelegate',
         data: { frozen: false },
       }),
     ],
@@ -129,7 +129,7 @@ test('it can create a new asset in account state with plugins', async (t) => {
     name: 'Test Bread',
     uri: 'https://example.com/bread',
     // pluginHeader: formPluginHeader(BigInt(120)),
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },
@@ -169,7 +169,7 @@ test('it can create a new asset in account state with plugins with a different u
     updateAuthority: updateAuth.publicKey,
     plugins: [
       pluginAuthorityPair({
-        type: 'Freeze',
+        type: 'FreezeDelegate',
         data: { frozen: false },
       }),
     ],
@@ -180,7 +180,7 @@ test('it can create a new asset in account state with plugins with a different u
     asset: assetAddress.publicKey,
     owner: umi.identity,
     updateAuthority: { type: 'Address', address: updateAuth.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: { type: 'Owner' },
       frozen: false,
     },

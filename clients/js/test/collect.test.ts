@@ -45,7 +45,7 @@ test('it can add asset plugin with collect amount', async (t) => {
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'Freeze', data: { frozen: true } }),
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: true } }),
     initAuthority: null,
   }).sendAndConfirm(umi);
 
@@ -61,7 +61,7 @@ test('it can add remove asset plugin with collect amount', async (t) => {
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Freeze',
+        type: 'FreezeDelegate',
         data: { frozen: true },
       }),
     ],
@@ -74,7 +74,7 @@ test('it can add remove asset plugin with collect amount', async (t) => {
 
   await removePlugin(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Freeze,
+    pluginType: PluginType.FreezeDelegate,
   }).sendAndConfirm(umi);
   t.assert(
     await hasCollectAmount(umi, asset.publicKey),

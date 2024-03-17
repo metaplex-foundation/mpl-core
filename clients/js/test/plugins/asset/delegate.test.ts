@@ -21,12 +21,12 @@ test('it can delegate a new authority', async (t) => {
   const delegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: false } })],
+    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Freeze,
+    pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
@@ -35,7 +35,7 @@ test('it can delegate a new authority', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Pubkey',
         address: delegateAddress.publicKey,
@@ -51,12 +51,12 @@ test('a delegate can freeze the token', async (t) => {
   const delegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: false } })],
+    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Freeze,
+    pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
@@ -64,7 +64,7 @@ test('a delegate can freeze the token', async (t) => {
   await updatePlugin(umi2, {
     asset: asset.publicKey,
     authority: delegateAddress,
-    plugin: createPlugin({ type: 'Freeze', data: { frozen: true } }),
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: true } }),
   }).sendAndConfirm(umi2);
 
   await assertAsset(t, umi, {
@@ -72,7 +72,7 @@ test('a delegate can freeze the token', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Pubkey',
         address: delegateAddress.publicKey,

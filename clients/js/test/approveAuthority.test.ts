@@ -26,12 +26,12 @@ test('it can add an authority to a plugin', async (t) => {
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'Freeze', data: { frozen: false } }),
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
   })
     .append(
       approvePluginAuthority(umi, {
         asset: asset.publicKey,
-        pluginType: PluginType.Freeze,
+        pluginType: PluginType.FreezeDelegate,
         newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
       })
     )
@@ -42,7 +42,7 @@ test('it can add an authority to a plugin', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Pubkey',
         address: delegateAddress.publicKey,
@@ -59,7 +59,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
   const newDelegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: false } })],
+    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
   await assertAsset(t, umi, {
@@ -67,7 +67,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },
@@ -77,7 +77,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
 
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Freeze,
+    pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
@@ -86,7 +86,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Pubkey',
         address: delegateAddress.publicKey,
@@ -97,7 +97,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
 
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Freeze,
+    pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(newDelegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
@@ -106,7 +106,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Pubkey',
         address: newDelegateAddress.publicKey,
@@ -122,12 +122,12 @@ test('it can approve to reassign authority back to owner', async (t) => {
   const delegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: false } })],
+    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Freeze,
+    pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
@@ -136,7 +136,7 @@ test('it can approve to reassign authority back to owner', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Pubkey',
         address: delegateAddress.publicKey,
@@ -147,7 +147,7 @@ test('it can approve to reassign authority back to owner', async (t) => {
 
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Freeze,
+    pluginType: PluginType.FreezeDelegate,
     newAuthority: ownerPluginAuthority(),
   }).sendAndConfirm(umi);
 
@@ -156,7 +156,7 @@ test('it can approve to reassign authority back to owner', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },

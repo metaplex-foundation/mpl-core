@@ -1,10 +1,10 @@
 mod attributes;
-mod burn;
-mod freeze;
+mod burn_delegate;
+mod freeze_delegate;
 mod lifecycle;
-mod permanent_burn;
-mod permanent_freeze;
-mod permanent_transfer;
+mod permanent_burn_delegate;
+mod permanent_freeze_delegate;
+mod permanent_transfer_delegate;
 mod plugin_header;
 mod plugin_registry;
 mod royalties;
@@ -13,13 +13,13 @@ mod update_delegate;
 mod utils;
 
 pub use attributes::*;
-pub use burn::*;
-pub use freeze::*;
+pub use burn_delegate::*;
+pub use freeze_delegate::*;
 pub use lifecycle::*;
 use num_derive::ToPrimitive;
-pub use permanent_burn::*;
-pub use permanent_freeze::*;
-pub use permanent_transfer::*;
+pub use permanent_burn_delegate::*;
+pub use permanent_freeze_delegate::*;
+pub use permanent_transfer_delegate::*;
 pub use plugin_header::*;
 pub use plugin_registry::*;
 pub use royalties::*;
@@ -43,26 +43,24 @@ use crate::{
 #[repr(u16)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum Plugin {
-    /// Reserved for uninitialized or invalid plugins.
-    Reserved,
     /// Royalties plugin.
     Royalties(Royalties),
-    /// Freeze plugin.
-    Freeze(Freeze),
-    /// Burn plugin.
-    Burn(Burn),
-    /// Transfer plugin.
-    Transfer(Transfer),
+    /// Freeze Delegate plugin.
+    FreezeDelegate(FreezeDelegate),
+    /// Burn Delegate plugin.
+    BurnDelegate(BurnDelegate),
+    /// Transfer Delegate plugin.
+    TransferDelegate(TransferDelegate),
     /// Update Delegate plugin.
     UpdateDelegate(UpdateDelegate),
-    /// Permanent Freeze authority which allows the creator to freeze
-    PermanentFreeze(PermanentFreeze),
+    /// Permanent Freeze Delegate authority which allows the creator to freeze
+    PermanentFreezeDelegate(PermanentFreezeDelegate),
     /// Attributes plugin for arbitrary Key-Value pairs.
     Attributes(Attributes),
-    /// Permanent Transfer authority which allows the creator of an asset to become the person who can transfer an Asset
-    PermanentTransfer(PermanentTransfer),
-    /// Permanent Burn authority allows the creator of an asset to become the person who can burn an Asset
-    PermanentBurn(PermanentBurn),
+    /// Permanent Transfer Delegate authority which allows the creator of an asset to become the person who can transfer an Asset
+    PermanentTransferDelegate(PermanentTransferDelegate),
+    /// Permanent Burn Delegate authority allows the creator of an asset to become the person who can burn an Asset
+    PermanentBurnDelegate(PermanentBurnDelegate),
 }
 
 impl Plugin {
@@ -103,32 +101,28 @@ impl Compressible for Plugin {}
     PartialEq,
     ToPrimitive,
     EnumCount,
-    Default,
     PartialOrd,
     Ord,
 )]
 pub enum PluginType {
-    /// Reserved plugin.
-    #[default]
-    Reserved,
     /// Royalties plugin.
     Royalties,
-    /// Freeze plugin.
-    Freeze,
-    /// Burn plugin.
-    Burn,
-    /// Transfer plugin.
-    Transfer,
+    /// Freeze Delegate plugin.
+    FreezeDelegate,
+    /// Burn Delegate plugin.
+    BurnDelegate,
+    /// Transfer Delegate plugin.
+    TransferDelegate,
     /// Update Delegate plugin.
     UpdateDelegate,
-    /// The Permanent Freeze plugin.
-    PermanentFreeze,
+    /// The Permanent Freeze Delegate plugin.
+    PermanentFreezeDelegate,
     /// The Attributes plugin.
     Attributes,
-    /// The Permanent Transfer plugin.
-    PermanentTransfer,
-    /// The Permanent Burn plugin.
-    PermanentBurn,
+    /// The Permanent Transfer Delegate plugin.
+    PermanentTransferDelegate,
+    /// The Permanent Burn Delegate plugin.
+    PermanentBurnDelegate,
 }
 
 impl DataBlob for PluginType {
@@ -144,16 +138,15 @@ impl DataBlob for PluginType {
 impl From<&Plugin> for PluginType {
     fn from(plugin: &Plugin) -> Self {
         match plugin {
-            Plugin::Reserved => PluginType::Reserved,
             Plugin::Royalties(_) => PluginType::Royalties,
-            Plugin::Freeze(_) => PluginType::Freeze,
-            Plugin::Burn(_) => PluginType::Burn,
-            Plugin::Transfer(_) => PluginType::Transfer,
+            Plugin::FreezeDelegate(_) => PluginType::FreezeDelegate,
+            Plugin::BurnDelegate(_) => PluginType::BurnDelegate,
+            Plugin::TransferDelegate(_) => PluginType::TransferDelegate,
             Plugin::UpdateDelegate(_) => PluginType::UpdateDelegate,
-            Plugin::PermanentFreeze(_) => PluginType::PermanentFreeze,
+            Plugin::PermanentFreezeDelegate(_) => PluginType::PermanentFreezeDelegate,
             Plugin::Attributes(_) => PluginType::Attributes,
-            Plugin::PermanentTransfer(_) => PluginType::PermanentTransfer,
-            Plugin::PermanentBurn(_) => PluginType::PermanentBurn,
+            Plugin::PermanentTransferDelegate(_) => PluginType::PermanentTransferDelegate,
+            Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
         }
     }
 }
@@ -162,16 +155,15 @@ impl PluginType {
     /// Get the default authority for a plugin which defines who must allow the plugin to be created.
     pub fn manager(&self) -> Authority {
         match self {
-            PluginType::Reserved => Authority::None,
             PluginType::Royalties => Authority::UpdateAuthority,
-            PluginType::Freeze => Authority::Owner,
-            PluginType::Burn => Authority::Owner,
-            PluginType::Transfer => Authority::Owner,
+            PluginType::FreezeDelegate => Authority::Owner,
+            PluginType::BurnDelegate => Authority::Owner,
+            PluginType::TransferDelegate => Authority::Owner,
             PluginType::UpdateDelegate => Authority::UpdateAuthority,
-            PluginType::PermanentFreeze => Authority::UpdateAuthority,
+            PluginType::PermanentFreezeDelegate => Authority::UpdateAuthority,
             PluginType::Attributes => Authority::UpdateAuthority,
-            PluginType::PermanentTransfer => Authority::UpdateAuthority,
-            PluginType::PermanentBurn => Authority::UpdateAuthority,
+            PluginType::PermanentTransferDelegate => Authority::UpdateAuthority,
+            PluginType::PermanentBurnDelegate => Authority::UpdateAuthority,
         }
     }
 }

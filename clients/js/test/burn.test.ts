@@ -74,7 +74,7 @@ test('it cannot burn an asset if it is frozen', async (t) => {
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Freeze',
+        type: 'FreezeDelegate',
         data: { frozen: true },
       }),
     ],
@@ -85,7 +85,7 @@ test('it cannot burn an asset if it is frozen', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },
@@ -103,7 +103,7 @@ test('it cannot burn an asset if it is frozen', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },
@@ -141,7 +141,7 @@ test('it cannot burn an asset if collection permanently frozen', async (t) => {
     {
       plugins: [
         pluginAuthorityPair({
-          type: 'PermanentFreeze',
+          type: 'PermanentFreezeDelegate',
           data: { frozen: true },
         }),
       ],
@@ -158,7 +158,7 @@ test('it cannot burn an asset if collection permanently frozen', async (t) => {
   await assertCollection(t, umi, {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
-    permanentFreeze: {
+    permanentFreezeDelegate: {
       authority: {
         type: 'UpdateAuthority',
       },

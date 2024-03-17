@@ -12,22 +12,22 @@ use super::{Plugin, PluginValidation, ValidationResult};
 /// approved are permitted to transfer the asset on behalf of the owner.
 #[repr(C)]
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
-pub struct Transfer {}
+pub struct TransferDelegate {}
 
-impl Transfer {
+impl TransferDelegate {
     /// Initialize the Transfer plugin.
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl Default for Transfer {
+impl Default for TransferDelegate {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl DataBlob for Transfer {
+impl DataBlob for TransferDelegate {
     fn get_initial_size() -> usize {
         0
     }
@@ -37,7 +37,7 @@ impl DataBlob for Transfer {
     }
 }
 
-impl PluginValidation for Transfer {
+impl PluginValidation for TransferDelegate {
     fn validate_burn(
         &self,
         authority_info: &AccountInfo,
@@ -87,7 +87,7 @@ impl PluginValidation for Transfer {
                 address: *authority_info.key,
             })
             && plugin_to_revoke.is_some()
-            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::Transfer
+            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::TransferDelegate
         {
             Ok(ValidationResult::Approved)
         } else {

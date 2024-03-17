@@ -1,5 +1,5 @@
 import test from 'ava';
-import { generateSigner } from '@metaplex-foundation/umi';
+import { generateSigner, assertAccountExists, sol } from '@metaplex-foundation/umi';
 import {
   pluginAuthorityPair,
   burn,
@@ -8,7 +8,6 @@ import {
   updatePluginAuthority,
 } from '../../../src';
 import { createAsset, createCollection, createUmi } from '../../_setup';
-import { assertAccountExists, sol } from '@metaplex-foundation/umi';
 
 test('it can burn an assets as an owner', async (t) => {
   // Given a Umi instance and a new signer.
@@ -17,7 +16,7 @@ test('it can burn an assets as an owner', async (t) => {
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'PermanentBurn',
+        type: 'PermanentBurnDelegate',
         authority: updatePluginAuthority(),
       }),
     ],
@@ -46,7 +45,7 @@ test('it can burn an assets as a delegate', async (t) => {
     payer: owner,
     plugins: [
       pluginAuthorityPair({
-        type: 'PermanentBurn',
+        type: 'PermanentBurnDelegate',
         authority: updatePluginAuthority(),
       }),
     ],
@@ -83,7 +82,7 @@ test('it can burn an assets as a delegate for a collection', async (t) => {
     payer: firstAssetOwner,
     plugins: [
       pluginAuthorityPair({
-        type: 'PermanentBurn',
+        type: 'PermanentBurnDelegate',
         authority: updatePluginAuthority(),
       }),
     ],
@@ -176,7 +175,7 @@ test('it can burn an asset which is the part of a collection', async (t) => {
     collection: collection.publicKey,
     plugins: [
       pluginAuthorityPair({
-        type: 'PermanentBurn',
+        type: 'PermanentBurnDelegate',
         authority: updatePluginAuthority(),
       }),
     ],

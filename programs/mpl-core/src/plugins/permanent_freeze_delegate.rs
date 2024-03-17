@@ -12,25 +12,25 @@ use super::{Plugin, PluginValidation, ValidationResult};
 /// The default authority for this plugin is the update authority.
 #[repr(C)]
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
-pub struct PermanentFreeze {
+pub struct PermanentFreezeDelegate {
     /// The current state of the asset and whether or not it's transferable.
     pub frozen: bool, // 1
 }
 
-impl PermanentFreeze {
-    /// Initialize the PermanentFreeze plugin, unfrozen by default.
+impl PermanentFreezeDelegate {
+    /// Initialize the PermanentFreezeDelegate plugin, unfrozen by default.
     pub fn new() -> Self {
         Self { frozen: false }
     }
 }
 
-impl Default for PermanentFreeze {
+impl Default for PermanentFreezeDelegate {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl DataBlob for PermanentFreeze {
+impl DataBlob for PermanentFreezeDelegate {
     fn get_initial_size() -> usize {
         1
     }
@@ -40,7 +40,7 @@ impl DataBlob for PermanentFreeze {
     }
 }
 
-impl PluginValidation for PermanentFreeze {
+impl PluginValidation for PermanentFreezeDelegate {
     fn validate_update_plugin<T: CoreAsset>(
         &self,
         core_asset: &T,
@@ -121,7 +121,7 @@ impl PluginValidation for PermanentFreeze {
                 address: *authority_info.key,
             })
             && plugin_to_revoke.is_some()
-            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::Freeze
+            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::FreezeDelegate
         {
             Ok(ValidationResult::Approved)
         } else {

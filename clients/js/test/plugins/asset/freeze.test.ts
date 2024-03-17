@@ -26,7 +26,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'Freeze', data: { frozen: true } }),
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: true } }),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -34,7 +34,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },
@@ -44,7 +44,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'Freeze', data: { frozen: false } }),
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -52,7 +52,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },
@@ -67,18 +67,18 @@ test('it can delegate then freeze an asset', async (t) => {
   const delegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: false } })],
+    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Freeze,
+    pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'Freeze', data: { frozen: true } }),
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: true } }),
     authority: delegateAddress,
   }).sendAndConfirm(umi);
 
@@ -87,7 +87,7 @@ test('it can delegate then freeze an asset', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Pubkey',
         address: delegateAddress.publicKey,
@@ -105,7 +105,7 @@ test('owner cannot undelegate a freeze plugin with a delegate', async (t) => {
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Freeze',
+        type: 'FreezeDelegate',
         data: { frozen: true },
         authority: pubkeyPluginAuthority(delegateAddress.publicKey),
       }),
@@ -114,7 +114,7 @@ test('owner cannot undelegate a freeze plugin with a delegate', async (t) => {
 
   const result = revokePluginAuthority(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Freeze,
+    pluginType: PluginType.FreezeDelegate,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
@@ -128,7 +128,7 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Freeze',
+        type: 'FreezeDelegate',
         data: { frozen: true },
         authority: pubkeyPluginAuthority(delegateAddress.publicKey),
       }),
@@ -140,7 +140,7 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Pubkey',
         address: delegateAddress.publicKey,
@@ -151,7 +151,7 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
 
   const result = approvePluginAuthority(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Freeze,
+    pluginType: PluginType.FreezeDelegate,
     newAuthority: ownerPluginAuthority(),
   }).sendAndConfirm(umi);
 
@@ -162,7 +162,7 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Pubkey',
         address: delegateAddress.publicKey,
@@ -177,12 +177,12 @@ test('it cannot add multiple freeze plugins to an asset', async (t) => {
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: false } })],
+    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'Freeze', data: { frozen: true } }),
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: true } }),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'PluginAlreadyExists' });

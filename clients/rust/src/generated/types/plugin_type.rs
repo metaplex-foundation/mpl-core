@@ -11,14 +11,13 @@ use borsh::BorshSerialize;
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum PluginType {
-    Reserved,
     Royalties,
-    Freeze,
-    Burn,
-    Transfer,
+    FreezeDelegate,
+    BurnDelegate,
+    TransferDelegate,
     UpdateDelegate,
-    PermanentFreeze,
+    PermanentFreezeDelegate,
     Attributes,
-    PermanentTransfer,
-    PermanentBurn,
+    PermanentTransferDelegate,
+    PermanentBurnDelegate,
 }

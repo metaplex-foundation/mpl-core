@@ -30,8 +30,8 @@ impl PluginType {
         match plugin_type {
             PluginType::Royalties => CheckResult::CanReject,
             PluginType::UpdateDelegate => CheckResult::CanApprove,
-            PluginType::PermanentFreeze => CheckResult::CanReject,
-            PluginType::PermanentTransfer => CheckResult::CanReject,
+            PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
+            PluginType::PermanentTransferDelegate => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -83,10 +83,10 @@ impl PluginType {
     /// Check if a plugin is permitted to approve or deny a burn action.
     pub fn check_burn(plugin_type: &PluginType) -> CheckResult {
         match plugin_type {
-            PluginType::Freeze => CheckResult::CanReject,
-            PluginType::Burn => CheckResult::CanApprove,
-            PluginType::PermanentFreeze => CheckResult::CanReject,
-            PluginType::PermanentBurn => CheckResult::CanApprove,
+            PluginType::FreezeDelegate => CheckResult::CanReject,
+            PluginType::BurnDelegate => CheckResult::CanApprove,
+            PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
+            PluginType::PermanentBurnDelegate => CheckResult::CanApprove,
             _ => CheckResult::None,
         }
     }
@@ -95,10 +95,10 @@ impl PluginType {
     pub fn check_transfer(plugin_type: &PluginType) -> CheckResult {
         match plugin_type {
             PluginType::Royalties => CheckResult::CanReject,
-            PluginType::Freeze => CheckResult::CanReject,
-            PluginType::Transfer => CheckResult::CanApprove,
-            PluginType::PermanentFreeze => CheckResult::CanReject,
-            PluginType::PermanentTransfer => CheckResult::CanApprove,
+            PluginType::FreezeDelegate => CheckResult::CanReject,
+            PluginType::TransferDelegate => CheckResult::CanApprove,
+            PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
+            PluginType::PermanentTransferDelegate => CheckResult::CanApprove,
             _ => CheckResult::None,
         }
     }
@@ -131,30 +131,31 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_add_plugin(authority_info, authority, new_plugin)
             }
-            Plugin::Freeze(freeze) => {
+            Plugin::FreezeDelegate(freeze) => {
                 freeze.validate_add_plugin(authority_info, authority, new_plugin)
             }
-            Plugin::Burn(burn) => burn.validate_add_plugin(authority_info, authority, new_plugin),
-            Plugin::Transfer(transfer) => {
+            Plugin::BurnDelegate(burn) => {
+                burn.validate_add_plugin(authority_info, authority, new_plugin)
+            }
+            Plugin::TransferDelegate(transfer) => {
                 transfer.validate_add_plugin(authority_info, authority, new_plugin)
             }
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_add_plugin(authority_info, authority, new_plugin)
             }
-            Plugin::PermanentFreeze(permanent_freeze) => {
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
                 permanent_freeze.validate_add_plugin(authority_info, authority, new_plugin)
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_add_plugin(authority_info, authority, new_plugin)
             }
-            Plugin::PermanentTransfer(permanent_transfer) => {
+            Plugin::PermanentTransferDelegate(permanent_transfer) => {
                 permanent_transfer.validate_add_plugin(authority_info, authority, new_plugin)
             }
-            Plugin::PermanentBurn(permanent_burn) => {
+            Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_add_plugin(authority_info, authority, new_plugin)
             }
         }
@@ -170,31 +171,30 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
-            Plugin::Freeze(freeze) => {
+            Plugin::FreezeDelegate(freeze) => {
                 freeze.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
-            Plugin::Burn(burn) => {
+            Plugin::BurnDelegate(burn) => {
                 burn.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
-            Plugin::Transfer(transfer) => {
+            Plugin::TransferDelegate(transfer) => {
                 transfer.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
-            Plugin::PermanentFreeze(permanent_freeze) => {
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
                 permanent_freeze.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
-            Plugin::PermanentTransfer(permanent_transfer) => permanent_transfer
+            Plugin::PermanentTransferDelegate(permanent_transfer) => permanent_transfer
                 .validate_remove_plugin(authority_info, authority, plugin_to_remove),
-            Plugin::PermanentBurn(permanent_burn) => {
+            Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
         }
@@ -210,37 +210,36 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_approve_plugin_authority(
                 authority_info,
                 authority,
                 plugin_to_approve,
             ),
-            Plugin::Freeze(freeze) => freeze.validate_approve_plugin_authority(
+            Plugin::FreezeDelegate(freeze) => freeze.validate_approve_plugin_authority(
                 authority_info,
                 authority,
                 plugin_to_approve,
             ),
-            Plugin::Burn(burn) => {
+            Plugin::BurnDelegate(burn) => {
                 burn.validate_approve_plugin_authority(authority_info, authority, plugin_to_approve)
             }
-            Plugin::Transfer(transfer) => transfer.validate_approve_plugin_authority(
+            Plugin::TransferDelegate(transfer) => transfer.validate_approve_plugin_authority(
                 authority_info,
                 authority,
                 plugin_to_approve,
             ),
             Plugin::UpdateDelegate(update_delegate) => update_delegate
                 .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
-            Plugin::PermanentFreeze(permanent_freeze) => permanent_freeze
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => permanent_freeze
                 .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
             Plugin::Attributes(attributes) => attributes.validate_approve_plugin_authority(
                 authority_info,
                 authority,
                 plugin_to_approve,
             ),
-            Plugin::PermanentTransfer(permanent_transfer) => permanent_transfer
+            Plugin::PermanentTransferDelegate(permanent_transfer) => permanent_transfer
                 .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
-            Plugin::PermanentBurn(permanent_burn) => permanent_burn
+            Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn
                 .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
         }
     }
@@ -259,35 +258,34 @@ impl Plugin {
         }
 
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_revoke_plugin_authority(
                 authority_info,
                 authority,
                 plugin_to_revoke,
             ),
-            Plugin::Freeze(freeze) => {
+            Plugin::FreezeDelegate(freeze) => {
                 freeze.validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke)
             }
-            Plugin::Burn(burn) => {
+            Plugin::BurnDelegate(burn) => {
                 burn.validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke)
             }
-            Plugin::Transfer(transfer) => transfer.validate_revoke_plugin_authority(
+            Plugin::TransferDelegate(transfer) => transfer.validate_revoke_plugin_authority(
                 authority_info,
                 authority,
                 plugin_to_revoke,
             ),
             Plugin::UpdateDelegate(update_delegate) => update_delegate
                 .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
-            Plugin::PermanentFreeze(permanent_freeze) => permanent_freeze
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => permanent_freeze
                 .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
             Plugin::Attributes(attributes) => attributes.validate_revoke_plugin_authority(
                 authority_info,
                 authority,
                 plugin_to_revoke,
             ),
-            Plugin::PermanentTransfer(permanent_transfer) => permanent_transfer
+            Plugin::PermanentTransferDelegate(permanent_transfer) => permanent_transfer
                 .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
-            Plugin::PermanentBurn(permanent_burn) => permanent_burn
+            Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn
                 .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
         }
     }
@@ -302,22 +300,23 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_create(authority_info, authority),
-            Plugin::Freeze(freeze) => freeze.validate_create(authority_info, authority),
-            Plugin::Burn(burn) => burn.validate_create(authority_info, authority),
-            Plugin::Transfer(transfer) => transfer.validate_create(authority_info, authority),
+            Plugin::FreezeDelegate(freeze) => freeze.validate_create(authority_info, authority),
+            Plugin::BurnDelegate(burn) => burn.validate_create(authority_info, authority),
+            Plugin::TransferDelegate(transfer) => {
+                transfer.validate_create(authority_info, authority)
+            }
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_create(authority_info, authority)
             }
-            Plugin::PermanentFreeze(permanent_freeze) => {
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
                 permanent_freeze.validate_create(authority_info, authority)
             }
             Plugin::Attributes(attributes) => attributes.validate_create(authority_info, authority),
-            Plugin::PermanentTransfer(permanent_transfer) => {
+            Plugin::PermanentTransferDelegate(permanent_transfer) => {
                 permanent_transfer.validate_create(authority_info, authority)
             }
-            Plugin::PermanentBurn(permanent_burn) => {
+            Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_create(authority_info, authority)
             }
         }
@@ -333,22 +332,23 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_update(authority_info, authority),
-            Plugin::Freeze(freeze) => freeze.validate_update(authority_info, authority),
-            Plugin::Burn(burn) => burn.validate_update(authority_info, authority),
-            Plugin::Transfer(transfer) => transfer.validate_update(authority_info, authority),
+            Plugin::FreezeDelegate(freeze) => freeze.validate_update(authority_info, authority),
+            Plugin::BurnDelegate(burn) => burn.validate_update(authority_info, authority),
+            Plugin::TransferDelegate(transfer) => {
+                transfer.validate_update(authority_info, authority)
+            }
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_update(authority_info, authority)
             }
-            Plugin::PermanentFreeze(permanent_freeze) => {
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
                 permanent_freeze.validate_update(authority_info, authority)
             }
             Plugin::Attributes(attributes) => attributes.validate_update(authority_info, authority),
-            Plugin::PermanentTransfer(permanent_transfer) => {
+            Plugin::PermanentTransferDelegate(permanent_transfer) => {
                 permanent_transfer.validate_update(authority_info, authority)
             }
-            Plugin::PermanentBurn(permanent_burn) => {
+            Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_update(authority_info, authority)
             }
         }
@@ -366,32 +366,31 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_update_plugin(core_asset, authority_info, authority)
             }
-            Plugin::Freeze(freeze) => {
+            Plugin::FreezeDelegate(freeze) => {
                 freeze.validate_update_plugin(core_asset, authority_info, authority)
             }
-            Plugin::Burn(burn) => {
+            Plugin::BurnDelegate(burn) => {
                 burn.validate_update_plugin(core_asset, authority_info, authority)
             }
-            Plugin::Transfer(transfer) => {
+            Plugin::TransferDelegate(transfer) => {
                 transfer.validate_update_plugin(core_asset, authority_info, authority)
             }
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_update_plugin(core_asset, authority_info, authority)
             }
-            Plugin::PermanentFreeze(permanent_freeze) => {
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
                 permanent_freeze.validate_update_plugin(core_asset, authority_info, authority)
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_update_plugin(core_asset, authority_info, authority)
             }
-            Plugin::PermanentTransfer(permanent_transfer) => {
+            Plugin::PermanentTransferDelegate(permanent_transfer) => {
                 permanent_transfer.validate_update_plugin(core_asset, authority_info, authority)
             }
-            Plugin::PermanentBurn(permanent_burn) => {
+            Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_update_plugin(core_asset, authority_info, authority)
             }
         }
@@ -407,30 +406,31 @@ impl Plugin {
         resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_burn(authority_info, authority, resolved_authority)
             }
-            Plugin::Freeze(freeze) => {
+            Plugin::FreezeDelegate(freeze) => {
                 freeze.validate_burn(authority_info, authority, resolved_authority)
             }
-            Plugin::Burn(burn) => burn.validate_burn(authority_info, authority, resolved_authority),
-            Plugin::Transfer(transfer) => {
+            Plugin::BurnDelegate(burn) => {
+                burn.validate_burn(authority_info, authority, resolved_authority)
+            }
+            Plugin::TransferDelegate(transfer) => {
                 transfer.validate_burn(authority_info, authority, resolved_authority)
             }
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_burn(authority_info, authority, resolved_authority)
             }
-            Plugin::PermanentFreeze(permanent_freeze) => {
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
                 permanent_freeze.validate_burn(authority_info, authority, resolved_authority)
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_burn(authority_info, authority, resolved_authority)
             }
-            Plugin::PermanentTransfer(permanent_transfer) => {
+            Plugin::PermanentTransferDelegate(permanent_transfer) => {
                 permanent_transfer.validate_burn(authority_info, authority, resolved_authority)
             }
-            Plugin::PermanentBurn(permanent_burn) => {
+            Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_burn(authority_info, authority, resolved_authority)
             }
         }
@@ -447,20 +447,19 @@ impl Plugin {
     ) -> Result<ValidationResult, ProgramError> {
         let new_owner = new_owner.ok_or(MplCoreError::MissingNewOwner)?;
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_transfer(
                 authority_info,
                 new_owner,
                 authority,
                 resolved_authority,
             ),
-            Plugin::Freeze(freeze) => {
+            Plugin::FreezeDelegate(freeze) => {
                 freeze.validate_transfer(authority_info, new_owner, authority, resolved_authority)
             }
-            Plugin::Burn(burn) => {
+            Plugin::BurnDelegate(burn) => {
                 burn.validate_transfer(authority_info, new_owner, authority, resolved_authority)
             }
-            Plugin::Transfer(transfer) => {
+            Plugin::TransferDelegate(transfer) => {
                 transfer.validate_transfer(authority_info, new_owner, authority, resolved_authority)
             }
             Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_transfer(
@@ -469,25 +468,17 @@ impl Plugin {
                 authority,
                 resolved_authority,
             ),
-            Plugin::PermanentFreeze(permanent_freeze) => permanent_freeze.validate_transfer(
-                authority_info,
-                new_owner,
-                authority,
-                resolved_authority,
-            ),
-            Plugin::PermanentTransfer(permanent_transfer) => permanent_transfer.validate_transfer(
-                authority_info,
-                new_owner,
-                authority,
-                resolved_authority,
-            ),
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => permanent_freeze
+                .validate_transfer(authority_info, new_owner, authority, resolved_authority),
+            Plugin::PermanentTransferDelegate(permanent_transfer) => permanent_transfer
+                .validate_transfer(authority_info, new_owner, authority, resolved_authority),
             Plugin::Attributes(attributes_transfer) => attributes_transfer.validate_transfer(
                 authority_info,
                 new_owner,
                 authority,
                 resolved_authority,
             ),
-            Plugin::PermanentBurn(burn_transfer) => burn_transfer.validate_transfer(
+            Plugin::PermanentBurnDelegate(burn_transfer) => burn_transfer.validate_transfer(
                 authority_info,
                 new_owner,
                 authority,
@@ -506,24 +497,25 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_compress(authority_info, authority),
-            Plugin::Freeze(freeze) => freeze.validate_compress(authority_info, authority),
-            Plugin::Burn(burn) => burn.validate_compress(authority_info, authority),
-            Plugin::Transfer(transfer) => transfer.validate_compress(authority_info, authority),
+            Plugin::FreezeDelegate(freeze) => freeze.validate_compress(authority_info, authority),
+            Plugin::BurnDelegate(burn) => burn.validate_compress(authority_info, authority),
+            Plugin::TransferDelegate(transfer) => {
+                transfer.validate_compress(authority_info, authority)
+            }
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_compress(authority_info, authority)
             }
-            Plugin::PermanentFreeze(permanent_freeze) => {
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
                 permanent_freeze.validate_compress(authority_info, authority)
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_compress(authority_info, authority)
             }
-            Plugin::PermanentTransfer(permanent_transfer) => {
+            Plugin::PermanentTransferDelegate(permanent_transfer) => {
                 permanent_transfer.validate_compress(authority_info, authority)
             }
-            Plugin::PermanentBurn(burn_transfer) => {
+            Plugin::PermanentBurnDelegate(burn_transfer) => {
                 burn_transfer.validate_compress(authority_info, authority)
             }
         }
@@ -539,26 +531,27 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_decompress(authority_info, authority)
             }
-            Plugin::Freeze(freeze) => freeze.validate_decompress(authority_info, authority),
-            Plugin::Burn(burn) => burn.validate_decompress(authority_info, authority),
-            Plugin::Transfer(transfer) => transfer.validate_decompress(authority_info, authority),
+            Plugin::FreezeDelegate(freeze) => freeze.validate_decompress(authority_info, authority),
+            Plugin::BurnDelegate(burn) => burn.validate_decompress(authority_info, authority),
+            Plugin::TransferDelegate(transfer) => {
+                transfer.validate_decompress(authority_info, authority)
+            }
             Plugin::UpdateDelegate(update_delegate) => {
                 update_delegate.validate_decompress(authority_info, authority)
             }
-            Plugin::PermanentFreeze(permanent_freeze) => {
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
                 permanent_freeze.validate_decompress(authority_info, authority)
             }
             Plugin::Attributes(attributes) => {
                 attributes.validate_decompress(authority_info, authority)
             }
-            Plugin::PermanentTransfer(permanent_transfer) => {
+            Plugin::PermanentTransferDelegate(permanent_transfer) => {
                 permanent_transfer.validate_decompress(authority_info, authority)
             }
-            Plugin::PermanentBurn(permanent_burn) => {
+            Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_decompress(authority_info, authority)
             }
         }

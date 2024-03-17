@@ -9,16 +9,15 @@
 import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 
 export enum PluginType {
-  Reserved,
   Royalties,
-  Freeze,
-  Burn,
-  Transfer,
+  FreezeDelegate,
+  BurnDelegate,
+  TransferDelegate,
   UpdateDelegate,
-  PermanentFreeze,
+  PermanentFreezeDelegate,
   Attributes,
-  PermanentTransfer,
-  PermanentBurn,
+  PermanentTransferDelegate,
+  PermanentBurnDelegate,
 }
 
 export type PluginTypeArgs = PluginType;

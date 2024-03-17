@@ -5,13 +5,13 @@ use crate::state::{Authority, DataBlob};
 
 use super::{Plugin, PluginValidation, ValidationResult};
 
-/// The permanent burn plugin allows any authority to burn the asset.
+/// The permanent transfer plugin allows any authority to transfer the asset.
 /// The default authority for this plugin is the update authority.
 #[repr(C)]
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, Default, PartialEq, Eq)]
-pub struct PermanentBurn {}
+pub struct PermanentTransferDelegate {}
 
-impl DataBlob for PermanentBurn {
+impl DataBlob for PermanentTransferDelegate {
     fn get_initial_size() -> usize {
         0
     }
@@ -21,11 +21,11 @@ impl DataBlob for PermanentBurn {
     }
 }
 
-impl PluginValidation for PermanentBurn {
+impl PluginValidation for PermanentTransferDelegate {
     fn validate_add_plugin(
         &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
+        _authority: &AccountInfo,
+        _authorities: &Authority,
         _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
@@ -35,16 +35,17 @@ impl PluginValidation for PermanentBurn {
 
     fn validate_revoke_plugin_authority(
         &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
+        _authority: &AccountInfo,
+        _authorities: &Authority,
         _plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Approved)
     }
 
-    fn validate_burn(
+    fn validate_transfer(
         &self,
         _authority_info: &AccountInfo,
+        _new_owner: &AccountInfo,
         authority: &Authority,
         resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {

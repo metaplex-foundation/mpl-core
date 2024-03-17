@@ -40,7 +40,7 @@ test('it can create a new collection with plugins', async (t) => {
   const collection = await createCollection(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Freeze',
+        type: 'FreezeDelegate',
         data: { frozen: false },
       }),
     ],
@@ -50,7 +50,7 @@ test('it can create a new collection with plugins', async (t) => {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },

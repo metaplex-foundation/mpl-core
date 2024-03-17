@@ -100,14 +100,14 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
     for plugin in input.plugins {
         match plugin {
             PluginAuthorityPair {
-                plugin: Plugin::Freeze(freeze),
+                plugin: Plugin::FreezeDelegate(freeze),
                 authority,
             } => {
-                let plugin = asset.plugin_list.freeze.clone().unwrap();
+                let plugin = asset.plugin_list.freeze_delegate.clone().unwrap();
                 if let Some(authority) = authority {
                     assert_eq!(plugin.base.authority, authority.into());
                 }
-                assert_eq!(plugin.freeze, freeze);
+                assert_eq!(plugin.freeze_delegate, freeze);
             }
             _ => panic!("unsupported plugin type"),
         }

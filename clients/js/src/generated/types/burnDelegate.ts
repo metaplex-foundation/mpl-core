@@ -8,13 +8,15 @@
 
 import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
 
-export type Burn = {};
+export type BurnDelegate = {};
 
-export type BurnArgs = Burn;
+export type BurnDelegateArgs = BurnDelegate;
 
-export function getBurnSerializer(): Serializer<BurnArgs, Burn> {
-  return struct<Burn>([], { description: 'Burn' }) as Serializer<
-    BurnArgs,
-    Burn
-  >;
+export function getBurnDelegateSerializer(): Serializer<
+  BurnDelegateArgs,
+  BurnDelegate
+> {
+  return struct<BurnDelegate>([], {
+    description: 'BurnDelegate',
+  }) as Serializer<BurnDelegateArgs, BurnDelegate>;
 }

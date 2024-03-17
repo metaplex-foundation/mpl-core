@@ -36,7 +36,7 @@ test('it can add a plugin to an asset', async (t) => {
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'Freeze', data: { frozen: false } }),
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -44,7 +44,7 @@ test('it can add a plugin to an asset', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },
@@ -96,7 +96,7 @@ test('it can add a plugin to an asset with a different authority than the defaul
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'Freeze', data: { frozen: false } }),
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
     initAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
@@ -105,7 +105,7 @@ test('it can add a plugin to an asset with a different authority than the defaul
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Pubkey',
         address: delegateAddress.publicKey,
@@ -123,7 +123,7 @@ test('it can add plugin to asset with a plugin', async (t) => {
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Freeze',
+        type: 'FreezeDelegate',
         data: { frozen: false },
       }),
     ],
@@ -134,7 +134,7 @@ test('it can add plugin to asset with a plugin', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },
@@ -144,7 +144,7 @@ test('it can add plugin to asset with a plugin', async (t) => {
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'Transfer' }),
+    plugin: createPlugin({ type: 'TransferDelegate' }),
     initAuthority: pubkeyPluginAuthority(delegate.publicKey),
   }).sendAndConfirm(umi);
 
@@ -153,13 +153,13 @@ test('it can add plugin to asset with a plugin', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },
       frozen: false,
     },
-    transfer: {
+    transferDelegate: {
       authority: {
         type: 'Pubkey',
         address: delegate.publicKey,
@@ -221,7 +221,7 @@ test('it cannot add an owner-managed plugin to a collection', async (t) => {
 
   const result = addCollectionPlugin(umi, {
     collection: collection.publicKey,
-    plugin: createPlugin({ type: 'Freeze', data: { frozen: false } }),
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -360,7 +360,7 @@ test('it cannot add a owner-managed plugin to an asset via delegate authority', 
     asset: asset.publicKey,
     collection: collection.publicKey,
     plugin: createPlugin({
-      type: 'Freeze',
+      type: 'FreezeDelegate',
       data: {
         frozen: false,
       },

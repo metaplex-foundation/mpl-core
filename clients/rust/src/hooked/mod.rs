@@ -4,6 +4,12 @@ pub use compression_proof::*;
 pub mod plugin;
 pub use plugin::*;
 
+pub mod advanced_types;
+pub use advanced_types::*;
+
+pub mod asset;
+pub use asset::*;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 
 use std::{cmp::Ordering, mem::size_of};
@@ -18,16 +24,15 @@ use solana_program::account_info::AccountInfo;
 impl From<&Plugin> for PluginType {
     fn from(plugin: &Plugin) -> Self {
         match plugin {
-            Plugin::Reserved => PluginType::Reserved,
             Plugin::Royalties(_) => PluginType::Royalties,
-            Plugin::Freeze(_) => PluginType::Freeze,
-            Plugin::Burn(_) => PluginType::Burn,
-            Plugin::Transfer(_) => PluginType::Transfer,
+            Plugin::FreezeDelegate(_) => PluginType::FreezeDelegate,
+            Plugin::BurnDelegate(_) => PluginType::BurnDelegate,
+            Plugin::TransferDelegate(_) => PluginType::TransferDelegate,
             Plugin::UpdateDelegate(_) => PluginType::UpdateDelegate,
-            Plugin::PermanentFreeze(_) => PluginType::PermanentFreeze,
+            Plugin::PermanentFreezeDelegate(_) => PluginType::PermanentFreezeDelegate,
             Plugin::Attributes(_) => PluginType::Attributes,
-            Plugin::PermanentTransfer(_) => PluginType::PermanentTransfer,
-            Plugin::PermanentBurn(_) => PluginType::PermanentBurn,
+            Plugin::PermanentTransferDelegate(_) => PluginType::PermanentTransferDelegate,
+            Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
         }
     }
 }

@@ -1,6 +1,8 @@
 #![cfg(feature = "test-sbf")]
 pub mod setup;
-use mpl_core::types::{Authority, Freeze, Plugin, PluginAuthorityPair, UpdateAuthority};
+use mpl_core::types::{
+    FreezeDelegate, Plugin, PluginAuthority, PluginAuthorityPair, UpdateAuthority,
+};
 pub use setup::*;
 
 use solana_program_test::tokio;
@@ -104,7 +106,7 @@ async fn create_asset_with_plugins() {
             update_authority: None,
             collection: None,
             plugins: vec![PluginAuthorityPair {
-                plugin: Plugin::Freeze(Freeze { frozen: false }),
+                plugin: Plugin::FreezeDelegate(FreezeDelegate { frozen: false }),
                 authority: None,
             }],
         },
@@ -123,8 +125,8 @@ async fn create_asset_with_plugins() {
             name: None,
             uri: None,
             plugins: vec![PluginAuthorityPair {
-                plugin: Plugin::Freeze(Freeze { frozen: false }),
-                authority: Some(Authority::Owner),
+                plugin: Plugin::FreezeDelegate(FreezeDelegate { frozen: false }),
+                authority: Some(PluginAuthority::Owner),
             }],
         },
     )

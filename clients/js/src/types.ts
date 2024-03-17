@@ -1,14 +1,14 @@
 import { PublicKey } from '@metaplex-foundation/umi';
 import {
   PluginAuthority,
-  Burn,
-  Freeze,
-  PermanentFreeze,
+  BurnDelegate,
+  FreezeDelegate,
+  PermanentFreezeDelegate,
   Royalties,
-  Transfer,
+  TransferDelegate,
   UpdateDelegate,
   Attributes,
-  PermanentTransfer,
+  PermanentTransferDelegate,
   UpdateAuthority,
 } from './generated';
 
@@ -26,21 +26,21 @@ export type BasePlugin = {
 };
 
 export type RoyaltiesPlugin = BasePlugin & Royalties;
-export type FreezePlugin = BasePlugin & Freeze;
-export type BurnPlugin = BasePlugin & Burn;
-export type TransferPlugin = BasePlugin & Transfer;
+export type FreezeDelegatePlugin = BasePlugin & FreezeDelegate;
+export type BurnDelegatePlugin = BasePlugin & BurnDelegate;
+export type TransferDelegatePlugin = BasePlugin & TransferDelegate;
 export type UpdateDelegatePlugin = BasePlugin & UpdateDelegate;
-export type PermanentFreezePlugin = BasePlugin & PermanentFreeze;
+export type PermanentFreezeDelegatePlugin = BasePlugin & PermanentFreezeDelegate;
 export type AttributesPlugin = BasePlugin & Attributes;
-export type PermanentTransferPlugin = BasePlugin & PermanentTransfer;
+export type PermanentTransferDelegatePlugin = BasePlugin & PermanentTransferDelegate;
 
 export type PluginsList = {
   royalties?: RoyaltiesPlugin;
-  freeze?: FreezePlugin;
-  burn?: BurnPlugin;
-  transfer?: TransferPlugin;
+  freezeDelegate?: FreezeDelegatePlugin;
+  burnDelegate?: BurnDelegatePlugin;
+  transferDelegate?: TransferDelegatePlugin;
   updateDelegate?: UpdateDelegatePlugin;
-  permanentFreeze?: PermanentFreezePlugin;
+  permanentFreezeDelegate?: PermanentFreezeDelegatePlugin;
   attributes?: AttributesPlugin;
-  permanentTransfer?: PermanentTransferPlugin;
+  permanentTransferDelegate?: PermanentTransferDelegatePlugin;
 };

@@ -9,9 +9,9 @@ import {
   PluginAuthorityPair,
   PluginAuthority,
   RoyaltiesArgs,
-  FreezeArgs,
-  PermanentFreezeArgs,
+  FreezeDelegateArgs,
   AttributesArgs,
+  PermanentFreezeDelegateArgs,
 } from './generated';
 import { BaseAuthority, PluginsList } from './types';
 import { mapAuthority } from './authority';
@@ -32,40 +32,40 @@ export type PluginAuthorityPairHelperArgs = CreatePluginArgs & {
 
 export type CreatePluginArgs =
   | {
-      type: 'Royalties';
-      data: RoyaltiesArgs;
-    }
+    type: 'Royalties';
+    data: RoyaltiesArgs;
+  }
   | {
-      type: 'Freeze';
-      data: FreezeArgs;
-    }
+    type: 'FreezeDelegate';
+    data: FreezeDelegateArgs;
+  }
   | {
-      type: 'Burn';
-    }
+    type: 'BurnDelegate';
+  }
   | {
-      type: 'Transfer';
-    }
+    type: 'TransferDelegate';
+  }
   | {
-      type: 'UpdateDelegate';
-    }
+    type: 'UpdateDelegate';
+  }
   | {
-      type: 'PermanentFreeze';
-      data: PermanentFreezeArgs;
-    }
+    type: 'PermanentFreezeDelegate';
+    data: PermanentFreezeDelegateArgs;
+  }
   | {
-      type: 'Attributes';
-      data: AttributesArgs;
-    }
+    type: 'Attributes';
+    data: AttributesArgs;
+  }
   | {
-      type: 'PermanentFreeze';
-      data: PermanentFreezeArgs;
-    }
+    type: 'PermanentFreezeDelegate';
+    data: PermanentFreezeDelegateArgs;
+  }
   | {
-      type: 'PermanentTransfer';
-    }
+    type: 'PermanentTransferDelegate';
+  }
   | {
-      type: 'PermanentBurn';
-    };
+    type: 'PermanentBurnDelegate';
+  };
 
 export function createPlugin(args: CreatePluginArgs): BasePlugin {
   return {
@@ -121,8 +121,6 @@ export function registryRecordsToPluginsList(
       accountData,
       Number(record.offset)
     )[0];
-
-    if (deserializedPlugin.__kind === 'Reserved') return acc;
 
     acc = {
       ...acc,

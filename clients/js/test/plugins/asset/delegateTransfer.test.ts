@@ -22,12 +22,12 @@ test('a delegate can transfer the asset', async (t) => {
   const newOwnerAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'Transfer' })],
+    plugins: [pluginAuthorityPair({ type: 'TransferDelegate' })],
   });
 
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Transfer,
+    pluginType: PluginType.TransferDelegate,
     newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
@@ -42,7 +42,7 @@ test('a delegate can transfer the asset', async (t) => {
     asset: asset.publicKey,
     owner: newOwnerAddress.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    transfer: {
+    transferDelegate: {
       authority: {
         type: 'Pubkey',
         address: delegateAddress.publicKey,
@@ -60,7 +60,7 @@ test('owner can transfer asset with delegate transfer', async (t) => {
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Transfer',
+        type: 'TransferDelegate',
         authority: pubkeyPluginAuthority(delegateAddress.publicKey),
       }),
     ],
@@ -76,7 +76,7 @@ test('owner can transfer asset with delegate transfer', async (t) => {
     asset: asset.publicKey,
     owner: newOwnerAddress.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    transfer: {
+    transferDelegate: {
       authority: {
         type: 'Pubkey',
         address: delegateAddress.publicKey,
@@ -93,7 +93,7 @@ test('it can revoke a delegate transfer plugin', async (t) => {
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Transfer',
+        type: 'TransferDelegate',
         authority: pubkeyPluginAuthority(delegateAddress.publicKey),
       }),
     ],
@@ -101,7 +101,7 @@ test('it can revoke a delegate transfer plugin', async (t) => {
 
   await revokePluginAuthority(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Transfer,
+    pluginType: PluginType.TransferDelegate,
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -109,7 +109,7 @@ test('it can revoke a delegate transfer plugin', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    transfer: {
+    transferDelegate: {
       authority: {
         type: 'Owner',
       },
@@ -126,7 +126,7 @@ test('it cannot transfer after delegate has been revoked', async (t) => {
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Transfer',
+        type: 'TransferDelegate',
         authority: pubkeyPluginAuthority(delegateAddress.publicKey),
       }),
     ],
@@ -134,7 +134,7 @@ test('it cannot transfer after delegate has been revoked', async (t) => {
 
   await revokePluginAuthority(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.Transfer,
+    pluginType: PluginType.TransferDelegate,
   }).sendAndConfirm(umi);
 
   const result = transfer(umi, {
@@ -150,7 +150,7 @@ test('it cannot transfer after delegate has been revoked', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    transfer: {
+    transferDelegate: {
       authority: {
         type: 'Owner',
       },

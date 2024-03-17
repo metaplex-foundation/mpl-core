@@ -5,29 +5,29 @@ use crate::state::{Authority, CoreAsset, DataBlob};
 
 use super::{Plugin, PluginValidation, ValidationResult};
 
-/// The freeze plugin allows any authority to lock the asset so it's no longer transferable.
+/// The freeze delegate plugin allows any authority to lock the asset so it's no longer transferable.
 /// The default authority for this plugin is the owner.
 #[repr(C)]
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
-pub struct Freeze {
+pub struct FreezeDelegate {
     /// The current state of the asset and whether or not it's transferable.
     pub frozen: bool, // 1
 }
 
-impl Freeze {
+impl FreezeDelegate {
     /// Initialize the Freeze plugin, unfrozen by default.
     pub fn new() -> Self {
         Self { frozen: false }
     }
 }
 
-impl Default for Freeze {
+impl Default for FreezeDelegate {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl DataBlob for Freeze {
+impl DataBlob for FreezeDelegate {
     fn get_initial_size() -> usize {
         1
     }
@@ -37,7 +37,7 @@ impl DataBlob for Freeze {
     }
 }
 
-impl PluginValidation for Freeze {
+impl PluginValidation for FreezeDelegate {
     fn validate_update_plugin<T: CoreAsset>(
         &self,
         core_asset: &T,
@@ -94,7 +94,7 @@ impl PluginValidation for Freeze {
         _authorities: &Authority,
         plugin_to_approve: Option<&super::Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(Plugin::Freeze(freeze)) = plugin_to_approve {
+        if let Some(Plugin::FreezeDelegate(freeze)) = plugin_to_approve {
             if freeze.frozen {
                 return Ok(ValidationResult::Rejected);
             }
@@ -109,7 +109,7 @@ impl PluginValidation for Freeze {
         authority: &Authority,
         plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(Plugin::Freeze(freeze)) = plugin_to_revoke {
+        if let Some(Plugin::FreezeDelegate(freeze)) = plugin_to_revoke {
             if freeze.frozen {
                 return Ok(ValidationResult::Rejected);
             } else if authority

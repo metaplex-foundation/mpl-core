@@ -6,13 +6,13 @@
 //!
 
 use crate::generated::types::Attributes;
-use crate::generated::types::Burn;
-use crate::generated::types::Freeze;
-use crate::generated::types::PermanentBurn;
-use crate::generated::types::PermanentFreeze;
-use crate::generated::types::PermanentTransfer;
+use crate::generated::types::BurnDelegate;
+use crate::generated::types::FreezeDelegate;
+use crate::generated::types::PermanentBurnDelegate;
+use crate::generated::types::PermanentFreezeDelegate;
+use crate::generated::types::PermanentTransferDelegate;
 use crate::generated::types::Royalties;
-use crate::generated::types::Transfer;
+use crate::generated::types::TransferDelegate;
 use crate::generated::types::UpdateDelegate;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
@@ -20,14 +20,13 @@ use borsh::BorshSerialize;
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Plugin {
-    Reserved,
     Royalties(Royalties),
-    Freeze(Freeze),
-    Burn(Burn),
-    Transfer(Transfer),
+    FreezeDelegate(FreezeDelegate),
+    BurnDelegate(BurnDelegate),
+    TransferDelegate(TransferDelegate),
     UpdateDelegate(UpdateDelegate),
-    PermanentFreeze(PermanentFreeze),
+    PermanentFreezeDelegate(PermanentFreezeDelegate),
     Attributes(Attributes),
-    PermanentTransfer(PermanentTransfer),
-    PermanentBurn(PermanentBurn),
+    PermanentTransferDelegate(PermanentTransferDelegate),
+    PermanentBurnDelegate(PermanentBurnDelegate),
 }

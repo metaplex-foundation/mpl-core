@@ -12,22 +12,22 @@ use super::{Plugin, PluginValidation, ValidationResult};
 /// Any authorities approved are given permission to burn the asset on behalf of the owner.
 #[repr(C)]
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
-pub struct Burn {}
+pub struct BurnDelegate {}
 
-impl Burn {
+impl BurnDelegate {
     /// Initialize the Burn plugin.
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl Default for Burn {
+impl Default for BurnDelegate {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl DataBlob for Burn {
+impl DataBlob for BurnDelegate {
     fn get_initial_size() -> usize {
         0
     }
@@ -37,7 +37,7 @@ impl DataBlob for Burn {
     }
 }
 
-impl PluginValidation for Burn {
+impl PluginValidation for BurnDelegate {
     fn validate_burn(
         &self,
         authority_info: &AccountInfo,
@@ -69,7 +69,7 @@ impl PluginValidation for Burn {
                 address: *authority_info.key,
             })
             && plugin_to_revoke.is_some()
-            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::Burn
+            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::BurnDelegate
         {
             Ok(ValidationResult::Approved)
         } else {

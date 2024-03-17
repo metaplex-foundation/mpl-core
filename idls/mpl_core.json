@@ -1471,14 +1471,14 @@
       }
     },
     {
-      "name": "Burn",
+      "name": "BurnDelegate",
       "type": {
         "kind": "struct",
         "fields": []
       }
     },
     {
-      "name": "Freeze",
+      "name": "FreezeDelegate",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1490,14 +1490,14 @@
       }
     },
     {
-      "name": "PermanentBurn",
+      "name": "PermanentBurnDelegate",
       "type": {
         "kind": "struct",
         "fields": []
       }
     },
     {
-      "name": "PermanentFreeze",
+      "name": "PermanentFreezeDelegate",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1509,7 +1509,7 @@
       }
     },
     {
-      "name": "PermanentTransfer",
+      "name": "PermanentTransferDelegate",
       "type": {
         "kind": "struct",
         "fields": []
@@ -1600,7 +1600,7 @@
       }
     },
     {
-      "name": "Transfer",
+      "name": "TransferDelegate",
       "type": {
         "kind": "struct",
         "fields": []
@@ -2044,9 +2044,6 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "Reserved"
-          },
-          {
             "name": "Royalties",
             "fields": [
               {
@@ -2055,26 +2052,26 @@
             ]
           },
           {
-            "name": "Freeze",
+            "name": "FreezeDelegate",
             "fields": [
               {
-                "defined": "Freeze"
+                "defined": "FreezeDelegate"
               }
             ]
           },
           {
-            "name": "Burn",
+            "name": "BurnDelegate",
             "fields": [
               {
-                "defined": "Burn"
+                "defined": "BurnDelegate"
               }
             ]
           },
           {
-            "name": "Transfer",
+            "name": "TransferDelegate",
             "fields": [
               {
-                "defined": "Transfer"
+                "defined": "TransferDelegate"
               }
             ]
           },
@@ -2087,10 +2084,10 @@
             ]
           },
           {
-            "name": "PermanentFreeze",
+            "name": "PermanentFreezeDelegate",
             "fields": [
               {
-                "defined": "PermanentFreeze"
+                "defined": "PermanentFreezeDelegate"
               }
             ]
           },
@@ -2103,18 +2100,18 @@
             ]
           },
           {
-            "name": "PermanentTransfer",
+            "name": "PermanentTransferDelegate",
             "fields": [
               {
-                "defined": "PermanentTransfer"
+                "defined": "PermanentTransferDelegate"
               }
             ]
           },
           {
-            "name": "PermanentBurn",
+            "name": "PermanentBurnDelegate",
             "fields": [
               {
-                "defined": "PermanentBurn"
+                "defined": "PermanentBurnDelegate"
               }
             ]
           }
@@ -2127,34 +2124,31 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "Reserved"
-          },
-          {
             "name": "Royalties"
           },
           {
-            "name": "Freeze"
+            "name": "FreezeDelegate"
           },
           {
-            "name": "Burn"
+            "name": "BurnDelegate"
           },
           {
-            "name": "Transfer"
+            "name": "TransferDelegate"
           },
           {
             "name": "UpdateDelegate"
           },
           {
-            "name": "PermanentFreeze"
+            "name": "PermanentFreezeDelegate"
           },
           {
             "name": "Attributes"
           },
           {
-            "name": "PermanentTransfer"
+            "name": "PermanentTransferDelegate"
           },
           {
-            "name": "PermanentBurn"
+            "name": "PermanentBurnDelegate"
           }
         ]
       }

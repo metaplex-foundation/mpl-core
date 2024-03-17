@@ -25,7 +25,7 @@ test('it cannot add permanentTransfer after creation', async (t) => {
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'PermanentTransfer' }),
+    plugin: createPlugin({ type: 'PermanentTransferDelegate' }),
     authority: owner,
   }).sendAndConfirm(umi);
 
@@ -38,7 +38,7 @@ test('it cannot add permanentTransfer after creation', async (t) => {
     asset: asset.publicKey,
     owner: owner.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    permanentTransfer: undefined,
+    permanentTransferDelegate: undefined,
   });
 });
 
@@ -53,7 +53,7 @@ test('it can transfer an asset as the owner and not the delegate', async (t) => 
     owner,
     plugins: [
       pluginAuthorityPair({
-        type: 'PermanentTransfer',
+        type: 'PermanentTransferDelegate',
         authority: updatePluginAuthority(),
       }),
     ],
@@ -76,7 +76,7 @@ test('it can transfer an asset as the owner and not the delegate', async (t) => 
     asset: asset.publicKey,
     owner: brandNewOwner.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    permanentTransfer: {
+    permanentTransferDelegate: {
       authority: {
         type: 'UpdateAuthority',
       },
@@ -94,7 +94,7 @@ test('it can transfer an asset as the delegate and the owner', async (t) => {
     owner,
     plugins: [
       pluginAuthorityPair({
-        type: 'PermanentTransfer',
+        type: 'PermanentTransferDelegate',
         authority: updatePluginAuthority(),
       }),
     ],
@@ -111,7 +111,7 @@ test('it can transfer an asset as the delegate and the owner', async (t) => {
     asset: asset.publicKey,
     owner: newOwner.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    permanentTransfer: {
+    permanentTransferDelegate: {
       authority: {
         type: 'UpdateAuthority',
       },
@@ -130,7 +130,7 @@ test('it can transfer an asset as not the owner', async (t) => {
     owner,
     plugins: [
       pluginAuthorityPair({
-        type: 'PermanentTransfer',
+        type: 'PermanentTransferDelegate',
         authority: updatePluginAuthority(),
       }),
     ],
@@ -147,7 +147,7 @@ test('it can transfer an asset as not the owner', async (t) => {
     asset: asset.publicKey,
     owner: newOwner.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    permanentTransfer: {
+    permanentTransferDelegate: {
       authority: {
         type: 'UpdateAuthority',
       },
@@ -165,7 +165,7 @@ test('it can transfer an asset as not the owner', async (t) => {
     asset: asset.publicKey,
     owner: brandNewOwner.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    permanentTransfer: {
+    permanentTransferDelegate: {
       authority: {
         type: 'UpdateAuthority',
       },
@@ -183,7 +183,7 @@ test('it cannot delegate its authority', async (t) => {
     owner,
     plugins: [
       pluginAuthorityPair({
-        type: 'PermanentTransfer',
+        type: 'PermanentTransferDelegate',
         authority: updatePluginAuthority(),
       }),
     ],
@@ -200,7 +200,7 @@ test('it cannot delegate its authority', async (t) => {
     asset: asset.publicKey,
     owner: newOwner.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    permanentTransfer: {
+    permanentTransferDelegate: {
       authority: {
         type: 'UpdateAuthority',
       },
@@ -214,7 +214,7 @@ test('it can transfer a collection', async (t) => {
   const collection = await createCollection(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'PermanentTransfer',
+        type: 'PermanentTransferDelegate',
         authority: updatePluginAuthority(),
       }),
     ],
@@ -224,7 +224,7 @@ test('it can transfer a collection', async (t) => {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    permanentTransfer: {
+    permanentTransferDelegate: {
       authority: {
         type: 'UpdateAuthority',
       },
@@ -245,7 +245,7 @@ test('it can transfer asset that is a part of a collection forever as a delegate
     owner,
     plugins: [
       pluginAuthorityPair({
-        type: 'PermanentTransfer',
+        type: 'PermanentTransferDelegate',
         authority: updatePluginAuthority(),
       }),
     ],
@@ -271,7 +271,7 @@ test('it can transfer asset that is a part of a collection forever as a delegate
     asset: asset.publicKey,
     owner: brandNewOwner.publicKey,
     updateAuthority: { type: 'Collection', address: collection.publicKey },
-    permanentTransfer: {
+    permanentTransferDelegate: {
       authority: {
         type: 'UpdateAuthority',
       },
@@ -289,7 +289,7 @@ test('it can transfer multiple assets that is a part of a collection forever as 
   const collection = await createCollection(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'PermanentTransfer',
+        type: 'PermanentTransferDelegate',
         authority: updatePluginAuthority(),
       }),
     ],
@@ -325,7 +325,7 @@ test('it can transfer multiple assets that is a part of a collection forever as 
     asset: asset1.publicKey,
     owner: brandNewOwner.publicKey,
     updateAuthority: { type: 'Collection', address: collection.publicKey },
-    permanentTransfer: undefined,
+    permanentTransferDelegate: undefined,
   });
 
   // move asset #2 twice as a delegate for collection
@@ -348,14 +348,14 @@ test('it can transfer multiple assets that is a part of a collection forever as 
     asset: asset2.publicKey,
     owner: brandNewOwner.publicKey,
     updateAuthority: { type: 'Collection', address: collection.publicKey },
-    permanentTransfer: undefined,
+    permanentTransferDelegate: undefined,
   });
 
   await assertCollection(t, umi, {
     ...collection,
     collection: collection.publicKey,
     updateAuthority: umi.payer.publicKey,
-    permanentTransfer: {
+    permanentTransferDelegate: {
       authority: {
         type: 'UpdateAuthority',
       },

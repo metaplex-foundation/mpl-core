@@ -49,7 +49,7 @@ test('it can update an asset with plugins to be larger', async (t) => {
   const asset = await createAsset(umi, {
     name: 'short',
     uri: 'https://short.com',
-    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: false } })],
+    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
   // const asset = await createAsset(umi, {
@@ -73,7 +73,7 @@ test('it can update an asset with plugins to be larger', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },
@@ -88,7 +88,7 @@ test('it can update an asset with plugins to be smaller', async (t) => {
   const asset = await createAsset(umi, {
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
-    plugins: [pluginAuthorityPair({ type: 'Freeze', data: { frozen: false } })],
+    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
   await update(umi, {
@@ -103,7 +103,7 @@ test('it can update an asset with plugins to be smaller', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     name: '',
     uri: '',
-    freeze: {
+    freezeDelegate: {
       authority: {
         type: 'Owner',
       },

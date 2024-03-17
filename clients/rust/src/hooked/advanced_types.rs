@@ -3,7 +3,8 @@ use solana_program::pubkey::Pubkey;
 use crate::{
     accounts::{BaseAsset, BaseCollection, PluginHeader},
     types::{
-        Attributes, Authority, Burn, Freeze, PermanentFreeze, Royalties, Transfer, UpdateDelegate,
+        Attributes, BurnDelegate, FreezeDelegate, PermanentBurnDelegate, PermanentFreezeDelegate,
+        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
     },
 };
 
@@ -15,13 +16,13 @@ pub enum AuthorityType {
     Pubkey,
 }
 
-impl From<Authority> for AuthorityType {
-    fn from(authority: Authority) -> Self {
+impl From<PluginAuthority> for AuthorityType {
+    fn from(authority: PluginAuthority) -> Self {
         match authority {
-            Authority::None => AuthorityType::None,
-            Authority::Owner => AuthorityType::Owner,
-            Authority::UpdateAuthority => AuthorityType::UpdateAuthority,
-            Authority::Pubkey { address: _ } => AuthorityType::Pubkey,
+            PluginAuthority::None => AuthorityType::None,
+            PluginAuthority::Owner => AuthorityType::Owner,
+            PluginAuthority::UpdateAuthority => AuthorityType::UpdateAuthority,
+            PluginAuthority::Pubkey { address: _ } => AuthorityType::Pubkey,
         }
     }
 }
@@ -32,22 +33,22 @@ pub struct BaseAuthority {
     pub address: Option<Pubkey>,
 }
 
-impl From<Authority> for BaseAuthority {
-    fn from(authority: Authority) -> Self {
+impl From<PluginAuthority> for BaseAuthority {
+    fn from(authority: PluginAuthority) -> Self {
         match authority {
-            Authority::None => BaseAuthority {
+            PluginAuthority::None => BaseAuthority {
                 authority_type: AuthorityType::None,
                 address: None,
             },
-            Authority::Owner => BaseAuthority {
+            PluginAuthority::Owner => BaseAuthority {
                 authority_type: AuthorityType::Owner,
                 address: None,
             },
-            Authority::UpdateAuthority => BaseAuthority {
+            PluginAuthority::UpdateAuthority => BaseAuthority {
                 authority_type: AuthorityType::UpdateAuthority,
                 address: None,
             },
-            Authority::Pubkey { address } => BaseAuthority {
+            PluginAuthority::Pubkey { address } => BaseAuthority {
                 authority_type: AuthorityType::Pubkey,
                 address: Some(address),
             },
@@ -68,21 +69,21 @@ pub struct RoyaltiesPlugin {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct FreezePlugin {
+pub struct FreezeDelegatePlugin {
     pub base: BasePlugin,
-    pub freeze: Freeze,
+    pub freeze_delegate: FreezeDelegate,
 }
 
 #[derive(Debug)]
-pub struct BurnPlugin {
+pub struct BurnDelegatePlugin {
     pub base: BasePlugin,
-    pub burn: Burn,
+    pub burn_delegate: BurnDelegate,
 }
 
 #[derive(Debug)]
-pub struct TransferPlugin {
+pub struct TransferDelegatePlugin {
     pub base: BasePlugin,
-    pub transfer: Transfer,
+    pub transfer_delegate: TransferDelegate,
 }
 
 #[derive(Debug)]
@@ -92,9 +93,9 @@ pub struct UpdateDelegatePlugin {
 }
 
 #[derive(Debug)]
-pub struct PermanentFreezePlugin {
+pub struct PermanentFreezeDelegatePlugin {
     pub base: BasePlugin,
-    pub permanent_freeze: PermanentFreeze,
+    pub permanent_freeze_delegate: PermanentFreezeDelegate,
 }
 
 #[derive(Debug)]
@@ -103,15 +104,29 @@ pub struct AttributesPlugin {
     pub attributes: Attributes,
 }
 
+#[derive(Debug)]
+pub struct PermanentTransferDelegatePlugin {
+    pub base: BasePlugin,
+    pub permanent_transfer_delegate: PermanentTransferDelegate,
+}
+
+#[derive(Debug)]
+pub struct PermanentBurnDelegatePlugin {
+    pub base: BasePlugin,
+    pub permanent_burn_delegate: PermanentBurnDelegate,
+}
+
 #[derive(Debug, Default)]
 pub struct PluginsList {
     pub royalties: Option<RoyaltiesPlugin>,
-    pub freeze: Option<FreezePlugin>,
-    pub burn: Option<BurnPlugin>,
-    pub transfer: Option<TransferPlugin>,
+    pub freeze_delegate: Option<FreezeDelegatePlugin>,
+    pub burn_delegate: Option<BurnDelegatePlugin>,
+    pub transfer_delegate: Option<TransferDelegatePlugin>,
     pub update_delegate: Option<UpdateDelegatePlugin>,
-    pub permanent_freeze: Option<PermanentFreezePlugin>,
+    pub permanent_freeze_delegate: Option<PermanentFreezeDelegatePlugin>,
     pub attributes: Option<AttributesPlugin>,
+    pub permanent_transfer_delegate: Option<PermanentTransferDelegatePlugin>,
+    pub permanent_burn_delegate: Option<PermanentBurnDelegatePlugin>,
 }
 
 #[derive(Debug)]
