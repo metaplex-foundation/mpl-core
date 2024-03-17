@@ -38,22 +38,6 @@ impl DataBlob for Transfer {
 }
 
 impl PluginValidation for Transfer {
-    fn validate_create(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_update(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
     fn validate_burn(
         &self,
         authority_info: &AccountInfo,
@@ -87,49 +71,6 @@ impl PluginValidation for Transfer {
         } else {
             Ok(ValidationResult::Pass)
         }
-    }
-
-    fn validate_compress(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_decompress(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_add_plugin(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_remove_plugin(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _plugin_to_remove: Option<&super::Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_approve_plugin_authority(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
     }
 
     /// Validate the revoke plugin authority lifecycle action.

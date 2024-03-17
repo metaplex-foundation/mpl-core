@@ -57,6 +57,7 @@ export const createAsset = async (
   const owner = publicKey(input.owner || input.payer || umi.identity);
   const asset = input.asset || generateSigner(umi);
   const updateAuthority = publicKey(input.updateAuthority || payer);
+  // const tx = 
   await create(umi, {
     owner,
     payer,
@@ -69,6 +70,8 @@ export const createAsset = async (
     collection: input.collection,
     authority: input.authority,
   }).sendAndConfirm(umi);
+
+  // console.log("Creating with:", input.plugins, "cost", (await umi.rpc.getTransaction(tx.signature))?.meta.computeUnitsConsumed);
 
   return fetchAsset(umi, publicKey(asset));
 };
@@ -113,10 +116,10 @@ export const createAssetWithCollection: (
   const collection = assetInput.collection
     ? await fetchCollection(umi, publicKey(assetInput.collection))
     : await createCollection(umi, {
-        payer: assetInput.payer,
-        updateAuthority: assetInput.updateAuthority,
-        ...collectionInput,
-      });
+      payer: assetInput.payer,
+      updateAuthority: assetInput.updateAuthority,
+      ...collectionInput,
+    });
 
   const asset = await createAsset(umi, {
     ...assetInput,

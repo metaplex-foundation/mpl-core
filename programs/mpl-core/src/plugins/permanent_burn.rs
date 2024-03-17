@@ -33,24 +33,6 @@ impl PluginValidation for PermanentBurn {
         Ok(ValidationResult::Rejected)
     }
 
-    fn validate_remove_plugin(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _plugin_to_remove: Option<&Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_approve_plugin_authority(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _plugin_to_approve: Option<&Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
     fn validate_revoke_plugin_authority(
         &self,
         _authority: &AccountInfo,
@@ -58,22 +40,6 @@ impl PluginValidation for PermanentBurn {
         _plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Approved)
-    }
-
-    fn validate_create(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_update(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
     }
 
     fn validate_burn(
@@ -88,32 +54,6 @@ impl PluginValidation for PermanentBurn {
             }
         }
 
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_transfer(
-        &self,
-        _authority: &AccountInfo,
-        _new_owner: &AccountInfo,
-        _authorities: &Authority,
-        _resolved_authority: Option<&Authority>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_compress(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_decompress(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-    ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 }

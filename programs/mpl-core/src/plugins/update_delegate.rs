@@ -38,57 +38,6 @@ impl DataBlob for UpdateDelegate {
 }
 
 impl PluginValidation for UpdateDelegate {
-    fn validate_create(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_update(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_burn(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-        _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_transfer(
-        &self,
-        _authority_info: &AccountInfo,
-        _new_owner: &AccountInfo,
-        _authority: &Authority,
-        _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_compress(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_decompress(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
     fn validate_add_plugin(
         &self,
         authority: &AccountInfo,
@@ -121,15 +70,6 @@ impl PluginValidation for UpdateDelegate {
         } else {
             Ok(ValidationResult::Pass)
         }
-    }
-
-    fn validate_approve_plugin_authority(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
     }
 
     /// Validate the revoke plugin authority lifecycle action.

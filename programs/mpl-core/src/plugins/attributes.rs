@@ -3,7 +3,7 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::state::{Authority, CoreAsset, DataBlob};
 
-use super::{Plugin, PluginValidation, ValidationResult};
+use super::{PluginValidation, ValidationResult};
 
 /// The Attribute type which represent a Key Value pair.
 #[repr(C)]
@@ -41,22 +41,6 @@ impl DataBlob for Attributes {
 }
 
 impl PluginValidation for Attributes {
-    fn validate_create(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_update(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
     fn validate_update_plugin<T: CoreAsset>(
         &self,
         core_asset: &T,
@@ -74,85 +58,5 @@ impl PluginValidation for Attributes {
         } else {
             Ok(ValidationResult::Pass)
         }
-    }
-
-    fn validate_burn(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-        _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_transfer(
-        &self,
-        _authority_info: &AccountInfo,
-        _new_owner: &AccountInfo,
-        _authority: &Authority,
-        _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_compress(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_decompress(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_add_authority(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_add_plugin(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_remove_plugin(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _plugin_to_remove: Option<&super::Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_approve_plugin_authority(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _plugin_to_approve: Option<&super::Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    /// Validate the revoke plugin authority lifecycle action.
-    fn validate_revoke_plugin_authority(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _plugin_to_revoke: Option<&Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
     }
 }

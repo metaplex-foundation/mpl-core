@@ -41,22 +41,6 @@ impl DataBlob for PermanentFreeze {
 }
 
 impl PluginValidation for PermanentFreeze {
-    fn validate_create(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_update(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
     fn validate_update_plugin<T: CoreAsset>(
         &self,
         core_asset: &T,
@@ -106,22 +90,6 @@ impl PluginValidation for PermanentFreeze {
         }
     }
 
-    fn validate_compress(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_decompress(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
     fn validate_add_authority(
         &self,
         _authority_info: &AccountInfo,
@@ -139,24 +107,6 @@ impl PluginValidation for PermanentFreeze {
         // This plugin can only be added at creation time, so we
         // always reject it.
         Ok(ValidationResult::Rejected)
-    }
-
-    fn validate_remove_plugin(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _plugin_to_remove: Option<&super::Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    fn validate_approve_plugin_authority(
-        &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _new_plugin: Option<&super::Plugin>,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
     }
 
     /// Validate the revoke plugin authority lifecycle action.

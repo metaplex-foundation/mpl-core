@@ -565,53 +565,80 @@ pub enum ValidationResult {
     ForceApproved,
 }
 
+/// The required context for a plugin validation.
+#[allow(dead_code)]
+pub(crate) struct PluginValidationContext<'a, 'b> {
+    /// The authorities.
+    pub self_authority: &'b Authority,
+    /// The authority account.
+    pub authority_info: &'a AccountInfo<'a>,
+    /// The resolved authority.
+    pub resolved_authority: Option<&'a Authority>,
+    /// The new owner account.
+    pub new_owner: Option<&'a AccountInfo<'a>>,
+    /// The new plugin.
+    pub target_plugin: Option<&'a Plugin>,
+}
+
 /// Plugin validation trait which is implemented by each plugin.
 pub(crate) trait PluginValidation {
     /// Validate the add plugin lifecycle action.
     fn validate_add_plugin(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
-        new_plugin: Option<&Plugin>,
-    ) -> Result<ValidationResult, ProgramError>;
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+        _new_plugin: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 
     /// Validate the remove plugin lifecycle action.
     fn validate_remove_plugin(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
-        plugin_to_remove: Option<&Plugin>,
-    ) -> Result<ValidationResult, ProgramError>;
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+        _plugin_to_remove: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 
     /// Validate the approve plugin authority lifecycle action.
     fn validate_approve_plugin_authority(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
-        plugin_to_approve: Option<&Plugin>,
-    ) -> Result<ValidationResult, ProgramError>;
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+        _plugin_to_approve: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
-        plugin_to_revoke: Option<&Plugin>,
-    ) -> Result<ValidationResult, ProgramError>;
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+        _plugin_to_revoke: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 
     /// Validate the create lifecycle action.
     fn validate_create(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
-    ) -> Result<ValidationResult, ProgramError>;
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 
     /// Validate the update lifecycle action.
     fn validate_update(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
-    ) -> Result<ValidationResult, ProgramError>;
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 
     /// Validate the update_plugin lifecycle action.
     fn validate_update_plugin<T: CoreAsset>(
@@ -637,33 +664,41 @@ pub(crate) trait PluginValidation {
     /// Validate the burn lifecycle action.
     fn validate_burn(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
-        resolved_authority: Option<&Authority>,
-    ) -> Result<ValidationResult, ProgramError>;
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+        _resolved_authority: Option<&Authority>,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 
     /// Validate the transfer lifecycle action.
     fn validate_transfer(
         &self,
-        authority: &AccountInfo,
-        new_owner: &AccountInfo,
-        authorities: &Authority,
-        resolved_authority: Option<&Authority>,
-    ) -> Result<ValidationResult, ProgramError>;
+        _authority: &AccountInfo,
+        _new_owner: &AccountInfo,
+        _authorities: &Authority,
+        _resolved_authority: Option<&Authority>,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 
     /// Validate the compress lifecycle action.
     fn validate_compress(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
-    ) -> Result<ValidationResult, ProgramError>;
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 
     /// Validate the decompress lifecycle action.
     fn validate_decompress(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
-    ) -> Result<ValidationResult, ProgramError>;
+        _authority: &AccountInfo,
+        _authorities: &Authority,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 
     /// Validate the add_authority lifecycle action.
     fn validate_add_authority(
