@@ -4,9 +4,9 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, 
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::DecompressAccounts,
+    instruction::accounts::DecompressV1Accounts,
     plugins::{Plugin, PluginType},
-    state::{Asset, Collection, CompressionProof, Key},
+    state::{AssetV1, CollectionV1, CompressionProof, Key},
     utils::{
         load_key, rebuild_account_state_from_proof_data, resolve_authority,
         validate_asset_permissions, verify_proof,
@@ -15,16 +15,16 @@ use crate::{
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct DecompressArgs {
+pub struct DecompressV1Args {
     compression_proof: CompressionProof,
 }
 
 pub(crate) fn decompress<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: DecompressArgs,
+    args: DecompressV1Args,
 ) -> ProgramResult {
     // Accounts.
-    let ctx = DecompressAccounts::context(accounts)?;
+    let ctx = DecompressV1Accounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
@@ -35,7 +35,7 @@ pub(crate) fn decompress<'a>(
     }
 
     match load_key(ctx.accounts.asset, 0)? {
-        Key::HashedAsset => {
+        Key::HashedAssetV1 => {
             // Verify the proof and rebuild `Asset`` struct in account space.
             let (mut asset, plugins) = verify_proof(ctx.accounts.asset, &args.compression_proof)?;
 
@@ -59,11 +59,11 @@ pub(crate) fn decompress<'a>(
                 ctx.accounts.collection,
                 None,
                 None,
-                Asset::check_decompress,
-                Collection::check_decompress,
+                AssetV1::check_decompress,
+                CollectionV1::check_decompress,
                 PluginType::check_decompress,
-                Asset::validate_decompress,
-                Collection::validate_decompress,
+                AssetV1::validate_decompress,
+                CollectionV1::validate_decompress,
                 Plugin::validate_decompress,
             )?;
 
@@ -71,7 +71,7 @@ pub(crate) fn decompress<'a>(
             msg!("Error: Decompression currently not available");
             Err(MplCoreError::NotAvailable.into())
         }
-        Key::Asset => Err(MplCoreError::AlreadyDecompressed.into()),
+        Key::AssetV1 => Err(MplCoreError::AlreadyDecompressed.into()),
         _ => Err(MplCoreError::IncorrectAccount.into()),
     }
 }

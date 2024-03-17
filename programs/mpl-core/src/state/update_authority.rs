@@ -5,12 +5,12 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{
-        BurnAccounts, CompressAccounts, CreateAccounts, DecompressAccounts, TransferAccounts,
-        UpdateAccounts,
+        BurnV1Accounts, CompressV1Accounts, CreateV1Accounts, DecompressV1Accounts,
+        TransferV1Accounts, UpdateV1Accounts,
     },
     plugins::{fetch_plugin, CheckResult, PluginType, UpdateDelegate, ValidationResult},
-    processor::CreateArgs,
-    state::{Authority, Collection, SolanaAccount},
+    processor::CreateV1Args,
+    state::{Authority, CollectionV1, SolanaAccount},
     utils::assert_collection_authority,
 };
 
@@ -48,8 +48,8 @@ impl UpdateAuthority {
     /// Validate the create lifecycle event.
     pub(crate) fn validate_create(
         &self,
-        ctx: &CreateAccounts,
-        _args: &CreateArgs,
+        ctx: &CreateV1Accounts,
+        _args: &CreateV1Args,
     ) -> Result<ValidationResult, ProgramError> {
         match (ctx.collection, self) {
             // If you're trying to add a collection, then check the authority.
@@ -57,7 +57,7 @@ impl UpdateAuthority {
                 if collection_info.key != collection_address {
                     return Err(MplCoreError::InvalidCollection.into());
                 }
-                let collection = Collection::load(collection_info, 0)?;
+                let collection = CollectionV1::load(collection_info, 0)?;
                 solana_program::msg!("Collection: {:?}", collection);
 
                 let authority_info = match ctx.authority {
@@ -68,7 +68,7 @@ impl UpdateAuthority {
                     None => ctx.payer,
                 };
 
-                let maybe_update_delegate = fetch_plugin::<Collection, UpdateDelegate>(
+                let maybe_update_delegate = fetch_plugin::<CollectionV1, UpdateDelegate>(
                     collection_info,
                     PluginType::UpdateDelegate,
                 );
@@ -98,7 +98,10 @@ impl UpdateAuthority {
     }
 
     /// Validate the update lifecycle event.
-    pub fn validate_update(&self, ctx: &UpdateAccounts) -> Result<ValidationResult, ProgramError> {
+    pub fn validate_update(
+        &self,
+        ctx: &UpdateV1Accounts,
+    ) -> Result<ValidationResult, ProgramError> {
         let authority = match self {
             Self::None => return Ok(ValidationResult::Rejected),
             Self::Address(address) => address,
@@ -113,14 +116,14 @@ impl UpdateAuthority {
     }
 
     /// Validate the burn lifecycle event.
-    pub fn validate_burn(&self, _ctx: &BurnAccounts) -> Result<ValidationResult, ProgramError> {
+    pub fn validate_burn(&self, _ctx: &BurnV1Accounts) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
     /// Validate the transfer lifecycle event.
     pub fn validate_transfer(
         &self,
-        _ctx: &TransferAccounts,
+        _ctx: &TransferV1Accounts,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -128,7 +131,7 @@ impl UpdateAuthority {
     /// Validate the compress lifecycle event.
     pub fn validate_compress(
         &self,
-        _ctx: &CompressAccounts,
+        _ctx: &CompressV1Accounts,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -136,7 +139,7 @@ impl UpdateAuthority {
     /// Validate the decompress lifecycle event.
     pub fn validate_decompress(
         &self,
-        _ctx: &DecompressAccounts,
+        _ctx: &DecompressV1Accounts,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

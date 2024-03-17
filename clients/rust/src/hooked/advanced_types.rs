@@ -1,7 +1,7 @@
 use solana_program::pubkey::Pubkey;
 
 use crate::{
-    accounts::{BaseAsset, BaseCollection, PluginHeader},
+    accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
         Attributes, BurnDelegate, FreezeDelegate, PermanentBurnDelegate, PermanentFreezeDelegate,
         PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
@@ -131,14 +131,14 @@ pub struct PluginsList {
 
 #[derive(Debug)]
 pub struct Asset {
-    pub base: BaseAsset,
+    pub base: BaseAssetV1,
     pub plugin_list: PluginsList,
-    pub plugin_header: Option<PluginHeader>,
+    pub plugin_header: Option<PluginHeaderV1>,
 }
 
 #[derive(Debug)]
 pub struct Collection {
-    pub base: BaseCollection,
+    pub base: BaseCollectionV1,
     pub plugin_list: PluginsList,
-    pub plugin_header: PluginHeader,
+    pub plugin_header: PluginHeaderV1,
 }

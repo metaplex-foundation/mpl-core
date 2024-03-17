@@ -2,10 +2,10 @@ import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   PluginType,
-  approvePluginAuthority,
-  transfer,
+  approvePluginAuthorityV1,
+  transferV1,
   pluginAuthorityPair,
-  revokePluginAuthority,
+  revokePluginAuthorityV1,
   pubkeyPluginAuthority,
 } from '../../../src';
 import {
@@ -25,13 +25,13 @@ test('a delegate can transfer the asset', async (t) => {
     plugins: [pluginAuthorityPair({ type: 'TransferDelegate' })],
   });
 
-  await approvePluginAuthority(umi, {
+  await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.TransferDelegate,
     newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     newOwner: newOwnerAddress.publicKey,
     authority: delegateAddress,
@@ -66,7 +66,7 @@ test('owner can transfer asset with delegate transfer', async (t) => {
     ],
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     newOwner: newOwnerAddress.publicKey,
   }).sendAndConfirm(umi);
@@ -99,7 +99,7 @@ test('it can revoke a delegate transfer plugin', async (t) => {
     ],
   });
 
-  await revokePluginAuthority(umi, {
+  await revokePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.TransferDelegate,
   }).sendAndConfirm(umi);
@@ -132,12 +132,12 @@ test('it cannot transfer after delegate has been revoked', async (t) => {
     ],
   });
 
-  await revokePluginAuthority(umi, {
+  await revokePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.TransferDelegate,
   }).sendAndConfirm(umi);
 
-  const result = transfer(umi, {
+  const result = transferV1(umi, {
     asset: asset.publicKey,
     newOwner: newOwnerAddress.publicKey,
     authority: delegateAddress,

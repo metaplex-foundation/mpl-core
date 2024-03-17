@@ -1,6 +1,6 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { DataState, create /* fetchAsset, fetchHashedAsset */ } from '../src';
+import { DataState, createV1 /* fetchAsset, fetchHashedAsset */ } from '../src';
 import { createUmi } from './_setup';
 
 test('fetch account info for account state', async (t) => {
@@ -9,7 +9,7 @@ test('fetch account info for account state', async (t) => {
   const assetAddress = generateSigner(umi);
 
   // When we create a new account.
-  await create(umi, {
+  await createV1(umi, {
     dataState: DataState.AccountState,
     asset: assetAddress,
     name: 'Test Bread',
@@ -35,7 +35,7 @@ test.skip('fetch account info for ledger state', async (t) => {
   const assetAddress = generateSigner(umi);
 
   // When we create a new account.
-  await create(umi, {
+  await createV1(umi, {
     dataState: DataState.AccountState,
     asset: assetAddress,
     name: 'Test Bread',

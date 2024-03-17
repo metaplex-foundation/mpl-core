@@ -1,14 +1,14 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { getAssetAccountDataSerializer } from '../src/hooked';
+import { getAssetV1AccountDataSerializer } from '../src/hooked';
 import {
-  Asset,
-  compress,
-  create,
+  AssetV1,
+  compressV1,
+  createV1,
   DataState,
-  decompress,
-  fetchAsset,
-  fetchHashedAsset,
+  decompressV1,
+  fetchAssetV1,
+  fetchHashedAssetV1,
   getHashedAssetSchemaSerializer,
   hash,
   HashedAssetSchema,
@@ -22,7 +22,7 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
   const assetAddress = generateSigner(umi);
 
   // When we create a new account.
-  await create(umi, {
+  await createV1(umi, {
     dataState: DataState.AccountState,
     asset: assetAddress,
     name: 'Test Bread',
@@ -30,9 +30,9 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
-  const beforeAsset = await fetchAsset(umi, assetAddress.publicKey);
+  const beforeAsset = await fetchAssetV1(umi, assetAddress.publicKey);
   // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <Asset>{
+  t.like(beforeAsset, <AssetV1>{
     publicKey: assetAddress.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     owner: umi.identity.publicKey,
@@ -41,21 +41,21 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
   });
 
   // And when we compress the asset.
-  await compress(umi, {
+  await compressV1(umi, {
     asset: assetAddress.publicKey,
     authority: umi.identity,
     logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
   }).sendAndConfirm(umi);
 
   // And the asset is now compressed as a hashed asset.
-  const afterCompressedAsset = await fetchHashedAsset(
+  const afterCompressedAsset = await fetchHashedAssetV1(
     umi,
     assetAddress.publicKey
   );
 
   // And the hash matches the expected value.
   const hashedAssetSchema: HashedAssetSchema = {
-    assetHash: hash(getAssetAccountDataSerializer().serialize(beforeAsset)),
+    assetHash: hash(getAssetV1AccountDataSerializer().serialize(beforeAsset)),
     pluginHashes: [],
   };
 
@@ -65,7 +65,7 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
   t.deepEqual(afterCompressedAsset.hash, hashedAsset);
 
   // And when we decompress the asset.
-  await decompress(umi, {
+  await decompressV1(umi, {
     asset: assetAddress.publicKey,
     authority: umi.identity,
     compressionProof: {
@@ -79,9 +79,9 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
   }).sendAndConfirm(umi);
 
   // Then the asset is now decompressed into an asset.
-  const afterDecompressedAsset = await fetchAsset(umi, assetAddress.publicKey);
+  const afterDecompressedAsset = await fetchAssetV1(umi, assetAddress.publicKey);
 
-  t.like(afterDecompressedAsset, <Asset>{
+  t.like(afterDecompressedAsset, <AssetV1>{
     publicKey: assetAddress.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     owner: umi.identity.publicKey,

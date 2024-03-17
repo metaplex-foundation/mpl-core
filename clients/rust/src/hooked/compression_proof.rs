@@ -2,21 +2,21 @@ use borsh::BorshDeserialize;
 use solana_program::pubkey::Pubkey;
 
 use crate::{
-    accounts::{BaseAsset, BaseCollection, PluginHeader, PluginRegistry},
+    accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1, PluginRegistryV1},
     types::{CompressionProof, HashablePluginSchema, Plugin, RegistryRecord, UpdateAuthority},
     DataBlob,
 };
 
 /// Fetch asset and the plugin registry.
 pub fn fetch_asset_compression_proof(account: &[u8]) -> Result<CompressionProof, std::io::Error> {
-    let asset = BaseAsset::from_bytes(account)?;
+    let asset = BaseAssetV1::from_bytes(account)?;
     let asset_size = asset.get_size();
     let mut compression_proof = CompressionProof::from_asset(asset.clone(), 0, vec![]);
 
     if asset_size != account.len() {
-        let header = PluginHeader::from_bytes(&account[asset.get_size()..])?;
+        let header = PluginHeaderV1::from_bytes(&account[asset.get_size()..])?;
         let plugin_registry =
-            PluginRegistry::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
+            PluginRegistryV1::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
 
         let mut registry_records = plugin_registry.registry;
 
@@ -42,14 +42,14 @@ pub fn fetch_asset_compression_proof(account: &[u8]) -> Result<CompressionProof,
 pub fn fetch_collection_compression_proof(
     account: &[u8],
 ) -> Result<CompressionProof, std::io::Error> {
-    let asset = BaseCollection::from_bytes(account)?;
+    let asset = BaseCollectionV1::from_bytes(account)?;
     let asset_size = asset.get_size();
     let mut compression_proof = CompressionProof::from_collection(asset.clone(), vec![]);
 
     if asset_size != account.len() {
-        let header = PluginHeader::from_bytes(&account[asset.get_size()..])?;
+        let header = PluginHeaderV1::from_bytes(&account[asset.get_size()..])?;
         let plugin_registry =
-            PluginRegistry::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
+            PluginRegistryV1::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
 
         let mut registry_records = plugin_registry.registry;
 
@@ -72,9 +72,9 @@ pub fn fetch_collection_compression_proof(
 }
 
 impl CompressionProof {
-    /// Create a new `CompressionProof` from a BaseAsset.  Note this uses a passed-in `seq` rather than
+    /// Create a new `CompressionProof` from a BaseAssetV1.  Note this uses a passed-in `seq` rather than
     /// the one contained in `asset` to avoid errors.
-    pub fn from_asset(asset: BaseAsset, seq: u64, plugins: Vec<HashablePluginSchema>) -> Self {
+    pub fn from_asset(asset: BaseAssetV1, seq: u64, plugins: Vec<HashablePluginSchema>) -> Self {
         Self {
             owner: asset.owner,
             update_authority: asset.update_authority,
@@ -86,7 +86,7 @@ impl CompressionProof {
     }
 
     /// Create a new `CompressionProof` from a BaseCollecton.
-    pub fn from_collection(asset: BaseCollection, plugins: Vec<HashablePluginSchema>) -> Self {
+    pub fn from_collection(asset: BaseCollectionV1, plugins: Vec<HashablePluginSchema>) -> Self {
         Self {
             owner: Pubkey::default(),
             update_authority: UpdateAuthority::Address(asset.update_authority),

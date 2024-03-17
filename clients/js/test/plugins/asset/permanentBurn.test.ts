@@ -2,9 +2,9 @@ import test from 'ava';
 import { generateSigner, assertAccountExists, sol } from '@metaplex-foundation/umi';
 import {
   pluginAuthorityPair,
-  burn,
+  burnV1,
   Key,
-  transfer,
+  transferV1,
   updatePluginAuthority,
 } from '../../../src';
 import { createAsset, createCollection, createUmi } from '../../_setup';
@@ -22,7 +22,7 @@ test('it can burn an assets as an owner', async (t) => {
     ],
   });
 
-  await burn(umi, {
+  await burnV1(umi, {
     asset: asset.publicKey,
   }).sendAndConfirm(umi);
 
@@ -51,13 +51,13 @@ test('it can burn an assets as a delegate', async (t) => {
     ],
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: owner,
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
-  await burn(umi, {
+  await burnV1(umi, {
     payer: owner,
     asset: asset.publicKey,
   }).sendAndConfirm(umi);
@@ -101,14 +101,14 @@ test('it can burn an assets as a delegate for a collection', async (t) => {
   });
 
   // move asset #1 twice as a delegate for collection
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: firstAssetOwner,
     asset: asset1.publicKey,
     collection: collection.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: newOwner,
     asset: asset1.publicKey,
     collection: collection.publicKey,
@@ -116,27 +116,27 @@ test('it can burn an assets as a delegate for a collection', async (t) => {
   }).sendAndConfirm(umi);
 
   // move asset #2 twice as a delegate for collection
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: firstAssetOwner,
     asset: asset2.publicKey,
     collection: collection.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: newOwner,
     asset: asset2.publicKey,
     collection: collection.publicKey,
     newOwner: brandNewOwner.publicKey,
   }).sendAndConfirm(umi);
 
-  await burn(umi, {
+  await burnV1(umi, {
     payer: firstAssetOwner,
     asset: asset1.publicKey,
     collection: collection.publicKey,
   }).sendAndConfirm(umi);
 
-  await burn(umi, {
+  await burnV1(umi, {
     payer: firstAssetOwner,
     asset: asset2.publicKey,
     collection: collection.publicKey,
@@ -182,21 +182,21 @@ test('it can burn an asset which is the part of a collection', async (t) => {
   });
 
   // move asset #1 twice as a delegate for collection
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: firstAssetOwner,
     asset: asset.publicKey,
     collection: collection.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: newOwner,
     asset: asset.publicKey,
     collection: collection.publicKey,
     newOwner: brandNewOwner.publicKey,
   }).sendAndConfirm(umi);
 
-  await burn(umi, {
+  await burnV1(umi, {
     payer: firstAssetOwner,
     asset: asset.publicKey,
     collection: collection.publicKey,

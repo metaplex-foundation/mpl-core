@@ -16,7 +16,7 @@ use super::{Authority, CoreAsset, UpdateAuthority};
 
 /// The Core Asset structure that exists at the beginning of every asset account.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount, Eq, PartialEq)]
-pub struct Asset {
+pub struct AssetV1 {
     /// The account discriminator.
     pub key: Key, //1
     /// The owner of the asset.
@@ -32,7 +32,7 @@ pub struct Asset {
     pub seq: Option<u64>, //1
 }
 
-impl Asset {
+impl AssetV1 {
     /// Create a new `Asset` with correct `Key` and `seq` of None.
     pub fn new(
         owner: Pubkey,
@@ -41,7 +41,7 @@ impl Asset {
         uri: String,
     ) -> Self {
         Self {
-            key: Key::Asset,
+            key: Key::AssetV1,
             owner,
             update_authority,
             name,
@@ -251,15 +251,15 @@ impl Asset {
     }
 }
 
-impl Compressible for Asset {}
+impl Compressible for AssetV1 {}
 
-impl DataBlob for Asset {
+impl DataBlob for AssetV1 {
     fn get_initial_size() -> usize {
-        Asset::BASE_LENGTH
+        AssetV1::BASE_LENGTH
     }
 
     fn get_size(&self) -> usize {
-        let mut size = Asset::BASE_LENGTH + self.name.len() + self.uri.len();
+        let mut size = AssetV1::BASE_LENGTH + self.name.len() + self.uri.len();
         if self.seq.is_some() {
             size += size_of::<u64>();
         }
@@ -267,13 +267,13 @@ impl DataBlob for Asset {
     }
 }
 
-impl SolanaAccount for Asset {
+impl SolanaAccount for AssetV1 {
     fn key() -> Key {
-        Key::Asset
+        Key::AssetV1
     }
 }
 
-impl From<CompressionProof> for Asset {
+impl From<CompressionProof> for AssetV1 {
     fn from(compression_proof: CompressionProof) -> Self {
         Self {
             key: Self::key(),
@@ -286,7 +286,7 @@ impl From<CompressionProof> for Asset {
     }
 }
 
-impl CoreAsset for Asset {
+impl CoreAsset for AssetV1 {
     fn update_authority(&self) -> UpdateAuthority {
         self.update_authority.clone()
     }

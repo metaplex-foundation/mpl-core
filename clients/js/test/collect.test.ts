@@ -9,11 +9,11 @@ import test from 'ava';
 
 import {
   PluginType,
-  addPlugin,
+  addPluginV1,
   collect,
   createPlugin,
   pluginAuthorityPair,
-  removePlugin,
+  removePluginV1,
 } from '../src';
 import { createAsset, createUmi } from './_setup';
 
@@ -43,7 +43,7 @@ test('it can add asset plugin with collect amount', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi);
 
-  await addPlugin(umi, {
+  await addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: true } }),
     initAuthority: null,
@@ -72,7 +72,7 @@ test('it can add remove asset plugin with collect amount', async (t) => {
     'Collect amount not found'
   );
 
-  await removePlugin(umi, {
+  await removePluginV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
   }).sendAndConfirm(umi);

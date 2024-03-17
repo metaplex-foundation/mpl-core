@@ -5,7 +5,7 @@ import {
 } from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import { burn, Key, pluginAuthorityPair } from '../src';
+import { burnV1, Key, pluginAuthorityPair } from '../src';
 import {
   DEFAULT_ASSET,
   DEFAULT_COLLECTION,
@@ -27,7 +27,7 @@ test('it can burn an asset as the owner', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
-  await burn(umi, {
+  await burnV1(umi, {
     asset: asset.publicKey,
   }).sendAndConfirm(umi);
 
@@ -53,7 +53,7 @@ test('it cannot burn an asset if not the owner', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
-  const result = burn(umi, {
+  const result = burnV1(umi, {
     asset: asset.publicKey,
     authority: attacker,
   }).sendAndConfirm(umi);
@@ -93,7 +93,7 @@ test('it cannot burn an asset if it is frozen', async (t) => {
     },
   });
 
-  const result = burn(umi, {
+  const result = burnV1(umi, {
     asset: asset.publicKey,
   }).sendAndConfirm(umi);
 
@@ -118,7 +118,7 @@ test('it cannot burn asset in collection if no collection specified', async (t) 
 
   const { asset, collection } = await createAssetWithCollection(umi, {});
 
-  const result = burn(umi, {
+  const result = burnV1(umi, {
     asset: asset.publicKey,
   }).sendAndConfirm(umi);
 
@@ -166,7 +166,7 @@ test('it cannot burn an asset if collection permanently frozen', async (t) => {
     },
   });
 
-  const result = burn(umi, {
+  const result = burnV1(umi, {
     asset: asset.publicKey,
     collection: collection.publicKey,
   }).sendAndConfirm(umi);

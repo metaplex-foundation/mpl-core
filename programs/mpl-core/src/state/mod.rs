@@ -87,15 +87,15 @@ pub enum Key {
     /// Uninitialized or invalid account.
     Uninitialized,
     /// An account holding an uncompressed asset.
-    Asset,
+    AssetV1,
     /// An account holding a compressed asset.
-    HashedAsset,
+    HashedAssetV1,
     /// A discriminator indicating the plugin header.
-    PluginHeader,
+    PluginHeaderV1,
     /// A discriminator indicating the plugin registry.
-    PluginRegistry,
+    PluginRegistryV1,
     /// A discriminator indicating the collection.
-    Collection,
+    CollectionV1,
 }
 
 impl Key {

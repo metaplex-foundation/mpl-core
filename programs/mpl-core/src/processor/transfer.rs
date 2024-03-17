@@ -4,9 +4,9 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::TransferAccounts,
+    instruction::accounts::TransferV1Accounts,
     plugins::{Plugin, PluginType},
-    state::{Asset, Collection, CompressionProof, Key, SolanaAccount, Wrappable},
+    state::{AssetV1, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         compress_into_account_space, load_key, rebuild_account_state_from_proof_data,
         resolve_authority, validate_asset_permissions, verify_proof,
@@ -15,13 +15,13 @@ use crate::{
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct TransferArgs {
+pub struct TransferV1Args {
     compression_proof: Option<CompressionProof>,
 }
 
-pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) -> ProgramResult {
+pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args) -> ProgramResult {
     // Accounts.
-    let ctx = TransferAccounts::context(accounts)?;
+    let ctx = TransferV1Accounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
@@ -30,7 +30,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
     let key = load_key(ctx.accounts.asset, 0)?;
 
     match key {
-        Key::HashedAsset => {
+        Key::HashedAssetV1 => {
             let compression_proof = args
                 .compression_proof
                 .ok_or(MplCoreError::MissingCompressionProof)?;
@@ -59,7 +59,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             msg!("Error: Transferring compressed is currently not available");
             return Err(MplCoreError::NotAvailable.into());
         }
-        Key::Asset => (),
+        Key::AssetV1 => (),
         _ => return Err(MplCoreError::IncorrectAccount.into()),
     }
 
@@ -70,11 +70,11 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
         ctx.accounts.collection,
         Some(ctx.accounts.new_owner),
         None,
-        Asset::check_transfer,
-        Collection::check_transfer,
+        AssetV1::check_transfer,
+        CollectionV1::check_transfer,
         PluginType::check_transfer,
-        Asset::validate_transfer,
-        Collection::validate_transfer,
+        AssetV1::validate_transfer,
+        CollectionV1::validate_transfer,
         Plugin::validate_transfer,
     )?;
 
@@ -83,7 +83,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
 
     // Reserialize the account into correct format.
     match key {
-        Key::HashedAsset => {
+        Key::HashedAssetV1 => {
             let system_program = ctx
                 .accounts
                 .system_program
@@ -101,7 +101,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferArgs) 
             // Send the spl-noop event for indexing the compressed asset.
             compression_proof.wrap()
         }
-        Key::Asset => {
+        Key::AssetV1 => {
             // Increment sequence number only if it is `Some(_)`.
             asset.seq = asset.seq.map(|seq| seq.saturating_add(1));
             asset.save(ctx.accounts.asset, 0)

@@ -7,27 +7,27 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::CreateAccounts,
+    instruction::accounts::CreateV1Accounts,
     plugins::{
         create_meta_idempotent, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
         PluginType, ValidationResult,
     },
-    state::{Asset, DataState, UpdateAuthority, COLLECT_AMOUNT},
+    state::{AssetV1, DataState, UpdateAuthority, COLLECT_AMOUNT},
     utils::fetch_core_data,
 };
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct CreateArgs {
+pub(crate) struct CreateV1Args {
     pub(crate) data_state: DataState,
     pub(crate) name: String,
     pub(crate) uri: String,
     pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
 }
 
-pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> ProgramResult {
+pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) -> ProgramResult {
     // Accounts.
-    let ctx = CreateAccounts::context(accounts)?;
+    let ctx = CreateV1Accounts::context(accounts)?;
     let rent = Rent::get()?;
 
     // Guards.
@@ -52,7 +52,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
-    let new_asset = Asset::new(
+    let new_asset = AssetV1::new(
         *ctx.accounts
             .owner
             .unwrap_or(ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer))
@@ -98,14 +98,14 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
     );
 
     if args.data_state == DataState::AccountState {
-        create_meta_idempotent::<Asset>(
+        create_meta_idempotent::<AssetV1>(
             ctx.accounts.asset,
             ctx.accounts.payer,
             ctx.accounts.system_program,
         )?;
 
         for plugin in &args.plugins.unwrap_or_default() {
-            initialize_plugin::<Asset>(
+            initialize_plugin::<AssetV1>(
                 &plugin.plugin,
                 &plugin.authority.unwrap_or(plugin.plugin.manager()),
                 ctx.accounts.asset,
@@ -114,7 +114,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateArgs) -> P
             )?;
         }
 
-        let (_, _, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
+        let (_, _, plugin_registry) = fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
 
         let mut approved = true;
         // match Asset::check_create() {

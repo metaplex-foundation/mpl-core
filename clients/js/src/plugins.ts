@@ -2,7 +2,7 @@ import { none, some } from '@metaplex-foundation/umi';
 
 import {
   Key,
-  PluginHeader,
+  PluginHeaderV1,
   Plugin as BasePlugin,
   getPluginSerializer,
   RegistryRecord,
@@ -17,11 +17,11 @@ import { BaseAuthority, PluginsList } from './types';
 import { mapAuthority } from './authority';
 import { toWords } from './utils';
 
-export function formPluginHeader(
+export function formPluginHeaderV1(
   pluginRegistryOffset: bigint
-): Omit<PluginHeader, 'publicKey' | 'header'> {
+): Omit<PluginHeaderV1, 'publicKey' | 'header'> {
   return {
-    key: Key.PluginHeader,
+    key: Key.PluginHeaderV1,
     pluginRegistryOffset,
   };
 }

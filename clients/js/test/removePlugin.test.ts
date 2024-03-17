@@ -3,11 +3,11 @@ import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 import {
   PluginType,
-  fetchAsset,
-  removePlugin,
+  fetchAssetV1,
+  removePluginV1,
   pluginAuthorityPair,
-  removeCollectionPlugin,
-  fetchCollection,
+  removeCollectionPluginV1,
+  fetchCollectionV1,
   ruleSet,
   pubkeyPluginAuthority,
 } from '../src';
@@ -40,12 +40,12 @@ test('it can remove a plugin from an asset', async (t) => {
     },
   });
 
-  await removePlugin(umi, {
+  await removePluginV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
   }).sendAndConfirm(umi);
 
-  const asset2 = await fetchAsset(umi, asset.publicKey);
+  const asset2 = await fetchAssetV1(umi, asset.publicKey);
 
   t.is(asset2.freezeDelegate, undefined);
 });
@@ -59,7 +59,7 @@ test('it cannot remove an owner plugin from an asset if not the owner', async (t
     plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
-  const result = removePlugin(umi, {
+  const result = removePluginV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
     authority: attacker,
@@ -75,12 +75,12 @@ test('it can remove authority managed plugin from collection', async (t) => {
     plugins: [pluginAuthorityPair({ type: 'UpdateDelegate' })],
   });
 
-  await removeCollectionPlugin(umi, {
+  await removeCollectionPluginV1(umi, {
     collection: collection.publicKey,
     pluginType: PluginType.UpdateDelegate,
   }).sendAndConfirm(umi);
 
-  const collection2 = await fetchCollection(umi, collection.publicKey);
+  const collection2 = await fetchCollectionV1(umi, collection.publicKey);
 
   t.is(collection2.updateDelegate, undefined);
 });
@@ -115,7 +115,7 @@ test('it can remove authority managed plugin from asset using update auth', asyn
     updateAuthority: updateAuth.publicKey,
   });
 
-  await removePlugin(umi, {
+  await removePluginV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Royalties,
     authority: updateAuth,
@@ -123,7 +123,7 @@ test('it can remove authority managed plugin from asset using update auth', asyn
     collection: collection.publicKey,
   }).sendAndConfirm(umi);
 
-  const asset2 = await fetchAsset(umi, asset.publicKey);
+  const asset2 = await fetchAssetV1(umi, asset.publicKey);
 
   t.is(asset2.royalties, undefined);
 });
@@ -162,7 +162,7 @@ test('it can remove authority managed plugin from collection using delegate auth
     updateAuthority: umi.identity.publicKey,
   });
 
-  await removePlugin(umi, {
+  await removePluginV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Royalties,
     authority: delegate,
@@ -171,7 +171,7 @@ test('it can remove authority managed plugin from collection using delegate auth
     collection: collection.publicKey,
   }).sendAndConfirm(umi);
 
-  const asset2 = await fetchAsset(umi, asset.publicKey);
+  const asset2 = await fetchAssetV1(umi, asset.publicKey);
 
   t.is(asset2.royalties, undefined);
 });

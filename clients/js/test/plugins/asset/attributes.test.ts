@@ -1,5 +1,5 @@
 import test from 'ava';
-import { createPlugin, pluginAuthorityPair, updatePlugin } from '../../../src';
+import { createPlugin, pluginAuthorityPair, updatePluginV1 } from '../../../src';
 import {
   DEFAULT_ASSET,
   assertAsset,
@@ -30,7 +30,7 @@ test('it can add attributes to an asset', async (t) => {
     },
   });
 
-  await updatePlugin(umi, {
+  await updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'Attributes',
@@ -94,7 +94,7 @@ test('it can remove attributes to an asset', async (t) => {
     },
   });
 
-  await updatePlugin(umi, {
+  await updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'Attributes',
@@ -139,7 +139,7 @@ test('it can add then remove attributes to an asset', async (t) => {
     },
   });
 
-  await updatePlugin(umi, {
+  await updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'Attributes',
@@ -168,7 +168,7 @@ test('it can add then remove attributes to an asset', async (t) => {
     },
   });
 
-  await updatePlugin(umi, {
+  await updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'Attributes', data: { attributeList: [] } }),
   }).sendAndConfirm(umi);

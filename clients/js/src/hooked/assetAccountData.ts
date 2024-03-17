@@ -2,38 +2,38 @@ import { Serializer } from '@metaplex-foundation/umi/serializers';
 
 import {
   Key,
-  PluginHeader,
-  PluginHeaderAccountData,
-  PluginRegistryAccountData,
-  getPluginHeaderAccountDataSerializer,
-  getPluginRegistryAccountDataSerializer,
+  PluginHeaderV1,
+  PluginHeaderV1AccountData,
+  PluginRegistryV1AccountData,
+  getPluginHeaderV1AccountDataSerializer,
+  getPluginRegistryV1AccountDataSerializer,
 } from '../generated';
 import {
-  AssetAccountData as GenAssetAccountData,
-  AssetAccountDataArgs as GenAssetAccountDataArgs,
-  getAssetAccountDataSerializer as genGetAssetAccountDataSerializer,
-} from '../generated/types/assetAccountData';
+  AssetV1AccountData as GenAssetV1AccountData,
+  AssetV1AccountDataArgs as GenAssetV1AccountDataArgs,
+  getAssetV1AccountDataSerializer as genGetAssetV1AccountDataSerializer,
+} from '../generated/types/assetV1AccountData';
 import { BaseAuthority, PluginsList } from '../types';
 import { registryRecordsToPluginsList } from '../plugins';
 
-export type AssetAccountData = Omit<GenAssetAccountData, 'updateAuthority'> &
+export type AssetV1AccountData = Omit<GenAssetV1AccountData, 'updateAuthority'> &
   PluginsList & {
-    pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>;
+    pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
     updateAuthority: BaseAuthority;
   };
 
-export type AssetAccountDataArgs = Omit<
-  GenAssetAccountDataArgs,
+export type AssetV1AccountDataArgs = Omit<
+  GenAssetV1AccountDataArgs,
   'updateAuthority'
 > &
   PluginsList & {
-    pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>;
+    pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
     updateAuthority: BaseAuthority;
   };
 
-export const getAssetAccountDataSerializer = (): Serializer<
-  AssetAccountDataArgs,
-  AssetAccountData
+export const getAssetV1AccountDataSerializer = (): Serializer<
+  AssetV1AccountDataArgs,
+  AssetV1AccountData
 > => ({
   description: 'AssetAccountData',
   fixedSize: null,
@@ -41,29 +41,29 @@ export const getAssetAccountDataSerializer = (): Serializer<
   serialize: () => {
     throw new Error('Operation not supported.');
   },
-  deserialize: (buffer: Uint8Array, offset = 0): [AssetAccountData, number] => {
+  deserialize: (buffer: Uint8Array, offset = 0): [AssetV1AccountData, number] => {
     // Account.
-    const [asset, assetOffset] = genGetAssetAccountDataSerializer().deserialize(
+    const [asset, assetOffset] = genGetAssetV1AccountDataSerializer().deserialize(
       buffer,
       offset
     );
-    if (asset.key !== Key.Asset) {
+    if (asset.key !== Key.AssetV1) {
       throw new Error(`Expected an Asset account, got key: ${asset.key}`);
     }
 
-    let pluginHeader: PluginHeaderAccountData | undefined;
-    let pluginRegistry: PluginRegistryAccountData | undefined;
+    let pluginHeader: PluginHeaderV1AccountData | undefined;
+    let pluginRegistry: PluginRegistryV1AccountData | undefined;
     let pluginsList: PluginsList | undefined;
     let finalOffset = assetOffset;
 
     if (buffer.length !== assetOffset) {
-      [pluginHeader] = getPluginHeaderAccountDataSerializer().deserialize(
+      [pluginHeader] = getPluginHeaderV1AccountDataSerializer().deserialize(
         buffer,
         assetOffset
       );
 
       [pluginRegistry, finalOffset] =
-        getPluginRegistryAccountDataSerializer().deserialize(
+        getPluginRegistryV1AccountDataSerializer().deserialize(
           buffer,
           Number(pluginHeader.pluginRegistryOffset)
         );

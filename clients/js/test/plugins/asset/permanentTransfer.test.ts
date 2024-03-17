@@ -1,10 +1,10 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 import {
-  addPlugin,
+  addPluginV1,
   createPlugin,
   pluginAuthorityPair,
-  transfer,
+  transferV1,
   updatePluginAuthority,
 } from '../../../src';
 import {
@@ -23,7 +23,7 @@ test('it cannot add permanentTransfer after creation', async (t) => {
 
   const asset = await createAsset(umi, { owner });
 
-  const result = addPlugin(umi, {
+  const result = addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'PermanentTransferDelegate' }),
     authority: owner,
@@ -59,13 +59,13 @@ test('it can transfer an asset as the owner and not the delegate', async (t) => 
     ],
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: owner,
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: newOwner,
     asset: asset.publicKey,
     newOwner: brandNewOwner.publicKey,
@@ -100,7 +100,7 @@ test('it can transfer an asset as the delegate and the owner', async (t) => {
     ],
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: owner,
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
@@ -136,7 +136,7 @@ test('it can transfer an asset as not the owner', async (t) => {
     ],
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
     authority: owner,
@@ -154,7 +154,7 @@ test('it can transfer an asset as not the owner', async (t) => {
     },
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     newOwner: brandNewOwner.publicKey,
     authority: umi.payer,
@@ -189,7 +189,7 @@ test('it cannot delegate its authority', async (t) => {
     ],
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: owner,
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
@@ -252,14 +252,14 @@ test('it can transfer asset that is a part of a collection forever as a delegate
     collection: collection.publicKey,
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: umi.payer,
     asset: asset.publicKey,
     collection: collection.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: umi.payer,
     asset: asset.publicKey,
     collection: collection.publicKey,
@@ -306,14 +306,14 @@ test('it can transfer multiple assets that is a part of a collection forever as 
   });
 
   // move asset #1 twice as a delegate for collection
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: umi.payer,
     asset: asset1.publicKey,
     collection: collection.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: umi.payer,
     asset: asset1.publicKey,
     collection: collection.publicKey,
@@ -329,14 +329,14 @@ test('it can transfer multiple assets that is a part of a collection forever as 
   });
 
   // move asset #2 twice as a delegate for collection
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: umi.payer,
     asset: asset2.publicKey,
     collection: collection.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
-  await transfer(umi, {
+  await transferV1(umi, {
     authority: umi.payer,
     asset: asset2.publicKey,
     collection: collection.publicKey,

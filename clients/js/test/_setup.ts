@@ -11,13 +11,13 @@ import {
 import {
   DataState,
   Key,
-  create,
-  fetchAsset,
-  fetchCollection,
+  createV1,
+  fetchAssetV1,
+  fetchCollectionV1,
   mplCore,
-  createCollection as baseCreateCollection,
-  Collection,
-  Asset,
+  createCollectionV1 as baseCreateCollection,
+  CollectionV1,
+  AssetV1,
   PluginsList,
   PluginAuthorityPairArgs,
   BaseAuthority,
@@ -58,7 +58,7 @@ export const createAsset = async (
   const asset = input.asset || generateSigner(umi);
   const updateAuthority = publicKey(input.updateAuthority || payer);
   // const tx =
-  await create(umi, {
+  await createV1(umi, {
     owner,
     payer,
     dataState: input.dataState,
@@ -73,7 +73,7 @@ export const createAsset = async (
 
   // console.log("Creating with:", input.plugins, "cost", (await umi.rpc.getTransaction(tx.signature))?.meta.computeUnitsConsumed);
 
-  return fetchAsset(umi, publicKey(asset));
+  return fetchAssetV1(umi, publicKey(asset));
 };
 
 export type CreateCollectionHelperArgs = {
@@ -102,7 +102,7 @@ export const createCollection = async (
     plugins: input.plugins,
   }).sendAndConfirm(umi);
 
-  return fetchCollection(umi, publicKey(collection));
+  return fetchCollectionV1(umi, publicKey(collection));
 };
 
 export const createAssetWithCollection: (
@@ -110,16 +110,16 @@ export const createAssetWithCollection: (
   assetInput: CreateAssetHelperArgs & { collection?: PublicKey | Signer },
   collectionInput?: CreateCollectionHelperArgs
 ) => Promise<{
-  asset: Asset;
-  collection: Collection;
+  asset: AssetV1;
+  collection: CollectionV1;
 }> = async (umi, assetInput, collectionInput = {}) => {
   const collection = assetInput.collection
-    ? await fetchCollection(umi, publicKey(assetInput.collection))
+    ? await fetchCollectionV1(umi, publicKey(assetInput.collection))
     : await createCollection(umi, {
-        payer: assetInput.payer,
-        updateAuthority: assetInput.updateAuthority,
-        ...collectionInput,
-      });
+      payer: assetInput.payer,
+      updateAuthority: assetInput.updateAuthority,
+      ...collectionInput,
+    });
 
   const asset = await createAsset(umi, {
     ...assetInput,
@@ -145,7 +145,7 @@ export const assertAsset = async (
 ) => {
   const { asset, owner, name, uri, ...rest } = input;
   const assetAddress = publicKey(input.asset);
-  const assetWithPlugins = await fetchAsset(umi, assetAddress);
+  const assetWithPlugins = await fetchAssetV1(umi, assetAddress);
 
   // Name.
   if (typeof name === 'string') t.is(assetWithPlugins.name, name);
@@ -155,8 +155,8 @@ export const assertAsset = async (
   if (typeof uri === 'string') t.is(assetWithPlugins.uri, uri);
   else if (uri !== undefined) t.regex(assetWithPlugins.uri, uri);
 
-  const testObj = <Asset>{
-    key: Key.Asset,
+  const testObj = <AssetV1>{
+    key: Key.AssetV1,
     publicKey: assetAddress,
     owner: publicKey(owner),
     ...rest,
@@ -180,7 +180,7 @@ export const assertCollection = async (
   const { collection, name, uri, updateAuthority, ...rest } = input;
 
   const collectionAddress = publicKey(collection);
-  const collectionWithPlugins = await fetchCollection(umi, collectionAddress);
+  const collectionWithPlugins = await fetchCollectionV1(umi, collectionAddress);
 
   // Name.
   if (typeof name === 'string') t.is(collectionWithPlugins.name, name);
@@ -190,8 +190,8 @@ export const assertCollection = async (
   if (typeof uri === 'string') t.is(collectionWithPlugins.uri, uri);
   else if (uri !== undefined) t.regex(collectionWithPlugins.uri, uri);
 
-  const testObj = <Collection>{
-    key: Key.Collection,
+  const testObj = <CollectionV1>{
+    key: Key.CollectionV1,
     publicKey: collectionAddress,
     ...rest,
   };

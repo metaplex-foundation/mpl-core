@@ -3,8 +3,8 @@ import test from 'ava';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import {
   PluginType,
-  approvePluginAuthority,
-  revokePluginAuthority,
+  approvePluginAuthorityV1,
+  revokePluginAuthorityV1,
   pubkeyPluginAuthority,
   nonePluginAuthority,
   pluginAuthorityPair,
@@ -20,7 +20,7 @@ test('it can remove an authority from a plugin', async (t) => {
     plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
-  await approvePluginAuthority(umi, {
+  await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
@@ -39,7 +39,7 @@ test('it can remove an authority from a plugin', async (t) => {
     },
   });
 
-  await revokePluginAuthority(umi, {
+  await revokePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
   }).sendAndConfirm(umi);
@@ -64,7 +64,7 @@ test('it can remove the default authority from a plugin to make it immutable', a
     plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
-  await approvePluginAuthority(umi, {
+  await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
     newAuthority: nonePluginAuthority(),
@@ -92,7 +92,7 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
     plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
-  await approvePluginAuthority(umi, {
+  await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(pubkeyAuth.publicKey),
@@ -113,7 +113,7 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
 
   const umi2 = await createUmi();
 
-  await revokePluginAuthority(umi2, {
+  await revokePluginAuthorityV1(umi2, {
     payer: umi2.identity,
     asset: asset.publicKey,
     authority: pubkeyAuth,
@@ -140,7 +140,7 @@ test('it cannot remove a none authority from a plugin', async (t) => {
     plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
-  await approvePluginAuthority(umi, {
+  await approvePluginAuthorityV1(umi, {
     payer: umi.identity,
     asset: asset.publicKey,
     authority: umi.identity,
@@ -149,7 +149,7 @@ test('it cannot remove a none authority from a plugin', async (t) => {
   }).sendAndConfirm(umi);
 
   const err = await t.throwsAsync(() =>
-    revokePluginAuthority(umi, {
+    revokePluginAuthorityV1(umi, {
       payer: umi.identity,
       asset: asset.publicKey,
       authority: umi.identity,

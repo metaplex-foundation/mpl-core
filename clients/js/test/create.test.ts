@@ -2,12 +2,12 @@ import { generateSigner, publicKey, sol } from '@metaplex-foundation/umi';
 import test from 'ava';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import { createAccount } from '@metaplex-foundation/mpl-toolbox';
-import { getAssetAccountDataSerializer } from '../src/hooked';
+import { getAssetV1AccountDataSerializer } from '../src/hooked';
 import {
-  Asset,
-  create,
+  AssetV1,
+  createV1,
   DataState,
-  fetchHashedAsset,
+  fetchHashedAssetV1,
   pluginAuthorityPair,
 } from '../src';
 import { assertAsset, createAsset, createUmi, DEFAULT_ASSET } from './_setup';
@@ -55,7 +55,7 @@ test.skip('it can create a new asset in ledger state', async (t) => {
   const assetAddress = generateSigner(umi);
 
   // When we create a new account.
-  const txResult = await create(umi, {
+  const txResult = await createV1(umi, {
     dataState: DataState.LedgerState,
     asset: assetAddress,
     name: 'Test Bread',
@@ -64,9 +64,9 @@ test.skip('it can create a new asset in ledger state', async (t) => {
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
-  const asset = await fetchHashedAsset(umi, assetAddress.publicKey);
+  const asset = await fetchHashedAssetV1(umi, assetAddress.publicKey);
   // console.log(asset);
-  t.like(asset, <Asset>{
+  t.like(asset, <AssetV1>{
     publicKey: assetAddress.publicKey,
   });
 
@@ -75,9 +75,9 @@ test.skip('it can create a new asset in ledger state', async (t) => {
     // console.log(tx.meta.innerInstructions[0].instructions);
     const { data } = tx.meta.innerInstructions[0].instructions[0];
     // console.log(base58.deserialize(data));
-    const parsed = getAssetAccountDataSerializer().deserialize(data)[0];
+    const parsed = getAssetV1AccountDataSerializer().deserialize(data)[0];
     // console.log("Ledger State:", parsed);
-    t.like(parsed, <Asset>{
+    t.like(parsed, <AssetV1>{
       updateAuthority: { type: 'Address', address: umi.identity.publicKey },
       owner: umi.identity.publicKey,
       name: 'Test Bread',
@@ -92,7 +92,7 @@ test('it cannot create a new asset in ledger state because it is not available',
   const assetAddress = generateSigner(umi);
 
   // When we create a new account.
-  const result = create(umi, {
+  const result = createV1(umi, {
     dataState: DataState.LedgerState,
     asset: assetAddress,
     name: 'Test Bread',
@@ -109,7 +109,7 @@ test('it can create a new asset in account state with plugins', async (t) => {
   const assetAddress = generateSigner(umi);
 
   // When we create a new account.
-  await create(umi, {
+  await createV1(umi, {
     dataState: DataState.AccountState,
     asset: assetAddress,
     name: 'Test Bread',
@@ -196,7 +196,7 @@ test('it cannot create a new asset if the address is already in use', async (t) 
     asset: assetAddress,
   });
 
-  const result = create(umi, {
+  const result = createV1(umi, {
     dataState: DataState.AccountState,
     asset: assetAddress,
     name: DEFAULT_ASSET.name,
@@ -220,7 +220,7 @@ test('it cannot create a new asset if the address is not owned by the system pro
   }).sendAndConfirm(umi);
 
   // The invalid system program error is expected.
-  const result = create(umi, {
+  const result = createV1(umi, {
     ...DEFAULT_ASSET,
     dataState: DataState.AccountState,
     asset: newAccount,

@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::pubkey::Pubkey;
 
-use crate::state::{Asset, HashablePluginSchema, UpdateAuthority, Wrappable};
+use crate::state::{AssetV1, HashablePluginSchema, UpdateAuthority, Wrappable};
 
 /// A simple struct to store the compression proof of an asset.
 #[repr(C)]
@@ -24,7 +24,7 @@ pub struct CompressionProof {
 impl CompressionProof {
     /// Create a new `CompressionProof`.  Note this uses a passed-in `seq` rather than
     /// the one contained in `asset` to avoid errors.
-    pub fn new(asset: Asset, seq: u64, plugins: Vec<HashablePluginSchema>) -> Self {
+    pub fn new(asset: AssetV1, seq: u64, plugins: Vec<HashablePluginSchema>) -> Self {
         Self {
             owner: asset.owner,
             update_authority: asset.update_authority,
