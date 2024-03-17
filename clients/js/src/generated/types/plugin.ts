@@ -13,7 +13,6 @@ import {
   dataEnum,
   struct,
   tuple,
-  unit,
 } from '@metaplex-foundation/umi/serializers';
 import {
   Attributes,
@@ -46,7 +45,6 @@ import {
 } from '.';
 
 export type Plugin =
-  | { __kind: 'Reserved' }
   | { __kind: 'Royalties'; fields: [Royalties] }
   | { __kind: 'Freeze'; fields: [Freeze] }
   | { __kind: 'Burn'; fields: [Burn] }
@@ -58,7 +56,6 @@ export type Plugin =
   | { __kind: 'PermanentBurn'; fields: [PermanentBurn] };
 
 export type PluginArgs =
-  | { __kind: 'Reserved' }
   | { __kind: 'Royalties'; fields: [RoyaltiesArgs] }
   | { __kind: 'Freeze'; fields: [FreezeArgs] }
   | { __kind: 'Burn'; fields: [BurnArgs] }
@@ -72,7 +69,6 @@ export type PluginArgs =
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
     [
-      ['Reserved', unit()],
       [
         'Royalties',
         struct<GetDataEnumKindContent<Plugin, 'Royalties'>>([
@@ -133,9 +129,6 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
 }
 
 // Data Enum Helpers.
-export function plugin(
-  kind: 'Reserved'
-): GetDataEnumKind<PluginArgs, 'Reserved'>;
 export function plugin(
   kind: 'Royalties',
   data: GetDataEnumKindContent<PluginArgs, 'Royalties'>['fields']

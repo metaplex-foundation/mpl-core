@@ -2044,9 +2044,6 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "Reserved"
-          },
-          {
             "name": "Royalties",
             "fields": [
               {
@@ -2126,9 +2123,6 @@
       "type": {
         "kind": "enum",
         "variants": [
-          {
-            "name": "Reserved"
-          },
           {
             "name": "Royalties"
           },

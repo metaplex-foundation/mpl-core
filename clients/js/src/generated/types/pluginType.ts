@@ -9,7 +9,6 @@
 import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 
 export enum PluginType {
-  Reserved,
   Royalties,
   Freeze,
   Burn,

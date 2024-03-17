@@ -131,7 +131,6 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_add_plugin(authority_info, authority, new_plugin)
             }
@@ -170,7 +169,6 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
@@ -210,7 +208,6 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_approve_plugin_authority(
                 authority_info,
                 authority,
@@ -259,7 +256,6 @@ impl Plugin {
         }
 
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_revoke_plugin_authority(
                 authority_info,
                 authority,
@@ -302,7 +298,6 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_create(authority_info, authority),
             Plugin::Freeze(freeze) => freeze.validate_create(authority_info, authority),
             Plugin::Burn(burn) => burn.validate_create(authority_info, authority),
@@ -333,7 +328,6 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_update(authority_info, authority),
             Plugin::Freeze(freeze) => freeze.validate_update(authority_info, authority),
             Plugin::Burn(burn) => burn.validate_update(authority_info, authority),
@@ -366,7 +360,6 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_update_plugin(core_asset, authority_info, authority)
             }
@@ -407,7 +400,6 @@ impl Plugin {
         resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_burn(authority_info, authority, resolved_authority)
             }
@@ -447,7 +439,6 @@ impl Plugin {
     ) -> Result<ValidationResult, ProgramError> {
         let new_owner = new_owner.ok_or(MplCoreError::MissingNewOwner)?;
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_transfer(
                 authority_info,
                 new_owner,
@@ -506,7 +497,6 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_compress(authority_info, authority),
             Plugin::Freeze(freeze) => freeze.validate_compress(authority_info, authority),
             Plugin::Burn(burn) => burn.validate_compress(authority_info, authority),
@@ -539,7 +529,6 @@ impl Plugin {
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
                 royalties.validate_decompress(authority_info, authority)
             }

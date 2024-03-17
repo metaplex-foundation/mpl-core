@@ -33,55 +33,55 @@ export function formPluginHeader(
 
 export type PluginAuthorityPairHelperArgs =
   | {
-      type: 'Royalties';
-      authority?: Authority;
-      data: RoyaltiesArgs;
-    }
+    type: 'Royalties';
+    authority?: Authority;
+    data: RoyaltiesArgs;
+  }
   | {
-      type: 'Freeze';
-      authority?: Authority;
-      data: FreezeArgs;
-    }
+    type: 'Freeze';
+    authority?: Authority;
+    data: FreezeArgs;
+  }
   | {
-      type: 'Burn';
-      authority?: Authority;
-      data?: BurnArgs;
-    }
+    type: 'Burn';
+    authority?: Authority;
+    data?: BurnArgs;
+  }
   | {
-      type: 'Transfer';
-      authority?: Authority;
-      data?: TransferArgs;
-    }
+    type: 'Transfer';
+    authority?: Authority;
+    data?: TransferArgs;
+  }
   | {
-      type: 'UpdateDelegate';
-      authority?: Authority;
-      data?: UpdateDelegateArgs;
-    }
+    type: 'UpdateDelegate';
+    authority?: Authority;
+    data?: UpdateDelegateArgs;
+  }
   | {
-      type: 'PermanentFreeze';
-      authority?: Authority;
-      data: PermanentFreezeArgs;
-    }
+    type: 'PermanentFreeze';
+    authority?: Authority;
+    data: PermanentFreezeArgs;
+  }
   | {
-      type: 'Attributes';
-      authority?: Authority;
-      data: AttributesArgs;
-    }
+    type: 'Attributes';
+    authority?: Authority;
+    data: AttributesArgs;
+  }
   | {
-      type: 'PermanentFreeze';
-      authority?: Authority;
-      data: PermanentFreezeArgs;
-    }
+    type: 'PermanentFreeze';
+    authority?: Authority;
+    data: PermanentFreezeArgs;
+  }
   | {
-      type: 'PermanentTransfer';
-      authority?: Authority;
-      data?: PermanentTransferArgs;
-    }
+    type: 'PermanentTransfer';
+    authority?: Authority;
+    data?: PermanentTransferArgs;
+  }
   | {
-      type: 'PermanentBurn';
-      authority?: Authority;
-      data?: PermanentBurnArgs;
-    };
+    type: 'PermanentBurn';
+    authority?: Authority;
+    data?: PermanentBurnArgs;
+  };
 
 export function pluginAuthorityPair(
   args: PluginAuthorityPairHelperArgs
@@ -130,8 +130,6 @@ export function registryRecordsToPluginsList(
       accountData,
       Number(record.offset)
     )[0];
-
-    if (deserializedPlugin.__kind === 'Reserved') return acc;
 
     acc = {
       ...acc,

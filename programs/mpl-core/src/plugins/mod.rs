@@ -14,6 +14,7 @@ mod utils;
 
 pub use attributes::*;
 pub use burn::*;
+use core_macros::plugin_validator;
 pub use freeze::*;
 pub use lifecycle::*;
 use num_derive::ToPrimitive;
@@ -40,11 +41,10 @@ use crate::{
 };
 
 /// Definition of the plugin variants, each containing a link to the plugin struct.
-#[repr(u16)]
+#[repr(u16)]/
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
+#[plugin_validator(create)]
 pub enum Plugin {
-    /// Reserved for uninitialized or invalid plugins.
-    Reserved,
     /// Royalties plugin.
     Royalties(Royalties),
     /// Freeze plugin.
@@ -103,14 +103,10 @@ impl Compressible for Plugin {}
     PartialEq,
     ToPrimitive,
     EnumCount,
-    Default,
     PartialOrd,
     Ord,
 )]
 pub enum PluginType {
-    /// Reserved plugin.
-    #[default]
-    Reserved,
     /// Royalties plugin.
     Royalties,
     /// Freeze plugin.
@@ -144,7 +140,6 @@ impl DataBlob for PluginType {
 impl From<&Plugin> for PluginType {
     fn from(plugin: &Plugin) -> Self {
         match plugin {
-            Plugin::Reserved => PluginType::Reserved,
             Plugin::Royalties(_) => PluginType::Royalties,
             Plugin::Freeze(_) => PluginType::Freeze,
             Plugin::Burn(_) => PluginType::Burn,
@@ -162,7 +157,6 @@ impl PluginType {
     /// Get the default authority for a plugin which defines who must allow the plugin to be created.
     pub fn manager(&self) -> Authority {
         match self {
-            PluginType::Reserved => Authority::None,
             PluginType::Royalties => Authority::UpdateAuthority,
             PluginType::Freeze => Authority::Owner,
             PluginType::Burn => Authority::Owner,

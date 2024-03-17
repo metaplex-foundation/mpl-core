@@ -21,3 +21,4 @@ mpl-utils = "0.3.3"
 spl-noop = { version = "0.2.0", features = ["cpi"] }
 podded = "0.5.1"
 strum = { version = "0.26.1", features = ["derive"] }
+core-macros = { path = "../core-macros" }
