@@ -24,8 +24,8 @@ impl DataBlob for PermanentBurn {
 impl PluginValidation for PermanentBurn {
     fn validate_add_plugin(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
         _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
@@ -35,8 +35,8 @@ impl PluginValidation for PermanentBurn {
 
     fn validate_revoke_plugin_authority(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
         _plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Approved)
@@ -44,12 +44,12 @@ impl PluginValidation for PermanentBurn {
 
     fn validate_burn(
         &self,
-        _authority: &AccountInfo,
-        authorities: &Authority,
+        _authority_info: &AccountInfo,
+        authority: &Authority,
         resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(resolved_authority) = resolved_authority {
-            if resolved_authority == authorities {
+            if resolved_authority == authority {
                 return Ok(ValidationResult::ForceApproved);
             }
         }

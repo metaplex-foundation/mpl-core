@@ -50,7 +50,7 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
         )? as usize..],
     )?;
 
-    // Return the plugin and its authorities.
+    // Return the plugin and its authority.
     Ok((
         registry_record.authority.clone(),
         inner,

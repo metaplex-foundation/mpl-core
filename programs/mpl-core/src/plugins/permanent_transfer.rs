@@ -44,13 +44,13 @@ impl PluginValidation for PermanentTransfer {
 
     fn validate_transfer(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _new_owner: &AccountInfo,
-        authorities: &Authority,
+        authority: &Authority,
         resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(resolved_authority) = resolved_authority {
-            if resolved_authority == authorities {
+            if resolved_authority == authority {
                 return Ok(ValidationResult::ForceApproved);
             }
         }

@@ -100,8 +100,8 @@ impl PluginValidation for PermanentFreeze {
 
     fn validate_add_plugin(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
         _new_plugin: Option<&super::Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
@@ -112,13 +112,13 @@ impl PluginValidation for PermanentFreeze {
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
+        authority_info: &AccountInfo,
+        authority: &Authority,
         plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        if authorities
+        if authority
             == &(Authority::Pubkey {
-                address: *authority.key,
+                address: *authority_info.key,
             })
             && plugin_to_revoke.is_some()
             && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::Freeze

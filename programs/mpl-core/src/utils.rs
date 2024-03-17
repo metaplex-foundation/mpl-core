@@ -29,19 +29,15 @@ pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, ProgramErro
     Ok(key)
 }
 
-/// Assert that the account info address is in the authorities array.
+/// Assert that the account info address is in the same as the authority.
 pub fn assert_authority<T: CoreAsset>(
     asset: &T,
     authority_info: &AccountInfo,
-    authorities: &Authority,
+    authority: &Authority,
 ) -> ProgramResult {
     solana_program::msg!("Update authority: {:?}", asset.update_authority());
-    solana_program::msg!(
-        "Check if {:?} matches {:?}",
-        authority_info.key,
-        authorities
-    );
-    match authorities {
+    solana_program::msg!("Check if {:?} matches {:?}", authority_info.key, authority);
+    match authority {
         Authority::None => (),
         Authority::Owner => {
             if asset.owner() == authority_info.key {
@@ -63,7 +59,7 @@ pub fn assert_authority<T: CoreAsset>(
     Err(MplCoreError::InvalidAuthority.into())
 }
 
-/// Assert that the account info address is in the authorities array.
+/// Assert that the account info address is the same as the authority.
 pub fn assert_collection_authority(
     asset: &Collection,
     authority_info: &AccountInfo,

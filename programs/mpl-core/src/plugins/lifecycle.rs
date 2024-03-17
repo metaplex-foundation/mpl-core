@@ -124,38 +124,38 @@ impl Plugin {
     /// Validate the add plugin lifecycle event.
     pub fn validate_add_plugin(
         plugin: &Plugin,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&AccountInfo>,
-        authorities: &Authority,
+        authority: &Authority,
         new_plugin: Option<&Plugin>,
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
-                royalties.validate_add_plugin(authority, authorities, new_plugin)
+                royalties.validate_add_plugin(authority_info, authority, new_plugin)
             }
             Plugin::Freeze(freeze) => {
-                freeze.validate_add_plugin(authority, authorities, new_plugin)
+                freeze.validate_add_plugin(authority_info, authority, new_plugin)
             }
-            Plugin::Burn(burn) => burn.validate_add_plugin(authority, authorities, new_plugin),
+            Plugin::Burn(burn) => burn.validate_add_plugin(authority_info, authority, new_plugin),
             Plugin::Transfer(transfer) => {
-                transfer.validate_add_plugin(authority, authorities, new_plugin)
+                transfer.validate_add_plugin(authority_info, authority, new_plugin)
             }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_add_plugin(authority, authorities, new_plugin)
+                update_delegate.validate_add_plugin(authority_info, authority, new_plugin)
             }
             Plugin::PermanentFreeze(permanent_freeze) => {
-                permanent_freeze.validate_add_plugin(authority, authorities, new_plugin)
+                permanent_freeze.validate_add_plugin(authority_info, authority, new_plugin)
             }
             Plugin::Attributes(attributes) => {
-                attributes.validate_add_plugin(authority, authorities, new_plugin)
+                attributes.validate_add_plugin(authority_info, authority, new_plugin)
             }
             Plugin::PermanentTransfer(permanent_transfer) => {
-                permanent_transfer.validate_add_plugin(authority, authorities, new_plugin)
+                permanent_transfer.validate_add_plugin(authority_info, authority, new_plugin)
             }
             Plugin::PermanentBurn(permanent_burn) => {
-                permanent_burn.validate_add_plugin(authority, authorities, new_plugin)
+                permanent_burn.validate_add_plugin(authority_info, authority, new_plugin)
             }
         }
     }
@@ -163,40 +163,39 @@ impl Plugin {
     /// Validate the remove plugin lifecycle event.
     pub fn validate_remove_plugin(
         plugin: &Plugin,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&AccountInfo>,
-        authorities: &Authority,
+        authority: &Authority,
         plugin_to_remove: Option<&Plugin>,
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
-                royalties.validate_remove_plugin(authority, authorities, plugin_to_remove)
+                royalties.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
             Plugin::Freeze(freeze) => {
-                freeze.validate_remove_plugin(authority, authorities, plugin_to_remove)
+                freeze.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
             Plugin::Burn(burn) => {
-                burn.validate_remove_plugin(authority, authorities, plugin_to_remove)
+                burn.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
             Plugin::Transfer(transfer) => {
-                transfer.validate_remove_plugin(authority, authorities, plugin_to_remove)
+                transfer.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_remove_plugin(authority, authorities, plugin_to_remove)
+                update_delegate.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
             Plugin::PermanentFreeze(permanent_freeze) => {
-                permanent_freeze.validate_remove_plugin(authority, authorities, plugin_to_remove)
+                permanent_freeze.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
             Plugin::Attributes(attributes) => {
-                attributes.validate_remove_plugin(authority, authorities, plugin_to_remove)
+                attributes.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
-            Plugin::PermanentTransfer(permanent_transfer) => {
-                permanent_transfer.validate_remove_plugin(authority, authorities, plugin_to_remove)
-            }
+            Plugin::PermanentTransfer(permanent_transfer) => permanent_transfer
+                .validate_remove_plugin(authority_info, authority, plugin_to_remove),
             Plugin::PermanentBurn(permanent_burn) => {
-                permanent_burn.validate_remove_plugin(authority, authorities, plugin_to_remove)
+                permanent_burn.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
         }
     }
@@ -204,116 +203,122 @@ impl Plugin {
     /// Validate the approve plugin authority lifecycle event.
     pub fn validate_approve_plugin_authority(
         plugin: &Plugin,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&AccountInfo>,
-        authorities: &Authority,
+        authority: &Authority,
         plugin_to_approve: Option<&Plugin>,
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => royalties.validate_approve_plugin_authority(
+                authority_info,
                 authority,
-                authorities,
                 plugin_to_approve,
             ),
-            Plugin::Freeze(freeze) => {
-                freeze.validate_approve_plugin_authority(authority, authorities, plugin_to_approve)
-            }
+            Plugin::Freeze(freeze) => freeze.validate_approve_plugin_authority(
+                authority_info,
+                authority,
+                plugin_to_approve,
+            ),
             Plugin::Burn(burn) => {
-                burn.validate_approve_plugin_authority(authority, authorities, plugin_to_approve)
+                burn.validate_approve_plugin_authority(authority_info, authority, plugin_to_approve)
             }
             Plugin::Transfer(transfer) => transfer.validate_approve_plugin_authority(
+                authority_info,
                 authority,
-                authorities,
                 plugin_to_approve,
             ),
             Plugin::UpdateDelegate(update_delegate) => update_delegate
-                .validate_approve_plugin_authority(authority, authorities, plugin_to_approve),
+                .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
             Plugin::PermanentFreeze(permanent_freeze) => permanent_freeze
-                .validate_approve_plugin_authority(authority, authorities, plugin_to_approve),
+                .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
             Plugin::Attributes(attributes) => attributes.validate_approve_plugin_authority(
+                authority_info,
                 authority,
-                authorities,
                 plugin_to_approve,
             ),
             Plugin::PermanentTransfer(permanent_transfer) => permanent_transfer
-                .validate_approve_plugin_authority(authority, authorities, plugin_to_approve),
+                .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
             Plugin::PermanentBurn(permanent_burn) => permanent_burn
-                .validate_approve_plugin_authority(authority, authorities, plugin_to_approve),
+                .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
         }
     }
 
     /// Validate the revoke plugin authority lifecycle event.
     pub fn validate_revoke_plugin_authority(
         plugin: &Plugin,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&AccountInfo>,
-        authorities: &Authority,
+        authority: &Authority,
         plugin_to_revoke: Option<&Plugin>,
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
-        if authorities == &Authority::None {
+        if authority == &Authority::None {
             return Ok(ValidationResult::Rejected);
         }
 
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => {
-                royalties.validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke)
-            }
+            Plugin::Royalties(royalties) => royalties.validate_revoke_plugin_authority(
+                authority_info,
+                authority,
+                plugin_to_revoke,
+            ),
             Plugin::Freeze(freeze) => {
-                freeze.validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke)
+                freeze.validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke)
             }
             Plugin::Burn(burn) => {
-                burn.validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke)
+                burn.validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke)
             }
-            Plugin::Transfer(transfer) => {
-                transfer.validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke)
-            }
-            Plugin::UpdateDelegate(update_delegate) => update_delegate
-                .validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke),
-            Plugin::PermanentFreeze(permanent_freeze) => permanent_freeze
-                .validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke),
-            Plugin::Attributes(attributes) => attributes.validate_revoke_plugin_authority(
+            Plugin::Transfer(transfer) => transfer.validate_revoke_plugin_authority(
+                authority_info,
                 authority,
-                authorities,
+                plugin_to_revoke,
+            ),
+            Plugin::UpdateDelegate(update_delegate) => update_delegate
+                .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
+            Plugin::PermanentFreeze(permanent_freeze) => permanent_freeze
+                .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
+            Plugin::Attributes(attributes) => attributes.validate_revoke_plugin_authority(
+                authority_info,
+                authority,
                 plugin_to_revoke,
             ),
             Plugin::PermanentTransfer(permanent_transfer) => permanent_transfer
-                .validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke),
+                .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
             Plugin::PermanentBurn(permanent_burn) => permanent_burn
-                .validate_revoke_plugin_authority(authority, authorities, plugin_to_revoke),
+                .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
         }
     }
 
     /// Route the validation of the create action to the appropriate plugin.
     pub(crate) fn validate_create(
         plugin: &Plugin,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&AccountInfo>,
-        authorities: &Authority,
+        authority: &Authority,
         _: Option<&Plugin>,
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => royalties.validate_create(authority, authorities),
-            Plugin::Freeze(freeze) => freeze.validate_create(authority, authorities),
-            Plugin::Burn(burn) => burn.validate_create(authority, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_create(authority, authorities),
+            Plugin::Royalties(royalties) => royalties.validate_create(authority_info, authority),
+            Plugin::Freeze(freeze) => freeze.validate_create(authority_info, authority),
+            Plugin::Burn(burn) => burn.validate_create(authority_info, authority),
+            Plugin::Transfer(transfer) => transfer.validate_create(authority_info, authority),
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_create(authority, authorities)
+                update_delegate.validate_create(authority_info, authority)
             }
             Plugin::PermanentFreeze(permanent_freeze) => {
-                permanent_freeze.validate_create(authority, authorities)
+                permanent_freeze.validate_create(authority_info, authority)
             }
-            Plugin::Attributes(attributes) => attributes.validate_create(authority, authorities),
+            Plugin::Attributes(attributes) => attributes.validate_create(authority_info, authority),
             Plugin::PermanentTransfer(permanent_transfer) => {
-                permanent_transfer.validate_create(authority, authorities)
+                permanent_transfer.validate_create(authority_info, authority)
             }
             Plugin::PermanentBurn(permanent_burn) => {
-                permanent_burn.validate_create(authority, authorities)
+                permanent_burn.validate_create(authority_info, authority)
             }
         }
     }
@@ -321,30 +326,30 @@ impl Plugin {
     /// Route the validation of the update action to the appropriate plugin.
     pub(crate) fn validate_update(
         plugin: &Plugin,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&AccountInfo>,
-        authorities: &Authority,
+        authority: &Authority,
         _: Option<&Plugin>,
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => royalties.validate_update(authority, authorities),
-            Plugin::Freeze(freeze) => freeze.validate_update(authority, authorities),
-            Plugin::Burn(burn) => burn.validate_update(authority, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_update(authority, authorities),
+            Plugin::Royalties(royalties) => royalties.validate_update(authority_info, authority),
+            Plugin::Freeze(freeze) => freeze.validate_update(authority_info, authority),
+            Plugin::Burn(burn) => burn.validate_update(authority_info, authority),
+            Plugin::Transfer(transfer) => transfer.validate_update(authority_info, authority),
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_update(authority, authorities)
+                update_delegate.validate_update(authority_info, authority)
             }
             Plugin::PermanentFreeze(permanent_freeze) => {
-                permanent_freeze.validate_update(authority, authorities)
+                permanent_freeze.validate_update(authority_info, authority)
             }
-            Plugin::Attributes(attributes) => attributes.validate_update(authority, authorities),
+            Plugin::Attributes(attributes) => attributes.validate_update(authority_info, authority),
             Plugin::PermanentTransfer(permanent_transfer) => {
-                permanent_transfer.validate_update(authority, authorities)
+                permanent_transfer.validate_update(authority_info, authority)
             }
             Plugin::PermanentBurn(permanent_burn) => {
-                permanent_burn.validate_update(authority, authorities)
+                permanent_burn.validate_update(authority_info, authority)
             }
         }
     }
@@ -354,38 +359,40 @@ impl Plugin {
     pub(crate) fn validate_update_plugin<T: CoreAsset>(
         plugin: &Plugin,
         core_asset: &T,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&AccountInfo>,
-        authorities: &Authority,
+        authority: &Authority,
         _: Option<&Plugin>,
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
-                royalties.validate_update_plugin(core_asset, authority, authorities)
+                royalties.validate_update_plugin(core_asset, authority_info, authority)
             }
             Plugin::Freeze(freeze) => {
-                freeze.validate_update_plugin(core_asset, authority, authorities)
+                freeze.validate_update_plugin(core_asset, authority_info, authority)
             }
-            Plugin::Burn(burn) => burn.validate_update_plugin(core_asset, authority, authorities),
+            Plugin::Burn(burn) => {
+                burn.validate_update_plugin(core_asset, authority_info, authority)
+            }
             Plugin::Transfer(transfer) => {
-                transfer.validate_update_plugin(core_asset, authority, authorities)
+                transfer.validate_update_plugin(core_asset, authority_info, authority)
             }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_update_plugin(core_asset, authority, authorities)
+                update_delegate.validate_update_plugin(core_asset, authority_info, authority)
             }
             Plugin::PermanentFreeze(permanent_freeze) => {
-                permanent_freeze.validate_update_plugin(core_asset, authority, authorities)
+                permanent_freeze.validate_update_plugin(core_asset, authority_info, authority)
             }
             Plugin::Attributes(attributes) => {
-                attributes.validate_update_plugin(core_asset, authority, authorities)
+                attributes.validate_update_plugin(core_asset, authority_info, authority)
             }
             Plugin::PermanentTransfer(permanent_transfer) => {
-                permanent_transfer.validate_update_plugin(core_asset, authority, authorities)
+                permanent_transfer.validate_update_plugin(core_asset, authority_info, authority)
             }
             Plugin::PermanentBurn(permanent_burn) => {
-                permanent_burn.validate_update_plugin(core_asset, authority, authorities)
+                permanent_burn.validate_update_plugin(core_asset, authority_info, authority)
             }
         }
     }
@@ -393,38 +400,38 @@ impl Plugin {
     /// Route the validation of the burn action to the appropriate plugin.
     pub(crate) fn validate_burn(
         plugin: &Plugin,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&AccountInfo>,
-        authorities: &Authority,
+        authority: &Authority,
         _: Option<&Plugin>,
         resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
             Plugin::Royalties(royalties) => {
-                royalties.validate_burn(authority, authorities, resolved_authority)
+                royalties.validate_burn(authority_info, authority, resolved_authority)
             }
             Plugin::Freeze(freeze) => {
-                freeze.validate_burn(authority, authorities, resolved_authority)
+                freeze.validate_burn(authority_info, authority, resolved_authority)
             }
-            Plugin::Burn(burn) => burn.validate_burn(authority, authorities, resolved_authority),
+            Plugin::Burn(burn) => burn.validate_burn(authority_info, authority, resolved_authority),
             Plugin::Transfer(transfer) => {
-                transfer.validate_burn(authority, authorities, resolved_authority)
+                transfer.validate_burn(authority_info, authority, resolved_authority)
             }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_burn(authority, authorities, resolved_authority)
+                update_delegate.validate_burn(authority_info, authority, resolved_authority)
             }
             Plugin::PermanentFreeze(permanent_freeze) => {
-                permanent_freeze.validate_burn(authority, authorities, resolved_authority)
+                permanent_freeze.validate_burn(authority_info, authority, resolved_authority)
             }
             Plugin::Attributes(attributes) => {
-                attributes.validate_burn(authority, authorities, resolved_authority)
+                attributes.validate_burn(authority_info, authority, resolved_authority)
             }
             Plugin::PermanentTransfer(permanent_transfer) => {
-                permanent_transfer.validate_burn(authority, authorities, resolved_authority)
+                permanent_transfer.validate_burn(authority_info, authority, resolved_authority)
             }
             Plugin::PermanentBurn(permanent_burn) => {
-                permanent_burn.validate_burn(authority, authorities, resolved_authority)
+                permanent_burn.validate_burn(authority_info, authority, resolved_authority)
             }
         }
     }
@@ -432,55 +439,58 @@ impl Plugin {
     /// Route the validation of the transfer action to the appropriate plugin.
     pub(crate) fn validate_transfer(
         plugin: &Plugin,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         new_owner: Option<&AccountInfo>,
-        authorities: &Authority,
+        authority: &Authority,
         _: Option<&Plugin>,
         resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         let new_owner = new_owner.ok_or(MplCoreError::MissingNewOwner)?;
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => {
-                royalties.validate_transfer(authority, new_owner, authorities, resolved_authority)
-            }
+            Plugin::Royalties(royalties) => royalties.validate_transfer(
+                authority_info,
+                new_owner,
+                authority,
+                resolved_authority,
+            ),
             Plugin::Freeze(freeze) => {
-                freeze.validate_transfer(authority, new_owner, authorities, resolved_authority)
+                freeze.validate_transfer(authority_info, new_owner, authority, resolved_authority)
             }
             Plugin::Burn(burn) => {
-                burn.validate_transfer(authority, new_owner, authorities, resolved_authority)
+                burn.validate_transfer(authority_info, new_owner, authority, resolved_authority)
             }
             Plugin::Transfer(transfer) => {
-                transfer.validate_transfer(authority, new_owner, authorities, resolved_authority)
+                transfer.validate_transfer(authority_info, new_owner, authority, resolved_authority)
             }
             Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_transfer(
-                authority,
+                authority_info,
                 new_owner,
-                authorities,
+                authority,
                 resolved_authority,
             ),
             Plugin::PermanentFreeze(permanent_freeze) => permanent_freeze.validate_transfer(
-                authority,
+                authority_info,
                 new_owner,
-                authorities,
+                authority,
                 resolved_authority,
             ),
             Plugin::PermanentTransfer(permanent_transfer) => permanent_transfer.validate_transfer(
-                authority,
+                authority_info,
                 new_owner,
-                authorities,
+                authority,
                 resolved_authority,
             ),
             Plugin::Attributes(attributes_transfer) => attributes_transfer.validate_transfer(
-                authority,
+                authority_info,
                 new_owner,
-                authorities,
+                authority,
                 resolved_authority,
             ),
             Plugin::PermanentBurn(burn_transfer) => burn_transfer.validate_transfer(
-                authority,
+                authority_info,
                 new_owner,
-                authorities,
+                authority,
                 resolved_authority,
             ),
         }
@@ -489,30 +499,32 @@ impl Plugin {
     /// Route the validation of the compress action to the appropriate plugin.
     pub(crate) fn validate_compress(
         plugin: &Plugin,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&AccountInfo>,
-        authorities: &Authority,
+        authority: &Authority,
         _: Option<&Plugin>,
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => royalties.validate_compress(authority, authorities),
-            Plugin::Freeze(freeze) => freeze.validate_compress(authority, authorities),
-            Plugin::Burn(burn) => burn.validate_compress(authority, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_compress(authority, authorities),
+            Plugin::Royalties(royalties) => royalties.validate_compress(authority_info, authority),
+            Plugin::Freeze(freeze) => freeze.validate_compress(authority_info, authority),
+            Plugin::Burn(burn) => burn.validate_compress(authority_info, authority),
+            Plugin::Transfer(transfer) => transfer.validate_compress(authority_info, authority),
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_compress(authority, authorities)
+                update_delegate.validate_compress(authority_info, authority)
             }
             Plugin::PermanentFreeze(permanent_freeze) => {
-                permanent_freeze.validate_compress(authority, authorities)
+                permanent_freeze.validate_compress(authority_info, authority)
             }
-            Plugin::Attributes(attributes) => attributes.validate_compress(authority, authorities),
+            Plugin::Attributes(attributes) => {
+                attributes.validate_compress(authority_info, authority)
+            }
             Plugin::PermanentTransfer(permanent_transfer) => {
-                permanent_transfer.validate_compress(authority, authorities)
+                permanent_transfer.validate_compress(authority_info, authority)
             }
             Plugin::PermanentBurn(burn_transfer) => {
-                burn_transfer.validate_compress(authority, authorities)
+                burn_transfer.validate_compress(authority_info, authority)
             }
         }
     }
@@ -520,32 +532,34 @@ impl Plugin {
     /// Route the validation of the decompress action to the appropriate plugin.
     pub(crate) fn validate_decompress(
         plugin: &Plugin,
-        authority: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&AccountInfo>,
-        authorities: &Authority,
+        authority: &Authority,
         _: Option<&Plugin>,
         _: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Reserved => Err(MplCoreError::InvalidPlugin.into()),
-            Plugin::Royalties(royalties) => royalties.validate_decompress(authority, authorities),
-            Plugin::Freeze(freeze) => freeze.validate_decompress(authority, authorities),
-            Plugin::Burn(burn) => burn.validate_decompress(authority, authorities),
-            Plugin::Transfer(transfer) => transfer.validate_decompress(authority, authorities),
+            Plugin::Royalties(royalties) => {
+                royalties.validate_decompress(authority_info, authority)
+            }
+            Plugin::Freeze(freeze) => freeze.validate_decompress(authority_info, authority),
+            Plugin::Burn(burn) => burn.validate_decompress(authority_info, authority),
+            Plugin::Transfer(transfer) => transfer.validate_decompress(authority_info, authority),
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_decompress(authority, authorities)
+                update_delegate.validate_decompress(authority_info, authority)
             }
             Plugin::PermanentFreeze(permanent_freeze) => {
-                permanent_freeze.validate_decompress(authority, authorities)
+                permanent_freeze.validate_decompress(authority_info, authority)
             }
             Plugin::Attributes(attributes) => {
-                attributes.validate_decompress(authority, authorities)
+                attributes.validate_decompress(authority_info, authority)
             }
             Plugin::PermanentTransfer(permanent_transfer) => {
-                permanent_transfer.validate_decompress(authority, authorities)
+                permanent_transfer.validate_decompress(authority_info, authority)
             }
             Plugin::PermanentBurn(permanent_burn) => {
-                permanent_burn.validate_decompress(authority, authorities)
+                permanent_burn.validate_decompress(authority_info, authority)
             }
         }
     }
@@ -568,7 +582,7 @@ pub enum ValidationResult {
 /// The required context for a plugin validation.
 #[allow(dead_code)]
 pub(crate) struct PluginValidationContext<'a, 'b> {
-    /// The authorities.
+    /// The authority.
     pub self_authority: &'b Authority,
     /// The authority account.
     pub authority_info: &'a AccountInfo<'a>,
@@ -585,8 +599,8 @@ pub(crate) trait PluginValidation {
     /// Validate the add plugin lifecycle action.
     fn validate_add_plugin(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
         _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -595,8 +609,8 @@ pub(crate) trait PluginValidation {
     /// Validate the remove plugin lifecycle action.
     fn validate_remove_plugin(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
         _plugin_to_remove: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -605,8 +619,8 @@ pub(crate) trait PluginValidation {
     /// Validate the approve plugin authority lifecycle action.
     fn validate_approve_plugin_authority(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
         _plugin_to_approve: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -615,8 +629,8 @@ pub(crate) trait PluginValidation {
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
         _plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -625,8 +639,8 @@ pub(crate) trait PluginValidation {
     /// Validate the create lifecycle action.
     fn validate_create(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -634,8 +648,8 @@ pub(crate) trait PluginValidation {
     /// Validate the update lifecycle action.
     fn validate_update(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -664,8 +678,8 @@ pub(crate) trait PluginValidation {
     /// Validate the burn lifecycle action.
     fn validate_burn(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
         _resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -674,9 +688,9 @@ pub(crate) trait PluginValidation {
     /// Validate the transfer lifecycle action.
     fn validate_transfer(
         &self,
-        _authority: &AccountInfo,
+        _authority_info: &AccountInfo,
         _new_owner: &AccountInfo,
-        _authorities: &Authority,
+        _authority: &Authority,
         _resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -685,8 +699,8 @@ pub(crate) trait PluginValidation {
     /// Validate the compress lifecycle action.
     fn validate_compress(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -694,8 +708,8 @@ pub(crate) trait PluginValidation {
     /// Validate the decompress lifecycle action.
     fn validate_decompress(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -703,8 +717,8 @@ pub(crate) trait PluginValidation {
     /// Validate the add_authority lifecycle action.
     fn validate_add_authority(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -712,8 +726,8 @@ pub(crate) trait PluginValidation {
     /// Validate the add_authority lifecycle action.
     fn validate_remove_authority(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
     ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

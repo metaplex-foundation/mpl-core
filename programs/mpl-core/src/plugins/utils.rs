@@ -130,7 +130,7 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
             .ok_or(MplCoreError::NumericalOverflow)?..],
     )?;
 
-    // Return the plugin and its authorities.
+    // Return the plugin and its authority.
     Ok((registry_record.authority, inner, registry_record.offset))
 }
 
@@ -154,7 +154,7 @@ pub fn fetch_wrapped_plugin<T: DataBlob + SolanaAccount>(
     // Deserialize the plugin.
     let plugin = Plugin::deserialize(&mut &(*account.data).borrow()[registry_record.offset..])?;
 
-    // Return the plugin and its authorities.
+    // Return the plugin and its authority.
     Ok((registry_record.authority, plugin))
 }
 

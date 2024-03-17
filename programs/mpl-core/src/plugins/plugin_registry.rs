@@ -57,7 +57,7 @@ impl SolanaAccount for PluginRegistry {
 pub struct RegistryRecord {
     /// The type of plugin.
     pub plugin_type: PluginType, // 2
-    /// The authorities who have permission to utilize a plugin.
+    /// The authority who has permission to utilize a plugin.
     pub authority: Authority, // Variable
     /// The offset to the plugin in the account.
     pub offset: usize, // 8

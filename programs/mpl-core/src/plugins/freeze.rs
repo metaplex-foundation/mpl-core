@@ -105,16 +105,16 @@ impl PluginValidation for Freeze {
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
+        authority_info: &AccountInfo,
+        authority: &Authority,
         plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(Plugin::Freeze(freeze)) = plugin_to_revoke {
             if freeze.frozen {
                 return Ok(ValidationResult::Rejected);
-            } else if authorities
+            } else if authority
                 == &(Authority::Pubkey {
-                    address: *authority.key,
+                    address: *authority_info.key,
                 })
             {
                 return Ok(ValidationResult::Approved);

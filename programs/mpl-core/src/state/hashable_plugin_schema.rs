@@ -6,7 +6,7 @@ use crate::{
     state::{Authority, Compressible},
 };
 
-/// A type that stores a plugin's authorities and deserialized data into a
+/// A type that stores a plugin's authority and deserialized data into a
 /// schema that will be later hashed into a hashed asset.  Also used in
 /// `CompressionProof`.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
@@ -14,7 +14,7 @@ pub struct HashablePluginSchema {
     /// This is the order the plugins are stored in the account, allowing us
     /// to keep track of their order in the hashing.
     pub index: usize,
-    /// The authorities who have permission to utilize a plugin.
+    /// The authority who has permission to utilize a plugin.
     pub authority: Authority,
     /// The deserialized plugin.
     pub plugin: Plugin,

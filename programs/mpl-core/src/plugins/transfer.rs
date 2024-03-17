@@ -9,7 +9,7 @@ use crate::{
 use super::{Plugin, PluginValidation, ValidationResult};
 
 /// This plugin manages the ability to transfer an asset and any authorities
-/// added are permitted to transfer the asset on behalf of the owner.
+/// approved are permitted to transfer the asset on behalf of the owner.
 #[repr(C)]
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct Transfer {}
@@ -76,15 +76,15 @@ impl PluginValidation for Transfer {
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
+        authority_info: &AccountInfo,
+        authority: &Authority,
         plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("Authority: {:?}", authority.key);
-        solana_program::msg!("Authorities: {:?}", authorities);
-        if authorities
+        solana_program::msg!("authority_info: {:?}", authority_info.key);
+        solana_program::msg!("authority: {:?}", authority);
+        if authority
             == &(Authority::Pubkey {
-                address: *authority.key,
+                address: *authority_info.key,
             })
             && plugin_to_revoke.is_some()
             && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::Transfer

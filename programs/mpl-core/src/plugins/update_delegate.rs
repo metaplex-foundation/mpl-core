@@ -40,13 +40,13 @@ impl DataBlob for UpdateDelegate {
 impl PluginValidation for UpdateDelegate {
     fn validate_add_plugin(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
+        authority_info: &AccountInfo,
+        authority: &Authority,
         _new_plugin: Option<&super::Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        if authorities
+        if authority
             == (&Authority::Pubkey {
-                address: *authority.key,
+                address: *authority_info.key,
             })
         {
             Ok(ValidationResult::Approved)
@@ -57,13 +57,13 @@ impl PluginValidation for UpdateDelegate {
 
     fn validate_remove_plugin(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
+        authority_info: &AccountInfo,
+        authority: &Authority,
         _plugin_to_remove: Option<&super::Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        if authorities
+        if authority
             == (&Authority::Pubkey {
-                address: *authority.key,
+                address: *authority_info.key,
             })
         {
             Ok(ValidationResult::Approved)
@@ -75,15 +75,15 @@ impl PluginValidation for UpdateDelegate {
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        authority: &AccountInfo,
-        authorities: &Authority,
+        authority_info: &AccountInfo,
+        authority: &Authority,
         plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("Authority: {:?}", authority.key);
-        solana_program::msg!("Authorities: {:?}", authorities);
-        if authorities
+        solana_program::msg!("authority_info: {:?}", authority_info.key);
+        solana_program::msg!("authority: {:?}", authority);
+        if authority
             == &(Authority::Pubkey {
-                address: *authority.key,
+                address: *authority_info.key,
             })
             && plugin_to_revoke.is_some()
             && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::UpdateDelegate
