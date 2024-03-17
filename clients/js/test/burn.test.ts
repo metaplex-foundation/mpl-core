@@ -5,7 +5,7 @@ import {
 } from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import { burn, Key, updateAuthority, pluginAuthorityPair } from '../src';
+import { burn, Key, pluginAuthorityPair } from '../src';
 import {
   DEFAULT_ASSET,
   DEFAULT_COLLECTION,
@@ -24,7 +24,7 @@ test('it can burn an asset as the owner', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
   await burn(umi, {
@@ -50,7 +50,7 @@ test('it cannot burn an asset if not the owner', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
   const result = burn(umi, {
@@ -63,7 +63,7 @@ test('it cannot burn an asset if not the owner', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 });
 
@@ -84,7 +84,7 @@ test('it cannot burn an asset if it is frozen', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Owner',
@@ -102,7 +102,7 @@ test('it cannot burn an asset if it is frozen', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Owner',
@@ -127,7 +127,7 @@ test('it cannot burn asset in collection if no collection specified', async (t) 
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 });
 
@@ -152,7 +152,7 @@ test('it cannot burn an asset if collection permanently frozen', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 
   await assertCollection(t, umi, {
@@ -176,6 +176,6 @@ test('it cannot burn an asset if collection permanently frozen', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 });

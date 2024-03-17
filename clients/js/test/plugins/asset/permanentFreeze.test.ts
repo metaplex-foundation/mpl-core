@@ -5,7 +5,6 @@ import {
   plugin,
   pluginAuthorityPair,
   transfer,
-  updateAuthority,
   updateCollectionPlugin,
   updatePlugin,
 } from '../../../src';
@@ -36,7 +35,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     permanentFreeze: {
       authority: {
         type: 'UpdateAuthority',
@@ -54,7 +53,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     permanentFreeze: {
       authority: {
         type: 'UpdateAuthority',
@@ -81,7 +80,7 @@ test('it cannot be transferred while frozen', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     permanentFreeze: {
       authority: {
         type: 'UpdateAuthority',
@@ -103,7 +102,7 @@ test('it cannot be transferred while frozen', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     permanentFreeze: {
       authority: {
         type: 'UpdateAuthority',
@@ -133,7 +132,7 @@ test('it cannot add permanentFreeze after creation', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 });
 
@@ -220,7 +219,7 @@ test('it cannot move asset in a permanently frozen collection', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 
   const result = transfer(umi, {
@@ -237,7 +236,7 @@ test('it cannot move asset in a permanently frozen collection', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 });
 
@@ -270,7 +269,7 @@ test('it can move asset with permanent freeze override in a frozen collection', 
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 
   await transfer(umi, {
@@ -284,7 +283,7 @@ test('it can move asset with permanent freeze override in a frozen collection', 
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: newOwner.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 });
 

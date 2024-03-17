@@ -8,7 +8,6 @@ import {
   plugin,
   pluginAuthorityPair,
   ruleSet,
-  updateAuthority,
 } from '../src';
 import {
   DEFAULT_ASSET,
@@ -32,7 +31,7 @@ test('it can add a plugin to an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
   await addPlugin(umi, {
@@ -44,7 +43,7 @@ test('it can add a plugin to an asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Owner',
@@ -72,7 +71,7 @@ test('it can add an authority managed plugin to an asset via update auth', async
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [updateAuth.publicKey]),
+    updateAuthority: { type: 'Address', address: updateAuth.publicKey },
     updateDelegate: {
       authority: {
         type: 'UpdateAuthority',
@@ -92,7 +91,7 @@ test('it can add a plugin to an asset with a different authority than the defaul
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
   await addPlugin(umi, {
@@ -105,7 +104,7 @@ test('it can add a plugin to an asset with a different authority than the defaul
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Pubkey',
@@ -134,7 +133,7 @@ test('it can add plugin to asset with a plugin', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Owner',
@@ -153,7 +152,7 @@ test('it can add plugin to asset with a plugin', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Owner',
@@ -268,7 +267,7 @@ test('it can add an authority-managed plugin to an asset via delegate authority'
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
     royalties: {
       authority: {
         type: 'UpdateAuthority',
@@ -317,7 +316,7 @@ test('it can add an authority-managed plugin to an asset with the collection upd
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
     royalties: {
       authority: {
         type: 'UpdateAuthority',

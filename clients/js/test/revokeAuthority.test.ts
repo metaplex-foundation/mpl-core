@@ -5,7 +5,6 @@ import {
   PluginType,
   approvePluginAuthority,
   revokePluginAuthority,
-  updateAuthority,
   getPubkeyAuthority,
   getNoneAuthority,
   pluginAuthorityPair,
@@ -30,7 +29,7 @@ test('it can remove an authority from a plugin', async (t) => {
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Pubkey',
@@ -48,7 +47,7 @@ test('it can remove an authority from a plugin', async (t) => {
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Owner',
@@ -74,7 +73,7 @@ test('it can remove the default authority from a plugin to make it immutable', a
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'None',
@@ -102,7 +101,7 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Pubkey',
@@ -124,7 +123,7 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freeze: {
       authority: {
         type: 'Owner',

@@ -5,7 +5,6 @@ import {
   plugin,
   pluginAuthorityPair,
   transfer,
-  updateAuthority,
   getUpdateAuthority,
 } from '../../../src';
 import {
@@ -38,7 +37,7 @@ test('it cannot add permanentTransfer after creation', async (t) => {
     ...asset,
     asset: asset.publicKey,
     owner: owner.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     permanentTransfer: undefined,
   });
 });
@@ -76,7 +75,7 @@ test('it can transfer an asset as the owner and not the delegate', async (t) => 
     ...asset,
     asset: asset.publicKey,
     owner: brandNewOwner.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     permanentTransfer: {
       authority: {
         type: 'UpdateAuthority',
@@ -111,7 +110,7 @@ test('it can transfer an asset as the delegate and the owner', async (t) => {
     ...asset,
     asset: asset.publicKey,
     owner: newOwner.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     permanentTransfer: {
       authority: {
         type: 'UpdateAuthority',
@@ -147,7 +146,7 @@ test('it can transfer an asset as not the owner', async (t) => {
     ...asset,
     asset: asset.publicKey,
     owner: newOwner.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     permanentTransfer: {
       authority: {
         type: 'UpdateAuthority',
@@ -165,7 +164,7 @@ test('it can transfer an asset as not the owner', async (t) => {
     ...asset,
     asset: asset.publicKey,
     owner: brandNewOwner.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     permanentTransfer: {
       authority: {
         type: 'UpdateAuthority',
@@ -200,7 +199,7 @@ test('it cannot delegate its authority', async (t) => {
     ...asset,
     asset: asset.publicKey,
     owner: newOwner.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     permanentTransfer: {
       authority: {
         type: 'UpdateAuthority',
@@ -271,7 +270,7 @@ test('it can transfer asset that is a part of a collection forever as a delegate
     ...asset,
     asset: asset.publicKey,
     owner: brandNewOwner.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
     permanentTransfer: {
       authority: {
         type: 'UpdateAuthority',
@@ -325,7 +324,7 @@ test('it can transfer multiple assets that is a part of a collection forever as 
     ...asset1,
     asset: asset1.publicKey,
     owner: brandNewOwner.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
     permanentTransfer: undefined,
   });
 
@@ -348,7 +347,7 @@ test('it can transfer multiple assets that is a part of a collection forever as 
     ...asset2,
     asset: asset2.publicKey,
     owner: brandNewOwner.publicKey,
-    updateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
     permanentTransfer: undefined,
   });
 

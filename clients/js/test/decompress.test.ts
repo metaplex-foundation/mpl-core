@@ -2,6 +2,7 @@ import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   Asset,
+  baseAsset,
   compress,
   create,
   DataState,
@@ -34,7 +35,7 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
   // console.log("Account State:", beforeAsset);
   t.like(beforeAsset, <Asset>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
@@ -55,7 +56,7 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
 
   // And the hash matches the expected value.
   const hashedAssetSchema: HashedAssetSchema = {
-    assetHash: hash(getBaseAssetAccountDataSerializer().serialize(beforeAsset)),
+    assetHash: hash(getBaseAssetAccountDataSerializer().serialize(baseAsset(beforeAsset))),
     pluginHashes: [],
   };
 
@@ -83,7 +84,7 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
 
   t.like(afterDecompressedAsset, <Asset>{
     publicKey: assetAddress.publicKey,
-    updateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     owner: umi.identity.publicKey,
     name: 'Test Bread',
     uri: 'https://example.com/bread',

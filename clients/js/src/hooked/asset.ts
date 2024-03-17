@@ -16,6 +16,7 @@ import {
   u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseAsset,
   KeyArgs,
   PluginHeaderAccountData,
   PluginRegistryAccountData,
@@ -55,11 +56,16 @@ export function deserializeAsset(rawAccount: RpcAccount): Asset {
       rawAccount.data
     );
   }
+  const updateAuth = {
+    type: asset.updateAuthority.__kind,
+    address: asset.updateAuthority.__kind ==='None' ? undefined : asset.updateAuthority.fields[0],
+  }
 
   return {
     pluginHeader,
     ...pluginsList,
     ...asset,
+    updateAuthority: updateAuth,
   };
 }
 
@@ -117,11 +123,8 @@ export function deriveAssetPlugins(
   collection?: Collection
 ): Asset {
   if (!collection) return asset;
-  if (asset.updateAuthority.__kind !== 'Collection') return asset;
-  if (
-    asset.updateAuthority !==
-    (collection ? updateAuthority('Collection', [collection?.publicKey]) : null)
-  ) {
+  if (asset.updateAuthority.type !== 'Collection') return asset;
+  if (asset.updateAuthority.address !== collection?.updateAuthority) {
     throw new Error('Collection address does not match asset update authority');
   }
   const {
@@ -139,4 +142,13 @@ export function deriveAssetPlugins(
     ...rest,
     ...asset,
   };
+}
+
+// hax
+export function baseAsset(asset: Asset): BaseAsset {
+  return {
+    ...asset,
+    updateAuthority:
+      updateAuthority(asset.updateAuthority.type as any, asset.updateAuthority.address? [asset.updateAuthority.address] : undefined as any)
+  }
 }
