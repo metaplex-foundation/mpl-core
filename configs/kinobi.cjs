@@ -56,6 +56,12 @@ kinobi.update(
   })
 );
 
+kinobi.update(new k.updateDefinedTypesVisitor({
+  authority: {
+    name: "pluginAuthority"
+  }
+}))
+
 // Update instructions with default values
 kinobi.update(
   k.updateInstructionsVisitor({
@@ -124,14 +130,8 @@ kinobi.update(
   k.setAccountDiscriminatorFromFieldVisitor({
     asset: key("Asset"),
     collection: key("Collection"),
-    // myPdaAccount: key("MyPdaAccount"),
   })
 );
-
-// Render JavaScript.
-const jsDir = path.join(clientDir, "js", "src", "generated");
-const prettier = require(path.join(clientDir, "js", ".prettierrc.json"));
-kinobi.accept(k.renderJavaScriptVisitor(jsDir, { prettier }));
 
 // Render Rust.
 const crateDir = path.join(clientDir, "rust");
@@ -142,3 +142,31 @@ kinobi.accept(
     crateFolder: crateDir,
   })
 );
+
+
+// rewrite the account names for custom account data
+kinobi.update(
+  new k.updateAccountsVisitor({
+    baseAsset: {
+      name: "asset",
+    },
+    baseCollection: {
+      name: "collection",
+    }
+  })
+);
+
+// Render JavaScript.
+const jsDir = path.join(clientDir, "js", "src", "generated");
+const prettier = require(path.join(clientDir, "js", ".prettierrc.json"));
+kinobi.accept(k.renderJavaScriptVisitor(jsDir, {
+  prettier,
+  internalNodes: [],
+  customAccountData: [{
+    name: "asset",
+    extract: true,
+  }, {
+    name: "collection",
+    extract: true,
+  }],
+}));

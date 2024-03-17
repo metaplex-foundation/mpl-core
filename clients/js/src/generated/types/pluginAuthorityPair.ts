@@ -13,22 +13,22 @@ import {
   struct,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  Authority,
-  AuthorityArgs,
   Plugin,
   PluginArgs,
-  getAuthoritySerializer,
+  PluginAuthority,
+  PluginAuthorityArgs,
+  getPluginAuthoritySerializer,
   getPluginSerializer,
 } from '.';
 
 export type PluginAuthorityPair = {
   plugin: Plugin;
-  authority: Option<Authority>;
+  authority: Option<PluginAuthority>;
 };
 
 export type PluginAuthorityPairArgs = {
   plugin: PluginArgs;
-  authority: OptionOrNullable<AuthorityArgs>;
+  authority: OptionOrNullable<PluginAuthorityArgs>;
 };
 
 export function getPluginAuthorityPairSerializer(): Serializer<
@@ -38,7 +38,7 @@ export function getPluginAuthorityPairSerializer(): Serializer<
   return struct<PluginAuthorityPair>(
     [
       ['plugin', getPluginSerializer()],
-      ['authority', option(getAuthoritySerializer())],
+      ['authority', option(getPluginAuthoritySerializer())],
     ],
     { description: 'PluginAuthorityPair' }
   ) as Serializer<PluginAuthorityPairArgs, PluginAuthorityPair>;

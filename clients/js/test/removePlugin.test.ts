@@ -9,7 +9,7 @@ import {
   removeCollectionPlugin,
   fetchCollection,
   ruleSet,
-  authority,
+  pubkeyPluginAuthority,
 } from '../src';
 import {
   DEFAULT_COLLECTION,
@@ -72,7 +72,7 @@ test('it can remove authority managed plugin from collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const collection = await createCollection(umi, {
-    plugins: [pluginAuthorityPair({ type: 'UpdateDelegate', data: {} })],
+    plugins: [pluginAuthorityPair({ type: 'UpdateDelegate' })],
   });
 
   await removeCollectionPlugin(umi, {
@@ -150,7 +150,7 @@ test('it can remove authority managed plugin from collection using delegate auth
       plugins: [
         pluginAuthorityPair({
           type: 'UpdateDelegate',
-          authority: authority('Pubkey', { address: delegate.publicKey }),
+          authority: pubkeyPluginAuthority(delegate.publicKey),
         }),
       ],
     }

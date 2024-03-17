@@ -3,21 +3,16 @@ import { none, some } from '@metaplex-foundation/umi';
 import {
   Key,
   PluginHeader,
-  Plugin,
+  Plugin as BasePlugin,
   getPluginSerializer,
   RegistryRecord,
   PluginAuthorityPair,
-  Authority,
+  PluginAuthority,
   RoyaltiesArgs,
   FreezeArgs,
-  BurnArgs,
-  TransferArgs,
-  UpdateDelegateArgs,
   PermanentFreezeArgs,
   AttributesArgs,
-  PermanentTransferArgs,
-  PermanentBurnArgs,
-} from '../generated';
+} from './generated';
 import { BaseAuthority, PluginsList } from './types';
 import { mapAuthority } from './authority';
 import { toWords } from './utils';
@@ -31,64 +26,60 @@ export function formPluginHeader(
   };
 }
 
-export type PluginAuthorityPairHelperArgs =
+export type PluginAuthorityPairHelperArgs = CreatePluginArgs & {
+  authority?: PluginAuthority;
+};
+
+export type CreatePluginArgs =
   | {
       type: 'Royalties';
-      authority?: Authority;
       data: RoyaltiesArgs;
     }
   | {
       type: 'Freeze';
-      authority?: Authority;
       data: FreezeArgs;
     }
   | {
       type: 'Burn';
-      authority?: Authority;
-      data?: BurnArgs;
     }
   | {
       type: 'Transfer';
-      authority?: Authority;
-      data?: TransferArgs;
     }
   | {
       type: 'UpdateDelegate';
-      authority?: Authority;
-      data?: UpdateDelegateArgs;
     }
   | {
       type: 'PermanentFreeze';
-      authority?: Authority;
       data: PermanentFreezeArgs;
     }
   | {
       type: 'Attributes';
-      authority?: Authority;
       data: AttributesArgs;
     }
   | {
       type: 'PermanentFreeze';
-      authority?: Authority;
       data: PermanentFreezeArgs;
     }
   | {
       type: 'PermanentTransfer';
-      authority?: Authority;
-      data?: PermanentTransferArgs;
     }
   | {
       type: 'PermanentBurn';
-      authority?: Authority;
-      data?: PermanentBurnArgs;
     };
+
+export function createPlugin(args: CreatePluginArgs): BasePlugin {
+  return {
+    __kind: args.type,
+    fields: [(args as any).data || {}],
+  };
+}
 
 export function pluginAuthorityPair(
   args: PluginAuthorityPairHelperArgs
 ): PluginAuthorityPair {
-  const { type, authority, data } = args;
+  const { type, authority, data } = args as any;
   return {
-    plugin: { __kind: type, fields: [(data as any) || {}] },
+    plugin: { __kind: type, fields: [data || {}] },
     authority: authority ? some(authority) : none(),
   };
 }
@@ -102,7 +93,7 @@ export function mapPlugin({
   authority,
   offset,
 }: {
-  plugin: Exclude<Plugin, { __kind: 'Reserved' }>;
+  plugin: Exclude<BasePlugin, { __kind: 'Reserved' }>;
   authority: BaseAuthority;
   offset: bigint;
 }): PluginsList {

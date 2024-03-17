@@ -57,7 +57,7 @@ export const createAsset = async (
   const owner = publicKey(input.owner || input.payer || umi.identity);
   const asset = input.asset || generateSigner(umi);
   const updateAuthority = publicKey(input.updateAuthority || payer);
-  // const tx = 
+  // const tx =
   await create(umi, {
     owner,
     payer,
@@ -116,10 +116,10 @@ export const createAssetWithCollection: (
   const collection = assetInput.collection
     ? await fetchCollection(umi, publicKey(assetInput.collection))
     : await createCollection(umi, {
-      payer: assetInput.payer,
-      updateAuthority: assetInput.updateAuthority,
-      ...collectionInput,
-    });
+        payer: assetInput.payer,
+        updateAuthority: assetInput.updateAuthority,
+        ...collectionInput,
+      });
 
   const asset = await createAsset(umi, {
     ...assetInput,

@@ -7,7 +7,6 @@
 
 pub(crate) mod r#attribute;
 pub(crate) mod r#attributes;
-pub(crate) mod r#authority;
 pub(crate) mod r#burn;
 pub(crate) mod r#compression_proof;
 pub(crate) mod r#creator;
@@ -22,6 +21,7 @@ pub(crate) mod r#permanent_burn;
 pub(crate) mod r#permanent_freeze;
 pub(crate) mod r#permanent_transfer;
 pub(crate) mod r#plugin;
+pub(crate) mod r#plugin_authority;
 pub(crate) mod r#plugin_authority_pair;
 pub(crate) mod r#plugin_type;
 pub(crate) mod r#registry_record;
@@ -33,7 +33,6 @@ pub(crate) mod r#update_delegate;
 
 pub use self::r#attribute::*;
 pub use self::r#attributes::*;
-pub use self::r#authority::*;
 pub use self::r#burn::*;
 pub use self::r#compression_proof::*;
 pub use self::r#creator::*;
@@ -48,6 +47,7 @@ pub use self::r#permanent_burn::*;
 pub use self::r#permanent_freeze::*;
 pub use self::r#permanent_transfer::*;
 pub use self::r#plugin::*;
+pub use self::r#plugin_authority::*;
 pub use self::r#plugin_authority_pair::*;
 pub use self::r#plugin_type::*;
 pub use self::r#registry_record::*;

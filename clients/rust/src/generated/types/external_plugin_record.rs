@@ -5,13 +5,13 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Authority;
+use crate::generated::types::PluginAuthority;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ExternalPluginRecord {
-    pub authority: Authority,
+    pub authority: PluginAuthority,
     pub offset: u64,
 }

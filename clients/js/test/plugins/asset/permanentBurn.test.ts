@@ -5,7 +5,7 @@ import {
   burn,
   Key,
   transfer,
-  getUpdateAuthority,
+  updatePluginAuthority,
 } from '../../../src';
 import { createAsset, createCollection, createUmi } from '../../_setup';
 import { assertAccountExists, sol } from '@metaplex-foundation/umi';
@@ -18,7 +18,7 @@ test('it can burn an assets as an owner', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentBurn',
-        authority: getUpdateAuthority(),
+        authority: updatePluginAuthority(),
       }),
     ],
   });
@@ -47,7 +47,7 @@ test('it can burn an assets as a delegate', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentBurn',
-        authority: getUpdateAuthority(),
+        authority: updatePluginAuthority(),
       }),
     ],
   });
@@ -84,7 +84,7 @@ test('it can burn an assets as a delegate for a collection', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentBurn',
-        authority: getUpdateAuthority(),
+        authority: updatePluginAuthority(),
       }),
     ],
   });
@@ -177,7 +177,7 @@ test('it can burn an asset which is the part of a collection', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentBurn',
-        authority: getUpdateAuthority(),
+        authority: updatePluginAuthority(),
       }),
     ],
   });

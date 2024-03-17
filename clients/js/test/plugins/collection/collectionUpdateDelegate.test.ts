@@ -4,8 +4,8 @@ import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import {
   PluginType,
   approveCollectionPluginAuthority,
-  authority,
   pluginAuthorityPair,
+  pubkeyPluginAuthority,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -30,7 +30,7 @@ test('it can create a new asset with a collection if it is the collection update
   await approveCollectionPluginAuthority(umi, {
     collection: collection.publicKey,
     pluginType: PluginType.UpdateDelegate,
-    newAuthority: authority('Pubkey', { address: updateDelegate.publicKey }),
+    newAuthority: pubkeyPluginAuthority(updateDelegate.publicKey),
   }).sendAndConfirm(umi);
 
   await assertCollection(t, umi, {

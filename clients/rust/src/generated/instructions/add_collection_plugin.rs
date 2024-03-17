@@ -5,8 +5,8 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Authority;
 use crate::generated::types::Plugin;
+use crate::generated::types::PluginAuthority;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -100,7 +100,7 @@ impl AddCollectionPluginInstructionData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AddCollectionPluginInstructionArgs {
     pub plugin: Plugin,
-    pub init_authority: Option<Authority>,
+    pub init_authority: Option<PluginAuthority>,
 }
 
 /// Instruction builder for `AddCollectionPlugin`.
@@ -120,7 +120,7 @@ pub struct AddCollectionPluginBuilder {
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
     plugin: Option<Plugin>,
-    init_authority: Option<Authority>,
+    init_authority: Option<PluginAuthority>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -171,7 +171,7 @@ impl AddCollectionPluginBuilder {
     }
     /// `[optional argument]`
     #[inline(always)]
-    pub fn init_authority(&mut self, init_authority: Authority) -> &mut Self {
+    pub fn init_authority(&mut self, init_authority: PluginAuthority) -> &mut Self {
         self.init_authority = Some(init_authority);
         self
     }
@@ -449,7 +449,7 @@ impl<'a, 'b> AddCollectionPluginCpiBuilder<'a, 'b> {
     }
     /// `[optional argument]`
     #[inline(always)]
-    pub fn init_authority(&mut self, init_authority: Authority) -> &mut Self {
+    pub fn init_authority(&mut self, init_authority: PluginAuthority) -> &mut Self {
         self.instruction.init_authority = Some(init_authority);
         self
     }
@@ -530,7 +530,7 @@ struct AddCollectionPluginCpiBuilderInstruction<'a, 'b> {
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     plugin: Option<Plugin>,
-    init_authority: Option<Authority>,
+    init_authority: Option<PluginAuthority>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

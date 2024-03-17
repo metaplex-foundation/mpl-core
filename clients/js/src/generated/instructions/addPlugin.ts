@@ -30,11 +30,11 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  Authority,
-  AuthorityArgs,
   Plugin,
   PluginArgs,
-  getAuthoritySerializer,
+  PluginAuthority,
+  PluginAuthorityArgs,
+  getPluginAuthoritySerializer,
   getPluginSerializer,
 } from '../types';
 
@@ -58,12 +58,12 @@ export type AddPluginInstructionAccounts = {
 export type AddPluginInstructionData = {
   discriminator: number;
   plugin: Plugin;
-  initAuthority: Option<Authority>;
+  initAuthority: Option<PluginAuthority>;
 };
 
 export type AddPluginInstructionDataArgs = {
   plugin: PluginArgs;
-  initAuthority?: OptionOrNullable<AuthorityArgs>;
+  initAuthority?: OptionOrNullable<PluginAuthorityArgs>;
 };
 
 export function getAddPluginInstructionDataSerializer(): Serializer<
@@ -79,7 +79,7 @@ export function getAddPluginInstructionDataSerializer(): Serializer<
       [
         ['discriminator', u8()],
         ['plugin', getPluginSerializer()],
-        ['initAuthority', option(getAuthoritySerializer())],
+        ['initAuthority', option(getPluginAuthoritySerializer())],
       ],
       { description: 'AddPluginInstructionData' }
     ),

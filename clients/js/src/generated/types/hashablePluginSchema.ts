@@ -8,23 +8,23 @@
 
 import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
 import {
-  Authority,
-  AuthorityArgs,
   Plugin,
   PluginArgs,
-  getAuthoritySerializer,
+  PluginAuthority,
+  PluginAuthorityArgs,
+  getPluginAuthoritySerializer,
   getPluginSerializer,
 } from '.';
 
 export type HashablePluginSchema = {
   index: bigint;
-  authority: Authority;
+  authority: PluginAuthority;
   plugin: Plugin;
 };
 
 export type HashablePluginSchemaArgs = {
   index: number | bigint;
-  authority: AuthorityArgs;
+  authority: PluginAuthorityArgs;
   plugin: PluginArgs;
 };
 
@@ -35,7 +35,7 @@ export function getHashablePluginSchemaSerializer(): Serializer<
   return struct<HashablePluginSchema>(
     [
       ['index', u64()],
-      ['authority', getAuthoritySerializer()],
+      ['authority', getPluginAuthoritySerializer()],
       ['plugin', getPluginSerializer()],
     ],
     { description: 'HashablePluginSchema' }

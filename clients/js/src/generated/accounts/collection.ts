@@ -20,117 +20,77 @@ import {
   publicKey as toPublicKey,
 } from '@metaplex-foundation/umi';
 import {
-  Serializer,
   publicKey as publicKeySerializer,
   string,
-  struct,
   u32,
 } from '@metaplex-foundation/umi/serializers';
-import { Key, KeyArgs, getKeySerializer } from '../types';
+import {
+  CollectionAccountData,
+  getCollectionAccountDataSerializer,
+} from '../../hooked';
+import { KeyArgs, getKeySerializer } from '../types';
 
-export type BaseCollection = Account<BaseCollectionAccountData>;
+export type Collection = Account<CollectionAccountData>;
 
-export type BaseCollectionAccountData = {
-  key: Key;
-  updateAuthority: PublicKey;
-  name: string;
-  uri: string;
-  numMinted: number;
-  currentSize: number;
-};
-
-export type BaseCollectionAccountDataArgs = {
-  key: KeyArgs;
-  updateAuthority: PublicKey;
-  name: string;
-  uri: string;
-  numMinted: number;
-  currentSize: number;
-};
-
-export function getBaseCollectionAccountDataSerializer(): Serializer<
-  BaseCollectionAccountDataArgs,
-  BaseCollectionAccountData
-> {
-  return struct<BaseCollectionAccountData>(
-    [
-      ['key', getKeySerializer()],
-      ['updateAuthority', publicKeySerializer()],
-      ['name', string()],
-      ['uri', string()],
-      ['numMinted', u32()],
-      ['currentSize', u32()],
-    ],
-    { description: 'BaseCollectionAccountData' }
-  ) as Serializer<BaseCollectionAccountDataArgs, BaseCollectionAccountData>;
+export function deserializeCollection(rawAccount: RpcAccount): Collection {
+  return deserializeAccount(rawAccount, getCollectionAccountDataSerializer());
 }
 
-export function deserializeBaseCollection(
-  rawAccount: RpcAccount
-): BaseCollection {
-  return deserializeAccount(
-    rawAccount,
-    getBaseCollectionAccountDataSerializer()
-  );
-}
-
-export async function fetchBaseCollection(
+export async function fetchCollection(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<BaseCollection> {
+): Promise<Collection> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  assertAccountExists(maybeAccount, 'BaseCollection');
-  return deserializeBaseCollection(maybeAccount);
+  assertAccountExists(maybeAccount, 'Collection');
+  return deserializeCollection(maybeAccount);
 }
 
-export async function safeFetchBaseCollection(
+export async function safeFetchCollection(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<BaseCollection | null> {
+): Promise<Collection | null> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  return maybeAccount.exists ? deserializeBaseCollection(maybeAccount) : null;
+  return maybeAccount.exists ? deserializeCollection(maybeAccount) : null;
 }
 
-export async function fetchAllBaseCollection(
+export async function fetchAllCollection(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions
-): Promise<BaseCollection[]> {
+): Promise<Collection[]> {
   const maybeAccounts = await context.rpc.getAccounts(
     publicKeys.map((key) => toPublicKey(key, false)),
     options
   );
   return maybeAccounts.map((maybeAccount) => {
-    assertAccountExists(maybeAccount, 'BaseCollection');
-    return deserializeBaseCollection(maybeAccount);
+    assertAccountExists(maybeAccount, 'Collection');
+    return deserializeCollection(maybeAccount);
   });
 }
 
-export async function safeFetchAllBaseCollection(
+export async function safeFetchAllCollection(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions
-): Promise<BaseCollection[]> {
+): Promise<Collection[]> {
   const maybeAccounts = await context.rpc.getAccounts(
     publicKeys.map((key) => toPublicKey(key, false)),
     options
   );
   return maybeAccounts
     .filter((maybeAccount) => maybeAccount.exists)
-    .map((maybeAccount) =>
-      deserializeBaseCollection(maybeAccount as RpcAccount)
-    );
+    .map((maybeAccount) => deserializeCollection(maybeAccount as RpcAccount));
 }
 
-export function getBaseCollectionGpaBuilder(
+export function getCollectionGpaBuilder(
   context: Pick<Context, 'rpc' | 'programs'>
 ) {
   const programId = context.programs.getPublicKey(
@@ -153,7 +113,5 @@ export function getBaseCollectionGpaBuilder(
       numMinted: [null, u32()],
       currentSize: [null, u32()],
     })
-    .deserializeUsing<BaseCollection>((account) =>
-      deserializeBaseCollection(account)
-    );
+    .deserializeUsing<Collection>((account) => deserializeCollection(account));
 }

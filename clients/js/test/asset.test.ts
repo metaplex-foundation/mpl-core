@@ -54,9 +54,9 @@ test('it can gpa fetch assets by collection', async (t) => {
   t.is(assets.length, 2);
   t.assert(assets.every((asset) => names.includes(asset.name)));
   assets.forEach((asset) => {
-    t.deepEqual(
-      asset.updateAuthority,
-      { type: 'Collection', address: collection.publicKey}
-    );
+    t.deepEqual(asset.updateAuthority, {
+      type: 'Collection',
+      address: collection.publicKey,
+    });
   });
 });

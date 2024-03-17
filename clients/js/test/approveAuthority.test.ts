@@ -4,10 +4,10 @@ import {
   PluginType,
   approvePluginAuthority,
   addPlugin,
-  plugin,
-  getPubkeyAuthority,
+  pubkeyPluginAuthority,
   pluginAuthorityPair,
-  authority,
+  createPlugin,
+  ownerPluginAuthority,
 } from '../src';
 import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from './_setup';
 
@@ -26,13 +26,13 @@ test('it can add an authority to a plugin', async (t) => {
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Freeze', [{ frozen: false }]),
+    plugin: createPlugin({ type: 'Freeze', data: { frozen: false } }),
   })
     .append(
       approvePluginAuthority(umi, {
         asset: asset.publicKey,
         pluginType: PluginType.Freeze,
-        newAuthority: getPubkeyAuthority(delegateAddress.publicKey),
+        newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
       })
     )
     .sendAndConfirm(umi);
@@ -78,7 +78,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Freeze,
-    newAuthority: getPubkeyAuthority(delegateAddress.publicKey),
+    newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -98,7 +98,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Freeze,
-    newAuthority: getPubkeyAuthority(newDelegateAddress.publicKey),
+    newAuthority: pubkeyPluginAuthority(newDelegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -128,7 +128,7 @@ test('it can approve to reassign authority back to owner', async (t) => {
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Freeze,
-    newAuthority: getPubkeyAuthority(delegateAddress.publicKey),
+    newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -148,7 +148,7 @@ test('it can approve to reassign authority back to owner', async (t) => {
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Freeze,
-    newAuthority: authority('Owner'),
+    newAuthority: ownerPluginAuthority(),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {

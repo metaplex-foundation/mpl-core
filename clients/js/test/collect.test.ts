@@ -11,7 +11,7 @@ import {
   PluginType,
   addPlugin,
   collect,
-  plugin,
+  createPlugin,
   pluginAuthorityPair,
   removePlugin,
 } from '../src';
@@ -45,7 +45,7 @@ test('it can add asset plugin with collect amount', async (t) => {
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Freeze', [{ frozen: true }]),
+    plugin: createPlugin({ type: 'Freeze', data: { frozen: true } }),
     initAuthority: null,
   }).sendAndConfirm(umi);
 

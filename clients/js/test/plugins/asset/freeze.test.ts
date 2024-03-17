@@ -4,12 +4,12 @@ import {
   PluginType,
   addPlugin,
   approvePluginAuthority,
-  authority,
-  getPubkeyAuthority,
-  plugin,
+  pubkeyPluginAuthority,
   pluginAuthorityPair,
   revokePluginAuthority,
   updatePlugin,
+  createPlugin,
+  ownerPluginAuthority,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -26,7 +26,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Freeze', [{ frozen: true }]),
+    plugin: createPlugin({ type: 'Freeze', data: { frozen: true } }),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -44,7 +44,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Freeze', [{ frozen: false }]),
+    plugin: createPlugin({ type: 'Freeze', data: { frozen: false } }),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -73,12 +73,12 @@ test('it can delegate then freeze an asset', async (t) => {
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Freeze,
-    newAuthority: authority('Pubkey', { address: delegateAddress.publicKey }),
+    newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Freeze', [{ frozen: true }]),
+    plugin: createPlugin({ type: 'Freeze', data: { frozen: true } }),
     authority: delegateAddress,
   }).sendAndConfirm(umi);
 
@@ -107,7 +107,7 @@ test('owner cannot undelegate a freeze plugin with a delegate', async (t) => {
       pluginAuthorityPair({
         type: 'Freeze',
         data: { frozen: true },
-        authority: getPubkeyAuthority(delegateAddress.publicKey),
+        authority: pubkeyPluginAuthority(delegateAddress.publicKey),
       }),
     ],
   });
@@ -130,7 +130,7 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
       pluginAuthorityPair({
         type: 'Freeze',
         data: { frozen: true },
-        authority: getPubkeyAuthority(delegateAddress.publicKey),
+        authority: pubkeyPluginAuthority(delegateAddress.publicKey),
       }),
     ],
   });
@@ -152,7 +152,7 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
   const result = approvePluginAuthority(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Freeze,
-    newAuthority: authority('Owner'),
+    newAuthority: ownerPluginAuthority(),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
@@ -182,7 +182,7 @@ test('it cannot add multiple freeze plugins to an asset', async (t) => {
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Freeze', [{ frozen: true }]),
+    plugin: createPlugin({ type: 'Freeze', data: { frozen: true } }),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'PluginAlreadyExists' });

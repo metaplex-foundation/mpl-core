@@ -2,10 +2,10 @@ import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 import {
   addPlugin,
-  plugin,
+  createPlugin,
   pluginAuthorityPair,
   transfer,
-  getUpdateAuthority,
+  updatePluginAuthority,
 } from '../../../src';
 import {
   DEFAULT_COLLECTION,
@@ -25,7 +25,7 @@ test('it cannot add permanentTransfer after creation', async (t) => {
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('PermanentTransfer', [{ authority: getUpdateAuthority() }]),
+    plugin: createPlugin({ type: 'PermanentTransfer' }),
     authority: owner,
   }).sendAndConfirm(umi);
 
@@ -54,7 +54,7 @@ test('it can transfer an asset as the owner and not the delegate', async (t) => 
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getUpdateAuthority(),
+        authority: updatePluginAuthority(),
       }),
     ],
   });
@@ -95,7 +95,7 @@ test('it can transfer an asset as the delegate and the owner', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getUpdateAuthority(),
+        authority: updatePluginAuthority(),
       }),
     ],
   });
@@ -131,7 +131,7 @@ test('it can transfer an asset as not the owner', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getUpdateAuthority(),
+        authority: updatePluginAuthority(),
       }),
     ],
   });
@@ -184,7 +184,7 @@ test('it cannot delegate its authority', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getUpdateAuthority(),
+        authority: updatePluginAuthority(),
       }),
     ],
   });
@@ -215,7 +215,7 @@ test('it can transfer a collection', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getUpdateAuthority(),
+        authority: updatePluginAuthority(),
       }),
     ],
   });
@@ -246,7 +246,7 @@ test('it can transfer asset that is a part of a collection forever as a delegate
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getUpdateAuthority(),
+        authority: updatePluginAuthority(),
       }),
     ],
     collection: collection.publicKey,
@@ -290,7 +290,7 @@ test('it can transfer multiple assets that is a part of a collection forever as 
     plugins: [
       pluginAuthorityPair({
         type: 'PermanentTransfer',
-        authority: getUpdateAuthority(),
+        authority: updatePluginAuthority(),
       }),
     ],
   });

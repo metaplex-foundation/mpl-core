@@ -1,19 +1,16 @@
 import { PublicKey } from '@metaplex-foundation/umi';
 import {
-  BaseAsset,
-  Authority,
+  PluginAuthority,
   Burn,
-  BaseCollection,
   Freeze,
   PermanentFreeze,
-  PluginHeader,
   Royalties,
   Transfer,
   UpdateDelegate,
   Attributes,
   PermanentTransfer,
   UpdateAuthority,
-} from '../generated';
+} from './generated';
 
 export type BaseAuthority = {
   type: PluginAuthorityType | UpdateAuthorityType;
@@ -21,7 +18,7 @@ export type BaseAuthority = {
 };
 
 export type UpdateAuthorityType = UpdateAuthority['__kind'];
-export type PluginAuthorityType = Authority['__kind'];
+export type PluginAuthorityType = PluginAuthority['__kind'];
 
 export type BasePlugin = {
   authority: BaseAuthority;
@@ -47,14 +44,3 @@ export type PluginsList = {
   attributes?: AttributesPlugin;
   permanentTransfer?: PermanentTransferPlugin;
 };
-
-export type Asset = Omit<BaseAsset, 'updateAuthority'> &
-  PluginsList & {
-    pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>;
-    updateAuthority: BaseAuthority;
-  };
-
-export type Collection = BaseCollection &
-  PluginsList & {
-    pluginHeader?: Omit<PluginHeader, 'publicKey' | 'header'>;
-  };

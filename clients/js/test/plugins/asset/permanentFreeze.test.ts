@@ -2,7 +2,7 @@ import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 import {
   addPlugin,
-  plugin,
+  createPlugin,
   pluginAuthorityPair,
   transfer,
   updateCollectionPlugin,
@@ -46,7 +46,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('PermanentFreeze', [{ frozen: false }]),
+    plugin: createPlugin({ type: 'PermanentFreeze', data: { frozen: false } }),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -121,7 +121,7 @@ test('it cannot add permanentFreeze after creation', async (t) => {
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('PermanentFreeze', [{ frozen: true }]),
+    plugin: createPlugin({ type: 'PermanentFreeze', data: { frozen: true } }),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -181,7 +181,7 @@ test('it can freeze and unfreeze a collection', async (t) => {
 
   await updateCollectionPlugin(umi, {
     collection: collection.publicKey,
-    plugin: plugin('PermanentFreeze', [{ frozen: false }]),
+    plugin: createPlugin({ type: 'PermanentFreeze', data: { frozen: false } }),
   }).sendAndConfirm(umi);
 
   await assertCollection(t, umi, {
@@ -310,7 +310,7 @@ test('it can remove a permanent freeze plugin from an asset', async (t) => {
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('PermanentFreeze', [{ frozen: false }]),
+    plugin: createPlugin({ type: 'PermanentFreeze', data: { frozen: false } }),
   }).sendAndConfirm(umi);
 
   const asset2 = await createAsset(umi, { owner: umi.identity });

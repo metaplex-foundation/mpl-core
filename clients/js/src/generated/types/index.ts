@@ -8,7 +8,6 @@
 
 export * from './attribute';
 export * from './attributes';
-export * from './authority';
 export * from './burn';
 export * from './compressionProof';
 export * from './creator';
@@ -23,6 +22,7 @@ export * from './permanentBurn';
 export * from './permanentFreeze';
 export * from './permanentTransfer';
 export * from './plugin';
+export * from './pluginAuthority';
 export * from './pluginAuthorityPair';
 export * from './pluginType';
 export * from './registryRecord';

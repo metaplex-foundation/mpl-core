@@ -4,9 +4,9 @@ import {
   PluginType,
   approvePluginAuthority,
   transfer,
-  authority,
   pluginAuthorityPair,
   revokePluginAuthority,
+  pubkeyPluginAuthority,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -28,7 +28,7 @@ test('a delegate can transfer the asset', async (t) => {
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Transfer,
-    newAuthority: authority('Pubkey', { address: delegateAddress.publicKey }),
+    newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await transfer(umi, {
@@ -61,7 +61,7 @@ test('owner can transfer asset with delegate transfer', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'Transfer',
-        authority: authority('Pubkey', { address: delegateAddress.publicKey }),
+        authority: pubkeyPluginAuthority(delegateAddress.publicKey),
       }),
     ],
   });
@@ -94,7 +94,7 @@ test('it can revoke a delegate transfer plugin', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'Transfer',
-        authority: authority('Pubkey', { address: delegateAddress.publicKey }),
+        authority: pubkeyPluginAuthority(delegateAddress.publicKey),
       }),
     ],
   });
@@ -127,7 +127,7 @@ test('it cannot transfer after delegate has been revoked', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'Transfer',
-        authority: authority('Pubkey', { address: delegateAddress.publicKey }),
+        authority: pubkeyPluginAuthority(delegateAddress.publicKey),
       }),
     ],
   });

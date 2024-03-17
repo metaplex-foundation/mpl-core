@@ -1,14 +1,13 @@
 import { generateSigner, publicKey, sol } from '@metaplex-foundation/umi';
 import test from 'ava';
-// import { base58 } from '@metaplex-foundation/umi/serializers';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import { createAccount } from '@metaplex-foundation/mpl-toolbox';
+import { getAssetAccountDataSerializer } from '../src/hooked';
 import {
   Asset,
   create,
   DataState,
   fetchHashedAsset,
-  getBaseAssetAccountDataSerializer,
   pluginAuthorityPair,
 } from '../src';
 import { assertAsset, createAsset, createUmi, DEFAULT_ASSET } from './_setup';
@@ -76,7 +75,7 @@ test.skip('it can create a new asset in ledger state', async (t) => {
     // console.log(tx.meta.innerInstructions[0].instructions);
     const { data } = tx.meta.innerInstructions[0].instructions[0];
     // console.log(base58.deserialize(data));
-    const parsed = getBaseAssetAccountDataSerializer().deserialize(data)[0];
+    const parsed = getAssetAccountDataSerializer().deserialize(data)[0];
     // console.log("Ledger State:", parsed);
     t.like(parsed, <Asset>{
       updateAuthority: { type: 'Address', address: umi.identity.publicKey },

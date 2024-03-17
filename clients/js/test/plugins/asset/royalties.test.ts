@@ -7,7 +7,7 @@ import {
 import {
   MPL_CORE_PROGRAM_ID,
   addPlugin,
-  plugin,
+  createPlugin,
   pluginAuthorityPair,
   ruleSet,
   transfer,
@@ -639,8 +639,9 @@ test('it cannot add royalty percentages that dont add up to 100', async (t) => {
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Royalties', [
-      {
+    plugin: createPlugin({
+      type: 'Royalties',
+      data: {
         basisPoints: 5,
         creators: [
           { address: creator1.publicKey, percentage: 20 },
@@ -648,7 +649,7 @@ test('it cannot add royalty percentages that dont add up to 100', async (t) => {
         ],
         ruleSet: ruleSet('None'),
       },
-    ]),
+    }),
   }).sendAndConfirm(umi);
 
   const error = await t.throwsAsync(result);
@@ -663,8 +664,9 @@ test('it cannot add royalty percentages that has duplicate creators', async (t) 
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Royalties', [
-      {
+    plugin: createPlugin({
+      type: 'Royalties',
+      data: {
         basisPoints: 5,
         creators: [
           { address: creator1.publicKey, percentage: 20 },
@@ -672,7 +674,7 @@ test('it cannot add royalty percentages that has duplicate creators', async (t) 
         ],
         ruleSet: ruleSet('None'),
       },
-    ]),
+    }),
   }).sendAndConfirm(umi);
 
   const error = await t.throwsAsync(result);
@@ -685,13 +687,14 @@ test('it cannot add royalty basis points greater than 10000', async (t) => {
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Royalties', [
-      {
+    plugin: createPlugin({
+      type: 'Royalties',
+      data: {
         basisPoints: 10001,
         creators: [{ address: umi.identity.publicKey, percentage: 100 }],
         ruleSet: ruleSet('None'),
       },
-    ]),
+    }),
   }).sendAndConfirm(umi);
 
   const error = await t.throwsAsync(result);
@@ -722,8 +725,9 @@ test('it cannot update royalty percentages that dont add up to 100', async (t) =
 
   const result = updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Royalties', [
-      {
+    plugin: createPlugin({
+      type: 'Royalties',
+      data: {
         basisPoints: 5,
         creators: [
           { address: creator1.publicKey, percentage: 20 },
@@ -731,7 +735,7 @@ test('it cannot update royalty percentages that dont add up to 100', async (t) =
         ],
         ruleSet: ruleSet('None'),
       },
-    ]),
+    }),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
@@ -755,13 +759,14 @@ test('it cannot update royalty basis points greater than 10000', async (t) => {
 
   const result = updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Royalties', [
-      {
+    plugin: createPlugin({
+      type: 'Royalties',
+      data: {
         basisPoints: 10001,
         creators: [{ address: umi.identity.publicKey, percentage: 100 }],
         ruleSet: ruleSet('None'),
       },
-    ]),
+    }),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
@@ -786,8 +791,9 @@ test('it cannot update royalty with duplicate creators', async (t) => {
 
   const result = updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Royalties', [
-      {
+    plugin: createPlugin({
+      type: 'Royalties',
+      data: {
         basisPoints: 10001,
         creators: [
           {
@@ -801,7 +807,7 @@ test('it cannot update royalty with duplicate creators', async (t) => {
         ],
         ruleSet: ruleSet('None'),
       },
-    ]),
+    }),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });

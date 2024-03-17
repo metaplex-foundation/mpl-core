@@ -110,13 +110,13 @@ A Umi-compatible JavaScript library for the project.
    await addPlugin(umi, {
       asset: assetAddress.publicKey,
       // adds the owner-managed freeze plugin to the asset
-      plugin: plugin('Freeze', [{
+      plugin: createPlugin({ type: 'Freeze', [{
          frozen: true
       }]),
       // Optionally set the authority to a delegate who can unfreeze. If unset, this will be the Owner
       // This is functionally the same as calling addPlugin and approvePluginAuthority separately.
       // Freezing with a delegate is commonly used for escrowless staking programs.
-      initAuthority: getPubkeyAuthority(freezeDelegate.publicKey)
+      initAuthority: pubkeyPluginAuthority(freezeDelegate.publicKey)
    }).sendAndConfirm(umi);
 
    // Unfreezing an asset with a delegate

@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Authority;
+use crate::generated::types::PluginAuthority;
 use crate::generated::types::PluginType;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
@@ -100,7 +100,7 @@ impl ApproveCollectionPluginAuthorityInstructionData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ApproveCollectionPluginAuthorityInstructionArgs {
     pub plugin_type: PluginType,
-    pub new_authority: Authority,
+    pub new_authority: PluginAuthority,
 }
 
 /// Instruction builder for `ApproveCollectionPluginAuthority`.
@@ -120,7 +120,7 @@ pub struct ApproveCollectionPluginAuthorityBuilder {
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
     plugin_type: Option<PluginType>,
-    new_authority: Option<Authority>,
+    new_authority: Option<PluginAuthority>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -170,7 +170,7 @@ impl ApproveCollectionPluginAuthorityBuilder {
         self
     }
     #[inline(always)]
-    pub fn new_authority(&mut self, new_authority: Authority) -> &mut Self {
+    pub fn new_authority(&mut self, new_authority: PluginAuthority) -> &mut Self {
         self.new_authority = Some(new_authority);
         self
     }
@@ -450,7 +450,7 @@ impl<'a, 'b> ApproveCollectionPluginAuthorityCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn new_authority(&mut self, new_authority: Authority) -> &mut Self {
+    pub fn new_authority(&mut self, new_authority: PluginAuthority) -> &mut Self {
         self.instruction.new_authority = Some(new_authority);
         self
     }
@@ -539,7 +539,7 @@ struct ApproveCollectionPluginAuthorityCpiBuilderInstruction<'a, 'b> {
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     plugin_type: Option<PluginType>,
-    new_authority: Option<Authority>,
+    new_authority: Option<PluginAuthority>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

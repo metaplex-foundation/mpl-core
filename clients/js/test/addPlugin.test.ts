@@ -4,9 +4,9 @@ import test from 'ava';
 import {
   addCollectionPlugin,
   addPlugin,
-  authority,
-  plugin,
+  createPlugin,
   pluginAuthorityPair,
+  pubkeyPluginAuthority,
   ruleSet,
 } from '../src';
 import {
@@ -36,7 +36,7 @@ test('it can add a plugin to an asset', async (t) => {
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Freeze', [{ frozen: false }]),
+    plugin: createPlugin({ type: 'Freeze', data: { frozen: false } }),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -62,7 +62,7 @@ test('it can add an authority managed plugin to an asset via update auth', async
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('UpdateDelegate', [{ frozen: false }]),
+    plugin: createPlugin({ type: 'UpdateDelegate' }),
     authority: updateAuth,
     payer: umi.identity,
   }).sendAndConfirm(umi);
@@ -96,8 +96,8 @@ test('it can add a plugin to an asset with a different authority than the defaul
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Freeze', [{ frozen: false }]),
-    initAuthority: authority('Pubkey', { address: delegateAddress.publicKey }),
+    plugin: createPlugin({ type: 'Freeze', data: { frozen: false } }),
+    initAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -144,8 +144,8 @@ test('it can add plugin to asset with a plugin', async (t) => {
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Transfer', [{}]),
-    initAuthority: authority('Pubkey', { address: delegate.publicKey }),
+    plugin: createPlugin({ type: 'Transfer' }),
+    initAuthority: pubkeyPluginAuthority(delegate.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -182,13 +182,14 @@ test('it can add a plugin to a collection', async (t) => {
 
   await addCollectionPlugin(umi, {
     collection: collection.publicKey,
-    plugin: plugin('Royalties', [
-      {
+    plugin: createPlugin({
+      type: 'Royalties',
+      data: {
         basisPoints: 5,
         creators: [],
         ruleSet: ruleSet('None'),
       },
-    ]),
+    }),
   }).sendAndConfirm(umi);
 
   await assertCollection(t, umi, {
@@ -220,7 +221,7 @@ test('it cannot add an owner-managed plugin to a collection', async (t) => {
 
   const result = addCollectionPlugin(umi, {
     collection: collection.publicKey,
-    plugin: plugin('Freeze', [{ frozen: false }]),
+    plugin: createPlugin({ type: 'Freeze', data: { frozen: false } }),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -238,7 +239,7 @@ test('it can add an authority-managed plugin to an asset via delegate authority'
       plugins: [
         pluginAuthorityPair({
           type: 'UpdateDelegate',
-          authority: authority('Pubkey', { address: delegate.publicKey }),
+          authority: pubkeyPluginAuthority(delegate.publicKey),
         }),
       ],
     }
@@ -247,8 +248,9 @@ test('it can add an authority-managed plugin to an asset via delegate authority'
   await addPlugin(umi, {
     asset: asset.publicKey,
     collection: collection.publicKey,
-    plugin: plugin('Royalties', [
-      {
+    plugin: createPlugin({
+      type: 'Royalties',
+      data: {
         basisPoints: 5,
         creators: [
           {
@@ -258,7 +260,7 @@ test('it can add an authority-managed plugin to an asset via delegate authority'
         ],
         ruleSet: ruleSet('None'),
       },
-    ]),
+    }),
     authority: delegate,
     payer: umi.identity,
   }).sendAndConfirm(umi);
@@ -296,8 +298,9 @@ test('it can add an authority-managed plugin to an asset with the collection upd
   await addPlugin(umi, {
     asset: asset.publicKey,
     collection: collection.publicKey,
-    plugin: plugin('Royalties', [
-      {
+    plugin: createPlugin({
+      type: 'Royalties',
+      data: {
         basisPoints: 5,
         creators: [
           {
@@ -307,7 +310,7 @@ test('it can add an authority-managed plugin to an asset with the collection upd
         ],
         ruleSet: ruleSet('None'),
       },
-    ]),
+    }),
     authority: collectionAuth,
     payer: umi.identity,
   }).sendAndConfirm(umi);
@@ -333,17 +336,21 @@ test('it can add an authority-managed plugin to an asset with the collection upd
   });
 });
 
-test('it cannot add a authority-managed plugin to an asset via delegate authority with the wrong authority', async (t) => {
+test('it cannot add a owner-managed plugin to an asset via delegate authority', async (t) => {
   const umi = await createUmi();
   const delegate = generateSigner(umi);
+  const collectionAuth = generateSigner(umi);
   const { asset, collection } = await createAssetWithCollection(
     umi,
-    {},
     {
+      authority: collectionAuth,
+    },
+    {
+      updateAuthority: collectionAuth,
       plugins: [
         pluginAuthorityPair({
           type: 'UpdateDelegate',
-          authority: authority('Pubkey', { address: delegate.publicKey }),
+          authority: pubkeyPluginAuthority(delegate.publicKey),
         }),
       ],
     }
@@ -352,18 +359,13 @@ test('it cannot add a authority-managed plugin to an asset via delegate authorit
   const result = addPlugin(umi, {
     asset: asset.publicKey,
     collection: collection.publicKey,
-    plugin: plugin('Royalties', [
-      {
-        basisPoints: 5,
-        creators: [
-          {
-            address: umi.identity.publicKey,
-            percentage: 100,
-          },
-        ],
-        ruleSet: ruleSet('None'),
+    plugin: createPlugin({
+      type: 'Freeze',
+      data: {
+        frozen: false,
       },
-    ]),
+    }),
+    authority: delegate,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -380,8 +382,9 @@ test('it cannot add authority-managed plugin to an asset by owner', async (t) =>
     asset: asset.publicKey,
     collection: collection.publicKey,
     authority: owner,
-    plugin: plugin('Royalties', [
-      {
+    plugin: createPlugin({
+      type: 'Royalties',
+      data: {
         basisPoints: 5,
         creators: [
           {
@@ -391,7 +394,7 @@ test('it cannot add authority-managed plugin to an asset by owner', async (t) =>
         ],
         ruleSet: ruleSet('None'),
       },
-    ]),
+    }),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -443,8 +446,8 @@ test('it can add a plugin to a collection with a plugin', async (t) => {
 
   await addCollectionPlugin(umi, {
     collection: collection.publicKey,
-    plugin: plugin('UpdateDelegate', [{}]),
-    initAuthority: authority('Pubkey', { address: delegate.publicKey }),
+    plugin: createPlugin({ type: 'UpdateDelegate' }),
+    initAuthority: pubkeyPluginAuthority(delegate.publicKey),
   }).sendAndConfirm(umi);
 
   await assertCollection(t, umi, {

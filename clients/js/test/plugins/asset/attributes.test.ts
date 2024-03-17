@@ -1,9 +1,5 @@
 import test from 'ava';
-import {
-  plugin,
-  pluginAuthorityPair,
-  updatePlugin,
-} from '../../../src';
+import { createPlugin, pluginAuthorityPair, updatePlugin } from '../../../src';
 import {
   DEFAULT_ASSET,
   assertAsset,
@@ -36,14 +32,15 @@ test('it can add attributes to an asset', async (t) => {
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Attributes', [
-      {
+    plugin: createPlugin({
+      type: 'Attributes',
+      data: {
         attributeList: [
           { key: 'key0', value: 'value0' },
           { key: 'key1', value: 'value1' },
         ],
       },
-    ]),
+    }),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -99,9 +96,10 @@ test('it can remove attributes to an asset', async (t) => {
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Attributes', [
-      { attributeList: [{ key: 'key0', value: 'value0' }] },
-    ]),
+    plugin: createPlugin({
+      type: 'Attributes',
+      data: { attributeList: [{ key: 'key0', value: 'value0' }] },
+    }),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -143,14 +141,15 @@ test('it can add then remove attributes to an asset', async (t) => {
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Attributes', [
-      {
+    plugin: createPlugin({
+      type: 'Attributes',
+      data: {
         attributeList: [
           { key: 'key0', value: 'value0' },
           { key: 'key1', value: 'value1' },
         ],
       },
-    ]),
+    }),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -171,7 +170,7 @@ test('it can add then remove attributes to an asset', async (t) => {
 
   await updatePlugin(umi, {
     asset: asset.publicKey,
-    plugin: plugin('Attributes', [{ attributeList: [] }]),
+    plugin: createPlugin({ type: 'Attributes', data: { attributeList: [] } }),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {

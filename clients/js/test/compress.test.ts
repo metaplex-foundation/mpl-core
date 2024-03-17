@@ -1,18 +1,18 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
+import { getAssetAccountDataSerializer } from '../src/hooked';
 import {
   Asset,
-  baseAsset,
   compress,
   create,
   DataState,
   fetchAsset,
   fetchHashedAsset,
-  getBaseAssetAccountDataSerializer,
   getHashedAssetSchemaSerializer,
   hash,
   HashedAssetSchema,
 } from '../src';
+
 import { createAsset, createUmi } from './_setup';
 
 test.skip('it can compress an asset without any plugins as the owner', async (t) => {
@@ -34,7 +34,7 @@ test.skip('it can compress an asset without any plugins as the owner', async (t)
 
   // And the hash matches the expected value.
   const hashedAssetSchema: HashedAssetSchema = {
-    assetHash: hash(getBaseAssetAccountDataSerializer().serialize(baseAsset(asset))),
+    assetHash: hash(getAssetAccountDataSerializer().serialize(asset)),
     pluginHashes: [],
   };
 

@@ -1,15 +1,14 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
+import { getAssetAccountDataSerializer } from '../src/hooked';
 import {
   Asset,
-  baseAsset,
   compress,
   create,
   DataState,
   decompress,
   fetchAsset,
   fetchHashedAsset,
-  getBaseAssetAccountDataSerializer,
   getHashedAssetSchemaSerializer,
   hash,
   HashedAssetSchema,
@@ -56,7 +55,7 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
 
   // And the hash matches the expected value.
   const hashedAssetSchema: HashedAssetSchema = {
-    assetHash: hash(getBaseAssetAccountDataSerializer().serialize(baseAsset(beforeAsset))),
+    assetHash: hash(getAssetAccountDataSerializer().serialize(beforeAsset)),
     pluginHashes: [],
   };
 

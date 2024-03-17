@@ -56,7 +56,7 @@ test('it can update an asset with plugins to be larger', async (t) => {
   //   name: 'Test Bread',
   //   uri: 'https://example.com/bread',
   //   plugins: [{
-  //     plugin: plugin('Freeze', [{ frozen: false }]),
+  //     plugin: createPlugin({ type: 'Freeze', data: { frozen: true }}),
   //     authority: null,
   //   }],
   // });

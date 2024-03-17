@@ -7,13 +7,13 @@ import {
   createCollection,
   fetchAsset,
   getAssetGpaBuilder,
-  getPubkeyAuthority,
-  plugin,
+  pubkeyPluginAuthority,
   pluginAuthorityPair,
   revokePluginAuthority,
   ruleSet,
   transfer,
   updateAuthority,
+  createPlugin,
 } from './index';
 
 const example = async () => {
@@ -93,15 +93,16 @@ const advancedExamples = async () => {
   await addPlugin(umi, {
     asset: assetAddress.publicKey,
     // adds the owner-managed freeze plugin to the asset
-    plugin: plugin('Freeze', [
-      {
+    plugin: createPlugin({
+      type: 'Freeze',
+      data: {
         frozen: true,
       },
-    ]),
+    }),
     // Optionally set the authority to a delegate who can unfreeze. If unset, this will be the Owner
     // This is functionally the same as calling addPlugin and approvePluginAuthority separately.
     // Freezing with a delegate is commonly used for escrowless staking programs.
-    initAuthority: getPubkeyAuthority(freezeDelegate.publicKey),
+    initAuthority: pubkeyPluginAuthority(freezeDelegate.publicKey),
   }).sendAndConfirm(umi);
 
   // Unfreezing an asset with a delegate

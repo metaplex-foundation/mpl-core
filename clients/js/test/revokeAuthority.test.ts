@@ -5,8 +5,8 @@ import {
   PluginType,
   approvePluginAuthority,
   revokePluginAuthority,
-  getPubkeyAuthority,
-  getNoneAuthority,
+  pubkeyPluginAuthority,
+  nonePluginAuthority,
   pluginAuthorityPair,
 } from '../src';
 import { assertAsset, createAsset, createUmi } from './_setup';
@@ -23,7 +23,7 @@ test('it can remove an authority from a plugin', async (t) => {
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Freeze,
-    newAuthority: getPubkeyAuthority(delegateAddress.publicKey),
+    newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -67,7 +67,7 @@ test('it can remove the default authority from a plugin to make it immutable', a
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Freeze,
-    newAuthority: getNoneAuthority(),
+    newAuthority: nonePluginAuthority(),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -95,7 +95,7 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Freeze,
-    newAuthority: getPubkeyAuthority(pubkeyAuth.publicKey),
+    newAuthority: pubkeyPluginAuthority(pubkeyAuth.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -145,7 +145,7 @@ test('it cannot remove a none authority from a plugin', async (t) => {
     asset: asset.publicKey,
     authority: umi.identity,
     pluginType: PluginType.Freeze,
-    newAuthority: getNoneAuthority(),
+    newAuthority: nonePluginAuthority(),
   }).sendAndConfirm(umi);
 
   const err = await t.throwsAsync(() =>

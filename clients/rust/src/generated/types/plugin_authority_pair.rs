@@ -5,8 +5,8 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Authority;
 use crate::generated::types::Plugin;
+use crate::generated::types::PluginAuthority;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -14,5 +14,5 @@ use borsh::BorshSerialize;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct PluginAuthorityPair {
     pub plugin: Plugin,
-    pub authority: Option<Authority>,
+    pub authority: Option<PluginAuthority>,
 }

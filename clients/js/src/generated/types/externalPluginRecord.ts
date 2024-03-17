@@ -7,12 +7,19 @@
  */
 
 import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
-import { Authority, AuthorityArgs, getAuthoritySerializer } from '.';
+import {
+  PluginAuthority,
+  PluginAuthorityArgs,
+  getPluginAuthoritySerializer,
+} from '.';
 
-export type ExternalPluginRecord = { authority: Authority; offset: bigint };
+export type ExternalPluginRecord = {
+  authority: PluginAuthority;
+  offset: bigint;
+};
 
 export type ExternalPluginRecordArgs = {
-  authority: AuthorityArgs;
+  authority: PluginAuthorityArgs;
   offset: number | bigint;
 };
 
@@ -22,7 +29,7 @@ export function getExternalPluginRecordSerializer(): Serializer<
 > {
   return struct<ExternalPluginRecord>(
     [
-      ['authority', getAuthoritySerializer()],
+      ['authority', getPluginAuthoritySerializer()],
       ['offset', u64()],
     ],
     { description: 'ExternalPluginRecord' }
