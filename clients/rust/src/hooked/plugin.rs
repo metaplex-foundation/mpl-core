@@ -4,7 +4,7 @@ use solana_program::account_info::AccountInfo;
 use crate::{
     accounts::{BaseAsset, PluginHeader, PluginRegistry},
     errors::MplCoreError,
-    types::{Authority, Plugin, PluginType, RegistryRecord},
+    types::{BaseAuthority, Plugin, PluginType, RegistryRecord},
     AttributesPlugin, BaseAuthority, BasePlugin, BurnPlugin, DataBlob, FreezePlugin,
     PermanentFreezePlugin, PluginsList, RoyaltiesPlugin, SolanaAccount, TransferPlugin,
     UpdateDelegatePlugin,
@@ -126,6 +126,14 @@ pub fn registry_records_to_plugin_list(
                 Plugin::Attributes(attributes) => {
                     acc.attributes = Some(AttributesPlugin { base, attributes });
                 }
+                Plugin::PermanentTransfer(permanent_transfer) => Some(PermanentTransferPlugin {
+                    base,
+                    permanent_transfer,
+                }),
+                Plugin::PermanentBurn(permanent_burn) => Some(PermanentBurnPlugin {
+                    base,
+                    permanent_burn,
+                }),
             };
 
             Ok(acc)

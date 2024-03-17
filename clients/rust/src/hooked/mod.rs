@@ -1,6 +1,9 @@
 pub mod compression_proof;
 pub use compression_proof::*;
 
+pub mod plugin;
+pub use plugin::*;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 
 use std::{cmp::Ordering, mem::size_of};
