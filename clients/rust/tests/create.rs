@@ -132,3 +132,93 @@ async fn create_asset_with_plugins() {
     )
     .await;
 }
+
+#[tokio::test]
+async fn create_asset_with_different_update_authority() {
+    let mut context = program_test().start_with_context().await;
+
+    let asset = Keypair::new();
+    let update_authority = Keypair::new();
+    airdrop(&mut context, &update_authority.pubkey(), LAMPORTS_PER_SOL)
+        .await
+        .unwrap();
+    create_asset(
+        &mut context,
+        CreateAssetHelperArgs {
+            owner: None,
+            payer: None,
+            asset: &asset,
+            data_state: None,
+            name: None,
+            uri: None,
+            authority: None,
+            update_authority: Some(update_authority.pubkey()),
+            collection: None,
+            plugins: vec![],
+        },
+    )
+    .await
+    .unwrap();
+
+    let owner = context.payer.pubkey();
+    assert_asset(
+        &mut context,
+        AssertAssetHelperArgs {
+            asset: asset.pubkey(),
+            owner,
+            update_authority: Some(UpdateAuthority::Address(update_authority.pubkey())),
+            name: None,
+            uri: None,
+            plugins: vec![],
+        },
+    )
+    .await;
+}
+
+#[tokio::test]
+async fn create_asset_with_plugins_with_different_update_authority() {
+    let mut context = program_test().start_with_context().await;
+
+    let asset = Keypair::new();
+    let update_authority = Keypair::new();
+    airdrop(&mut context, &update_authority.pubkey(), LAMPORTS_PER_SOL)
+        .await
+        .unwrap();
+    create_asset(
+        &mut context,
+        CreateAssetHelperArgs {
+            owner: None,
+            payer: None,
+            asset: &asset,
+            data_state: None,
+            name: None,
+            uri: None,
+            authority: None,
+            update_authority: Some(update_authority.pubkey()),
+            collection: None,
+            plugins: vec![PluginAuthorityPair {
+                plugin: Plugin::FreezeDelegate(FreezeDelegate { frozen: false }),
+                authority: None,
+            }],
+        },
+    )
+    .await
+    .unwrap();
+
+    let owner = context.payer.pubkey();
+    assert_asset(
+        &mut context,
+        AssertAssetHelperArgs {
+            asset: asset.pubkey(),
+            owner,
+            update_authority: Some(UpdateAuthority::Address(update_authority.pubkey())),
+            name: None,
+            uri: None,
+            plugins: vec![PluginAuthorityPair {
+                plugin: Plugin::FreezeDelegate(FreezeDelegate { frozen: false }),
+                authority: Some(PluginAuthority::Owner),
+            }],
+        },
+    )
+    .await;
+}

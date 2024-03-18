@@ -16,6 +16,7 @@ pub fn program_test() -> ProgramTest {
 const DEFAULT_ASSET_NAME: &str = "Test Asset";
 const DEFAULT_ASSET_URI: &str = "https://example.com/asset";
 
+#[derive(Debug)]
 pub struct CreateAssetHelperArgs<'a> {
     pub owner: Option<Pubkey>,
     pub payer: Option<&'a Keypair>,
@@ -40,7 +41,7 @@ pub async fn create_asset<'a>(
         .collection(input.collection)
         .authority(input.authority)
         .payer(payer.pubkey())
-        .owner(input.owner)
+        .owner(Some(input.owner.unwrap_or(payer.pubkey())))
         .update_authority(input.update_authority)
         .system_program(system_program::ID)
         .data_state(input.data_state.unwrap_or(DataState::AccountState))
