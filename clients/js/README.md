@@ -41,7 +41,7 @@ A Umi-compatible JavaScript library for the project.
    const assetAddress = generateSigner(umi);
    const owner = generateSigner(umi);
 
-   await create(umi, {
+   await createV1(umi, {
       name: 'Test Asset',
       uri: 'https://example.com/asset.json',
       asset: assetAddress,
@@ -51,7 +51,7 @@ A Umi-compatible JavaScript library for the project.
    // Create a collection
    const collectionUpdateAuthority = generateSigner(umi);
    const collectionAddress = generateSigner(umi);
-   await createCollection(umi, {
+   await createCollectionV1(umi, {
       name: 'Test Collection',
       uri: 'https://example.com/collection.json',
       collection: collectionAddress,
@@ -59,7 +59,7 @@ A Umi-compatible JavaScript library for the project.
    }).sendAndConfirm(umi);
 
    // Create an asset in a collection, the authority must be the updateAuthority of the collection
-   await create(umi, {
+   await createV1(umi, {
       name: 'Test Asset',
       uri: 'https://example.com/asset.json',
       asset: assetAddress,
@@ -69,28 +69,28 @@ A Umi-compatible JavaScript library for the project.
 
    // Transfer an asset
    const recipient = generateSigner(umi);
-   await transfer(umi, {
+   await transferV1(umi, {
       asset: assetAddress.publicKey,
       newOwner: recipient.publicKey,
    }).sendAndConfirm(umi);
 
-   // Transfer an asset belonging to a collection
-   await transfer(umi, {
+   // Transfer an asset in a collection
+   await transferV1(umi, {
       asset: assetAddress.publicKey,
       newOwner: recipient.publicKey,
       collection: collectionAddress.publicKey,
    }).sendAndConfirm(umi);
 
    // Fetch an asset
-   const asset = await fetchAsset(umi, assetAddress.publicKey);
+   const asset = await fetchAssetV1(umi, assetAddress.publicKey);
 
    // GPA fetch assets by owner
-   const assetsByOwner = await getAssetGpaBuilder(umi)
+   const assetsByOwner = await getAssetV1GpaBuilder(umi)
       .whereField('owner', owner.publicKey)
       .getDeserialized();
 
    // GPA fetch assets by collection
-   const assetsByCollection = await getAssetGpaBuilder(umi)
+   const assetsByCollection = await getAssetV1GpaBuilder(umi)
       .whereField(
          'updateAuthority',
          updateAuthority('Collection', [collectionAddress.publicKey])
@@ -107,33 +107,35 @@ A Umi-compatible JavaScript library for the project.
    const assetAddress = generateSigner(umi);
    const freezeDelegate = generateSigner(umi);
 
-   await addPlugin(umi, {
+   await addPluginV1(umi, {
       asset: assetAddress.publicKey,
       // adds the owner-managed freeze plugin to the asset
-      plugin: createPlugin({ type: 'Freeze', [{
-         frozen: true
-      }]),
+      plugin: createPlugin({
+         type: 'FreezeDelegate',
+         data: {
+         frozen: true,
+         },
+      }),
       // Optionally set the authority to a delegate who can unfreeze. If unset, this will be the Owner
       // This is functionally the same as calling addPlugin and approvePluginAuthority separately.
       // Freezing with a delegate is commonly used for escrowless staking programs.
-      initAuthority: pubkeyPluginAuthority(freezeDelegate.publicKey)
+      initAuthority: pubkeyPluginAuthority(freezeDelegate.publicKey),
    }).sendAndConfirm(umi);
 
    // Unfreezing an asset with a delegate
    // Revoking an authority will revert the authority back to the owner for owner-managed plugins
-   await revokePluginAuthority(umi, {
+   await revokePluginAuthorityV1(umi, {
       asset: assetAddress.publicKey,
-      pluginType: PluginType.Freeze,
-      authority: freezeDelegate
+      pluginType: PluginType.FreezeDelegate,
+      authority: freezeDelegate,
    }).sendAndConfirm(umi);
-
 
    // Create a collection with royalties
    const collectionAddress = generateSigner(umi);
    const creator1 = generateSigner(umi);
    const creator2 = generateSigner(umi);
-   
-   await createCollection(umi, {
+
+   await createCollectionV1(umi, {
       name: 'Test Collection',
       uri: 'https://example.com/collection.json',
       collection: collectionAddress,
@@ -142,22 +144,25 @@ A Umi-compatible JavaScript library for the project.
          type: 'Royalties',
          data: {
             basisPoints: 500,
-            creators: [{
+            creators: [
+               {
                address: creator1.publicKey,
-               percentage: 20
-            }, {
+               percentage: 20,
+               },
+               {
                address: creator2.publicKey,
-               percentage: 80
-            }],
-            ruleSet: ruleSet('None') // Compatibility rule set
-         }
-         })
-      ]
+               percentage: 80,
+               },
+            ],
+            ruleSet: ruleSet('None'), // Compatibility rule set
+         },
+         }),
+      ],
    }).sendAndConfirm(umi);
 
    // Create an asset in a collection.
    // Assets in a collection will inherit the collection's authority-managed plugins, in this case the royalties plugin
-   await create(umi, {
+   await createV1(umi, {
       name: 'Test Asset',
       uri: 'https://example.com/asset.json',
       asset: assetAddress,

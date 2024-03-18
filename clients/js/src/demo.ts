@@ -2,16 +2,16 @@
 import { createUmi, generateSigner } from '@metaplex-foundation/umi';
 import {
   PluginType,
-  addPlugin,
-  create,
-  createCollection,
-  fetchAsset,
-  getAssetGpaBuilder,
+  addPluginV1,
+  createV1,
+  createCollectionV1,
+  fetchAssetV1,
+  getAssetV1GpaBuilder,
   pubkeyPluginAuthority,
   pluginAuthorityPair,
-  revokePluginAuthority,
+  revokePluginAuthorityV1,
   ruleSet,
-  transfer,
+  transferV1,
   updateAuthority,
   createPlugin,
 } from './index';
@@ -23,7 +23,7 @@ const example = async () => {
   const assetAddress = generateSigner(umi);
   const owner = generateSigner(umi);
 
-  await create(umi, {
+  await createV1(umi, {
     name: 'Test Asset',
     uri: 'https://example.com/asset.json',
     asset: assetAddress,
@@ -33,7 +33,7 @@ const example = async () => {
   // Create a collection
   const collectionUpdateAuthority = generateSigner(umi);
   const collectionAddress = generateSigner(umi);
-  await createCollection(umi, {
+  await createCollectionV1(umi, {
     name: 'Test Collection',
     uri: 'https://example.com/collection.json',
     collection: collectionAddress,
@@ -41,7 +41,7 @@ const example = async () => {
   }).sendAndConfirm(umi);
 
   // Create an asset in a collection, the authority must be the updateAuthority of the collection
-  await create(umi, {
+  await createV1(umi, {
     name: 'Test Asset',
     uri: 'https://example.com/asset.json',
     asset: assetAddress,
@@ -51,28 +51,28 @@ const example = async () => {
 
   // Transfer an asset
   const recipient = generateSigner(umi);
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: assetAddress.publicKey,
     newOwner: recipient.publicKey,
   }).sendAndConfirm(umi);
 
   // Transfer an asset in a collection
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: assetAddress.publicKey,
     newOwner: recipient.publicKey,
     collection: collectionAddress.publicKey,
   }).sendAndConfirm(umi);
 
   // Fetch an asset
-  const asset = await fetchAsset(umi, assetAddress.publicKey);
+  const asset = await fetchAssetV1(umi, assetAddress.publicKey);
 
   // GPA fetch assets by owner
-  const assetsByOwner = await getAssetGpaBuilder(umi)
+  const assetsByOwner = await getAssetV1GpaBuilder(umi)
     .whereField('owner', owner.publicKey)
     .getDeserialized();
 
   // GPA fetch assets by collection
-  const assetsByCollection = await getAssetGpaBuilder(umi)
+  const assetsByCollection = await getAssetV1GpaBuilder(umi)
     .whereField(
       'updateAuthority',
       updateAuthority('Collection', [collectionAddress.publicKey])
@@ -90,11 +90,11 @@ const advancedExamples = async () => {
   const assetAddress = generateSigner(umi);
   const freezeDelegate = generateSigner(umi);
 
-  await addPlugin(umi, {
+  await addPluginV1(umi, {
     asset: assetAddress.publicKey,
     // adds the owner-managed freeze plugin to the asset
     plugin: createPlugin({
-      type: 'Freeze',
+      type: 'FreezeDelegate',
       data: {
         frozen: true,
       },
@@ -107,9 +107,9 @@ const advancedExamples = async () => {
 
   // Unfreezing an asset with a delegate
   // Revoking an authority will revert the authority back to the owner for owner-managed plugins
-  await revokePluginAuthority(umi, {
+  await revokePluginAuthorityV1(umi, {
     asset: assetAddress.publicKey,
-    pluginType: PluginType.Freeze,
+    pluginType: PluginType.FreezeDelegate,
     authority: freezeDelegate,
   }).sendAndConfirm(umi);
 
@@ -118,7 +118,7 @@ const advancedExamples = async () => {
   const creator1 = generateSigner(umi);
   const creator2 = generateSigner(umi);
 
-  await createCollection(umi, {
+  await createCollectionV1(umi, {
     name: 'Test Collection',
     uri: 'https://example.com/collection.json',
     collection: collectionAddress,
@@ -145,7 +145,7 @@ const advancedExamples = async () => {
 
   // Create an asset in a collection.
   // Assets in a collection will inherit the collection's authority-managed plugins, in this case the royalties plugin
-  await create(umi, {
+  await createV1(umi, {
     name: 'Test Asset',
     uri: 'https://example.com/asset.json',
     asset: assetAddress,
