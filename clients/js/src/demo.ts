@@ -14,6 +14,7 @@ import {
   transferV1,
   updateAuthority,
   createPlugin,
+  Key,
 } from './index';
 
 const example = async () => {
@@ -68,11 +69,13 @@ const example = async () => {
 
   // GPA fetch assets by owner
   const assetsByOwner = await getAssetV1GpaBuilder(umi)
+    .whereField('key', Key.AssetV1)
     .whereField('owner', owner.publicKey)
     .getDeserialized();
 
   // GPA fetch assets by collection
   const assetsByCollection = await getAssetV1GpaBuilder(umi)
+    .whereField('key', Key.AssetV1)
     .whereField(
       'updateAuthority',
       updateAuthority('Collection', [collectionAddress.publicKey])
