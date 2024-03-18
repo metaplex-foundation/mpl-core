@@ -1,5 +1,7 @@
 [package]
-name = "mpl-core"
+name = "core-preview"
+description = "Preview"
+homepage = "https://www.example.com"
 version = "0.1.0"
 edition = "2021"
 readme = "README.md"
