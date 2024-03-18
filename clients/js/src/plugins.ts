@@ -32,40 +32,40 @@ export type PluginAuthorityPairHelperArgs = CreatePluginArgs & {
 
 export type CreatePluginArgs =
   | {
-    type: 'Royalties';
-    data: RoyaltiesArgs;
-  }
+      type: 'Royalties';
+      data: RoyaltiesArgs;
+    }
   | {
-    type: 'FreezeDelegate';
-    data: FreezeDelegateArgs;
-  }
+      type: 'FreezeDelegate';
+      data: FreezeDelegateArgs;
+    }
   | {
-    type: 'BurnDelegate';
-  }
+      type: 'BurnDelegate';
+    }
   | {
-    type: 'TransferDelegate';
-  }
+      type: 'TransferDelegate';
+    }
   | {
-    type: 'UpdateDelegate';
-  }
+      type: 'UpdateDelegate';
+    }
   | {
-    type: 'PermanentFreezeDelegate';
-    data: PermanentFreezeDelegateArgs;
-  }
+      type: 'PermanentFreezeDelegate';
+      data: PermanentFreezeDelegateArgs;
+    }
   | {
-    type: 'Attributes';
-    data: AttributesArgs;
-  }
+      type: 'Attributes';
+      data: AttributesArgs;
+    }
   | {
-    type: 'PermanentFreezeDelegate';
-    data: PermanentFreezeDelegateArgs;
-  }
+      type: 'PermanentFreezeDelegate';
+      data: PermanentFreezeDelegateArgs;
+    }
   | {
-    type: 'PermanentTransferDelegate';
-  }
+      type: 'PermanentTransferDelegate';
+    }
   | {
-    type: 'PermanentBurnDelegate';
-  };
+      type: 'PermanentBurnDelegate';
+    };
 
 export function createPlugin(args: CreatePluginArgs): BasePlugin {
   return {

@@ -30,9 +30,11 @@ export type FreezeDelegatePlugin = BasePlugin & FreezeDelegate;
 export type BurnDelegatePlugin = BasePlugin & BurnDelegate;
 export type TransferDelegatePlugin = BasePlugin & TransferDelegate;
 export type UpdateDelegatePlugin = BasePlugin & UpdateDelegate;
-export type PermanentFreezeDelegatePlugin = BasePlugin & PermanentFreezeDelegate;
+export type PermanentFreezeDelegatePlugin = BasePlugin &
+  PermanentFreezeDelegate;
 export type AttributesPlugin = BasePlugin & Attributes;
-export type PermanentTransferDelegatePlugin = BasePlugin & PermanentTransferDelegate;
+export type PermanentTransferDelegatePlugin = BasePlugin &
+  PermanentTransferDelegate;
 
 export type PluginsList = {
   royalties?: RoyaltiesPlugin;

@@ -93,4 +93,4 @@ test('it can add updateDelegate to collection and then approve', async (t) => {
       },
     },
   });
-})
+});

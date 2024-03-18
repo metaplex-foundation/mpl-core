@@ -116,10 +116,10 @@ export const createAssetWithCollection: (
   const collection = assetInput.collection
     ? await fetchCollectionV1(umi, publicKey(assetInput.collection))
     : await createCollection(umi, {
-      payer: assetInput.payer,
-      updateAuthority: assetInput.updateAuthority,
-      ...collectionInput,
-    });
+        payer: assetInput.payer,
+        updateAuthority: assetInput.updateAuthority,
+        ...collectionInput,
+      });
 
   const asset = await createAsset(umi, {
     ...assetInput,

@@ -16,7 +16,10 @@ import {
 import { BaseAuthority, PluginsList } from '../types';
 import { registryRecordsToPluginsList } from '../plugins';
 
-export type AssetV1AccountData = Omit<GenAssetV1AccountData, 'updateAuthority'> &
+export type AssetV1AccountData = Omit<
+  GenAssetV1AccountData,
+  'updateAuthority'
+> &
   PluginsList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
     updateAuthority: BaseAuthority;
@@ -41,12 +44,13 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
   serialize: () => {
     throw new Error('Operation not supported.');
   },
-  deserialize: (buffer: Uint8Array, offset = 0): [AssetV1AccountData, number] => {
+  deserialize: (
+    buffer: Uint8Array,
+    offset = 0
+  ): [AssetV1AccountData, number] => {
     // Account.
-    const [asset, assetOffset] = genGetAssetV1AccountDataSerializer().deserialize(
-      buffer,
-      offset
-    );
+    const [asset, assetOffset] =
+      genGetAssetV1AccountDataSerializer().deserialize(buffer, offset);
     if (asset.key !== Key.AssetV1) {
       throw new Error(`Expected an Asset account, got key: ${asset.key}`);
     }

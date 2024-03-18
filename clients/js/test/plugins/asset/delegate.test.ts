@@ -21,7 +21,9 @@ test('it can delegate a new authority', async (t) => {
   const delegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
   });
 
   await approvePluginAuthorityV1(umi, {
@@ -51,7 +53,9 @@ test('a delegate can freeze the token', async (t) => {
   const delegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
   });
 
   await approvePluginAuthorityV1(umi, {

@@ -1,5 +1,9 @@
 import test from 'ava';
-import { generateSigner, assertAccountExists, sol } from '@metaplex-foundation/umi';
+import {
+  generateSigner,
+  assertAccountExists,
+  sol,
+} from '@metaplex-foundation/umi';
 import {
   pluginAuthorityPair,
   burnV1,
