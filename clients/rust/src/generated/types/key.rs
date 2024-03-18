@@ -12,9 +12,9 @@ use borsh::BorshSerialize;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Key {
     Uninitialized,
-    Asset,
-    HashedAsset,
-    PluginHeader,
-    PluginRegistry,
-    Collection,
+    AssetV1,
+    HashedAssetV1,
+    PluginHeaderV1,
+    PluginRegistryV1,
+    CollectionV1,
 }

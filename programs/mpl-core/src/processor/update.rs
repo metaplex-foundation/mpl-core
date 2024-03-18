@@ -6,9 +6,9 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::{UpdateAccounts, UpdateCollectionAccounts},
-    plugins::{Plugin, PluginHeader, PluginRegistry, PluginType, RegistryRecord},
-    state::{Asset, Collection, DataBlob, Key, SolanaAccount, UpdateAuthority},
+    instruction::accounts::{UpdateCollectionV1Accounts, UpdateV1Accounts},
+    plugins::{Plugin, PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord},
+    state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
         load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
         validate_collection_permissions,
@@ -17,20 +17,20 @@ use crate::{
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct UpdateArgs {
+pub(crate) struct UpdateV1Args {
     pub new_name: Option<String>,
     pub new_uri: Option<String>,
 }
 
-pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> ProgramResult {
+pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) -> ProgramResult {
     // Accounts.
-    let ctx = UpdateAccounts::context(accounts)?;
+    let ctx = UpdateV1Accounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
+    if let Key::HashedAssetV1 = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Update for compressed is not available");
         return Err(MplCoreError::NotAvailable.into());
     }
@@ -41,11 +41,11 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
         ctx.accounts.collection,
         None,
         None,
-        Asset::check_update,
-        Collection::check_update,
+        AssetV1::check_update,
+        CollectionV1::check_update,
         PluginType::check_update,
-        Asset::validate_update,
-        Collection::validate_update,
+        AssetV1::validate_update,
+        CollectionV1::validate_update,
         Plugin::validate_update,
     )?;
 
@@ -84,17 +84,17 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateArgs) -> P
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct UpdateCollectionArgs {
+pub(crate) struct UpdateCollectionV1Args {
     pub new_name: Option<String>,
     pub new_uri: Option<String>,
 }
 
 pub(crate) fn update_collection<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: UpdateCollectionArgs,
+    args: UpdateCollectionV1Args,
 ) -> ProgramResult {
     // Accounts.
-    let ctx = UpdateCollectionAccounts::context(accounts)?;
+    let ctx = UpdateCollectionV1Accounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
@@ -104,9 +104,9 @@ pub(crate) fn update_collection<'a>(
         authority,
         ctx.accounts.collection,
         None,
-        Collection::check_update,
+        CollectionV1::check_update,
         PluginType::check_update,
-        Collection::validate_update,
+        CollectionV1::validate_update,
         Plugin::validate_update,
     )?;
 
@@ -142,8 +142,8 @@ pub(crate) fn update_collection<'a>(
 
 fn process_update<'a, T: DataBlob + SolanaAccount>(
     core: T,
-    plugin_header: &Option<PluginHeader>,
-    plugin_registry: &Option<PluginRegistry>,
+    plugin_header: &Option<PluginHeaderV1>,
+    plugin_registry: &Option<PluginRegistryV1>,
     core_size: isize,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,

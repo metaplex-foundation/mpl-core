@@ -6,35 +6,36 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::{UpdateCollectionPluginAccounts, UpdatePluginAccounts},
+    instruction::accounts::{UpdateCollectionPluginV1Accounts, UpdatePluginV1Accounts},
     plugins::{Plugin, PluginType, RegistryRecord, ValidationResult},
-    state::{Asset, Collection, DataBlob, Key, SolanaAccount},
+    state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{fetch_core_data, load_key, resize_or_reallocate_account, resolve_authority},
 };
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct UpdatePluginArgs {
+pub(crate) struct UpdatePluginV1Args {
     pub plugin: Plugin,
 }
 
 pub(crate) fn update_plugin<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: UpdatePluginArgs,
+    args: UpdatePluginV1Args,
 ) -> ProgramResult {
     // Accounts.
-    let ctx = UpdatePluginAccounts::context(accounts)?;
+    let ctx = UpdatePluginV1Accounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
+    if let Key::HashedAssetV1 = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Update plugin for compressed is not available");
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    let (mut asset, plugin_header, plugin_registry) = fetch_core_data::<Asset>(ctx.accounts.asset)?;
+    let (mut asset, plugin_header, plugin_registry) =
+        fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
     let mut plugin_registry = plugin_registry.ok_or(MplCoreError::PluginsNotInitialized)?;
     let mut plugin_header = plugin_header.ok_or(MplCoreError::PluginsNotInitialized)?;
 
@@ -142,23 +143,23 @@ pub(crate) fn update_plugin<'a>(
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct UpdateCollectionPluginArgs {
+pub(crate) struct UpdateCollectionPluginV1Args {
     pub plugin: Plugin,
 }
 
 pub(crate) fn update_collection_plugin<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: UpdateCollectionPluginArgs,
+    args: UpdateCollectionPluginV1Args,
 ) -> ProgramResult {
     // Accounts.
-    let ctx = UpdateCollectionPluginAccounts::context(accounts)?;
+    let ctx = UpdateCollectionPluginV1Accounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     let (collection, plugin_header, plugin_registry) =
-        fetch_core_data::<Collection>(ctx.accounts.collection)?;
+        fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;
     let mut plugin_registry = plugin_registry.ok_or(MplCoreError::PluginsNotInitialized)?;
     let mut plugin_header = plugin_header.ok_or(MplCoreError::PluginsNotInitialized)?;
 

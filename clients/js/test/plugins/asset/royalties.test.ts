@@ -6,12 +6,12 @@ import {
 } from '@metaplex-foundation/mpl-toolbox';
 import {
   MPL_CORE_PROGRAM_ID,
-  addPlugin,
+  addPluginV1,
   createPlugin,
   pluginAuthorityPair,
   ruleSet,
-  transfer,
-  updatePlugin,
+  transferV1,
+  updatePluginV1,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -59,7 +59,7 @@ test('it can transfer an asset with royalties', async (t) => {
     },
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     newOwner: programOwned.publicKey,
   }).sendAndConfirm(umi);
@@ -114,7 +114,7 @@ test('it can transfer an asset with collection royalties', async (t) => {
     },
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     collection: collection.publicKey,
     asset: asset.publicKey,
     newOwner: programOwned.publicKey,
@@ -162,7 +162,7 @@ test('it can transfer an asset with royalties to an allowlisted program address'
     },
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     newOwner: programOwned.publicKey,
   }).sendAndConfirm(umi);
@@ -217,7 +217,7 @@ test('it can transfer an asset with collection royalties to an allowlisted progr
     },
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     collection: collection.publicKey,
     newOwner: programOwned.publicKey,
@@ -271,12 +271,12 @@ test('it cannot transfer an asset with royalties to a program address not on the
     },
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     newOwner: programOwned.publicKey,
   }).sendAndConfirm(umi);
 
-  const result = transfer(umi, {
+  const result = transferV1(umi, {
     asset: asset.publicKey,
     newOwner: programOwned2.publicKey,
     authority: programOwner,
@@ -334,14 +334,14 @@ test('it cannot transfer an asset with collection royalties to a program address
     },
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     collection: collection.publicKey,
     newOwner: programOwned.publicKey,
     authority: programOwner,
   }).sendAndConfirm(umi);
 
-  const result = transfer(umi, {
+  const result = transferV1(umi, {
     asset: asset.publicKey,
     collection: collection.publicKey,
     newOwner: programOwned2.publicKey,
@@ -393,7 +393,7 @@ test('it can transfer an asset with royalties to a program address not on the de
     },
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     newOwner: programOwned.publicKey,
   }).sendAndConfirm(umi);
@@ -448,7 +448,7 @@ test('it can transfer an asset with collection royalties to a program address no
     },
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     collection: collection.publicKey,
     newOwner: programOwned.publicKey,
@@ -488,7 +488,7 @@ test('it cannot transfer an asset with royalties to a denylisted program', async
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
-  const result = transfer(umi, {
+  const result = transferV1(umi, {
     asset: asset.publicKey,
     newOwner: programOwned.publicKey,
   }).sendAndConfirm(umi);
@@ -540,7 +540,7 @@ test('it cannot transfer an asset with collection royalties to a program address
     },
   });
 
-  const result = transfer(umi, {
+  const result = transferV1(umi, {
     asset: asset.publicKey,
     collection: collection.publicKey,
     newOwner: programOwned.publicKey,
@@ -637,7 +637,7 @@ test('it cannot add royalty percentages that dont add up to 100', async (t) => {
   const creator1 = generateSigner(umi);
   const creator2 = generateSigner(umi);
 
-  const result = addPlugin(umi, {
+  const result = addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'Royalties',
@@ -662,7 +662,7 @@ test('it cannot add royalty percentages that has duplicate creators', async (t) 
   const asset = await createAsset(umi, {});
   const creator1 = generateSigner(umi);
 
-  const result = addPlugin(umi, {
+  const result = addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'Royalties',
@@ -685,7 +685,7 @@ test('it cannot add royalty basis points greater than 10000', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi, {});
 
-  const result = addPlugin(umi, {
+  const result = addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'Royalties',
@@ -723,7 +723,7 @@ test('it cannot update royalty percentages that dont add up to 100', async (t) =
     ],
   });
 
-  const result = updatePlugin(umi, {
+  const result = updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'Royalties',
@@ -757,7 +757,7 @@ test('it cannot update royalty basis points greater than 10000', async (t) => {
     ],
   });
 
-  const result = updatePlugin(umi, {
+  const result = updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'Royalties',
@@ -789,7 +789,7 @@ test('it cannot update royalty with duplicate creators', async (t) => {
     ],
   });
 
-  const result = updatePlugin(umi, {
+  const result = updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'Royalties',

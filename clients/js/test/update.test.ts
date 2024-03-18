@@ -1,6 +1,6 @@
 import test from 'ava';
 
-import { update, pluginAuthorityPair } from '../src';
+import { updateV1, pluginAuthorityPair } from '../src';
 import { assertAsset, createAsset, createUmi } from './_setup';
 
 test('it can update an asset to be larger', async (t) => {
@@ -8,7 +8,7 @@ test('it can update an asset to be larger', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi);
 
-  await update(umi, {
+  await updateV1(umi, {
     asset: asset.publicKey,
     newName: 'Test Bread 2',
     newUri: 'https://example.com/bread2',
@@ -28,7 +28,7 @@ test('it can update an asset to be smaller', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi);
 
-  await update(umi, {
+  await updateV1(umi, {
     asset: asset.publicKey,
     newName: '',
     newUri: '',
@@ -61,7 +61,7 @@ test('it can update an asset with plugins to be larger', async (t) => {
   //   }],
   // });
 
-  await update(umi, {
+  await updateV1(umi, {
     asset: asset.publicKey,
     newName: 'Test Bread 2',
     newUri: 'https://example.com/bread2',
@@ -91,7 +91,7 @@ test('it can update an asset with plugins to be smaller', async (t) => {
     plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
-  await update(umi, {
+  await updateV1(umi, {
     asset: asset.publicKey,
     newName: '',
     newUri: '',

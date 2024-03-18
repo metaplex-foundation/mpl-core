@@ -759,8 +759,8 @@ pub(crate) fn validate_plugin_checks<'a>(
         {
             solana_program::msg!("Validating plugin checks");
             let account = match key {
-                Key::Collection => collection.ok_or(MplCoreError::InvalidCollection)?,
-                Key::Asset => asset.ok_or(MplCoreError::InvalidAsset)?,
+                Key::CollectionV1 => collection.ok_or(MplCoreError::InvalidCollection)?,
+                Key::AssetV1 => asset.ok_or(MplCoreError::InvalidAsset)?,
                 _ => unreachable!(),
             };
 

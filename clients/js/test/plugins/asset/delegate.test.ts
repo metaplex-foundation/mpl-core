@@ -2,8 +2,8 @@ import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   PluginType,
-  approvePluginAuthority,
-  updatePlugin,
+  approvePluginAuthorityV1,
+  updatePluginV1,
   pluginAuthorityPair,
   pubkeyPluginAuthority,
   createPlugin,
@@ -24,7 +24,7 @@ test('it can delegate a new authority', async (t) => {
     plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
-  await approvePluginAuthority(umi, {
+  await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
@@ -54,14 +54,14 @@ test('a delegate can freeze the token', async (t) => {
     plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
-  await approvePluginAuthority(umi, {
+  await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   const umi2 = await createUmi();
-  await updatePlugin(umi2, {
+  await updatePluginV1(umi2, {
     asset: asset.publicKey,
     authority: delegateAddress,
     plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: true } }),

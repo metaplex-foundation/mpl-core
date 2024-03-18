@@ -1,5 +1,5 @@
 use mpl_core::{
-    instructions::CreateBuilder,
+    instructions::CreateV1Builder,
     types::{DataState, Key, Plugin, PluginAuthorityPair, UpdateAuthority},
     Asset,
 };
@@ -35,7 +35,7 @@ pub async fn create_asset<'a>(
     input: CreateAssetHelperArgs<'a>,
 ) -> Result<(), BanksClientError> {
     let payer = input.payer.unwrap_or(&context.payer);
-    let create_ix = CreateBuilder::new()
+    let create_ix = CreateV1Builder::new()
         .asset(input.asset.pubkey())
         .collection(input.collection)
         .authority(input.authority)
@@ -83,7 +83,7 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
         .expect("asset account not found");
 
     let asset = Asset::from_bytes(&asset_account.data).unwrap();
-    assert_eq!(asset.base.key, Key::Asset);
+    assert_eq!(asset.base.key, Key::AssetV1);
     assert_eq!(
         asset.base.name,
         input.name.unwrap_or(DEFAULT_ASSET_NAME.to_owned())

@@ -2,8 +2,8 @@ import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   PluginType,
-  approvePluginAuthority,
-  addPlugin,
+  approvePluginAuthorityV1,
+  addPluginV1,
   pubkeyPluginAuthority,
   pluginAuthorityPair,
   createPlugin,
@@ -24,12 +24,12 @@ test('it can add an authority to a plugin', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
-  await addPlugin(umi, {
+  await addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
   })
     .append(
-      approvePluginAuthority(umi, {
+      approvePluginAuthorityV1(umi, {
         asset: asset.publicKey,
         pluginType: PluginType.FreezeDelegate,
         newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
@@ -75,7 +75,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
     },
   });
 
-  await approvePluginAuthority(umi, {
+  await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
@@ -95,7 +95,7 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
     },
   });
 
-  await approvePluginAuthority(umi, {
+  await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(newDelegateAddress.publicKey),
@@ -125,7 +125,7 @@ test('it can approve to reassign authority back to owner', async (t) => {
     plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
   });
 
-  await approvePluginAuthority(umi, {
+  await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
     newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
@@ -145,7 +145,7 @@ test('it can approve to reassign authority back to owner', async (t) => {
     },
   });
 
-  await approvePluginAuthority(umi, {
+  await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
     newAuthority: ownerPluginAuthority(),

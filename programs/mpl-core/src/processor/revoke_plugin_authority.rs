@@ -5,13 +5,13 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{
-        RevokeCollectionPluginAuthorityAccounts, RevokePluginAuthorityAccounts,
+        RevokeCollectionPluginAuthorityV1Accounts, RevokePluginAuthorityV1Accounts,
     },
     plugins::{
-        fetch_wrapped_plugin, revoke_authority_on_plugin, Plugin, PluginHeader, PluginRegistry,
+        fetch_wrapped_plugin, revoke_authority_on_plugin, Plugin, PluginHeaderV1, PluginRegistryV1,
         PluginType,
     },
-    state::{Asset, Collection, Key},
+    state::{AssetV1, CollectionV1, Key},
     utils::{
         fetch_core_data, load_key, resolve_authority, validate_asset_permissions,
         validate_collection_permissions,
@@ -20,29 +20,29 @@ use crate::{
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct RevokePluginAuthorityArgs {
+pub(crate) struct RevokePluginAuthorityV1Args {
     pub plugin_type: PluginType,
 }
 
 pub(crate) fn revoke_plugin_authority<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: RevokePluginAuthorityArgs,
+    args: RevokePluginAuthorityV1Args,
 ) -> ProgramResult {
-    let ctx = RevokePluginAuthorityAccounts::context(accounts)?;
+    let ctx = RevokePluginAuthorityV1Accounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
+    if let Key::HashedAssetV1 = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Revoke plugin authority for compressed is not available");
         return Err(MplCoreError::NotAvailable.into());
     }
 
     let (mut asset, plugin_header, mut plugin_registry) =
-        fetch_core_data::<Asset>(ctx.accounts.asset)?;
+        fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
 
-    let (_, plugin) = fetch_wrapped_plugin::<Asset>(ctx.accounts.asset, args.plugin_type)?;
+    let (_, plugin) = fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, args.plugin_type)?;
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
@@ -51,11 +51,11 @@ pub(crate) fn revoke_plugin_authority<'a>(
         ctx.accounts.collection,
         None,
         Some(&plugin),
-        Asset::check_revoke_plugin_authority,
-        Collection::check_revoke_plugin_authority,
+        AssetV1::check_revoke_plugin_authority,
+        CollectionV1::check_revoke_plugin_authority,
         PluginType::check_revoke_plugin_authority,
-        Asset::validate_revoke_plugin_authority,
-        Collection::validate_revoke_plugin_authority,
+        AssetV1::validate_revoke_plugin_authority,
+        CollectionV1::validate_revoke_plugin_authority,
         Plugin::validate_revoke_plugin_authority,
     )?;
 
@@ -74,34 +74,34 @@ pub(crate) fn revoke_plugin_authority<'a>(
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct RevokeCollectionPluginAuthorityArgs {
+pub(crate) struct RevokeCollectionPluginAuthorityV1Args {
     pub plugin_type: PluginType,
 }
 
 pub(crate) fn revoke_collection_plugin_authority<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: RevokeCollectionPluginAuthorityArgs,
+    args: RevokeCollectionPluginAuthorityV1Args,
 ) -> ProgramResult {
-    let ctx = RevokeCollectionPluginAuthorityAccounts::context(accounts)?;
+    let ctx = RevokeCollectionPluginAuthorityV1Accounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     let (_, plugin_header, mut plugin_registry) =
-        fetch_core_data::<Collection>(ctx.accounts.collection)?;
+        fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;
 
     let (_, plugin) =
-        fetch_wrapped_plugin::<Collection>(ctx.accounts.collection, args.plugin_type)?;
+        fetch_wrapped_plugin::<CollectionV1>(ctx.accounts.collection, args.plugin_type)?;
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
         authority,
         ctx.accounts.collection,
         Some(&plugin),
-        Collection::check_revoke_plugin_authority,
+        CollectionV1::check_revoke_plugin_authority,
         PluginType::check_revoke_plugin_authority,
-        Collection::validate_revoke_plugin_authority,
+        CollectionV1::validate_revoke_plugin_authority,
         Plugin::validate_revoke_plugin_authority,
     )?;
 
@@ -121,8 +121,8 @@ fn process_revoke_plugin_authority<'a>(
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
     plugin_type: &PluginType,
-    plugin_header: Option<&PluginHeader>,
-    plugin_registry: Option<&mut PluginRegistry>,
+    plugin_header: Option<&PluginHeaderV1>,
+    plugin_registry: Option<&mut PluginRegistryV1>,
 ) -> ProgramResult {
     let plugin_header = match plugin_header {
         Some(header) => header,

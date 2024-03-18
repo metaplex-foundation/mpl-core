@@ -13,11 +13,12 @@ use crate::{
     error::MplCoreError,
     plugins::{
         create_meta_idempotent, initialize_plugin, validate_plugin_checks, CheckResult, Plugin,
-        PluginHeader, PluginRegistry, PluginType, RegistryRecord, ValidationResult,
+        PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord, ValidationResult,
     },
     state::{
-        Asset, Authority, Collection, Compressible, CompressionProof, CoreAsset, DataBlob,
-        HashablePluginSchema, HashedAsset, HashedAssetSchema, Key, SolanaAccount, UpdateAuthority,
+        AssetV1, Authority, CollectionV1, Compressible, CompressionProof, CoreAsset, DataBlob,
+        HashablePluginSchema, HashedAssetSchema, HashedAssetV1, Key, SolanaAccount,
+        UpdateAuthority,
     },
 };
 
@@ -61,7 +62,7 @@ pub fn assert_authority<T: CoreAsset>(
 
 /// Assert that the account info address is the same as the authority.
 pub fn assert_collection_authority(
-    asset: &Collection,
+    asset: &CollectionV1,
     authority_info: &AccountInfo,
     authority: &Authority,
 ) -> ProgramResult {
@@ -85,12 +86,13 @@ pub fn assert_collection_authority(
 /// Fetch the core data from the account; asset, plugin header (if present), and plugin registry (if present).
 pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
-) -> Result<(T, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
+) -> Result<(T, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
     let asset = T::load(account, 0)?;
 
     if asset.get_size() != account.data_len() {
-        let plugin_header = PluginHeader::load(account, asset.get_size())?;
-        let plugin_registry = PluginRegistry::load(account, plugin_header.plugin_registry_offset)?;
+        let plugin_header = PluginHeaderV1::load(account, asset.get_size())?;
+        let plugin_registry =
+            PluginRegistryV1::load(account, plugin_header.plugin_registry_offset)?;
 
         Ok((asset, Some(plugin_header), Some(plugin_registry)))
     } else {
@@ -102,8 +104,8 @@ pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
 pub fn verify_proof(
     hashed_asset: &AccountInfo,
     compression_proof: &CompressionProof,
-) -> Result<(Asset, Vec<HashablePluginSchema>), ProgramError> {
-    let asset = Asset::from(compression_proof.clone());
+) -> Result<(AssetV1, Vec<HashablePluginSchema>), ProgramError> {
+    let asset = AssetV1::from(compression_proof.clone());
     let asset_hash = asset.hash()?;
 
     let mut sorted_plugins = compression_proof.plugins.clone();
@@ -121,7 +123,7 @@ pub fn verify_proof(
 
     let hashed_asset_schema_hash = hashed_asset_schema.hash()?;
 
-    let current_account_hash = HashedAsset::load(hashed_asset, 0)?.hash;
+    let current_account_hash = HashedAssetV1::load(hashed_asset, 0)?.hash;
     if hashed_asset_schema_hash != current_account_hash {
         return Err(MplCoreError::IncorrectAssetHash.into());
     }
@@ -218,12 +220,12 @@ pub fn validate_asset_permissions<'a>(
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
     asset_validate_fp: fn(
-        &Asset,
+        &AssetV1,
         &AccountInfo,
         Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError>,
     collection_validate_fp: fn(
-        &Collection,
+        &CollectionV1,
         &AccountInfo,
         Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError>,
@@ -235,8 +237,8 @@ pub fn validate_asset_permissions<'a>(
         Option<&Plugin>,
         Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError>,
-) -> Result<(Asset, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
-    let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<Asset>(asset)?;
+) -> Result<(AssetV1, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
+    let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<AssetV1>(asset)?;
     let resolved_authority = resolve_to_authority(authority_info, collection, &deserialized_asset)?;
 
     // If the asset is part of a collection, the collection must be passed in and it must be correct.
@@ -260,9 +262,9 @@ pub fn validate_asset_permissions<'a>(
 
     // Check the collection plugins first.
     if let Some(collection_info) = collection {
-        fetch_core_data::<Collection>(collection_info).map(|(_, _, registry)| {
+        fetch_core_data::<CollectionV1>(collection_info).map(|(_, _, registry)| {
             registry.map(|r| {
-                r.check_registry(Key::Collection, plugin_check_fp, &mut checks);
+                r.check_registry(Key::CollectionV1, plugin_check_fp, &mut checks);
                 r
             })
         })?;
@@ -271,7 +273,7 @@ pub fn validate_asset_permissions<'a>(
     // Next check the asset plugins. Plugins on the asset override the collection plugins,
     // so we don't need to validate the collection plugins if the asset has a plugin.
     if let Some(registry) = plugin_registry.as_ref() {
-        registry.check_registry(Key::Asset, plugin_check_fp, &mut checks);
+        registry.check_registry(Key::AssetV1, plugin_check_fp, &mut checks);
     }
 
     solana_program::msg!("checks: {:#?}", checks);
@@ -280,7 +282,7 @@ pub fn validate_asset_permissions<'a>(
     let mut approved = false;
     let mut rejected = false;
     if asset_check != CheckResult::None {
-        match asset_validate_fp(&Asset::load(asset, 0)?, authority_info, new_plugin)? {
+        match asset_validate_fp(&AssetV1::load(asset, 0)?, authority_info, new_plugin)? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
             ValidationResult::Pass => (),
@@ -293,7 +295,7 @@ pub fn validate_asset_permissions<'a>(
 
     if collection_check != CheckResult::None {
         match collection_validate_fp(
-            &Collection::load(collection.ok_or(MplCoreError::MissingCollection)?, 0)?,
+            &CollectionV1::load(collection.ok_or(MplCoreError::MissingCollection)?, 0)?,
             authority_info,
             new_plugin,
         )? {
@@ -308,7 +310,7 @@ pub fn validate_asset_permissions<'a>(
     solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
 
     match validate_plugin_checks(
-        Key::Collection,
+        Key::CollectionV1,
         &checks,
         authority_info,
         new_owner,
@@ -329,7 +331,7 @@ pub fn validate_asset_permissions<'a>(
     solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
 
     match validate_plugin_checks(
-        Key::Asset,
+        Key::AssetV1,
         &checks,
         authority_info,
         new_owner,
@@ -367,7 +369,7 @@ pub fn validate_collection_permissions<'a>(
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
     collection_validate_fp: fn(
-        &Collection,
+        &CollectionV1,
         &AccountInfo,
         Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError>,
@@ -379,17 +381,24 @@ pub fn validate_collection_permissions<'a>(
         Option<&Plugin>,
         Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError>,
-) -> Result<(Collection, Option<PluginHeader>, Option<PluginRegistry>), ProgramError> {
+) -> Result<
+    (
+        CollectionV1,
+        Option<PluginHeaderV1>,
+        Option<PluginRegistryV1>,
+    ),
+    ProgramError,
+> {
     let (deserialized_collection, plugin_header, plugin_registry) =
-        fetch_core_data::<Collection>(collection)?;
+        fetch_core_data::<CollectionV1>(collection)?;
     let resolved_authority = resolve_collection_authority(authority_info, collection)?;
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
 
-    let core_check = (Key::Collection, collection_check_fp());
+    let core_check = (Key::CollectionV1, collection_check_fp());
 
     // Check the collection plugins first.
     if let Some(registry) = plugin_registry.as_ref() {
-        registry.check_registry(Key::Collection, plugin_check_fp, &mut checks);
+        registry.check_registry(Key::CollectionV1, plugin_check_fp, &mut checks);
     }
 
     solana_program::msg!("checks: {:#?}", checks);
@@ -400,12 +409,12 @@ pub fn validate_collection_permissions<'a>(
     if matches!(
         core_check,
         (
-            Key::Collection,
+            Key::CollectionV1,
             CheckResult::CanApprove | CheckResult::CanReject | CheckResult::CanForceApprove
         )
     ) {
         let result = match core_check.0 {
-            Key::Collection => {
+            Key::CollectionV1 => {
                 collection_validate_fp(&deserialized_collection, authority_info, new_plugin)?
             }
             _ => return Err(MplCoreError::IncorrectAccount.into()),
@@ -422,7 +431,7 @@ pub fn validate_collection_permissions<'a>(
     solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
 
     match validate_plugin_checks(
-        Key::Collection,
+        Key::CollectionV1,
         &checks,
         authority_info,
         None,
@@ -451,7 +460,7 @@ pub fn validate_collection_permissions<'a>(
 
 /// Take an `Asset` and Vec of `HashablePluginSchema` and rebuild the asset in account space.
 pub fn rebuild_account_state_from_proof_data<'a>(
-    asset: Asset,
+    asset: AssetV1,
     plugins: Vec<HashablePluginSchema>,
     asset_info: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
@@ -468,10 +477,10 @@ pub fn rebuild_account_state_from_proof_data<'a>(
 
     // Add the plugins.
     if !plugins.is_empty() {
-        create_meta_idempotent::<Asset>(asset_info, payer, system_program)?;
+        create_meta_idempotent::<AssetV1>(asset_info, payer, system_program)?;
 
         for plugin in plugins {
-            initialize_plugin::<Asset>(
+            initialize_plugin::<AssetV1>(
                 &plugin.plugin,
                 &plugin.authority,
                 asset_info,
@@ -486,8 +495,8 @@ pub fn rebuild_account_state_from_proof_data<'a>(
 
 /// Take `Asset` and `PluginRegistry` for a decompressed asset, and compress into account space.
 pub fn compress_into_account_space<'a>(
-    mut asset: Asset,
-    plugin_registry: Option<PluginRegistry>,
+    mut asset: AssetV1,
+    plugin_registry: Option<PluginRegistryV1>,
     asset_info: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
@@ -526,7 +535,7 @@ pub fn compress_into_account_space<'a>(
         plugin_hashes,
     };
 
-    let hashed_asset = HashedAsset::new(hashed_asset_schema.hash()?);
+    let hashed_asset = HashedAssetV1::new(hashed_asset_schema.hash()?);
     let serialized_data = hashed_asset.try_to_vec()?;
 
     resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
@@ -543,7 +552,7 @@ pub fn compress_into_account_space<'a>(
 pub(crate) fn resolve_to_authority(
     authority_info: &AccountInfo,
     maybe_collection_info: Option<&AccountInfo>,
-    asset: &Asset,
+    asset: &AssetV1,
 ) -> Result<Authority, ProgramError> {
     let authority_type = if authority_info.key == &asset.owner {
         Authority::Owner
@@ -555,7 +564,7 @@ pub(crate) fn resolve_to_authority(
                 if collection_info.key != &collection_address {
                     return Err(MplCoreError::InvalidCollection.into());
                 }
-                let collection: Collection = Collection::load(collection_info, 0)?;
+                let collection: CollectionV1 = CollectionV1::load(collection_info, 0)?;
                 if authority_info.key == &collection.update_authority {
                     Authority::UpdateAuthority
                 } else {
@@ -578,7 +587,7 @@ pub(crate) fn resolve_collection_authority(
     authority_info: &AccountInfo,
     collection_info: &AccountInfo,
 ) -> Result<Authority, ProgramError> {
-    let collection: Collection = Collection::load(collection_info, 0)?;
+    let collection: CollectionV1 = CollectionV1::load(collection_info, 0)?;
     if authority_info.key == collection.owner() {
         Ok(Authority::Owner)
     } else if authority_info.key == &collection.update_authority {

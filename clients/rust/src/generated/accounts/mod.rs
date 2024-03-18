@@ -5,14 +5,14 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub(crate) mod r#base_asset;
-pub(crate) mod r#base_collection;
-pub(crate) mod r#hashed_asset;
-pub(crate) mod r#plugin_header;
-pub(crate) mod r#plugin_registry;
+pub(crate) mod r#base_asset_v1;
+pub(crate) mod r#base_collection_v1;
+pub(crate) mod r#hashed_asset_v1;
+pub(crate) mod r#plugin_header_v1;
+pub(crate) mod r#plugin_registry_v1;
 
-pub use self::r#base_asset::*;
-pub use self::r#base_collection::*;
-pub use self::r#hashed_asset::*;
-pub use self::r#plugin_header::*;
-pub use self::r#plugin_registry::*;
+pub use self::r#base_asset_v1::*;
+pub use self::r#base_collection_v1::*;
+pub use self::r#hashed_asset_v1::*;
+pub use self::r#plugin_header_v1::*;
+pub use self::r#plugin_registry_v1::*;

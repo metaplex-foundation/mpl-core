@@ -1,13 +1,13 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { getAssetAccountDataSerializer } from '../src/hooked';
+import { getAssetV1AccountDataSerializer } from '../src/hooked';
 import {
-  Asset,
-  compress,
-  create,
+  AssetV1,
+  compressV1,
+  createV1,
   DataState,
-  fetchAsset,
-  fetchHashedAsset,
+  fetchAssetV1,
+  fetchHashedAssetV1,
   getHashedAssetSchemaSerializer,
   hash,
   HashedAssetSchema,
@@ -21,7 +21,7 @@ test.skip('it can compress an asset without any plugins as the owner', async (t)
   const asset = await createAsset(umi);
 
   // And when we compress the asset.
-  await compress(umi, {
+  await compressV1(umi, {
     asset: asset.publicKey,
     authority: umi.identity,
     logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
@@ -29,12 +29,12 @@ test.skip('it can compress an asset without any plugins as the owner', async (t)
   // console.log('Compress signature: ', bs58.encode(tx.signature));
 
   // And the asset is now compressed as a hashed asset.
-  const afterAsset = await fetchHashedAsset(umi, asset.publicKey);
+  const afterAsset = await fetchHashedAssetV1(umi, asset.publicKey);
   // console.log("Account State:", afterAsset);
 
   // And the hash matches the expected value.
   const hashedAssetSchema: HashedAssetSchema = {
-    assetHash: hash(getAssetAccountDataSerializer().serialize(asset)),
+    assetHash: hash(getAssetV1AccountDataSerializer().serialize(asset)),
     pluginHashes: [],
   };
 
@@ -51,7 +51,7 @@ test.skip('it cannot compress an asset if not the owner', async (t) => {
   const attacker = generateSigner(umi);
 
   // When we create a new account.
-  await create(umi, {
+  await createV1(umi, {
     dataState: DataState.AccountState,
     asset: assetAddress,
     name: 'Test Bread',
@@ -59,9 +59,9 @@ test.skip('it cannot compress an asset if not the owner', async (t) => {
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
-  const beforeAsset = await fetchAsset(umi, assetAddress.publicKey);
+  const beforeAsset = await fetchAssetV1(umi, assetAddress.publicKey);
   // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <Asset>{
+  t.like(beforeAsset, <AssetV1>{
     publicKey: assetAddress.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     owner: umi.identity.publicKey,
@@ -69,16 +69,16 @@ test.skip('it cannot compress an asset if not the owner', async (t) => {
     uri: 'https://example.com/bread',
   });
 
-  const result = compress(umi, {
+  const result = compressV1(umi, {
     asset: assetAddress.publicKey,
     authority: attacker,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
 
-  const afterAsset = await fetchAsset(umi, assetAddress.publicKey);
+  const afterAsset = await fetchAssetV1(umi, assetAddress.publicKey);
   // console.log("Account State:", afterAsset);
-  t.like(afterAsset, <Asset>{
+  t.like(afterAsset, <AssetV1>{
     publicKey: assetAddress.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     owner: umi.identity.publicKey,
@@ -93,7 +93,7 @@ test('it cannot compress an asset because it is not available', async (t) => {
   const assetAddress = generateSigner(umi);
 
   // When we create a new account.
-  await create(umi, {
+  await createV1(umi, {
     dataState: DataState.AccountState,
     asset: assetAddress,
     name: 'Test Bread',
@@ -101,9 +101,9 @@ test('it cannot compress an asset because it is not available', async (t) => {
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
-  const beforeAsset = await fetchAsset(umi, assetAddress.publicKey);
+  const beforeAsset = await fetchAssetV1(umi, assetAddress.publicKey);
   // console.log("Account State:", beforeAsset);
-  t.like(beforeAsset, <Asset>{
+  t.like(beforeAsset, <AssetV1>{
     publicKey: assetAddress.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     owner: umi.identity.publicKey,
@@ -112,7 +112,7 @@ test('it cannot compress an asset because it is not available', async (t) => {
   });
 
   // And when we compress the asset.
-  const result = compress(umi, {
+  const result = compressV1(umi, {
     asset: assetAddress.publicKey,
     authority: umi.identity,
     logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),

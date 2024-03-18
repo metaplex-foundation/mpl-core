@@ -10,11 +10,11 @@ import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 
 export enum Key {
   Uninitialized,
-  Asset,
-  HashedAsset,
-  PluginHeader,
-  PluginRegistry,
-  Collection,
+  AssetV1,
+  HashedAssetV1,
+  PluginHeaderV1,
+  PluginRegistryV1,
+  CollectionV1,
 }
 
 export type KeyArgs = Key;

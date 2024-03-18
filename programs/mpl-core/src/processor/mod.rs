@@ -49,79 +49,79 @@ pub fn process_instruction<'a>(
 ) -> ProgramResult {
     let instruction: MplAssetInstruction = MplAssetInstruction::try_from_slice(instruction_data)?;
     match instruction {
-        MplAssetInstruction::Create(args) => {
+        MplAssetInstruction::CreateV1(args) => {
             msg!("Instruction: Create");
             create(accounts, args)
         }
-        MplAssetInstruction::CreateCollection(args) => {
+        MplAssetInstruction::CreateCollectionV1(args) => {
             msg!("Instruction: CreateCollection");
             create_collection(accounts, args)
         }
-        MplAssetInstruction::AddPlugin(args) => {
+        MplAssetInstruction::AddPluginV1(args) => {
             msg!("Instruction: AddPlugin");
             add_plugin(accounts, args)
         }
-        MplAssetInstruction::AddCollectionPlugin(args) => {
+        MplAssetInstruction::AddCollectionPluginV1(args) => {
             msg!("Instruction: AddCollectionPlugin");
             add_collection_plugin(accounts, args)
         }
-        MplAssetInstruction::RemovePlugin(args) => {
+        MplAssetInstruction::RemovePluginV1(args) => {
             msg!("Instruction: RemovePlugin");
             remove_plugin(accounts, args)
         }
-        MplAssetInstruction::RemoveCollectionPlugin(args) => {
+        MplAssetInstruction::RemoveCollectionPluginV1(args) => {
             msg!("Instruction: RemoveCollectionPlugin");
             remove_collection_plugin(accounts, args)
         }
-        MplAssetInstruction::UpdatePlugin(args) => {
+        MplAssetInstruction::UpdatePluginV1(args) => {
             msg!("Instruction: UpdatePlugin");
             update_plugin(accounts, args)
         }
-        MplAssetInstruction::UpdateCollectionPlugin(args) => {
+        MplAssetInstruction::UpdateCollectionPluginV1(args) => {
             msg!("Instruction: UpdateCollectionPlugin");
             update_collection_plugin(accounts, args)
         }
-        MplAssetInstruction::ApprovePluginAuthority(args) => {
+        MplAssetInstruction::ApprovePluginAuthorityV1(args) => {
             msg!("Instruction: ApprovePluginAuthority");
             approve_plugin_authority(accounts, args)
         }
-        MplAssetInstruction::ApproveCollectionPluginAuthority(args) => {
+        MplAssetInstruction::ApproveCollectionPluginAuthorityV1(args) => {
             msg!("Instruction: ApproveCollectionPluginAuthority");
             approve_collection_plugin_authority(accounts, args)
         }
-        MplAssetInstruction::RevokePluginAuthority(args) => {
+        MplAssetInstruction::RevokePluginAuthorityV1(args) => {
             msg!("Instruction: RevokePluginAuthority");
             revoke_plugin_authority(accounts, args)
         }
-        MplAssetInstruction::RevokeCollectionPluginAuthority(args) => {
+        MplAssetInstruction::RevokeCollectionPluginAuthorityV1(args) => {
             msg!("Instruction: RevokeCollectionPluginAuthority");
             revoke_collection_plugin_authority(accounts, args)
         }
-        MplAssetInstruction::Burn(args) => {
+        MplAssetInstruction::BurnV1(args) => {
             msg!("Instruction: Burn");
             burn(accounts, args)
         }
-        MplAssetInstruction::BurnCollection(args) => {
+        MplAssetInstruction::BurnCollectionV1(args) => {
             msg!("Instruction: BurnCollection");
             burn_collection(accounts, args)
         }
-        MplAssetInstruction::Transfer(args) => {
+        MplAssetInstruction::TransferV1(args) => {
             msg!("Instruction: Transfer");
             transfer(accounts, args)
         }
-        MplAssetInstruction::Update(args) => {
+        MplAssetInstruction::UpdateV1(args) => {
             msg!("Instruction: Update");
             update(accounts, args)
         }
-        MplAssetInstruction::UpdateCollection(args) => {
+        MplAssetInstruction::UpdateCollectionV1(args) => {
             msg!("Instruction: UpdateCollection");
             update_collection(accounts, args)
         }
-        MplAssetInstruction::Compress(args) => {
+        MplAssetInstruction::CompressV1(args) => {
             msg!("Instruction: Compress");
             compress(accounts, args)
         }
-        MplAssetInstruction::Decompress(args) => {
+        MplAssetInstruction::DecompressV1(args) => {
             msg!("Instruction: Decompress");
             decompress(accounts, args)
         }

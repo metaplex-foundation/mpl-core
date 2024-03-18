@@ -15,7 +15,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use std::{cmp::Ordering, mem::size_of};
 
 use crate::{
-    accounts::{BaseAsset, BaseCollection, PluginHeader, PluginRegistry},
+    accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1, PluginRegistryV1},
     errors::MplCoreError,
     types::{Key, Plugin, PluginType, RegistryRecord},
 };
@@ -37,23 +37,23 @@ impl From<&Plugin> for PluginType {
     }
 }
 
-impl BaseAsset {
+impl BaseAssetV1 {
     /// The base length of the asset account with an empty name and uri and no seq.
     pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4 + 1;
 }
 
-impl BaseCollection {
+impl BaseCollectionV1 {
     /// The base length of the collection account with an empty name and uri.
     pub const BASE_LENGTH: usize = 1 + 32 + 4 + 4 + 4 + 4;
 }
 
-impl DataBlob for BaseAsset {
+impl DataBlob for BaseAssetV1 {
     fn get_initial_size() -> usize {
-        BaseAsset::BASE_LENGTH
+        BaseAssetV1::BASE_LENGTH
     }
 
     fn get_size(&self) -> usize {
-        let mut size = BaseAsset::BASE_LENGTH + self.name.len() + self.uri.len();
+        let mut size = BaseAssetV1::BASE_LENGTH + self.name.len() + self.uri.len();
         if self.seq.is_some() {
             size += size_of::<u64>();
         }
@@ -61,13 +61,13 @@ impl DataBlob for BaseAsset {
     }
 }
 
-impl SolanaAccount for BaseAsset {
+impl SolanaAccount for BaseAssetV1 {
     fn key() -> Key {
-        Key::Asset
+        Key::AssetV1
     }
 }
 
-impl DataBlob for BaseCollection {
+impl DataBlob for BaseCollectionV1 {
     fn get_initial_size() -> usize {
         Self::BASE_LENGTH
     }
@@ -77,21 +77,21 @@ impl DataBlob for BaseCollection {
     }
 }
 
-impl SolanaAccount for BaseCollection {
+impl SolanaAccount for BaseCollectionV1 {
     fn key() -> Key {
-        Key::Collection
+        Key::CollectionV1
     }
 }
 
-impl SolanaAccount for PluginRegistry {
+impl SolanaAccount for PluginRegistryV1 {
     fn key() -> Key {
-        Key::PluginRegistry
+        Key::PluginRegistryV1
     }
 }
 
-impl SolanaAccount for PluginHeader {
+impl SolanaAccount for PluginHeaderV1 {
     fn key() -> Key {
-        Key::PluginHeader
+        Key::PluginHeaderV1
     }
 }
 
@@ -99,11 +99,11 @@ impl Key {
     pub fn from_u8(value: u8) -> Option<Self> {
         match value {
             0 => Some(Key::Uninitialized),
-            1 => Some(Key::Asset),
-            2 => Some(Key::HashedAsset),
-            3 => Some(Key::PluginHeader),
-            4 => Some(Key::PluginRegistry),
-            5 => Some(Key::Collection),
+            1 => Some(Key::AssetV1),
+            2 => Some(Key::HashedAssetV1),
+            3 => Some(Key::PluginHeaderV1),
+            4 => Some(Key::PluginRegistryV1),
+            5 => Some(Key::CollectionV1),
             _ => None,
         }
     }

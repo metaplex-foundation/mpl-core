@@ -8,18 +8,19 @@
 use borsh::BorshSerialize;
 
 use crate::{
-    accounts::{BaseAsset, PluginHeader, PluginRegistry},
+    accounts::{BaseAssetV1, PluginHeaderV1, PluginRegistryV1},
     registry_records_to_plugin_list, Asset,
 };
 
 impl Asset {
     pub fn deserialize_asset(data: &[u8]) -> Result<Asset, std::io::Error> {
-        let base = BaseAsset::from_bytes(data)?;
+        let base = BaseAssetV1::from_bytes(data)?;
         let base_data = base.try_to_vec()?;
         let (plugin_header, plugin_list) = if base_data.len() != data.len() {
-            let plugin_header = PluginHeader::from_bytes(&data[base_data.len()..])?;
-            let plugin_registry =
-                PluginRegistry::from_bytes(&data[plugin_header.plugin_registry_offset as usize..])?;
+            let plugin_header = PluginHeaderV1::from_bytes(&data[base_data.len()..])?;
+            let plugin_registry = PluginRegistryV1::from_bytes(
+                &data[plugin_header.plugin_registry_offset as usize..],
+            )?;
             let plugin_list = registry_records_to_plugin_list(&plugin_registry.registry, data)?;
 
             (Some(plugin_header), Some(plugin_list))

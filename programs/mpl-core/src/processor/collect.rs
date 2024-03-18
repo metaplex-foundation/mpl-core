@@ -6,7 +6,7 @@ use crate::state::{DataBlob, COLLECT_RECIPIENT};
 use crate::{
     error::MplCoreError,
     instruction::accounts::CollectAccounts,
-    state::{Asset, HashedAsset, Key},
+    state::{AssetV1, HashedAssetV1, Key},
     utils::{fetch_core_data, load_key},
     ID,
 };
@@ -41,8 +41,8 @@ fn collect_from_account(account_info: &AccountInfo, dest_info: &AccountInfo) -> 
 
             (account_info.lamports(), 0)
         }
-        Key::Asset => {
-            let (asset, header, registry) = fetch_core_data::<Asset>(account_info)?;
+        Key::AssetV1 => {
+            let (asset, header, registry) = fetch_core_data::<AssetV1>(account_info)?;
             let header_size = match header {
                 Some(header) => header.get_size(),
                 None => 0,
@@ -62,9 +62,9 @@ fn collect_from_account(account_info: &AccountInfo, dest_info: &AccountInfo) -> 
 
             (fee_amount, asset_rent)
         }
-        Key::HashedAsset => {
+        Key::HashedAssetV1 => {
             // TODO use DataBlob trait instead?
-            let hashed_rent = rent.minimum_balance(HashedAsset::LENGTH);
+            let hashed_rent = rent.minimum_balance(HashedAssetV1::LENGTH);
             let fee_amount = account_info
                 .lamports()
                 .checked_sub(hashed_rent)

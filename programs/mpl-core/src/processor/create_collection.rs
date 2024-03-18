@@ -7,14 +7,14 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::CreateCollectionAccounts,
+    instruction::accounts::CreateCollectionV1Accounts,
     plugins::{create_meta_idempotent, initialize_plugin, PluginAuthorityPair},
-    state::{Collection, Key},
+    state::{CollectionV1, Key},
 };
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct CreateCollectionArgs {
+pub(crate) struct CreateCollectionV1Args {
     pub(crate) name: String,
     pub(crate) uri: String,
     pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
@@ -22,10 +22,10 @@ pub(crate) struct CreateCollectionArgs {
 
 pub(crate) fn create_collection<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: CreateCollectionArgs,
+    args: CreateCollectionV1Args,
 ) -> ProgramResult {
     // Accounts.
-    let ctx = CreateCollectionAccounts::context(accounts)?;
+    let ctx = CreateCollectionV1Accounts::context(accounts)?;
     let rent = Rent::get()?;
 
     // Guards.
@@ -36,8 +36,8 @@ pub(crate) fn create_collection<'a>(
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
-    let new_collection = Collection {
-        key: Key::Collection,
+    let new_collection = CollectionV1 {
+        key: Key::CollectionV1,
         update_authority: *ctx
             .accounts
             .update_authority
@@ -77,14 +77,14 @@ pub(crate) fn create_collection<'a>(
 
     drop(serialized_data);
 
-    create_meta_idempotent::<Collection>(
+    create_meta_idempotent::<CollectionV1>(
         ctx.accounts.collection,
         ctx.accounts.payer,
         ctx.accounts.system_program,
     )?;
 
     for plugin in args.plugins.unwrap_or_default() {
-        initialize_plugin::<Collection>(
+        initialize_plugin::<CollectionV1>(
             &plugin.plugin,
             &plugin.authority.unwrap_or(plugin.plugin.manager()),
             ctx.accounts.collection,

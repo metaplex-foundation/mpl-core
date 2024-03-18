@@ -1,6 +1,6 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { Key, getCollectionGpaBuilder } from '../src';
+import { Key, getCollectionV1GpaBuilder } from '../src';
 import { createUmi, createCollection } from './_setup';
 
 test('it can gpa fetch collections by updateAuthority', async (t) => {
@@ -17,17 +17,17 @@ test('it can gpa fetch collections by updateAuthority', async (t) => {
   });
   await createCollection(umi, {});
 
-  const collections = await getCollectionGpaBuilder(umi)
+  const collections = await getCollectionV1GpaBuilder(umi)
     .whereField('updateAuthority', updateAuthority.publicKey)
-    .whereField('key', Key.Collection)
+    .whereField('key', Key.CollectionV1)
     .getDeserialized();
   const names = ['collection1', 'collection2'];
 
   t.is(collections.length, 2);
-  t.assert(collections.every((collection) => names.includes(collection.name)));
+  t.assert(collections.every((collectionV1) => names.includes(collectionV1.name)));
   t.assert(
     collections.every(
-      (collection) => collection.updateAuthority === updateAuthority.publicKey
+      (collectionV1) => collectionV1.updateAuthority === updateAuthority.publicKey
     )
   );
 });

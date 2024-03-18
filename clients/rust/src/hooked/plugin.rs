@@ -2,7 +2,7 @@ use borsh::BorshDeserialize;
 use solana_program::account_info::AccountInfo;
 
 use crate::{
-    accounts::{BaseAsset, PluginHeader, PluginRegistry},
+    accounts::{BaseAssetV1, PluginHeaderV1, PluginRegistryV1},
     errors::MplCoreError,
     types::{Plugin, PluginAuthority, PluginType, RegistryRecord},
     AttributesPlugin, BaseAuthority, BasePlugin, BurnDelegatePlugin, DataBlob,
@@ -18,9 +18,9 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
 ) -> Result<(PluginAuthority, U, usize), std::io::Error> {
     let asset = T::load(account, 0)?;
 
-    let header = PluginHeader::load(account, asset.get_size())?;
-    let PluginRegistry { registry, .. } =
-        PluginRegistry::load(account, header.plugin_registry_offset as usize)?;
+    let header = PluginHeaderV1::load(account, asset.get_size())?;
+    let PluginRegistryV1 { registry, .. } =
+        PluginRegistryV1::load(account, header.plugin_registry_offset as usize)?;
 
     // Find the plugin in the registry.
     let registry_record = registry
@@ -61,22 +61,22 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
 
 /// Fetch the plugin registry.
 pub fn fetch_plugins(account: &[u8]) -> Result<Vec<RegistryRecord>, std::io::Error> {
-    let asset = BaseAsset::from_bytes(account)?;
+    let asset = BaseAssetV1::from_bytes(account)?;
 
-    let header = PluginHeader::from_bytes(&account[asset.get_size()..])?;
-    let PluginRegistry { registry, .. } =
-        PluginRegistry::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
+    let header = PluginHeaderV1::from_bytes(&account[asset.get_size()..])?;
+    let PluginRegistryV1 { registry, .. } =
+        PluginRegistryV1::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
 
     Ok(registry)
 }
 
 /// Create plugin header and registry if it doesn't exist
 pub fn list_plugins(account: &[u8]) -> Result<Vec<PluginType>, std::io::Error> {
-    let asset = BaseAsset::from_bytes(account)?;
+    let asset = BaseAssetV1::from_bytes(account)?;
 
-    let header = PluginHeader::from_bytes(&account[asset.get_size()..])?;
-    let PluginRegistry { registry, .. } =
-        PluginRegistry::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
+    let header = PluginHeaderV1::from_bytes(&account[asset.get_size()..])?;
+    let PluginRegistryV1 { registry, .. } =
+        PluginRegistryV1::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
 
     Ok(registry
         .iter()

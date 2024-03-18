@@ -1,6 +1,6 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { Key, getAssetGpaBuilder, updateAuthority } from '../src';
+import { Key, getAssetV1GpaBuilder, updateAuthority } from '../src';
 import { createAsset, createCollection, createUmi } from './_setup';
 
 test('it can gpa fetch assets by owner', async (t) => {
@@ -17,9 +17,9 @@ test('it can gpa fetch assets by owner', async (t) => {
   });
   await createAsset(umi, {});
 
-  const assets = await getAssetGpaBuilder(umi)
+  const assets = await getAssetV1GpaBuilder(umi)
     .whereField('owner', owner.publicKey)
-    .whereField('key', Key.Asset)
+    .whereField('key', Key.AssetV1)
     .getDeserialized();
   const names = ['asset1', 'asset2'];
 
@@ -42,12 +42,12 @@ test('it can gpa fetch assets by collection', async (t) => {
   });
   await createAsset(umi, {});
 
-  const assets = await getAssetGpaBuilder(umi)
+  const assets = await getAssetV1GpaBuilder(umi)
     .whereField(
       'updateAuthority',
       updateAuthority('Collection', [collection.publicKey])
     )
-    .whereField('key', Key.Asset)
+    .whereField('key', Key.AssetV1)
     .getDeserialized();
   const names = ['asset1', 'asset2'];
 

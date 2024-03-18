@@ -4,9 +4,9 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::{BurnAccounts, BurnCollectionAccounts},
+    instruction::accounts::{BurnCollectionV1Accounts, BurnV1Accounts},
     plugins::{Plugin, PluginType},
-    state::{Asset, Collection, CompressionProof, Key, Wrappable},
+    state::{AssetV1, CollectionV1, CompressionProof, Key, Wrappable},
     utils::{
         close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_authority,
         validate_asset_permissions, validate_collection_permissions, verify_proof,
@@ -14,20 +14,20 @@ use crate::{
 };
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct BurnArgs {
+pub(crate) struct BurnV1Args {
     compression_proof: Option<CompressionProof>,
 }
 
-pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> ProgramResult {
+pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> ProgramResult {
     // Accounts.
-    let ctx = BurnAccounts::context(accounts)?;
+    let ctx = BurnV1Accounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     match load_key(ctx.accounts.asset, 0)? {
-        Key::HashedAsset => {
+        Key::HashedAssetV1 => {
             let mut compression_proof = args
                 .compression_proof
                 .ok_or(MplCoreError::MissingCompressionProof)?;
@@ -61,7 +61,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
             msg!("Error: Burning compressed is currently not available");
             return Err(MplCoreError::NotAvailable.into());
         }
-        Key::Asset => (),
+        Key::AssetV1 => (),
         _ => return Err(MplCoreError::IncorrectAccount.into()),
     }
 
@@ -72,11 +72,11 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
         ctx.accounts.collection,
         None,
         None,
-        Asset::check_burn,
-        Collection::check_burn,
+        AssetV1::check_burn,
+        CollectionV1::check_burn,
         PluginType::check_burn,
-        Asset::validate_burn,
-        Collection::validate_burn,
+        AssetV1::validate_burn,
+        CollectionV1::validate_burn,
         Plugin::validate_burn,
     )?;
 
@@ -84,16 +84,16 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnArgs) -> Progr
 }
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct BurnCollectionArgs {
+pub(crate) struct BurnCollectionV1Args {
     compression_proof: Option<CompressionProof>,
 }
 
 pub(crate) fn burn_collection<'a>(
     accounts: &'a [AccountInfo<'a>],
-    _args: BurnCollectionArgs,
+    _args: BurnCollectionV1Args,
 ) -> ProgramResult {
     // Accounts.
-    let ctx = BurnCollectionAccounts::context(accounts)?;
+    let ctx = BurnCollectionV1Accounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
@@ -104,9 +104,9 @@ pub(crate) fn burn_collection<'a>(
         authority,
         ctx.accounts.collection,
         None,
-        Collection::check_burn,
+        CollectionV1::check_burn,
         PluginType::check_burn,
-        Collection::validate_burn,
+        CollectionV1::validate_burn,
         Plugin::validate_burn,
     )?;
 

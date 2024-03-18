@@ -3,7 +3,7 @@
   "name": "mpl_core_program",
   "instructions": [
     {
-      "name": "Create",
+      "name": "CreateV1",
       "accounts": [
         {
           "name": "asset",
@@ -77,9 +77,9 @@
       ],
       "args": [
         {
-          "name": "createArgs",
+          "name": "createV1Args",
           "type": {
-            "defined": "CreateArgs"
+            "defined": "CreateV1Args"
           }
         }
       ],
@@ -89,7 +89,7 @@
       }
     },
     {
-      "name": "CreateCollection",
+      "name": "CreateCollectionV1",
       "accounts": [
         {
           "name": "collection",
@@ -127,9 +127,9 @@
       ],
       "args": [
         {
-          "name": "createCollectionArgs",
+          "name": "createCollectionV1Args",
           "type": {
-            "defined": "CreateCollectionArgs"
+            "defined": "CreateCollectionV1Args"
           }
         }
       ],
@@ -139,7 +139,7 @@
       }
     },
     {
-      "name": "AddPlugin",
+      "name": "AddPluginV1",
       "accounts": [
         {
           "name": "asset",
@@ -195,9 +195,9 @@
       ],
       "args": [
         {
-          "name": "addPluginArgs",
+          "name": "addPluginV1Args",
           "type": {
-            "defined": "AddPluginArgs"
+            "defined": "AddPluginV1Args"
           }
         }
       ],
@@ -207,7 +207,7 @@
       }
     },
     {
-      "name": "AddCollectionPlugin",
+      "name": "AddCollectionPluginV1",
       "accounts": [
         {
           "name": "collection",
@@ -254,9 +254,9 @@
       ],
       "args": [
         {
-          "name": "addCollectionPluginArgs",
+          "name": "addCollectionPluginV1Args",
           "type": {
-            "defined": "AddCollectionPluginArgs"
+            "defined": "AddCollectionPluginV1Args"
           }
         }
       ],
@@ -266,7 +266,7 @@
       }
     },
     {
-      "name": "RemovePlugin",
+      "name": "RemovePluginV1",
       "accounts": [
         {
           "name": "asset",
@@ -322,9 +322,9 @@
       ],
       "args": [
         {
-          "name": "removePluginArgs",
+          "name": "removePluginV1Args",
           "type": {
-            "defined": "RemovePluginArgs"
+            "defined": "RemovePluginV1Args"
           }
         }
       ],
@@ -334,7 +334,7 @@
       }
     },
     {
-      "name": "RemoveCollectionPlugin",
+      "name": "RemoveCollectionPluginV1",
       "accounts": [
         {
           "name": "collection",
@@ -381,9 +381,9 @@
       ],
       "args": [
         {
-          "name": "removeCollectionPluginArgs",
+          "name": "removeCollectionPluginV1Args",
           "type": {
-            "defined": "RemoveCollectionPluginArgs"
+            "defined": "RemoveCollectionPluginV1Args"
           }
         }
       ],
@@ -393,7 +393,7 @@
       }
     },
     {
-      "name": "UpdatePlugin",
+      "name": "UpdatePluginV1",
       "accounts": [
         {
           "name": "asset",
@@ -449,9 +449,9 @@
       ],
       "args": [
         {
-          "name": "updatePluginArgs",
+          "name": "updatePluginV1Args",
           "type": {
-            "defined": "UpdatePluginArgs"
+            "defined": "UpdatePluginV1Args"
           }
         }
       ],
@@ -461,7 +461,7 @@
       }
     },
     {
-      "name": "UpdateCollectionPlugin",
+      "name": "UpdateCollectionPluginV1",
       "accounts": [
         {
           "name": "collection",
@@ -508,9 +508,9 @@
       ],
       "args": [
         {
-          "name": "updateCollectionPluginArgs",
+          "name": "updateCollectionPluginV1Args",
           "type": {
-            "defined": "UpdateCollectionPluginArgs"
+            "defined": "UpdateCollectionPluginV1Args"
           }
         }
       ],
@@ -520,7 +520,7 @@
       }
     },
     {
-      "name": "ApprovePluginAuthority",
+      "name": "ApprovePluginAuthorityV1",
       "accounts": [
         {
           "name": "asset",
@@ -576,9 +576,9 @@
       ],
       "args": [
         {
-          "name": "approvePluginAuthorityArgs",
+          "name": "approvePluginAuthorityV1Args",
           "type": {
-            "defined": "ApprovePluginAuthorityArgs"
+            "defined": "ApprovePluginAuthorityV1Args"
           }
         }
       ],
@@ -588,7 +588,7 @@
       }
     },
     {
-      "name": "ApproveCollectionPluginAuthority",
+      "name": "ApproveCollectionPluginAuthorityV1",
       "accounts": [
         {
           "name": "collection",
@@ -635,9 +635,9 @@
       ],
       "args": [
         {
-          "name": "approveCollectionPluginAuthorityArgs",
+          "name": "approveCollectionPluginAuthorityV1Args",
           "type": {
-            "defined": "ApproveCollectionPluginAuthorityArgs"
+            "defined": "ApproveCollectionPluginAuthorityV1Args"
           }
         }
       ],
@@ -647,7 +647,7 @@
       }
     },
     {
-      "name": "RevokePluginAuthority",
+      "name": "RevokePluginAuthorityV1",
       "accounts": [
         {
           "name": "asset",
@@ -703,9 +703,9 @@
       ],
       "args": [
         {
-          "name": "revokePluginAuthorityArgs",
+          "name": "revokePluginAuthorityV1Args",
           "type": {
-            "defined": "RevokePluginAuthorityArgs"
+            "defined": "RevokePluginAuthorityV1Args"
           }
         }
       ],
@@ -715,7 +715,7 @@
       }
     },
     {
-      "name": "RevokeCollectionPluginAuthority",
+      "name": "RevokeCollectionPluginAuthorityV1",
       "accounts": [
         {
           "name": "collection",
@@ -762,9 +762,9 @@
       ],
       "args": [
         {
-          "name": "revokeCollectionPluginAuthorityArgs",
+          "name": "revokeCollectionPluginAuthorityV1Args",
           "type": {
-            "defined": "RevokeCollectionPluginAuthorityArgs"
+            "defined": "RevokeCollectionPluginAuthorityV1Args"
           }
         }
       ],
@@ -774,7 +774,7 @@
       }
     },
     {
-      "name": "Burn",
+      "name": "BurnV1",
       "accounts": [
         {
           "name": "asset",
@@ -831,9 +831,9 @@
       ],
       "args": [
         {
-          "name": "burnArgs",
+          "name": "burnV1Args",
           "type": {
-            "defined": "BurnArgs"
+            "defined": "BurnV1Args"
           }
         }
       ],
@@ -843,7 +843,7 @@
       }
     },
     {
-      "name": "BurnCollection",
+      "name": "BurnCollectionV1",
       "accounts": [
         {
           "name": "collection",
@@ -882,9 +882,9 @@
       ],
       "args": [
         {
-          "name": "burnCollectionArgs",
+          "name": "burnCollectionV1Args",
           "type": {
-            "defined": "BurnCollectionArgs"
+            "defined": "BurnCollectionV1Args"
           }
         }
       ],
@@ -894,7 +894,7 @@
       }
     },
     {
-      "name": "Transfer",
+      "name": "TransferV1",
       "accounts": [
         {
           "name": "asset",
@@ -959,9 +959,9 @@
       ],
       "args": [
         {
-          "name": "transferArgs",
+          "name": "transferV1Args",
           "type": {
-            "defined": "TransferArgs"
+            "defined": "TransferV1Args"
           }
         }
       ],
@@ -971,7 +971,7 @@
       }
     },
     {
-      "name": "Update",
+      "name": "UpdateV1",
       "accounts": [
         {
           "name": "asset",
@@ -1036,9 +1036,9 @@
       ],
       "args": [
         {
-          "name": "updateArgs",
+          "name": "updateV1Args",
           "type": {
-            "defined": "UpdateArgs"
+            "defined": "UpdateV1Args"
           }
         }
       ],
@@ -1048,7 +1048,7 @@
       }
     },
     {
-      "name": "UpdateCollection",
+      "name": "UpdateCollectionV1",
       "accounts": [
         {
           "name": "collection",
@@ -1104,9 +1104,9 @@
       ],
       "args": [
         {
-          "name": "updateCollectionArgs",
+          "name": "updateCollectionV1Args",
           "type": {
-            "defined": "UpdateCollectionArgs"
+            "defined": "UpdateCollectionV1Args"
           }
         }
       ],
@@ -1116,7 +1116,7 @@
       }
     },
     {
-      "name": "Compress",
+      "name": "CompressV1",
       "accounts": [
         {
           "name": "asset",
@@ -1172,9 +1172,9 @@
       ],
       "args": [
         {
-          "name": "compressArgs",
+          "name": "compressV1Args",
           "type": {
-            "defined": "CompressArgs"
+            "defined": "CompressV1Args"
           }
         }
       ],
@@ -1184,7 +1184,7 @@
       }
     },
     {
-      "name": "Decompress",
+      "name": "DecompressV1",
       "accounts": [
         {
           "name": "asset",
@@ -1240,9 +1240,9 @@
       ],
       "args": [
         {
-          "name": "decompressArgs",
+          "name": "decompressV1Args",
           "type": {
-            "defined": "DecompressArgs"
+            "defined": "DecompressV1Args"
           }
         }
       ],
@@ -1272,7 +1272,7 @@
   ],
   "accounts": [
     {
-      "name": "PluginHeader",
+      "name": "PluginHeaderV1",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1290,7 +1290,7 @@
       }
     },
     {
-      "name": "PluginRegistry",
+      "name": "PluginRegistryV1",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1320,7 +1320,7 @@
       }
     },
     {
-      "name": "Asset",
+      "name": "AssetV1",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1358,7 +1358,7 @@
       }
     },
     {
-      "name": "Collection",
+      "name": "CollectionV1",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1392,7 +1392,7 @@
       }
     },
     {
-      "name": "HashedAsset",
+      "name": "HashedAssetV1",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1614,7 +1614,7 @@
       }
     },
     {
-      "name": "AddPluginArgs",
+      "name": "AddPluginV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1636,7 +1636,7 @@
       }
     },
     {
-      "name": "AddCollectionPluginArgs",
+      "name": "AddCollectionPluginV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1658,7 +1658,7 @@
       }
     },
     {
-      "name": "ApprovePluginAuthorityArgs",
+      "name": "ApprovePluginAuthorityV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1678,7 +1678,7 @@
       }
     },
     {
-      "name": "ApproveCollectionPluginAuthorityArgs",
+      "name": "ApproveCollectionPluginAuthorityV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1698,7 +1698,7 @@
       }
     },
     {
-      "name": "BurnArgs",
+      "name": "BurnV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1714,7 +1714,7 @@
       }
     },
     {
-      "name": "BurnCollectionArgs",
+      "name": "BurnCollectionV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1730,14 +1730,14 @@
       }
     },
     {
-      "name": "CompressArgs",
+      "name": "CompressV1Args",
       "type": {
         "kind": "struct",
         "fields": []
       }
     },
     {
-      "name": "CreateArgs",
+      "name": "CreateV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1769,7 +1769,7 @@
       }
     },
     {
-      "name": "CreateCollectionArgs",
+      "name": "CreateCollectionV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1795,7 +1795,7 @@
       }
     },
     {
-      "name": "DecompressArgs",
+      "name": "DecompressV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1809,7 +1809,7 @@
       }
     },
     {
-      "name": "RemovePluginArgs",
+      "name": "RemovePluginV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1823,7 +1823,7 @@
       }
     },
     {
-      "name": "RemoveCollectionPluginArgs",
+      "name": "RemoveCollectionPluginV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1837,7 +1837,7 @@
       }
     },
     {
-      "name": "RevokePluginAuthorityArgs",
+      "name": "RevokePluginAuthorityV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1851,7 +1851,7 @@
       }
     },
     {
-      "name": "RevokeCollectionPluginAuthorityArgs",
+      "name": "RevokeCollectionPluginAuthorityV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1865,7 +1865,7 @@
       }
     },
     {
-      "name": "TransferArgs",
+      "name": "TransferV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1881,7 +1881,7 @@
       }
     },
     {
-      "name": "UpdateArgs",
+      "name": "UpdateV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1901,7 +1901,7 @@
       }
     },
     {
-      "name": "UpdateCollectionArgs",
+      "name": "UpdateCollectionV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1921,7 +1921,7 @@
       }
     },
     {
-      "name": "UpdatePluginArgs",
+      "name": "UpdatePluginV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1935,7 +1935,7 @@
       }
     },
     {
-      "name": "UpdateCollectionPluginArgs",
+      "name": "UpdateCollectionPluginV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2272,19 +2272,19 @@
             "name": "Uninitialized"
           },
           {
-            "name": "Asset"
+            "name": "AssetV1"
           },
           {
-            "name": "HashedAsset"
+            "name": "HashedAssetV1"
           },
           {
-            "name": "PluginHeader"
+            "name": "PluginHeaderV1"
           },
           {
-            "name": "PluginRegistry"
+            "name": "PluginRegistryV1"
           },
           {
-            "name": "Collection"
+            "name": "CollectionV1"
           }
         ]
       }

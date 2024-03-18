@@ -47,11 +47,11 @@ kinobi.update(
 
 kinobi.update(
   new k.updateAccountsVisitor({
-    asset: {
-      name: "baseAsset",
+    assetV1: {
+      name: "baseAssetV1",
     },
-    collection: {
-      name: "baseCollection",
+    collectionV1: {
+      name: "baseCollectionV1",
     }
   })
 );
@@ -68,35 +68,35 @@ kinobi.update(
     // create: {
     //   bytesCreatedOnChain: k.bytesFromAccount("assetAccount"),
     // },
-    transfer: {
+    transferV1: {
       arguments: {
         compressionProof: {
           defaultValue: k.noneValueNode()
         }
       }
     },
-    addPlugin: {
+    addPluginV1: {
       arguments: {
         initAuthority: {
           defaultValue: k.noneValueNode()
         }
       }
     },
-    addCollectionPlugin: {
+    addCollectionPluginV1: {
       arguments: {
         initAuthority: {
           defaultValue: k.noneValueNode()
         }
       }
     },
-    burn: {
+    burnV1: {
       arguments: {
         compressionProof: {
           defaultValue: k.noneValueNode()
         }
       }
     },
-    create: {
+    createV1: {
       arguments: {
         plugins: {
           defaultValue: k.arrayValueNode([])
@@ -106,7 +106,7 @@ kinobi.update(
         }
       }
     },
-    createCollection: {
+    createCollectionV1: {
       arguments: {
         plugins: {
           defaultValue: k.noneValueNode()
@@ -128,8 +128,8 @@ kinobi.update(
 const key = (name) => ({ field: "key", value: k.enumValueNode("Key", name) });
 kinobi.update(
   k.setAccountDiscriminatorFromFieldVisitor({
-    asset: key("Asset"),
-    collection: key("Collection"),
+    assetV1: key("AssetV1"),
+    collectionV1: key("CollectionV1"),
   })
 );
 
@@ -147,11 +147,11 @@ kinobi.accept(
 // rewrite the account names for custom account data
 kinobi.update(
   new k.updateAccountsVisitor({
-    baseAsset: {
-      name: "asset",
+    baseAssetV1: {
+      name: "assetV1",
     },
-    baseCollection: {
-      name: "collection",
+    baseCollectionV1: {
+      name: "collectionV1",
     }
   })
 );
@@ -163,10 +163,10 @@ kinobi.accept(k.renderJavaScriptVisitor(jsDir, {
   prettier,
   internalNodes: [],
   customAccountData: [{
-    name: "asset",
+    name: "assetV1",
     extract: true,
   }, {
-    name: "collection",
+    name: "collectionV1",
     extract: true,
   }],
 }));

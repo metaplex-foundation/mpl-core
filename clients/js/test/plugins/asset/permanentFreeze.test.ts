@@ -1,12 +1,12 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 import {
-  addPlugin,
+  addPluginV1,
   createPlugin,
   pluginAuthorityPair,
-  transfer,
-  updateCollectionPlugin,
-  updatePlugin,
+  transferV1,
+  updateCollectionPluginV1,
+  updatePluginV1,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -44,7 +44,7 @@ test('it can freeze and unfreeze an asset', async (t) => {
     },
   });
 
-  await updatePlugin(umi, {
+  await updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'PermanentFreezeDelegate', data: { frozen: false } }),
   }).sendAndConfirm(umi);
@@ -89,7 +89,7 @@ test('it cannot be transferred while frozen', async (t) => {
     },
   });
 
-  const result = transfer(umi, {
+  const result = transferV1(umi, {
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
@@ -119,7 +119,7 @@ test('it cannot add permanentFreeze after creation', async (t) => {
 
   const asset = await createAsset(umi, { owner });
 
-  const result = addPlugin(umi, {
+  const result = addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'PermanentFreezeDelegate', data: { frozen: true } }),
   }).sendAndConfirm(umi);
@@ -179,7 +179,7 @@ test('it can freeze and unfreeze a collection', async (t) => {
     },
   });
 
-  await updateCollectionPlugin(umi, {
+  await updateCollectionPluginV1(umi, {
     collection: collection.publicKey,
     plugin: createPlugin({ type: 'PermanentFreezeDelegate', data: { frozen: false } }),
   }).sendAndConfirm(umi);
@@ -222,7 +222,7 @@ test('it cannot move asset in a permanently frozen collection', async (t) => {
     updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 
-  const result = transfer(umi, {
+  const result = transferV1(umi, {
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
     collection: collection.publicKey,
@@ -272,7 +272,7 @@ test('it can move asset with permanent freeze override in a frozen collection', 
     updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
     authority: umi.identity,
@@ -308,7 +308,7 @@ test('it can remove a permanent freeze plugin from an asset', async (t) => {
     },
   });
 
-  await updatePlugin(umi, {
+  await updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'PermanentFreezeDelegate', data: { frozen: false } }),
   }).sendAndConfirm(umi);

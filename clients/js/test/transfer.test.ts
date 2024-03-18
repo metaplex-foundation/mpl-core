@@ -1,7 +1,7 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import { transfer } from '../src';
+import { transferV1 } from '../src';
 import {
   assertAsset,
   createAsset,
@@ -21,7 +21,7 @@ test('it can transfer an asset as the owner', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
-  await transfer(umi, {
+  await transferV1(umi, {
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
@@ -41,7 +41,7 @@ test('it cannot transfer an asset if not the owner', async (t) => {
 
   const asset = await createAsset(umi);
 
-  const result = transfer(umi, {
+  const result = transferV1(umi, {
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
     authority: attacker,
@@ -63,7 +63,7 @@ test('it cannot transfer asset in collection if no collection', async (t) => {
 
   const { asset, collection } = await createAssetWithCollection(umi, {});
 
-  const result = transfer(umi, {
+  const result = transferV1(umi, {
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);

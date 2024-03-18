@@ -4,9 +4,9 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::{AddCollectionPluginAccounts, AddPluginAccounts},
+    instruction::accounts::{AddCollectionPluginV1Accounts, AddPluginV1Accounts},
     plugins::{create_meta_idempotent, initialize_plugin, Plugin, PluginType, ValidationResult},
-    state::{Asset, Authority, Collection, DataBlob, Key, SolanaAccount},
+    state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
         load_key, resolve_authority, validate_asset_permissions, validate_collection_permissions,
     },
@@ -14,22 +14,22 @@ use crate::{
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct AddPluginArgs {
+pub(crate) struct AddPluginV1Args {
     plugin: Plugin,
     init_authority: Option<Authority>,
 }
 
 pub(crate) fn add_plugin<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: AddPluginArgs,
+    args: AddPluginV1Args,
 ) -> ProgramResult {
-    let ctx = AddPluginAccounts::context(accounts)?;
+    let ctx = AddPluginV1Accounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if let Key::HashedAsset = load_key(ctx.accounts.asset, 0)? {
+    if let Key::HashedAssetV1 = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Adding plugin to compressed is not available");
         return Err(MplCoreError::NotAvailable.into());
     }
@@ -53,18 +53,18 @@ pub(crate) fn add_plugin<'a>(
         ctx.accounts.collection,
         None,
         Some(&args.plugin),
-        Asset::check_add_plugin,
-        Collection::check_add_plugin,
+        AssetV1::check_add_plugin,
+        CollectionV1::check_add_plugin,
         PluginType::check_add_plugin,
-        Asset::validate_add_plugin,
-        Collection::validate_add_plugin,
+        AssetV1::validate_add_plugin,
+        CollectionV1::validate_add_plugin,
         Plugin::validate_add_plugin,
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
     asset.increment_seq_and_save(ctx.accounts.asset)?;
 
-    process_add_plugin::<Asset>(
+    process_add_plugin::<AssetV1>(
         ctx.accounts.asset,
         ctx.accounts.payer,
         ctx.accounts.system_program,
@@ -75,16 +75,16 @@ pub(crate) fn add_plugin<'a>(
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct AddCollectionPluginArgs {
+pub(crate) struct AddCollectionPluginV1Args {
     plugin: Plugin,
     init_authority: Option<Authority>,
 }
 
 pub(crate) fn add_collection_plugin<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: AddCollectionPluginArgs,
+    args: AddCollectionPluginV1Args,
 ) -> ProgramResult {
-    let ctx = AddCollectionPluginAccounts::context(accounts)?;
+    let ctx = AddCollectionPluginV1Accounts::context(accounts)?;
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
@@ -95,13 +95,13 @@ pub(crate) fn add_collection_plugin<'a>(
         authority,
         ctx.accounts.collection,
         Some(&args.plugin),
-        Collection::check_add_plugin,
+        CollectionV1::check_add_plugin,
         PluginType::check_add_plugin,
-        Collection::validate_add_plugin,
+        CollectionV1::validate_add_plugin,
         Plugin::validate_add_plugin,
     )?;
 
-    process_add_plugin::<Collection>(
+    process_add_plugin::<CollectionV1>(
         ctx.accounts.collection,
         ctx.accounts.payer,
         ctx.accounts.system_program,

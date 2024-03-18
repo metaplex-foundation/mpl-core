@@ -3,7 +3,7 @@ import test from 'ava';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import {
   PluginType,
-  approveCollectionPluginAuthority,
+  approveCollectionPluginAuthorityV1,
   pluginAuthorityPair,
   pubkeyPluginAuthority,
 } from '../../../src';
@@ -27,7 +27,7 @@ test('it can create a new asset with a collection if it is the collection update
     plugins: [pluginAuthorityPair({ type: 'UpdateDelegate' })],
   });
 
-  await approveCollectionPluginAuthority(umi, {
+  await approveCollectionPluginAuthorityV1(umi, {
     collection: collection.publicKey,
     pluginType: PluginType.UpdateDelegate,
     newAuthority: pubkeyPluginAuthority(updateDelegate.publicKey),

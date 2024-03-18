@@ -9,7 +9,7 @@ use super::{CheckResult, PluginType};
 /// The Plugin Registry stores a record of all plugins, their location, and their authorities.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
-pub struct PluginRegistry {
+pub struct PluginRegistryV1 {
     /// The Discriminator of the header which doubles as a Plugin metadata version.
     pub key: Key, // 1
     /// The registry of all plugins.
@@ -18,7 +18,7 @@ pub struct PluginRegistry {
     pub external_plugins: Vec<ExternalPluginRecord>, // 4
 }
 
-impl PluginRegistry {
+impl PluginRegistryV1 {
     /// Evaluate checks for all plugins in the registry.
     pub(crate) fn check_registry(
         &self,
@@ -35,7 +35,7 @@ impl PluginRegistry {
     }
 }
 
-impl DataBlob for PluginRegistry {
+impl DataBlob for PluginRegistryV1 {
     fn get_initial_size() -> usize {
         9
     }
@@ -45,9 +45,9 @@ impl DataBlob for PluginRegistry {
     }
 }
 
-impl SolanaAccount for PluginRegistry {
+impl SolanaAccount for PluginRegistryV1 {
     fn key() -> Key {
-        Key::PluginRegistry
+        Key::PluginRegistryV1
     }
 }
 
