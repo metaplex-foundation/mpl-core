@@ -39,7 +39,7 @@ pub(crate) fn add_plugin<'a>(
         authority,
         None,
         &args.init_authority.unwrap_or(args.plugin.manager()),
-        None,
+        Some(&args.plugin),
         None,
     )? == ValidationResult::Rejected
     {

@@ -369,7 +369,7 @@ test('it cannot add a owner-managed plugin to an asset via delegate authority', 
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
-    name: 'InvalidAuthority',
+    name: 'NoApprovals',
   });
 });
 

@@ -2,6 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::{
+    error::MplCoreError,
     plugins::PluginType,
     state::{Authority, DataBlob},
 };
@@ -42,16 +43,21 @@ impl PluginValidation for UpdateDelegate {
         &self,
         authority_info: &AccountInfo,
         authority: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        new_plugin: Option<&super::Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        if authority
-            == (&Authority::Pubkey {
-                address: *authority_info.key,
-            })
-        {
-            Ok(ValidationResult::Approved)
+        if let Some(new_plugin) = new_plugin {
+            if authority
+                == (&Authority::Pubkey {
+                    address: *authority_info.key,
+                })
+                && new_plugin.manager() == Authority::UpdateAuthority
+            {
+                Ok(ValidationResult::Approved)
+            } else {
+                Ok(ValidationResult::Pass)
+            }
         } else {
-            Ok(ValidationResult::Pass)
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
@@ -59,16 +65,21 @@ impl PluginValidation for UpdateDelegate {
         &self,
         authority_info: &AccountInfo,
         authority: &Authority,
-        _plugin_to_remove: Option<&super::Plugin>,
+        plugin_to_remove: Option<&super::Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        if authority
-            == (&Authority::Pubkey {
-                address: *authority_info.key,
-            })
-        {
-            Ok(ValidationResult::Approved)
+        if let Some(plugin_to_remove) = plugin_to_remove {
+            if authority
+                == (&Authority::Pubkey {
+                    address: *authority_info.key,
+                })
+                && plugin_to_remove.manager() == Authority::UpdateAuthority
+            {
+                Ok(ValidationResult::Approved)
+            } else {
+                Ok(ValidationResult::Pass)
+            }
         } else {
-            Ok(ValidationResult::Pass)
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
