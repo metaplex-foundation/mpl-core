@@ -6,21 +6,35 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
 import {
+  Serializer,
+  array,
+  struct,
+  tuple,
+  u64,
+} from '@metaplex-foundation/umi/serializers';
+import {
+  CheckResult,
+  CheckResultArgs,
+  LifecycleEvent,
+  LifecycleEventArgs,
   PluginAuthority,
   PluginAuthorityArgs,
+  getCheckResultSerializer,
+  getLifecycleEventSerializer,
   getPluginAuthoritySerializer,
 } from '.';
 
 export type ExternalPluginRecord = {
   authority: PluginAuthority;
   offset: bigint;
+  permissions: Array<[LifecycleEvent, CheckResult]>;
 };
 
 export type ExternalPluginRecordArgs = {
   authority: PluginAuthorityArgs;
   offset: number | bigint;
+  permissions: Array<[LifecycleEventArgs, CheckResultArgs]>;
 };
 
 export function getExternalPluginRecordSerializer(): Serializer<
@@ -31,6 +45,12 @@ export function getExternalPluginRecordSerializer(): Serializer<
     [
       ['authority', getPluginAuthoritySerializer()],
       ['offset', u64()],
+      [
+        'permissions',
+        array(
+          tuple([getLifecycleEventSerializer(), getCheckResultSerializer()])
+        ),
+      ],
     ],
     { description: 'ExternalPluginRecord' }
   ) as Serializer<ExternalPluginRecordArgs, ExternalPluginRecord>;

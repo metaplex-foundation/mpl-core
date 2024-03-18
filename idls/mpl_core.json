@@ -1553,6 +1553,21 @@
           {
             "name": "offset",
             "type": "u64"
+          },
+          {
+            "name": "permissions",
+            "type": {
+              "vec": {
+                "tuple": [
+                  {
+                    "defined": "LifecycleEvent"
+                  },
+                  {
+                    "defined": "CheckResult"
+                  }
+                ]
+              }
+            }
           }
         ]
       }
@@ -2149,6 +2164,73 @@
           },
           {
             "name": "PermanentBurnDelegate"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LifecycleEvent",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "AddPlugin"
+          },
+          {
+            "name": "RemovePlugin"
+          },
+          {
+            "name": "ApprovePluginAuthority"
+          },
+          {
+            "name": "RevokePluginAuthority"
+          },
+          {
+            "name": "Create"
+          },
+          {
+            "name": "Update"
+          },
+          {
+            "name": "UpdatePlugin"
+          },
+          {
+            "name": "Burn"
+          },
+          {
+            "name": "Transfer"
+          },
+          {
+            "name": "Compress"
+          },
+          {
+            "name": "Decompress"
+          },
+          {
+            "name": "AddAuthority"
+          },
+          {
+            "name": "RemoveAuthority"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CheckResult",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "CanApprove"
+          },
+          {
+            "name": "CanReject"
+          },
+          {
+            "name": "None"
+          },
+          {
+            "name": "CanForceApprove"
           }
         ]
       }

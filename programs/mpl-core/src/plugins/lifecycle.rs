@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::{
@@ -9,10 +10,28 @@ use crate::{
 
 use super::{Plugin, PluginType, RegistryRecord};
 
+#[repr(C)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
+pub(crate) enum LifecycleEvent {
+    AddPlugin,
+    RemovePlugin,
+    ApprovePluginAuthority,
+    RevokePluginAuthority,
+    Create,
+    Update,
+    UpdatePlugin,
+    Burn,
+    Transfer,
+    Compress,
+    Decompress,
+    AddAuthority,
+    RemoveAuthority,
+}
+
 /// Lifecycle permissions
 /// Plugins use this field to indicate their permission to approve or deny
 /// a lifecycle action.
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, BorshDeserialize, BorshSerialize)]
 pub enum CheckResult {
     /// A plugin is permitted to approve a lifecycle action.
     CanApprove,
@@ -704,24 +723,6 @@ pub(crate) trait PluginValidation {
         _authority_info: &AccountInfo,
         _authority: &Authority,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    /// Validate the add_authority lifecycle action.
-    fn validate_add_authority(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
-    /// Validate the add_authority lifecycle action.
-    fn validate_remove_authority(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 }

@@ -6,14 +6,14 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    state::{AssetV1, Authority, CoreAsset, DataBlob, Key, SolanaAccount},
+    state::{AssetV1, Authority, DataBlob, Key, SolanaAccount},
     utils::resize_or_reallocate_account,
 };
 
 use super::{Plugin, PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord};
 
 /// Create plugin header and registry if it doesn't exist
-pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
+pub(crate) fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
@@ -55,7 +55,8 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
 }
 
 /// Create plugin header and registry if it doesn't exist
-pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
+#[allow(dead_code)]
+pub(crate) fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
     asset: T,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
@@ -320,7 +321,7 @@ pub fn delete_plugin<'a, T: DataBlob>(
 
 /// Add an authority to a plugin.
 #[allow(clippy::too_many_arguments)]
-pub fn approve_authority_on_plugin<'a, T: CoreAsset>(
+pub(crate) fn approve_authority_on_plugin<'a>(
     plugin_type: &PluginType,
     new_authority: &Authority,
     account: &AccountInfo<'a>,
@@ -352,7 +353,7 @@ pub fn approve_authority_on_plugin<'a, T: CoreAsset>(
 
 /// Remove an authority from a plugin.
 #[allow(clippy::too_many_arguments)]
-pub fn revoke_authority_on_plugin<'a>(
+pub(crate) fn revoke_authority_on_plugin<'a>(
     plugin_type: &PluginType,
     account: &AccountInfo<'a>,
     plugin_header: &PluginHeaderV1,

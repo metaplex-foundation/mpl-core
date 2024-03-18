@@ -84,7 +84,7 @@ pub fn assert_collection_authority(
 }
 
 /// Fetch the core data from the account; asset, plugin header (if present), and plugin registry (if present).
-pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
+pub(crate) fn fetch_core_data<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
 ) -> Result<(T, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
     let asset = T::load(account, 0)?;
@@ -210,7 +210,7 @@ pub(crate) fn resize_or_reallocate_account<'a>(
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 /// Validate asset permissions using lifecycle validations for asset, collection, and plugins.
-pub fn validate_asset_permissions<'a>(
+pub(crate) fn validate_asset_permissions<'a>(
     authority_info: &AccountInfo<'a>,
     asset: &AccountInfo<'a>,
     collection: Option<&AccountInfo<'a>>,
@@ -362,7 +362,7 @@ pub fn validate_asset_permissions<'a>(
 
 /// Validate collection permissions using lifecycle validations for collection and plugins.
 #[allow(clippy::type_complexity)]
-pub fn validate_collection_permissions<'a>(
+pub(crate) fn validate_collection_permissions<'a>(
     authority_info: &AccountInfo<'a>,
     collection: &AccountInfo<'a>,
     new_plugin: Option<&Plugin>,
@@ -494,7 +494,7 @@ pub fn rebuild_account_state_from_proof_data<'a>(
 }
 
 /// Take `Asset` and `PluginRegistry` for a decompressed asset, and compress into account space.
-pub fn compress_into_account_space<'a>(
+pub(crate) fn compress_into_account_space<'a>(
     mut asset: AssetV1,
     plugin_registry: Option<PluginRegistryV1>,
     asset_info: &AccountInfo<'a>,

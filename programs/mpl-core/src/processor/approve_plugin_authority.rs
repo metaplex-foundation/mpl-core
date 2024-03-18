@@ -125,7 +125,7 @@ fn process_approve_plugin_authority<'a, T: CoreAsset + DataBlob + SolanaAccount>
         None => return Err(MplCoreError::PluginsNotInitialized.into()),
     };
 
-    approve_authority_on_plugin::<T>(
+    approve_authority_on_plugin(
         plugin_type,
         new_authority,
         core_info,

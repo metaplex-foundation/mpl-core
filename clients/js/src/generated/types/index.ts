@@ -9,6 +9,7 @@
 export * from './attribute';
 export * from './attributes';
 export * from './burnDelegate';
+export * from './checkResult';
 export * from './compressionProof';
 export * from './creator';
 export * from './dataState';
@@ -18,6 +19,7 @@ export * from './freezeDelegate';
 export * from './hashablePluginSchema';
 export * from './hashedAssetSchema';
 export * from './key';
+export * from './lifecycleEvent';
 export * from './permanentBurnDelegate';
 export * from './permanentFreezeDelegate';
 export * from './permanentTransferDelegate';

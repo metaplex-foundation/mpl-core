@@ -5,16 +5,23 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::CheckResult;
-use crate::generated::types::LifecycleEvent;
-use crate::generated::types::PluginAuthority;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct ExternalPluginRecord {
-    pub authority: PluginAuthority,
-    pub offset: u64,
-    pub permissions: Vec<(LifecycleEvent, CheckResult)>,
+pub enum LifecycleEvent {
+    AddPlugin,
+    RemovePlugin,
+    ApprovePluginAuthority,
+    RevokePluginAuthority,
+    Create,
+    Update,
+    UpdatePlugin,
+    Burn,
+    Transfer,
+    Compress,
+    Decompress,
+    AddAuthority,
+    RemoveAuthority,
 }

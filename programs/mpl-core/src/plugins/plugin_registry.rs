@@ -4,12 +4,12 @@ use std::{cmp::Ordering, collections::BTreeMap};
 
 use crate::state::{Authority, DataBlob, Key, SolanaAccount};
 
-use super::{CheckResult, PluginType};
+use super::{CheckResult, LifecycleEvent, PluginType};
 
 /// The Plugin Registry stores a record of all plugins, their location, and their authorities.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
-pub struct PluginRegistryV1 {
+pub(crate) struct PluginRegistryV1 {
     /// The Discriminator of the header which doubles as a Plugin metadata version.
     pub key: Key, // 1
     /// The registry of all plugins.
@@ -73,9 +73,11 @@ impl RegistryRecord {
 /// A simple type to store the mapping of external Plugin authority to Plugin data.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
-pub struct ExternalPluginRecord {
+pub(crate) struct ExternalPluginRecord {
     /// The authority of the external plugin.
     pub authority: Authority,
     /// The offset to the plugin in the account.
     pub offset: usize,
+    /// The permissions of the external plugin.
+    pub permissions: Vec<(LifecycleEvent, CheckResult)>,
 }

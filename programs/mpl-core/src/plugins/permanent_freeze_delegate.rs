@@ -90,14 +90,6 @@ impl PluginValidation for PermanentFreezeDelegate {
         }
     }
 
-    fn validate_add_authority(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
     fn validate_add_plugin(
         &self,
         _authority_info: &AccountInfo,
