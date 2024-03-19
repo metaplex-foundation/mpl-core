@@ -3,7 +3,7 @@ import {
   PluginAuthority,
   pluginAuthority,
 } from './generated/types/pluginAuthority';
-import { BaseAuthority } from './types';
+import { BasePluginAuthority } from './types';
 
 // Authorities data helpers
 export function nonePluginAuthority() {
@@ -22,7 +22,7 @@ export function pubkeyPluginAuthority(address: PublicKey) {
   return pluginAuthority('Pubkey', { address });
 }
 
-export function mapAuthority(authority: PluginAuthority): BaseAuthority {
+export function mapPluginAuthority(authority: PluginAuthority): BasePluginAuthority {
   return {
     type: authority.__kind,
     address: (authority as any).address,

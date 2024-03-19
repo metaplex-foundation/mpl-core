@@ -59,7 +59,9 @@ test('it can reassign authority of a plugin to another pubkey', async (t) => {
   const newDelegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
   });
 
   await assertAsset(t, umi, {
@@ -122,7 +124,9 @@ test('it can approve to reassign authority back to owner', async (t) => {
   const delegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
   });
 
   await approvePluginAuthorityV1(umi, {

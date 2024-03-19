@@ -1,5 +1,9 @@
 import test from 'ava';
-import { createPlugin, pluginAuthorityPair, updatePluginV1 } from '../../../src';
+import {
+  createPlugin,
+  pluginAuthorityPair,
+  updatePluginV1,
+} from '../../../src';
 import {
   DEFAULT_ASSET,
   assertAsset,

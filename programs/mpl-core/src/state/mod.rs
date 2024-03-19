@@ -39,7 +39,6 @@ pub enum DataState {
     LedgerState,
 }
 
-//TODO: Consider making Permanent a subfield of Pubkey.
 /// Variants representing the different types of authority that can have permissions over plugins.
 #[repr(u8)]
 #[derive(Copy, Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]

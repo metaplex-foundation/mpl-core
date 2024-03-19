@@ -79,7 +79,10 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
   }).sendAndConfirm(umi);
 
   // Then the asset is now decompressed into an asset.
-  const afterDecompressedAsset = await fetchAssetV1(umi, assetAddress.publicKey);
+  const afterDecompressedAsset = await fetchAssetV1(
+    umi,
+    assetAddress.publicKey
+  );
 
   t.like(afterDecompressedAsset, <AssetV1>{
     publicKey: assetAddress.publicKey,

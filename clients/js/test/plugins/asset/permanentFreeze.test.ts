@@ -27,7 +27,10 @@ test('it can freeze and unfreeze an asset', async (t) => {
   const asset = await createAsset(umi, {
     owner,
     plugins: [
-      pluginAuthorityPair({ type: 'PermanentFreezeDelegate', data: { frozen: true } }),
+      pluginAuthorityPair({
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: true },
+      }),
     ],
   });
 
@@ -46,7 +49,10 @@ test('it can freeze and unfreeze an asset', async (t) => {
 
   await updatePluginV1(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'PermanentFreezeDelegate', data: { frozen: false } }),
+    plugin: createPlugin({
+      type: 'PermanentFreezeDelegate',
+      data: { frozen: false },
+    }),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -72,7 +78,10 @@ test('it cannot be transferred while frozen', async (t) => {
   const asset = await createAsset(umi, {
     owner,
     plugins: [
-      pluginAuthorityPair({ type: 'PermanentFreezeDelegate', data: { frozen: true } }),
+      pluginAuthorityPair({
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: true },
+      }),
     ],
   });
 
@@ -121,7 +130,10 @@ test('it cannot add permanentFreeze after creation', async (t) => {
 
   const result = addPluginV1(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'PermanentFreezeDelegate', data: { frozen: true } }),
+    plugin: createPlugin({
+      type: 'PermanentFreezeDelegate',
+      data: { frozen: true },
+    }),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -141,7 +153,10 @@ test('it can add permanent freeze to collection', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
-      pluginAuthorityPair({ type: 'PermanentFreezeDelegate', data: { frozen: true } }),
+      pluginAuthorityPair({
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: true },
+      }),
     ],
   });
 
@@ -163,7 +178,10 @@ test('it can freeze and unfreeze a collection', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
-      pluginAuthorityPair({ type: 'PermanentFreezeDelegate', data: { frozen: true } }),
+      pluginAuthorityPair({
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: true },
+      }),
     ],
   });
 
@@ -181,7 +199,10 @@ test('it can freeze and unfreeze a collection', async (t) => {
 
   await updateCollectionPluginV1(umi, {
     collection: collection.publicKey,
-    plugin: createPlugin({ type: 'PermanentFreezeDelegate', data: { frozen: false } }),
+    plugin: createPlugin({
+      type: 'PermanentFreezeDelegate',
+      data: { frozen: false },
+    }),
   }).sendAndConfirm(umi);
 
   await assertCollection(t, umi, {
@@ -293,7 +314,10 @@ test('it can remove a permanent freeze plugin from an asset', async (t) => {
 
   const asset = await createAsset(umi, {
     plugins: [
-      pluginAuthorityPair({ type: 'PermanentFreezeDelegate', data: { frozen: true } }),
+      pluginAuthorityPair({
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: true },
+      }),
     ],
   });
 
@@ -310,7 +334,10 @@ test('it can remove a permanent freeze plugin from an asset', async (t) => {
 
   await updatePluginV1(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'PermanentFreezeDelegate', data: { frozen: false } }),
+    plugin: createPlugin({
+      type: 'PermanentFreezeDelegate',
+      data: { frozen: false },
+    }),
   }).sendAndConfirm(umi);
 
   const asset2 = await createAsset(umi, { owner: umi.identity });

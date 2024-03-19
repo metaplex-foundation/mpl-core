@@ -26,7 +26,9 @@ test('it can remove a plugin from an asset', async (t) => {
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
   });
 
   await assertAsset(t, umi, {
@@ -56,7 +58,9 @@ test('it cannot remove an owner plugin from an asset if not the owner', async (t
   const attacker = generateSigner(umi);
   const asset = await createAsset(umi, {
     owner: umi.identity,
-    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
   });
 
   const result = removePluginV1(umi, {

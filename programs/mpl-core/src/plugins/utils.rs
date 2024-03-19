@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
-    program_memory::sol_memcpy,
+    account_info::AccountInfo, entrypoint::ProgramResult, log::sol_log_compute_units,
+    program_error::ProgramError, program_memory::sol_memcpy,
 };
 
 use crate::{
@@ -54,7 +54,7 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
     }
 }
 
-/// Create plugin header and registry if it doesn't exist
+/// Create plugin header and registry
 pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
     asset: T,
     account: &AccountInfo<'a>,
@@ -183,22 +183,18 @@ pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramErr
         .collect())
 }
 
-//TODO: Take in the header and registry so we don't have to reload it.
 /// Add a plugin to the registry and initialize it.
 pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     plugin: &Plugin,
     authority: &Authority,
+    plugin_header: &mut PluginHeaderV1,
+    plugin_registry: &mut PluginRegistryV1,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
     let core = T::load(account, 0)?;
     let header_offset = core.get_size();
-
-    //TODO: Bytemuck this.
-    let mut header = PluginHeaderV1::load(account, header_offset)?;
-    let mut plugin_registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
-
     let plugin_type = plugin.into();
     let plugin_data = plugin.try_to_vec()?;
     let plugin_size = plugin_data.len();
@@ -212,7 +208,7 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
         return Err(MplCoreError::PluginAlreadyExists.into());
     }
 
-    let old_registry_offset = header.plugin_registry_offset;
+    let old_registry_offset = plugin_header.plugin_registry_offset;
 
     let new_registry_record = RegistryRecord {
         plugin_type,
@@ -224,12 +220,12 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
         .checked_add(new_registry_record.try_to_vec()?.len())
         .ok_or(MplCoreError::NumericalOverflow)?;
 
-    let new_registry_offset = header
+    let new_registry_offset = plugin_header
         .plugin_registry_offset
         .checked_add(plugin_size)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
-    header.plugin_registry_offset = new_registry_offset;
+    plugin_header.plugin_registry_offset = new_registry_offset;
 
     plugin_registry.registry.push(new_registry_record);
 
@@ -239,7 +235,7 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     resize_or_reallocate_account(account, payer, system_program, new_size)?;
-    header.save(account, header_offset)?;
+    plugin_header.save(account, header_offset)?;
     plugin.save(account, old_registry_offset)?;
     plugin_registry.save(account, new_registry_offset)?;
 

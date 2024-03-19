@@ -17,7 +17,9 @@ test('it can remove an authority from a plugin', async (t) => {
   const delegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
   });
 
   await approvePluginAuthorityV1(umi, {
@@ -61,7 +63,9 @@ test('it can remove the default authority from a plugin to make it immutable', a
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
   });
 
   await approvePluginAuthorityV1(umi, {
@@ -89,7 +93,9 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
   const pubkeyAuth = await generateSignerWithSol(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
   });
 
   await approvePluginAuthorityV1(umi, {
@@ -137,7 +143,9 @@ test('it cannot remove a none authority from a plugin', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
   });
 
   await approvePluginAuthorityV1(umi, {

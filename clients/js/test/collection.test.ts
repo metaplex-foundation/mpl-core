@@ -24,10 +24,13 @@ test('it can gpa fetch collections by updateAuthority', async (t) => {
   const names = ['collection1', 'collection2'];
 
   t.is(collections.length, 2);
-  t.assert(collections.every((collectionV1) => names.includes(collectionV1.name)));
+  t.assert(
+    collections.every((collectionV1) => names.includes(collectionV1.name))
+  );
   t.assert(
     collections.every(
-      (collectionV1) => collectionV1.updateAuthority === updateAuthority.publicKey
+      (collectionV1) =>
+        collectionV1.updateAuthority === updateAuthority.publicKey
     )
   );
 });

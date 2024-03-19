@@ -67,7 +67,9 @@ test('it can delegate then freeze an asset', async (t) => {
   const delegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
   });
 
   await approvePluginAuthorityV1(umi, {
@@ -177,7 +179,9 @@ test('it cannot add multiple freeze plugins to an asset', async (t) => {
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } })],
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
   });
 
   const result = addPluginV1(umi, {

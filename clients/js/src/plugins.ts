@@ -13,8 +13,8 @@ import {
   AttributesArgs,
   PermanentFreezeDelegateArgs,
 } from './generated';
-import { BaseAuthority, PluginsList } from './types';
-import { mapAuthority } from './authority';
+import { BasePluginAuthority, PluginsList } from './types';
+import { mapPluginAuthority } from './authority';
 import { toWords } from './utils';
 
 export function formPluginHeaderV1(
@@ -32,40 +32,40 @@ export type PluginAuthorityPairHelperArgs = CreatePluginArgs & {
 
 export type CreatePluginArgs =
   | {
-    type: 'Royalties';
-    data: RoyaltiesArgs;
-  }
+      type: 'Royalties';
+      data: RoyaltiesArgs;
+    }
   | {
-    type: 'FreezeDelegate';
-    data: FreezeDelegateArgs;
-  }
+      type: 'FreezeDelegate';
+      data: FreezeDelegateArgs;
+    }
   | {
-    type: 'BurnDelegate';
-  }
+      type: 'BurnDelegate';
+    }
   | {
-    type: 'TransferDelegate';
-  }
+      type: 'TransferDelegate';
+    }
   | {
-    type: 'UpdateDelegate';
-  }
+      type: 'UpdateDelegate';
+    }
   | {
-    type: 'PermanentFreezeDelegate';
-    data: PermanentFreezeDelegateArgs;
-  }
+      type: 'PermanentFreezeDelegate';
+      data: PermanentFreezeDelegateArgs;
+    }
   | {
-    type: 'Attributes';
-    data: AttributesArgs;
-  }
+      type: 'Attributes';
+      data: AttributesArgs;
+    }
   | {
-    type: 'PermanentFreezeDelegate';
-    data: PermanentFreezeDelegateArgs;
-  }
+      type: 'PermanentFreezeDelegate';
+      data: PermanentFreezeDelegateArgs;
+    }
   | {
-    type: 'PermanentTransferDelegate';
-  }
+      type: 'PermanentTransferDelegate';
+    }
   | {
-    type: 'PermanentBurnDelegate';
-  };
+      type: 'PermanentBurnDelegate';
+    };
 
 export function createPlugin(args: CreatePluginArgs): BasePlugin {
   return {
@@ -94,7 +94,7 @@ export function mapPlugin({
   offset,
 }: {
   plugin: Exclude<BasePlugin, { __kind: 'Reserved' }>;
-  authority: BaseAuthority;
+  authority: BasePluginAuthority;
   offset: bigint;
 }): PluginsList {
   const pluginKey = toWords(plug.__kind)
@@ -116,7 +116,7 @@ export function registryRecordsToPluginsList(
   accountData: Uint8Array
 ) {
   return registryRecords.reduce((acc: PluginsList, record) => {
-    const mappedAuthority = mapAuthority(record.authority);
+    const mappedAuthority = mapPluginAuthority(record.authority);
     const deserializedPlugin = getPluginSerializer().deserialize(
       accountData,
       Number(record.offset)
