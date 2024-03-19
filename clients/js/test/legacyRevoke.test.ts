@@ -81,6 +81,96 @@ test('it can revoke with all required plugins defined', async (t) => {
   });
 });
 
+test('it can revoke with a couple of non-homogenous plugin authorities', async (t) => {
+  // Given an Umi instance and asset with a couple required plugins with non-homogenous plugin authorities.
+  const umi = await createUmi();
+  const delegateToRevokeFrom = generateSigner(umi);
+  const delegateToRevokeFrom2 = generateSigner(umi);
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'TransferDelegate',
+        authority: pubkeyPluginAuthority(delegateToRevokeFrom.publicKey),
+      }),
+      pluginAuthorityPair({
+        type: 'BurnDelegate',
+        authority: pubkeyPluginAuthority(delegateToRevokeFrom2.publicKey),
+      }),
+    ],
+  });
+
+  // The authority of all defined plugins becomes the asset owner.
+  await legacyRevoke(umi, asset).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    transferDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+    burnDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+  });
+});
+
+test('it can revoke with all required plugins with non-homogenous plugin authorities', async (t) => {
+  // Given an Umi instance and asset with all required plugin with non-homogenous plugin authorities.
+  const umi = await createUmi();
+  const delegateToRevokeFrom = generateSigner(umi);
+  const delegateToRevokeFrom2 = generateSigner(umi);
+  const delegateToRevokeFrom3 = generateSigner(umi);
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        authority: pubkeyPluginAuthority(delegateToRevokeFrom.publicKey),
+        data: {
+          frozen: false,
+        },
+      }),
+      pluginAuthorityPair({
+        type: 'TransferDelegate',
+        authority: pubkeyPluginAuthority(delegateToRevokeFrom2.publicKey),
+      }),
+      pluginAuthorityPair({
+        type: 'BurnDelegate',
+        authority: pubkeyPluginAuthority(delegateToRevokeFrom3.publicKey),
+      }),
+    ],
+  });
+
+  // The authority of all defined plugins becomes the asset owner.
+  await legacyRevoke(umi, asset).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: false,
+    },
+    transferDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+    burnDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+  });
+});
+
 test('it cannot revoke if no plugins defined', async (t) => {
   // Given an Umi instance and asset with no plugins defined.
   const umi = await createUmi();
