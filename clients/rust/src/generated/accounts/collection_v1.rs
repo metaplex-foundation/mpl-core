@@ -12,7 +12,7 @@ use solana_program::pubkey::Pubkey;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct BaseCollectionV1 {
+pub struct CollectionV1 {
     pub key: Key,
     #[cfg_attr(
         feature = "serde",
@@ -25,7 +25,7 @@ pub struct BaseCollectionV1 {
     pub current_size: u32,
 }
 
-impl BaseCollectionV1 {
+impl CollectionV1 {
     #[inline(always)]
     pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {
         let mut data = data;
@@ -33,7 +33,7 @@ impl BaseCollectionV1 {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for BaseCollectionV1 {
+impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for CollectionV1 {
     type Error = std::io::Error;
 
     fn try_from(

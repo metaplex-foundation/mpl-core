@@ -127,7 +127,7 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
         ]),
       ],
     ],
-    { description: 'Plugin' }
+    { size: u16(), description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
 }
 

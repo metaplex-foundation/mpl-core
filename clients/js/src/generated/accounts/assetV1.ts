@@ -31,6 +31,7 @@ import {
   getAssetV1AccountDataSerializer,
 } from '../../hooked';
 import {
+  Key,
   KeyArgs,
   UpdateAuthorityArgs,
   getKeySerializer,
@@ -120,5 +121,6 @@ export function getAssetV1GpaBuilder(
       uri: [null, string()],
       seq: [null, option(u64())],
     })
-    .deserializeUsing<AssetV1>((account) => deserializeAssetV1(account));
+    .deserializeUsing<AssetV1>((account) => deserializeAssetV1(account))
+    .whereField('key', Key.AssetV1);
 }

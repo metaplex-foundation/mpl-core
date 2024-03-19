@@ -9,6 +9,7 @@
 import { Option, OptionOrNullable, PublicKey } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  mapSerializer,
   option,
   publicKey as publicKeySerializer,
   string,
@@ -17,7 +18,6 @@ import {
 } from '@metaplex-foundation/umi/serializers';
 import {
   Key,
-  KeyArgs,
   UpdateAuthority,
   UpdateAuthorityArgs,
   getKeySerializer,
@@ -34,7 +34,6 @@ export type AssetV1AccountData = {
 };
 
 export type AssetV1AccountDataArgs = {
-  key: KeyArgs;
   owner: PublicKey;
   updateAuthority: UpdateAuthorityArgs;
   name: string;
@@ -46,15 +45,18 @@ export function getAssetV1AccountDataSerializer(): Serializer<
   AssetV1AccountDataArgs,
   AssetV1AccountData
 > {
-  return struct<AssetV1AccountData>(
-    [
-      ['key', getKeySerializer()],
-      ['owner', publicKeySerializer()],
-      ['updateAuthority', getUpdateAuthoritySerializer()],
-      ['name', string()],
-      ['uri', string()],
-      ['seq', option(u64())],
-    ],
-    { description: 'AssetV1AccountData' }
+  return mapSerializer<AssetV1AccountDataArgs, any, AssetV1AccountData>(
+    struct<AssetV1AccountData>(
+      [
+        ['key', getKeySerializer()],
+        ['owner', publicKeySerializer()],
+        ['updateAuthority', getUpdateAuthoritySerializer()],
+        ['name', string()],
+        ['uri', string()],
+        ['seq', option(u64())],
+      ],
+      { description: 'AssetV1AccountData' }
+    ),
+    (value) => ({ ...value, key: Key.AssetV1 })
   ) as Serializer<AssetV1AccountDataArgs, AssetV1AccountData>;
 }

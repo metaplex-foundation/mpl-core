@@ -6,7 +6,11 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
+import {
+  Serializer,
+  scalarEnum,
+  u16,
+} from '@metaplex-foundation/umi/serializers';
 
 export enum PluginType {
   Royalties,
@@ -27,6 +31,7 @@ export function getPluginTypeSerializer(): Serializer<
   PluginType
 > {
   return scalarEnum<PluginType>(PluginType, {
+    size: u16(),
     description: 'PluginType',
   }) as Serializer<PluginTypeArgs, PluginType>;
 }

@@ -28,7 +28,7 @@ import {
   CollectionV1AccountData,
   getCollectionV1AccountDataSerializer,
 } from '../../hooked';
-import { KeyArgs, getKeySerializer } from '../types';
+import { Key, KeyArgs, getKeySerializer } from '../types';
 
 export type CollectionV1 = Account<CollectionV1AccountData>;
 
@@ -115,5 +115,6 @@ export function getCollectionV1GpaBuilder(
     })
     .deserializeUsing<CollectionV1>((account) =>
       deserializeCollectionV1(account)
-    );
+    )
+    .whereField('key', Key.CollectionV1);
 }

@@ -23,6 +23,7 @@ pub use permanent_transfer_delegate::*;
 pub use plugin_header::*;
 pub use plugin_registry::*;
 pub use royalties::*;
+use shank::ShankType;
 pub use transfer::*;
 pub use update_delegate::*;
 pub use utils::*;
@@ -41,7 +42,7 @@ use crate::{
 
 /// Definition of the plugin variants, each containing a link to the plugin struct.
 #[repr(u16)]
-#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, ShankType)]
 pub enum Plugin {
     /// Royalties plugin.
     Royalties(Royalties),
@@ -61,6 +62,84 @@ pub enum Plugin {
     PermanentTransferDelegate(PermanentTransferDelegate),
     /// Permanent Burn Delegate authority allows the creator of an asset to become the person who can burn an Asset
     PermanentBurnDelegate(PermanentBurnDelegate),
+}
+
+impl BorshSerialize for Plugin {
+    fn serialize<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
+        match self {
+            Plugin::Royalties(royalties) => {
+                PluginType::Royalties.serialize(writer)?;
+                royalties.serialize(writer)
+            }
+            Plugin::FreezeDelegate(freeze_delegate) => {
+                PluginType::FreezeDelegate.serialize(writer)?;
+                freeze_delegate.serialize(writer)
+            }
+            Plugin::BurnDelegate(burn_delegate) => {
+                PluginType::BurnDelegate.serialize(writer)?;
+                burn_delegate.serialize(writer)
+            }
+            Plugin::TransferDelegate(transfer_delegate) => {
+                PluginType::TransferDelegate.serialize(writer)?;
+                transfer_delegate.serialize(writer)
+            }
+            Plugin::UpdateDelegate(update_delegate) => {
+                PluginType::UpdateDelegate.serialize(writer)?;
+                update_delegate.serialize(writer)
+            }
+            Plugin::PermanentFreezeDelegate(permanent_freeze_delegate) => {
+                PluginType::PermanentFreezeDelegate.serialize(writer)?;
+                permanent_freeze_delegate.serialize(writer)
+            }
+            Plugin::Attributes(attributes) => {
+                PluginType::Attributes.serialize(writer)?;
+                attributes.serialize(writer)
+            }
+            Plugin::PermanentTransferDelegate(permanent_transfer_delegate) => {
+                PluginType::PermanentTransferDelegate.serialize(writer)?;
+                permanent_transfer_delegate.serialize(writer)
+            }
+            Plugin::PermanentBurnDelegate(permanent_burn_delegate) => {
+                PluginType::PermanentBurnDelegate.serialize(writer)?;
+                permanent_burn_delegate.serialize(writer)
+            }
+        }
+    }
+}
+
+impl BorshDeserialize for Plugin {
+    fn deserialize_reader<R: std::io::prelude::Read>(reader: &mut R) -> std::io::Result<Self> {
+        let plugin_type = PluginType::deserialize_reader(reader)?;
+        match plugin_type {
+            PluginType::Royalties => Royalties::deserialize_reader(reader).map(Plugin::Royalties),
+            PluginType::FreezeDelegate => {
+                FreezeDelegate::deserialize_reader(reader).map(Plugin::FreezeDelegate)
+            }
+            PluginType::BurnDelegate => {
+                BurnDelegate::deserialize_reader(reader).map(Plugin::BurnDelegate)
+            }
+            PluginType::TransferDelegate => {
+                TransferDelegate::deserialize_reader(reader).map(Plugin::TransferDelegate)
+            }
+            PluginType::UpdateDelegate => {
+                UpdateDelegate::deserialize_reader(reader).map(Plugin::UpdateDelegate)
+            }
+            PluginType::PermanentFreezeDelegate => {
+                PermanentFreezeDelegate::deserialize_reader(reader)
+                    .map(Plugin::PermanentFreezeDelegate)
+            }
+            PluginType::Attributes => {
+                Attributes::deserialize_reader(reader).map(Plugin::Attributes)
+            }
+            PluginType::PermanentTransferDelegate => {
+                PermanentTransferDelegate::deserialize_reader(reader)
+                    .map(Plugin::PermanentTransferDelegate)
+            }
+            PluginType::PermanentBurnDelegate => {
+                PermanentBurnDelegate::deserialize_reader(reader).map(Plugin::PermanentBurnDelegate)
+            }
+        }
+    }
 }
 
 impl Plugin {
@@ -91,19 +170,7 @@ impl Compressible for Plugin {}
 
 /// List of First Party Plugin types.
 #[repr(u16)]
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    BorshSerialize,
-    BorshDeserialize,
-    Eq,
-    PartialEq,
-    ToPrimitive,
-    EnumCount,
-    PartialOrd,
-    Ord,
-)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, ToPrimitive, EnumCount, PartialOrd, Ord, ShankType)]
 pub enum PluginType {
     /// Royalties plugin.
     Royalties,
@@ -123,6 +190,43 @@ pub enum PluginType {
     PermanentTransferDelegate,
     /// The Permanent Burn Delegate plugin.
     PermanentBurnDelegate,
+}
+
+impl BorshSerialize for PluginType {
+    fn serialize<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
+        match self {
+            PluginType::Royalties => 0u16.serialize(writer),
+            PluginType::FreezeDelegate => 1u16.serialize(writer),
+            PluginType::BurnDelegate => 2u16.serialize(writer),
+            PluginType::TransferDelegate => 3u16.serialize(writer),
+            PluginType::UpdateDelegate => 4u16.serialize(writer),
+            PluginType::PermanentFreezeDelegate => 5u16.serialize(writer),
+            PluginType::Attributes => 6u16.serialize(writer),
+            PluginType::PermanentTransferDelegate => 7u16.serialize(writer),
+            PluginType::PermanentBurnDelegate => 8u16.serialize(writer),
+        }
+    }
+}
+
+impl BorshDeserialize for PluginType {
+    fn deserialize_reader<R: std::io::prelude::Read>(reader: &mut R) -> std::io::Result<Self> {
+        let value = u16::deserialize_reader(reader)?;
+        match value {
+            0 => Ok(PluginType::Royalties),
+            1 => Ok(PluginType::FreezeDelegate),
+            2 => Ok(PluginType::BurnDelegate),
+            3 => Ok(PluginType::TransferDelegate),
+            4 => Ok(PluginType::UpdateDelegate),
+            5 => Ok(PluginType::PermanentFreezeDelegate),
+            6 => Ok(PluginType::Attributes),
+            7 => Ok(PluginType::PermanentTransferDelegate),
+            8 => Ok(PluginType::PermanentBurnDelegate),
+            _ => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Invalid PluginType",
+            )),
+        }
+    }
 }
 
 impl DataBlob for PluginType {

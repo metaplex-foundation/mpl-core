@@ -9,12 +9,13 @@
 import { PublicKey } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  mapSerializer,
   publicKey as publicKeySerializer,
   string,
   struct,
   u32,
 } from '@metaplex-foundation/umi/serializers';
-import { Key, KeyArgs, getKeySerializer } from '.';
+import { Key, getKeySerializer } from '.';
 
 export type CollectionV1AccountData = {
   key: Key;
@@ -26,7 +27,6 @@ export type CollectionV1AccountData = {
 };
 
 export type CollectionV1AccountDataArgs = {
-  key: KeyArgs;
   updateAuthority: PublicKey;
   name: string;
   uri: string;
@@ -38,15 +38,22 @@ export function getCollectionV1AccountDataSerializer(): Serializer<
   CollectionV1AccountDataArgs,
   CollectionV1AccountData
 > {
-  return struct<CollectionV1AccountData>(
-    [
-      ['key', getKeySerializer()],
-      ['updateAuthority', publicKeySerializer()],
-      ['name', string()],
-      ['uri', string()],
-      ['numMinted', u32()],
-      ['currentSize', u32()],
-    ],
-    { description: 'CollectionV1AccountData' }
+  return mapSerializer<
+    CollectionV1AccountDataArgs,
+    any,
+    CollectionV1AccountData
+  >(
+    struct<CollectionV1AccountData>(
+      [
+        ['key', getKeySerializer()],
+        ['updateAuthority', publicKeySerializer()],
+        ['name', string()],
+        ['uri', string()],
+        ['numMinted', u32()],
+        ['currentSize', u32()],
+      ],
+      { description: 'CollectionV1AccountData' }
+    ),
+    (value) => ({ ...value, key: Key.CollectionV1 })
   ) as Serializer<CollectionV1AccountDataArgs, CollectionV1AccountData>;
 }
