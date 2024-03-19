@@ -8,7 +8,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateCollectionV1Accounts,
-    plugins::{create_meta_idempotent, initialize_plugin, PluginAuthorityPair},
+    plugins::{create_plugin_meta, initialize_plugin, PluginAuthorityPair},
     state::{CollectionV1, Key},
 };
 
@@ -77,7 +77,8 @@ pub(crate) fn create_collection<'a>(
 
     drop(serialized_data);
 
-    create_meta_idempotent::<CollectionV1>(
+    let (mut plugin_header, mut plugin_registry) = create_plugin_meta::<CollectionV1>(
+        new_collection,
         ctx.accounts.collection,
         ctx.accounts.payer,
         ctx.accounts.system_program,
@@ -87,6 +88,8 @@ pub(crate) fn create_collection<'a>(
         initialize_plugin::<CollectionV1>(
             &plugin.plugin,
             &plugin.authority.unwrap_or(plugin.plugin.manager()),
+            &mut plugin_header,
+            &mut plugin_registry,
             ctx.accounts.collection,
             ctx.accounts.payer,
             ctx.accounts.system_program,

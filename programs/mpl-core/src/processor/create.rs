@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke,
+    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
     program_memory::sol_memcpy, rent::Rent, system_instruction, system_program, sysvar::Sysvar,
 };
 
@@ -9,11 +9,10 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::CreateV1Accounts,
     plugins::{
-        create_meta_idempotent, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
+        create_plugin_meta, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
         PluginType, ValidationResult,
     },
     state::{AssetV1, DataState, UpdateAuthority, COLLECT_AMOUNT},
-    utils::fetch_core_data,
 };
 
 #[repr(C)]
@@ -68,7 +67,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
         DataState::AccountState => serialized_data,
         DataState::LedgerState => {
             // TODO: Implement minting compressed.
-            msg!("Error: Minting compressed is currently not available");
+            solana_program::msg!("Error: Minting compressed is currently not available");
             return Err(MplCoreError::NotAvailable.into());
         }
     };
@@ -97,66 +96,46 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
         serialized_data.len(),
     );
 
-    if args.data_state == DataState::AccountState {
-        create_meta_idempotent::<AssetV1>(
-            ctx.accounts.asset,
-            ctx.accounts.payer,
-            ctx.accounts.system_program,
-        )?;
-
-        for plugin in &args.plugins.unwrap_or_default() {
-            initialize_plugin::<AssetV1>(
-                &plugin.plugin,
-                &plugin.authority.unwrap_or(plugin.plugin.manager()),
+    if let (Some(plugins), DataState::AccountState) = (args.plugins, args.data_state) {
+        if !plugins.is_empty() {
+            let (mut plugin_header, mut plugin_registry) = create_plugin_meta::<AssetV1>(
+                new_asset,
                 ctx.accounts.asset,
                 ctx.accounts.payer,
                 ctx.accounts.system_program,
             )?;
-        }
-
-        let (_, _, plugin_registry) = fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
-
-        let mut approved = true;
-        // match Asset::check_create() {
-        //     CheckResult::CanApprove | CheckResult::CanReject => {
-        //         match asset.validate_create(&ctx.accounts)? {
-        //             ValidationResult::Approved => {
-        //                 approved = true;
-        //             }
-        //             ValidationResult::Rejected => return Err(MplCoreError::InvalidAuthority.into()),
-        //             ValidationResult::Pass => (),
-        //         }
-        //     }
-        //     CheckResult::None => (),
-        // };
-
-        if let Some(plugin_registry) = plugin_registry {
-            for record in plugin_registry.registry {
-                if matches!(
-                    PluginType::check_create(&record.plugin_type),
-                    CheckResult::CanApprove | CheckResult::CanReject
-                ) {
-                    let result = Plugin::validate_create(
-                        &Plugin::load(ctx.accounts.asset, record.offset)?,
-                        ctx.accounts
-                            .owner
-                            .unwrap_or(ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer)),
+            let mut approved = true;
+            let mut force_approved = false;
+            for plugin in &plugins {
+                if PluginType::check_create(&PluginType::from(&plugin.plugin)) != CheckResult::None
+                {
+                    match Plugin::validate_create(
+                        &plugin.plugin,
+                        ctx.accounts.authority.unwrap_or(ctx.accounts.payer),
                         None,
-                        &record.authority,
+                        &plugin.authority.unwrap_or(plugin.plugin.manager()),
                         None,
                         None,
-                    )?;
-                    if result == ValidationResult::Rejected {
-                        return Err(MplCoreError::InvalidAuthority.into());
-                    } else if result == ValidationResult::Approved {
-                        approved = true;
-                    }
+                    )? {
+                        ValidationResult::Rejected => approved = false,
+                        ValidationResult::ForceApproved => force_approved = true,
+                        _ => (),
+                    };
                 }
+                initialize_plugin::<AssetV1>(
+                    &plugin.plugin,
+                    &plugin.authority.unwrap_or(plugin.plugin.manager()),
+                    &mut plugin_header,
+                    &mut plugin_registry,
+                    ctx.accounts.asset,
+                    ctx.accounts.payer,
+                    ctx.accounts.system_program,
+                )?;
             }
-        };
 
-        if !approved {
-            return Err(MplCoreError::InvalidAuthority.into());
+            if !(approved || force_approved) {
+                return Err(MplCoreError::InvalidAuthority.into());
+            }
         }
     }
 

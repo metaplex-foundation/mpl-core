@@ -176,12 +176,6 @@ pub(crate) fn resize_or_reallocate_account<'a>(
 
     if new_minimum_balance >= current_minimum_balance {
         let lamports_diff = new_minimum_balance.saturating_sub(current_minimum_balance);
-        solana_program::msg!(
-            "Transferring {} from {} to {}.",
-            lamports_diff,
-            funding_account.key,
-            target_account.key
-        );
         invoke(
             &system_instruction::transfer(funding_account.key, target_account.key, lamports_diff),
             account_infos,
@@ -189,15 +183,6 @@ pub(crate) fn resize_or_reallocate_account<'a>(
     } else {
         // return lamports to the compressor
         let lamports_diff = current_minimum_balance.saturating_sub(new_minimum_balance);
-
-        solana_program::msg!(
-            "Transferring {} from {}:{} to {}:{}.",
-            lamports_diff,
-            target_account.key,
-            target_account.lamports(),
-            funding_account.key,
-            funding_account.lamports()
-        );
 
         **funding_account.try_borrow_mut_lamports()? += lamports_diff;
         **target_account.try_borrow_mut_lamports()? -= lamports_diff
@@ -477,12 +462,15 @@ pub fn rebuild_account_state_from_proof_data<'a>(
 
     // Add the plugins.
     if !plugins.is_empty() {
-        create_meta_idempotent::<AssetV1>(asset_info, payer, system_program)?;
+        let (_, mut plugin_header, mut plugin_registry) =
+            create_meta_idempotent::<AssetV1>(asset_info, payer, system_program)?;
 
         for plugin in plugins {
             initialize_plugin::<AssetV1>(
                 &plugin.plugin,
                 &plugin.authority,
+                &mut plugin_header,
+                &mut plugin_registry,
                 asset_info,
                 payer,
                 system_program,

@@ -118,9 +118,18 @@ fn process_add_plugin<'a, T: DataBlob + SolanaAccount>(
     authority: &Authority,
 ) -> ProgramResult {
     solana_program::msg!("Creating meta if it doesn't exist");
-    create_meta_idempotent::<T>(account, payer, system_program)?;
+    let (_, mut plugin_header, mut plugin_registry) =
+        create_meta_idempotent::<T>(account, payer, system_program)?;
     solana_program::msg!("Initializing plugin");
-    initialize_plugin::<T>(plugin, authority, account, payer, system_program)?;
+    initialize_plugin::<T>(
+        plugin,
+        authority,
+        &mut plugin_header,
+        &mut plugin_registry,
+        account,
+        payer,
+        system_program,
+    )?;
     solana_program::msg!("Plugin added successfully");
     Ok(())
 }
