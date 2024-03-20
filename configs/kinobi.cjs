@@ -15,35 +15,6 @@ kinobi.update(
   })
 );
 
-// Set default account values across multiple instructions.
-// kinobi.update(
-//   new k.SetInstructionAccountDefaultValuesVisitor([
-//     {
-//       account: "logWrapper",
-//       defaultsTo: k.conditionalDefault("arg", "dataState", {
-//         value: k.vEnum("DataState", "LedgerState"),
-//         ifTrue: k.programDefault(
-//           "splNoop",
-//           "noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV"
-//         ),
-//       }),
-//     },
-//   ])
-// );
-
-// // Update accounts.
-// kinobi.update(
-//   new k.UpdateAccountsVisitor({
-//     myPdaAccount: {
-//       seeds: [
-//         k.stringConstantSeed("myPdaAccount"),
-//         k.programSeed(),
-//         k.publicKeySeed("authority", "The address of the authority"),
-//         k.stringSeed("name", "The name of the account"),
-//       ],
-//     },
-//   })
-// );
 
 kinobi.update(
   new k.updateAccountsVisitor({

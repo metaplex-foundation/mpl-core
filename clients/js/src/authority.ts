@@ -22,7 +22,9 @@ export function pubkeyPluginAuthority(address: PublicKey) {
   return pluginAuthority('Pubkey', { address });
 }
 
-export function mapPluginAuthority(authority: PluginAuthority): BasePluginAuthority {
+export function mapPluginAuthority(
+  authority: PluginAuthority
+): BasePluginAuthority {
   return {
     type: authority.__kind,
     address: (authority as any).address,

@@ -18,6 +18,13 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
 ) -> Result<(PluginAuthority, U, usize), std::io::Error> {
     let asset = T::load(account, 0)?;
 
+    if asset.get_size() == account.data_len() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            MplCoreError::PluginNotFound.to_string(),
+        ));
+    }
+
     let header = PluginHeaderV1::load(account, asset.get_size())?;
     let PluginRegistryV1 { registry, .. } =
         PluginRegistryV1::load(account, header.plugin_registry_offset as usize)?;

@@ -67,11 +67,11 @@ test('it can gpa fetch assets by updateAuthority', async (t) => {
   const authority = generateSigner(umi);
   await createAsset(umi, {
     name: 'asset1',
-    updateAuthority: authority
+    updateAuthority: authority,
   });
   await createAsset(umi, {
     name: 'asset2',
-    updateAuthority: authority
+    updateAuthority: authority,
   });
   await createAsset(umi, {});
 
