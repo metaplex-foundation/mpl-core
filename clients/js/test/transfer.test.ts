@@ -76,3 +76,45 @@ test('it cannot transfer asset in collection if no collection', async (t) => {
     updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 });
+
+
+test('it can transfer asset in collection as the owner', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const newOwner = generateSigner(umi);
+
+  const { asset, collection } = await createAssetWithCollection(umi, {});
+
+  await transferV1(umi, {
+    asset: asset.publicKey,
+    newOwner: newOwner.publicKey,
+    collection: collection.publicKey,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+  });
+})
+
+test('it cannot transfer asset in collection if collection not included', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const newOwner = generateSigner(umi);
+
+  const { asset, collection } = await createAssetWithCollection(umi, {});
+
+  const result = transferV1(umi, {
+    asset: asset.publicKey,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'MissingCollection' });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+  });
+})
