@@ -157,7 +157,7 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
     newAuthority: ownerPluginAuthority(),
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(result, { name: 'CannotRedelegate' });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,

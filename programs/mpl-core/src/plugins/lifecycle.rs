@@ -207,8 +207,18 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authority: &Authority,
         plugin_to_approve: Option<&Plugin>,
-        _: Option<&Authority>,
+        _resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
+        // Universally, we cannot delegate a plugin authority if it's already delegated, even if
+        // we're the manager.
+        if let Some(plugin_to_approve) = plugin_to_approve {
+            if plugin_to_approve == plugin && &plugin_to_approve.manager() != authority {
+                return Err(MplCoreError::CannotRedelegate.into());
+            }
+        } else {
+            return Err(MplCoreError::InvalidPlugin.into());
+        }
+
         match plugin {
             Plugin::Royalties(royalties) => royalties.validate_approve_plugin_authority(
                 authority_info,

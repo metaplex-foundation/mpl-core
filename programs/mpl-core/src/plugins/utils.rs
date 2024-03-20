@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, log::sol_log_compute_units,
-    program_error::ProgramError, program_memory::sol_memcpy,
+    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+    program_memory::sol_memcpy,
 };
 
 use crate::{

@@ -90,8 +90,8 @@ impl PluginValidation for FreezeDelegate {
 
     fn validate_approve_plugin_authority(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
         plugin_to_approve: Option<&super::Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(Plugin::FreezeDelegate(freeze)) = plugin_to_approve {

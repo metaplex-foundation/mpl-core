@@ -91,6 +91,9 @@ pub enum MplCoreError {
     /// 26 (0x1A) - Neither the asset or any plugins have approved this operation
     #[error("Neither the asset or any plugins have approved this operation")]
     NoApprovals,
+    /// 27 (0x1B) - Plugin Manager cannot redelegate a delegated plugin without revoking first
+    #[error("Plugin Manager cannot redelegate a delegated plugin without revoking first")]
+    CannotRedelegate,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

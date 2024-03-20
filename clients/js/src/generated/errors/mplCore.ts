@@ -373,6 +373,23 @@ export class NoApprovalsError extends ProgramError {
 codeToErrorMap.set(0x1a, NoApprovalsError);
 nameToErrorMap.set('NoApprovals', NoApprovalsError);
 
+/** CannotRedelegate: Plugin Manager cannot redelegate a delegated plugin without revoking first */
+export class CannotRedelegateError extends ProgramError {
+  override readonly name: string = 'CannotRedelegate';
+
+  readonly code: number = 0x1b; // 27
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Plugin Manager cannot redelegate a delegated plugin without revoking first',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x1b, CannotRedelegateError);
+nameToErrorMap.set('CannotRedelegate', CannotRedelegateError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
