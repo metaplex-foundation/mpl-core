@@ -879,7 +879,7 @@ checksum = "06ea2b9bc92be3c2baa9334a323ebca2d6f074ff852cd1d7b11064035cd3868f"
 
 [[package]]
 name = "core-preview"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "assert_matches",
  "base64 0.22.0",
@@ -2097,7 +2097,7 @@ dependencies = [
 
 [[package]]
 name = "mpl-core-program"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "borsh 0.10.3",
  "bytemuck",
