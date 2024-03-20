@@ -10,10 +10,16 @@ import {
   Attributes,
   PermanentTransferDelegate,
   UpdateAuthority,
+  PermanentBurnDelegate,
 } from './generated';
 
-export type BaseAuthority = {
-  type: PluginAuthorityType | UpdateAuthorityType;
+export type BasePluginAuthority = {
+  type: PluginAuthorityType;
+  address?: PublicKey;
+};
+
+export type BaseUpdateAuthority = {
+  type: UpdateAuthorityType;
   address?: PublicKey;
 };
 
@@ -21,7 +27,7 @@ export type UpdateAuthorityType = UpdateAuthority['__kind'];
 export type PluginAuthorityType = PluginAuthority['__kind'];
 
 export type BasePlugin = {
-  authority: BaseAuthority;
+  authority: BasePluginAuthority;
   offset?: bigint;
 };
 
@@ -35,6 +41,7 @@ export type PermanentFreezeDelegatePlugin = BasePlugin &
 export type AttributesPlugin = BasePlugin & Attributes;
 export type PermanentTransferDelegatePlugin = BasePlugin &
   PermanentTransferDelegate;
+export type PermanentBurnDelegatePlugin = BasePlugin & PermanentBurnDelegate;
 
 export type PluginsList = {
   royalties?: RoyaltiesPlugin;
@@ -42,7 +49,8 @@ export type PluginsList = {
   burnDelegate?: BurnDelegatePlugin;
   transferDelegate?: TransferDelegatePlugin;
   updateDelegate?: UpdateDelegatePlugin;
-  permanentFreezeDelegate?: PermanentFreezeDelegatePlugin;
   attributes?: AttributesPlugin;
+  permanentFreezeDelegate?: PermanentFreezeDelegatePlugin;
   permanentTransferDelegate?: PermanentTransferDelegatePlugin;
+  permanentBurnDelegate?: PermanentBurnDelegatePlugin;
 };
