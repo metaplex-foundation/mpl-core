@@ -1,6 +1,7 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
+import { base58 } from '@metaplex-foundation/umi/serializers';
 import {
   PluginType,
   approvePluginAuthorityV1,
@@ -119,12 +120,14 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
 
   const umi2 = await createUmi();
 
-  await revokePluginAuthorityV1(umi2, {
+  const result = await revokePluginAuthorityV1(umi2, {
     payer: umi2.identity,
     asset: asset.publicKey,
     authority: pubkeyAuth,
     pluginType: PluginType.FreezeDelegate,
   }).sendAndConfirm(umi);
+
+  console.log(base58.deserialize(result.signature));
 
   await assertAsset(t, umi, {
     asset: asset.publicKey,
