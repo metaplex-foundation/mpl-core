@@ -6,7 +6,7 @@ import {
   transferV1,
   pluginAuthorityPair,
   revokePluginAuthorityV1,
-  pubkeyPluginAuthority,
+  addressPluginAuthority,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -28,7 +28,7 @@ test('a delegate can transfer the asset', async (t) => {
   await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.TransferDelegate,
-    newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
+    newAuthority: addressPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await transferV1(umi, {
@@ -44,7 +44,7 @@ test('a delegate can transfer the asset', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     transferDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
     },
@@ -61,7 +61,7 @@ test('owner can transfer asset with delegate transfer', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'TransferDelegate',
-        authority: pubkeyPluginAuthority(delegateAddress.publicKey),
+        authority: addressPluginAuthority(delegateAddress.publicKey),
       }),
     ],
   });
@@ -78,7 +78,7 @@ test('owner can transfer asset with delegate transfer', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     transferDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
     },
@@ -94,7 +94,7 @@ test('it can revoke a delegate transfer plugin', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'TransferDelegate',
-        authority: pubkeyPluginAuthority(delegateAddress.publicKey),
+        authority: addressPluginAuthority(delegateAddress.publicKey),
       }),
     ],
   });
@@ -127,7 +127,7 @@ test('it cannot transfer after delegate has been revoked', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'TransferDelegate',
-        authority: pubkeyPluginAuthority(delegateAddress.publicKey),
+        authority: addressPluginAuthority(delegateAddress.publicKey),
       }),
     ],
   });

@@ -15,7 +15,7 @@ pub enum PluginAuthority {
     None,
     Owner,
     UpdateAuthority,
-    Pubkey {
+    Address {
         #[cfg_attr(
             feature = "serde",
             serde(with = "serde_with::As::<serde_with::DisplayFromStr>")

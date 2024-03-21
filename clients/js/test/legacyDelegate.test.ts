@@ -1,7 +1,7 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 import { assertAsset, createAsset, createUmi } from './_setup';
-import { pubkeyPluginAuthority, pluginAuthorityPair } from '../src';
+import { addressPluginAuthority, pluginAuthorityPair } from '../src';
 import { legacyDelegate } from '../src/instructions/legacyDelegate';
 import { ERR_CANNOT_DELEGATE } from '../src/instructions/errors';
 
@@ -20,20 +20,20 @@ test('it can delegate with a new delegate address and no defined plugins', async
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
       frozen: false,
     },
     transferDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
     },
     burnDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
     },
@@ -61,20 +61,20 @@ test('it can delegate with a new delegate address and one defined plugin', async
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
       frozen: false,
     },
     transferDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
     },
     burnDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
     },
@@ -109,20 +109,20 @@ test('it can delegate with a new delegate address and all required plugins defin
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
       frozen: false,
     },
     transferDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
     },
     burnDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
     },
@@ -155,7 +155,7 @@ test('it cannot delegate if the target delegate is the asset owner and the plugi
       pluginAuthorityPair({
         type: 'FreezeDelegate',
         data: { frozen: false },
-        authority: pubkeyPluginAuthority(umi.identity.publicKey),
+        authority: addressPluginAuthority(umi.identity.publicKey),
       }),
     ],
   });
@@ -175,7 +175,7 @@ test('it cannot delegate if the target delegate is already set as an authority o
       pluginAuthorityPair({
         type: 'FreezeDelegate',
         data: { frozen: false },
-        authority: pubkeyPluginAuthority(delegate.publicKey),
+        authority: addressPluginAuthority(delegate.publicKey),
       }),
     ],
   });

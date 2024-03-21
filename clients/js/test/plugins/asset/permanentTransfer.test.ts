@@ -5,7 +5,7 @@ import {
   addPluginV1,
   createPlugin,
   pluginAuthorityPair,
-  pubkeyPluginAuthority,
+  addressPluginAuthority,
   removePluginV1,
   transferV1,
   updatePluginAuthority,
@@ -429,7 +429,7 @@ test('it can permanent transfer using collection delegate authority', async (t) 
       plugins: [
         pluginAuthorityPair({
           type: 'PermanentTransferDelegate',
-          authority: pubkeyPluginAuthority(delegate.publicKey),
+          authority: addressPluginAuthority(delegate.publicKey),
         }),
       ],
     }
@@ -454,7 +454,7 @@ test('it can permanent transfer using collection delegate authority', async (t) 
     collection: collection.publicKey,
     permanentTransferDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
     },

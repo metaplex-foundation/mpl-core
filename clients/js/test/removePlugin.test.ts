@@ -9,7 +9,7 @@ import {
   removeCollectionPluginV1,
   fetchCollectionV1,
   ruleSet,
-  pubkeyPluginAuthority,
+  addressPluginAuthority,
 } from '../src';
 import {
   DEFAULT_COLLECTION,
@@ -154,7 +154,7 @@ test('it can remove authority managed plugin from collection using delegate auth
       plugins: [
         pluginAuthorityPair({
           type: 'UpdateDelegate',
-          authority: pubkeyPluginAuthority(delegate.publicKey),
+          authority: addressPluginAuthority(delegate.publicKey),
         }),
       ],
     }
@@ -189,7 +189,7 @@ test('it cannot remove owner managed plugin if the delegate authority is not own
       pluginAuthorityPair({
         type: 'FreezeDelegate',
         data: { frozen: false },
-        authority: pubkeyPluginAuthority(delegate.publicKey),
+        authority: addressPluginAuthority(delegate.publicKey),
       }),
     ],
   });
@@ -207,7 +207,7 @@ test('it cannot remove owner managed plugin if the delegate authority is not own
     owner: umi.identity.publicKey,
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
       frozen: false,
@@ -222,7 +222,7 @@ test('it cannot remove authority managed plugin if the delegate authority is not
     plugins: [
       pluginAuthorityPair({
         type: 'Royalties',
-        authority: pubkeyPluginAuthority(delegate.publicKey),
+        authority: addressPluginAuthority(delegate.publicKey),
         data: {
           creators: [{ address: umi.identity.publicKey, percentage: 100 }],
           basisPoints: 5,
@@ -245,7 +245,7 @@ test('it cannot remove authority managed plugin if the delegate authority is not
     owner: umi.identity.publicKey,
     royalties: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
@@ -262,7 +262,7 @@ test('it cannot remove authority managed collection plugin if the delegate autho
     plugins: [
       pluginAuthorityPair({
         type: 'Royalties',
-        authority: pubkeyPluginAuthority(delegate.publicKey),
+        authority: addressPluginAuthority(delegate.publicKey),
         data: {
           creators: [{ address: umi.identity.publicKey, percentage: 100 }],
           basisPoints: 5,
@@ -284,7 +284,7 @@ test('it cannot remove authority managed collection plugin if the delegate autho
     collection: collection.publicKey,
     royalties: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],

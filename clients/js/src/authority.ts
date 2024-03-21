@@ -18,8 +18,8 @@ export function updatePluginAuthority() {
   return pluginAuthority('UpdateAuthority');
 }
 
-export function pubkeyPluginAuthority(address: PublicKey) {
-  return pluginAuthority('Pubkey', { address });
+export function addressPluginAuthority(address: PublicKey) {
+  return pluginAuthority('Address', { address });
 }
 
 export function mapPluginAuthority(

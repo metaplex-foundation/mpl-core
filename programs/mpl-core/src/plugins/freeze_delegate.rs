@@ -48,7 +48,7 @@ impl PluginValidation for FreezeDelegate {
         if (authority_info.key != core_asset.owner()
             && (authority_info.key == &core_asset.update_authority().key()
                 && authority == (&Authority::UpdateAuthority))
-            || authority == (&Authority::Pubkey {
+            || authority == (&Authority::Address {
                 address: *authority_info.key,
             }))
             // Unless the owner is the only authority.
@@ -113,7 +113,7 @@ impl PluginValidation for FreezeDelegate {
             if freeze.frozen {
                 return Ok(ValidationResult::Rejected);
             } else if authority
-                == &(Authority::Pubkey {
+                == &(Authority::Address {
                     address: *authority_info.key,
                 })
             {

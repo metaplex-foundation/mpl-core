@@ -50,7 +50,7 @@ pub fn assert_authority<T: CoreAsset>(
                 return Ok(());
             }
         }
-        Authority::Pubkey { address } => {
+        Authority::Address { address } => {
             if authority_info.key == address {
                 return Ok(());
             }
@@ -73,7 +73,7 @@ pub fn assert_collection_authority(
                 return Ok(());
             }
         }
-        Authority::Pubkey { address } => {
+        Authority::Address { address } => {
             if authority_info.key == address {
                 return Ok(());
             }
@@ -556,7 +556,7 @@ pub(crate) fn resolve_to_authority(
                 if authority_info.key == &collection.update_authority {
                     Authority::UpdateAuthority
                 } else {
-                    Authority::Pubkey {
+                    Authority::Address {
                         address: *authority_info.key,
                     }
                 }
@@ -564,7 +564,7 @@ pub(crate) fn resolve_to_authority(
             None => return Err(MplCoreError::InvalidCollection.into()),
         }
     } else {
-        Authority::Pubkey {
+        Authority::Address {
             address: *authority_info.key,
         }
     };
@@ -581,7 +581,7 @@ pub(crate) fn resolve_collection_authority(
     } else if authority_info.key == &collection.update_authority {
         Ok(Authority::UpdateAuthority)
     } else {
-        Ok(Authority::Pubkey {
+        Ok(Authority::Address {
             address: *authority_info.key,
         })
     }

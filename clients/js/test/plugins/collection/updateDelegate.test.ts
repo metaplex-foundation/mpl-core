@@ -7,7 +7,7 @@ import {
   approveCollectionPluginAuthorityV1,
   createPlugin,
   pluginAuthorityPair,
-  pubkeyPluginAuthority,
+  addressPluginAuthority,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -32,7 +32,7 @@ test('it can create a new asset with a collection if it is the collection update
   await approveCollectionPluginAuthorityV1(umi, {
     collection: collection.publicKey,
     pluginType: PluginType.UpdateDelegate,
-    newAuthority: pubkeyPluginAuthority(updateDelegate.publicKey),
+    newAuthority: addressPluginAuthority(updateDelegate.publicKey),
   }).sendAndConfirm(umi);
 
   await assertCollection(t, umi, {
@@ -41,7 +41,7 @@ test('it can create a new asset with a collection if it is the collection update
     updateAuthority: umi.identity.publicKey,
     updateDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: updateDelegate.publicKey,
       },
     },
@@ -79,7 +79,7 @@ test('it can add updateDelegate to collection and then approve', async (t) => {
   await approveCollectionPluginAuthorityV1(umi, {
     collection: collection.publicKey,
     pluginType: PluginType.UpdateDelegate,
-    newAuthority: pubkeyPluginAuthority(updateDelegate.publicKey),
+    newAuthority: addressPluginAuthority(updateDelegate.publicKey),
   }).sendAndConfirm(umi);
 
   await assertCollection(t, umi, {
@@ -88,7 +88,7 @@ test('it can add updateDelegate to collection and then approve', async (t) => {
     updateAuthority: umi.identity.publicKey,
     updateDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: updateDelegate.publicKey,
       },
     },

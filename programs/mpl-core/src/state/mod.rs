@@ -50,7 +50,7 @@ pub enum Authority {
     /// The update authority of the core asset.
     UpdateAuthority,
     /// A pubkey that is the authority over a plugin.
-    Pubkey {
+    Address {
         /// The address of the authority.
         address: Pubkey,
     },

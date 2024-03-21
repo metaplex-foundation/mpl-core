@@ -7,7 +7,7 @@ import {
   createCollectionV1,
   fetchAssetV1,
   getAssetV1GpaBuilder,
-  pubkeyPluginAuthority,
+  addressPluginAuthority,
   pluginAuthorityPair,
   revokePluginAuthorityV1,
   ruleSet,
@@ -105,7 +105,7 @@ const advancedExamples = async () => {
     // Optionally set the authority to a delegate who can unfreeze. If unset, this will be the Owner
     // This is functionally the same as calling addPlugin and approvePluginAuthority separately.
     // Freezing with a delegate is commonly used for escrowless staking programs.
-    initAuthority: pubkeyPluginAuthority(freezeDelegate.publicKey),
+    initAuthority: addressPluginAuthority(freezeDelegate.publicKey),
   }).sendAndConfirm(umi);
 
   // Unfreezing an asset with a delegate

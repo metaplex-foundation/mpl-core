@@ -13,7 +13,7 @@ pub enum AuthorityType {
     None,
     Owner,
     UpdateAuthority,
-    Pubkey,
+    Address,
 }
 
 impl From<PluginAuthority> for AuthorityType {
@@ -22,7 +22,7 @@ impl From<PluginAuthority> for AuthorityType {
             PluginAuthority::None => AuthorityType::None,
             PluginAuthority::Owner => AuthorityType::Owner,
             PluginAuthority::UpdateAuthority => AuthorityType::UpdateAuthority,
-            PluginAuthority::Pubkey { address: _ } => AuthorityType::Pubkey,
+            PluginAuthority::Address { address: _ } => AuthorityType::Address,
         }
     }
 }
@@ -48,8 +48,8 @@ impl From<PluginAuthority> for BaseAuthority {
                 authority_type: AuthorityType::UpdateAuthority,
                 address: None,
             },
-            PluginAuthority::Pubkey { address } => BaseAuthority {
-                authority_type: AuthorityType::Pubkey,
+            PluginAuthority::Address { address } => BaseAuthority {
+                authority_type: AuthorityType::Address,
                 address: Some(address),
             },
         }

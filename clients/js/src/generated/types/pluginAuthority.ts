@@ -21,7 +21,7 @@ export type PluginAuthority =
   | { __kind: 'None' }
   | { __kind: 'Owner' }
   | { __kind: 'UpdateAuthority' }
-  | { __kind: 'Pubkey'; address: PublicKey };
+  | { __kind: 'Address'; address: PublicKey };
 
 export type PluginAuthorityArgs = PluginAuthority;
 
@@ -35,8 +35,8 @@ export function getPluginAuthoritySerializer(): Serializer<
       ['Owner', unit()],
       ['UpdateAuthority', unit()],
       [
-        'Pubkey',
-        struct<GetDataEnumKindContent<PluginAuthority, 'Pubkey'>>([
+        'Address',
+        struct<GetDataEnumKindContent<PluginAuthority, 'Address'>>([
           ['address', publicKeySerializer()],
         ]),
       ],
@@ -56,9 +56,9 @@ export function pluginAuthority(
   kind: 'UpdateAuthority'
 ): GetDataEnumKind<PluginAuthorityArgs, 'UpdateAuthority'>;
 export function pluginAuthority(
-  kind: 'Pubkey',
-  data: GetDataEnumKindContent<PluginAuthorityArgs, 'Pubkey'>
-): GetDataEnumKind<PluginAuthorityArgs, 'Pubkey'>;
+  kind: 'Address',
+  data: GetDataEnumKindContent<PluginAuthorityArgs, 'Address'>
+): GetDataEnumKind<PluginAuthorityArgs, 'Address'>;
 export function pluginAuthority<K extends PluginAuthorityArgs['__kind']>(
   kind: K,
   data?: any

@@ -6,7 +6,7 @@ import {
   PluginType,
   approvePluginAuthorityV1,
   revokePluginAuthorityV1,
-  pubkeyPluginAuthority,
+  addressPluginAuthority,
   nonePluginAuthority,
   pluginAuthorityPair,
 } from '../src';
@@ -26,7 +26,7 @@ test('it can remove an authority from a plugin', async (t) => {
   await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
-    newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
+    newAuthority: addressPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -35,7 +35,7 @@ test('it can remove an authority from a plugin', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
       frozen: false,
@@ -102,7 +102,7 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
   await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
-    newAuthority: pubkeyPluginAuthority(pubkeyAuth.publicKey),
+    newAuthority: addressPluginAuthority(pubkeyAuth.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -111,7 +111,7 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: pubkeyAuth.publicKey,
       },
       frozen: false,

@@ -50,7 +50,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         // The owner can't update the freeze status.
         if (authority_info.key == &core_asset.update_authority().key()
                 && authority == (&Authority::UpdateAuthority))
-            || authority == (&Authority::Pubkey {
+            || authority == (&Authority::Address {
                 address: *authority_info.key,
             })
             // Unless the owner is the only authority.
@@ -109,7 +109,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority
-            == &(Authority::Pubkey {
+            == &(Authority::Address {
                 address: *authority_info.key,
             })
             && plugin_to_revoke.is_some()
