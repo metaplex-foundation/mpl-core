@@ -1,7 +1,12 @@
 use base64::prelude::*;
 use borsh::BorshDeserialize;
 use solana_program::pubkey::Pubkey;
-use std::{cmp::Ordering, collections::HashMap, io::ErrorKind};
+use std::{
+    cmp::Ordering,
+    collections::HashMap,
+    fmt::{Display, Formatter},
+    io::ErrorKind,
+};
 
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
@@ -149,7 +154,9 @@ pub struct IndexableAsset {
     pub name: String,
     pub uri: String,
     pub seq: u64,
-    pub plugins: HashMap<PluginType, IndexablePluginSchemaV1>,
+    pub num_minted: Option<u32>,
+    pub current_size: Option<u32>,
+    pub plugins: HashMap<String, IndexablePluginSchemaV1>,
     pub unknown_plugins: Vec<IndexableUnknownPluginSchemaV1>,
 }
 
@@ -163,19 +170,23 @@ impl IndexableAsset {
             name: asset.name,
             uri: asset.uri,
             seq,
+            num_minted: None,
+            current_size: None,
             plugins: HashMap::new(),
             unknown_plugins: Vec::new(),
         }
     }
 
     /// Create a new `IndexableAsset` from a `BaseCollectionV1`.
-    pub fn from_collection(asset: BaseCollectionV1) -> Self {
+    pub fn from_collection(collection: BaseCollectionV1) -> Self {
         Self {
             owner: None,
-            update_authority: UpdateAuthority::Address(asset.update_authority),
-            name: asset.name,
-            uri: asset.uri,
+            update_authority: UpdateAuthority::Address(collection.update_authority),
+            name: collection.name,
+            uri: collection.uri,
             seq: 0,
+            num_minted: Some(collection.num_minted),
+            current_size: Some(collection.current_size),
             plugins: HashMap::new(),
             unknown_plugins: Vec::new(),
         }
@@ -185,7 +196,8 @@ impl IndexableAsset {
     fn add_processed_plugin(&mut self, plugin: ProcessedPlugin) {
         match plugin {
             ProcessedPlugin::Known((plugin_type, indexable_plugin_schema)) => {
-                self.plugins.insert(plugin_type, indexable_plugin_schema);
+                self.plugins
+                    .insert(plugin_type.to_string(), indexable_plugin_schema);
             }
             ProcessedPlugin::Unknown(indexable_unknown_plugin_schema) => {
                 self.unknown_plugins.push(indexable_unknown_plugin_schema)
@@ -195,24 +207,24 @@ impl IndexableAsset {
 
     /// Fetch the base `Asset`` or `Collection`` and all the plugins and store in an `IndexableAsset`.
     pub fn fetch(key: Key, account: &[u8]) -> Result<Self, std::io::Error> {
-        let (mut indexable_asset, asset_size) = match key {
+        let (mut indexable_asset, base_size) = match key {
             Key::AssetV1 => {
                 let asset = BaseAssetV1::from_bytes(account)?;
-                let asset_size = asset.get_size();
+                let base_size = asset.get_size();
                 let indexable_asset = Self::from_asset(asset, 0);
-                (indexable_asset, asset_size)
+                (indexable_asset, base_size)
             }
             Key::CollectionV1 => {
-                let asset = BaseCollectionV1::from_bytes(account)?;
-                let asset_size = asset.get_size();
-                let indexable_asset = Self::from_collection(asset);
-                (indexable_asset, asset_size)
+                let collection = BaseCollectionV1::from_bytes(account)?;
+                let base_size = collection.get_size();
+                let indexable_asset = Self::from_collection(collection);
+                (indexable_asset, base_size)
             }
             _ => return Err(ErrorKind::InvalidInput.into()),
         };
 
-        if asset_size != account.len() {
-            let header = PluginHeaderV1::from_bytes(&account[asset_size..])?;
+        if base_size != account.len() {
+            let header = PluginHeaderV1::from_bytes(&account[base_size..])?;
             let plugin_registry = PluginRegistryV1Safe::from_bytes(
                 &account[(header.plugin_registry_offset as usize)..],
             )?;
