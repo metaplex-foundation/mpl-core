@@ -3,7 +3,11 @@ import { AssetV1, CollectionV1, PluginType } from '../generated';
 import { deriveAssetPlugins, isFrozen } from './state';
 import { checkPluginAuthorities } from './plugin';
 
-export function canTransfer(authority: PublicKey | string, asset: AssetV1, collection?: CollectionV1): boolean {
+export function canTransfer(
+  authority: PublicKey | string,
+  asset: AssetV1,
+  collection?: CollectionV1
+): boolean {
   if (!isFrozen(asset, collection)) {
     const dAsset = deriveAssetPlugins(asset, collection);
     if (dAsset.owner === authority) {
@@ -11,7 +15,10 @@ export function canTransfer(authority: PublicKey | string, asset: AssetV1, colle
     }
     const transferDelegates = checkPluginAuthorities({
       authority,
-      pluginTypes: [PluginType.TransferDelegate, PluginType.PermanentTransferDelegate],
+      pluginTypes: [
+        PluginType.TransferDelegate,
+        PluginType.PermanentTransferDelegate,
+      ],
       asset: dAsset,
       collection,
     });
@@ -20,7 +27,11 @@ export function canTransfer(authority: PublicKey | string, asset: AssetV1, colle
   return false;
 }
 
-export function canBurn(authority: PublicKey | string, asset: AssetV1, collection?: CollectionV1): boolean {
+export function canBurn(
+  authority: PublicKey | string,
+  asset: AssetV1,
+  collection?: CollectionV1
+): boolean {
   if (!isFrozen(asset, collection)) {
     const dAsset = deriveAssetPlugins(asset, collection);
     if (dAsset.owner === authority) {
@@ -37,9 +48,16 @@ export function canBurn(authority: PublicKey | string, asset: AssetV1, collectio
   return false;
 }
 
-export function canUpdate(authority: PublicKey | string, asset: AssetV1, collection?: CollectionV1): boolean {
+export function canUpdate(
+  authority: PublicKey | string,
+  asset: AssetV1,
+  collection?: CollectionV1
+): boolean {
   const dAsset = deriveAssetPlugins(asset, collection);
-  if (dAsset.updateAuthority.type === 'Address' && dAsset.updateAuthority.address === authority) {
+  if (
+    dAsset.updateAuthority.type === 'Address' &&
+    dAsset.updateAuthority.address === authority
+  ) {
     return true;
   }
   const updateDelegates = checkPluginAuthorities({
