@@ -33,6 +33,24 @@ impl PluginType {
     }
 }
 
+impl Display for PluginType {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        let message = match self {
+            PluginType::Royalties => "royalties".to_string(),
+            PluginType::FreezeDelegate => "freeze_delegate".to_string(),
+            PluginType::BurnDelegate => "burn_delegate".to_string(),
+            PluginType::TransferDelegate => "transfer_delegate".to_string(),
+            PluginType::UpdateDelegate => "update_delegate".to_string(),
+            PluginType::PermanentFreezeDelegate => "permanent_freeze_delegate".to_string(),
+            PluginType::Attributes => "attributes".to_string(),
+            PluginType::PermanentTransferDelegate => "permanent_transfer_delegate".to_string(),
+            PluginType::PermanentBurnDelegate => "permanent_burn_delegate".to_string(),
+        };
+
+        write!(f, "{message}")
+    }
+}
+
 /// Schema used for indexing known plugin types.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
