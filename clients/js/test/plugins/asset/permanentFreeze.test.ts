@@ -1,9 +1,11 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 import {
+  PluginType,
   addPluginV1,
   createPlugin,
   pluginAuthorityPair,
+  removePluginV1,
   transferV1,
   updateCollectionPluginV1,
   updatePluginV1,
@@ -308,7 +310,7 @@ test('it can move asset with permanent freeze override in a frozen collection', 
   });
 });
 
-test('it can remove a permanent freeze plugin from an asset', async (t) => {
+test('it can unfreeze a permanent freeze plugin from an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
@@ -340,7 +342,71 @@ test('it can remove a permanent freeze plugin from an asset', async (t) => {
     }),
   }).sendAndConfirm(umi);
 
-  const asset2 = await createAsset(umi, { owner: umi.identity });
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    permanentFreezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: false,
+    },
+  });
+});
 
-  t.is(asset2.permanentFreezeDelegate, undefined);
+test('it cannot remove permanent freeze plugin if update authority and frozen', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: true },
+      }),
+    ],
+  });
+
+  const result = removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.PermanentFreezeDelegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, {
+    name: 'InvalidAuthority',
+  });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    permanentFreezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: true,
+    },
+  });
+});
+
+test('it can remove permanent freeze plugin if update authority and unfrozen', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: false },
+      }),
+    ],
+  });
+
+  await removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.PermanentFreezeDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    permanentFreezeDelegate: undefined,
+  });
 });

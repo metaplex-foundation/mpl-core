@@ -135,7 +135,6 @@ impl AssetV1 {
     pub fn validate_remove_plugin(
         &self,
         authority_info: &AccountInfo,
-        _authority: &Authority,
         _plugin_to_remove: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.owner {

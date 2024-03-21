@@ -41,6 +41,8 @@ impl PluginType {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
             PluginType::UpdateDelegate => CheckResult::CanApprove,
+            PluginType::FreezeDelegate => CheckResult::CanReject,
+            PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
