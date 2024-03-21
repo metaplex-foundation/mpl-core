@@ -64,7 +64,7 @@ async fn transfer_asset_as_owner() {
 }
 
 #[tokio::test]
-async fn transfer_asset_as_with_royalties() {
+async fn transfer_asset_with_royalties() {
     let mut context = program_test().start_with_context().await;
 
     let asset = Keypair::new();
