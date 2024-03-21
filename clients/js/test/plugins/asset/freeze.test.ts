@@ -10,6 +10,7 @@ import {
   updatePluginV1,
   createPlugin,
   ownerPluginAuthority,
+  removePluginV1,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -191,3 +192,36 @@ test('it cannot add multiple freeze plugins to an asset', async (t) => {
 
   await t.throwsAsync(result, { name: 'PluginAlreadyExists' });
 });
+
+test('it cannot remove freeze plugin if update authority and frozen', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: true },
+      }),
+    ],
+  });
+
+  const result = removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.FreezeDelegate
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, {
+    name: 'InvalidAuthority',
+  });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: true,
+    },
+  });
+})

@@ -90,14 +90,6 @@ impl PluginValidation for PermanentFreezeDelegate {
         }
     }
 
-    fn validate_add_authority(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
     fn validate_add_plugin(
         &self,
         _authority_info: &AccountInfo,
@@ -121,9 +113,26 @@ impl PluginValidation for PermanentFreezeDelegate {
                 address: *authority_info.key,
             })
             && plugin_to_revoke.is_some()
-            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::FreezeDelegate
+            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::PermanentFreezeDelegate
         {
             Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
+    /// Validate the remove plugin lifecycle action.
+    fn validate_remove_plugin(
+        &self,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
+        plugin_to_revoke: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        if plugin_to_revoke.is_some()
+            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::PermanentFreezeDelegate
+            && self.frozen
+        {
+            Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)
         }

@@ -3,7 +3,7 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::state::{Authority, CoreAsset, DataBlob};
 
-use super::{Plugin, PluginValidation, ValidationResult};
+use super::{Plugin, PluginType, PluginValidation, ValidationResult};
 
 /// The freeze delegate plugin allows any authority to lock the asset so it's no longer transferable.
 /// The default authority for this plugin is the owner.
@@ -122,5 +122,22 @@ impl PluginValidation for FreezeDelegate {
         }
 
         Ok(ValidationResult::Pass)
+    }
+
+    /// Validate the remove plugin lifecycle action.
+    fn validate_remove_plugin(
+        &self,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
+        plugin_to_revoke: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        if plugin_to_revoke.is_some()
+            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::FreezeDelegate
+            && self.frozen
+        {
+            Ok(ValidationResult::Rejected)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
     }
 }
