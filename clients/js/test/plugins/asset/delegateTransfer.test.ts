@@ -44,8 +44,7 @@ test('a delegate can transfer the asset', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     transferDelegate: {
       authority: {
-        type: 'Address',
-        address: delegateAddress.publicKey,
+        type: 'Owner',
       },
     },
   });
@@ -78,8 +77,7 @@ test('owner can transfer asset with delegate transfer', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     transferDelegate: {
       authority: {
-        type: 'Address',
-        address: delegateAddress.publicKey,
+        type: 'Owner',
       },
     },
   });

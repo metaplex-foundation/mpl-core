@@ -1,5 +1,5 @@
-import { PublicKey, publicKey } from "@metaplex-foundation/umi";
-import { AssetV1, CollectionV1 } from "../generated";
+import { PublicKey, publicKey } from '@metaplex-foundation/umi';
+import { AssetV1, CollectionV1 } from '../generated';
 
 /**
  * Find the collection address for the given asset if it is part of a collection.
@@ -11,7 +11,7 @@ export function collectionAddress(asset: AssetV1): PublicKey | undefined {
     return asset.updateAuthority.address;
   }
 
-  return undefined
+  return undefined;
 }
 
 /**
@@ -20,7 +20,10 @@ export function collectionAddress(asset: AssetV1): PublicKey | undefined {
  * @param {CollectionV1 | undefined} collection Collection
  * @returns {AssetV1} Asset with plugins
  */
-export function deriveAssetPlugins(asset: AssetV1, collection?: CollectionV1): AssetV1 {
+export function deriveAssetPlugins(
+  asset: AssetV1,
+  collection?: CollectionV1
+): AssetV1 {
   if (!collection) {
     return asset;
   }
@@ -39,7 +42,11 @@ export function deriveAssetPlugins(asset: AssetV1, collection?: CollectionV1): A
  */
 export function isFrozen(asset: AssetV1, collection?: CollectionV1): boolean {
   const dAsset = deriveAssetPlugins(asset, collection);
-  return dAsset.freezeDelegate?.frozen || dAsset.permanentFreezeDelegate?.frozen || false;
+  return (
+    dAsset.freezeDelegate?.frozen ||
+    dAsset.permanentFreezeDelegate?.frozen ||
+    false
+  );
 }
 
 /**
@@ -48,7 +55,10 @@ export function isFrozen(asset: AssetV1, collection?: CollectionV1): boolean {
  * @param {AssetV1} asset Asset
  * @returns {boolean} True if the pubkey is the owner
  */
-export function isAssetOwner(pubkey: string | PublicKey, asset: AssetV1): boolean {
+export function isAssetOwner(
+  pubkey: string | PublicKey,
+  asset: AssetV1
+): boolean {
   const key = publicKey(pubkey);
   return key === asset.owner;
 }

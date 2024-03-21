@@ -6,7 +6,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::TransferV1Accounts,
     plugins::{Plugin, PluginType},
-    state::{AssetV1, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
+    state::{AssetV1, Authority, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         compress_into_account_space, load_key, rebuild_account_state_from_proof_data,
         resolve_authority, validate_asset_permissions, verify_proof,
@@ -64,7 +64,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
     }
 
     // Validate asset permissions.
-    let (mut asset, _, plugin_registry) = validate_asset_permissions(
+    let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
@@ -77,6 +77,20 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
         CollectionV1::validate_transfer,
         Plugin::validate_transfer,
     )?;
+
+    // Reset every owner-managed plugin in the registry.
+    if let (Some(plugin_header), Some(mut plugin_registry)) =
+        (plugin_header, plugin_registry.clone())
+    {
+        for record in plugin_registry.registry.iter_mut() {
+            if record.plugin_type.manager() == Authority::Owner {
+                record.authority = Authority::Owner;
+            }
+        }
+
+        // Save the plugin registry.
+        plugin_registry.save(ctx.accounts.asset, plugin_header.plugin_registry_offset)?;
+    }
 
     // Set the new owner.
     asset.owner = *ctx.accounts.new_owner.key;

@@ -110,6 +110,16 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
                 }
                 assert_eq!(plugin.freeze_delegate, freeze);
             }
+            PluginAuthorityPair {
+                plugin: Plugin::Royalties(royalties),
+                authority,
+            } => {
+                let plugin = asset.plugin_list.royalties.clone().unwrap();
+                if let Some(authority) = authority {
+                    assert_eq!(plugin.base.authority, authority.into());
+                }
+                assert_eq!(plugin.royalties, royalties);
+            }
             _ => panic!("unsupported plugin type"),
         }
     }
