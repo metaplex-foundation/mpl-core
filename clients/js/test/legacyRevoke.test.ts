@@ -1,7 +1,7 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 import { assertAsset, createAsset, createUmi } from './_setup';
-import { pluginAuthorityPair, pubkeyPluginAuthority } from '../src';
+import { pluginAuthorityPair, addressPluginAuthority } from '../src';
 import { legacyRevoke } from '../src/instructions/legacyRevoke';
 import { ERR_CANNOT_REVOKE } from '../src/instructions/errors';
 
@@ -13,7 +13,7 @@ test('it can revoke with one plugin defined', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'BurnDelegate',
-        authority: pubkeyPluginAuthority(delegateToRevokeFrom.publicKey),
+        authority: addressPluginAuthority(delegateToRevokeFrom.publicKey),
       }),
     ],
   });
@@ -42,15 +42,15 @@ test('it can revoke with all required plugins defined', async (t) => {
       pluginAuthorityPair({
         type: 'FreezeDelegate',
         data: { frozen: false },
-        authority: pubkeyPluginAuthority(delegateToRevokeFrom.publicKey),
+        authority: addressPluginAuthority(delegateToRevokeFrom.publicKey),
       }),
       pluginAuthorityPair({
         type: 'TransferDelegate',
-        authority: pubkeyPluginAuthority(delegateToRevokeFrom.publicKey),
+        authority: addressPluginAuthority(delegateToRevokeFrom.publicKey),
       }),
       pluginAuthorityPair({
         type: 'BurnDelegate',
-        authority: pubkeyPluginAuthority(delegateToRevokeFrom.publicKey),
+        authority: addressPluginAuthority(delegateToRevokeFrom.publicKey),
       }),
     ],
   });
@@ -90,11 +90,11 @@ test('it can revoke with a couple of non-homogenous plugin authorities', async (
     plugins: [
       pluginAuthorityPair({
         type: 'TransferDelegate',
-        authority: pubkeyPluginAuthority(delegateToRevokeFrom.publicKey),
+        authority: addressPluginAuthority(delegateToRevokeFrom.publicKey),
       }),
       pluginAuthorityPair({
         type: 'BurnDelegate',
-        authority: pubkeyPluginAuthority(delegateToRevokeFrom2.publicKey),
+        authority: addressPluginAuthority(delegateToRevokeFrom2.publicKey),
       }),
     ],
   });
@@ -129,18 +129,18 @@ test('it can revoke with all required plugins with non-homogenous plugin authori
     plugins: [
       pluginAuthorityPair({
         type: 'FreezeDelegate',
-        authority: pubkeyPluginAuthority(delegateToRevokeFrom.publicKey),
+        authority: addressPluginAuthority(delegateToRevokeFrom.publicKey),
         data: {
           frozen: false,
         },
       }),
       pluginAuthorityPair({
         type: 'TransferDelegate',
-        authority: pubkeyPluginAuthority(delegateToRevokeFrom2.publicKey),
+        authority: addressPluginAuthority(delegateToRevokeFrom2.publicKey),
       }),
       pluginAuthorityPair({
         type: 'BurnDelegate',
-        authority: pubkeyPluginAuthority(delegateToRevokeFrom3.publicKey),
+        authority: addressPluginAuthority(delegateToRevokeFrom3.publicKey),
       }),
     ],
   });
@@ -194,11 +194,11 @@ test('it cannot revoke if one of plugin authorities is the asset owner', async (
       }),
       pluginAuthorityPair({
         type: 'TransferDelegate',
-        authority: pubkeyPluginAuthority(delegateToRevokeFrom.publicKey),
+        authority: addressPluginAuthority(delegateToRevokeFrom.publicKey),
       }),
       pluginAuthorityPair({
         type: 'BurnDelegate',
-        authority: pubkeyPluginAuthority(delegateToRevokeFrom.publicKey),
+        authority: addressPluginAuthority(delegateToRevokeFrom.publicKey),
       }),
     ],
   });

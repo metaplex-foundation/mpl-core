@@ -5,7 +5,7 @@ import {
   approvePluginAuthorityV1,
   updatePluginV1,
   pluginAuthorityPair,
-  pubkeyPluginAuthority,
+  addressPluginAuthority,
   createPlugin,
 } from '../../../src';
 import {
@@ -29,7 +29,7 @@ test('it can delegate a new authority', async (t) => {
   await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
-    newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
+    newAuthority: addressPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -39,7 +39,7 @@ test('it can delegate a new authority', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
       frozen: false,
@@ -61,7 +61,7 @@ test('a delegate can freeze the token', async (t) => {
   await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
-    newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
+    newAuthority: addressPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   const umi2 = await createUmi();
@@ -78,7 +78,7 @@ test('a delegate can freeze the token', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
       frozen: true,

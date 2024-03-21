@@ -4,7 +4,7 @@ import {
   PluginType,
   approvePluginAuthorityV1,
   addPluginV1,
-  pubkeyPluginAuthority,
+  addressPluginAuthority,
   pluginAuthorityPair,
   createPlugin,
   ownerPluginAuthority,
@@ -32,7 +32,7 @@ test('it can add an authority to a plugin', async (t) => {
       approvePluginAuthorityV1(umi, {
         asset: asset.publicKey,
         pluginType: PluginType.FreezeDelegate,
-        newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
+        newAuthority: addressPluginAuthority(delegateAddress.publicKey),
       })
     )
     .sendAndConfirm(umi);
@@ -44,7 +44,7 @@ test('it can add an authority to a plugin', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
       frozen: false,
@@ -81,7 +81,7 @@ test('it cannot reassign authority of a plugin while already delegated', async (
   await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
-    newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
+    newAuthority: addressPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -91,7 +91,7 @@ test('it cannot reassign authority of a plugin while already delegated', async (
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
       frozen: false,
@@ -101,7 +101,7 @@ test('it cannot reassign authority of a plugin while already delegated', async (
   const result = approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
-    newAuthority: pubkeyPluginAuthority(newDelegateAddress.publicKey),
+    newAuthority: addressPluginAuthority(newDelegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'CannotRedelegate' });
@@ -113,7 +113,7 @@ test('it cannot reassign authority of a plugin while already delegated', async (
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
       frozen: false,
@@ -135,7 +135,7 @@ test('it cannot approve to reassign authority back to owner', async (t) => {
   await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
-    newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
+    newAuthority: addressPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -145,7 +145,7 @@ test('it cannot approve to reassign authority back to owner', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
       frozen: false,
@@ -167,7 +167,7 @@ test('it cannot approve to reassign authority back to owner', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
       frozen: false,

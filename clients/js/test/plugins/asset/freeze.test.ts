@@ -4,7 +4,7 @@ import {
   PluginType,
   addPluginV1,
   approvePluginAuthorityV1,
-  pubkeyPluginAuthority,
+  addressPluginAuthority,
   pluginAuthorityPair,
   revokePluginAuthorityV1,
   updatePluginV1,
@@ -76,7 +76,7 @@ test('it can delegate then freeze an asset', async (t) => {
   await approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
-    newAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
+    newAuthority: addressPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await updatePluginV1(umi, {
@@ -92,7 +92,7 @@ test('it can delegate then freeze an asset', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
       frozen: true,
@@ -110,7 +110,7 @@ test('owner cannot undelegate a freeze plugin with a delegate', async (t) => {
       pluginAuthorityPair({
         type: 'FreezeDelegate',
         data: { frozen: true },
-        authority: pubkeyPluginAuthority(delegateAddress.publicKey),
+        authority: addressPluginAuthority(delegateAddress.publicKey),
       }),
     ],
   });
@@ -133,7 +133,7 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
       pluginAuthorityPair({
         type: 'FreezeDelegate',
         data: { frozen: true },
-        authority: pubkeyPluginAuthority(delegateAddress.publicKey),
+        authority: addressPluginAuthority(delegateAddress.publicKey),
       }),
     ],
   });
@@ -145,7 +145,7 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
       frozen: true,
@@ -167,7 +167,7 @@ test('owner cannot approve to reassign authority back to owner if frozen', async
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
       frozen: true,

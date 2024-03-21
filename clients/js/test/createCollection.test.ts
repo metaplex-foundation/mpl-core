@@ -4,7 +4,7 @@ import {
   PluginType,
   approveCollectionPluginAuthorityV1,
   pluginAuthorityPair,
-  pubkeyPluginAuthority,
+  addressPluginAuthority,
 } from '../src';
 import {
   DEFAULT_ASSET,
@@ -105,7 +105,7 @@ test('it can create a new asset with a collection with collection delegate', asy
   await approveCollectionPluginAuthorityV1(umi, {
     collection: collection.publicKey,
     pluginType: PluginType.UpdateDelegate,
-    newAuthority: pubkeyPluginAuthority(delegate.publicKey),
+    newAuthority: addressPluginAuthority(delegate.publicKey),
   }).sendAndConfirm(umi);
 
   const umi2 = await createUmi(); // guarantee a new signer

@@ -2209,7 +2209,7 @@
             "name": "UpdateAuthority"
           },
           {
-            "name": "Pubkey",
+            "name": "Address",
             "fields": [
               {
                 "name": "address",

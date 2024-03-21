@@ -6,7 +6,7 @@ import {
   addPluginV1,
   createPlugin,
   pluginAuthorityPair,
-  pubkeyPluginAuthority,
+  addressPluginAuthority,
   ruleSet,
 } from '../src';
 import {
@@ -97,7 +97,7 @@ test('it can add a plugin to an asset with a different authority than the defaul
   await addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
-    initAuthority: pubkeyPluginAuthority(delegateAddress.publicKey),
+    initAuthority: addressPluginAuthority(delegateAddress.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -107,7 +107,7 @@ test('it can add a plugin to an asset with a different authority than the defaul
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     freezeDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegateAddress.publicKey,
       },
       frozen: false,
@@ -145,7 +145,7 @@ test('it can add plugin to asset with a plugin', async (t) => {
   await addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'TransferDelegate' }),
-    initAuthority: pubkeyPluginAuthority(delegate.publicKey),
+    initAuthority: addressPluginAuthority(delegate.publicKey),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -161,7 +161,7 @@ test('it can add plugin to asset with a plugin', async (t) => {
     },
     transferDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
     },
@@ -239,7 +239,7 @@ test('it can add an authority-managed plugin to an asset via delegate authority'
       plugins: [
         pluginAuthorityPair({
           type: 'UpdateDelegate',
-          authority: pubkeyPluginAuthority(delegate.publicKey),
+          authority: addressPluginAuthority(delegate.publicKey),
         }),
       ],
     }
@@ -350,7 +350,7 @@ test('it cannot add a owner-managed plugin to an asset via delegate authority', 
       plugins: [
         pluginAuthorityPair({
           type: 'UpdateDelegate',
-          authority: pubkeyPluginAuthority(delegate.publicKey),
+          authority: addressPluginAuthority(delegate.publicKey),
         }),
       ],
     }
@@ -447,7 +447,7 @@ test('it can add a plugin to a collection with a plugin', async (t) => {
   await addCollectionPluginV1(umi, {
     collection: collection.publicKey,
     plugin: createPlugin({ type: 'UpdateDelegate' }),
-    initAuthority: pubkeyPluginAuthority(delegate.publicKey),
+    initAuthority: addressPluginAuthority(delegate.publicKey),
   }).sendAndConfirm(umi);
 
   await assertCollection(t, umi, {
@@ -469,7 +469,7 @@ test('it can add a plugin to a collection with a plugin', async (t) => {
     },
     updateDelegate: {
       authority: {
-        type: 'Pubkey',
+        type: 'Address',
         address: delegate.publicKey,
       },
     },

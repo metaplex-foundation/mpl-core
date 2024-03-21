@@ -11,7 +11,7 @@ import {
   PluginType,
 } from '../generated';
 import { createPlugin, pluginKeyToPluginType } from '../plugins';
-import { pubkeyPluginAuthority } from '../authority';
+import { addressPluginAuthority } from '../authority';
 import { PluginsList } from '../types';
 
 export function legacyDelegate(
@@ -57,7 +57,7 @@ export function legacyDelegate(
       approvePluginAuthorityV1(context, {
         asset: asset.publicKey,
         pluginType: PluginType[plugType],
-        newAuthority: pubkeyPluginAuthority(targetDelegate),
+        newAuthority: addressPluginAuthority(targetDelegate),
       })
     );
   });
@@ -91,7 +91,7 @@ export function legacyDelegate(
       addPluginV1(context, {
         asset: asset.publicKey,
         plugin,
-        initAuthority: pubkeyPluginAuthority(targetDelegate),
+        initAuthority: addressPluginAuthority(targetDelegate),
       })
     );
   });

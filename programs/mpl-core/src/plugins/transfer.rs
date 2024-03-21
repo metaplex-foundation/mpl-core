@@ -45,7 +45,7 @@ impl PluginValidation for TransferDelegate {
         _resolved_authority: Option<&Authority>,
     ) -> Result<super::ValidationResult, ProgramError> {
         if authority
-            == (&Authority::Pubkey {
+            == (&Authority::Address {
                 address: *authority_info.key,
             })
         {
@@ -63,7 +63,7 @@ impl PluginValidation for TransferDelegate {
         _resolved_authority: Option<&Authority>,
     ) -> Result<super::ValidationResult, ProgramError> {
         if authority
-            == (&Authority::Pubkey {
+            == (&Authority::Address {
                 address: *authority_info.key,
             })
         {
@@ -83,7 +83,7 @@ impl PluginValidation for TransferDelegate {
         solana_program::msg!("authority_info: {:?}", authority_info.key);
         solana_program::msg!("authority: {:?}", authority);
         if authority
-            == &(Authority::Pubkey {
+            == &(Authority::Address {
                 address: *authority_info.key,
             })
             && plugin_to_revoke.is_some()

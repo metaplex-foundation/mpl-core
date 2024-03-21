@@ -50,7 +50,7 @@ impl PluginValidation for Attributes {
         if authority_info.key == &core_asset.update_authority().key()
             && authority == (&Authority::UpdateAuthority)
             || authority
-                == (&Authority::Pubkey {
+                == (&Authority::Address {
                     address: *authority_info.key,
                 })
         {
