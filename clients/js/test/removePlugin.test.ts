@@ -213,27 +213,24 @@ test('it cannot remove owner managed plugin if the delegate authority is not own
       frozen: false,
     },
   });
-})
+});
 
 test('it cannot remove authority managed plugin if the delegate authority is not update authority', async (t) => {
   const umi = await createUmi();
   const delegate = generateSigner(umi);
-  const asset = await createAsset(
-    umi,
-    {
-      plugins: [
-        pluginAuthorityPair({
-          type: 'Royalties',
-          authority: pubkeyPluginAuthority(delegate.publicKey),
-          data: {
-            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-            basisPoints: 5,
-            ruleSet: ruleSet('None'),
-          },
-        }),
-      ],
-    },
-  );
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Royalties',
+        authority: pubkeyPluginAuthority(delegate.publicKey),
+        data: {
+          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+          basisPoints: 5,
+          ruleSet: ruleSet('None'),
+        },
+      }),
+    ],
+  });
 
   const result = removePluginV1(umi, {
     asset: asset.publicKey,
@@ -256,27 +253,24 @@ test('it cannot remove authority managed plugin if the delegate authority is not
       ruleSet: ruleSet('None'),
     },
   });
-})
+});
 
 test('it cannot remove authority managed collection plugin if the delegate authority is not update authority', async (t) => {
   const umi = await createUmi();
   const delegate = generateSigner(umi);
-  const collection = await createCollection(
-    umi,
-    {
-      plugins: [
-        pluginAuthorityPair({
-          type: 'Royalties',
-          authority: pubkeyPluginAuthority(delegate.publicKey),
-          data: {
-            creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-            basisPoints: 5,
-            ruleSet: ruleSet('None'),
-          },
-        }),
-      ],
-    },
-  );
+  const collection = await createCollection(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Royalties',
+        authority: pubkeyPluginAuthority(delegate.publicKey),
+        data: {
+          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+          basisPoints: 5,
+          ruleSet: ruleSet('None'),
+        },
+      }),
+    ],
+  });
 
   const result = removeCollectionPluginV1(umi, {
     collection: collection.publicKey,
@@ -298,4 +292,4 @@ test('it cannot remove authority managed collection plugin if the delegate autho
       ruleSet: ruleSet('None'),
     },
   });
-})
+});

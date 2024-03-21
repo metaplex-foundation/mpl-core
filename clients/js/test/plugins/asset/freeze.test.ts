@@ -207,7 +207,7 @@ test('it cannot remove freeze plugin if update authority and frozen', async (t) 
 
   const result = removePluginV1(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.FreezeDelegate
+    pluginType: PluginType.FreezeDelegate,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -224,4 +224,4 @@ test('it cannot remove freeze plugin if update authority and frozen', async (t) 
       frozen: true,
     },
   });
-})
+});

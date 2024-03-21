@@ -368,7 +368,7 @@ test('it cannot remove permanent freeze plugin if update authority and frozen', 
 
   const result = removePluginV1(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.PermanentFreezeDelegate
+    pluginType: PluginType.PermanentFreezeDelegate,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -385,7 +385,7 @@ test('it cannot remove permanent freeze plugin if update authority and frozen', 
       frozen: true,
     },
   });
-})
+});
 
 test('it can remove permanent freeze plugin if update authority and unfrozen', async (t) => {
   const umi = await createUmi();
@@ -401,12 +401,12 @@ test('it can remove permanent freeze plugin if update authority and unfrozen', a
 
   await removePluginV1(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.PermanentFreezeDelegate
+    pluginType: PluginType.PermanentFreezeDelegate,
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    permanentFreezeDelegate: undefined
+    permanentFreezeDelegate: undefined,
   });
-})
+});

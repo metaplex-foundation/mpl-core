@@ -13,7 +13,12 @@ import {
   removePluginV1,
   PluginType,
 } from '../../../src';
-import { assertAsset, createAsset, createCollection, createUmi } from '../../_setup';
+import {
+  assertAsset,
+  createAsset,
+  createCollection,
+  createUmi,
+} from '../../_setup';
 
 test('it can burn an assets as an owner', async (t) => {
   // Given a Umi instance and a new signer.
@@ -229,12 +234,12 @@ test('it can remove permanent burn plugin if update authority', async (t) => {
 
   await removePluginV1(umi, {
     asset: asset.publicKey,
-    pluginType: PluginType.PermanentBurnDelegate
+    pluginType: PluginType.PermanentBurnDelegate,
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    permanentBurnDelegate: undefined
+    permanentBurnDelegate: undefined,
   });
-})
+});

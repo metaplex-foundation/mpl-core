@@ -372,17 +372,21 @@ test('it can remove permanent transfer plugin if collection update authority', a
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const collectionAuth = generateSigner(umi);
-  const { asset, collection } = await createAssetWithCollection(umi, {
-    authority: collectionAuth,
-    plugins: [
-      pluginAuthorityPair({
-        type: 'PermanentTransferDelegate',
-        authority: updatePluginAuthority(),
-      }),
-    ],
-  }, {
-    updateAuthority: collectionAuth,
-  });
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {
+      authority: collectionAuth,
+      plugins: [
+        pluginAuthorityPair({
+          type: 'PermanentTransferDelegate',
+          authority: updatePluginAuthority(),
+        }),
+      ],
+    },
+    {
+      updateAuthority: collectionAuth,
+    }
+  );
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -403,7 +407,6 @@ test('it can remove permanent transfer plugin if collection update authority', a
     collection: collection.publicKey,
   }).sendAndConfirm(umi);
 
-  
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
@@ -411,7 +414,7 @@ test('it can remove permanent transfer plugin if collection update authority', a
     updateAuthority: { type: 'Collection', address: collection.publicKey },
     permanentTransferDelegate: undefined,
   });
-})
+});
 
 test('it can permanent transfer using collection delegate authority', async (t) => {
   // Given a Umi instance and a new signer.
@@ -419,16 +422,18 @@ test('it can permanent transfer using collection delegate authority', async (t) 
   const newOwner = generateSigner(umi);
   const delegate = generateSigner(umi);
 
-  const { asset, collection } = await createAssetWithCollection(umi, {},
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
     {
       plugins: [
         pluginAuthorityPair({
           type: 'PermanentTransferDelegate',
           authority: pubkeyPluginAuthority(delegate.publicKey),
         }),
-      ]
+      ],
     }
-  )
+  );
 
   await transferV1(umi, {
     asset: asset.publicKey,
@@ -453,5 +458,5 @@ test('it can permanent transfer using collection delegate authority', async (t) 
         address: delegate.publicKey,
       },
     },
-  })
-})
+  });
+});

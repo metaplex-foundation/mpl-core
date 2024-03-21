@@ -77,7 +77,6 @@ test('it cannot transfer asset in collection if no collection', async (t) => {
   });
 });
 
-
 test('it can transfer asset in collection as the owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
@@ -96,7 +95,7 @@ test('it can transfer asset in collection as the owner', async (t) => {
     owner: newOwner.publicKey,
     updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
-})
+});
 
 test('it cannot transfer asset in collection if collection not included', async (t) => {
   // Given a Umi instance and a new signer.
@@ -117,4 +116,4 @@ test('it cannot transfer asset in collection if collection not included', async 
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
-})
+});
