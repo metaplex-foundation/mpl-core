@@ -460,3 +460,197 @@ test('it can permanent transfer using collection delegate authority', async (t) 
     },
   });
 });
+
+test('it can permanent transfer asset that is frozen as a delegate', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const newOwner = generateSigner(umi);
+  const delegate = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentTransferDelegate',
+        authority: addressPluginAuthority(delegate.publicKey),
+      }),
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: true },
+      }),
+    ],
+  });
+
+  await transferV1(umi, {
+    authority: delegate,
+    asset: asset.publicKey,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...asset,
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    permanentTransferDelegate: {
+      authority: {
+        type: 'Address',
+        address: delegate.publicKey,
+      },
+    },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: true,
+    },
+  });
+});
+
+test('it cannot transfer asset that is frozen with permanent transfer by owner', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const newOwner = generateSigner(umi);
+  const delegate = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentTransferDelegate',
+        authority: addressPluginAuthority(delegate.publicKey),
+      }),
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: true },
+      }),
+    ],
+  });
+
+  const result = transferV1(umi, {
+    authority: owner,
+    asset: asset.publicKey,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, {
+    name: 'InvalidAuthority',
+  });
+
+  await assertAsset(t, umi, {
+    ...asset,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    permanentTransferDelegate: {
+      authority: {
+        type: 'Address',
+        address: delegate.publicKey,
+      },
+    },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: true,
+    },
+  });
+});
+
+test('it can collection permanent transfer asset that is frozen as a collection delegate', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const newOwner = generateSigner(umi);
+  const delegate = generateSigner(umi);
+
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {
+      owner,
+      plugins: [
+        pluginAuthorityPair({
+          type: 'FreezeDelegate',
+          data: { frozen: true },
+        }),
+      ],
+    },
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'PermanentTransferDelegate',
+          authority: addressPluginAuthority(delegate.publicKey),
+        }),
+      ],
+    }
+  );
+
+  await transferV1(umi, {
+    authority: delegate,
+    asset: asset.publicKey,
+    newOwner: newOwner.publicKey,
+    collection: collection.publicKey,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...asset,
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: true,
+    },
+  });
+});
+
+test('it can collection permanent transfer asset that is frozen as a collection update auth', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const newOwner = generateSigner(umi);
+  const colAuth = generateSigner(umi);
+
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {
+      owner,
+      authority: colAuth,
+      plugins: [
+        pluginAuthorityPair({
+          type: 'FreezeDelegate',
+          data: { frozen: true },
+        }),
+      ],
+    },
+    {
+      updateAuthority: colAuth,
+      plugins: [
+        pluginAuthorityPair({
+          type: 'PermanentTransferDelegate',
+          authority: updatePluginAuthority(),
+        }),
+      ],
+    }
+  );
+
+  await transferV1(umi, {
+    authority: colAuth,
+    asset: asset.publicKey,
+    newOwner: newOwner.publicKey,
+    collection: collection.publicKey,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...asset,
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: true,
+    },
+  });
+});
