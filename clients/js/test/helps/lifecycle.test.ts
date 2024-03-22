@@ -100,7 +100,7 @@ test('it can detect transferrable when frozen with permanent collection transfer
   const owner = generateSigner(umi);
   const delegate = generateSigner(umi);
 
-  const { asset } = await createAssetWithCollection(
+  const { asset, collection } = await createAssetWithCollection(
     umi,
     {
       owner,
@@ -121,8 +121,8 @@ test('it can detect transferrable when frozen with permanent collection transfer
     }
   );
 
-  t.assert(!canTransfer(owner.publicKey, asset));
-  t.assert(canTransfer(delegate.publicKey, asset));
+  t.assert(!canTransfer(owner.publicKey, asset, collection));
+  t.assert(canTransfer(delegate.publicKey, asset, collection));
 });
 
 test('it can detect burnable on basic asset', async (t) => {
@@ -217,7 +217,7 @@ test('it can detect burnable when frozen with permanent collection burn delegate
   const owner = generateSigner(umi);
   const delegate = generateSigner(umi);
 
-  const { asset } = await createAssetWithCollection(
+  const { asset, collection } = await createAssetWithCollection(
     umi,
     {
       owner,
@@ -238,6 +238,6 @@ test('it can detect burnable when frozen with permanent collection burn delegate
     }
   );
 
-  t.assert(!canBurn(owner.publicKey, asset));
-  t.assert(canBurn(delegate.publicKey, asset));
+  t.assert(!canBurn(owner.publicKey, asset, collection));
+  t.assert(canBurn(delegate.publicKey, asset, collection));
 });

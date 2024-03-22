@@ -17,9 +17,8 @@ test('it throws when not matching asset and collection', async (t) => {
   const owner = generateSigner(umi);
   const updateAuth = generateSigner(umi);
 
-  const asset = await createAsset(umi, {
+  const { asset } = await createAssetWithCollection(umi, {
     owner,
-    updateAuthority: updateAuth.publicKey,
   });
 
   const collection = await createCollection(umi, {
@@ -53,6 +52,7 @@ test('it can detect correct update auth from collection', async (t) => {
   const { asset, collection } = await createAssetWithCollection(
     umi,
     {
+      authority: updateAuth,
       owner,
     },
     {
@@ -97,6 +97,7 @@ test('it can detect correct update auth from collection update delegate', async 
   const { asset, collection } = await createAssetWithCollection(
     umi,
     {
+      authority: updateAuth,
       owner,
     },
     {

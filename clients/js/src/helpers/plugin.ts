@@ -1,6 +1,6 @@
 import { PublicKey, publicKey } from '@metaplex-foundation/umi';
 import { PluginsList } from '../types';
-import { lowercaseFirstLetter } from '../utils';
+import { capitalizeFirstLetter, lowercaseFirstLetter } from '../utils';
 import { AssetV1, CollectionV1, PluginType } from '../generated';
 import { collectionAddress, deriveAssetPlugins, isAssetOwner } from './state';
 import {
@@ -25,7 +25,7 @@ export function assetPluginKeyFromType(pluginType: PluginType): AssetPluginKey {
  * @returns {PluginType}
  */
 export function pluginTypeFromAssetPluginKey(key: AssetPluginKey): PluginType {
-  return PluginType[key.toUpperCase() as keyof typeof PluginType];
+  return PluginType[capitalizeFirstLetter(key) as keyof typeof PluginType];
 }
 
 export type CheckPluginAuthoritiesArgs = {

@@ -65,7 +65,7 @@ test('it can detect unfrozen from permanent freeze delegate', async (t) => {
 test('it can detect frozen from permanent freeze on collection', async (t) => {
   const umi = await createUmi();
 
-  const { asset } = await createAssetWithCollection(
+  const { asset, collection } = await createAssetWithCollection(
     umi,
     {},
     {
@@ -78,13 +78,13 @@ test('it can detect frozen from permanent freeze on collection', async (t) => {
     }
   );
 
-  t.assert(isFrozen(asset));
+  t.assert(isFrozen(asset, collection));
 });
 
 test('it can detect unfrozen from freeze on asset and permanent freeze on collection', async (t) => {
   const umi = await createUmi();
 
-  const { asset } = await createAssetWithCollection(
+  const { asset, collection } = await createAssetWithCollection(
     umi,
     {
       plugins: [
@@ -104,13 +104,13 @@ test('it can detect unfrozen from freeze on asset and permanent freeze on collec
     }
   );
 
-  t.assert(!isFrozen(asset));
+  t.assert(!isFrozen(asset, collection));
 });
 
 test('it can detect frozen from freeze on asset and permanent freeze on collection', async (t) => {
   const umi = await createUmi();
 
-  const { asset } = await createAssetWithCollection(
+  const { asset, collection } = await createAssetWithCollection(
     umi,
     {
       plugins: [
@@ -130,5 +130,5 @@ test('it can detect frozen from freeze on asset and permanent freeze on collecti
     }
   );
 
-  t.assert(isFrozen(asset));
+  t.assert(isFrozen(asset, collection));
 });
