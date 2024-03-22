@@ -43,7 +43,7 @@ impl PluginValidation for BurnDelegate {
         authority_info: &AccountInfo,
         authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if authority
             == (&Authority::Address {
                 address: *authority_info.key,

@@ -43,7 +43,7 @@ impl PluginValidation for TransferDelegate {
         authority_info: &AccountInfo,
         authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if authority
             == (&Authority::Address {
                 address: *authority_info.key,
@@ -61,7 +61,7 @@ impl PluginValidation for TransferDelegate {
         _new_owner: &AccountInfo,
         authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if authority
             == (&Authority::Address {
                 address: *authority_info.key,

@@ -66,7 +66,7 @@ impl PluginValidation for FreezeDelegate {
         _authority_info: &AccountInfo,
         _authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
             Ok(ValidationResult::Rejected)
         } else {
@@ -80,7 +80,7 @@ impl PluginValidation for FreezeDelegate {
         _new_owner: &AccountInfo,
         _authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
             Ok(ValidationResult::Rejected)
         } else {
@@ -92,7 +92,7 @@ impl PluginValidation for FreezeDelegate {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-        plugin_to_approve: Option<&super::Plugin>,
+        plugin_to_approve: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(Plugin::FreezeDelegate(freeze)) = plugin_to_approve {
             if freeze.frozen {

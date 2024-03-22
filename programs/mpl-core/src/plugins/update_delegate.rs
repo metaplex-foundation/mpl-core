@@ -43,7 +43,7 @@ impl PluginValidation for UpdateDelegate {
         &self,
         authority_info: &AccountInfo,
         authority: &Authority,
-        new_plugin: Option<&super::Plugin>,
+        new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(new_plugin) = new_plugin {
             if authority
@@ -65,7 +65,7 @@ impl PluginValidation for UpdateDelegate {
         &self,
         authority_info: &AccountInfo,
         authority: &Authority,
-        plugin_to_remove: Option<&super::Plugin>,
+        plugin_to_remove: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(plugin_to_remove) = plugin_to_remove {
             if authority

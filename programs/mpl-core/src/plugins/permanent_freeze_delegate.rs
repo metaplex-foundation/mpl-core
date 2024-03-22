@@ -68,7 +68,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         _authority_info: &AccountInfo,
         _authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
             Ok(ValidationResult::Rejected)
         } else {
@@ -82,7 +82,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         _new_owner: &AccountInfo,
         _authority: &Authority,
         _resolved_authority: Option<&Authority>,
-    ) -> Result<super::ValidationResult, ProgramError> {
+    ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
             Ok(ValidationResult::Rejected)
         } else {
@@ -94,7 +94,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-        _new_plugin: Option<&super::Plugin>,
+        _new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
         // always reject it.
