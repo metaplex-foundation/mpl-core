@@ -69,7 +69,7 @@ export function hasAssetUpdateAuthority(
   const dAsset = deriveAssetPlugins(asset, collection);
   if (
     dAsset.updateAuthority.type === 'Collection' &&
-    dAsset.updateAuthority.address === collection?.publicKey
+    dAsset.updateAuthority.address !== collection?.publicKey
   ) {
     throw Error('Collection mismatch');
   }
