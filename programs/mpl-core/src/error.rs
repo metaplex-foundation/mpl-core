@@ -116,6 +116,10 @@ pub enum MplCoreError {
     /// 26 - Neither the asset or any plugins have approved this operation.
     #[error("Neither the asset or any plugins have approved this operation")]
     NoApprovals,
+
+    /// 27 - Plugin Manager cannot redelegate a delegated plugin without revoking first.
+    #[error("Plugin Manager cannot redelegate a delegated plugin without revoking first")]
+    CannotRedelegate,
 }
 
 impl PrintProgramError for MplCoreError {

@@ -52,12 +52,12 @@ pub(crate) fn remove_plugin<'a>(
         ctx.accounts.collection,
         None,
         Some(&plugin_to_remove),
-        AssetV1::check_add_plugin,
-        CollectionV1::check_add_plugin,
-        PluginType::check_add_plugin,
-        AssetV1::validate_add_plugin,
-        CollectionV1::validate_add_plugin,
-        Plugin::validate_add_plugin,
+        AssetV1::check_remove_plugin,
+        CollectionV1::check_remove_plugin,
+        PluginType::check_remove_plugin,
+        AssetV1::validate_remove_plugin,
+        CollectionV1::validate_remove_plugin,
+        Plugin::validate_remove_plugin,
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.

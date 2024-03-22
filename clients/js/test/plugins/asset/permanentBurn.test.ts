@@ -10,8 +10,15 @@ import {
   Key,
   transferV1,
   updatePluginAuthority,
+  removePluginV1,
+  PluginType,
 } from '../../../src';
-import { createAsset, createCollection, createUmi } from '../../_setup';
+import {
+  assertAsset,
+  createAsset,
+  createCollection,
+  createUmi,
+} from '../../_setup';
 
 test('it can burn an assets as an owner', async (t) => {
   // Given a Umi instance and a new signer.
@@ -212,4 +219,27 @@ test('it can burn an asset which is the part of a collection', async (t) => {
   t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
   t.is(afterAsset.data.length, 1);
   t.is(afterAsset.data[0], Key.Uninitialized);
+});
+
+test('it can remove permanent burn plugin if update authority', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentBurnDelegate',
+      }),
+    ],
+  });
+
+  await removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.PermanentBurnDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    permanentBurnDelegate: undefined,
+  });
 });

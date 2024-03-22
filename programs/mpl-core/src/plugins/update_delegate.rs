@@ -47,7 +47,7 @@ impl PluginValidation for UpdateDelegate {
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(new_plugin) = new_plugin {
             if authority
-                == (&Authority::Pubkey {
+                == (&Authority::Address {
                     address: *authority_info.key,
                 })
                 && new_plugin.manager() == Authority::UpdateAuthority
@@ -69,7 +69,7 @@ impl PluginValidation for UpdateDelegate {
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(plugin_to_remove) = plugin_to_remove {
             if authority
-                == (&Authority::Pubkey {
+                == (&Authority::Address {
                     address: *authority_info.key,
                 })
                 && plugin_to_remove.manager() == Authority::UpdateAuthority
@@ -93,7 +93,7 @@ impl PluginValidation for UpdateDelegate {
         solana_program::msg!("authority_info: {:?}", authority_info.key);
         solana_program::msg!("authority: {:?}", authority);
         if authority
-            == &(Authority::Pubkey {
+            == &(Authority::Address {
                 address: *authority_info.key,
             })
             && plugin_to_revoke.is_some()

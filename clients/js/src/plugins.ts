@@ -12,6 +12,7 @@ import {
   FreezeDelegateArgs,
   AttributesArgs,
   PermanentFreezeDelegateArgs,
+  PluginType,
 } from './generated';
 import { BasePluginAuthority, PluginsList } from './types';
 import { mapPluginAuthority } from './authority';
@@ -47,10 +48,6 @@ export type CreatePluginArgs =
     }
   | {
       type: 'UpdateDelegate';
-    }
-  | {
-      type: 'PermanentFreezeDelegate';
-      data: PermanentFreezeDelegateArgs;
     }
   | {
       type: 'Attributes';
@@ -133,4 +130,9 @@ export function registryRecordsToPluginsList(
 
     return acc;
   }, {});
+}
+
+export function pluginKeyToPluginType(pluginKey: keyof PluginsList) {
+  return (pluginKey.charAt(0).toUpperCase() +
+    pluginKey.slice(1)) as keyof typeof PluginType;
 }

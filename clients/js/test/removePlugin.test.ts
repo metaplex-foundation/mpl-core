@@ -9,7 +9,7 @@ import {
   removeCollectionPluginV1,
   fetchCollectionV1,
   ruleSet,
-  pubkeyPluginAuthority,
+  addressPluginAuthority,
 } from '../src';
 import {
   DEFAULT_COLLECTION,
@@ -154,7 +154,7 @@ test('it can remove authority managed plugin from collection using delegate auth
       plugins: [
         pluginAuthorityPair({
           type: 'UpdateDelegate',
-          authority: pubkeyPluginAuthority(delegate.publicKey),
+          authority: addressPluginAuthority(delegate.publicKey),
         }),
       ],
     }
@@ -178,4 +178,118 @@ test('it can remove authority managed plugin from collection using delegate auth
   const asset2 = await fetchAssetV1(umi, asset.publicKey);
 
   t.is(asset2.royalties, undefined);
+});
+
+test('it cannot remove owner managed plugin if the delegate authority is not owner', async (t) => {
+  const umi = await createUmi();
+  const delegate = generateSigner(umi);
+  const asset = await createAsset(umi, {
+    owner: umi.identity,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: false },
+        authority: addressPluginAuthority(delegate.publicKey),
+      }),
+    ],
+  });
+
+  const result = removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.FreezeDelegate,
+    authority: delegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    freezeDelegate: {
+      authority: {
+        type: 'Address',
+        address: delegate.publicKey,
+      },
+      frozen: false,
+    },
+  });
+});
+
+test('it cannot remove authority managed plugin if the delegate authority is not update authority', async (t) => {
+  const umi = await createUmi();
+  const delegate = generateSigner(umi);
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Royalties',
+        authority: addressPluginAuthority(delegate.publicKey),
+        data: {
+          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+          basisPoints: 5,
+          ruleSet: ruleSet('None'),
+        },
+      }),
+    ],
+  });
+
+  const result = removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.Royalties,
+    authority: delegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    royalties: {
+      authority: {
+        type: 'Address',
+        address: delegate.publicKey,
+      },
+      creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+      basisPoints: 5,
+      ruleSet: ruleSet('None'),
+    },
+  });
+});
+
+test('it cannot remove authority managed collection plugin if the delegate authority is not update authority', async (t) => {
+  const umi = await createUmi();
+  const delegate = generateSigner(umi);
+  const collection = await createCollection(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Royalties',
+        authority: addressPluginAuthority(delegate.publicKey),
+        data: {
+          creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+          basisPoints: 5,
+          ruleSet: ruleSet('None'),
+        },
+      }),
+    ],
+  });
+
+  const result = removeCollectionPluginV1(umi, {
+    collection: collection.publicKey,
+    pluginType: PluginType.Royalties,
+    authority: delegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await assertCollection(t, umi, {
+    collection: collection.publicKey,
+    royalties: {
+      authority: {
+        type: 'Address',
+        address: delegate.publicKey,
+      },
+      creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+      basisPoints: 5,
+      ruleSet: ruleSet('None'),
+    },
+  });
 });

@@ -13,7 +13,7 @@ pub enum AuthorityType {
     None,
     Owner,
     UpdateAuthority,
-    Pubkey,
+    Address,
 }
 
 impl From<PluginAuthority> for AuthorityType {
@@ -22,7 +22,7 @@ impl From<PluginAuthority> for AuthorityType {
             PluginAuthority::None => AuthorityType::None,
             PluginAuthority::Owner => AuthorityType::Owner,
             PluginAuthority::UpdateAuthority => AuthorityType::UpdateAuthority,
-            PluginAuthority::Pubkey { address: _ } => AuthorityType::Pubkey,
+            PluginAuthority::Address { address: _ } => AuthorityType::Address,
         }
     }
 }
@@ -48,8 +48,8 @@ impl From<PluginAuthority> for BaseAuthority {
                 authority_type: AuthorityType::UpdateAuthority,
                 address: None,
             },
-            PluginAuthority::Pubkey { address } => BaseAuthority {
-                authority_type: AuthorityType::Pubkey,
+            PluginAuthority::Address { address } => BaseAuthority {
+                authority_type: AuthorityType::Address,
                 address: Some(address),
             },
         }
@@ -62,7 +62,7 @@ pub struct BasePlugin {
     pub offset: Option<u64>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct RoyaltiesPlugin {
     pub base: BasePlugin,
     pub royalties: Royalties,
@@ -74,43 +74,43 @@ pub struct FreezeDelegatePlugin {
     pub freeze_delegate: FreezeDelegate,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct BurnDelegatePlugin {
     pub base: BasePlugin,
     pub burn_delegate: BurnDelegate,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TransferDelegatePlugin {
     pub base: BasePlugin,
     pub transfer_delegate: TransferDelegate,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct UpdateDelegatePlugin {
     pub base: BasePlugin,
     pub update_delegate: UpdateDelegate,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct PermanentFreezeDelegatePlugin {
     pub base: BasePlugin,
     pub permanent_freeze_delegate: PermanentFreezeDelegate,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct AttributesPlugin {
     pub base: BasePlugin,
     pub attributes: Attributes,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct PermanentTransferDelegatePlugin {
     pub base: BasePlugin,
     pub permanent_transfer_delegate: PermanentTransferDelegate,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct PermanentBurnDelegatePlugin {
     pub base: BasePlugin,
     pub permanent_burn_delegate: PermanentBurnDelegate,

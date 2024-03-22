@@ -62,7 +62,7 @@ test('it can add remove asset plugin with collect amount', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'FreezeDelegate',
-        data: { frozen: true },
+        data: { frozen: false },
       }),
     ],
   });

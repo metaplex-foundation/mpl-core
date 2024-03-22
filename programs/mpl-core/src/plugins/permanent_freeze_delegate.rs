@@ -50,7 +50,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         // The owner can't update the freeze status.
         if (authority_info.key == &core_asset.update_authority().key()
                 && authority == (&Authority::UpdateAuthority))
-            || authority == (&Authority::Pubkey {
+            || authority == (&Authority::Address {
                 address: *authority_info.key,
             })
             // Unless the owner is the only authority.
@@ -90,14 +90,6 @@ impl PluginValidation for PermanentFreezeDelegate {
         }
     }
 
-    fn validate_add_authority(
-        &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-    ) -> Result<super::ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
-
     fn validate_add_plugin(
         &self,
         _authority_info: &AccountInfo,
@@ -117,13 +109,30 @@ impl PluginValidation for PermanentFreezeDelegate {
         plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority
-            == &(Authority::Pubkey {
+            == &(Authority::Address {
                 address: *authority_info.key,
             })
             && plugin_to_revoke.is_some()
-            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::FreezeDelegate
+            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::PermanentFreezeDelegate
         {
             Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
+    /// Validate the remove plugin lifecycle action.
+    fn validate_remove_plugin(
+        &self,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
+        plugin_to_revoke: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        if plugin_to_revoke.is_some()
+            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::PermanentFreezeDelegate
+            && self.frozen
+        {
+            Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)
         }

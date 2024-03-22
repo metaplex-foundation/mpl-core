@@ -41,6 +41,8 @@ impl PluginType {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
             PluginType::UpdateDelegate => CheckResult::CanApprove,
+            PluginType::FreezeDelegate => CheckResult::CanReject,
+            PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -207,8 +209,18 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authority: &Authority,
         plugin_to_approve: Option<&Plugin>,
-        _: Option<&Authority>,
+        _resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
+        // Universally, we cannot delegate a plugin authority if it's already delegated, even if
+        // we're the manager.
+        if let Some(plugin_to_approve) = plugin_to_approve {
+            if plugin_to_approve == plugin && &plugin_to_approve.manager() != authority {
+                return Err(MplCoreError::CannotRedelegate.into());
+            }
+        } else {
+            return Err(MplCoreError::InvalidPlugin.into());
+        }
+
         match plugin {
             Plugin::Royalties(royalties) => royalties.validate_approve_plugin_authority(
                 authority_info,
@@ -658,7 +670,7 @@ pub(crate) trait PluginValidation {
             || (authority_info.key == &core_asset.update_authority().key()
                 && authority == &Authority::UpdateAuthority)
             || authority
-                == (&Authority::Pubkey {
+                == (&Authority::Address {
                     address: *authority_info.key,
                 })
         {

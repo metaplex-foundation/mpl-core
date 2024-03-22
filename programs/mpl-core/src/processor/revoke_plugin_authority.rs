@@ -13,8 +13,8 @@ use crate::{
     },
     state::{AssetV1, CollectionV1, Key},
     utils::{
-        fetch_core_data, load_key, resolve_authority, validate_asset_permissions,
-        validate_collection_permissions,
+        fetch_core_data, load_key, resolve_authority, resolve_collection_authority,
+        resolve_to_authority, validate_asset_permissions, validate_collection_permissions,
     },
 };
 
@@ -62,9 +62,16 @@ pub(crate) fn revoke_plugin_authority<'a>(
     // Increment sequence number and save only if it is `Some(_)`.
     asset.increment_seq_and_save(ctx.accounts.asset)?;
 
+    let resolved_authority = resolve_to_authority(authority, ctx.accounts.collection, &asset)?;
+    let payer = if resolved_authority == plugin.manager() {
+        ctx.accounts.payer
+    } else {
+        ctx.accounts.asset
+    };
+
     process_revoke_plugin_authority(
         ctx.accounts.asset,
-        ctx.accounts.payer,
+        payer,
         ctx.accounts.system_program,
         &args.plugin_type,
         plugin_header.as_ref(),
@@ -105,9 +112,16 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
         Plugin::validate_revoke_plugin_authority,
     )?;
 
+    let resolved_authority = resolve_collection_authority(authority, ctx.accounts.collection)?;
+    let payer = if resolved_authority == plugin.manager() {
+        ctx.accounts.payer
+    } else {
+        ctx.accounts.collection
+    };
+
     process_revoke_plugin_authority(
         ctx.accounts.collection,
-        ctx.accounts.payer,
+        payer,
         ctx.accounts.system_program,
         &args.plugin_type,
         plugin_header.as_ref(),
