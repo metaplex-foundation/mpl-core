@@ -12,7 +12,7 @@ use crate::{
         create_plugin_meta, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
         PluginType, ValidationResult,
     },
-    state::{AssetV1, DataState, UpdateAuthority, COLLECT_AMOUNT},
+    state::{AssetV1, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT},
 };
 
 #[repr(C)]
@@ -37,13 +37,19 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
-    let update_authority = match ctx.accounts.collection {
-        Some(collection) => UpdateAuthority::Collection(*collection.key),
-        None => UpdateAuthority::Address(
-            *ctx.accounts
-                .update_authority
-                .unwrap_or(ctx.accounts.payer)
-                .key,
+    let (update_authority, collection) = match ctx.accounts.collection {
+        Some(collection) => (
+            UpdateAuthority::Collection(*collection.key),
+            Some(CollectionV1::load(collection, 0)?),
+        ),
+        None => (
+            UpdateAuthority::Address(
+                *ctx.accounts
+                    .update_authority
+                    .unwrap_or(ctx.accounts.payer)
+                    .key,
+            ),
+            None,
         ),
     };
 
@@ -138,6 +144,11 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
             }
         }
     }
+
+    if let Some(mut collection) = collection {
+        collection.increment()?;
+        collection.save(ctx.accounts.collection.unwrap(), 0)?;
+    };
 
     Ok(())
 }
