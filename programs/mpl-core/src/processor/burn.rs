@@ -6,7 +6,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{BurnCollectionV1Accounts, BurnV1Accounts},
     plugins::{Plugin, PluginType},
-    state::{AssetV1, CollectionV1, CompressionProof, Key, Wrappable},
+    state::{AssetV1, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_authority,
         validate_asset_permissions, validate_collection_permissions, verify_proof,
@@ -21,6 +21,11 @@ pub(crate) struct BurnV1Args {
 pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> ProgramResult {
     // Accounts.
     let ctx = BurnV1Accounts::context(accounts)?;
+    let collection = if let Some(collection) = ctx.accounts.collection {
+        Some(CollectionV1::load(collection, 0)?)
+    } else {
+        None
+    };
 
     // Guards.
     assert_signer(ctx.accounts.payer)?;
@@ -80,7 +85,12 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
         Plugin::validate_burn,
     )?;
 
-    process_burn(ctx.accounts.asset, authority)
+    process_burn(ctx.accounts.asset, authority)?;
+    if let Some(mut collection) = collection {
+        collection.decrement()?;
+        collection.save(ctx.accounts.collection.unwrap(), 0)?;
+    };
+    Ok(())
 }
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]

@@ -221,6 +221,31 @@ impl CollectionV1 {
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
+
+    /// Increment size of the Collection
+    pub fn increment(&mut self) -> Result<(), ProgramError> {
+        self.num_minted = self
+            .num_minted
+            .checked_add(1)
+            .ok_or(MplCoreError::NumericalOverflowError)?;
+
+        self.current_size = self
+            .current_size
+            .checked_add(1)
+            .ok_or(MplCoreError::NumericalOverflowError)?;
+
+        Ok(())
+    }
+
+    /// Decrements size of the Collection
+    pub fn decrement(&mut self) -> Result<(), ProgramError> {
+        self.current_size = self
+            .current_size
+            .checked_sub(1)
+            .ok_or(MplCoreError::NumericalOverflowError)?;
+
+        Ok(())
+    }
 }
 
 impl DataBlob for CollectionV1 {
