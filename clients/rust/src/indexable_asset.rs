@@ -1,12 +1,7 @@
 use base64::prelude::*;
 use borsh::BorshDeserialize;
 use solana_program::pubkey::Pubkey;
-use std::{
-    cmp::Ordering,
-    collections::HashMap,
-    fmt::{Display, Formatter},
-    io::ErrorKind,
-};
+use std::{cmp::Ordering, collections::HashMap, io::ErrorKind};
 
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
@@ -30,24 +25,6 @@ impl PluginType {
             8 => Some(PluginType::PermanentBurnDelegate),
             _ => None,
         }
-    }
-}
-
-impl Display for PluginType {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        let message = match self {
-            PluginType::Royalties => "royalties".to_string(),
-            PluginType::FreezeDelegate => "freeze_delegate".to_string(),
-            PluginType::BurnDelegate => "burn_delegate".to_string(),
-            PluginType::TransferDelegate => "transfer_delegate".to_string(),
-            PluginType::UpdateDelegate => "update_delegate".to_string(),
-            PluginType::PermanentFreezeDelegate => "permanent_freeze_delegate".to_string(),
-            PluginType::Attributes => "attributes".to_string(),
-            PluginType::PermanentTransferDelegate => "permanent_transfer_delegate".to_string(),
-            PluginType::PermanentBurnDelegate => "permanent_burn_delegate".to_string(),
-        };
-
-        write!(f, "{message}")
     }
 }
 
@@ -174,7 +151,7 @@ pub struct IndexableAsset {
     pub seq: u64,
     pub num_minted: Option<u32>,
     pub current_size: Option<u32>,
-    pub plugins: HashMap<String, IndexablePluginSchemaV1>,
+    pub plugins: HashMap<PluginType, IndexablePluginSchemaV1>,
     pub unknown_plugins: Vec<IndexableUnknownPluginSchemaV1>,
 }
 
@@ -214,8 +191,7 @@ impl IndexableAsset {
     fn add_processed_plugin(&mut self, plugin: ProcessedPlugin) {
         match plugin {
             ProcessedPlugin::Known((plugin_type, indexable_plugin_schema)) => {
-                self.plugins
-                    .insert(plugin_type.to_string(), indexable_plugin_schema);
+                self.plugins.insert(plugin_type, indexable_plugin_schema);
             }
             ProcessedPlugin::Unknown(indexable_unknown_plugin_schema) => {
                 self.unknown_plugins.push(indexable_unknown_plugin_schema)
