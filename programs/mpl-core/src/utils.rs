@@ -220,11 +220,12 @@ pub fn validate_asset_permissions<'a>(
         Option<&AccountInfo>,
         &Authority,
         Option<&Plugin>,
-        Option<&Authority>,
+        Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<(AssetV1, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
     let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<AssetV1>(asset)?;
-    let resolved_authority = resolve_to_authority(authority_info, collection, &deserialized_asset)?;
+    let resolved_authorities =
+        resolve_pubkey_to_authorities(authority_info, collection, &deserialized_asset)?;
 
     // If the asset is part of a collection, the collection must be passed in and it must be correct.
     if let UpdateAuthority::Collection(collection_address) = deserialized_asset.update_authority {
@@ -302,7 +303,7 @@ pub fn validate_asset_permissions<'a>(
         new_plugin,
         Some(asset),
         collection,
-        &resolved_authority,
+        &resolved_authorities,
         plugin_validate_fp,
     )? {
         ValidationResult::Approved => approved = true,
@@ -323,7 +324,7 @@ pub fn validate_asset_permissions<'a>(
         new_plugin,
         Some(asset),
         collection,
-        &resolved_authority,
+        &resolved_authorities,
         plugin_validate_fp,
     )? {
         ValidationResult::Approved => approved = true,
@@ -364,7 +365,7 @@ pub fn validate_collection_permissions<'a>(
         Option<&AccountInfo>,
         &Authority,
         Option<&Plugin>,
-        Option<&Authority>,
+        Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<
     (
@@ -376,7 +377,8 @@ pub fn validate_collection_permissions<'a>(
 > {
     let (deserialized_collection, plugin_header, plugin_registry) =
         fetch_core_data::<CollectionV1>(collection)?;
-    let resolved_authority = resolve_collection_authority(authority_info, collection)?;
+    let resolved_authorities =
+        resolve_pubkey_to_authorities_collection(authority_info, collection)?;
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
 
     let core_check = (Key::CollectionV1, collection_check_fp());
@@ -423,7 +425,7 @@ pub fn validate_collection_permissions<'a>(
         new_plugin,
         None,
         Some(collection),
-        &resolved_authority,
+        &resolved_authorities,
         plugin_validate_fp,
     )? {
         ValidationResult::Approved => approved = true,
@@ -537,15 +539,18 @@ pub fn compress_into_account_space<'a>(
     Ok(compression_proof)
 }
 
-pub(crate) fn resolve_to_authority(
+pub(crate) fn resolve_pubkey_to_authorities(
     authority_info: &AccountInfo,
     maybe_collection_info: Option<&AccountInfo>,
     asset: &AssetV1,
-) -> Result<Authority, ProgramError> {
-    let authority_type = if authority_info.key == &asset.owner {
-        Authority::Owner
-    } else if asset.update_authority == UpdateAuthority::Address(*authority_info.key) {
-        Authority::UpdateAuthority
+) -> Result<Vec<Authority>, ProgramError> {
+    let mut authorities = vec![];
+    if authority_info.key == &asset.owner {
+        authorities.push(Authority::Owner);
+    }
+
+    if asset.update_authority == UpdateAuthority::Address(*authority_info.key) {
+        authorities.push(Authority::UpdateAuthority);
     } else if let UpdateAuthority::Collection(collection_address) = asset.update_authority {
         match maybe_collection_info {
             Some(collection_info) => {
@@ -554,37 +559,39 @@ pub(crate) fn resolve_to_authority(
                 }
                 let collection: CollectionV1 = CollectionV1::load(collection_info, 0)?;
                 if authority_info.key == &collection.update_authority {
-                    Authority::UpdateAuthority
-                } else {
-                    Authority::Address {
-                        address: *authority_info.key,
-                    }
+                    authorities.push(Authority::UpdateAuthority);
                 }
             }
-            None => return Err(MplCoreError::InvalidCollection.into()),
+            None => return Err(MplCoreError::MissingCollection.into()),
         }
-    } else {
-        Authority::Address {
-            address: *authority_info.key,
-        }
-    };
-    Ok(authority_type)
+    }
+
+    authorities.push(Authority::Address {
+        address: *authority_info.key,
+    });
+
+    Ok(authorities)
 }
 
-pub(crate) fn resolve_collection_authority(
+pub(crate) fn resolve_pubkey_to_authorities_collection(
     authority_info: &AccountInfo,
     collection_info: &AccountInfo,
-) -> Result<Authority, ProgramError> {
+) -> Result<Vec<Authority>, ProgramError> {
     let collection: CollectionV1 = CollectionV1::load(collection_info, 0)?;
+    let mut authorities = vec![];
     if authority_info.key == collection.owner() {
-        Ok(Authority::Owner)
-    } else if authority_info.key == &collection.update_authority {
-        Ok(Authority::UpdateAuthority)
-    } else {
-        Ok(Authority::Address {
-            address: *authority_info.key,
-        })
+        authorities.push(Authority::Owner);
     }
+
+    if authority_info.key == &collection.update_authority {
+        authorities.push(Authority::UpdateAuthority)
+    }
+
+    authorities.push(Authority::Address {
+        address: *authority_info.key,
+    });
+
+    Ok(authorities)
 }
 
 /// Resolves the authority for the transaction for an optional authority pattern.

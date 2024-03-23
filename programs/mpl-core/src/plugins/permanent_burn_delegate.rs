@@ -46,10 +46,10 @@ impl PluginValidation for PermanentBurnDelegate {
         &self,
         _authority_info: &AccountInfo,
         authority: &Authority,
-        resolved_authority: Option<&Authority>,
+        resolved_authorities: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(resolved_authority) = resolved_authority {
-            if resolved_authority == authority {
+        if let Some(resolved_authorities) = resolved_authorities {
+            if resolved_authorities.contains(authority) {
                 return Ok(ValidationResult::ForceApproved);
             }
         }
