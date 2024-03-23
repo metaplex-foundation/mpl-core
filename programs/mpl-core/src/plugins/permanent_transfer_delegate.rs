@@ -47,10 +47,10 @@ impl PluginValidation for PermanentTransferDelegate {
         _authority_info: &AccountInfo,
         _new_owner: &AccountInfo,
         authority: &Authority,
-        resolved_authority: Option<&Authority>,
+        resolved_authorities: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(resolved_authority) = resolved_authority {
-            if resolved_authority == authority {
+        if let Some(resolved_authorities) = resolved_authorities {
+            if resolved_authorities.contains(authority) {
                 return Ok(ValidationResult::ForceApproved);
             }
         }
