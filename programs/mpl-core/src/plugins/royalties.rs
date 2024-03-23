@@ -110,13 +110,23 @@ impl PluginValidation for Royalties {
         validate_royalties(self)
     }
 
-    fn validate_update_plugin<T: crate::state::CoreAsset>(
+    fn validate_update_plugin(
         &self,
-        _core_asset: &T,
         _authority_info: &AccountInfo,
-        _authority: &Authority,
+        authority: &Authority,
+        resolved_authority: &Authority,
+        plugin_to_update: &Plugin,
     ) -> Result<ValidationResult, ProgramError> {
-        validate_royalties(self)
+        solana_program::msg!("authority: {:?}", authority);
+        solana_program::msg!("resolved_authority: {:?}", resolved_authority);
+        if authority == resolved_authority
+            && PluginType::from(plugin_to_update) == PluginType::Royalties
+        {
+            solana_program::msg!("Validating royalties");
+            validate_royalties(self)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
     }
 
     /// Validate the revoke plugin authority lifecycle action.

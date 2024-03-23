@@ -4,7 +4,7 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::{
     error::MplCoreError,
-    state::{Authority, CoreAsset, Key},
+    state::{Authority, Key},
 };
 
 use super::{Plugin, PluginType, RegistryRecord};
@@ -32,6 +32,7 @@ impl PluginType {
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentTransferDelegate => CheckResult::CanReject,
+            PluginType::Immutable => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -43,7 +44,16 @@ impl PluginType {
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::FreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
+            PluginType::Immutable => CheckResult::CanReject,
             _ => CheckResult::None,
+        }
+    }
+
+    /// Check permissions for the update plugin lifecycle event.
+    pub fn check_update_plugin(plugin_type: &PluginType) -> CheckResult {
+        #[allow(clippy::match_single_binding)]
+        match plugin_type {
+            _ => CheckResult::CanApprove,
         }
     }
 
@@ -78,6 +88,7 @@ impl PluginType {
     pub fn check_update(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
+            PluginType::Immutable => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -160,6 +171,9 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_add_plugin(authority_info, authority, new_plugin)
             }
+            Plugin::Immutable(immutable) => {
+                immutable.validate_add_plugin(authority_info, authority, new_plugin)
+            }
         }
     }
 
@@ -198,6 +212,9 @@ impl Plugin {
                 .validate_remove_plugin(authority_info, authority, plugin_to_remove),
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_remove_plugin(authority_info, authority, plugin_to_remove)
+            }
+            Plugin::Immutable(immutable) => {
+                immutable.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
         }
     }
@@ -253,6 +270,11 @@ impl Plugin {
                 .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn
                 .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
+            Plugin::Immutable(immutable) => immutable.validate_approve_plugin_authority(
+                authority_info,
+                authority,
+                plugin_to_approve,
+            ),
         }
     }
 
@@ -299,6 +321,11 @@ impl Plugin {
                 .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn
                 .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
+            Plugin::Immutable(immutable) => immutable.validate_revoke_plugin_authority(
+                authority_info,
+                authority,
+                plugin_to_revoke,
+            ),
         }
     }
 
@@ -331,6 +358,7 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_create(authority_info, authority)
             }
+            Plugin::Immutable(immutable) => immutable.validate_create(authority_info, authority),
         }
     }
 
@@ -363,48 +391,115 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_update(authority_info, authority)
             }
+            Plugin::Immutable(immutable) => immutable.validate_update(authority_info, authority),
         }
     }
 
     /// Route the validation of the update_plugin action to the appropriate plugin.
     /// There is no check for updating a plugin because the plugin itself MUST validate the change.
-    pub(crate) fn validate_update_plugin<T: CoreAsset>(
+    pub(crate) fn validate_update_plugin(
         plugin: &Plugin,
-        core_asset: &T,
         authority_info: &AccountInfo,
         _: Option<&AccountInfo>,
         authority: &Authority,
-        _: Option<&Plugin>,
-        _: Option<&Authority>,
+        plugin_to_update: Option<&Plugin>,
+        resolved_authority: Option<&Authority>,
     ) -> Result<ValidationResult, ProgramError> {
-        match plugin {
-            Plugin::Royalties(royalties) => {
-                royalties.validate_update_plugin(core_asset, authority_info, authority)
+        solana_program::msg!("Validating update plugin");
+        let resolved_authority = resolved_authority.ok_or(MplCoreError::InvalidAuthority)?;
+        let plugin_to_update = plugin_to_update.ok_or(MplCoreError::InvalidPlugin)?;
+        let base_result = if resolved_authority == authority {
+            ValidationResult::Approved
+        } else {
+            ValidationResult::Pass
+        };
+
+        solana_program::msg!("Base result: {:?}", base_result);
+
+        let result = match plugin {
+            Plugin::Royalties(royalties) => royalties.validate_update_plugin(
+                authority_info,
+                authority,
+                resolved_authority,
+                plugin_to_update,
+            ),
+            Plugin::FreezeDelegate(freeze) => freeze.validate_update_plugin(
+                authority_info,
+                authority,
+                resolved_authority,
+                plugin_to_update,
+            ),
+            Plugin::BurnDelegate(burn) => burn.validate_update_plugin(
+                authority_info,
+                authority,
+                resolved_authority,
+                plugin_to_update,
+            ),
+            Plugin::TransferDelegate(transfer) => transfer.validate_update_plugin(
+                authority_info,
+                authority,
+                resolved_authority,
+                plugin_to_update,
+            ),
+            Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_update_plugin(
+                authority_info,
+                authority,
+                resolved_authority,
+                plugin_to_update,
+            ),
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => permanent_freeze
+                .validate_update_plugin(
+                    authority_info,
+                    authority,
+                    resolved_authority,
+                    plugin_to_update,
+                ),
+            Plugin::Attributes(attributes) => attributes.validate_update_plugin(
+                authority_info,
+                authority,
+                resolved_authority,
+                plugin_to_update,
+            ),
+            Plugin::PermanentTransferDelegate(permanent_transfer) => permanent_transfer
+                .validate_update_plugin(
+                    authority_info,
+                    authority,
+                    resolved_authority,
+                    plugin_to_update,
+                ),
+            Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_update_plugin(
+                authority_info,
+                authority,
+                resolved_authority,
+                plugin_to_update,
+            ),
+            Plugin::Immutable(immutable) => immutable.validate_update_plugin(
+                authority_info,
+                authority,
+                resolved_authority,
+                plugin_to_update,
+            ),
+        }?;
+
+        solana_program::msg!("Result: {:?}", result);
+
+        match (&base_result, &result) {
+            (ValidationResult::Approved, ValidationResult::Approved) => {
+                Ok(ValidationResult::Approved)
             }
-            Plugin::FreezeDelegate(freeze) => {
-                freeze.validate_update_plugin(core_asset, authority_info, authority)
+            (ValidationResult::Approved, ValidationResult::Rejected) => {
+                Ok(ValidationResult::Rejected)
             }
-            Plugin::BurnDelegate(burn) => {
-                burn.validate_update_plugin(core_asset, authority_info, authority)
+            (ValidationResult::Rejected, ValidationResult::Approved) => {
+                Ok(ValidationResult::Rejected)
             }
-            Plugin::TransferDelegate(transfer) => {
-                transfer.validate_update_plugin(core_asset, authority_info, authority)
+            (ValidationResult::Rejected, ValidationResult::Rejected) => {
+                Ok(ValidationResult::Rejected)
             }
-            Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_update_plugin(core_asset, authority_info, authority)
-            }
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_update_plugin(core_asset, authority_info, authority)
-            }
-            Plugin::Attributes(attributes) => {
-                attributes.validate_update_plugin(core_asset, authority_info, authority)
-            }
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_update_plugin(core_asset, authority_info, authority)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_update_plugin(core_asset, authority_info, authority)
-            }
+            (ValidationResult::Pass, _) => Ok(result),
+            (ValidationResult::ForceApproved, _) => Ok(ValidationResult::ForceApproved),
+            (_, ValidationResult::Pass) => Ok(base_result),
+            (_, ValidationResult::ForceApproved) => Ok(ValidationResult::ForceApproved),
         }
     }
 
@@ -444,6 +539,9 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_burn(authority_info, authority, resolved_authority)
+            }
+            Plugin::Immutable(immutable) => {
+                immutable.validate_burn(authority_info, authority, resolved_authority)
             }
         }
     }
@@ -496,6 +594,12 @@ impl Plugin {
                 authority,
                 resolved_authority,
             ),
+            Plugin::Immutable(immutable) => immutable.validate_transfer(
+                authority_info,
+                new_owner,
+                authority,
+                resolved_authority,
+            ),
         }
     }
 
@@ -530,6 +634,7 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(burn_transfer) => {
                 burn_transfer.validate_compress(authority_info, authority)
             }
+            Plugin::Immutable(immutable) => immutable.validate_compress(authority_info, authority),
         }
     }
 
@@ -565,6 +670,9 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_decompress(authority_info, authority)
+            }
+            Plugin::Immutable(immutable) => {
+                immutable.validate_decompress(authority_info, authority)
             }
         }
     }
@@ -660,24 +768,14 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the update_plugin lifecycle action.
-    fn validate_update_plugin<T: CoreAsset>(
+    fn validate_update_plugin(
         &self,
-        core_asset: &T,
-        authority_info: &AccountInfo,
-        authority: &Authority,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
+        _resolved_authority: &Authority,
+        _plugin_to_update: &Plugin,
     ) -> Result<ValidationResult, ProgramError> {
-        if (authority_info.key == core_asset.owner() && authority == &Authority::Owner)
-            || (authority_info.key == &core_asset.update_authority().key()
-                && authority == &Authority::UpdateAuthority)
-            || authority
-                == (&Authority::Address {
-                    address: *authority_info.key,
-                })
-        {
-            Ok(ValidationResult::Approved)
-        } else {
-            Ok(ValidationResult::Pass)
-        }
+        Ok(ValidationResult::Pass)
     }
 
     /// Validate the burn lifecycle action.

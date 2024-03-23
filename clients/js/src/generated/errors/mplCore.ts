@@ -390,6 +390,19 @@ export class CannotRedelegateError extends ProgramError {
 codeToErrorMap.set(0x1b, CannotRedelegateError);
 nameToErrorMap.set('CannotRedelegate', CannotRedelegateError);
 
+/** ImmutableAsset: Cannot update an immutable asset */
+export class ImmutableAssetError extends ProgramError {
+  override readonly name: string = 'ImmutableAsset';
+
+  readonly code: number = 0x1c; // 28
+
+  constructor(program: Program, cause?: Error) {
+    super('Cannot update an immutable asset', program, cause);
+  }
+}
+codeToErrorMap.set(0x1c, ImmutableAssetError);
+nameToErrorMap.set('ImmutableAsset', ImmutableAssetError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

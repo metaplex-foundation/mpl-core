@@ -6,9 +6,9 @@ use crate::{
     errors::MplCoreError,
     types::{Plugin, PluginAuthority, PluginType, RegistryRecord},
     AttributesPlugin, BaseAuthority, BasePlugin, BurnDelegatePlugin, DataBlob,
-    FreezeDelegatePlugin, PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin,
-    PermanentTransferDelegatePlugin, PluginsList, RoyaltiesPlugin, SolanaAccount,
-    TransferDelegatePlugin, UpdateDelegatePlugin,
+    FreezeDelegatePlugin, ImmutablePlugin, PermanentBurnDelegatePlugin,
+    PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin, PluginsList, RoyaltiesPlugin,
+    SolanaAccount, TransferDelegatePlugin, UpdateDelegatePlugin,
 };
 
 /// Fetch the plugin from the registry.
@@ -153,6 +153,9 @@ pub fn registry_records_to_plugin_list(
                         base,
                         permanent_burn_delegate,
                     })
+                }
+                Plugin::Immutable(immutable) => {
+                    acc.immutable = Some(ImmutablePlugin { base, immutable })
                 }
             };
 

@@ -1,6 +1,7 @@
 mod attributes;
 mod burn_delegate;
 mod freeze_delegate;
+mod immutable;
 mod lifecycle;
 mod permanent_burn_delegate;
 mod permanent_freeze_delegate;
@@ -15,6 +16,7 @@ mod utils;
 pub use attributes::*;
 pub use burn_delegate::*;
 pub use freeze_delegate::*;
+pub use immutable::*;
 pub use lifecycle::*;
 use num_derive::ToPrimitive;
 pub use permanent_burn_delegate::*;
@@ -40,7 +42,7 @@ use crate::{
 };
 
 /// Definition of the plugin variants, each containing a link to the plugin struct.
-#[repr(u16)]
+#[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum Plugin {
     /// Royalties plugin.
@@ -61,6 +63,8 @@ pub enum Plugin {
     PermanentTransferDelegate(PermanentTransferDelegate),
     /// Permanent Burn Delegate authority allows the creator of an asset to become the person who can burn an Asset
     PermanentBurnDelegate(PermanentBurnDelegate),
+    /// Immutable plugin for disabling any authority modifications to plugins or the asset.
+    Immutable(Immutable),
 }
 
 impl Plugin {
@@ -90,7 +94,7 @@ impl Plugin {
 impl Compressible for Plugin {}
 
 /// List of First Party Plugin types.
-#[repr(u16)]
+#[repr(C)]
 #[derive(
     Clone,
     Copy,
@@ -123,6 +127,8 @@ pub enum PluginType {
     PermanentTransferDelegate,
     /// The Permanent Burn Delegate plugin.
     PermanentBurnDelegate,
+    /// The Immutable plugin.
+    Immutable,
 }
 
 impl DataBlob for PluginType {
@@ -147,6 +153,7 @@ impl From<&Plugin> for PluginType {
             Plugin::Attributes(_) => PluginType::Attributes,
             Plugin::PermanentTransferDelegate(_) => PluginType::PermanentTransferDelegate,
             Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
+            Plugin::Immutable(_) => PluginType::Immutable,
         }
     }
 }
@@ -164,6 +171,7 @@ impl PluginType {
             PluginType::Attributes => Authority::UpdateAuthority,
             PluginType::PermanentTransferDelegate => Authority::UpdateAuthority,
             PluginType::PermanentBurnDelegate => Authority::UpdateAuthority,
+            PluginType::Immutable => Authority::UpdateAuthority,
         }
     }
 }

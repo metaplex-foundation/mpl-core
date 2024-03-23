@@ -8,17 +8,6 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq, PartialOrd, Hash)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub enum PluginType {
-    Royalties,
-    FreezeDelegate,
-    BurnDelegate,
-    TransferDelegate,
-    UpdateDelegate,
-    PermanentFreezeDelegate,
-    Attributes,
-    PermanentTransferDelegate,
-    PermanentBurnDelegate,
-    Immutable,
-}
+pub struct Immutable {}

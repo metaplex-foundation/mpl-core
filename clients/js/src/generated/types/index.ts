@@ -17,6 +17,7 @@ export * from './extraAccounts';
 export * from './freezeDelegate';
 export * from './hashablePluginSchema';
 export * from './hashedAssetSchema';
+export * from './immutable';
 export * from './key';
 export * from './permanentBurnDelegate';
 export * from './permanentFreezeDelegate';

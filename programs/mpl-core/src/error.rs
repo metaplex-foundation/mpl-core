@@ -120,6 +120,10 @@ pub enum MplCoreError {
     /// 27 - Plugin Manager cannot redelegate a delegated plugin without revoking first.
     #[error("Plugin Manager cannot redelegate a delegated plugin without revoking first")]
     CannotRedelegate,
+
+    /// 28 - Cannot update an immutable asset
+    #[error("Cannot update an immutable asset")]
+    ImmutableAsset,
 }
 
 impl PrintProgramError for MplCoreError {

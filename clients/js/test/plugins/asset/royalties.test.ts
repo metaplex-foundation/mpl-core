@@ -738,7 +738,7 @@ test('it cannot update royalty percentages that dont add up to 100', async (t) =
     }),
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(result, { name: 'NoApprovals' });
 });
 test('it cannot update royalty basis points greater than 10000', async (t) => {
   // Given a Umi instance and a new signer.
@@ -810,5 +810,5 @@ test('it cannot update royalty with duplicate creators', async (t) => {
     }),
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(result, { name: 'NoApprovals' });
 });

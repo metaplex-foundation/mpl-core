@@ -8,6 +8,7 @@
 use crate::generated::types::Attributes;
 use crate::generated::types::BurnDelegate;
 use crate::generated::types::FreezeDelegate;
+use crate::generated::types::Immutable;
 use crate::generated::types::PermanentBurnDelegate;
 use crate::generated::types::PermanentFreezeDelegate;
 use crate::generated::types::PermanentTransferDelegate;
@@ -29,4 +30,5 @@ pub enum Plugin {
     Attributes(Attributes),
     PermanentTransferDelegate(PermanentTransferDelegate),
     PermanentBurnDelegate(PermanentBurnDelegate),
+    Immutable(Immutable),
 }

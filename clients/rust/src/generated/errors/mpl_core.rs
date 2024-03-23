@@ -94,6 +94,9 @@ pub enum MplCoreError {
     /// 27 (0x1B) - Plugin Manager cannot redelegate a delegated plugin without revoking first
     #[error("Plugin Manager cannot redelegate a delegated plugin without revoking first")]
     CannotRedelegate,
+    /// 28 (0x1C) - Cannot update an immutable asset
+    #[error("Cannot update an immutable asset")]
+    ImmutableAsset,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

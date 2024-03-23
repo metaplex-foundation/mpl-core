@@ -58,6 +58,11 @@ impl CollectionV1 {
         CheckResult::CanApprove
     }
 
+    /// Check permissions for the update plugin lifecycle event.
+    pub fn check_update_plugin() -> CheckResult {
+        CheckResult::None
+    }
+
     /// Check permissions for the approve plugin authority lifecycle event.
     pub fn check_approve_plugin_authority() -> CheckResult {
         CheckResult::CanApprove
@@ -131,6 +136,15 @@ impl CollectionV1 {
         } else {
             Ok(ValidationResult::Pass)
         }
+    }
+
+    /// Validate the update plugin lifecycle event.
+    pub fn validate_update_plugin(
+        &self,
+        _authority_info: &AccountInfo,
+        _plugin: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
     }
 
     /// Validate the approve plugin authority lifecycle event.

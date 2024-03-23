@@ -1490,6 +1490,13 @@
       }
     },
     {
+      "name": "Immutable",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
       "name": "PermanentBurnDelegate",
       "type": {
         "kind": "struct",
@@ -2114,6 +2121,14 @@
                 "defined": "PermanentBurnDelegate"
               }
             ]
+          },
+          {
+            "name": "Immutable",
+            "fields": [
+              {
+                "defined": "Immutable"
+              }
+            ]
           }
         ]
       }
@@ -2149,6 +2164,9 @@
           },
           {
             "name": "PermanentBurnDelegate"
+          },
+          {
+            "name": "Immutable"
           }
         ]
       }
@@ -2453,6 +2471,11 @@
       "code": 27,
       "name": "CannotRedelegate",
       "msg": "Plugin Manager cannot redelegate a delegated plugin without revoking first"
+    },
+    {
+      "code": 28,
+      "name": "ImmutableAsset",
+      "msg": "Cannot update an immutable asset"
     }
   ],
   "metadata": {

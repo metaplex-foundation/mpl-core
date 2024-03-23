@@ -11,6 +11,7 @@ import {
   PermanentTransferDelegate,
   UpdateAuthority,
   PermanentBurnDelegate,
+  Immutable,
 } from './generated';
 
 export type BasePluginAuthority = {
@@ -42,6 +43,7 @@ export type AttributesPlugin = BasePlugin & Attributes;
 export type PermanentTransferDelegatePlugin = BasePlugin &
   PermanentTransferDelegate;
 export type PermanentBurnDelegatePlugin = BasePlugin & PermanentBurnDelegate;
+export type ImmutablePlugin = BasePlugin & Immutable;
 
 export type PluginsList = {
   royalties?: RoyaltiesPlugin;
@@ -53,4 +55,5 @@ export type PluginsList = {
   permanentFreezeDelegate?: PermanentFreezeDelegatePlugin;
   permanentTransferDelegate?: PermanentTransferDelegatePlugin;
   permanentBurnDelegate?: PermanentBurnDelegatePlugin;
+  immutable?: ImmutablePlugin;
 };
