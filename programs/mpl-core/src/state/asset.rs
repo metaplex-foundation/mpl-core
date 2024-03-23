@@ -70,7 +70,7 @@ impl AssetV1 {
 
     /// Check permissions for the remove plugin lifecycle event.
     pub fn check_remove_plugin() -> CheckResult {
-        CheckResult::None
+        CheckResult::CanApprove
     }
 
     /// Check permissions for the update plugin lifecycle event.

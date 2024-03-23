@@ -124,6 +124,10 @@ pub enum MplCoreError {
     /// 28 - Cannot update an immutable asset
     #[error("Cannot update an immutable asset")]
     ImmutableAsset,
+
+    /// 29 - Invalid setting for plugin
+    #[error("Invalid setting for plugin")]
+    InvalidPluginSetting,
 }
 
 impl PrintProgramError for MplCoreError {

@@ -97,6 +97,9 @@ pub enum MplCoreError {
     /// 28 (0x1C) - Cannot update an immutable asset
     #[error("Cannot update an immutable asset")]
     ImmutableAsset,
+    /// 29 (0x1D) - Invalid setting for plugin
+    #[error("Invalid setting for plugin")]
+    InvalidPluginSetting,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

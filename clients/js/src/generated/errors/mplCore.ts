@@ -403,6 +403,19 @@ export class ImmutableAssetError extends ProgramError {
 codeToErrorMap.set(0x1c, ImmutableAssetError);
 nameToErrorMap.set('ImmutableAsset', ImmutableAssetError);
 
+/** InvalidPluginSetting: Invalid setting for plugin */
+export class InvalidPluginSettingError extends ProgramError {
+  override readonly name: string = 'InvalidPluginSetting';
+
+  readonly code: number = 0x1d; // 29
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid setting for plugin', program, cause);
+  }
+}
+codeToErrorMap.set(0x1d, InvalidPluginSettingError);
+nameToErrorMap.set('InvalidPluginSetting', InvalidPluginSettingError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

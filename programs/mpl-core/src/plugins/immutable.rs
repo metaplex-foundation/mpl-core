@@ -84,11 +84,11 @@ impl PluginValidation for Immutable {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-        _resolved_authority: &Authority,
+        _resolved_authority: &[Authority],
         plugin_to_update: &Plugin,
     ) -> Result<ValidationResult, ProgramError> {
         if plugin_to_update.manager() == Authority::Owner {
-            Ok(ValidationResult::Pass)
+            Ok(ValidationResult::Approved)
         } else {
             Err(MplCoreError::ImmutableAsset.into())
         }

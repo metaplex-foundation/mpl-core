@@ -141,7 +141,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authority: &Authority,
         new_plugin: Option<&Plugin>,
-        _: Option<&Authority>,
+        _: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Royalties(royalties) => {
@@ -184,7 +184,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authority: &Authority,
         plugin_to_remove: Option<&Plugin>,
-        _: Option<&Authority>,
+        _: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Royalties(royalties) => {
@@ -226,7 +226,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authority: &Authority,
         plugin_to_approve: Option<&Plugin>,
-        _resolved_authority: Option<&Authority>,
+        _resolved_authorities: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         // Universally, we cannot delegate a plugin authority if it's already delegated, even if
         // we're the manager.
@@ -285,7 +285,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authority: &Authority,
         plugin_to_revoke: Option<&Plugin>,
-        _: Option<&Authority>,
+        _: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority == &Authority::None {
             return Ok(ValidationResult::Rejected);
@@ -336,7 +336,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authority: &Authority,
         _: Option<&Plugin>,
-        _: Option<&Authority>,
+        _: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Royalties(royalties) => royalties.validate_create(authority_info, authority),
@@ -369,7 +369,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authority: &Authority,
         _: Option<&Plugin>,
-        _: Option<&Authority>,
+        _: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Royalties(royalties) => royalties.validate_update(authority_info, authority),
@@ -403,12 +403,12 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authority: &Authority,
         plugin_to_update: Option<&Plugin>,
-        resolved_authority: Option<&Authority>,
+        resolved_authorities: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         solana_program::msg!("Validating update plugin");
-        let resolved_authority = resolved_authority.ok_or(MplCoreError::InvalidAuthority)?;
+        let resolved_authorities = resolved_authorities.ok_or(MplCoreError::InvalidAuthority)?;
         let plugin_to_update = plugin_to_update.ok_or(MplCoreError::InvalidPlugin)?;
-        let base_result = if resolved_authority == authority {
+        let base_result = if resolved_authorities.contains(authority) {
             ValidationResult::Approved
         } else {
             ValidationResult::Pass
@@ -420,63 +420,63 @@ impl Plugin {
             Plugin::Royalties(royalties) => royalties.validate_update_plugin(
                 authority_info,
                 authority,
-                resolved_authority,
+                resolved_authorities,
                 plugin_to_update,
             ),
             Plugin::FreezeDelegate(freeze) => freeze.validate_update_plugin(
                 authority_info,
                 authority,
-                resolved_authority,
+                resolved_authorities,
                 plugin_to_update,
             ),
             Plugin::BurnDelegate(burn) => burn.validate_update_plugin(
                 authority_info,
                 authority,
-                resolved_authority,
+                resolved_authorities,
                 plugin_to_update,
             ),
             Plugin::TransferDelegate(transfer) => transfer.validate_update_plugin(
                 authority_info,
                 authority,
-                resolved_authority,
+                resolved_authorities,
                 plugin_to_update,
             ),
             Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_update_plugin(
                 authority_info,
                 authority,
-                resolved_authority,
+                resolved_authorities,
                 plugin_to_update,
             ),
             Plugin::PermanentFreezeDelegate(permanent_freeze) => permanent_freeze
                 .validate_update_plugin(
                     authority_info,
                     authority,
-                    resolved_authority,
+                    resolved_authorities,
                     plugin_to_update,
                 ),
             Plugin::Attributes(attributes) => attributes.validate_update_plugin(
                 authority_info,
                 authority,
-                resolved_authority,
+                resolved_authorities,
                 plugin_to_update,
             ),
             Plugin::PermanentTransferDelegate(permanent_transfer) => permanent_transfer
                 .validate_update_plugin(
                     authority_info,
                     authority,
-                    resolved_authority,
+                    resolved_authorities,
                     plugin_to_update,
                 ),
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_update_plugin(
                 authority_info,
                 authority,
-                resolved_authority,
+                resolved_authorities,
                 plugin_to_update,
             ),
             Plugin::Immutable(immutable) => immutable.validate_update_plugin(
                 authority_info,
                 authority,
-                resolved_authority,
+                resolved_authorities,
                 plugin_to_update,
             ),
         }?;
@@ -510,38 +510,38 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authority: &Authority,
         _: Option<&Plugin>,
-        resolved_authority: Option<&Authority>,
+        resolved_authorities: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Royalties(royalties) => {
-                royalties.validate_burn(authority_info, authority, resolved_authority)
+                royalties.validate_burn(authority_info, authority, resolved_authorities)
             }
             Plugin::FreezeDelegate(freeze) => {
-                freeze.validate_burn(authority_info, authority, resolved_authority)
+                freeze.validate_burn(authority_info, authority, resolved_authorities)
             }
             Plugin::BurnDelegate(burn) => {
-                burn.validate_burn(authority_info, authority, resolved_authority)
+                burn.validate_burn(authority_info, authority, resolved_authorities)
             }
             Plugin::TransferDelegate(transfer) => {
-                transfer.validate_burn(authority_info, authority, resolved_authority)
+                transfer.validate_burn(authority_info, authority, resolved_authorities)
             }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_burn(authority_info, authority, resolved_authority)
+                update_delegate.validate_burn(authority_info, authority, resolved_authorities)
             }
             Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_burn(authority_info, authority, resolved_authority)
+                permanent_freeze.validate_burn(authority_info, authority, resolved_authorities)
             }
             Plugin::Attributes(attributes) => {
-                attributes.validate_burn(authority_info, authority, resolved_authority)
+                attributes.validate_burn(authority_info, authority, resolved_authorities)
             }
             Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_burn(authority_info, authority, resolved_authority)
+                permanent_transfer.validate_burn(authority_info, authority, resolved_authorities)
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_burn(authority_info, authority, resolved_authority)
+                permanent_burn.validate_burn(authority_info, authority, resolved_authorities)
             }
             Plugin::Immutable(immutable) => {
-                immutable.validate_burn(authority_info, authority, resolved_authority)
+                immutable.validate_burn(authority_info, authority, resolved_authorities)
             }
         }
     }
@@ -553,7 +553,7 @@ impl Plugin {
         new_owner: Option<&AccountInfo>,
         authority: &Authority,
         _: Option<&Plugin>,
-        resolved_authority: Option<&Authority>,
+        resolved_authorities: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         let new_owner = new_owner.ok_or(MplCoreError::MissingNewOwner)?;
         match plugin {
@@ -561,44 +561,47 @@ impl Plugin {
                 authority_info,
                 new_owner,
                 authority,
-                resolved_authority,
+                resolved_authorities,
             ),
             Plugin::FreezeDelegate(freeze) => {
-                freeze.validate_transfer(authority_info, new_owner, authority, resolved_authority)
+                freeze.validate_transfer(authority_info, new_owner, authority, resolved_authorities)
             }
             Plugin::BurnDelegate(burn) => {
-                burn.validate_transfer(authority_info, new_owner, authority, resolved_authority)
+                burn.validate_transfer(authority_info, new_owner, authority, resolved_authorities)
             }
-            Plugin::TransferDelegate(transfer) => {
-                transfer.validate_transfer(authority_info, new_owner, authority, resolved_authority)
-            }
+            Plugin::TransferDelegate(transfer) => transfer.validate_transfer(
+                authority_info,
+                new_owner,
+                authority,
+                resolved_authorities,
+            ),
             Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_transfer(
                 authority_info,
                 new_owner,
                 authority,
-                resolved_authority,
+                resolved_authorities,
             ),
             Plugin::PermanentFreezeDelegate(permanent_freeze) => permanent_freeze
-                .validate_transfer(authority_info, new_owner, authority, resolved_authority),
+                .validate_transfer(authority_info, new_owner, authority, resolved_authorities),
             Plugin::PermanentTransferDelegate(permanent_transfer) => permanent_transfer
-                .validate_transfer(authority_info, new_owner, authority, resolved_authority),
+                .validate_transfer(authority_info, new_owner, authority, resolved_authorities),
             Plugin::Attributes(attributes_transfer) => attributes_transfer.validate_transfer(
                 authority_info,
                 new_owner,
                 authority,
-                resolved_authority,
+                resolved_authorities,
             ),
             Plugin::PermanentBurnDelegate(burn_transfer) => burn_transfer.validate_transfer(
                 authority_info,
                 new_owner,
                 authority,
-                resolved_authority,
+                resolved_authorities,
             ),
             Plugin::Immutable(immutable) => immutable.validate_transfer(
                 authority_info,
                 new_owner,
                 authority,
-                resolved_authority,
+                resolved_authorities,
             ),
         }
     }
@@ -610,7 +613,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authority: &Authority,
         _: Option<&Plugin>,
-        _: Option<&Authority>,
+        _: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Royalties(royalties) => royalties.validate_compress(authority_info, authority),
@@ -645,7 +648,7 @@ impl Plugin {
         _: Option<&AccountInfo>,
         authority: &Authority,
         _: Option<&Plugin>,
-        _: Option<&Authority>,
+        _: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
             Plugin::Royalties(royalties) => {
@@ -700,7 +703,7 @@ pub(crate) struct PluginValidationContext<'a, 'b> {
     /// The authority account.
     pub authority_info: &'a AccountInfo<'a>,
     /// The resolved authority.
-    pub resolved_authority: Option<&'a Authority>,
+    pub resolved_authorities: Option<&'a [Authority]>,
     /// The new owner account.
     pub new_owner: Option<&'a AccountInfo<'a>>,
     /// The new plugin.
@@ -772,7 +775,7 @@ pub(crate) trait PluginValidation {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-        _resolved_authority: &Authority,
+        _resolved_authorities: &[Authority],
         _plugin_to_update: &Plugin,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
@@ -783,7 +786,7 @@ pub(crate) trait PluginValidation {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-        _resolved_authority: Option<&Authority>,
+        _resolved_authorities: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -794,7 +797,7 @@ pub(crate) trait PluginValidation {
         _authority_info: &AccountInfo,
         _new_owner: &AccountInfo,
         _authority: &Authority,
-        _resolved_authority: Option<&Authority>,
+        _resolved_authorities: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -848,14 +851,14 @@ pub(crate) fn validate_plugin_checks<'a>(
     new_plugin: Option<&Plugin>,
     asset: Option<&AccountInfo<'a>>,
     collection: Option<&AccountInfo<'a>>,
-    resolved_authority: &Authority,
+    resolved_authorities: &[Authority],
     validate_fp: fn(
         &Plugin,
         &AccountInfo<'a>,
         Option<&AccountInfo>,
         &Authority,
         Option<&Plugin>,
-        Option<&Authority>,
+        Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
@@ -880,7 +883,7 @@ pub(crate) fn validate_plugin_checks<'a>(
                 new_owner,
                 &registry_record.authority,
                 new_plugin,
-                Some(resolved_authority),
+                Some(resolved_authorities),
             )?;
             match result {
                 ValidationResult::Rejected => rejected = true,

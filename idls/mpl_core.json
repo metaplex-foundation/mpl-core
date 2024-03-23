@@ -2476,6 +2476,11 @@
       "code": 28,
       "name": "ImmutableAsset",
       "msg": "Cannot update an immutable asset"
+    },
+    {
+      "code": 29,
+      "name": "InvalidPluginSetting",
+      "msg": "Invalid setting for plugin"
     }
   ],
   "metadata": {

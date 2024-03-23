@@ -1,7 +1,7 @@
 import test from "ava";
 import { generateSigner } from "@metaplex-foundation/umi";
 import { DEFAULT_ASSET, assertAsset, createAsset, createUmi } from "../../_setup";
-import { PluginType, addPluginV1, addressPluginAuthority, createPlugin, pluginAuthorityPair, removePluginV1, updatePluginV1, updateV1 } from "../../../src";
+import { PluginType, addPluginV1, addressPluginAuthority, createPlugin, pluginAuthorityPair, removePluginV1, transferV1, updatePluginV1, updateV1 } from "../../../src";
 
 test('it cannot update an immutable asset', async (t) => {
     // Given a Umi instance and a new signer.
@@ -272,6 +272,38 @@ test('it can update an owner-managed plugin on an immutable asset', async (t) =>
                 address: delegate.publicKey
             }
         },
+        immutable: { authority: { type: 'UpdateAuthority' } }
+    });
+});
+
+test('it can still transfer an immutable asset', async (t) => {
+    // Given a Umi instance and a new signer.
+    const umi = await createUmi();
+    const newOwner = generateSigner(umi);
+
+    const asset = await createAsset(umi, {
+        plugins: [
+            pluginAuthorityPair({
+                type: 'Immutable',
+            }),
+        ],
+    });
+    await assertAsset(t, umi, {
+        asset: asset.publicKey,
+        owner: umi.identity.publicKey,
+        updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+        immutable: { authority: { type: 'UpdateAuthority' } }
+    });
+
+    await transferV1(umi, {
+        asset: asset.publicKey,
+        newOwner: newOwner.publicKey,
+    }).sendAndConfirm(umi);
+
+    await assertAsset(t, umi, {
+        asset: asset.publicKey,
+        owner: newOwner.publicKey,
+        updateAuthority: { type: 'Address', address: umi.identity.publicKey },
         immutable: { authority: { type: 'UpdateAuthority' } }
     });
 });
