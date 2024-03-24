@@ -410,3 +410,39 @@ test('it can remove permanent freeze plugin if update authority and unfrozen', a
     permanentFreezeDelegate: undefined,
   });
 });
+
+test('it can add another plugin on asset with permanent freeze plugin', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: false },
+      }),
+    ],
+  });
+
+  await addPluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'TransferDelegate',
+    }),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    permanentFreezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: false,
+    },
+    transferDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+  });
+})

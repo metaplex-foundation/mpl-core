@@ -3,7 +3,7 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::state::{Authority, DataBlob};
 
-use super::{Plugin, PluginValidation, ValidationResult};
+use super::{Plugin, PluginType, PluginValidation, ValidationResult};
 
 /// The permanent burn plugin allows any authority to burn the asset.
 /// The default authority for this plugin is the update authority.
@@ -26,11 +26,17 @@ impl PluginValidation for PermanentBurnDelegate {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-        _new_plugin: Option<&Plugin>,
+        new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
         // always reject it.
-        Ok(ValidationResult::Rejected)
+        if new_plugin.is_some()
+            && PluginType::from(new_plugin.unwrap()) == PluginType::PermanentBurnDelegate
+        {
+            Ok(ValidationResult::Rejected)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
     }
 
     fn validate_revoke_plugin_authority(

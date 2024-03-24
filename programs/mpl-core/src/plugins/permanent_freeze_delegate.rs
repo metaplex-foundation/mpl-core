@@ -72,11 +72,17 @@ impl PluginValidation for PermanentFreezeDelegate {
         &self,
         _authority_info: &AccountInfo,
         _authority: &Authority,
-        _new_plugin: Option<&Plugin>,
+        new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
         // always reject it.
-        Ok(ValidationResult::Rejected)
+        if new_plugin.is_some()
+            && PluginType::from(new_plugin.unwrap()) == PluginType::PermanentFreezeDelegate
+        {
+            Ok(ValidationResult::Rejected)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
     }
 
     /// Validate the revoke plugin authority lifecycle action.
