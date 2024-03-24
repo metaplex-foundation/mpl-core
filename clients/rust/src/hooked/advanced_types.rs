@@ -3,9 +3,8 @@ use solana_program::pubkey::Pubkey;
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        Attributes, BurnDelegate, FreezeDelegate, Immutable, PermanentBurnDelegate,
-        PermanentFreezeDelegate, PermanentTransferDelegate, PluginAuthority, Royalties,
-        TransferDelegate, UpdateDelegate,
+        Attributes, BurnDelegate, FreezeDelegate, PermanentBurnDelegate, PermanentFreezeDelegate,
+        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
     },
 };
 
@@ -117,12 +116,6 @@ pub struct PermanentBurnDelegatePlugin {
     pub permanent_burn_delegate: PermanentBurnDelegate,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct ImmutablePlugin {
-    pub base: BasePlugin,
-    pub immutable: Immutable,
-}
-
 #[derive(Debug, Default)]
 pub struct PluginsList {
     pub royalties: Option<RoyaltiesPlugin>,
@@ -134,7 +127,6 @@ pub struct PluginsList {
     pub attributes: Option<AttributesPlugin>,
     pub permanent_transfer_delegate: Option<PermanentTransferDelegatePlugin>,
     pub permanent_burn_delegate: Option<PermanentBurnDelegatePlugin>,
-    pub immutable: Option<ImmutablePlugin>,
 }
 
 #[derive(Debug)]

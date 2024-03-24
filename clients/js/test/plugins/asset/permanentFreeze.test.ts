@@ -445,4 +445,4 @@ test('it can add another plugin on asset with permanent freeze plugin', async (t
       },
     },
   });
-})
+});

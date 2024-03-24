@@ -30,7 +30,6 @@ impl From<&Plugin> for PluginType {
             Plugin::Attributes(_) => PluginType::Attributes,
             Plugin::PermanentTransferDelegate(_) => PluginType::PermanentTransferDelegate,
             Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
-            Plugin::Immutable(_) => PluginType::Immutable,
         }
     }
 }

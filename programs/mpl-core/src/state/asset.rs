@@ -75,7 +75,7 @@ impl AssetV1 {
 
     /// Check permissions for the update plugin lifecycle event.
     pub fn check_update_plugin() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::None
     }
 
     /// Check permissions for the approve plugin authority lifecycle event.

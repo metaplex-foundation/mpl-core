@@ -304,7 +304,6 @@ pub fn delete_plugin<'a, T: DataBlob>(
         header.plugin_registry_offset = new_registry_offset;
         header.save(account, asset.get_size())?;
 
-        solana_program::msg!("Registry: {:?}", plugin_registry.registry);
         plugin_registry.save(account, new_registry_offset)?;
 
         resize_or_reallocate_account(account, payer, system_program, new_size)?;

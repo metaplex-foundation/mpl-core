@@ -390,30 +390,17 @@ export class CannotRedelegateError extends ProgramError {
 codeToErrorMap.set(0x1b, CannotRedelegateError);
 nameToErrorMap.set('CannotRedelegate', CannotRedelegateError);
 
-/** ImmutableAsset: Cannot update an immutable asset */
-export class ImmutableAssetError extends ProgramError {
-  override readonly name: string = 'ImmutableAsset';
-
-  readonly code: number = 0x1c; // 28
-
-  constructor(program: Program, cause?: Error) {
-    super('Cannot update an immutable asset', program, cause);
-  }
-}
-codeToErrorMap.set(0x1c, ImmutableAssetError);
-nameToErrorMap.set('ImmutableAsset', ImmutableAssetError);
-
 /** InvalidPluginSetting: Invalid setting for plugin */
 export class InvalidPluginSettingError extends ProgramError {
   override readonly name: string = 'InvalidPluginSetting';
 
-  readonly code: number = 0x1d; // 29
+  readonly code: number = 0x1c; // 28
 
   constructor(program: Program, cause?: Error) {
     super('Invalid setting for plugin', program, cause);
   }
 }
-codeToErrorMap.set(0x1d, InvalidPluginSettingError);
+codeToErrorMap.set(0x1c, InvalidPluginSettingError);
 nameToErrorMap.set('InvalidPluginSetting', InvalidPluginSettingError);
 
 /**

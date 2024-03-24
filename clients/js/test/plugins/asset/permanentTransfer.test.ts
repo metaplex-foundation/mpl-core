@@ -688,4 +688,4 @@ test('it can add another plugin on asset with permanent transfer plugin', async 
       },
     },
   });
-})
+});

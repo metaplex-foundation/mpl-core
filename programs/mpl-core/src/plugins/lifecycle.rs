@@ -32,7 +32,6 @@ impl PluginType {
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentTransferDelegate => CheckResult::CanReject,
-            PluginType::Immutable => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -44,7 +43,6 @@ impl PluginType {
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::FreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
-            PluginType::Immutable => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -88,7 +86,6 @@ impl PluginType {
     pub fn check_update(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            PluginType::Immutable => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -171,9 +168,6 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_add_plugin(authority_info, authority, new_plugin)
             }
-            Plugin::Immutable(immutable) => {
-                immutable.validate_add_plugin(authority_info, authority, new_plugin)
-            }
         }
     }
 
@@ -212,9 +206,6 @@ impl Plugin {
                 .validate_remove_plugin(authority_info, authority, plugin_to_remove),
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_remove_plugin(authority_info, authority, plugin_to_remove)
-            }
-            Plugin::Immutable(immutable) => {
-                immutable.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
         }
     }
@@ -270,11 +261,6 @@ impl Plugin {
                 .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn
                 .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
-            Plugin::Immutable(immutable) => immutable.validate_approve_plugin_authority(
-                authority_info,
-                authority,
-                plugin_to_approve,
-            ),
         }
     }
 
@@ -321,11 +307,6 @@ impl Plugin {
                 .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn
                 .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
-            Plugin::Immutable(immutable) => immutable.validate_revoke_plugin_authority(
-                authority_info,
-                authority,
-                plugin_to_revoke,
-            ),
         }
     }
 
@@ -358,7 +339,6 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_create(authority_info, authority)
             }
-            Plugin::Immutable(immutable) => immutable.validate_create(authority_info, authority),
         }
     }
 
@@ -391,7 +371,6 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_update(authority_info, authority)
             }
-            Plugin::Immutable(immutable) => immutable.validate_update(authority_info, authority),
         }
     }
 
@@ -473,12 +452,6 @@ impl Plugin {
                 resolved_authorities,
                 plugin_to_update,
             ),
-            Plugin::Immutable(immutable) => immutable.validate_update_plugin(
-                authority_info,
-                authority,
-                resolved_authorities,
-                plugin_to_update,
-            ),
         }?;
 
         solana_program::msg!("Result: {:?}", result);
@@ -540,9 +513,6 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_burn(authority_info, authority, resolved_authorities)
             }
-            Plugin::Immutable(immutable) => {
-                immutable.validate_burn(authority_info, authority, resolved_authorities)
-            }
         }
     }
 
@@ -597,12 +567,6 @@ impl Plugin {
                 authority,
                 resolved_authorities,
             ),
-            Plugin::Immutable(immutable) => immutable.validate_transfer(
-                authority_info,
-                new_owner,
-                authority,
-                resolved_authorities,
-            ),
         }
     }
 
@@ -637,7 +601,6 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(burn_transfer) => {
                 burn_transfer.validate_compress(authority_info, authority)
             }
-            Plugin::Immutable(immutable) => immutable.validate_compress(authority_info, authority),
         }
     }
 
@@ -673,9 +636,6 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_decompress(authority_info, authority)
-            }
-            Plugin::Immutable(immutable) => {
-                immutable.validate_decompress(authority_info, authority)
             }
         }
     }

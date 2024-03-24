@@ -576,7 +576,7 @@ test('it cannot create royalty percentages that dont add up to 100', async (t) =
     ],
   });
 
-  await t.throwsAsync(result, { name: "InvalidPluginSetting" });
+  await t.throwsAsync(result, { name: 'InvalidPluginSetting' });
 });
 test('it cannot create royalty basis points greater than 10000', async (t) => {
   // Given a Umi instance and a new signer.
@@ -595,7 +595,7 @@ test('it cannot create royalty basis points greater than 10000', async (t) => {
     ],
   });
 
-  await t.throwsAsync(result, { name: "InvalidPluginSetting" });
+  await t.throwsAsync(result, { name: 'InvalidPluginSetting' });
 });
 
 test('it cannot create royalty with duplicate creators', async (t) => {
@@ -624,7 +624,7 @@ test('it cannot create royalty with duplicate creators', async (t) => {
     ],
   });
 
-  await t.throwsAsync(result, { name: "InvalidPluginSetting" });
+  await t.throwsAsync(result, { name: 'InvalidPluginSetting' });
 });
 
 test('it cannot add royalty percentages that dont add up to 100', async (t) => {
@@ -649,7 +649,7 @@ test('it cannot add royalty percentages that dont add up to 100', async (t) => {
     }),
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: "InvalidPluginSetting" });
+  await t.throwsAsync(result, { name: 'InvalidPluginSetting' });
 });
 
 test('it cannot add royalty percentages that has duplicate creators', async (t) => {
@@ -673,7 +673,7 @@ test('it cannot add royalty percentages that has duplicate creators', async (t) 
     }),
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: "InvalidPluginSetting" });
+  await t.throwsAsync(result, { name: 'InvalidPluginSetting' });
 });
 test('it cannot add royalty basis points greater than 10000', async (t) => {
   // Given a Umi instance and a new signer.
@@ -692,7 +692,7 @@ test('it cannot add royalty basis points greater than 10000', async (t) => {
     }),
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: "InvalidPluginSetting" });
+  await t.throwsAsync(result, { name: 'InvalidPluginSetting' });
 });
 
 test('it cannot update royalty percentages that do not add up to 100', async (t) => {

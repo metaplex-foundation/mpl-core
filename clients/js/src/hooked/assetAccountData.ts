@@ -72,12 +72,10 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
           Number(pluginHeader.pluginRegistryOffset)
         );
 
-      console.log(pluginRegistry.registry);
       pluginsList = registryRecordsToPluginsList(
         pluginRegistry.registry,
         buffer
       );
-      console.log(pluginsList);
     }
     const updateAuth = {
       type: asset.updateAuthority.__kind,

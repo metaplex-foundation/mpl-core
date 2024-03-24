@@ -1490,13 +1490,6 @@
       }
     },
     {
-      "name": "Immutable",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
       "name": "PermanentBurnDelegate",
       "type": {
         "kind": "struct",
@@ -2121,14 +2114,6 @@
                 "defined": "PermanentBurnDelegate"
               }
             ]
-          },
-          {
-            "name": "Immutable",
-            "fields": [
-              {
-                "defined": "Immutable"
-              }
-            ]
           }
         ]
       }
@@ -2164,9 +2149,6 @@
           },
           {
             "name": "PermanentBurnDelegate"
-          },
-          {
-            "name": "Immutable"
           }
         ]
       }
@@ -2474,11 +2456,6 @@
     },
     {
       "code": 28,
-      "name": "ImmutableAsset",
-      "msg": "Cannot update an immutable asset"
-    },
-    {
-      "code": 29,
       "name": "InvalidPluginSetting",
       "msg": "Invalid setting for plugin"
     }

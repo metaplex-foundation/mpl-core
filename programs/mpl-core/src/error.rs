@@ -121,11 +121,7 @@ pub enum MplCoreError {
     #[error("Plugin Manager cannot redelegate a delegated plugin without revoking first")]
     CannotRedelegate,
 
-    /// 28 - Cannot update an immutable asset
-    #[error("Cannot update an immutable asset")]
-    ImmutableAsset,
-
-    /// 29 - Invalid setting for plugin
+    /// 28 - Invalid setting for plugin
     #[error("Invalid setting for plugin")]
     InvalidPluginSetting,
 }
