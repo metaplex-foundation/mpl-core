@@ -116,10 +116,10 @@ export const createAssetWithCollection: (
   const collection = assetInput.collection
     ? await fetchCollectionV1(umi, publicKey(assetInput.collection))
     : await createCollection(umi, {
-        payer: assetInput.payer,
-        updateAuthority: assetInput.updateAuthority,
-        ...collectionInput,
-      });
+      payer: assetInput.payer,
+      updateAuthority: assetInput.updateAuthority,
+      ...collectionInput,
+    });
 
   const asset = await createAsset(umi, {
     ...assetInput,
@@ -146,6 +146,7 @@ export const assertAsset = async (
   const { asset, owner, name, uri, ...rest } = input;
   const assetAddress = publicKey(input.asset);
   const assetWithPlugins = await fetchAssetV1(umi, assetAddress);
+  console.log('assetWithPlugins', assetWithPlugins);
 
   // Name.
   if (typeof name === 'string') t.is(assetWithPlugins.name, name);
