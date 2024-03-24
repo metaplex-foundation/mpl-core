@@ -6,7 +6,7 @@ use crate::{
     state::{Authority, DataBlob},
 };
 
-use super::{Plugin, PluginValidation, ValidationResult};
+use super::{Plugin, PluginType, PluginValidation, ValidationResult};
 
 /// This plugin manages additional permissions to burn.
 /// Any authorities approved are given permission to burn the asset on behalf of the owner.
@@ -45,9 +45,15 @@ impl PluginValidation for Immutable {
         new_plugin: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(plugin) = new_plugin {
-            if plugin.manager() == Authority::Owner {
-                Ok(ValidationResult::Approved)
-            } else {
+            // If we're adding the immutable plugin, then we're good to go OR
+            // If the plugin is not the immutable plugin, then we need to check if it's an owner-managed plugin..
+            if PluginType::from(plugin) == PluginType::Immutable
+                || plugin.manager() == Authority::Owner
+            {
+                Ok(ValidationResult::Pass)
+            }
+            // If it's not then it should fail.
+            else {
                 Err(MplCoreError::ImmutableAsset.into())
             }
         } else {
@@ -63,7 +69,7 @@ impl PluginValidation for Immutable {
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(plugin) = plugin_to_remove {
             if plugin.manager() == Authority::Owner {
-                Ok(ValidationResult::Approved)
+                Ok(ValidationResult::Pass)
             } else {
                 Err(MplCoreError::ImmutableAsset.into())
             }

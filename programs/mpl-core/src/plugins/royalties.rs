@@ -3,11 +3,7 @@ use std::collections::HashSet;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{
-    error::MplCoreError,
-    plugins::{royalties, PluginType},
-    state::Authority,
-};
+use crate::{error::MplCoreError, plugins::PluginType, state::Authority};
 
 use super::{Plugin, PluginValidation, ValidationResult};
 
@@ -124,6 +120,7 @@ impl PluginValidation for Royalties {
         solana_program::msg!("authority: {:?}", authority);
         solana_program::msg!("resolved_authority: {:?}", resolved_authorities);
 
+        // Perform validation on the new royalties plugin data.
         if let Plugin::Royalties(royalties) = plugin_to_update {
             if resolved_authorities.contains(authority) {
                 solana_program::msg!("Validating royalties");
