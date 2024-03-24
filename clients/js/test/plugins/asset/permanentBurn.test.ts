@@ -12,6 +12,8 @@ import {
   updatePluginAuthority,
   removePluginV1,
   PluginType,
+  addPluginV1,
+  createPlugin,
 } from '../../../src';
 import {
   assertAsset,
@@ -243,3 +245,37 @@ test('it can remove permanent burn plugin if update authority', async (t) => {
     permanentBurnDelegate: undefined,
   });
 });
+
+test('it can add another plugin on asset with permanent burn plugin', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentTransferDelegate',
+      }),
+    ],
+  });
+
+  await addPluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'TransferDelegate',
+    }),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    permanentTransferDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+    },
+    transferDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+  });
+})
