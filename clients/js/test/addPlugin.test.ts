@@ -186,7 +186,7 @@ test('it can add a plugin to a collection', async (t) => {
       type: 'Royalties',
       data: {
         basisPoints: 5,
-        creators: [],
+        creators: [{ address: umi.identity.publicKey, percentage: 100 }],
         ruleSet: ruleSet('None'),
       },
     }),
@@ -201,7 +201,7 @@ test('it can add a plugin to a collection', async (t) => {
         type: 'UpdateAuthority',
       },
       basisPoints: 5,
-      creators: [],
+      creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       ruleSet: ruleSet('None'),
     },
   });
