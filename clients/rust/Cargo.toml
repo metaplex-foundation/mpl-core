@@ -1,5 +1,7 @@
 [package]
 name = "mpl-core"
+description = "A flexible digital asset standard for Solana"
+repository = "https://github.com/metaplex-foundation/mpl-core"
 version = "0.1.0"
 edition = "2021"
 readme = "README.md"
