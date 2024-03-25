@@ -127,7 +127,9 @@ test('it can update an asset update authority', async (t) => {
     asset: asset.publicKey,
     newName: 'Test Bread 2',
     newUri: 'https://example.com/bread2',
-    newUpdateAuthority: updateAuthority("Address", [newUpdateAuthority.publicKey]),
+    newUpdateAuthority: updateAuthority('Address', [
+      newUpdateAuthority.publicKey,
+    ]),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -149,8 +151,10 @@ test('it cannot update an asset update authority to be part of a collection (rig
     asset: asset.publicKey,
     newName: 'Test Bread 2',
     newUri: 'https://example.com/bread2',
-    newUpdateAuthority: updateAuthority("Collection", [newCollection.publicKey]),
+    newUpdateAuthority: updateAuthority('Collection', [
+      newCollection.publicKey,
+    ]),
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: "NotAvailable" });
+  await t.throwsAsync(result, { name: 'NotAvailable' });
 });
