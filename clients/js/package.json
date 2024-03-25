@@ -1,6 +1,6 @@
 {
   "name": "@metaplex-foundation/mpl-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Digital Assets",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -24,8 +24,7 @@
   "repository": "https://github.com/metaplex-foundation/mpl-core.git",
   "author": "Metaplex Maintainers <contact@metaplex.com>",
   "license": "Apache-2.0",
-  "dependencies": {
-  },
+  "dependencies": {},
   "peerDependencies": {
     "@metaplex-foundation/umi": "^0.8.2",
     "@metaplex-foundation/mpl-toolbox": "^0.8.0",
