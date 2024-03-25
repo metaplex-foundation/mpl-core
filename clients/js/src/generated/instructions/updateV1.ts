@@ -14,6 +14,7 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
+  none,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -29,6 +30,11 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import {
+  UpdateAuthority,
+  UpdateAuthorityArgs,
+  getUpdateAuthoritySerializer,
+} from '../types';
 
 // Accounts.
 export type UpdateV1InstructionAccounts = {
@@ -40,8 +46,6 @@ export type UpdateV1InstructionAccounts = {
   payer?: Signer;
   /** The update authority or update authority delegate of the asset */
   authority?: Signer;
-  /** The new update authority of the asset */
-  newUpdateAuthority?: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
@@ -53,11 +57,13 @@ export type UpdateV1InstructionData = {
   discriminator: number;
   newName: Option<string>;
   newUri: Option<string>;
+  newUpdateAuthority: Option<UpdateAuthority>;
 };
 
 export type UpdateV1InstructionDataArgs = {
   newName: OptionOrNullable<string>;
   newUri: OptionOrNullable<string>;
+  newUpdateAuthority?: OptionOrNullable<UpdateAuthorityArgs>;
 };
 
 export function getUpdateV1InstructionDataSerializer(): Serializer<
@@ -74,10 +80,15 @@ export function getUpdateV1InstructionDataSerializer(): Serializer<
         ['discriminator', u8()],
         ['newName', option(string())],
         ['newUri', option(string())],
+        ['newUpdateAuthority', option(getUpdateAuthoritySerializer())],
       ],
       { description: 'UpdateV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 15 })
+    (value) => ({
+      ...value,
+      discriminator: 15,
+      newUpdateAuthority: value.newUpdateAuthority ?? none(),
+    })
   ) as Serializer<UpdateV1InstructionDataArgs, UpdateV1InstructionData>;
 }
 
@@ -117,18 +128,13 @@ export function updateV1(
       isWritable: false as boolean,
       value: input.authority ?? null,
     },
-    newUpdateAuthority: {
-      index: 4,
-      isWritable: false as boolean,
-      value: input.newUpdateAuthority ?? null,
-    },
     systemProgram: {
-      index: 5,
+      index: 4,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
-      index: 6,
+      index: 5,
       isWritable: false as boolean,
       value: input.logWrapper ?? null,
     },
