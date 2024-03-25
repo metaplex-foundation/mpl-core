@@ -20,6 +20,7 @@ use crate::{
 pub(crate) struct UpdateV1Args {
     pub new_name: Option<String>,
     pub new_uri: Option<String>,
+    pub new_update_authority: Option<UpdateAuthority>,
 }
 
 pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) -> ProgramResult {
@@ -55,8 +56,13 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
     let asset_size = asset.get_size() as isize;
 
     let mut dirty = false;
-    if let Some(new_update_authority) = ctx.accounts.new_update_authority {
-        asset.update_authority = UpdateAuthority::Address(*new_update_authority.key);
+    if let Some(new_update_authority) = args.new_update_authority {
+        if let UpdateAuthority::Collection(_collection_address) = new_update_authority {
+            // Updating collections is not currently available.
+            return Err(MplCoreError::NotAvailable.into());
+        };
+
+        asset.update_authority = new_update_authority;
         dirty = true;
     }
     if let Some(new_name) = &args.new_name {

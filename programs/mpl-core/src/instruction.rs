@@ -152,9 +152,8 @@ pub(crate) enum MplAssetInstruction {
     #[account(1, optional, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, optional, signer, name="authority", desc = "The update authority or update authority delegate of the asset")]
-    #[account(4, optional, name="new_update_authority", desc = "The new update authority of the asset")]
-    #[account(5, name="system_program", desc = "The system program")]
-    #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    #[account(4, name="system_program", desc = "The system program")]
+    #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     UpdateV1(UpdateV1Args),
 
     /// Update an mpl-core.

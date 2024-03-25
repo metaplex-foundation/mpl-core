@@ -1008,15 +1008,6 @@
           ]
         },
         {
-          "name": "newUpdateAuthority",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The new update authority of the asset"
-          ]
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
@@ -1895,6 +1886,14 @@
             "name": "newUri",
             "type": {
               "option": "string"
+            }
+          },
+          {
+            "name": "newUpdateAuthority",
+            "type": {
+              "option": {
+                "defined": "UpdateAuthority"
+              }
             }
           }
         ]

@@ -91,6 +91,13 @@ kinobi.update(
           defaultValue: k.publicKeyValueNode("8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v")
         }
       }
+    },
+    updateV1: {
+      arguments: {
+        newUpdateAuthority: {
+          defaultValue: k.noneValueNode()
+        }
+      }
     }
   })
 );
