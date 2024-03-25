@@ -90,6 +90,23 @@ pub(crate) fn add_collection_plugin<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
+    if Plugin::validate_add_plugin(
+        &args.plugin,
+        authority,
+        None,
+        &args.init_authority.unwrap_or(args.plugin.manager()),
+        Some(&args.plugin),
+        None,
+    )? == ValidationResult::Rejected
+    {
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
+
+    // Cannot add owner-managed plugins to collection.
+    if args.plugin.manager() == Authority::Owner {
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
+
     // Validate collection permissions.
     let _ = validate_collection_permissions(
         authority,

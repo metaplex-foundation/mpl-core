@@ -31,7 +31,8 @@ impl PluginValidation for PermanentTransferDelegate {
         // This plugin can only be added at creation time, so we
         // always reject it.
         if new_plugin.is_some()
-            && PluginType::from(new_plugin.unwrap()) == PluginType::PermanentTransferDelegate{
+            && PluginType::from(new_plugin.unwrap()) == PluginType::PermanentTransferDelegate
+        {
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)

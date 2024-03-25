@@ -278,4 +278,4 @@ test('it can add another plugin on asset with permanent burn plugin', async (t) 
       },
     },
   });
-})
+});
