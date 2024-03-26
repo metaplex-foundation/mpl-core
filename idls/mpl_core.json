@@ -2452,6 +2452,11 @@
       "code": 27,
       "name": "CannotRedelegate",
       "msg": "Plugin Manager cannot redelegate a delegated plugin without revoking first"
+    },
+    {
+      "code": 28,
+      "name": "InvalidPluginSetting",
+      "msg": "Invalid setting for plugin"
     }
   ],
   "metadata": {

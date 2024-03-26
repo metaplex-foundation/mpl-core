@@ -3,7 +3,7 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::{
     plugins::PluginType,
-    state::{Authority, CoreAsset, DataBlob},
+    state::{Authority, DataBlob},
 };
 
 use super::{Plugin, PluginValidation, ValidationResult};
@@ -41,28 +41,6 @@ impl DataBlob for PermanentFreezeDelegate {
 }
 
 impl PluginValidation for PermanentFreezeDelegate {
-    fn validate_update_plugin<T: CoreAsset>(
-        &self,
-        core_asset: &T,
-        authority_info: &AccountInfo,
-        authority: &Authority,
-    ) -> Result<ValidationResult, ProgramError> {
-        // The owner can't update the freeze status.
-        if (authority_info.key == &core_asset.update_authority().key()
-                && authority == (&Authority::UpdateAuthority))
-            || authority == (&Authority::Address {
-                address: *authority_info.key,
-            })
-            // Unless the owner is the only authority.
-            || (authority_info.key == core_asset.owner()
-                && authority == (&Authority::Owner))
-        {
-            Ok(ValidationResult::Approved)
-        } else {
-            Ok(ValidationResult::Pass)
-        }
-    }
-
     fn validate_burn(
         &self,
         _authority_info: &AccountInfo,

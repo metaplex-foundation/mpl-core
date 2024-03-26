@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{plugins::PluginType, state::Authority};
+use crate::{error::MplCoreError, plugins::PluginType, state::Authority};
 
 use super::{Plugin, PluginValidation, ValidationResult};
 
@@ -39,7 +39,7 @@ pub struct Royalties {
 fn validate_royalties(royalties: &Royalties) -> Result<ValidationResult, ProgramError> {
     if royalties.basis_points > 10000 {
         // TODO propagate a more useful error
-        return Err(ProgramError::InvalidArgument);
+        return Err(MplCoreError::InvalidPluginSetting.into());
     }
     if royalties
         .creators
@@ -48,7 +48,7 @@ fn validate_royalties(royalties: &Royalties) -> Result<ValidationResult, Program
         != 100
     {
         // TODO propagate a more useful error
-        return Err(ProgramError::InvalidArgument);
+        return Err(MplCoreError::InvalidPluginSetting.into());
     }
     // check unique creators array
     let mut seen_addresses = HashSet::new();
@@ -58,7 +58,7 @@ fn validate_royalties(royalties: &Royalties) -> Result<ValidationResult, Program
         .all(|creator| seen_addresses.insert(creator.address))
     {
         // If `insert` returns false, it means the address was already in the set, indicating a duplicate
-        return Err(ProgramError::InvalidArgument);
+        return Err(MplCoreError::InvalidPluginSetting.into());
     }
 
     Ok(ValidationResult::Pass)
@@ -110,13 +110,27 @@ impl PluginValidation for Royalties {
         validate_royalties(self)
     }
 
-    fn validate_update_plugin<T: crate::state::CoreAsset>(
+    fn validate_update_plugin(
         &self,
-        _core_asset: &T,
         _authority_info: &AccountInfo,
-        _authority: &Authority,
+        authority: &Authority,
+        resolved_authorities: &[Authority],
+        plugin_to_update: &Plugin,
     ) -> Result<ValidationResult, ProgramError> {
-        validate_royalties(self)
+        solana_program::msg!("authority: {:?}", authority);
+        solana_program::msg!("resolved_authority: {:?}", resolved_authorities);
+
+        // Perform validation on the new royalties plugin data.
+        if let Plugin::Royalties(royalties) = plugin_to_update {
+            if resolved_authorities.contains(authority) {
+                solana_program::msg!("Validating royalties");
+                validate_royalties(royalties)
+            } else {
+                Ok(ValidationResult::Pass)
+            }
+        } else {
+            Ok(ValidationResult::Pass)
+        }
     }
 
     /// Validate the revoke plugin authority lifecycle action.

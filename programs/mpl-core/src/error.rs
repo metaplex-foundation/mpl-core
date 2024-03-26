@@ -120,6 +120,10 @@ pub enum MplCoreError {
     /// 27 - Plugin Manager cannot redelegate a delegated plugin without revoking first.
     #[error("Plugin Manager cannot redelegate a delegated plugin without revoking first")]
     CannotRedelegate,
+
+    /// 28 - Invalid setting for plugin
+    #[error("Invalid setting for plugin")]
+    InvalidPluginSetting,
 }
 
 impl PrintProgramError for MplCoreError {

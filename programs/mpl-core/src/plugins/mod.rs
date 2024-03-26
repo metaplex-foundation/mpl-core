@@ -40,7 +40,7 @@ use crate::{
 };
 
 /// Definition of the plugin variants, each containing a link to the plugin struct.
-#[repr(u16)]
+#[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum Plugin {
     /// Royalties plugin.
@@ -90,7 +90,7 @@ impl Plugin {
 impl Compressible for Plugin {}
 
 /// List of First Party Plugin types.
-#[repr(u16)]
+#[repr(C)]
 #[derive(
     Clone,
     Copy,

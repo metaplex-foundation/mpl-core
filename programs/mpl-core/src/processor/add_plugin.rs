@@ -34,6 +34,7 @@ pub(crate) fn add_plugin<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
+    //TODO: Seed with Rejected
     if Plugin::validate_add_plugin(
         &args.plugin,
         authority,

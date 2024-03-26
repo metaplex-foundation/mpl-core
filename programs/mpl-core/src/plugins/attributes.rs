@@ -1,9 +1,6 @@
+use super::PluginValidation;
+use crate::state::DataBlob;
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{account_info::AccountInfo, program_error::ProgramError};
-
-use crate::state::{Authority, CoreAsset, DataBlob};
-
-use super::{PluginValidation, ValidationResult};
 
 /// The Attribute type which represent a Key Value pair.
 #[repr(C)]
@@ -40,23 +37,4 @@ impl DataBlob for Attributes {
     }
 }
 
-impl PluginValidation for Attributes {
-    fn validate_update_plugin<T: CoreAsset>(
-        &self,
-        core_asset: &T,
-        authority_info: &AccountInfo,
-        authority: &Authority,
-    ) -> Result<ValidationResult, ProgramError> {
-        if authority_info.key == &core_asset.update_authority().key()
-            && authority == (&Authority::UpdateAuthority)
-            || authority
-                == (&Authority::Address {
-                    address: *authority_info.key,
-                })
-        {
-            Ok(ValidationResult::Approved)
-        } else {
-            Ok(ValidationResult::Pass)
-        }
-    }
-}
+impl PluginValidation for Attributes {}
