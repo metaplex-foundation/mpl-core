@@ -13,6 +13,7 @@ import {
   AttributesArgs,
   PermanentFreezeDelegateArgs,
   PluginType,
+  UpdateDelegateArgs,
 } from './generated';
 import { BasePluginAuthority, PluginsList } from './types';
 import { mapPluginAuthority } from './authority';
@@ -48,6 +49,7 @@ export type CreatePluginArgs =
     }
   | {
       type: 'UpdateDelegate';
+      data: UpdateDelegateArgs;
     }
   | {
       type: 'Attributes';
