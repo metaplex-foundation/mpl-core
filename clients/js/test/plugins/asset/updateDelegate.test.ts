@@ -22,7 +22,6 @@ test('it can create an asset with updateDelegate', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'UpdateDelegate',
-        data: { additionalDelegates: [] },
       }),
     ],
   });
@@ -46,7 +45,7 @@ test('it cannot create an asset with updateDelegate with additional delegates', 
   const umi = await createUmi();
 
   // When we attempt to create a new asset with updateDelegate with additional delegates.
-  let result = createAsset(umi, {
+  const result = createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
         type: 'UpdateDelegate',
@@ -94,7 +93,6 @@ test('it cannot update updateDelegate on asset with additional delegates', async
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'UpdateDelegate',
-      data: { additionalDelegates: [] },
     }),
   }).sendAndConfirm(umi);
 

@@ -79,7 +79,6 @@ test('it can remove authority managed plugin from collection', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'UpdateDelegate',
-        data: { additionalDelegates: [] },
       }),
     ],
   });
@@ -160,7 +159,6 @@ test('it can remove authority managed plugin from collection using delegate auth
         pluginAuthorityPair({
           type: 'UpdateDelegate',
           authority: addressPluginAuthority(delegate.publicKey),
-          data: { additionalDelegates: [] },
         }),
       ],
     }

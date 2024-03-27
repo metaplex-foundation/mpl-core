@@ -30,7 +30,6 @@ test('it can create a new asset with a collection if it is the collection update
     plugins: [
       pluginAuthorityPair({
         type: 'UpdateDelegate',
-        data: { additionalDelegates: [] },
       }),
     ],
   });
@@ -82,7 +81,6 @@ test('it can add updateDelegate to collection and then approve', async (t) => {
     collection: collection.publicKey,
     plugin: createPlugin({
       type: 'UpdateDelegate',
-      data: { additionalDelegates: [] },
     }),
   }).sendAndConfirm(umi);
 
@@ -158,7 +156,6 @@ test('it cannot update updateDelegate on collection with additional delegates', 
     collection: collection.publicKey,
     plugin: createPlugin({
       type: 'UpdateDelegate',
-      data: { additionalDelegates: [] },
     }),
   }).sendAndConfirm(umi);
 

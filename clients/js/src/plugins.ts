@@ -49,7 +49,7 @@ export type CreatePluginArgs =
     }
   | {
       type: 'UpdateDelegate';
-      data: UpdateDelegateArgs;
+      data?: UpdateDelegateArgs;
     }
   | {
       type: 'Attributes';
@@ -67,6 +67,17 @@ export type CreatePluginArgs =
     };
 
 export function createPlugin(args: CreatePluginArgs): BasePlugin {
+  // TODO refactor when there are more required empty fields in plugins
+  if (args.type === 'UpdateDelegate') {
+    return {
+      __kind: args.type,
+      fields: [
+        (args as any).data || {
+          additionalDelegates: [],
+        },
+      ],
+    };
+  }
   return {
     __kind: args.type,
     fields: [(args as any).data || {}],
@@ -77,6 +88,20 @@ export function pluginAuthorityPair(
   args: PluginAuthorityPairHelperArgs
 ): PluginAuthorityPair {
   const { type, authority, data } = args as any;
+  // TODO refactor when there are more required empty fields in plugins
+  if (type === 'UpdateDelegate') {
+    return {
+      plugin: {
+        __kind: type,
+        fields: [
+          data || {
+            additionalDelegates: [],
+          },
+        ],
+      },
+      authority: authority ? some(authority) : none(),
+    };
+  }
   return {
     plugin: { __kind: type, fields: [data || {}] },
     authority: authority ? some(authority) : none(),
