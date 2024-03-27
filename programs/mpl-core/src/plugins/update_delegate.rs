@@ -44,6 +44,17 @@ impl DataBlob for UpdateDelegate {
 }
 
 impl PluginValidation for UpdateDelegate {
+    fn validate_create(
+        &self,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
+    ) -> Result<ValidationResult, ProgramError> {
+        if !self.additional_delegates.is_empty() {
+            return Err(MplCoreError::NotAvailable.into());
+        }
+        Ok(ValidationResult::Pass)
+    }
+
     fn validate_add_plugin(
         &self,
         authority_info: &AccountInfo,

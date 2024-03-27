@@ -104,3 +104,46 @@ test('it can add updateDelegate to collection and then approve', async (t) => {
     },
   });
 });
+
+
+test('it cannot create a collection with updateDelegate with additional delegates', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  // When we attempt to create a new collection with updateDelegate with additional delegates.
+  let result = createCollection(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'UpdateDelegate',
+        data: { additionalDelegates: [generateSigner(umi).publicKey] },
+      }),
+    ],
+  });
+
+  // The program does not allow it at creation.
+  await t.throwsAsync(result, { name: 'NotAvailable' });
+});
+
+test('it cannot add updateDelegate with additional delegates', async (t) => {
+  // Given a Umi instance and a new collection.
+  const umi = await createUmi();
+  const collection = await createCollection(umi);
+
+  // When we attempt to add an updateDelegate with additional delegates.
+  const result = addCollectionPluginV1(umi, {
+    collection: collection.publicKey,
+    plugin: createPlugin({
+      type: 'UpdateDelegate',
+      data: { additionalDelegates: [generateSigner(umi).publicKey] },
+    }),
+  }).sendAndConfirm(umi);
+
+  // The program does not allow it.
+  await t.throwsAsync(result, { name: 'NotAvailable' });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+  });
+});
