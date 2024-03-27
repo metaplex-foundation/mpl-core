@@ -5,3 +5,4 @@ export * from './types';
 export * from './authority';
 export * from './plugins';
 export * from './helpers';
+export * from './instructions';
