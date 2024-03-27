@@ -1,7 +1,11 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 import { assertAsset, createAsset, createUmi } from '../_setup';
-import { pluginAuthorityPair, addressPluginAuthority, legacyRevoke } from '../../src';
+import {
+  pluginAuthorityPair,
+  addressPluginAuthority,
+  legacyRevoke,
+} from '../../src';
 import { ERR_CANNOT_REVOKE } from '../../src/instructions/errors';
 
 test('it can revoke with one plugin defined', async (t) => {

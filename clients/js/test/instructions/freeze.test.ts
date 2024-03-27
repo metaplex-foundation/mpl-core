@@ -37,7 +37,7 @@ test('it can use the freeze helper to freeze an asset', async (t) => {
       frozen: true,
     },
   });
-})
+});
 
 test('it can use the freeze helper to freeze an asset with the plugin defined', async (t) => {
   const umi = await createUmi();
@@ -69,7 +69,7 @@ test('it can use the freeze helper to freeze an asset with the plugin defined', 
       frozen: true,
     },
   });
-})
+});
 
 test('it can use the freeze helper to freeze an asset with the plugin delegated if unfrozen', async (t) => {
   const umi = await createUmi();
@@ -103,7 +103,7 @@ test('it can use the freeze helper to freeze an asset with the plugin delegated 
       frozen: true,
     },
   });
-})
+});
 
 test('it can use freeze to freeze asset in collection', async (t) => {
   const umi = await createUmi();
@@ -129,7 +129,7 @@ test('it can use freeze to freeze asset in collection', async (t) => {
       frozen: true,
     },
   });
-})
+});
 
 test('it cannot freeze a frozen asset', async (t) => {
   const umi = await createUmi();
@@ -144,11 +144,15 @@ test('it cannot freeze a frozen asset', async (t) => {
     ],
   });
 
-  t.throws(()=> freezeAsset(umi, {
-    asset,
-    delegate: delegate.publicKey,
-  }).sendAndConfirm(umi), { message: 'Cannot freeze: asset is already frozen' });
-  
+  t.throws(
+    () =>
+      freezeAsset(umi, {
+        asset,
+        delegate: delegate.publicKey,
+      }).sendAndConfirm(umi),
+    { message: 'Cannot freeze: asset is already frozen' }
+  );
+
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
@@ -159,34 +163,42 @@ test('it cannot freeze a frozen asset', async (t) => {
       },
       frozen: true,
     },
-  })
-})
+  });
+});
 
 test('it cannot freeze a perma frozen asset in collection', async (t) => {
   const umi = await createUmi();
   const delegate = generateSigner(umi);
 
-  const { asset, collection } = await createAssetWithCollection(umi, {}, {
-    plugins: [
-      pluginAuthorityPair({
-        type: 'PermanentFreezeDelegate',
-        data: { frozen: true },
-      }),
-    ]
-  });
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'PermanentFreezeDelegate',
+          data: { frozen: true },
+        }),
+      ],
+    }
+  );
 
-  t.throws(() => freezeAsset(umi, {
-    asset,
-    collection,
-    delegate: delegate.publicKey,
-  }).sendAndConfirm(umi), { message: 'Cannot freeze: asset is already frozen' });
+  t.throws(
+    () =>
+      freezeAsset(umi, {
+        asset,
+        collection,
+        delegate: delegate.publicKey,
+      }).sendAndConfirm(umi),
+    { message: 'Cannot freeze: asset is already frozen' }
+  );
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-  })
-})
+  });
+});
 
 test('it can use thaw helper to thaw a frozen asset', async (t) => {
   const umi = await createUmi();
@@ -204,7 +216,7 @@ test('it can use thaw helper to thaw a frozen asset', async (t) => {
 
   await thawAsset(umi, {
     asset,
-    delegate
+    delegate,
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -218,7 +230,7 @@ test('it can use thaw helper to thaw a frozen asset', async (t) => {
       frozen: false,
     },
   });
-})
+});
 
 test('it can use thaw helper to thaw a frozen asset in collection', async (t) => {
   const umi = await createUmi();
@@ -237,7 +249,7 @@ test('it can use thaw helper to thaw a frozen asset in collection', async (t) =>
   await thawAsset(umi, {
     asset,
     collection,
-    delegate
+    delegate,
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -251,7 +263,7 @@ test('it can use thaw helper to thaw a frozen asset in collection', async (t) =>
       frozen: false,
     },
   });
-})
+});
 
 test('it cannot thaw an unfrozen asset', async (t) => {
   const umi = await createUmi();
@@ -267,13 +279,15 @@ test('it cannot thaw an unfrozen asset', async (t) => {
     ],
   });
 
-  t.throws(() => {
-    thawAsset(umi, {
-      asset,
-      delegate
-    }).sendAndConfirm(umi);
-  }, {  message: 'Cannot thaw: asset is not frozen' })
-
+  t.throws(
+    () => {
+      thawAsset(umi, {
+        asset,
+        delegate,
+      }).sendAndConfirm(umi);
+    },
+    { message: 'Cannot thaw: asset is not frozen' }
+  );
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -287,4 +301,4 @@ test('it cannot thaw an unfrozen asset', async (t) => {
       frozen: false,
     },
   });
-})
+});
