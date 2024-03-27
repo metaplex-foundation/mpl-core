@@ -36,8 +36,6 @@ pub fn assert_authority<T: CoreAsset>(
     authority_info: &AccountInfo,
     authority: &Authority,
 ) -> ProgramResult {
-    solana_program::msg!("Update authority: {:?}", asset.update_authority());
-    solana_program::msg!("Check if {:?} matches {:?}", authority_info.key, authority);
     match authority {
         Authority::None => (),
         Authority::Owner => {
@@ -268,7 +266,7 @@ pub fn validate_asset_permissions<'a>(
     let mut approved = false;
     let mut rejected = false;
     if asset_check != CheckResult::None {
-        match asset_validate_fp(&AssetV1::load(asset, 0)?, authority_info, new_plugin)? {
+        match asset_validate_fp(&deserialized_asset, authority_info, new_plugin)? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
             ValidationResult::Pass => (),
