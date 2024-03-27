@@ -48,6 +48,7 @@ test('it can detect correct authorities on many types and plugins', async (t) =>
         pluginAuthorityPair({
           type: 'UpdateDelegate',
           authority: addressPluginAuthority(overrideDelegate.publicKey),
+          data: { additionalDelegates: [] },
         }),
         pluginAuthorityPair({
           type: 'BurnDelegate',
@@ -61,6 +62,7 @@ test('it can detect correct authorities on many types and plugins', async (t) =>
         pluginAuthorityPair({
           type: 'UpdateDelegate',
           authority: addressPluginAuthority(overridenDelegate.publicKey),
+          data: { additionalDelegates: [] },
         }),
         pluginAuthorityPair({
           type: 'PermanentFreezeDelegate',

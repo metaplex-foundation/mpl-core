@@ -78,6 +78,7 @@ test('it can detect correct update auth from asset update delegate', async (t) =
       pluginAuthorityPair({
         type: 'UpdateDelegate',
         authority: addressPluginAuthority(delegate.publicKey),
+        data: { additionalDelegates: [] },
       }),
     ],
   });
@@ -106,6 +107,7 @@ test('it can detect correct update auth from collection update delegate', async 
         pluginAuthorityPair({
           type: 'UpdateDelegate',
           authority: addressPluginAuthority(delegate.publicKey),
+          data: { additionalDelegates: [] },
         }),
       ],
     }

@@ -66,7 +66,12 @@ test('it can create a new asset with a collection', async (t) => {
     umi,
     {},
     {
-      plugins: [pluginAuthorityPair({ type: 'UpdateDelegate' })],
+      plugins: [
+        pluginAuthorityPair({
+          type: 'UpdateDelegate',
+          data: { additionalDelegates: [] },
+        }),
+      ],
     }
   );
 
@@ -78,6 +83,7 @@ test('it can create a new asset with a collection', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
+      additionalDelegates: [],
     },
   });
 
@@ -98,6 +104,7 @@ test('it can create a new asset with a collection with collection delegate', asy
     plugins: [
       pluginAuthorityPair({
         type: 'UpdateDelegate',
+        data: { additionalDelegates: [] },
       }),
     ],
   });

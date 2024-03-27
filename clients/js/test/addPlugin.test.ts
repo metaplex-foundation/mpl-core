@@ -62,7 +62,10 @@ test('it can add an authority managed plugin to an asset via update auth', async
 
   await addPluginV1(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'UpdateDelegate' }),
+    plugin: createPlugin({
+      type: 'UpdateDelegate',
+      data: { additionalDelegates: [] },
+    }),
     authority: updateAuth,
     payer: umi.identity,
   }).sendAndConfirm(umi);
@@ -76,6 +79,7 @@ test('it can add an authority managed plugin to an asset via update auth', async
       authority: {
         type: 'UpdateAuthority',
       },
+      additionalDelegates: [],
     },
   });
 });
@@ -240,6 +244,7 @@ test('it can add an authority-managed plugin to an asset via delegate authority'
         pluginAuthorityPair({
           type: 'UpdateDelegate',
           authority: addressPluginAuthority(delegate.publicKey),
+          data: { additionalDelegates: [] },
         }),
       ],
     }
@@ -351,6 +356,7 @@ test('it cannot add a owner-managed plugin to an asset via delegate authority', 
         pluginAuthorityPair({
           type: 'UpdateDelegate',
           authority: addressPluginAuthority(delegate.publicKey),
+          data: { additionalDelegates: [] },
         }),
       ],
     }
@@ -446,7 +452,10 @@ test('it can add a plugin to a collection with a plugin', async (t) => {
 
   await addCollectionPluginV1(umi, {
     collection: collection.publicKey,
-    plugin: createPlugin({ type: 'UpdateDelegate' }),
+    plugin: createPlugin({
+      type: 'UpdateDelegate',
+      data: { additionalDelegates: [] },
+    }),
     initAuthority: addressPluginAuthority(delegate.publicKey),
   }).sendAndConfirm(umi);
 
@@ -472,6 +481,7 @@ test('it can add a plugin to a collection with a plugin', async (t) => {
         type: 'Address',
         address: delegate.publicKey,
       },
+      additionalDelegates: [],
     },
   });
 });

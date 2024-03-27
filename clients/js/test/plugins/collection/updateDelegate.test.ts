@@ -26,7 +26,12 @@ test('it can create a new asset with a collection if it is the collection update
 
   // When we create a new account.
   const collection = await createCollection(umi, {
-    plugins: [pluginAuthorityPair({ type: 'UpdateDelegate' })],
+    plugins: [
+      pluginAuthorityPair({
+        type: 'UpdateDelegate',
+        data: { additionalDelegates: [] },
+      }),
+    ],
   });
 
   await approveCollectionPluginAuthorityV1(umi, {
@@ -44,6 +49,7 @@ test('it can create a new asset with a collection if it is the collection update
         type: 'Address',
         address: updateDelegate.publicKey,
       },
+      additionalDelegates: [],
     },
   });
 
@@ -73,7 +79,10 @@ test('it can add updateDelegate to collection and then approve', async (t) => {
   const collection = await createCollection(umi);
   await addCollectionPluginV1(umi, {
     collection: collection.publicKey,
-    plugin: createPlugin({ type: 'UpdateDelegate' }),
+    plugin: createPlugin({
+      type: 'UpdateDelegate',
+      data: { additionalDelegates: [] },
+    }),
   }).sendAndConfirm(umi);
 
   await approveCollectionPluginAuthorityV1(umi, {
@@ -91,6 +100,7 @@ test('it can add updateDelegate to collection and then approve', async (t) => {
         type: 'Address',
         address: updateDelegate.publicKey,
       },
+      additionalDelegates: [],
     },
   });
 });
