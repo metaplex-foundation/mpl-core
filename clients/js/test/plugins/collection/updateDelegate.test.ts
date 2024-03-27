@@ -20,7 +20,7 @@ import {
   createUmi,
 } from '../../_setup';
 
-test('it can create a new asset with a collection if it is the collection update delegate', async (t) => {
+test('it can create a new asset with a collection if it is the collection updateDelegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const updateDelegate = await generateSignerWithSol(umi);
@@ -106,12 +106,11 @@ test('it can add updateDelegate to collection and then approve', async (t) => {
   });
 });
 
-
 test('it cannot create a collection with updateDelegate with additional delegates', async (t) => {
   // Given a Umi instance.
   const umi = await createUmi();
 
-  // When we attempt to create a new collection with update delegate with additional delegates.
+  // When we attempt to create a new collection with updateDelegate with additional delegates.
   let result = createCollection(umi, {
     plugins: [
       pluginAuthorityPair({
@@ -125,12 +124,12 @@ test('it cannot create a collection with updateDelegate with additional delegate
   await t.throwsAsync(result, { name: 'NotAvailable' });
 });
 
-test('it cannot add updateDelegate with additional delegates', async (t) => {
+test('it cannot add updateDelegate to collection with additional delegates', async (t) => {
   // Given a Umi instance and a new collection.
   const umi = await createUmi();
   const collection = await createCollection(umi);
 
-  // When we attempt to add an update delegate with additional delegates.
+  // When we attempt to add an updateDelegate with additional delegates.
   const result = addCollectionPluginV1(umi, {
     collection: collection.publicKey,
     plugin: createPlugin({
@@ -149,7 +148,7 @@ test('it cannot add updateDelegate with additional delegates', async (t) => {
   });
 });
 
-test('it cannot update updateDelegate with additional delegates', async (t) => {
+test('it cannot update updateDelegate on collection with additional delegates', async (t) => {
   // Given a Umi instance and a new collection.
   const umi = await createUmi();
   const collection = await createCollection(umi);
@@ -175,7 +174,7 @@ test('it cannot update updateDelegate with additional delegates', async (t) => {
     },
   });
 
-  // And we attempt to add an update delegate with additional delegates.
+  // And we attempt to add an updateDelegate with additional delegates.
   const result = updateCollectionPluginV1(umi, {
     collection: collection.publicKey,
     plugin: createPlugin({
