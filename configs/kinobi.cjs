@@ -87,8 +87,11 @@ kinobi.update(
     },
     collect: {
       accounts: {
-        recipient: {
+        recipient1: {
           defaultValue: k.publicKeyValueNode("8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v")
+        },
+        recipient2: {
+          defaultValue: k.publicKeyValueNode("MmHsqX4LxTfifxoH8BVRLUKrwDn1LPCac6YcCZTHhwt")
         }
       }
     },

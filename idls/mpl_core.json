@@ -1246,7 +1246,15 @@
       "name": "Collect",
       "accounts": [
         {
-          "name": "recipient",
+          "name": "recipient1",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the recipient"
+          ]
+        },
+        {
+          "name": "recipient2",
           "isMut": true,
           "isSigner": false,
           "docs": [
