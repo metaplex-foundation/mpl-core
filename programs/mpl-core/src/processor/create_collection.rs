@@ -8,7 +8,10 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateCollectionV1Accounts,
-    plugins::{create_plugin_meta, initialize_plugin, PluginAuthorityPair},
+    plugins::{
+        create_plugin_meta, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
+        PluginType, ValidationResult,
+    },
     state::{CollectionV1, Key},
 };
 
@@ -75,25 +78,48 @@ pub(crate) fn create_collection<'a>(
         serialized_data.len(),
     );
 
-    drop(serialized_data);
+    if let Some(plugins) = args.plugins {
+        if !plugins.is_empty() {
+            let (mut plugin_header, mut plugin_registry) = create_plugin_meta::<CollectionV1>(
+                new_collection,
+                ctx.accounts.collection,
+                ctx.accounts.payer,
+                ctx.accounts.system_program,
+            )?;
 
-    let (mut plugin_header, mut plugin_registry) = create_plugin_meta::<CollectionV1>(
-        new_collection,
-        ctx.accounts.collection,
-        ctx.accounts.payer,
-        ctx.accounts.system_program,
-    )?;
+            let mut approved = true;
+            let mut force_approved = false;
+            for plugin in &plugins {
+                if PluginType::check_create(&PluginType::from(&plugin.plugin)) != CheckResult::None
+                {
+                    match Plugin::validate_create(
+                        &plugin.plugin,
+                        ctx.accounts.payer,
+                        None,
+                        &plugin.authority.unwrap_or(plugin.plugin.manager()),
+                        None,
+                        None,
+                    )? {
+                        ValidationResult::Rejected => approved = false,
+                        ValidationResult::ForceApproved => force_approved = true,
+                        _ => (),
+                    };
+                }
+                initialize_plugin::<CollectionV1>(
+                    &plugin.plugin,
+                    &plugin.authority.unwrap_or(plugin.plugin.manager()),
+                    &mut plugin_header,
+                    &mut plugin_registry,
+                    ctx.accounts.collection,
+                    ctx.accounts.payer,
+                    ctx.accounts.system_program,
+                )?;
+            }
 
-    for plugin in args.plugins.unwrap_or_default() {
-        initialize_plugin::<CollectionV1>(
-            &plugin.plugin,
-            &plugin.authority.unwrap_or(plugin.plugin.manager()),
-            &mut plugin_header,
-            &mut plugin_registry,
-            ctx.accounts.collection,
-            ctx.accounts.payer,
-            ctx.accounts.system_program,
-        )?;
+            if !(approved || force_approved) {
+                return Err(MplCoreError::InvalidAuthority.into());
+            }
+        }
     }
 
     Ok(())

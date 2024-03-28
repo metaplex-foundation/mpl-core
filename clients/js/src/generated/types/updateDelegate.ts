@@ -6,9 +6,15 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
+import { PublicKey } from '@metaplex-foundation/umi';
+import {
+  Serializer,
+  array,
+  publicKey as publicKeySerializer,
+  struct,
+} from '@metaplex-foundation/umi/serializers';
 
-export type UpdateDelegate = {};
+export type UpdateDelegate = { additionalDelegates: Array<PublicKey> };
 
 export type UpdateDelegateArgs = UpdateDelegate;
 
@@ -16,7 +22,8 @@ export function getUpdateDelegateSerializer(): Serializer<
   UpdateDelegateArgs,
   UpdateDelegate
 > {
-  return struct<UpdateDelegate>([], {
-    description: 'UpdateDelegate',
-  }) as Serializer<UpdateDelegateArgs, UpdateDelegate>;
+  return struct<UpdateDelegate>(
+    [['additionalDelegates', array(publicKeySerializer())]],
+    { description: 'UpdateDelegate' }
+  ) as Serializer<UpdateDelegateArgs, UpdateDelegate>;
 }

@@ -106,6 +106,10 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
 ) -> Result<(Authority, U, usize), ProgramError> {
     let asset = T::load(account, 0)?;
 
+    if asset.get_size() == account.data_len() {
+        return Err(MplCoreError::PluginNotFound.into());
+    }
+
     let header = PluginHeaderV1::load(account, asset.get_size())?;
     let PluginRegistryV1 { registry, .. } =
         PluginRegistryV1::load(account, header.plugin_registry_offset)?;
@@ -141,6 +145,10 @@ pub fn fetch_wrapped_plugin<T: DataBlob + SolanaAccount>(
 ) -> Result<(Authority, Plugin), ProgramError> {
     let asset = T::load(account, 0)?;
 
+    if asset.get_size() == account.data_len() {
+        return Err(MplCoreError::PluginNotFound.into());
+    }
+
     let header = PluginHeaderV1::load(account, asset.get_size())?;
     let PluginRegistryV1 { registry, .. } =
         PluginRegistryV1::load(account, header.plugin_registry_offset)?;
@@ -162,6 +170,10 @@ pub fn fetch_wrapped_plugin<T: DataBlob + SolanaAccount>(
 pub fn fetch_plugins(account: &AccountInfo) -> Result<Vec<RegistryRecord>, ProgramError> {
     let asset = AssetV1::load(account, 0)?;
 
+    if asset.get_size() == account.data_len() {
+        return Err(MplCoreError::PluginNotFound.into());
+    }
+
     let header = PluginHeaderV1::load(account, asset.get_size())?;
     let PluginRegistryV1 { registry, .. } =
         PluginRegistryV1::load(account, header.plugin_registry_offset)?;
@@ -172,6 +184,10 @@ pub fn fetch_plugins(account: &AccountInfo) -> Result<Vec<RegistryRecord>, Progr
 /// Create plugin header and registry if it doesn't exist
 pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramError> {
     let asset = AssetV1::load(account, 0)?;
+
+    if asset.get_size() == account.data_len() {
+        return Err(MplCoreError::PluginNotFound.into());
+    }
 
     let header = PluginHeaderV1::load(account, asset.get_size())?;
     let PluginRegistryV1 { registry, .. } =
@@ -250,6 +266,10 @@ pub fn delete_plugin<'a, T: DataBlob>(
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
+    if asset.get_size() == account.data_len() {
+        return Err(MplCoreError::PluginNotFound.into());
+    }
+
     //TODO: Bytemuck this.
     let mut header = PluginHeaderV1::load(account, asset.get_size())?;
     let mut plugin_registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;

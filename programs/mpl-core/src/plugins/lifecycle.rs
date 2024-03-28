@@ -78,6 +78,7 @@ impl PluginType {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
             PluginType::Royalties => CheckResult::CanReject,
+            PluginType::UpdateDelegate => CheckResult::CanApprove,
             _ => CheckResult::None,
         }
     }

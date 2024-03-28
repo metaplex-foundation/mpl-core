@@ -76,7 +76,11 @@ test('it can remove authority managed plugin from collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const collection = await createCollection(umi, {
-    plugins: [pluginAuthorityPair({ type: 'UpdateDelegate' })],
+    plugins: [
+      pluginAuthorityPair({
+        type: 'UpdateDelegate',
+      }),
+    ],
   });
 
   await removeCollectionPluginV1(umi, {

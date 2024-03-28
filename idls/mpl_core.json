@@ -1601,7 +1601,14 @@
       "name": "UpdateDelegate",
       "type": {
         "kind": "struct",
-        "fields": []
+        "fields": [
+          {
+            "name": "additionalDelegates",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
       }
     },
     {
