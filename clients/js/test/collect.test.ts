@@ -18,14 +18,14 @@ import {
 } from '../src';
 import { createAsset, createUmi } from './_setup';
 
-const recipient1 = publicKey('8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v')
-const recipient2 = publicKey('MmHsqX4LxTfifxoH8BVRLUKrwDn1LPCac6YcCZTHhwt')
+const recipient1 = publicKey('8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v');
+const recipient2 = publicKey('MmHsqX4LxTfifxoH8BVRLUKrwDn1LPCac6YcCZTHhwt');
 
 test.before(async () => {
   const umi = await createUmi();
   await umi.rpc.airdrop(recipient1, sol(0.1));
   await umi.rpc.airdrop(recipient2, sol(0.1));
-})
+});
 
 const hasCollectAmount = async (umi: Umi, address: PublicKey) => {
   const account = await umi.rpc.getAccount(address);
@@ -101,15 +101,11 @@ test.serial('it can collect', async (t) => {
       pubkey: asset.publicKey,
     })
     .sendAndConfirm(umi);
-  const balEnd1 = await umi.rpc.getBalance(
-    recipient1
-  );
-  const balEnd2 = await umi.rpc.getBalance(
-    recipient2
-  );
+  const balEnd1 = await umi.rpc.getBalance(recipient1);
+  const balEnd2 = await umi.rpc.getBalance(recipient2);
   t.is(await hasCollectAmount(umi, asset.publicKey), false);
-  t.deepEqual(subtractAmounts(balEnd1, balStart1), sol(0.0015/2));
-  t.deepEqual(subtractAmounts(balEnd2, balStart2), sol(0.0015/2));
+  t.deepEqual(subtractAmounts(balEnd1, balStart1), sol(0.0015 / 2));
+  t.deepEqual(subtractAmounts(balEnd2, balStart2), sol(0.0015 / 2));
 });
 
 test.serial('it can collect burned asset', async (t) => {
@@ -129,13 +125,9 @@ test.serial('it can collect burned asset', async (t) => {
       pubkey: asset.publicKey,
     })
     .sendAndConfirm(umi);
-  const balEnd1 = await umi.rpc.getBalance(
-    recipient1
-  );
-  const balEnd2 = await umi.rpc.getBalance(
-    recipient2
-  );
+  const balEnd1 = await umi.rpc.getBalance(recipient1);
+  const balEnd2 = await umi.rpc.getBalance(recipient2);
   t.is(await hasCollectAmount(umi, asset.publicKey), false);
-  t.deepEqual(subtractAmounts(balEnd1, balStart1), sol(0.0015/2));
-  t.deepEqual(subtractAmounts(balEnd2, balStart2), sol(0.0015/2));
-})
+  t.deepEqual(subtractAmounts(balEnd1, balStart1), sol(0.0015 / 2));
+  t.deepEqual(subtractAmounts(balEnd2, balStart2), sol(0.0015 / 2));
+});
