@@ -1,9 +1,12 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
-import { assertAsset, createAsset, createUmi } from './_setup';
-import { addressPluginAuthority, pluginAuthorityPair } from '../src';
-import { legacyDelegate } from '../src/instructions/legacyDelegate';
-import { ERR_CANNOT_DELEGATE } from '../src/instructions/errors';
+import { assertAsset, createAsset, createUmi } from '../_setup';
+import {
+  addressPluginAuthority,
+  pluginAuthorityPair,
+  legacyDelegate,
+} from '../../src';
+import { ERR_CANNOT_DELEGATE } from '../../src/instructions/errors';
 
 test('it can delegate with a new delegate address and no defined plugins', async (t) => {
   // Given an Umi instance, asset with no plugins and new delegate.

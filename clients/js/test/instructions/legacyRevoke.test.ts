@@ -1,9 +1,12 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
-import { assertAsset, createAsset, createUmi } from './_setup';
-import { pluginAuthorityPair, addressPluginAuthority } from '../src';
-import { legacyRevoke } from '../src/instructions/legacyRevoke';
-import { ERR_CANNOT_REVOKE } from '../src/instructions/errors';
+import { assertAsset, createAsset, createUmi } from '../_setup';
+import {
+  pluginAuthorityPair,
+  addressPluginAuthority,
+  legacyRevoke,
+} from '../../src';
+import { ERR_CANNOT_REVOKE } from '../../src/instructions/errors';
 
 test('it can revoke with one plugin defined', async (t) => {
   // Given an Umi instance and asset with one required plugin with delegated authority.
