@@ -105,10 +105,8 @@ test('it can add updateDelegate to collection and then approve', async (t) => {
 });
 
 test('it cannot create a collection with updateDelegate with additional delegates', async (t) => {
-  // Given a Umi instance.
   const umi = await createUmi();
 
-  // When we attempt to create a new collection with updateDelegate with additional delegates.
   let result = createCollection(umi, {
     plugins: [
       pluginAuthorityPair({
@@ -118,16 +116,13 @@ test('it cannot create a collection with updateDelegate with additional delegate
     ],
   });
 
-  // The program does not allow it at creation.
   await t.throwsAsync(result, { name: 'NotAvailable' });
 });
 
 test('it cannot add updateDelegate to collection with additional delegates', async (t) => {
-  // Given a Umi instance and a new collection.
   const umi = await createUmi();
   const collection = await createCollection(umi);
 
-  // When we attempt to add an updateDelegate with additional delegates.
   const result = addCollectionPluginV1(umi, {
     collection: collection.publicKey,
     plugin: createPlugin({
@@ -136,22 +131,20 @@ test('it cannot add updateDelegate to collection with additional delegates', asy
     }),
   }).sendAndConfirm(umi);
 
-  // The program does not allow it.
   await t.throwsAsync(result, { name: 'NotAvailable' });
 
   await assertCollection(t, umi, {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
+    updateDelegate: undefined,
   });
 });
 
 test('it cannot update updateDelegate on collection with additional delegates', async (t) => {
-  // Given a Umi instance and a new collection.
   const umi = await createUmi();
   const collection = await createCollection(umi);
 
-  // And the collection has an existing update delegate.
   await addCollectionPluginV1(umi, {
     collection: collection.publicKey,
     plugin: createPlugin({
@@ -171,7 +164,6 @@ test('it cannot update updateDelegate on collection with additional delegates', 
     },
   });
 
-  // And we attempt to add an updateDelegate with additional delegates.
   const result = updateCollectionPluginV1(umi, {
     collection: collection.publicKey,
     plugin: createPlugin({
@@ -180,7 +172,6 @@ test('it cannot update updateDelegate on collection with additional delegates', 
     }),
   }).sendAndConfirm(umi);
 
-  // The program does not allow it.
   await t.throwsAsync(result, { name: 'NotAvailable' });
 
   await assertCollection(t, umi, {

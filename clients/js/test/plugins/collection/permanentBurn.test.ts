@@ -1,0 +1,61 @@
+import test from 'ava';
+import {
+  pluginAuthorityPair,
+  updatePluginAuthority,
+  addCollectionPluginV1,
+  createPlugin,
+} from '../../../src';
+import {
+  DEFAULT_COLLECTION,
+  assertCollection,
+  createCollection,
+  createUmi,
+} from '../../_setup';
+
+test('it can add permanentBurnDelegate to collection', async (t) => {
+  const umi = await createUmi();
+
+  const collection = await createCollection(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentBurnDelegate',
+        authority: updatePluginAuthority(),
+      }),
+    ],
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    permanentBurnDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+    },
+  });
+});
+
+test('it cannot add permanentBurnDelegate to collection after creation', async (t) => {
+  const umi = await createUmi();
+
+  const collection = await createCollection(umi);
+
+  const result = addCollectionPluginV1(umi, {
+    collection: collection.publicKey,
+    plugin: createPlugin({
+      type: 'PermanentBurnDelegate',
+    }),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, {
+    name: 'InvalidAuthority',
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    permanentBurnDelegate: undefined,
+  });
+});
