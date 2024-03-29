@@ -185,6 +185,7 @@ pub(crate) enum MplAssetInstruction {
 
     /// Collect
     /// This function creates the initial mpl-core
-    #[account(0, writable, name="recipient", desc = "The address of the recipient")]
+    #[account(0, writable, name="recipient1", desc = "The address of the recipient 1")]
+    #[account(1, writable, name="recipient2", desc = "The address of the recipient 2")]
     Collect,
 }

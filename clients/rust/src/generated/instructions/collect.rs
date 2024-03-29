@@ -10,8 +10,10 @@ use borsh::BorshSerialize;
 
 /// Accounts.
 pub struct Collect {
-    /// The address of the recipient
-    pub recipient: solana_program::pubkey::Pubkey,
+    /// The address of the recipient 1
+    pub recipient1: solana_program::pubkey::Pubkey,
+    /// The address of the recipient 2
+    pub recipient2: solana_program::pubkey::Pubkey,
 }
 
 impl Collect {
@@ -23,9 +25,13 @@ impl Collect {
         &self,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(1 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(2 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.recipient,
+            self.recipient1,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.recipient2,
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
@@ -54,10 +60,12 @@ impl CollectInstructionData {
 ///
 /// ### Accounts:
 ///
-///   0. `[writable, optional]` recipient (default to `8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v`)
+///   0. `[writable, optional]` recipient1 (default to `8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v`)
+///   1. `[writable, optional]` recipient2 (default to `MmHsqX4LxTfifxoH8BVRLUKrwDn1LPCac6YcCZTHhwt`)
 #[derive(Default)]
 pub struct CollectBuilder {
-    recipient: Option<solana_program::pubkey::Pubkey>,
+    recipient1: Option<solana_program::pubkey::Pubkey>,
+    recipient2: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -66,10 +74,17 @@ impl CollectBuilder {
         Self::default()
     }
     /// `[optional account, default to '8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v']`
-    /// The address of the recipient
+    /// The address of the recipient 1
     #[inline(always)]
-    pub fn recipient(&mut self, recipient: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.recipient = Some(recipient);
+    pub fn recipient1(&mut self, recipient1: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.recipient1 = Some(recipient1);
+        self
+    }
+    /// `[optional account, default to 'MmHsqX4LxTfifxoH8BVRLUKrwDn1LPCac6YcCZTHhwt']`
+    /// The address of the recipient 2
+    #[inline(always)]
+    pub fn recipient2(&mut self, recipient2: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.recipient2 = Some(recipient2);
         self
     }
     /// Add an aditional account to the instruction.
@@ -93,8 +108,11 @@ impl CollectBuilder {
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = Collect {
-            recipient: self.recipient.unwrap_or(solana_program::pubkey!(
+            recipient1: self.recipient1.unwrap_or(solana_program::pubkey!(
                 "8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v"
+            )),
+            recipient2: self.recipient2.unwrap_or(solana_program::pubkey!(
+                "MmHsqX4LxTfifxoH8BVRLUKrwDn1LPCac6YcCZTHhwt"
             )),
         };
 
@@ -104,16 +122,20 @@ impl CollectBuilder {
 
 /// `collect` CPI accounts.
 pub struct CollectCpiAccounts<'a, 'b> {
-    /// The address of the recipient
-    pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The address of the recipient 1
+    pub recipient1: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The address of the recipient 2
+    pub recipient2: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
 /// `collect` CPI instruction.
 pub struct CollectCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The address of the recipient
-    pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The address of the recipient 1
+    pub recipient1: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The address of the recipient 2
+    pub recipient2: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
 impl<'a, 'b> CollectCpi<'a, 'b> {
@@ -123,7 +145,8 @@ impl<'a, 'b> CollectCpi<'a, 'b> {
     ) -> Self {
         Self {
             __program: program,
-            recipient: accounts.recipient,
+            recipient1: accounts.recipient1,
+            recipient2: accounts.recipient2,
         }
     }
     #[inline(always)]
@@ -159,9 +182,13 @@ impl<'a, 'b> CollectCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(1 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(2 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.recipient.key,
+            *self.recipient1.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.recipient2.key,
             false,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
@@ -178,9 +205,10 @@ impl<'a, 'b> CollectCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(1 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(2 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.recipient.clone());
+        account_infos.push(self.recipient1.clone());
+        account_infos.push(self.recipient2.clone());
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -197,7 +225,8 @@ impl<'a, 'b> CollectCpi<'a, 'b> {
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` recipient
+///   0. `[writable]` recipient1
+///   1. `[writable]` recipient2
 pub struct CollectCpiBuilder<'a, 'b> {
     instruction: Box<CollectCpiBuilderInstruction<'a, 'b>>,
 }
@@ -206,18 +235,28 @@ impl<'a, 'b> CollectCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(CollectCpiBuilderInstruction {
             __program: program,
-            recipient: None,
+            recipient1: None,
+            recipient2: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
     }
-    /// The address of the recipient
+    /// The address of the recipient 1
     #[inline(always)]
-    pub fn recipient(
+    pub fn recipient1(
         &mut self,
-        recipient: &'b solana_program::account_info::AccountInfo<'a>,
+        recipient1: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.recipient = Some(recipient);
+        self.instruction.recipient1 = Some(recipient1);
+        self
+    }
+    /// The address of the recipient 2
+    #[inline(always)]
+    pub fn recipient2(
+        &mut self,
+        recipient2: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.recipient2 = Some(recipient2);
         self
     }
     /// Add an additional account to the instruction.
@@ -264,7 +303,9 @@ impl<'a, 'b> CollectCpiBuilder<'a, 'b> {
         let instruction = CollectCpi {
             __program: self.instruction.__program,
 
-            recipient: self.instruction.recipient.expect("recipient is not set"),
+            recipient1: self.instruction.recipient1.expect("recipient1 is not set"),
+
+            recipient2: self.instruction.recipient2.expect("recipient2 is not set"),
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -275,7 +316,8 @@ impl<'a, 'b> CollectCpiBuilder<'a, 'b> {
 
 struct CollectCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
-    recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    recipient1: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    recipient2: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

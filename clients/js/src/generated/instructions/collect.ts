@@ -28,8 +28,10 @@ import {
 
 // Accounts.
 export type CollectInstructionAccounts = {
-  /** The address of the recipient */
-  recipient?: PublicKey | Pda;
+  /** The address of the recipient 1 */
+  recipient1?: PublicKey | Pda;
+  /** The address of the recipient 2 */
+  recipient2?: PublicKey | Pda;
 };
 
 // Data.
@@ -62,17 +64,27 @@ export function collect(
 
   // Accounts.
   const resolvedAccounts = {
-    recipient: {
+    recipient1: {
       index: 0,
       isWritable: true as boolean,
-      value: input.recipient ?? null,
+      value: input.recipient1 ?? null,
+    },
+    recipient2: {
+      index: 1,
+      isWritable: true as boolean,
+      value: input.recipient2 ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 
   // Default values.
-  if (!resolvedAccounts.recipient.value) {
-    resolvedAccounts.recipient.value = publicKey(
+  if (!resolvedAccounts.recipient1.value) {
+    resolvedAccounts.recipient1.value = publicKey(
       '8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v'
+    );
+  }
+  if (!resolvedAccounts.recipient2.value) {
+    resolvedAccounts.recipient2.value = publicKey(
+      'MmHsqX4LxTfifxoH8BVRLUKrwDn1LPCac6YcCZTHhwt'
     );
   }
 
