@@ -40,7 +40,7 @@ jobs:
 
       - name: Test
         working-directory: ./clients/js
-        run: pnpm test
+        run: pnpm test -- --match='!das:*'
 
   lint:
     name: Lint

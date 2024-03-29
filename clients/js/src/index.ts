@@ -6,3 +6,4 @@ export * from './authority';
 export * from './plugins';
 export * from './helpers';
 export * from './instructions';
+export * from './das';
