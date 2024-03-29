@@ -7,17 +7,13 @@ import {
   pluginAuthorityPair,
   removePluginV1,
   transferV1,
-  updateCollectionPluginV1,
   updatePluginV1,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
-  DEFAULT_COLLECTION,
   assertAsset,
-  assertCollection,
   createAsset,
   createAssetWithCollection,
-  createCollection,
   createUmi,
 } from '../../_setup';
 
@@ -147,76 +143,6 @@ test('it cannot add permanentFreeze after creation', async (t) => {
     asset: asset.publicKey,
     owner,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-  });
-});
-
-test('it can add permanent freeze to collection', async (t) => {
-  // Given a Umi instance and a new signer.
-  const umi = await createUmi();
-  const collection = await createCollection(umi, {
-    plugins: [
-      pluginAuthorityPair({
-        type: 'PermanentFreezeDelegate',
-        data: { frozen: true },
-      }),
-    ],
-  });
-
-  await assertCollection(t, umi, {
-    ...DEFAULT_COLLECTION,
-    collection: collection.publicKey,
-    updateAuthority: umi.identity.publicKey,
-    permanentFreezeDelegate: {
-      authority: {
-        type: 'UpdateAuthority',
-      },
-      frozen: true,
-    },
-  });
-});
-
-test('it can freeze and unfreeze a collection', async (t) => {
-  // Given a Umi instance and a new signer.
-  const umi = await createUmi();
-  const collection = await createCollection(umi, {
-    plugins: [
-      pluginAuthorityPair({
-        type: 'PermanentFreezeDelegate',
-        data: { frozen: true },
-      }),
-    ],
-  });
-
-  await assertCollection(t, umi, {
-    ...DEFAULT_COLLECTION,
-    collection: collection.publicKey,
-    updateAuthority: umi.identity.publicKey,
-    permanentFreezeDelegate: {
-      authority: {
-        type: 'UpdateAuthority',
-      },
-      frozen: true,
-    },
-  });
-
-  await updateCollectionPluginV1(umi, {
-    collection: collection.publicKey,
-    plugin: createPlugin({
-      type: 'PermanentFreezeDelegate',
-      data: { frozen: false },
-    }),
-  }).sendAndConfirm(umi);
-
-  await assertCollection(t, umi, {
-    ...DEFAULT_COLLECTION,
-    collection: collection.publicKey,
-    updateAuthority: umi.identity.publicKey,
-    permanentFreezeDelegate: {
-      authority: {
-        type: 'UpdateAuthority',
-      },
-      frozen: false,
-    },
   });
 });
 
