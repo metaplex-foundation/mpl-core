@@ -28,9 +28,9 @@ import {
 
 // Accounts.
 export type CollectInstructionAccounts = {
-  /** The address of the recipient */
+  /** The address of the recipient 1 */
   recipient1?: PublicKey | Pda;
-  /** The address of the recipient */
+  /** The address of the recipient 2 */
   recipient2?: PublicKey | Pda;
 };
 

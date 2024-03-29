@@ -1250,7 +1250,7 @@
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "The address of the recipient"
+            "The address of the recipient 1"
           ]
         },
         {
@@ -1258,7 +1258,7 @@
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "The address of the recipient"
+            "The address of the recipient 2"
           ]
         }
       ],

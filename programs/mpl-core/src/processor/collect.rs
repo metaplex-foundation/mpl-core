@@ -105,7 +105,11 @@ fn collect_from_account(
         .ok_or(MplCoreError::NumericalOverflowError)?;
     **dest2_info.lamports.borrow_mut() = dest2_info
         .lamports()
-        .checked_add(split_fee_amount)
+        .checked_add(
+            fee_amount
+                .checked_sub(split_fee_amount)
+                .ok_or(MplCoreError::NumericalOverflowError)?,
+        )
         .ok_or(MplCoreError::NumericalOverflowError)?;
 
     **account_info.lamports.borrow_mut() = rent_amount;

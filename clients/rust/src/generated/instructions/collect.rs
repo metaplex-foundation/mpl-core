@@ -10,9 +10,9 @@ use borsh::BorshSerialize;
 
 /// Accounts.
 pub struct Collect {
-    /// The address of the recipient
+    /// The address of the recipient 1
     pub recipient1: solana_program::pubkey::Pubkey,
-    /// The address of the recipient
+    /// The address of the recipient 2
     pub recipient2: solana_program::pubkey::Pubkey,
 }
 
@@ -74,14 +74,14 @@ impl CollectBuilder {
         Self::default()
     }
     /// `[optional account, default to '8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v']`
-    /// The address of the recipient
+    /// The address of the recipient 1
     #[inline(always)]
     pub fn recipient1(&mut self, recipient1: solana_program::pubkey::Pubkey) -> &mut Self {
         self.recipient1 = Some(recipient1);
         self
     }
     /// `[optional account, default to 'MmHsqX4LxTfifxoH8BVRLUKrwDn1LPCac6YcCZTHhwt']`
-    /// The address of the recipient
+    /// The address of the recipient 2
     #[inline(always)]
     pub fn recipient2(&mut self, recipient2: solana_program::pubkey::Pubkey) -> &mut Self {
         self.recipient2 = Some(recipient2);
@@ -122,9 +122,9 @@ impl CollectBuilder {
 
 /// `collect` CPI accounts.
 pub struct CollectCpiAccounts<'a, 'b> {
-    /// The address of the recipient
+    /// The address of the recipient 1
     pub recipient1: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The address of the recipient
+    /// The address of the recipient 2
     pub recipient2: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
@@ -132,9 +132,9 @@ pub struct CollectCpiAccounts<'a, 'b> {
 pub struct CollectCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The address of the recipient
+    /// The address of the recipient 1
     pub recipient1: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The address of the recipient
+    /// The address of the recipient 2
     pub recipient2: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
@@ -241,7 +241,7 @@ impl<'a, 'b> CollectCpiBuilder<'a, 'b> {
         });
         Self { instruction }
     }
-    /// The address of the recipient
+    /// The address of the recipient 1
     #[inline(always)]
     pub fn recipient1(
         &mut self,
@@ -250,7 +250,7 @@ impl<'a, 'b> CollectCpiBuilder<'a, 'b> {
         self.instruction.recipient1 = Some(recipient1);
         self
     }
-    /// The address of the recipient
+    /// The address of the recipient 2
     #[inline(always)]
     pub fn recipient2(
         &mut self,
