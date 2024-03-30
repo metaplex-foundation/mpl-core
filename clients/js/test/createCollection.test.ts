@@ -34,13 +34,12 @@ test('it can create a new collection', async (t) => {
 });
 
 test('it can create a new collection with plugins', async (t) => {
-  // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
   const collection = await createCollection(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'FreezeDelegate',
+        type: 'PermanentFreezeDelegate',
         data: { frozen: false },
       }),
     ],
@@ -50,9 +49,9 @@ test('it can create a new collection with plugins', async (t) => {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    freezeDelegate: {
+    permanentFreezeDelegate: {
       authority: {
-        type: 'Owner',
+        type: 'UpdateAuthority',
       },
       frozen: false,
     },
@@ -146,4 +145,23 @@ test('it cannot create a new asset with a collection if it is not the collection
   });
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
+});
+
+test('it cannot create a collection with an owner managed plugin', async (t) => {
+  const umi = await createUmi();
+
+  const result = createCollection(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: {
+          frozen: false,
+        },
+      }),
+    ],
+  });
+
+  await t.throwsAsync(result, {
+    name: 'InvalidAuthority',
+  });
 });

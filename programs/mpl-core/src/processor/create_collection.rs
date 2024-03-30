@@ -12,7 +12,7 @@ use crate::{
         create_plugin_meta, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
         PluginType, ValidationResult,
     },
-    state::{CollectionV1, Key},
+    state::{Authority, CollectionV1, Key},
 };
 
 #[repr(C)]
@@ -90,6 +90,11 @@ pub(crate) fn create_collection<'a>(
             let mut approved = true;
             let mut force_approved = false;
             for plugin in &plugins {
+                // Cannot have owner-managed plugins on collection.
+                if plugin.plugin.manager() == Authority::Owner {
+                    return Err(MplCoreError::InvalidAuthority.into());
+                }
+
                 if PluginType::check_create(&PluginType::from(&plugin.plugin)) != CheckResult::None
                 {
                     match Plugin::validate_create(
