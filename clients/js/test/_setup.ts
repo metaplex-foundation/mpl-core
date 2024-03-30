@@ -1,8 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import {
-  createUmi as basecreateUmi,
-  testPlugins,
-} from '@metaplex-foundation/umi-bundle-tests';
+import { createUmi as basecreateUmi } from '@metaplex-foundation/umi-bundle-tests';
 import { Assertions } from 'ava';
 import {
   PublicKey,
@@ -10,9 +7,7 @@ import {
   Umi,
   generateSigner,
   publicKey,
-  createUmi as baseCreateUmi,
 } from '@metaplex-foundation/umi';
-import { dasApi } from '@metaplex-foundation/digital-asset-standard-api';
 import {
   DataState,
   Key,
@@ -29,8 +24,6 @@ import {
 } from '../src';
 
 export const createUmi = async () => (await basecreateUmi()).use(mplCore());
-export const createUmiWithDas = (endpoint: string) =>
-  baseCreateUmi().use(testPlugins(endpoint)).use(dasApi());
 
 export type CreateAssetHelperArgs = {
   owner?: PublicKey | Signer;
@@ -55,8 +48,6 @@ export const DEFAULT_COLLECTION = {
   name: 'Test Collection',
   uri: 'https://example.com/collection',
 };
-
-export const DAS_API_ENDPOINT = process.env.DAS_API_ENDPOINT!;
 
 export const createAsset = async (
   umi: Umi,
