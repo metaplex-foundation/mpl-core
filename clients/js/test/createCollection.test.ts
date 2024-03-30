@@ -156,7 +156,7 @@ test('it cannot create a collection with an owner managed plugin', async (t) => 
         type: 'FreezeDelegate',
         data: {
           frozen: false,
-        }
+        },
       }),
     ],
   });
