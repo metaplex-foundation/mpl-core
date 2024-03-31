@@ -599,7 +599,7 @@ pub(crate) fn resolve_authority<'a>(
 ) -> Result<&'a AccountInfo<'a>, ProgramError> {
     match authority {
         Some(authority) => {
-            assert_signer(authority).unwrap();
+            assert_signer(authority)?;
             Ok(authority)
         }
         None => Ok(payer),

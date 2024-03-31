@@ -10,7 +10,13 @@ import {
   fetchHashedAssetV1,
   pluginAuthorityPair,
 } from '../src';
-import { assertAsset, createAsset, createUmi, DEFAULT_ASSET } from './_setup';
+import {
+  assertAsset,
+  createAsset,
+  createCollection,
+  createUmi,
+  DEFAULT_ASSET,
+} from './_setup';
 
 test('it can create a new asset in account state', async (t) => {
   // Given an Umi instance and a new signer.
@@ -242,4 +248,17 @@ test.skip('it can create a new asset in ledger state with a different update aut
 // TODO: Add test
 test.skip('it can create a new asset in ledger state with plugins with a different update authority', async (t) => {
   t.pass();
+});
+
+test('it cannot create a new asset with an update authority that is not the collection', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const collection = await createCollection(umi);
+
+  const result = createAsset(umi, {
+    collection: collection.publicKey,
+    updateAuthority: generateSigner(umi),
+  });
+
+  await t.throwsAsync(result, { name: 'ConflictingAuthority' });
 });

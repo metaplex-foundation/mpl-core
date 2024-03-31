@@ -13,6 +13,7 @@ use crate::{
         PluginType, ValidationResult,
     },
     state::{AssetV1, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT},
+    utils::resolve_authority,
 };
 
 #[repr(C)]
@@ -32,6 +33,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
     // Guards.
     assert_signer(ctx.accounts.asset)?;
     assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     if *ctx.accounts.system_program.key != system_program::id() {
         return Err(MplCoreError::InvalidSystemProgram.into());
@@ -117,7 +119,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
                 {
                     match Plugin::validate_create(
                         &plugin.plugin,
-                        ctx.accounts.authority.unwrap_or(ctx.accounts.payer),
+                        authority,
                         None,
                         &plugin.authority.unwrap_or(plugin.plugin.manager()),
                         None,
