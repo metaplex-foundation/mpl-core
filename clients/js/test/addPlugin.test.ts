@@ -8,6 +8,8 @@ import {
   pluginAuthorityPair,
   addressPluginAuthority,
   ruleSet,
+  removePluginV1,
+  PluginType,
 } from '../src';
 import {
   DEFAULT_ASSET,
@@ -167,6 +169,96 @@ test('it can add plugin to asset with a plugin', async (t) => {
         type: 'Address',
         address: delegate.publicKey,
       },
+    },
+  });
+});
+
+test('it can remove a plugin from asset with a multiple existing plugins', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: false },
+      }),
+    ],
+  });
+
+  await addPluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'Royalties',
+      data: {
+        basisPoints: 5,
+        creators: [
+          {
+            address: umi.identity.publicKey,
+            percentage: 100,
+          },
+        ],
+        ruleSet: ruleSet('None'),
+      },
+    }),
+  }).sendAndConfirm(umi);
+
+  await addPluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'UpdateDelegate',
+    }),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: false,
+    },
+    royalties: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      basisPoints: 5,
+      creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+      ruleSet: ruleSet('None'),
+    },
+    updateDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      additionalDelegates: [],
+    },
+  });
+
+  await removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.FreezeDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    royalties: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      basisPoints: 5,
+      creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+      ruleSet: ruleSet('None'),
+    },
+    updateDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      additionalDelegates: [],
     },
   });
 });
