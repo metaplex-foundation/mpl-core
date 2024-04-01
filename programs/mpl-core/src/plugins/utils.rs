@@ -326,7 +326,9 @@ pub fn delete_plugin<'a, T: DataBlob>(
 
         // Move offsets for existing registry records.
         for record in &mut plugin_registry.registry {
-            record.offset -= serialized_plugin.len()
+            if plugin_offset < record.offset {
+                record.offset -= serialized_plugin.len()
+            }
         }
 
         plugin_registry.save(account, new_registry_offset)?;

@@ -12,6 +12,7 @@ import {
   addressPluginAuthority,
 } from '../src';
 import {
+  DEFAULT_ASSET,
   DEFAULT_COLLECTION,
   assertAsset,
   assertCollection,
@@ -294,6 +295,89 @@ test('it cannot remove authority managed collection plugin if the delegate autho
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
       basisPoints: 5,
       ruleSet: ruleSet('None'),
+    },
+  });
+});
+
+
+
+test('it can remove a plugin from asset with existing plugins', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: false },
+      }),
+      pluginAuthorityPair({
+        type: 'TransferDelegate',
+      }),
+      pluginAuthorityPair({
+        type: 'BurnDelegate',
+      }),
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: false,
+    },
+    transferDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+    burnDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+  });
+
+  await removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.FreezeDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    transferDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+    burnDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+  });
+
+  await removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.BurnDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    transferDelegate: {
+      authority: {
+        type: 'Owner',
+      },
     },
   });
 });
