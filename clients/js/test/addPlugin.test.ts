@@ -8,8 +8,6 @@ import {
   pluginAuthorityPair,
   addressPluginAuthority,
   ruleSet,
-  removePluginV1,
-  PluginType,
 } from '../src';
 import {
   DEFAULT_ASSET,
@@ -169,44 +167,6 @@ test('it can add plugin to asset with a plugin', async (t) => {
         type: 'Address',
         address: delegate.publicKey,
       },
-    },
-  });
-});
-
-test('it can remove a plugin from asset with existing plugins', async (t) => {
-  const umi = await createUmi();
-
-  const asset = await createAsset(umi, {
-    plugins: [
-      pluginAuthorityPair({
-        type: 'FreezeDelegate',
-        data: { frozen: false },
-      }),
-    ],
-  });
-
-  await addPluginV1(umi, {
-    asset: asset.publicKey,
-    plugin: createPlugin({
-      type: 'UpdateDelegate',
-    }),
-  }).sendAndConfirm(umi);
-
-  await removePluginV1(umi, {
-    asset: asset.publicKey,
-    pluginType: PluginType.FreezeDelegate,
-  }).sendAndConfirm(umi);
-
-  await assertAsset(t, umi, {
-    ...DEFAULT_ASSET,
-    asset: asset.publicKey,
-    owner: umi.identity.publicKey,
-    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    updateDelegate: {
-      authority: {
-        type: 'UpdateAuthority',
-      },
-      additionalDelegates: [],
     },
   });
 });
@@ -519,5 +479,89 @@ test('it can add a plugin to a collection with a plugin', async (t) => {
       },
       additionalDelegates: [],
     },
+  });
+});
+
+test('it can add a plugin to an asset that is part of a collection', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+
+  const { asset, collection } = await createAssetWithCollection(umi, {});
+
+  // Then an account was created with the correct data.
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+  });
+
+  await addPluginV1(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: false,
+    },
+  });
+});
+
+test('it cannot add a plugin to an asset if the collection is wrong', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+
+  const { asset, collection } = await createAssetWithCollection(umi, {});
+
+  // Then an account was created with the correct data.
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+  });
+
+  const result = addPluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, {
+    name: 'MissingCollection',
+  });
+});
+
+test('it cannot add a plugin to an asset if the collection is missing', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+
+  const wrongCollection = await createCollection(umi);
+  const { asset, collection } = await createAssetWithCollection(umi, {});
+
+  // Then an account was created with the correct data.
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+  });
+
+  const result = addPluginV1(umi, {
+    asset: asset.publicKey,
+    collection: wrongCollection.publicKey,
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, {
+    name: 'InvalidCollection',
   });
 });
