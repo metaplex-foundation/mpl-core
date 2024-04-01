@@ -1,8 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import {
-  createUmi as basecreateUmi,
-  testPlugins,
-} from '@metaplex-foundation/umi-bundle-tests';
+import { createUmi as basecreateUmi } from '@metaplex-foundation/umi-bundle-tests';
 import { Assertions } from 'ava';
 import {
   PublicKey,
@@ -10,9 +7,7 @@ import {
   Umi,
   generateSigner,
   publicKey,
-  createUmi as baseCreateUmi,
 } from '@metaplex-foundation/umi';
-import { dasApi } from '@metaplex-foundation/digital-asset-standard-api';
 import {
   DataState,
   Key,
@@ -29,8 +24,6 @@ import {
 } from '../src';
 
 export const createUmi = async () => (await basecreateUmi()).use(mplCore());
-export const createUmiWithDas = (endpoint: string) =>
-  baseCreateUmi().use(testPlugins(endpoint)).use(dasApi());
 
 export type CreateAssetHelperArgs = {
   owner?: PublicKey | Signer;
@@ -56,8 +49,6 @@ export const DEFAULT_COLLECTION = {
   uri: 'https://example.com/collection',
 };
 
-export const DAS_API_ENDPOINT = process.env.DAS_API_ENDPOINT!;
-
 export const createAsset = async (
   umi: Umi,
   input: CreateAssetHelperArgs = {}
@@ -65,7 +56,9 @@ export const createAsset = async (
   const payer = input.payer || umi.identity;
   const owner = publicKey(input.owner || input.payer || umi.identity);
   const asset = input.asset || generateSigner(umi);
-  const updateAuthority = input.updateAuthority ? publicKey(input.updateAuthority) : undefined;
+  const updateAuthority = input.updateAuthority
+    ? publicKey(input.updateAuthority)
+    : undefined;
   // const tx =
   await createV1(umi, {
     owner,
@@ -125,10 +118,10 @@ export const createAssetWithCollection: (
   const collection = assetInput.collection
     ? await fetchCollectionV1(umi, publicKey(assetInput.collection))
     : await createCollection(umi, {
-      payer: assetInput.payer,
-      updateAuthority: assetInput.updateAuthority,
-      ...collectionInput,
-    });
+        payer: assetInput.payer,
+        updateAuthority: assetInput.updateAuthority,
+        ...collectionInput,
+      });
 
   const asset = await createAsset(umi, {
     ...assetInput,
