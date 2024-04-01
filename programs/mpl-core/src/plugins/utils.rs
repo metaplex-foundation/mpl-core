@@ -310,7 +310,7 @@ pub fn delete_plugin<'a, T: DataBlob>(
 
         let data_to_move = header
             .plugin_registry_offset
-            .checked_sub(new_registry_offset)
+            .checked_sub(next_plugin_offset)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
         //TODO: This is memory intensive, we should use memmove instead probably.
@@ -323,6 +323,11 @@ pub fn delete_plugin<'a, T: DataBlob>(
 
         header.plugin_registry_offset = new_registry_offset;
         header.save(account, asset.get_size())?;
+
+        // Move offsets for existing registry records.
+        for record in &mut plugin_registry.registry {
+            record.offset -= serialized_plugin.len()
+        }
 
         plugin_registry.save(account, new_registry_offset)?;
 
