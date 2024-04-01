@@ -97,6 +97,9 @@ pub enum MplCoreError {
     /// 28 (0x1C) - Invalid setting for plugin
     #[error("Invalid setting for plugin")]
     InvalidPluginSetting,
+    /// 29 (0x1D) - Cannot specify both an update authority and collection on an asset
+    #[error("Cannot specify both an update authority and collection on an asset")]
+    ConflictingAuthority,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

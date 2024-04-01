@@ -124,6 +124,10 @@ pub enum MplCoreError {
     /// 28 - Invalid setting for plugin
     #[error("Invalid setting for plugin")]
     InvalidPluginSetting,
+
+    /// 29 - Conflicting Authority
+    #[error("Cannot specify both an update authority and collection on an asset")]
+    ConflictingAuthority,
 }
 
 impl PrintProgramError for MplCoreError {

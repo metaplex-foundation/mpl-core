@@ -107,7 +107,7 @@ test('it can add updateDelegate to collection and then approve', async (t) => {
 test('it cannot create a collection with updateDelegate with additional delegates', async (t) => {
   const umi = await createUmi();
 
-  let result = createCollection(umi, {
+  const result = createCollection(umi, {
     plugins: [
       pluginAuthorityPair({
         type: 'UpdateDelegate',

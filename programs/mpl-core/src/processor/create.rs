@@ -39,6 +39,10 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
+    if ctx.accounts.update_authority.is_some() && ctx.accounts.collection.is_some() {
+        return Err(MplCoreError::ConflictingAuthority.into());
+    }
+
     let (update_authority, collection) = match ctx.accounts.collection {
         Some(collection) => (
             UpdateAuthority::Collection(*collection.key),

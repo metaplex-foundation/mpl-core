@@ -6,6 +6,7 @@ import {
   assertAsset,
   createAsset,
   createAssetWithCollection,
+  createCollection,
   createUmi,
 } from './_setup';
 
@@ -97,19 +98,21 @@ test('it can transfer asset in collection as the owner', async (t) => {
   });
 });
 
-test('it cannot transfer asset in collection if collection not included', async (t) => {
+test('it cannot transfer asset in collection with the wrong collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const newOwner = generateSigner(umi);
 
   const { asset, collection } = await createAssetWithCollection(umi, {});
+  const wrongCollection = await createCollection(umi);
 
   const result = transferV1(umi, {
     asset: asset.publicKey,
     newOwner: newOwner.publicKey,
+    collection: wrongCollection.publicKey,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'MissingCollection' });
+  await t.throwsAsync(result, { name: 'InvalidCollection' });
 
   await assertAsset(t, umi, {
     asset: asset.publicKey,

@@ -403,6 +403,23 @@ export class InvalidPluginSettingError extends ProgramError {
 codeToErrorMap.set(0x1c, InvalidPluginSettingError);
 nameToErrorMap.set('InvalidPluginSetting', InvalidPluginSettingError);
 
+/** ConflictingAuthority: Cannot specify both an update authority and collection on an asset */
+export class ConflictingAuthorityError extends ProgramError {
+  override readonly name: string = 'ConflictingAuthority';
+
+  readonly code: number = 0x1d; // 29
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Cannot specify both an update authority and collection on an asset',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x1d, ConflictingAuthorityError);
+nameToErrorMap.set('ConflictingAuthority', ConflictingAuthorityError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

@@ -2472,6 +2472,11 @@
       "code": 28,
       "name": "InvalidPluginSetting",
       "msg": "Invalid setting for plugin"
+    },
+    {
+      "code": 29,
+      "name": "ConflictingAuthority",
+      "msg": "Cannot specify both an update authority and collection on an asset"
     }
   ],
   "metadata": {
