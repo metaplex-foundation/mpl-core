@@ -149,5 +149,8 @@ kinobi.accept(k.renderJavaScriptVisitor(jsDir, {
   }, {
     name: "collectionV1",
     extract: true,
+  }, {
+    name: "pluginRegistryV1",
+    extract: true,
   }],
 }));
