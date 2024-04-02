@@ -115,7 +115,7 @@ test('it can revoke a delegate transfer plugin', async (t) => {
   });
 });
 
-test('it cannot transfer after delegate has been revoked', async (t) => {
+test('it cannot transfer after delegate authority has been revoked', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const delegateAddress = generateSigner(umi);
