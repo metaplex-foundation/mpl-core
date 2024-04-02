@@ -299,8 +299,6 @@ test('it cannot remove authority managed collection plugin if the delegate autho
   });
 });
 
-
-
 test('it can remove a plugin from asset with existing plugins', async (t) => {
   const umi = await createUmi();
 

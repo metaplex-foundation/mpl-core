@@ -190,7 +190,6 @@ test('it cannot reassign authority of a plugin as delegate while already delegat
   });
 });
 
-
 test('it cannot approve to reassign authority back to owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
