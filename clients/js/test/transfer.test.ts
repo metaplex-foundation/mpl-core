@@ -273,3 +273,24 @@ test('authorities on authority-managed plugin should not be reset on transfer', 
     },
   });
 });
+
+test('it cannot transfer an asset using asset as authority', async (t) => {
+  const umi = await createUmi();
+  const myAsset = generateSigner(umi);
+
+  const asset = await createAsset(umi, { asset: myAsset });
+
+  const result = transferV1(umi, {
+    asset: asset.publicKey,
+    newOwner: generateSigner(umi).publicKey,
+    authority: myAsset,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+});
