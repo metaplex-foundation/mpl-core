@@ -11,6 +11,7 @@ mod royalties;
 mod transfer;
 mod update_delegate;
 mod utils;
+mod edition;
 
 pub use attributes::*;
 pub use burn_delegate::*;
@@ -26,6 +27,7 @@ pub use royalties::*;
 pub use transfer::*;
 pub use update_delegate::*;
 pub use utils::*;
+pub use edition::*;
 
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
@@ -61,6 +63,8 @@ pub enum Plugin {
     PermanentTransferDelegate(PermanentTransferDelegate),
     /// Permanent Burn Delegate authority allows the creator of an asset to become the person who can burn an Asset
     PermanentBurnDelegate(PermanentBurnDelegate),
+    /// Edition plugin allows creators to add an edition number to the asset
+    Edition(Edition),
 }
 
 impl Plugin {
@@ -123,6 +127,8 @@ pub enum PluginType {
     PermanentTransferDelegate,
     /// The Permanent Burn Delegate plugin.
     PermanentBurnDelegate,
+    /// The Edition plugin.
+    Edition,
 }
 
 impl DataBlob for PluginType {
@@ -147,6 +153,7 @@ impl From<&Plugin> for PluginType {
             Plugin::Attributes(_) => PluginType::Attributes,
             Plugin::PermanentTransferDelegate(_) => PluginType::PermanentTransferDelegate,
             Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
+            Plugin::Edition(_) => PluginType::Edition,
         }
     }
 }
@@ -164,6 +171,7 @@ impl PluginType {
             PluginType::Attributes => Authority::UpdateAuthority,
             PluginType::PermanentTransferDelegate => Authority::UpdateAuthority,
             PluginType::PermanentBurnDelegate => Authority::UpdateAuthority,
+            PluginType::Edition => Authority::UpdateAuthority,
         }
     }
 }

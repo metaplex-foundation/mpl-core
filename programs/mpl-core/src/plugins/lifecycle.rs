@@ -32,6 +32,7 @@ impl PluginType {
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentTransferDelegate => CheckResult::CanReject,
+            PluginType::Edition => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -169,6 +170,9 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_add_plugin(authority_info, authority, new_plugin)
             }
+            Plugin::Edition(edition) => {
+                edition.validate_add_plugin(authority_info, authority, new_plugin)
+            }
         }
     }
 
@@ -207,6 +211,9 @@ impl Plugin {
                 .validate_remove_plugin(authority_info, authority, plugin_to_remove),
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_remove_plugin(authority_info, authority, plugin_to_remove)
+            }
+            Plugin::Edition(edition) => {
+                edition.validate_remove_plugin(authority_info, authority, plugin_to_remove)
             }
         }
     }
@@ -262,6 +269,11 @@ impl Plugin {
                 .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn
                 .validate_approve_plugin_authority(authority_info, authority, plugin_to_approve),
+            Plugin::Edition(edition) => edition.validate_approve_plugin_authority(
+                authority_info,
+                authority,
+                plugin_to_approve,
+            ),
         }
     }
 
@@ -308,6 +320,11 @@ impl Plugin {
                 .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn
                 .validate_revoke_plugin_authority(authority_info, authority, plugin_to_revoke),
+            Plugin::Edition(edition) => edition.validate_revoke_plugin_authority(
+                authority_info,
+                authority,
+                plugin_to_revoke,
+            ),
         }
     }
 
@@ -340,6 +357,7 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_create(authority_info, authority)
             }
+            Plugin::Edition(edition) => edition.validate_create(authority_info, authority),
         }
     }
 
@@ -372,6 +390,7 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_update(authority_info, authority)
             }
+            Plugin::Edition(edition) => edition.validate_update(authority_info, authority),
         }
     }
 
@@ -453,6 +472,12 @@ impl Plugin {
                 resolved_authorities,
                 plugin_to_update,
             ),
+            Plugin::Edition(edition) => edition.validate_update_plugin(
+                authority_info,
+                authority,
+                resolved_authorities,
+                plugin_to_update,
+            ),
         }?;
 
         solana_program::msg!("Result: {:?}", result);
@@ -514,6 +539,9 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_burn(authority_info, authority, resolved_authorities)
             }
+            Plugin::Edition(edition) => {
+                edition.validate_burn(authority_info, authority, resolved_authorities)
+            }
         }
     }
 
@@ -568,6 +596,9 @@ impl Plugin {
                 authority,
                 resolved_authorities,
             ),
+            Plugin::Edition(edition) => {
+                edition.validate_transfer(authority_info, new_owner, authority, resolved_authorities)
+            }
         }
     }
 
@@ -602,6 +633,7 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(burn_transfer) => {
                 burn_transfer.validate_compress(authority_info, authority)
             }
+            Plugin::Edition(edition) => edition.validate_compress(authority_info, authority),
         }
     }
 
@@ -638,6 +670,7 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => {
                 permanent_burn.validate_decompress(authority_info, authority)
             }
+            Plugin::Edition(edition) => edition.validate_decompress(authority_info, authority),
         }
     }
 }

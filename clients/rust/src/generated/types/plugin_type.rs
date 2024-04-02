@@ -20,4 +20,5 @@ pub enum PluginType {
     Attributes,
     PermanentTransferDelegate,
     PermanentBurnDelegate,
+    Edition,
 }
