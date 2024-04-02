@@ -127,6 +127,22 @@ impl PluginValidation for UpdateDelegate {
         }
     }
 
+    fn validate_update(
+        &self,
+        authority_info: &AccountInfo,
+        authority: &Authority,
+    ) -> Result<ValidationResult, ProgramError> {
+        if authority
+            == (&Authority::Address {
+                address: *authority_info.key,
+            })
+        {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
     fn validate_update_plugin(
         &self,
         _authority_info: &AccountInfo,
