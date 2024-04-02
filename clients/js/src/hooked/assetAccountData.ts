@@ -4,9 +4,7 @@ import {
   Key,
   PluginHeaderV1,
   PluginHeaderV1AccountData,
-  PluginRegistryV1AccountData,
   getPluginHeaderV1AccountDataSerializer,
-  getPluginRegistryV1AccountDataSerializer,
 } from '../generated';
 import {
   AssetV1AccountData as GenAssetV1AccountData,
@@ -15,6 +13,7 @@ import {
 } from '../generated/types/assetV1AccountData';
 import { BaseUpdateAuthority, PluginsList } from '../types';
 import { registryRecordsToPluginsList } from '../plugins';
+import { PluginRegistryV1AccountData, getPluginRegistryV1AccountDataSerializer } from './pluginRegistryV1Data';
 
 export type AssetV1AccountData = Omit<
   GenAssetV1AccountData,
