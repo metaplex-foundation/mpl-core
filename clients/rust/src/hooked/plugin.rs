@@ -77,11 +77,12 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
 /// List all plugins in an account, dropping any unknown plugins (i.e. `PluginType`s that are too
 /// new for this client to know about). Note this also does not support external plugins for now,
 /// and will be updated when those are defined.
-pub fn list_plugins(account: &[u8]) -> Result<Vec<PluginType>, std::io::Error> {
-    let asset = BaseAssetV1::from_bytes(account)?;
-    let header = PluginHeaderV1::from_bytes(&account[asset.get_size()..])?;
-    let plugin_registry =
-        PluginRegistryV1Safe::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
+pub fn list_plugins(account_data: &[u8]) -> Result<Vec<PluginType>, std::io::Error> {
+    let asset = BaseAssetV1::from_bytes(account_data)?;
+    let header = PluginHeaderV1::from_bytes(&account_data[asset.get_size()..])?;
+    let plugin_registry = PluginRegistryV1Safe::from_bytes(
+        &account_data[(header.plugin_registry_offset as usize)..],
+    )?;
 
     Ok(plugin_registry
         .registry
@@ -89,6 +90,7 @@ pub fn list_plugins(account: &[u8]) -> Result<Vec<PluginType>, std::io::Error> {
         .filter_map(|registry_record| PluginType::from_u8(registry_record.plugin_type))
         .collect())
 }
+
 // Convert a slice of `RegistryRecordSafe` into the `PluginsList` type, dropping any unknown
 // plugins (i.e. `PluginType`s that are too new for this client to know about). Note this also does
 // not support external plugins for now, and will be updated when those are defined.
