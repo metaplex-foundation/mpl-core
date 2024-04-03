@@ -5,7 +5,7 @@ import {
 } from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import { burnV1, Key, pluginAuthorityPair } from '../src';
+import { burnCollectionV1, burnV1, Key, pluginAuthorityPair } from '../src';
 import {
   DEFAULT_ASSET,
   DEFAULT_COLLECTION,
@@ -13,6 +13,7 @@ import {
   assertCollection,
   createAsset,
   createAssetWithCollection,
+  createCollection,
   createUmi,
 } from './_setup';
 
@@ -178,4 +179,65 @@ test('it cannot burn an asset if collection permanently frozen', async (t) => {
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
+});
+
+test('It can burn a collection', async (t) => {
+  const umi = await createUmi();
+  const collection = await createCollection(umi);
+
+  await burnCollectionV1(umi, {
+    collection: collection.publicKey,
+    compressionProof: null,
+  }).sendAndConfirm(umi);
+
+  const afterCollection = await umi.rpc.getAccount(collection.publicKey);
+  t.true(afterCollection.exists);
+  assertAccountExists(afterCollection);
+  t.deepEqual(afterCollection.lamports, sol(0.00089784));
+  t.is(afterCollection.data.length, 1);
+  t.is(afterCollection.data[0], Key.Uninitialized);
+});
+
+test('It cannot burn a collection with an asset', async (t) => {
+  const umi = await createUmi();
+  const { asset, collection } = await createAssetWithCollection(umi, {}, {});
+
+  const result = burnCollectionV1(umi, {
+    collection: collection.publicKey,
+    compressionProof: null,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await burnV1(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+  }).sendAndConfirm(umi);
+
+  await burnCollectionV1(umi, {
+    collection: collection.publicKey,
+    compressionProof: null,
+  }).sendAndConfirm(umi);
+
+  const afterCollection = await umi.rpc.getAccount(collection.publicKey);
+  t.true(afterCollection.exists);
+  assertAccountExists(afterCollection);
+  t.deepEqual(afterCollection.lamports, sol(0.00089784));
+  t.is(afterCollection.data.length, 1);
+  t.is(afterCollection.data[0], Key.Uninitialized);
+});
+
+test('It cannot burn a collection as non-update auth', async (t) => {
+  const umi = await createUmi();
+  const updateAuthority = generateSigner(umi).publicKey;
+  const collection = await createCollection(umi, {
+    updateAuthority,
+  });
+
+  const result = burnCollectionV1(umi, {
+    collection: collection.publicKey,
+    compressionProof: null,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });

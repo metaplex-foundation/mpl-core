@@ -83,6 +83,11 @@ impl CollectionV1 {
         CheckResult::None
     }
 
+    /// Check permissions for the burn lifecycle event.
+    pub fn check_self_burn() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
     /// Check permissions for the update lifecycle event.
     pub fn check_update() -> CheckResult {
         CheckResult::CanApprove
@@ -203,6 +208,19 @@ impl CollectionV1 {
         _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
+    }
+
+    /// Validate the self-burn lifecycle event.
+    pub fn validate_self_burn(
+        &self,
+        authority_info: &AccountInfo,
+        _: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        if self.current_size == 0 && authority_info.key == &self.update_authority {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Rejected)
+        }
     }
 
     /// Validate the update lifecycle event.
