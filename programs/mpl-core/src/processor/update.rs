@@ -31,6 +31,16 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
+    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+        return Err(MplCoreError::InvalidSystemProgram.into());
+    }
+
+    if let Some(log_wrapper) = ctx.accounts.log_wrapper {
+        if log_wrapper.key != &spl_noop::ID {
+            return Err(MplCoreError::InvalidLogWrapperProgram.into());
+        }
+    }
+
     if let Key::HashedAssetV1 = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Update for compressed is not available");
         return Err(MplCoreError::NotAvailable.into());
@@ -105,6 +115,16 @@ pub(crate) fn update_collection<'a>(
     // Guards.
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
+
+    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+        return Err(MplCoreError::InvalidSystemProgram.into());
+    }
+
+    if let Some(log_wrapper) = ctx.accounts.log_wrapper {
+        if log_wrapper.key != &spl_noop::ID {
+            return Err(MplCoreError::InvalidLogWrapperProgram.into());
+        }
+    }
 
     let (mut collection, plugin_header, plugin_registry) = validate_collection_permissions(
         authority,

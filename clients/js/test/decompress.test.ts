@@ -92,3 +92,67 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
     uri: 'https://example.com/bread',
   });
 });
+
+test('it cannot use an invalid system program', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+  const fakeSystemProgram = generateSigner(umi);
+
+  // When we create a new account.
+  await createV1(umi, {
+    dataState: DataState.AccountState,
+    asset: assetAddress,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+  }).sendAndConfirm(umi);
+
+  const result = decompressV1(umi, {
+    asset: assetAddress.publicKey,
+    systemProgram: fakeSystemProgram.publicKey,
+    compressionProof: {
+      owner: umi.identity.publicKey,
+      updateAuthority: {
+        __kind: 'None'
+      },
+      name: '',
+      uri: '',
+      seq: 0,
+      plugins: []
+    }
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
+});
+
+test('it cannot use an invalid noop program', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+  const fakeLogWrapper = generateSigner(umi);
+
+  // When we create a new account.
+  await createV1(umi, {
+    dataState: DataState.AccountState,
+    asset: assetAddress,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+  }).sendAndConfirm(umi);
+
+  const result = decompressV1(umi, {
+    asset: assetAddress.publicKey,
+    logWrapper: fakeLogWrapper.publicKey,
+    compressionProof: {
+      owner: umi.identity.publicKey,
+      updateAuthority: {
+        __kind: 'None'
+      },
+      name: '',
+      uri: '',
+      seq: 0,
+      plugins: []
+    }
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
+});

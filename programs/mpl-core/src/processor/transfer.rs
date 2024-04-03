@@ -27,6 +27,18 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
+    if let Some(system_program) = ctx.accounts.system_program {
+        if system_program.key != &solana_program::system_program::ID {
+            return Err(MplCoreError::InvalidSystemProgram.into());
+        }
+    }
+
+    if let Some(log_wrapper) = ctx.accounts.log_wrapper {
+        if log_wrapper.key != &spl_noop::ID {
+            return Err(MplCoreError::InvalidLogWrapperProgram.into());
+        }
+    }
+
     let key = load_key(ctx.accounts.asset, 0)?;
 
     match key {

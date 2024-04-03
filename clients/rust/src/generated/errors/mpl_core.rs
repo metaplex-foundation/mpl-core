@@ -100,6 +100,9 @@ pub enum MplCoreError {
     /// 29 (0x1D) - Cannot specify both an update authority and collection on an asset
     #[error("Cannot specify both an update authority and collection on an asset")]
     ConflictingAuthority,
+    /// 30 (0x1E) - Invalid Log Wrapper Program
+    #[error("Invalid Log Wrapper Program")]
+    InvalidLogWrapperProgram,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

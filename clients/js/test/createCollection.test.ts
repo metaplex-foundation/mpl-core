@@ -5,6 +5,7 @@ import {
   approveCollectionPluginAuthorityV1,
   pluginAuthorityPair,
   addressPluginAuthority,
+  createCollectionV1,
 } from '../src';
 import {
   DEFAULT_ASSET,
@@ -164,4 +165,20 @@ test('it cannot create a collection with an owner managed plugin', async (t) => 
   await t.throwsAsync(result, {
     name: 'InvalidAuthority',
   });
+});
+
+test('it cannot use an invalid system program', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const collectionAddress = generateSigner(umi);
+  const fakeSystemProgram = generateSigner(umi);
+
+  const result = createCollectionV1(umi, {
+    collection: collectionAddress,
+    name: 'Test',
+    uri: 'Test',
+    systemProgram: fakeSystemProgram.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
 });

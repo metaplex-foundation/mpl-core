@@ -1,8 +1,8 @@
 import test from 'ava';
 
 import { generateSigner } from '@metaplex-foundation/umi';
-import { updateV1, pluginAuthorityPair, updateAuthority } from '../src';
-import { assertAsset, createAsset, createUmi, DEFAULT_ASSET } from './_setup';
+import { updateV1, pluginAuthorityPair, updateAuthority, updateCollectionV1 } from '../src';
+import { assertAsset, createAsset, createCollection, createUmi, DEFAULT_ASSET } from './_setup';
 
 test('it can update an asset to be larger', async (t) => {
   // Given a Umi instance and a new signer.
@@ -168,7 +168,7 @@ test('it cannot update an asset using wrong authority', async (t) => {
   });
 
   const newUpdateAuthority = generateSigner(umi);
-  let result = updateV1(umi, {
+  const result = updateV1(umi, {
     asset: asset.publicKey,
     newName: 'Test Bread 2',
     newUri: 'https://example.com/bread2',
@@ -185,4 +185,68 @@ test('it cannot update an asset using wrong authority', async (t) => {
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: updateAuth.publicKey },
   });
+});
+
+test('it cannot use an invalid system program for assets', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = await createAsset(umi);
+  const fakeSystemProgram = generateSigner(umi);
+
+  const result = updateV1(umi, {
+    asset: asset.publicKey,
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
+    systemProgram: fakeSystemProgram.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
+});
+
+test('it cannot use an invalid noop program for assets', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = await createAsset(umi);
+  const fakeLogWrapper = generateSigner(umi);
+
+  const result = updateV1(umi, {
+    asset: asset.publicKey,
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
+    logWrapper: fakeLogWrapper.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
+});
+
+test('it cannot use an invalid system program for collections', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const collection = await createCollection(umi);
+  const fakeSystemProgram = generateSigner(umi);
+
+  const result = updateCollectionV1(umi, {
+    collection: collection.publicKey,
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
+    systemProgram: fakeSystemProgram.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
+});
+
+test('it cannot use an invalid noop program for collections', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const collection = await createCollection(umi);
+  const fakeLogWrapper = generateSigner(umi);
+
+  const result = updateCollectionV1(umi, {
+    collection: collection.publicKey,
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
+    logWrapper: fakeLogWrapper.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
 });

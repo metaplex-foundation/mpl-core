@@ -420,6 +420,19 @@ export class ConflictingAuthorityError extends ProgramError {
 codeToErrorMap.set(0x1d, ConflictingAuthorityError);
 nameToErrorMap.set('ConflictingAuthority', ConflictingAuthorityError);
 
+/** InvalidLogWrapperProgram: Invalid Log Wrapper Program */
+export class InvalidLogWrapperProgramError extends ProgramError {
+  override readonly name: string = 'InvalidLogWrapperProgram';
+
+  readonly code: number = 0x1e; // 30
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Log Wrapper Program', program, cause);
+  }
+}
+codeToErrorMap.set(0x1e, InvalidLogWrapperProgramError);
+nameToErrorMap.set('InvalidLogWrapperProgram', InvalidLogWrapperProgramError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

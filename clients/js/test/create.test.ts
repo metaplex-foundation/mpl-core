@@ -262,3 +262,35 @@ test('it cannot create a new asset with an update authority that is not the coll
 
   await t.throwsAsync(result, { name: 'ConflictingAuthority' });
 });
+
+test('it cannot use an invalid system program for assets', async (t) => {
+  // Given an Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+  const fakeSystemProgram = generateSigner(umi);
+
+  const result = createV1(umi, {
+    asset: assetAddress,
+    name: 'Test',
+    uri: 'Test',
+    systemProgram: fakeSystemProgram.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
+});
+
+test('it cannot use an invalid noop program assets', async (t) => {
+  // Given an Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+  const fakeLogWrapper = generateSigner(umi);
+
+  const result = createV1(umi, {
+    asset: assetAddress,
+    name: 'Test',
+    uri: 'Test',
+    logWrapper: fakeLogWrapper.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
+});
