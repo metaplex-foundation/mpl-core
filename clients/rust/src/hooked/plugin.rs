@@ -2,13 +2,13 @@ use borsh::BorshDeserialize;
 use solana_program::account_info::AccountInfo;
 
 use crate::{
-    accounts::{BaseAssetV1, PluginHeaderV1, PluginRegistryV1},
+    accounts::{BaseAssetV1, PluginHeaderV1},
     errors::MplCoreError,
-    types::{Plugin, PluginAuthority, PluginType, RegistryRecord},
+    types::{Plugin, PluginAuthority, PluginType},
     AttributesPlugin, BaseAuthority, BasePlugin, BurnDelegatePlugin, DataBlob,
     FreezeDelegatePlugin, PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin,
-    PermanentTransferDelegatePlugin, PluginsList, RoyaltiesPlugin, SolanaAccount,
-    TransferDelegatePlugin, UpdateDelegatePlugin,
+    PermanentTransferDelegatePlugin, PluginRegistryV1Safe, PluginsList, RegistryRecordSafe,
+    RoyaltiesPlugin, SolanaAccount, TransferDelegatePlugin, UpdateDelegatePlugin,
 };
 
 /// Fetch the plugin from the registry.
@@ -25,14 +25,22 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
         ));
     }
 
-    let header = PluginHeaderV1::load(account, asset.get_size())?;
-    let PluginRegistryV1 { registry, .. } =
-        PluginRegistryV1::load(account, header.plugin_registry_offset as usize)?;
+    let header = PluginHeaderV1::from_bytes(&(*account.data).borrow()[asset.get_size()..])?;
+    let plugin_registry = PluginRegistryV1Safe::from_bytes(
+        &(*account.data).borrow()[header.plugin_registry_offset as usize..],
+    )?;
 
     // Find the plugin in the registry.
-    let registry_record = registry
+    let registry_record = plugin_registry
+        .registry
         .iter()
-        .find(|record| record.plugin_type == plugin_type)
+        .find(|record| {
+            if let Some(plugin) = PluginType::from_u8(record.plugin_type) {
+                plugin == plugin_type
+            } else {
+                false
+            }
+        })
         .ok_or(std::io::Error::new(
             std::io::ErrorKind::Other,
             MplCoreError::PluginNotFound.to_string(),
@@ -66,95 +74,90 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
     ))
 }
 
-/// Fetch the plugin registry.
-pub fn fetch_plugins(account: &[u8]) -> Result<Vec<RegistryRecord>, std::io::Error> {
-    let asset = BaseAssetV1::from_bytes(account)?;
-
-    let header = PluginHeaderV1::from_bytes(&account[asset.get_size()..])?;
-    let PluginRegistryV1 { registry, .. } =
-        PluginRegistryV1::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
-
-    Ok(registry)
-}
-
-/// Create plugin header and registry if it doesn't exist
+/// List all plugins in an account, dropping any unknown plugins (i.e. `PluginType`s that are too
+/// new for this client to know about). Note this also does not support external plugins for now,
+/// and will be updated when those are defined.
 pub fn list_plugins(account: &[u8]) -> Result<Vec<PluginType>, std::io::Error> {
     let asset = BaseAssetV1::from_bytes(account)?;
-
     let header = PluginHeaderV1::from_bytes(&account[asset.get_size()..])?;
-    let PluginRegistryV1 { registry, .. } =
-        PluginRegistryV1::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
+    let plugin_registry =
+        PluginRegistryV1Safe::from_bytes(&account[(header.plugin_registry_offset as usize)..])?;
 
-    Ok(registry
+    Ok(plugin_registry
+        .registry
         .iter()
-        .map(|registry_record| registry_record.plugin_type.clone())
+        .filter_map(|registry_record| PluginType::from_u8(registry_record.plugin_type))
         .collect())
 }
-
-pub fn registry_records_to_plugin_list(
-    registry_records: &[RegistryRecord],
+// Convert a slice of `RegistryRecordSafe` into the `PluginsList` type, dropping any unknown
+// plugins (i.e. `PluginType`s that are too new for this client to know about). Note this also does
+// not support external plugins for now, and will be updated when those are defined.
+pub(crate) fn registry_records_to_plugin_list(
+    registry_records: &[RegistryRecordSafe],
     account_data: &[u8],
 ) -> Result<PluginsList, std::io::Error> {
     let result = registry_records
         .iter()
         .try_fold(PluginsList::default(), |mut acc, record| {
-            let authority: BaseAuthority = record.authority.clone().into();
-            let base = BasePlugin {
-                authority,
-                offset: Some(record.offset),
-            };
-            let plugin = Plugin::deserialize(&mut &account_data[record.offset as usize..])?;
+            if PluginType::from_u8(record.plugin_type).is_some() {
+                let authority: BaseAuthority = record.authority.clone().into();
+                let base = BasePlugin {
+                    authority,
+                    offset: Some(record.offset),
+                };
+                let plugin = Plugin::deserialize(&mut &account_data[record.offset as usize..])?;
 
-            match plugin {
-                Plugin::Royalties(royalties) => {
-                    acc.royalties = Some(RoyaltiesPlugin { base, royalties });
+                match plugin {
+                    Plugin::Royalties(royalties) => {
+                        acc.royalties = Some(RoyaltiesPlugin { base, royalties });
+                    }
+                    Plugin::FreezeDelegate(freeze_delegate) => {
+                        acc.freeze_delegate = Some(FreezeDelegatePlugin {
+                            base,
+                            freeze_delegate,
+                        });
+                    }
+                    Plugin::BurnDelegate(burn_delegate) => {
+                        acc.burn_delegate = Some(BurnDelegatePlugin {
+                            base,
+                            burn_delegate,
+                        });
+                    }
+                    Plugin::TransferDelegate(transfer_delegate) => {
+                        acc.transfer_delegate = Some(TransferDelegatePlugin {
+                            base,
+                            transfer_delegate,
+                        });
+                    }
+                    Plugin::UpdateDelegate(update_delegate) => {
+                        acc.update_delegate = Some(UpdateDelegatePlugin {
+                            base,
+                            update_delegate,
+                        });
+                    }
+                    Plugin::PermanentFreezeDelegate(permanent_freeze_delegate) => {
+                        acc.permanent_freeze_delegate = Some(PermanentFreezeDelegatePlugin {
+                            base,
+                            permanent_freeze_delegate,
+                        });
+                    }
+                    Plugin::Attributes(attributes) => {
+                        acc.attributes = Some(AttributesPlugin { base, attributes });
+                    }
+                    Plugin::PermanentTransferDelegate(permanent_transfer_delegate) => {
+                        acc.permanent_transfer_delegate = Some(PermanentTransferDelegatePlugin {
+                            base,
+                            permanent_transfer_delegate,
+                        })
+                    }
+                    Plugin::PermanentBurnDelegate(permanent_burn_delegate) => {
+                        acc.permanent_burn_delegate = Some(PermanentBurnDelegatePlugin {
+                            base,
+                            permanent_burn_delegate,
+                        })
+                    }
                 }
-                Plugin::FreezeDelegate(freeze_delegate) => {
-                    acc.freeze_delegate = Some(FreezeDelegatePlugin {
-                        base,
-                        freeze_delegate,
-                    });
-                }
-                Plugin::BurnDelegate(burn_delegate) => {
-                    acc.burn_delegate = Some(BurnDelegatePlugin {
-                        base,
-                        burn_delegate,
-                    });
-                }
-                Plugin::TransferDelegate(transfer_delegate) => {
-                    acc.transfer_delegate = Some(TransferDelegatePlugin {
-                        base,
-                        transfer_delegate,
-                    });
-                }
-                Plugin::UpdateDelegate(update_delegate) => {
-                    acc.update_delegate = Some(UpdateDelegatePlugin {
-                        base,
-                        update_delegate,
-                    });
-                }
-                Plugin::PermanentFreezeDelegate(permanent_freeze_delegate) => {
-                    acc.permanent_freeze_delegate = Some(PermanentFreezeDelegatePlugin {
-                        base,
-                        permanent_freeze_delegate,
-                    });
-                }
-                Plugin::Attributes(attributes) => {
-                    acc.attributes = Some(AttributesPlugin { base, attributes });
-                }
-                Plugin::PermanentTransferDelegate(permanent_transfer_delegate) => {
-                    acc.permanent_transfer_delegate = Some(PermanentTransferDelegatePlugin {
-                        base,
-                        permanent_transfer_delegate,
-                    })
-                }
-                Plugin::PermanentBurnDelegate(permanent_burn_delegate) => {
-                    acc.permanent_burn_delegate = Some(PermanentBurnDelegatePlugin {
-                        base,
-                        permanent_burn_delegate,
-                    })
-                }
-            };
+            }
 
             Ok(acc)
         });

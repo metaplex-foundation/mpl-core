@@ -1,32 +1,13 @@
 use base64::prelude::*;
 use borsh::BorshDeserialize;
 use solana_program::pubkey::Pubkey;
-use std::{cmp::Ordering, collections::HashMap, io::ErrorKind};
+use std::{collections::HashMap, io::ErrorKind};
 
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{Key, Plugin, PluginAuthority, PluginType, UpdateAuthority},
-    DataBlob,
+    DataBlob, PluginRegistryV1Safe, RegistryRecordSafe,
 };
-
-impl PluginType {
-    // Needed to determine if a plugin is a known or unknown type.
-    // TODO: Derive this using Kinobi.
-    pub fn from_u8(n: u8) -> Option<PluginType> {
-        match n {
-            0 => Some(PluginType::Royalties),
-            1 => Some(PluginType::FreezeDelegate),
-            2 => Some(PluginType::BurnDelegate),
-            3 => Some(PluginType::TransferDelegate),
-            4 => Some(PluginType::UpdateDelegate),
-            5 => Some(PluginType::PermanentFreezeDelegate),
-            6 => Some(PluginType::Attributes),
-            7 => Some(PluginType::PermanentTransferDelegate),
-            8 => Some(PluginType::PermanentBurnDelegate),
-            _ => None,
-        }
-    }
-}
 
 /// Schema used for indexing known plugin types.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -86,57 +67,6 @@ impl ProcessedPlugin {
         };
 
         Ok(processed_plugin)
-    }
-}
-
-// Registry record that can be used when some plugins are not known.
-struct RegistryRecordSafe {
-    pub plugin_type: u8,
-    pub authority: PluginAuthority,
-    pub offset: u64,
-}
-
-impl RegistryRecordSafe {
-    /// Associated function for sorting `RegistryRecordIndexable` by offset.
-    pub fn compare_offsets(a: &RegistryRecordSafe, b: &RegistryRecordSafe) -> Ordering {
-        a.offset.cmp(&b.offset)
-    }
-}
-
-// Plugin registry that can safely be deserialized even if some plugins are not known.
-struct PluginRegistryV1Safe {
-    pub _key: Key,
-    pub registry: Vec<RegistryRecordSafe>,
-}
-
-impl PluginRegistryV1Safe {
-    #[inline(always)]
-    pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {
-        let mut data: &[u8] = data;
-        let key = Key::deserialize(&mut data)?;
-        if key != Key::PluginRegistryV1 {
-            return Err(ErrorKind::InvalidInput.into());
-        }
-
-        let registry_size = u32::deserialize(&mut data)?;
-
-        let mut registry = vec![];
-        for _ in 0..registry_size {
-            let plugin_type = u8::deserialize(&mut data)?;
-            let authority = PluginAuthority::deserialize(&mut data)?;
-            let offset = u64::deserialize(&mut data)?;
-
-            registry.push(RegistryRecordSafe {
-                plugin_type,
-                authority,
-                offset,
-            });
-        }
-
-        Ok(Self {
-            _key: key,
-            registry,
-        })
     }
 }
 
