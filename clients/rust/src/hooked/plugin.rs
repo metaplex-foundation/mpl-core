@@ -4,7 +4,7 @@ use solana_program::account_info::AccountInfo;
 use crate::{
     accounts::{BaseAssetV1, PluginHeaderV1},
     errors::MplCoreError,
-    types::{Plugin, PluginAuthority, PluginType},
+    types::{Plugin, PluginAuthority, PluginType, RegistryRecord},
     AttributesPlugin, BaseAuthority, BasePlugin, BurnDelegatePlugin, DataBlob,
     FreezeDelegatePlugin, PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin,
     PermanentTransferDelegatePlugin, PluginRegistryV1Safe, PluginsList, RegistryRecordSafe,
@@ -72,6 +72,31 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
         inner,
         registry_record.offset as usize,
     ))
+}
+
+/// Fetch the plugin registry, dropping any unknown plugins (i.e. `PluginType`s that are too new
+///  for this client to know about).
+pub fn fetch_plugins(account_data: &[u8]) -> Result<Vec<RegistryRecord>, std::io::Error> {
+    let asset = BaseAssetV1::from_bytes(account_data)?;
+
+    let header = PluginHeaderV1::from_bytes(&account_data[asset.get_size()..])?;
+    let plugin_registry = PluginRegistryV1Safe::from_bytes(
+        &account_data[(header.plugin_registry_offset as usize)..],
+    )?;
+
+    let filtered_plugin_registry = plugin_registry
+        .registry
+        .iter()
+        .filter_map(|record| {
+            PluginType::from_u8(record.plugin_type).map(|plugin_type| RegistryRecord {
+                plugin_type,
+                authority: record.authority.clone(),
+                offset: record.offset,
+            })
+        })
+        .collect();
+
+    Ok(filtered_plugin_registry)
 }
 
 /// List all plugins in an account, dropping any unknown plugins (i.e. `PluginType`s that are too
