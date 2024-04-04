@@ -380,6 +380,130 @@ test('it can remove a plugin from asset with existing plugins', async (t) => {
   });
 });
 
+test('it cannot remove a plugin from a frozen asset', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: true },
+      }),
+      pluginAuthorityPair({
+        type: 'TransferDelegate',
+      }),
+      pluginAuthorityPair({
+        type: 'BurnDelegate',
+      }),
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: true,
+    },
+    transferDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+    burnDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+  });
+
+  const result1 = removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.BurnDelegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result1, { name: 'InvalidAuthority' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: true,
+    },
+    transferDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+    burnDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+  });
+});
+
+test('it cannot remove a plugin from an asset with a frozen collection', async (t) => {
+  const umi = await createUmi();
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'TransferDelegate',
+        }),
+        pluginAuthorityPair({
+          type: 'BurnDelegate',
+        }),
+      ],
+    },
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'PermanentFreezeDelegate',
+          data: {
+            frozen: true,
+          },
+        }),
+      ],
+    }
+  );
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    transferDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+    burnDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+  });
+
+  const result = removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.TransferDelegate,
+    collection: collection.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+});
+
 test('it cannot use an invalid system program for assets', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();

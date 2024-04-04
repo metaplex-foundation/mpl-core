@@ -19,17 +19,14 @@ import {
   gpaBuilder,
   publicKey as toPublicKey,
 } from '@metaplex-foundation/umi';
+import { array } from '@metaplex-foundation/umi/serializers';
 import {
-  Serializer,
-  array,
-  struct,
-} from '@metaplex-foundation/umi/serializers';
+  PluginRegistryV1AccountData,
+  getPluginRegistryV1AccountDataSerializer,
+} from '../../hooked';
 import {
-  ExternalPluginRecord,
   ExternalPluginRecordArgs,
-  Key,
   KeyArgs,
-  RegistryRecord,
   RegistryRecordArgs,
   getExternalPluginRecordSerializer,
   getKeySerializer,
@@ -37,32 +34,6 @@ import {
 } from '../types';
 
 export type PluginRegistryV1 = Account<PluginRegistryV1AccountData>;
-
-export type PluginRegistryV1AccountData = {
-  key: Key;
-  registry: Array<RegistryRecord>;
-  externalPlugins: Array<ExternalPluginRecord>;
-};
-
-export type PluginRegistryV1AccountDataArgs = {
-  key: KeyArgs;
-  registry: Array<RegistryRecordArgs>;
-  externalPlugins: Array<ExternalPluginRecordArgs>;
-};
-
-export function getPluginRegistryV1AccountDataSerializer(): Serializer<
-  PluginRegistryV1AccountDataArgs,
-  PluginRegistryV1AccountData
-> {
-  return struct<PluginRegistryV1AccountData>(
-    [
-      ['key', getKeySerializer()],
-      ['registry', array(getRegistryRecordSerializer())],
-      ['externalPlugins', array(getExternalPluginRecordSerializer())],
-    ],
-    { description: 'PluginRegistryV1AccountData' }
-  ) as Serializer<PluginRegistryV1AccountDataArgs, PluginRegistryV1AccountData>;
-}
 
 export function deserializePluginRegistryV1(
   rawAccount: RpcAccount
