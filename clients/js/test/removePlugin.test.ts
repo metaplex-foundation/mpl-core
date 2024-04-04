@@ -572,9 +572,7 @@ test('it cannot use an invalid system program for collections', async (t) => {
   const fakeSystemProgram = generateSigner(umi);
 
   const collection = await createCollection(umi, {
-    plugins: [
-      pluginAuthorityPair({ type: 'UpdateDelegate' }),
-    ],
+    plugins: [pluginAuthorityPair({ type: 'UpdateDelegate' })],
   });
 
   await assertCollection(t, umi, {
@@ -596,9 +594,7 @@ test('it cannot use an invalid noop program for collections', async (t) => {
   const fakeLogWrapper = generateSigner(umi);
 
   const collection = await createCollection(umi, {
-    plugins: [
-      pluginAuthorityPair({ type: 'UpdateDelegate' }),
-    ],
+    plugins: [pluginAuthorityPair({ type: 'UpdateDelegate' })],
   });
 
   await assertCollection(t, umi, {

@@ -235,7 +235,7 @@ test('it cannot use an invalid noop program for collections', async (t) => {
   const result = burnCollectionV1(umi, {
     collection: collection.publicKey,
     logWrapper: fakeLogWrapper.publicKey,
-    compressionProof: null
+    compressionProof: null,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });

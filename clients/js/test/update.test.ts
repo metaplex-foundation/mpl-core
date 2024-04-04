@@ -1,8 +1,19 @@
 import test from 'ava';
 
 import { generateSigner } from '@metaplex-foundation/umi';
-import { updateV1, pluginAuthorityPair, updateAuthority, updateCollectionV1 } from '../src';
-import { assertAsset, createAsset, createCollection, createUmi, DEFAULT_ASSET } from './_setup';
+import {
+  updateV1,
+  pluginAuthorityPair,
+  updateAuthority,
+  updateCollectionV1,
+} from '../src';
+import {
+  assertAsset,
+  createAsset,
+  createCollection,
+  createUmi,
+  DEFAULT_ASSET,
+} from './_setup';
 
 test('it can update an asset to be larger', async (t) => {
   // Given a Umi instance and a new signer.

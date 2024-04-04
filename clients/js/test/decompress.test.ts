@@ -113,13 +113,13 @@ test('it cannot use an invalid system program', async (t) => {
     compressionProof: {
       owner: umi.identity.publicKey,
       updateAuthority: {
-        __kind: 'None'
+        __kind: 'None',
       },
       name: '',
       uri: '',
       seq: 0,
-      plugins: []
-    }
+      plugins: [],
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
@@ -145,13 +145,13 @@ test('it cannot use an invalid noop program', async (t) => {
     compressionProof: {
       owner: umi.identity.publicKey,
       updateAuthority: {
-        __kind: 'None'
+        __kind: 'None',
       },
       name: '',
       uri: '',
       seq: 0,
-      plugins: []
-    }
+      plugins: [],
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });

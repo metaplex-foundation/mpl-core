@@ -11,7 +11,13 @@ import {
   approveCollectionPluginAuthorityV1,
   revokeCollectionPluginAuthorityV1,
 } from '../src';
-import { assertAsset, assertCollection, createAsset, createCollection, createUmi } from './_setup';
+import {
+  assertAsset,
+  assertCollection,
+  createAsset,
+  createCollection,
+  createUmi,
+} from './_setup';
 
 test('it can remove an authority from a plugin', async (t) => {
   // Given a Umi instance and a new signer.
@@ -170,7 +176,6 @@ test('it cannot remove a none authority from a plugin', async (t) => {
   t.true(err?.message.startsWith('Invalid Authority'));
 });
 
-
 test('it cannot use an invalid system program for assets', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
@@ -258,9 +263,7 @@ test('it cannot use an invalid system program for collections', async (t) => {
   const fakeSystemProgram = generateSigner(umi);
 
   const collection = await createCollection(umi, {
-    plugins: [
-      pluginAuthorityPair({ type: 'UpdateDelegate' }),
-    ],
+    plugins: [pluginAuthorityPair({ type: 'UpdateDelegate' })],
   });
 
   await approveCollectionPluginAuthorityV1(umi, {
@@ -290,9 +293,7 @@ test('it cannot use an invalid noop program for collections', async (t) => {
   const fakeLogWrapper = generateSigner(umi);
 
   const collection = await createCollection(umi, {
-    plugins: [
-      pluginAuthorityPair({ type: 'UpdateDelegate' }),
-    ],
+    plugins: [pluginAuthorityPair({ type: 'UpdateDelegate' })],
   });
 
   await approveCollectionPluginAuthorityV1(umi, {

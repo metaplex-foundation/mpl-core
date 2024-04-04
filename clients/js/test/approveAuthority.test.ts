@@ -11,7 +11,14 @@ import {
   addCollectionPluginV1,
   approveCollectionPluginAuthorityV1,
 } from '../src';
-import { DEFAULT_ASSET, assertAsset, assertCollection, createAsset, createCollection, createUmi } from './_setup';
+import {
+  DEFAULT_ASSET,
+  assertAsset,
+  assertCollection,
+  createAsset,
+  createCollection,
+  createUmi,
+} from './_setup';
 
 test('it can add an authority to a plugin', async (t) => {
   // Given a Umi instance and a new signer.
@@ -263,8 +270,7 @@ test('it cannot use an invalid system program for assets', async (t) => {
   await addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
-  })
-    .sendAndConfirm(umi);
+  }).sendAndConfirm(umi);
 
   const result = approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
@@ -293,8 +299,7 @@ test('it cannot use an invalid noop program for assets', async (t) => {
   await addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
-  })
-    .sendAndConfirm(umi);
+  }).sendAndConfirm(umi);
 
   const result = approvePluginAuthorityV1(umi, {
     asset: asset.publicKey,
@@ -322,8 +327,7 @@ test('it cannot use an invalid system program for collections', async (t) => {
   await addCollectionPluginV1(umi, {
     collection: collection.publicKey,
     plugin: createPlugin({ type: 'UpdateDelegate' }),
-  })
-    .sendAndConfirm(umi);
+  }).sendAndConfirm(umi);
 
   const result = approveCollectionPluginAuthorityV1(umi, {
     collection: collection.publicKey,
@@ -351,8 +355,7 @@ test('it cannot use an invalid noop program for collections', async (t) => {
   await addCollectionPluginV1(umi, {
     collection: collection.publicKey,
     plugin: createPlugin({ type: 'UpdateDelegate' }),
-  })
-    .sendAndConfirm(umi);
+  }).sendAndConfirm(umi);
 
   const result = approveCollectionPluginAuthorityV1(umi, {
     collection: collection.publicKey,
