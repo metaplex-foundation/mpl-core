@@ -39,6 +39,12 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
+    if let Some(log_wrapper) = ctx.accounts.log_wrapper {
+        if log_wrapper.key != &spl_noop::ID {
+            return Err(MplCoreError::InvalidLogWrapperProgram.into());
+        }
+    }
+
     if ctx.accounts.update_authority.is_some() && ctx.accounts.collection.is_some() {
         return Err(MplCoreError::ConflictingAuthority.into());
     }

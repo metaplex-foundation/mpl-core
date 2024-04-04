@@ -245,7 +245,7 @@ test('it delegate cannot freeze after delegate has been revoked', async (t) => {
     pluginType: PluginType.FreezeDelegate,
   }).sendAndConfirm(umi);
 
-  let result = updatePluginV1(umi, {
+  const result = updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: true } }),
     authority: delegateAddress,
@@ -283,7 +283,7 @@ test('it owner cannot unfreeze frozen asset', async (t) => {
     ],
   });
 
-  let result = updatePluginV1(umi, {
+  const result = updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
     authority: owner,
@@ -324,7 +324,7 @@ test('it update authority cannot unfreeze frozen asset', async (t) => {
     ],
   });
 
-  let result = updatePluginV1(umi, {
+  const result = updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
     authority: updateAuthority,

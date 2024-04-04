@@ -35,6 +35,16 @@ pub(crate) fn revoke_plugin_authority<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
+    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+        return Err(MplCoreError::InvalidSystemProgram.into());
+    }
+
+    if let Some(log_wrapper) = ctx.accounts.log_wrapper {
+        if log_wrapper.key != &spl_noop::ID {
+            return Err(MplCoreError::InvalidLogWrapperProgram.into());
+        }
+    }
+
     if let Key::HashedAssetV1 = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Revoke plugin authority for compressed is not available");
         return Err(MplCoreError::NotAvailable.into());
@@ -96,6 +106,16 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
     // Guards.
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
+
+    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+        return Err(MplCoreError::InvalidSystemProgram.into());
+    }
+
+    if let Some(log_wrapper) = ctx.accounts.log_wrapper {
+        if log_wrapper.key != &spl_noop::ID {
+            return Err(MplCoreError::InvalidLogWrapperProgram.into());
+        }
+    }
 
     let (_, plugin_header, mut plugin_registry) =
         fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;

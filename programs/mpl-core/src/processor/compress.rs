@@ -28,6 +28,16 @@ pub(crate) fn compress<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
+    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+        return Err(MplCoreError::InvalidSystemProgram.into());
+    }
+
+    if let Some(log_wrapper) = ctx.accounts.log_wrapper {
+        if log_wrapper.key != &spl_noop::ID {
+            return Err(MplCoreError::InvalidLogWrapperProgram.into());
+        }
+    }
+
     match load_key(ctx.accounts.asset, 0)? {
         Key::AssetV1 => {
             let (asset, _, plugin_registry) = fetch_core_data::<AssetV1>(ctx.accounts.asset)?;

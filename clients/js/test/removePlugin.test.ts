@@ -503,3 +503,109 @@ test('it cannot remove a plugin from an asset with a frozen collection', async (
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });
+
+test('it cannot use an invalid system program for assets', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const fakeSystemProgram = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: false,
+    },
+  });
+
+  const result = removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.FreezeDelegate,
+    systemProgram: fakeSystemProgram.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
+});
+
+test('it cannot use an invalid noop program for assets', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const fakeLogWrapper = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: false,
+    },
+  });
+
+  const result = removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.FreezeDelegate,
+    logWrapper: fakeLogWrapper.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
+});
+
+test('it cannot use an invalid system program for collections', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const fakeSystemProgram = generateSigner(umi);
+
+  const collection = await createCollection(umi, {
+    plugins: [pluginAuthorityPair({ type: 'UpdateDelegate' })],
+  });
+
+  await assertCollection(t, umi, {
+    collection: collection.publicKey,
+  });
+
+  const result = removeCollectionPluginV1(umi, {
+    collection: collection.publicKey,
+    pluginType: PluginType.UpdateDelegate,
+    systemProgram: fakeSystemProgram.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
+});
+
+test('it cannot use an invalid noop program for collections', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const fakeLogWrapper = generateSigner(umi);
+
+  const collection = await createCollection(umi, {
+    plugins: [pluginAuthorityPair({ type: 'UpdateDelegate' })],
+  });
+
+  await assertCollection(t, umi, {
+    collection: collection.publicKey,
+  });
+
+  const result = removeCollectionPluginV1(umi, {
+    collection: collection.publicKey,
+    pluginType: PluginType.UpdateDelegate,
+    logWrapper: fakeLogWrapper.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
+});
