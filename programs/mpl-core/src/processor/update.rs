@@ -72,6 +72,12 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
             return Err(MplCoreError::NotAvailable.into());
         };
 
+        if let UpdateAuthority::Collection(_collection_address) = asset.update_authority {
+            // Removing from collection is not currently available.
+            // will require the collection size to be updated
+            return Err(MplCoreError::NotAvailable.into());
+        }
+
         asset.update_authority = new_update_authority;
         dirty = true;
     }
