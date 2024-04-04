@@ -112,10 +112,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         _authority: &Authority,
         plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        if plugin_to_revoke.is_some()
-            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::PermanentFreezeDelegate
-            && self.frozen
-        {
+        if plugin_to_revoke.is_some() && self.frozen {
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)
