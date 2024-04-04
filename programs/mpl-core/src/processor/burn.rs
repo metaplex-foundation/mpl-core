@@ -114,9 +114,9 @@ pub(crate) fn burn_collection<'a>(
         authority,
         ctx.accounts.collection,
         None,
-        CollectionV1::check_burn,
+        CollectionV1::check_self_burn,
         PluginType::check_burn,
-        CollectionV1::validate_burn,
+        CollectionV1::validate_self_burn,
         Plugin::validate_burn,
     )?;
 
