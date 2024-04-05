@@ -181,7 +181,7 @@ pub fn fetch_plugins(account: &AccountInfo) -> Result<Vec<RegistryRecord>, Progr
     Ok(registry)
 }
 
-/// Create plugin header and registry if it doesn't exist
+/// List all plugins in an account.
 pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramError> {
     let asset = AssetV1::load(account, 0)?;
 

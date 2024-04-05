@@ -89,6 +89,7 @@ impl PluginType {
     pub fn check_update(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
+            PluginType::UpdateDelegate => CheckResult::CanApprove,
             _ => CheckResult::None,
         }
     }

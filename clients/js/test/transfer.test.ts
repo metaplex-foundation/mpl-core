@@ -294,3 +294,47 @@ test('it cannot transfer an asset using asset as authority', async (t) => {
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 });
+
+test('it cannot use an invalid system program', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const newOwner = generateSigner(umi);
+  const fakeSystemProgram = generateSigner(umi);
+
+  const asset = await createAsset(umi);
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  const result = transferV1(umi, {
+    asset: asset.publicKey,
+    newOwner: newOwner.publicKey,
+    systemProgram: fakeSystemProgram.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
+});
+
+test('it cannot use an invalid noop program', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const newOwner = generateSigner(umi);
+  const fakeLogWrapper = generateSigner(umi);
+
+  const asset = await createAsset(umi);
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  const result = transferV1(umi, {
+    asset: asset.publicKey,
+    newOwner: newOwner.publicKey,
+    logWrapper: fakeLogWrapper.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
+});

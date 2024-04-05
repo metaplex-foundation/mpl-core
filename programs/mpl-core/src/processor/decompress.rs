@@ -34,6 +34,12 @@ pub(crate) fn decompress<'a>(
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
+    if let Some(log_wrapper) = ctx.accounts.log_wrapper {
+        if log_wrapper.key != &spl_noop::ID {
+            return Err(MplCoreError::InvalidLogWrapperProgram.into());
+        }
+    }
+
     match load_key(ctx.accounts.asset, 0)? {
         Key::HashedAssetV1 => {
             // Verify the proof and rebuild `Asset`` struct in account space.

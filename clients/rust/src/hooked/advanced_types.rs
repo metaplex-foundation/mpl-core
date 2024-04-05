@@ -1,9 +1,11 @@
+use borsh::BorshDeserialize;
 use solana_program::pubkey::Pubkey;
+use std::{cmp::Ordering, io::ErrorKind};
 
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        Attributes, BurnDelegate, Edition, FreezeDelegate, PermanentBurnDelegate,
+        Attributes, BurnDelegate, Edition, FreezeDelegate, Key, PermanentBurnDelegate,
         PermanentFreezeDelegate, PermanentTransferDelegate, PluginAuthority, Royalties,
         TransferDelegate, UpdateDelegate,
     },
@@ -148,5 +150,59 @@ pub struct Asset {
 pub struct Collection {
     pub base: BaseCollectionV1,
     pub plugin_list: PluginsList,
-    pub plugin_header: PluginHeaderV1,
+    pub plugin_header: Option<PluginHeaderV1>,
+}
+
+/// Registry record that can be used when the plugin type is not known (i.e. a `PluginType` that
+/// is too new for this client to know about).
+pub struct RegistryRecordSafe {
+    pub plugin_type: u8,
+    pub authority: PluginAuthority,
+    pub offset: u64,
+}
+
+impl RegistryRecordSafe {
+    /// Associated function for sorting `RegistryRecordIndexable` by offset.
+    pub fn compare_offsets(a: &RegistryRecordSafe, b: &RegistryRecordSafe) -> Ordering {
+        a.offset.cmp(&b.offset)
+    }
+}
+
+/// Plugin registry that an account can safely be deserialized into even if some plugins are
+/// not known.  Note this skips over external plugins for now, and will be updated when those
+/// are defined.
+pub struct PluginRegistryV1Safe {
+    pub _key: Key,
+    pub registry: Vec<RegistryRecordSafe>,
+}
+
+impl PluginRegistryV1Safe {
+    #[inline(always)]
+    pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {
+        let mut data: &[u8] = data;
+        let key = Key::deserialize(&mut data)?;
+        if key != Key::PluginRegistryV1 {
+            return Err(ErrorKind::InvalidInput.into());
+        }
+
+        let registry_size = u32::deserialize(&mut data)?;
+
+        let mut registry = vec![];
+        for _ in 0..registry_size {
+            let plugin_type = u8::deserialize(&mut data)?;
+            let authority = PluginAuthority::deserialize(&mut data)?;
+            let offset = u64::deserialize(&mut data)?;
+
+            registry.push(RegistryRecordSafe {
+                plugin_type,
+                authority,
+                offset,
+            });
+        }
+
+        Ok(Self {
+            _key: key,
+            registry,
+        })
+    }
 }
