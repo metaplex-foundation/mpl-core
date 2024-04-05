@@ -128,6 +128,10 @@ pub enum MplCoreError {
     /// 29 - Conflicting Authority
     #[error("Cannot specify both an update authority and collection on an asset")]
     ConflictingAuthority,
+
+    /// 30 - Invalid Log Wrapper Program
+    #[error("Invalid Log Wrapper Program")]
+    InvalidLogWrapperProgram,
 }
 
 impl PrintProgramError for MplCoreError {

@@ -2477,6 +2477,11 @@
       "code": 29,
       "name": "ConflictingAuthority",
       "msg": "Cannot specify both an update authority and collection on an asset"
+    },
+    {
+      "code": 30,
+      "name": "InvalidLogWrapperProgram",
+      "msg": "Invalid Log Wrapper Program"
     }
   ],
   "metadata": {

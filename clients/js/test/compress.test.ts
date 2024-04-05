@@ -120,3 +120,74 @@ test('it cannot compress an asset because it is not available', async (t) => {
 
   await t.throwsAsync(result, { name: 'NotAvailable' });
 });
+
+test('it cannot use an invalid system program', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+  const fakeSystemProgram = generateSigner(umi);
+
+  // When we create a new account.
+  await createV1(umi, {
+    dataState: DataState.AccountState,
+    asset: assetAddress,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+  }).sendAndConfirm(umi);
+
+  // Then an account was created with the correct data.
+  const beforeAsset = await fetchAssetV1(umi, assetAddress.publicKey);
+  // console.log("Account State:", beforeAsset);
+  t.like(beforeAsset, <AssetV1>{
+    publicKey: assetAddress.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    owner: umi.identity.publicKey,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+  });
+
+  // And when we compress the asset.
+  const result = compressV1(umi, {
+    asset: assetAddress.publicKey,
+    authority: umi.identity,
+    systemProgram: fakeSystemProgram.publicKey,
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
+});
+
+test('it cannot use an invalid log wrapper program', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetAddress = generateSigner(umi);
+  const fakeLogWrapper = generateSigner(umi);
+
+  // When we create a new account.
+  await createV1(umi, {
+    dataState: DataState.AccountState,
+    asset: assetAddress,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+  }).sendAndConfirm(umi);
+
+  // Then an account was created with the correct data.
+  const beforeAsset = await fetchAssetV1(umi, assetAddress.publicKey);
+  // console.log("Account State:", beforeAsset);
+  t.like(beforeAsset, <AssetV1>{
+    publicKey: assetAddress.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    owner: umi.identity.publicKey,
+    name: 'Test Bread',
+    uri: 'https://example.com/bread',
+  });
+
+  // And when we compress the asset.
+  const result = compressV1(umi, {
+    asset: assetAddress.publicKey,
+    authority: umi.identity,
+    logWrapper: fakeLogWrapper.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
+});
