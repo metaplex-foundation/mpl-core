@@ -44,6 +44,7 @@ impl PluginType {
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::FreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
+            PluginType::Edition => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }

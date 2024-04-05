@@ -36,4 +36,38 @@ impl PluginValidation for Edition {
             Ok(ValidationResult::Pass)
         }
     }
+
+    fn validate_remove_plugin(
+        &self,
+        _authority_info: &AccountInfo,
+        _authority: &Authority,
+        plugin: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        // This plugin cannot be removed
+        // always reject it.
+        if plugin.is_some() && PluginType::from(plugin.unwrap()) == PluginType::Edition {
+            Ok(ValidationResult::Rejected)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+    /// Validate the revoke plugin authority lifecycle action.
+    fn validate_revoke_plugin_authority(
+        &self,
+        authority_info: &AccountInfo,
+        authority: &Authority,
+        plugin_to_revoke: Option<&Plugin>,
+    ) -> Result<ValidationResult, ProgramError> {
+        if authority
+            == &(Authority::Address {
+                address: *authority_info.key,
+            })
+            && plugin_to_revoke.is_some()
+            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::Edition
+        {
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
 }
