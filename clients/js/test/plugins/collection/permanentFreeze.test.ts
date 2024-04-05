@@ -14,7 +14,7 @@ import {
   createUmi,
 } from '../../_setup';
 
-test('it can add permanent freeze to collection', async (t) => {
+test('it can add permanentFreezeDelegate to collection', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
@@ -38,7 +38,7 @@ test('it can add permanent freeze to collection', async (t) => {
   });
 });
 
-test('it can remove permanent freeze from collection', async (t) => {
+test('it can remove permanentFreezeDelegate from collection', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
@@ -74,7 +74,7 @@ test('it can remove permanent freeze from collection', async (t) => {
   });
 });
 
-test('it cannot remove permanent freeze from collection when frozen', async (t) => {
+test('it cannot remove permanentFreezeDelegate from collection when frozen', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
@@ -119,7 +119,7 @@ test('it cannot remove permanent freeze from collection when frozen', async (t) 
   });
 });
 
-test('it cannot add permanentFreeze to collection after creation', async (t) => {
+test('it cannot add permanentFreezeDelegate to collection after creation', async (t) => {
   const umi = await createUmi();
 
   const collection = await createCollection(umi);
