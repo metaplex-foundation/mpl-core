@@ -55,5 +55,5 @@ export type PluginsList = {
   permanentFreezeDelegate?: PermanentFreezeDelegatePlugin;
   permanentTransferDelegate?: PermanentTransferDelegatePlugin;
   permanentBurnDelegate?: PermanentBurnDelegatePlugin;
-  edition?: EditionPlugin
+  edition?: EditionPlugin;
 };

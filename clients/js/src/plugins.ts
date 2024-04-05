@@ -67,9 +67,9 @@ export type CreatePluginArgs =
       type: 'PermanentBurnDelegate';
     }
   | {
-      type: 'Edition',
+      type: 'Edition';
       data: EditionArgs;
-  };
+    };
 
 export function createPlugin(args: CreatePluginArgs): BasePlugin {
   // TODO refactor when there are more required empty fields in plugins

@@ -10,7 +10,6 @@ import {
   removePluginV1,
   revokePluginAuthorityV1,
   updatePluginV1,
-
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -28,7 +27,7 @@ test('it can create asset with edition plugin', async (t) => {
       pluginAuthorityPair({
         type: 'Edition',
         data: { number: 1 },
-      })
+      }),
     ],
   });
 
@@ -41,16 +40,16 @@ test('it can create asset with edition plugin', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      number: 1
+      number: 1,
     },
   });
-})
+});
 
 test('it cannot add edition plugin after mint', async (t) => {
   const umi = await createUmi();
 
-  const asset = await createAsset(umi, {})
-    
+  const asset = await createAsset(umi, {});
+
   const res = addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
@@ -59,8 +58,7 @@ test('it cannot add edition plugin after mint', async (t) => {
     }),
   }).sendAndConfirm(umi);
 
-  
-  await t.throwsAsync(res, { name: 'InvalidAuthority' })
+  await t.throwsAsync(res, { name: 'InvalidAuthority' });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -68,7 +66,7 @@ test('it cannot add edition plugin after mint', async (t) => {
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
-})
+});
 
 test('it cannot add edition plugin to collection', async (t) => {
   const umi = await createUmi();
@@ -78,12 +76,12 @@ test('it cannot add edition plugin to collection', async (t) => {
       pluginAuthorityPair({
         type: 'Edition',
         data: { number: 1 },
-      })
+      }),
     ],
-  })
+  });
 
-  await t.throwsAsync(res, { name: 'InvalidPlugin' })
-})
+  await t.throwsAsync(res, { name: 'InvalidPlugin' });
+});
 test('it cannot remove edition plugin', async (t) => {
   const umi = await createUmi();
 
@@ -92,16 +90,16 @@ test('it cannot remove edition plugin', async (t) => {
       pluginAuthorityPair({
         type: 'Edition',
         data: { number: 1 },
-      })
+      }),
     ],
   });
 
   const res = removePluginV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Edition,
-  }).sendAndConfirm(umi)
-  
-  await t.throwsAsync(res, { name: 'InvalidAuthority' })
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(res, { name: 'InvalidAuthority' });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -112,10 +110,10 @@ test('it cannot remove edition plugin', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      number: 1
+      number: 1,
     },
   });
-})
+});
 
 test('it can update edition plugin', async (t) => {
   const umi = await createUmi();
@@ -125,7 +123,7 @@ test('it can update edition plugin', async (t) => {
       pluginAuthorityPair({
         type: 'Edition',
         data: { number: 1 },
-      })
+      }),
     ],
   });
 
@@ -135,7 +133,7 @@ test('it can update edition plugin', async (t) => {
       type: 'Edition',
       data: { number: 2 },
     }),
-  }).sendAndConfirm(umi)
+  }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -146,24 +144,24 @@ test('it can update edition plugin', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      number: 2
+      number: 2,
     },
   });
-})
+});
 
 test('it cannot update edition plugin as owner', async (t) => {
   const umi = await createUmi();
-  const owner = generateSigner(umi)
+  const owner = generateSigner(umi);
 
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
         type: 'Edition',
         data: { number: 1 },
-      })
+      }),
     ],
     owner: owner.publicKey,
-  })
+  });
 
   const res = updatePluginV1(umi, {
     asset: asset.publicKey,
@@ -172,9 +170,9 @@ test('it cannot update edition plugin as owner', async (t) => {
       data: { number: 2 },
     }),
     authority: owner,
-  }).sendAndConfirm(umi)
+  }).sendAndConfirm(umi);
 
-  await t.throwsAsync(res, { name: 'NoApprovals' })
+  await t.throwsAsync(res, { name: 'NoApprovals' });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -185,10 +183,10 @@ test('it cannot update edition plugin as owner', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      number: 1
+      number: 1,
     },
   });
-})
+});
 
 test('it can create immutable edition plugin', async (t) => {
   const umi = await createUmi();
@@ -197,8 +195,8 @@ test('it can create immutable edition plugin', async (t) => {
       pluginAuthorityPair({
         type: 'Edition',
         data: { number: 1 },
-        authority: nonePluginAuthority()
-      })
+        authority: nonePluginAuthority(),
+      }),
     ],
   });
 
@@ -211,7 +209,7 @@ test('it can create immutable edition plugin', async (t) => {
       authority: {
         type: 'None',
       },
-      number: 1
+      number: 1,
     },
   });
 
@@ -221,11 +219,10 @@ test('it can create immutable edition plugin', async (t) => {
       type: 'Edition',
       data: { number: 2 },
     }),
-  }).sendAndConfirm(umi)
+  }).sendAndConfirm(umi);
 
-  await t.throwsAsync(res, { name: 'NoApprovals' })
-
-})
+  await t.throwsAsync(res, { name: 'NoApprovals' });
+});
 
 test('it can make edition plugin immutable', async (t) => {
   const umi = await createUmi();
@@ -234,7 +231,7 @@ test('it can make edition plugin immutable', async (t) => {
       pluginAuthorityPair({
         type: 'Edition',
         data: { number: 1 },
-      })
+      }),
     ],
   });
 
@@ -247,7 +244,7 @@ test('it can make edition plugin immutable', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      number: 1
+      number: 1,
     },
   });
 
@@ -266,16 +263,16 @@ test('it can make edition plugin immutable', async (t) => {
       authority: {
         type: 'None',
       },
-      number: 1
+      number: 1,
     },
   });
 
   const revokeRes = revokePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.Edition,
-  }).sendAndConfirm(umi)
+  }).sendAndConfirm(umi);
 
-  await t.throwsAsync(revokeRes, { name: 'InvalidAuthority' })
+  await t.throwsAsync(revokeRes, { name: 'InvalidAuthority' });
 
   const res = updatePluginV1(umi, {
     asset: asset.publicKey,
@@ -283,8 +280,7 @@ test('it can make edition plugin immutable', async (t) => {
       type: 'Edition',
       data: { number: 2 },
     }),
-  }).sendAndConfirm(umi)
+  }).sendAndConfirm(umi);
 
-  await t.throwsAsync(res, { name: 'NoApprovals' })
-
-})
+  await t.throwsAsync(res, { name: 'NoApprovals' });
+});

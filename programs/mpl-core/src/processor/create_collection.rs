@@ -100,8 +100,7 @@ pub(crate) fn create_collection<'a>(
                     return Err(MplCoreError::InvalidPlugin.into());
                 }
 
-                if PluginType::check_create(&plugin_type) != CheckResult::None
-                {
+                if PluginType::check_create(&plugin_type) != CheckResult::None {
                     match Plugin::validate_create(
                         &plugin.plugin,
                         ctx.accounts.payer,

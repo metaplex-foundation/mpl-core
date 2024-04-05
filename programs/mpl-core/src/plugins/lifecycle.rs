@@ -598,9 +598,12 @@ impl Plugin {
                 authority,
                 resolved_authorities,
             ),
-            Plugin::Edition(edition) => {
-                edition.validate_transfer(authority_info, new_owner, authority, resolved_authorities)
-            }
+            Plugin::Edition(edition) => edition.validate_transfer(
+                authority_info,
+                new_owner,
+                authority,
+                resolved_authorities,
+            ),
         }
     }
 

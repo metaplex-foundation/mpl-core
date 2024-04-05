@@ -1,5 +1,6 @@
 mod attributes;
 mod burn_delegate;
+mod edition;
 mod freeze_delegate;
 mod lifecycle;
 mod permanent_burn_delegate;
@@ -11,10 +12,10 @@ mod royalties;
 mod transfer;
 mod update_delegate;
 mod utils;
-mod edition;
 
 pub use attributes::*;
 pub use burn_delegate::*;
+pub use edition::*;
 pub use freeze_delegate::*;
 pub use lifecycle::*;
 use num_derive::ToPrimitive;
@@ -27,7 +28,6 @@ pub use royalties::*;
 pub use transfer::*;
 pub use update_delegate::*;
 pub use utils::*;
-pub use edition::*;
 
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
