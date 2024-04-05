@@ -6,14 +6,14 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct, u32 } from '@metaplex-foundation/umi/serializers';
 
-export type Edition = { number: bigint };
+export type Edition = { number: number };
 
-export type EditionArgs = { number: number | bigint };
+export type EditionArgs = Edition;
 
 export function getEditionSerializer(): Serializer<EditionArgs, Edition> {
-  return struct<Edition>([['number', u64()]], {
+  return struct<Edition>([['number', u32()]], {
     description: 'Edition',
   }) as Serializer<EditionArgs, Edition>;
 }

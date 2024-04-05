@@ -1483,7 +1483,7 @@
         "fields": [
           {
             "name": "number",
-            "type": "u64"
+            "type": "u32"
           }
         ]
       }

@@ -11,7 +11,7 @@ use super::{Plugin, PluginType, PluginValidation, ValidationResult};
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct Edition {
     /// The edition number.
-    pub number: u64,
+    pub number: u32,
 }
 
 impl Edition {

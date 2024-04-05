@@ -41,7 +41,7 @@ test('it can create asset with edition plugin', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      number: BigInt(1)
+      number: 1
     },
   });
 })
@@ -112,7 +112,7 @@ test('it cannot remove edition plugin', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      number: BigInt(1)
+      number: 1
     },
   });
 })
@@ -146,7 +146,7 @@ test('it can update edition plugin', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      number: BigInt(2)
+      number: 2
     },
   });
 })
@@ -185,7 +185,7 @@ test('it cannot update edition plugin as owner', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      number: BigInt(1)
+      number: 1
     },
   });
 })
@@ -211,7 +211,7 @@ test('it can create immutable edition plugin', async (t) => {
       authority: {
         type: 'None',
       },
-      number: BigInt(1)
+      number: 1
     },
   });
 
@@ -247,7 +247,7 @@ test('it can make edition plugin immutable', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      number: BigInt(1)
+      number: 1
     },
   });
 
@@ -266,7 +266,7 @@ test('it can make edition plugin immutable', async (t) => {
       authority: {
         type: 'None',
       },
-      number: BigInt(1)
+      number: 1
     },
   });
 
