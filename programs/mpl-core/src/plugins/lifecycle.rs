@@ -32,6 +32,7 @@ impl PluginType {
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentTransferDelegate => CheckResult::CanReject,
+            PluginType::PermanentBurnDelegate => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }

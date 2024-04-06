@@ -97,7 +97,7 @@ test('it cannot remove permanentFreezeDelegate from collection when frozen', asy
     },
   });
 
-  let result = removeCollectionPluginV1(umi, {
+  const result = removeCollectionPluginV1(umi, {
     collection: collection.publicKey,
     pluginType: PluginType.PermanentFreezeDelegate,
   }).sendAndConfirm(umi);
