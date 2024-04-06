@@ -4,6 +4,8 @@ import {
   createPlugin,
   pluginAuthorityPair,
   updateCollectionPluginV1,
+  removeCollectionPluginV1,
+  PluginType,
 } from '../../../src';
 import {
   DEFAULT_COLLECTION,
@@ -12,7 +14,7 @@ import {
   createUmi,
 } from '../../_setup';
 
-test('it can add permanent freeze to collection', async (t) => {
+test('it can add permanentFreezeDelegate to collection', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
@@ -36,7 +38,88 @@ test('it can add permanent freeze to collection', async (t) => {
   });
 });
 
-test('it cannot add permanentFreeze to collection after creation', async (t) => {
+test('it can remove permanentFreezeDelegate from collection', async (t) => {
+  const umi = await createUmi();
+  const collection = await createCollection(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: false },
+      }),
+    ],
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    permanentFreezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: false,
+    },
+  });
+
+  await removeCollectionPluginV1(umi, {
+    collection: collection.publicKey,
+    pluginType: PluginType.PermanentFreezeDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    permanentFreezeDelegate: undefined,
+  });
+});
+
+test('it cannot remove permanentFreezeDelegate from collection when frozen', async (t) => {
+  const umi = await createUmi();
+  const collection = await createCollection(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: true },
+      }),
+    ],
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    permanentFreezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: true,
+    },
+  });
+
+  const result = removeCollectionPluginV1(umi, {
+    collection: collection.publicKey,
+    pluginType: PluginType.PermanentFreezeDelegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, {
+    name: 'InvalidAuthority',
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    permanentFreezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: true,
+    },
+  });
+});
+
+test('it cannot add permanentFreezeDelegate to collection after creation', async (t) => {
   const umi = await createUmi();
 
   const collection = await createCollection(umi);

@@ -3,7 +3,7 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 
 use crate::state::{Authority, DataBlob};
 
-use super::{Plugin, PluginType, PluginValidation, ValidationResult};
+use super::{Plugin, PluginValidation, ValidationResult};
 
 /// The freeze delegate plugin allows any authority to lock the asset so it's no longer transferable.
 /// The default authority for this plugin is the owner.
