@@ -14,6 +14,7 @@ import {
   PermanentFreezeDelegateArgs,
   PluginType,
   UpdateDelegateArgs,
+  EditionArgs,
 } from './generated';
 import { BasePluginAuthority, PluginsList } from './types';
 import { mapPluginAuthority } from './authority';
@@ -64,6 +65,10 @@ export type CreatePluginArgs =
     }
   | {
       type: 'PermanentBurnDelegate';
+    }
+  | {
+      type: 'Edition';
+      data: EditionArgs;
     };
 
 export function createPlugin(args: CreatePluginArgs): BasePlugin {

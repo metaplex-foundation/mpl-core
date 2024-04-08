@@ -5,7 +5,7 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        Attributes, BurnDelegate, FreezeDelegate, Key, PermanentBurnDelegate,
+        Attributes, BurnDelegate, Edition, FreezeDelegate, Key, PermanentBurnDelegate,
         PermanentFreezeDelegate, PermanentTransferDelegate, PluginAuthority, Royalties,
         TransferDelegate, UpdateDelegate,
     },
@@ -119,6 +119,12 @@ pub struct PermanentBurnDelegatePlugin {
     pub permanent_burn_delegate: PermanentBurnDelegate,
 }
 
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct EditionPlugin {
+    pub base: BasePlugin,
+    pub edition: Edition,
+}
+
 #[derive(Debug, Default)]
 pub struct PluginsList {
     pub royalties: Option<RoyaltiesPlugin>,
@@ -130,6 +136,7 @@ pub struct PluginsList {
     pub attributes: Option<AttributesPlugin>,
     pub permanent_transfer_delegate: Option<PermanentTransferDelegatePlugin>,
     pub permanent_burn_delegate: Option<PermanentBurnDelegatePlugin>,
+    pub edition: Option<EditionPlugin>,
 }
 
 #[derive(Debug)]
