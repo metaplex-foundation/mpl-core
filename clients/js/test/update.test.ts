@@ -10,6 +10,7 @@ import {
 import {
   assertAsset,
   createAsset,
+  createAssetWithCollection,
   createCollection,
   createUmi,
   DEFAULT_ASSET,
@@ -193,6 +194,22 @@ test('it cannot update an asset update authority to be part of a collection (rig
     newUpdateAuthority: updateAuthority('Collection', [
       newCollection.publicKey,
     ]),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NotAvailable' });
+});
+
+test('it cannot remove an asset from a collection (right now)', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const { asset, collection } = await createAssetWithCollection(umi, {}, {});
+
+  const result = updateV1(umi, {
+    asset: asset.publicKey,
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
+    collection: collection.publicKey,
+    newUpdateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'NotAvailable' });

@@ -124,10 +124,10 @@ pub(crate) fn remove_collection_plugin<'a>(
         authority,
         ctx.accounts.collection,
         Some(&plugin_to_remove),
-        CollectionV1::check_add_plugin,
-        PluginType::check_add_plugin,
-        CollectionV1::validate_add_plugin,
-        Plugin::validate_add_plugin,
+        CollectionV1::check_remove_plugin,
+        PluginType::check_remove_plugin,
+        CollectionV1::validate_remove_plugin,
+        Plugin::validate_remove_plugin,
     )?;
 
     process_remove_plugin(

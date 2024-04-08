@@ -5,8 +5,15 @@ import {
   createPlugin,
   pluginAuthorityPair,
   updatePluginAuthority,
+  removeCollectionPluginV1,
+  PluginType,
 } from '../../../src';
-import { assertCollection, createCollection, createUmi } from '../../_setup';
+import {
+  assertCollection,
+  createCollection,
+  createUmi,
+  DEFAULT_COLLECTION,
+} from '../../_setup';
 
 test('it can add permanentTransferDelegate to collection', async (t) => {
   const umi = await createUmi();
@@ -21,7 +28,7 @@ test('it can add permanentTransferDelegate to collection', async (t) => {
   });
 
   await assertCollection(t, umi, {
-    ...collection,
+    ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
     permanentTransferDelegate: {
@@ -49,7 +56,41 @@ test('it cannot add PermanentTransferDelegate to collection after creation', asy
   });
 
   await assertCollection(t, umi, {
-    ...collection,
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    permanentTransferDelegate: undefined,
+  });
+});
+
+test('it can remove PermanentTransferDelegate from collection', async (t) => {
+  const umi = await createUmi();
+  const collection = await createCollection(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentTransferDelegate',
+      }),
+    ],
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    permanentTransferDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+    },
+  });
+
+  await removeCollectionPluginV1(umi, {
+    collection: collection.publicKey,
+    pluginType: PluginType.PermanentTransferDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
     permanentTransferDelegate: undefined,
