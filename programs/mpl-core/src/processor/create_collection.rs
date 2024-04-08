@@ -95,8 +95,12 @@ pub(crate) fn create_collection<'a>(
                     return Err(MplCoreError::InvalidAuthority.into());
                 }
 
-                if PluginType::check_create(&PluginType::from(&plugin.plugin)) != CheckResult::None
-                {
+                let plugin_type = PluginType::from(&plugin.plugin);
+                if plugin_type == PluginType::Edition {
+                    return Err(MplCoreError::InvalidPlugin.into());
+                }
+
+                if PluginType::check_create(&plugin_type) != CheckResult::None {
                     match Plugin::validate_create(
                         &plugin.plugin,
                         ctx.accounts.payer,

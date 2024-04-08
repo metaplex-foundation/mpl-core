@@ -12,6 +12,7 @@ export * from './burnDelegate';
 export * from './compressionProof';
 export * from './creator';
 export * from './dataState';
+export * from './edition';
 export * from './externalPluginRecord';
 export * from './extraAccounts';
 export * from './freezeDelegate';

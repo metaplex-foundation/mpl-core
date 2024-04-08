@@ -1477,6 +1477,18 @@
       }
     },
     {
+      "name": "Edition",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "number",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
       "name": "FreezeDelegate",
       "type": {
         "kind": "struct",
@@ -2128,6 +2140,14 @@
                 "defined": "PermanentBurnDelegate"
               }
             ]
+          },
+          {
+            "name": "Edition",
+            "fields": [
+              {
+                "defined": "Edition"
+              }
+            ]
           }
         ]
       }
@@ -2163,6 +2183,9 @@
           },
           {
             "name": "PermanentBurnDelegate"
+          },
+          {
+            "name": "Edition"
           }
         ]
       }

@@ -2,6 +2,7 @@ mod advanced_lifecycle_hook;
 mod attributes;
 mod burn_delegate;
 mod data_store;
+mod edition;
 mod external_plugins;
 mod freeze_delegate;
 mod lifecycle;
@@ -21,6 +22,7 @@ pub use advanced_lifecycle_hook::*;
 pub use attributes::*;
 pub use burn_delegate::*;
 pub use data_store::*;
+pub use edition::*;
 pub use external_plugins::*;
 pub use freeze_delegate::*;
 pub use lifecycle::*;
@@ -70,6 +72,8 @@ pub enum Plugin {
     PermanentTransferDelegate(PermanentTransferDelegate),
     /// Permanent Burn Delegate authority allows the creator of an asset to become the person who can burn an Asset
     PermanentBurnDelegate(PermanentBurnDelegate),
+    /// Edition plugin allows creators to add an edition number to the asset
+    Edition(Edition),
 }
 
 impl Plugin {
@@ -132,6 +136,8 @@ pub enum PluginType {
     PermanentTransferDelegate,
     /// The Permanent Burn Delegate plugin.
     PermanentBurnDelegate,
+    /// The Edition plugin.
+    Edition,
 }
 
 impl DataBlob for PluginType {
@@ -156,6 +162,7 @@ impl From<&Plugin> for PluginType {
             Plugin::Attributes(_) => PluginType::Attributes,
             Plugin::PermanentTransferDelegate(_) => PluginType::PermanentTransferDelegate,
             Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
+            Plugin::Edition(_) => PluginType::Edition,
         }
     }
 }
@@ -173,6 +180,7 @@ impl PluginType {
             PluginType::Attributes => Authority::UpdateAuthority,
             PluginType::PermanentTransferDelegate => Authority::UpdateAuthority,
             PluginType::PermanentBurnDelegate => Authority::UpdateAuthority,
+            PluginType::Edition => Authority::UpdateAuthority,
         }
     }
 }
