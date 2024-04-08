@@ -6,21 +6,46 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
+import { Option, OptionOrNullable } from '@metaplex-foundation/umi';
 import {
+  Serializer,
+  array,
+  option,
+  struct,
+  tuple,
+  u64,
+} from '@metaplex-foundation/umi/serializers';
+import {
+  ExternalCheckResult,
+  ExternalCheckResultArgs,
+  ExternalPluginKey,
+  ExternalPluginKeyArgs,
+  LifecycleEvent,
+  LifecycleEventArgs,
   PluginAuthority,
   PluginAuthorityArgs,
+  getExternalCheckResultSerializer,
+  getExternalPluginKeySerializer,
+  getLifecycleEventSerializer,
   getPluginAuthoritySerializer,
 } from '.';
 
 export type ExternalPluginRecord = {
+  pluginKey: ExternalPluginKey;
   authority: PluginAuthority;
-  offset: bigint;
+  lifecycleChecks: Option<Array<[LifecycleEvent, ExternalCheckResult]>>;
+  headerOffset: bigint;
+  dataOffset: Option<bigint>;
 };
 
 export type ExternalPluginRecordArgs = {
+  pluginKey: ExternalPluginKeyArgs;
   authority: PluginAuthorityArgs;
-  offset: number | bigint;
+  lifecycleChecks: OptionOrNullable<
+    Array<[LifecycleEventArgs, ExternalCheckResultArgs]>
+  >;
+  headerOffset: number | bigint;
+  dataOffset: OptionOrNullable<number | bigint>;
 };
 
 export function getExternalPluginRecordSerializer(): Serializer<
@@ -29,8 +54,21 @@ export function getExternalPluginRecordSerializer(): Serializer<
 > {
   return struct<ExternalPluginRecord>(
     [
+      ['pluginKey', getExternalPluginKeySerializer()],
       ['authority', getPluginAuthoritySerializer()],
-      ['offset', u64()],
+      [
+        'lifecycleChecks',
+        option(
+          array(
+            tuple([
+              getLifecycleEventSerializer(),
+              getExternalCheckResultSerializer(),
+            ])
+          )
+        ),
+      ],
+      ['headerOffset', u64()],
+      ['dataOffset', option(u64())],
     ],
     { description: 'ExternalPluginRecord' }
   ) as Serializer<ExternalPluginRecordArgs, ExternalPluginRecord>;
