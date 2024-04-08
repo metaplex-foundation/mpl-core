@@ -3,7 +3,7 @@ use solana_program::pubkey::Pubkey;
 
 use strum::EnumCount;
 
-use super::{AdvancedLifecycleHook, Authority, DataStore, Oracle, SimpleLifecycleHook};
+use super::{Authority, DataStore, LifecycleHook, Oracle};
 
 /// List of third party plugin types.
 #[repr(C)]
@@ -11,20 +11,15 @@ use super::{AdvancedLifecycleHook, Authority, DataStore, Oracle, SimpleLifecycle
     Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq, EnumCount, PartialOrd, Ord,
 )]
 pub enum ExternalPluginKey {
-    /// Simple Lifecycle Hook.  Pick from a selection of several preconfigured PDAs for hooks.
-    /// Attached `Pubkey` is the hooked program, which is called at specified lifecycle events and
-    /// will return a validation result and new data to store.
-    SimpleLifecycleHook(Pubkey),
-    /// Advanced Lifecycle Hook.  Uses extra account to store account metas.  Attached `Pubkey` is
-    /// the hooked program, which is called at specified lifecycle events and will return a
-    /// validation result and new data to store.
-    AdvancedLifecycleHook(Pubkey),
+    /// Lifecycle Hook.  Extra accounts are specified in the external plugin header.  The attached
+    /// `Pubkey` is the hooked program, which is called at specified lifecycle events and will
+    /// return a validation result and new data to store.
+    LifecycleHook(Pubkey),
     /// Oracle.  Get a `ValidationResult` result from an account either specified by or derived
     /// from the attached `Pubkey`.
     Oracle(Pubkey),
     /// Data Store.  Arbitrary data that can be written to by the attached `Authority`.  Note this
-    /// is different then the plugin authority as it cannot add/remove/revoke authority for the
-    /// plugin.
+    /// is different then the plugin authority as it cannot update/revoke authority for the plugin.
     DataStore(Authority),
 }
 
@@ -33,30 +28,91 @@ pub enum ExternalPluginKey {
 #[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum ExternalPluginHeader {
-    /// Simple Lifecycle Hook.
-    SimpleLifecycleHook(SimpleLifecycleHook),
-    /// Advanced Lifecycle Hook.
-    AdvancedLifecycleHook(AdvancedLifecycleHook),
+    /// Lifecycle Hook.
+    LifecycleHook(LifecycleHook),
     /// Oracle.
     Oracle(Oracle),
     /// Data Store.
     DataStore(DataStore),
 }
 
-/// A PDA with preconfigured known seeds.
+/// Type used to specify extra accounts for external plugins.
 #[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub enum PreconfiguredPda {
-    /// Program-based PDA.
+pub enum ExtraAccount {
+    /// Program-based PDA with seeds ["mpl-core"]
+    PreconfiguredProgram {
+        /// Account is a signer
+        is_signer: bool,
+        /// Account is writable.
+        is_writable: bool,
+    },
+    /// Collection-based PDA with seeds ["mpl-core", <collection Pubkey>]
+    PreconfiguredCollection {
+        /// Account is a signer
+        is_signer: bool,
+        /// Account is writable.
+        is_writable: bool,
+    },
+    /// Owner-based PDA with seeds ["mpl-core", <owner Pubkey>]
+    PreconfiguredOwner {
+        /// Account is a signer
+        is_signer: bool,
+        /// Account is writable.
+        is_writable: bool,
+    },
+    /// Recipient-based PDA with seeds ["mpl-core", <recipient Pubkey>]
+    /// If the lifecycle event has no recipient the derivation will fail.
+    PreconfiguredRecipient {
+        /// Account is a signer
+        is_signer: bool,
+        /// Account is writable.
+        is_writable: bool,
+    },
+    /// Asset-based PDA with seeds ["mpl-core", <asset Pubkey>]
+    PreconfiguredAsset {
+        /// Account is a signer
+        is_signer: bool,
+        /// Account is writable.
+        is_writable: bool,
+    },
+    /// PDA based on user-specified seeds.
+    CustomPda {
+        /// Seeds used to derive the PDA.
+        seeds: Vec<Seed>,
+        /// Account is a signer
+        is_signer: bool,
+        /// Account is writable.
+        is_writable: bool,
+    },
+    /// Directly-specified address.
+    Address {
+        /// Address.
+        address: Pubkey,
+        /// Account is a signer
+        is_signer: bool,
+        /// Account is writable.
+        is_writable: bool,
+    },
+}
+
+/// Seeds to be used for extra account custom PDA derivations.
+#[repr(C)]
+#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
+pub enum Seed {
+    /// Insert the program ID.
     Program,
-    /// Collection-based PDA.
+    /// Insert the collection Pubkey.  If the asset has no collection the lifecycle action will
+    /// fail.
     Collection,
-    /// Owner-based PDA.
+    /// Insert the owner Pubkey.
     Owner,
-    /// Recipient-based PDA.
+    /// Insert the recipient Pubkey.  If the lifecycle event has no recipient the action will fail.
     Recipient,
-    /// Asset-based PDA.
+    /// Insert the asset Pubkey.
     Asset,
+    /// Insert the specified bytes.
+    Bytes(Vec<u8>),
 }
 
 /// Schema used for third party plugin data.
