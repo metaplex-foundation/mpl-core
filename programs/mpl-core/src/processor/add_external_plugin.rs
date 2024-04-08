@@ -1,6 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
-use std::collections::HashMap;
 
 use crate::{
     error::MplCoreError,
@@ -18,7 +17,7 @@ pub(crate) struct AddExternalPluginV1Args {
     /// Initial authority.
     pub init_authority: Option<Authority>,
     /// The lifecyle events for which the the third party plugin is active.
-    pub lifecycle_checks: Option<HashMap<LifecycleEvent, ExternalCheckResult>>,
+    pub lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
     /// External plugin initial data.
     pub data: Option<Vec<u8>>,
 }
@@ -40,7 +39,7 @@ pub(crate) struct AddCollectionExternalPluginV1Args {
     /// Initial authority.
     pub init_authority: Option<Authority>,
     /// The lifecyle events for which the the third party plugin is active.
-    pub lifecycle_checks: Option<HashMap<LifecycleEvent, ExternalCheckResult>>,
+    pub lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
     /// External plugin initial data.
     pub data: Option<Vec<u8>>,
 }
