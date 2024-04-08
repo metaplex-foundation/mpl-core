@@ -41,7 +41,7 @@ pub enum DataState {
 
 /// Variants representing the different types of authority that can have permissions over plugins.
 #[repr(u8)]
-#[derive(Copy, Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Authority {
     /// No authority, used for immutability.
     None,

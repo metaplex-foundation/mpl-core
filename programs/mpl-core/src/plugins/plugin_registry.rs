@@ -4,13 +4,13 @@ use std::{cmp::Ordering, collections::BTreeMap};
 
 use crate::state::{Authority, DataBlob, Key, SolanaAccount};
 
-use super::{CheckResult, PluginType};
+use super::{CheckResult, ExternalCheckResult, ExternalPluginKey, LifecycleEvent, PluginType};
 
 /// The Plugin Registry stores a record of all plugins, their location, and their authorities.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
 pub struct PluginRegistryV1 {
-    /// The Discriminator of the header which doubles as a Plugin metadata version.
+    /// The Discriminator of the header which doubles as a plugin metadata version.
     pub key: Key, // 1
     /// The registry of all plugins.
     pub registry: Vec<RegistryRecord>, // 4
@@ -51,7 +51,7 @@ impl SolanaAccount for PluginRegistryV1 {
     }
 }
 
-/// A simple type to store the mapping of Plugin type to Plugin data.
+/// A simple type to store the mapping of plugin type to plugin data.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct RegistryRecord {
@@ -70,12 +70,18 @@ impl RegistryRecord {
     }
 }
 
-/// A simple type to store the mapping of external Plugin authority to Plugin data.
+/// A type to store the mapping of third party plugin type to third party plugin header and data.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct ExternalPluginRecord {
+    /// The third party plugin key.
+    pub plugin_key: ExternalPluginKey,
     /// The authority of the external plugin.
     pub authority: Authority,
-    /// The offset to the plugin in the account.
-    pub offset: usize,
+    /// The lifecyle events for which the the third party plugin is active.
+    pub lifecycle_checks: Vec<(LifecycleEvent, ExternalCheckResult)>,
+    /// The offset to the external plugin header in the account.
+    pub header_offset: usize,
+    /// The offset to the external plugin data in the account.
+    pub data_offset: Option<usize>,
 }
