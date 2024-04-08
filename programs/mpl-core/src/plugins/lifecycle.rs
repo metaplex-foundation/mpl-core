@@ -10,7 +10,7 @@ use crate::{
 use super::{Plugin, PluginType, RegistryRecord};
 
 #[repr(C)]
-#[derive(Eq, PartialEq, Clone, BorshSerialize, BorshDeserialize, Debug)]
+#[derive(Eq, PartialEq, Clone, BorshSerialize, BorshDeserialize, Debug, PartialOrd, Ord, Hash)]
 /// An enum listing all the lifecyle events.
 pub enum LifecycleEvent {
     /// Add a plugin.

@@ -1,6 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
-use std::{cmp::Ordering, collections::BTreeMap};
+use std::{
+    cmp::Ordering,
+    collections::{BTreeMap, HashMap},
+};
 
 use crate::state::{Authority, DataBlob, Key, SolanaAccount};
 
@@ -31,6 +34,24 @@ impl PluginRegistryV1 {
                 record.plugin_type,
                 (key, check_fp(&record.plugin_type), record.clone()),
             );
+        }
+    }
+
+    /// Evaluate checks for all external plugins in the registry.
+    pub(crate) fn check_external_registry(
+        &self,
+        key: Key,
+        lifecycle_event: &LifecycleEvent,
+        result: &mut BTreeMap<ExternalPluginKey, (Key, ExternalCheckResult, ExternalPluginRecord)>,
+    ) {
+        for record in &self.external_plugins {
+            if let Some(check_result) = record
+                .lifecycle_checks
+                .as_ref()
+                .and_then(|map| map.get(lifecycle_event))
+            {
+                result.insert(record.plugin_key, (key, *check_result, record.clone()));
+            }
         }
     }
 }
@@ -79,7 +100,7 @@ pub struct ExternalPluginRecord {
     /// The authority of the external plugin.
     pub authority: Authority,
     /// The lifecyle events for which the the third party plugin is active.
-    pub lifecycle_checks: Vec<(LifecycleEvent, ExternalCheckResult)>,
+    pub lifecycle_checks: Option<HashMap<LifecycleEvent, ExternalCheckResult>>,
     /// The offset to the external plugin header in the account.
     pub header_offset: usize,
     /// The offset to the external plugin data in the account.
