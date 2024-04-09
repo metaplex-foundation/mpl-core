@@ -1,0 +1,170 @@
+name: Deploy Program
+
+on:
+  workflow_dispatch:
+    inputs:
+      program:
+        description: Program
+        required: true
+        default: core
+        type: choice
+        options:
+          - core
+      cluster:
+        description: Cluster environment
+        required: true
+        default: devnet
+        type: choice
+        options:
+          - devnet
+          - mainnet-beta
+      version_program:
+        description: Version program
+        required: true
+        default: false
+        type: boolean
+      level:
+        description: Level
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+env:
+  CACHE: true
+
+jobs:
+  build_programs:
+    name: Programs
+    uses: ./.github/workflows/build-programs.yml
+    secrets: inherit
+
+  test_programs:
+    name: Programs
+    uses: ./.github/workflows/test-programs.yml
+    secrets: inherit
+    with:
+      program_matrix: '["${{ inputs.program }}"]'
+
+  test_js:
+    name: JS client
+    needs: build_programs
+    uses: ./.github/workflows/test-js-client.yml
+    secrets: inherit
+
+  test_rust:
+    name: Rust client
+    needs: build_programs
+    uses: ./.github/workflows/test-rust-client.yml
+    secrets: inherit
+
+  deploy_program:
+    name: Program / Deploy
+    runs-on: ubuntu-latest-16-cores
+    needs: [test_programs, test_js, test_rust]
+    permissions:
+      contents: write
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.SVC_TOKEN }}
+
+      - name: Load environment variables
+        run: cat .github/.env >> $GITHUB_ENV
+
+      - name: Install Rust
+        uses: metaplex-foundation/actions/install-rust@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Install Solana
+        uses: metaplex-foundation/actions/install-solana@v1
+        with:
+          version: ${{ env.SOLANA_VERSION }}
+          cache: ${{ env.CACHE }}
+
+      - name: Install cargo-release
+        uses: metaplex-foundation/actions/install-cargo-release@v1
+        if: github.event.inputs.publish_crate == 'true'
+        with:
+          cache: ${{ env.CACHE }}
+
+      - name: Set RPC
+        run: |
+          if [ "${{ inputs.cluster }}" == "devnet" ]; then
+            echo RPC=${{ secrets.DEVNET_RPC }} >> $GITHUB_ENV
+          else
+            echo RPC=${{ secrets.MAINNET_RPC }} >> $GITHUB_ENV
+          fi
+
+      - name: Determine program version
+        run: |
+          IDL_NAME="mpl_${{ inputs.program }}_program"
+          VERSION=`jq '.version' ./idls/${IDL_NAME}.json | sed 's/"//g'`
+          MAJOR=`echo ${VERSION} | cut -d. -f1`
+          MINOR=`echo ${VERSION} | cut -d. -f2`
+          PATCH=`echo ${VERSION} | cut -d. -f3`
+
+          if [ "${{ inputs.level }}" == "major" ]; then
+             MAJOR=$((MAJOR + 1))E
+             MINOR=0
+             PATCH=0
+          elif [ "${{ inputs.level }}" == "minor" ]; then
+             MINOR=$((MINOR + 1))
+             PATCH=0
+          else
+             PATCH=$((PATCH + 1))
+          fi
+
+          PROGRAM_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+
+          cp ./idls/${IDL_NAME}.json ./idls/${IDL_NAME}-previous.json
+          jq ".version = \"${PROGRAM_VERSION}\"" ./idls/${IDL_NAME}-previous.json > ./idls/${IDL_NAME}.json
+          rm ./idls/${IDL_NAME}-previous.json
+
+          echo PROGRAM_VERSION="${PROGRAM_VERSION}" >> $GITHUB_ENV
+
+      - name: Download program builds
+        uses: actions/download-artifact@v3
+        with:
+          name: program-builds
+
+      - name: Deploy Program
+        run: |
+          echo "Deploying ${{ inputs.program }} to ${{ inputs.cluster }}"
+
+          echo ${{ secrets.CORE_DEPLOYER_KEY }} > ./deployer-key.json 
+          echo ${{ secrets.CORE_ID }} > ./program-id.json
+
+          solana -v program deploy ./programs/.bin/mpl_${{ inputs.program }}_program.so \
+            -u ${{ env.RPC }} \
+            --program-id ./program-id.json \
+            -k ./deployer-key.json
+            
+          rm ./deployer-key.json
+          rm ./program-id.json
+
+      - name: Version program
+        working-directory: ./programs/${{ inputs.program }}/program
+        if: github.event.inputs.version_program == 'true'
+        run: |
+          git stash
+          git config user.name "${{ env.COMMIT_USER_NAME }}"
+          git config user.email "${{ env.COMMIT_USER_EMAIL }}"
+
+          cargo login ${{ secrets.CRATES_TOKEN }}
+          cargo release ${{ env.PROGRAM_VERSION }} --no-confirm --no-push --no-tag --no-publish --execute
+
+          git reset --soft HEAD~1
+          git stash pop
+
+      - name: Commit and tag new version
+        uses: stefanzweifel/git-auto-commit-action@v4
+        if: github.event.inputs.version_program == 'true' && github.event.inputs.cluster == 'mainnet-beta'
+        with:
+          commit_message: Deploy mpl-${{ inputs.program }} program v${{ env.PROGRAM_VERSION }}
+          tagging_message: mpl-${{ inputs.program }}@v${{ env.PROGRAM_VERSION }}
