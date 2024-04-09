@@ -33,6 +33,14 @@ jobs:
           cache: ${{ env.CACHE }}
           key: clients-js
 
+      - name: Build
+        working-directory: ./clients/js
+        run: pnpm build
+
+      - name: Test
+        working-directory: ./clients/js
+        run: pnpm bench
+
       # Download previous benchmark result from cache (if exists)
       - name: Download previous benchmark data
         uses: actions/cache@v4
@@ -44,10 +52,10 @@ jobs:
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          # What benchmark tool the output.txt came from
+          # What benchmark tool the output.json came from
           tool: "customSmallerIsBetter"
           # Where the output from the benchmark tool is stored
-          output-file-path: ./clients/js/output.txt
+          output-file-path: ./clients/js/output.json
           # Where the previous data file is stored
           external-data-json-path: ./cache/benchmark-data.json
           # Workflow will fail when an alert happens
