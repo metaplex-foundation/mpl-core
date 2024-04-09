@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  CACHE: true
+
 jobs:
   benchmark:
     name: Performance regression check
