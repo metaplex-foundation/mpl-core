@@ -122,7 +122,6 @@ jobs:
     needs: generate_clients
     uses: ./.github/workflows/build-rust-client.yml
     secrets: inherit
-
   test_rust_client:
     if: needs.changes.outputs.rust_client == 'true'
     name: Rust Client
