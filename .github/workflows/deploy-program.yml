@@ -6,10 +6,10 @@ on:
       program:
         description: Program
         required: true
-        default: mpl-core
+        default: core
         type: choice
         options:
-          - mpl-core
+          - core
       cluster:
         description: Cluster environment
         required: true
@@ -47,7 +47,7 @@ jobs:
     uses: ./.github/workflows/test-programs.yml
     secrets: inherit
     with:
-      program_matrix: '["${{ inputs.program }}"]'
+      program_matrix: '["mpl-${{ inputs.program }}"]'
 
   test_js:
     name: JS client
