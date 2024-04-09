@@ -18,6 +18,7 @@ export enum PluginType {
   Attributes,
   PermanentTransferDelegate,
   PermanentBurnDelegate,
+  Edition,
 }
 
 export type PluginTypeArgs = PluginType;

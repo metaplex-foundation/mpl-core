@@ -5,7 +5,7 @@ use crate::{
     accounts::{BaseAssetV1, PluginHeaderV1},
     errors::MplCoreError,
     types::{Plugin, PluginAuthority, PluginType, RegistryRecord},
-    AttributesPlugin, BaseAuthority, BasePlugin, BurnDelegatePlugin, DataBlob,
+    AttributesPlugin, BaseAuthority, BasePlugin, BurnDelegatePlugin, DataBlob, EditionPlugin,
     FreezeDelegatePlugin, PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin,
     PermanentTransferDelegatePlugin, PluginRegistryV1Safe, PluginsList, RegistryRecordSafe,
     RoyaltiesPlugin, SolanaAccount, TransferDelegatePlugin, UpdateDelegatePlugin,
@@ -183,9 +183,9 @@ pub(crate) fn registry_records_to_plugin_list(
                             permanent_burn_delegate,
                         })
                     }
+                    Plugin::Edition(edition) => acc.edition = Some(EditionPlugin { base, edition }),
                 }
             }
-
             Ok(acc)
         });
 
