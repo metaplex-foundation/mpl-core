@@ -63,7 +63,7 @@ jobs:
           # Where the output from the benchmark tool is stored
           output-file-path: ./clients/js/output.json
           # Where the previous data file is stored
-          external-data-json-path: ./cache/benchmark-data.json
+          # external-data-json-path: ./cache/benchmark-data.json
           # Workflow will fail when an alert happens
           fail-on-alert: true
           # Access token to deploy GitHub Pages branch
