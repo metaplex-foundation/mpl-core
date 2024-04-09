@@ -1,0 +1,52 @@
+name: Benchmark
+on:
+  workflow_call:
+  push:
+    branches:
+      - main
+
+jobs:
+  benchmark:
+    name: Performance regression check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v3
+
+      - name: Load environment variables
+        run: cat .github/.env >> $GITHUB_ENV
+
+      - name: Start validator
+        uses: metaplex-foundation/actions/start-validator@v1
+        with:
+          node: ${{ matrix.node }}
+          solana: ${{ env.SOLANA_VERSION }}
+          cache: ${{ env.CACHE }}
+
+      - name: Install dependencies
+        uses: metaplex-foundation/actions/install-node-dependencies@v1
+        with:
+          folder: ./clients/js
+          cache: ${{ env.CACHE }}
+          key: clients-js
+
+      # Download previous benchmark result from cache (if exists)
+      - name: Download previous benchmark data
+        uses: actions/cache@v4
+        with:
+          path: ./cache
+          key: ${{ runner.os }}-benchmark
+
+      # Run `github-action-benchmark` action
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          # What benchmark tool the output.txt came from
+          tool: "customSmallerIsBetter"
+          # Where the output from the benchmark tool is stored
+          output-file-path: ./clients/js/output.txt
+          # Where the previous data file is stored
+          external-data-json-path: ./cache/benchmark-data.json
+          # Workflow will fail when an alert happens
+          fail-on-alert: true
+      # Upload the updated cache file for the next job by actions/cache
