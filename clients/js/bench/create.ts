@@ -1,4 +1,4 @@
-import { generateSigner, TransactionBuilder, transactionBuilder } from "@metaplex-foundation/umi";
+import { generateSigner, TransactionBuilder } from "@metaplex-foundation/umi";
 import test from "ava";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { createCollectionV1, createV1 } from "../src";
