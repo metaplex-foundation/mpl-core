@@ -1,7 +1,7 @@
-import { generateSigner } from "@metaplex-foundation/umi";
+import { generateSigner, TransactionBuilder, transactionBuilder } from "@metaplex-foundation/umi";
 import test from "ava";
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { createV1 } from "../src";
+import { createCollectionV1, createV1 } from "../src";
 import { createUmi } from "./_setup";
 
 test('create a new, empty asset', async (t) => {
@@ -14,6 +14,49 @@ test('create a new, empty asset', async (t) => {
         name: "Test",
         uri: "www.test.com",
     }).sendAndConfirm(umi);
+
+    const compute = Number((await umi.rpc.getTransaction(tx.signature))?.meta.computeUnitsConsumed);
+
+    const result = {
+        name: t.title,
+        unit: "Compute Units",
+        value: compute,
+    }
+
+    // Read the results array from output.json
+    let output = [];
+    if (existsSync("./output.json")) {
+        output = JSON.parse(readFileSync("./output.json", 'utf-8'));
+    }
+
+    // Push the result to the array
+    output.push(result);
+    // Write the array to output.json
+    writeFileSync("./output.json", JSON.stringify(output, null, 2));
+
+    t.pass();
+});
+
+test('create a new, empty asset with empty collection', async (t) => {
+    // Given an Umi instance and a new signer.
+    const umi = await createUmi();
+    const collectionAddress = generateSigner(umi);
+    const assetAddress = generateSigner(umi);
+
+    const builder = new TransactionBuilder();
+    builder.add(createCollectionV1(umi, {
+        collection: collectionAddress,
+        name: "Test",
+        uri: "www.test.com",
+    }));
+    builder.add(createV1(umi, {
+        asset: assetAddress,
+        collection: collectionAddress.publicKey,
+        name: "Test",
+        uri: "www.test.com",
+    }));
+
+    const tx = await builder.sendAndConfirm(umi);
 
     const compute = Number((await umi.rpc.getTransaction(tx.signature))?.meta.computeUnitsConsumed);
 
