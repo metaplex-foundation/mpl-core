@@ -1,9 +1,6 @@
 name: Benchmark
 on:
   workflow_call:
-  push:
-    branches:
-      - main
 
 permissions:
   # deployments permission to deploy GitHub pages website
