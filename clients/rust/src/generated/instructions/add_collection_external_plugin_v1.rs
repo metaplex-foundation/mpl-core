@@ -6,7 +6,7 @@
 //!
 
 use crate::generated::types::ExternalCheckResult;
-use crate::generated::types::ExternalPluginHeader;
+use crate::generated::types::ExternalPlugin;
 use crate::generated::types::ExternalPluginKey;
 use crate::generated::types::LifecycleEvent;
 use crate::generated::types::PluginAuthority;
@@ -103,7 +103,7 @@ impl AddCollectionExternalPluginV1InstructionData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AddCollectionExternalPluginV1InstructionArgs {
     pub plugin_key: ExternalPluginKey,
-    pub header: ExternalPluginHeader,
+    pub plugin: ExternalPlugin,
     pub init_authority: Option<PluginAuthority>,
     pub lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
     pub data: Option<Vec<u8>>,
@@ -126,7 +126,7 @@ pub struct AddCollectionExternalPluginV1Builder {
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
     plugin_key: Option<ExternalPluginKey>,
-    header: Option<ExternalPluginHeader>,
+    plugin: Option<ExternalPlugin>,
     init_authority: Option<PluginAuthority>,
     lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
     data: Option<Vec<u8>>,
@@ -179,8 +179,8 @@ impl AddCollectionExternalPluginV1Builder {
         self
     }
     #[inline(always)]
-    pub fn header(&mut self, header: ExternalPluginHeader) -> &mut Self {
-        self.header = Some(header);
+    pub fn plugin(&mut self, plugin: ExternalPlugin) -> &mut Self {
+        self.plugin = Some(plugin);
         self
     }
     /// `[optional argument]`
@@ -235,7 +235,7 @@ impl AddCollectionExternalPluginV1Builder {
         };
         let args = AddCollectionExternalPluginV1InstructionArgs {
             plugin_key: self.plugin_key.clone().expect("plugin_key is not set"),
-            header: self.header.clone().expect("header is not set"),
+            plugin: self.plugin.clone().expect("plugin is not set"),
             init_authority: self.init_authority.clone(),
             lifecycle_checks: self.lifecycle_checks.clone(),
             data: self.data.clone(),
@@ -425,7 +425,7 @@ impl<'a, 'b> AddCollectionExternalPluginV1CpiBuilder<'a, 'b> {
             system_program: None,
             log_wrapper: None,
             plugin_key: None,
-            header: None,
+            plugin: None,
             init_authority: None,
             lifecycle_checks: None,
             data: None,
@@ -483,8 +483,8 @@ impl<'a, 'b> AddCollectionExternalPluginV1CpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn header(&mut self, header: ExternalPluginHeader) -> &mut Self {
-        self.instruction.header = Some(header);
+    pub fn plugin(&mut self, plugin: ExternalPlugin) -> &mut Self {
+        self.instruction.plugin = Some(plugin);
         self
     }
     /// `[optional argument]`
@@ -555,7 +555,7 @@ impl<'a, 'b> AddCollectionExternalPluginV1CpiBuilder<'a, 'b> {
                 .plugin_key
                 .clone()
                 .expect("plugin_key is not set"),
-            header: self.instruction.header.clone().expect("header is not set"),
+            plugin: self.instruction.plugin.clone().expect("plugin is not set"),
             init_authority: self.instruction.init_authority.clone(),
             lifecycle_checks: self.instruction.lifecycle_checks.clone(),
             data: self.instruction.data.clone(),
@@ -592,7 +592,7 @@ struct AddCollectionExternalPluginV1CpiBuilderInstruction<'a, 'b> {
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     plugin_key: Option<ExternalPluginKey>,
-    header: Option<ExternalPluginHeader>,
+    plugin: Option<ExternalPlugin>,
     init_authority: Option<PluginAuthority>,
     lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
     data: Option<Vec<u8>>,

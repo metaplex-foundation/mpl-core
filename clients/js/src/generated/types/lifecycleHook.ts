@@ -12,6 +12,7 @@ import {
   array,
   option,
   struct,
+  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalPluginSchema,
@@ -25,11 +26,15 @@ import {
 export type LifecycleHook = {
   extraAccounts: Option<Array<ExtraAccount>>;
   schema: Option<ExternalPluginSchema>;
+  dataOffset: bigint;
+  dataLen: bigint;
 };
 
 export type LifecycleHookArgs = {
   extraAccounts: OptionOrNullable<Array<ExtraAccountArgs>>;
   schema: OptionOrNullable<ExternalPluginSchemaArgs>;
+  dataOffset: number | bigint;
+  dataLen: number | bigint;
 };
 
 export function getLifecycleHookSerializer(): Serializer<
@@ -40,6 +45,8 @@ export function getLifecycleHookSerializer(): Serializer<
     [
       ['extraAccounts', option(array(getExtraAccountSerializer()))],
       ['schema', option(getExternalPluginSchemaSerializer())],
+      ['dataOffset', u64()],
+      ['dataLen', u64()],
     ],
     { description: 'LifecycleHook' }
   ) as Serializer<LifecycleHookArgs, LifecycleHook>;

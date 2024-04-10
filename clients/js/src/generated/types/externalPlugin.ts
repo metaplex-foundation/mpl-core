@@ -26,73 +26,69 @@ import {
   getOracleSerializer,
 } from '.';
 
-export type ExternalPluginHeader =
+export type ExternalPlugin =
   | { __kind: 'LifecycleHook'; fields: [LifecycleHook] }
   | { __kind: 'Oracle'; fields: [Oracle] }
   | { __kind: 'DataStore'; fields: [DataStore] };
 
-export type ExternalPluginHeaderArgs =
+export type ExternalPluginArgs =
   | { __kind: 'LifecycleHook'; fields: [LifecycleHookArgs] }
   | { __kind: 'Oracle'; fields: [OracleArgs] }
   | { __kind: 'DataStore'; fields: [DataStoreArgs] };
 
-export function getExternalPluginHeaderSerializer(): Serializer<
-  ExternalPluginHeaderArgs,
-  ExternalPluginHeader
+export function getExternalPluginSerializer(): Serializer<
+  ExternalPluginArgs,
+  ExternalPlugin
 > {
-  return dataEnum<ExternalPluginHeader>(
+  return dataEnum<ExternalPlugin>(
     [
       [
         'LifecycleHook',
-        struct<GetDataEnumKindContent<ExternalPluginHeader, 'LifecycleHook'>>([
+        struct<GetDataEnumKindContent<ExternalPlugin, 'LifecycleHook'>>([
           ['fields', tuple([getLifecycleHookSerializer()])],
         ]),
       ],
       [
         'Oracle',
-        struct<GetDataEnumKindContent<ExternalPluginHeader, 'Oracle'>>([
+        struct<GetDataEnumKindContent<ExternalPlugin, 'Oracle'>>([
           ['fields', tuple([getOracleSerializer()])],
         ]),
       ],
       [
         'DataStore',
-        struct<GetDataEnumKindContent<ExternalPluginHeader, 'DataStore'>>([
+        struct<GetDataEnumKindContent<ExternalPlugin, 'DataStore'>>([
           ['fields', tuple([getDataStoreSerializer()])],
         ]),
       ],
     ],
-    { description: 'ExternalPluginHeader' }
-  ) as Serializer<ExternalPluginHeaderArgs, ExternalPluginHeader>;
+    { description: 'ExternalPlugin' }
+  ) as Serializer<ExternalPluginArgs, ExternalPlugin>;
 }
 
 // Data Enum Helpers.
-export function externalPluginHeader(
+export function externalPlugin(
   kind: 'LifecycleHook',
-  data: GetDataEnumKindContent<
-    ExternalPluginHeaderArgs,
-    'LifecycleHook'
-  >['fields']
-): GetDataEnumKind<ExternalPluginHeaderArgs, 'LifecycleHook'>;
-export function externalPluginHeader(
+  data: GetDataEnumKindContent<ExternalPluginArgs, 'LifecycleHook'>['fields']
+): GetDataEnumKind<ExternalPluginArgs, 'LifecycleHook'>;
+export function externalPlugin(
   kind: 'Oracle',
-  data: GetDataEnumKindContent<ExternalPluginHeaderArgs, 'Oracle'>['fields']
-): GetDataEnumKind<ExternalPluginHeaderArgs, 'Oracle'>;
-export function externalPluginHeader(
+  data: GetDataEnumKindContent<ExternalPluginArgs, 'Oracle'>['fields']
+): GetDataEnumKind<ExternalPluginArgs, 'Oracle'>;
+export function externalPlugin(
   kind: 'DataStore',
-  data: GetDataEnumKindContent<ExternalPluginHeaderArgs, 'DataStore'>['fields']
-): GetDataEnumKind<ExternalPluginHeaderArgs, 'DataStore'>;
-export function externalPluginHeader<
-  K extends ExternalPluginHeaderArgs['__kind']
->(kind: K, data?: any): Extract<ExternalPluginHeaderArgs, { __kind: K }> {
+  data: GetDataEnumKindContent<ExternalPluginArgs, 'DataStore'>['fields']
+): GetDataEnumKind<ExternalPluginArgs, 'DataStore'>;
+export function externalPlugin<K extends ExternalPluginArgs['__kind']>(
+  kind: K,
+  data?: any
+): Extract<ExternalPluginArgs, { __kind: K }> {
   return Array.isArray(data)
     ? { __kind: kind, fields: data }
     : { __kind: kind, ...(data ?? {}) };
 }
-export function isExternalPluginHeader<
-  K extends ExternalPluginHeader['__kind']
->(
+export function isExternalPlugin<K extends ExternalPlugin['__kind']>(
   kind: K,
-  value: ExternalPluginHeader
-): value is ExternalPluginHeader & { __kind: K } {
+  value: ExternalPlugin
+): value is ExternalPlugin & { __kind: K } {
   return value.__kind === kind;
 }

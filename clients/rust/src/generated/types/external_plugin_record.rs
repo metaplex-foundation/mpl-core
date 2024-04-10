@@ -18,6 +18,5 @@ pub struct ExternalPluginRecord {
     pub plugin_key: ExternalPluginKey,
     pub authority: PluginAuthority,
     pub lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
-    pub header_offset: u64,
-    pub data_offset: Option<u64>,
+    pub offset: u64,
 }

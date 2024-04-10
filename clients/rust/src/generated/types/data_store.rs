@@ -13,4 +13,6 @@ use borsh::BorshSerialize;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DataStore {
     pub schema: Option<ExternalPluginSchema>,
+    pub data_offset: u64,
+    pub data_len: u64,
 }

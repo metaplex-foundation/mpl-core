@@ -15,4 +15,6 @@ use borsh::BorshSerialize;
 pub struct LifecycleHook {
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     pub schema: Option<ExternalPluginSchema>,
+    pub data_offset: u64,
+    pub data_len: u64,
 }

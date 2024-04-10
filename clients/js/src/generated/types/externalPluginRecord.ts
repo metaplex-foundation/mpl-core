@@ -34,8 +34,7 @@ export type ExternalPluginRecord = {
   pluginKey: ExternalPluginKey;
   authority: PluginAuthority;
   lifecycleChecks: Option<Array<[LifecycleEvent, ExternalCheckResult]>>;
-  headerOffset: bigint;
-  dataOffset: Option<bigint>;
+  offset: bigint;
 };
 
 export type ExternalPluginRecordArgs = {
@@ -44,8 +43,7 @@ export type ExternalPluginRecordArgs = {
   lifecycleChecks: OptionOrNullable<
     Array<[LifecycleEventArgs, ExternalCheckResultArgs]>
   >;
-  headerOffset: number | bigint;
-  dataOffset: OptionOrNullable<number | bigint>;
+  offset: number | bigint;
 };
 
 export function getExternalPluginRecordSerializer(): Serializer<
@@ -67,8 +65,7 @@ export function getExternalPluginRecordSerializer(): Serializer<
           )
         ),
       ],
-      ['headerOffset', u64()],
-      ['dataOffset', option(u64())],
+      ['offset', u64()],
     ],
     { description: 'ExternalPluginRecord' }
   ) as Serializer<ExternalPluginRecordArgs, ExternalPluginRecord>;

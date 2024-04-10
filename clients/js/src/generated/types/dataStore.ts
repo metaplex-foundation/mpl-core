@@ -11,6 +11,7 @@ import {
   Serializer,
   option,
   struct,
+  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalPluginSchema,
@@ -18,15 +19,25 @@ import {
   getExternalPluginSchemaSerializer,
 } from '.';
 
-export type DataStore = { schema: Option<ExternalPluginSchema> };
+export type DataStore = {
+  schema: Option<ExternalPluginSchema>;
+  dataOffset: bigint;
+  dataLen: bigint;
+};
 
 export type DataStoreArgs = {
   schema: OptionOrNullable<ExternalPluginSchemaArgs>;
+  dataOffset: number | bigint;
+  dataLen: number | bigint;
 };
 
 export function getDataStoreSerializer(): Serializer<DataStoreArgs, DataStore> {
   return struct<DataStore>(
-    [['schema', option(getExternalPluginSchemaSerializer())]],
+    [
+      ['schema', option(getExternalPluginSchemaSerializer())],
+      ['dataOffset', u64()],
+      ['dataLen', u64()],
+    ],
     { description: 'DataStore' }
   ) as Serializer<DataStoreArgs, DataStore>;
 }

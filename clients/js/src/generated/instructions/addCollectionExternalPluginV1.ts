@@ -35,8 +35,8 @@ import {
 import {
   ExternalCheckResult,
   ExternalCheckResultArgs,
-  ExternalPluginHeader,
-  ExternalPluginHeaderArgs,
+  ExternalPlugin,
+  ExternalPluginArgs,
   ExternalPluginKey,
   ExternalPluginKeyArgs,
   LifecycleEvent,
@@ -44,8 +44,8 @@ import {
   PluginAuthority,
   PluginAuthorityArgs,
   getExternalCheckResultSerializer,
-  getExternalPluginHeaderSerializer,
   getExternalPluginKeySerializer,
+  getExternalPluginSerializer,
   getLifecycleEventSerializer,
   getPluginAuthoritySerializer,
 } from '../types';
@@ -68,7 +68,7 @@ export type AddCollectionExternalPluginV1InstructionAccounts = {
 export type AddCollectionExternalPluginV1InstructionData = {
   discriminator: number;
   pluginKey: ExternalPluginKey;
-  header: ExternalPluginHeader;
+  plugin: ExternalPlugin;
   initAuthority: Option<PluginAuthority>;
   lifecycleChecks: Option<Array<[LifecycleEvent, ExternalCheckResult]>>;
   data: Option<Uint8Array>;
@@ -76,7 +76,7 @@ export type AddCollectionExternalPluginV1InstructionData = {
 
 export type AddCollectionExternalPluginV1InstructionDataArgs = {
   pluginKey: ExternalPluginKeyArgs;
-  header: ExternalPluginHeaderArgs;
+  plugin: ExternalPluginArgs;
   initAuthority: OptionOrNullable<PluginAuthorityArgs>;
   lifecycleChecks: OptionOrNullable<
     Array<[LifecycleEventArgs, ExternalCheckResultArgs]>
@@ -97,7 +97,7 @@ export function getAddCollectionExternalPluginV1InstructionDataSerializer(): Ser
       [
         ['discriminator', u8()],
         ['pluginKey', getExternalPluginKeySerializer()],
-        ['header', getExternalPluginHeaderSerializer()],
+        ['plugin', getExternalPluginSerializer()],
         ['initAuthority', option(getPluginAuthoritySerializer())],
         [
           'lifecycleChecks',

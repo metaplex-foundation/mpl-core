@@ -1869,6 +1869,14 @@
                 "defined": "ExternalPluginSchema"
               }
             }
+          },
+          {
+            "name": "dataOffset",
+            "type": "u64"
+          },
+          {
+            "name": "dataLen",
+            "type": "u64"
           }
         ]
       }
@@ -1919,6 +1927,14 @@
                 "defined": "ExternalPluginSchema"
               }
             }
+          },
+          {
+            "name": "dataOffset",
+            "type": "u64"
+          },
+          {
+            "name": "dataLen",
+            "type": "u64"
           }
         ]
       }
@@ -2024,14 +2040,8 @@
             }
           },
           {
-            "name": "headerOffset",
+            "name": "offset",
             "type": "u64"
-          },
-          {
-            "name": "dataOffset",
-            "type": {
-              "option": "u64"
-            }
           }
         ]
       }
@@ -2111,9 +2121,9 @@
             }
           },
           {
-            "name": "header",
+            "name": "plugin",
             "type": {
-              "defined": "ExternalPluginHeader"
+              "defined": "ExternalPlugin"
             }
           },
           {
@@ -2162,9 +2172,9 @@
             }
           },
           {
-            "name": "header",
+            "name": "plugin",
             "type": {
-              "defined": "ExternalPluginHeader"
+              "defined": "ExternalPlugin"
             }
           },
           {
@@ -2853,7 +2863,7 @@
       }
     },
     {
-      "name": "ExternalPluginHeader",
+      "name": "ExternalPlugin",
       "type": {
         "kind": "enum",
         "variants": [
