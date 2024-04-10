@@ -52,13 +52,13 @@ test('create a new, empty asset with empty collection', async (t) => {
     const collectionAddress = generateSigner(umi);
     const assetAddress = generateSigner(umi);
 
-    const builder = new TransactionBuilder();
-    builder.add(createCollectionV1(umi, {
+    let builder = new TransactionBuilder();
+    builder = builder.add(createCollectionV1(umi, {
         collection: collectionAddress,
         name: "Test",
         uri: "www.test.com",
     }));
-    builder.add(createV1(umi, {
+    builder = builder.add(createV1(umi, {
         asset: assetAddress,
         collection: collectionAddress.publicKey,
         name: "Test",
