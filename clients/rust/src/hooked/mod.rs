@@ -33,6 +33,7 @@ impl PluginType {
             6 => Some(PluginType::Attributes),
             7 => Some(PluginType::PermanentTransferDelegate),
             8 => Some(PluginType::PermanentBurnDelegate),
+            9 => Some(PluginType::Edition),
             _ => None,
         }
     }
