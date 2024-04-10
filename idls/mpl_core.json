@@ -1269,6 +1269,142 @@
       }
     },
     {
+      "name": "CreateV2",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The address of the new asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The authority signing for creation"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The owner of the new asset. Defaults to the authority if not present."
+          ]
+        },
+        {
+          "name": "updateAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The authority on the new asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "createV2Args",
+          "type": {
+            "defined": "CreateV2Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 20
+      }
+    },
+    {
+      "name": "CreateCollectionV2",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The address of the new asset"
+          ]
+        },
+        {
+          "name": "updateAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The authority of the new asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "createCollectionV2Args",
+          "type": {
+            "defined": "CreateCollectionV2Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 21
+      }
+    },
+    {
       "name": "AddExternalPluginV1",
       "accounts": [
         {
@@ -1333,7 +1469,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 20
+        "value": 22
       }
     },
     {
@@ -1392,7 +1528,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 21
+        "value": 23
       }
     },
     {
@@ -1460,7 +1596,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 22
+        "value": 24
       }
     },
     {
@@ -1519,7 +1655,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 23
+        "value": 25
       }
     },
     {
@@ -1587,7 +1723,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 24
+        "value": 26
       }
     },
     {
@@ -1646,7 +1782,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 25
+        "value": 27
       }
     }
   ],
@@ -2367,6 +2503,48 @@
       }
     },
     {
+      "name": "CreateV2Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataState",
+            "type": {
+              "defined": "DataState"
+            }
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "plugins",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "PluginAuthorityPair"
+                }
+              }
+            }
+          },
+          {
+            "name": "externalPlugins",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "PluginAuthorityPair"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "CreateCollectionV1Args",
       "type": {
         "kind": "struct",
@@ -2381,6 +2559,42 @@
           },
           {
             "name": "plugins",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "PluginAuthorityPair"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreateCollectionV2Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "plugins",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "PluginAuthorityPair"
+                }
+              }
+            }
+          },
+          {
+            "name": "externalPlugins",
             "type": {
               "option": {
                 "vec": {

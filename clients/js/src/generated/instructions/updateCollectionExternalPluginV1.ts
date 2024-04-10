@@ -76,7 +76,7 @@ export function getUpdateCollectionExternalPluginV1InstructionDataSerializer(): 
       ],
       { description: 'UpdateCollectionExternalPluginV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 25 })
+    (value) => ({ ...value, discriminator: 27 })
   ) as Serializer<
     UpdateCollectionExternalPluginV1InstructionDataArgs,
     UpdateCollectionExternalPluginV1InstructionData

@@ -106,7 +106,7 @@ struct AddExternalPluginV1InstructionData {
 
 impl AddExternalPluginV1InstructionData {
     fn new() -> Self {
-        Self { discriminator: 20 }
+        Self { discriminator: 22 }
     }
 }
 

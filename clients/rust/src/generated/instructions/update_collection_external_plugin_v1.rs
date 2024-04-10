@@ -91,7 +91,7 @@ struct UpdateCollectionExternalPluginV1InstructionData {
 
 impl UpdateCollectionExternalPluginV1InstructionData {
     fn new() -> Self {
-        Self { discriminator: 25 }
+        Self { discriminator: 27 }
     }
 }
 

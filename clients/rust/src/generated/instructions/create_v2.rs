@@ -5,52 +5,85 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::ExternalCheckResult;
-use crate::generated::types::ExternalPlugin;
-use crate::generated::types::ExternalPluginKey;
-use crate::generated::types::LifecycleEvent;
-use crate::generated::types::PluginAuthority;
+use crate::generated::types::DataState;
+use crate::generated::types::PluginAuthorityPair;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct AddCollectionExternalPluginV1 {
-    /// The address of the asset
-    pub collection: solana_program::pubkey::Pubkey,
+pub struct CreateV2 {
+    /// The address of the new asset
+    pub asset: solana_program::pubkey::Pubkey,
+    /// The collection to which the asset belongs
+    pub collection: Option<solana_program::pubkey::Pubkey>,
+    /// The authority signing for creation
+    pub authority: Option<solana_program::pubkey::Pubkey>,
     /// The account paying for the storage fees
     pub payer: solana_program::pubkey::Pubkey,
-    /// The owner or delegate of the asset
-    pub authority: Option<solana_program::pubkey::Pubkey>,
+    /// The owner of the new asset. Defaults to the authority if not present.
+    pub owner: Option<solana_program::pubkey::Pubkey>,
+    /// The authority on the new asset
+    pub update_authority: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
     /// The SPL Noop Program
     pub log_wrapper: Option<solana_program::pubkey::Pubkey>,
 }
 
-impl AddCollectionExternalPluginV1 {
+impl CreateV2 {
     pub fn instruction(
         &self,
-        args: AddCollectionExternalPluginV1InstructionArgs,
+        args: CreateV2InstructionArgs,
     ) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        args: AddCollectionExternalPluginV1InstructionArgs,
+        args: CreateV2InstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(8 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.collection,
-            false,
+            self.asset, true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.payer, true,
-        ));
+        if let Some(collection) = self.collection {
+            accounts.push(solana_program::instruction::AccountMeta::new(
+                collection, false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_CORE_ID,
+                false,
+            ));
+        }
         if let Some(authority) = self.authority {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 authority, true,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_CORE_ID,
+                false,
+            ));
+        }
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.payer, true,
+        ));
+        if let Some(owner) = self.owner {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                owner, false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_CORE_ID,
+                false,
+            ));
+        }
+        if let Some(update_authority) = self.update_authority {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                update_authority,
+                false,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -74,9 +107,7 @@ impl AddCollectionExternalPluginV1 {
             ));
         }
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = AddCollectionExternalPluginV1InstructionData::new()
-            .try_to_vec()
-            .unwrap();
+        let mut data = CreateV2InstructionData::new().try_to_vec().unwrap();
         let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
@@ -89,58 +120,78 @@ impl AddCollectionExternalPluginV1 {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct AddCollectionExternalPluginV1InstructionData {
+struct CreateV2InstructionData {
     discriminator: u8,
 }
 
-impl AddCollectionExternalPluginV1InstructionData {
+impl CreateV2InstructionData {
     fn new() -> Self {
-        Self { discriminator: 23 }
+        Self { discriminator: 20 }
     }
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AddCollectionExternalPluginV1InstructionArgs {
-    pub plugin_key: ExternalPluginKey,
-    pub plugin: ExternalPlugin,
-    pub init_authority: Option<PluginAuthority>,
-    pub lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
-    pub data: Option<Vec<u8>>,
+pub struct CreateV2InstructionArgs {
+    pub data_state: DataState,
+    pub name: String,
+    pub uri: String,
+    pub plugins: Option<Vec<PluginAuthorityPair>>,
+    pub external_plugins: Option<Vec<PluginAuthorityPair>>,
 }
 
-/// Instruction builder for `AddCollectionExternalPluginV1`.
+/// Instruction builder for `CreateV2`.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` collection
-///   1. `[writable, signer]` payer
+///   0. `[writable, signer]` asset
+///   1. `[writable, optional]` collection
 ///   2. `[signer, optional]` authority
-///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
-///   4. `[optional]` log_wrapper
+///   3. `[writable, signer]` payer
+///   4. `[optional]` owner
+///   5. `[optional]` update_authority
+///   6. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   7. `[optional]` log_wrapper
 #[derive(Default)]
-pub struct AddCollectionExternalPluginV1Builder {
+pub struct CreateV2Builder {
+    asset: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
-    payer: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
+    payer: Option<solana_program::pubkey::Pubkey>,
+    owner: Option<solana_program::pubkey::Pubkey>,
+    update_authority: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
-    plugin_key: Option<ExternalPluginKey>,
-    plugin: Option<ExternalPlugin>,
-    init_authority: Option<PluginAuthority>,
-    lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
-    data: Option<Vec<u8>>,
+    data_state: Option<DataState>,
+    name: Option<String>,
+    uri: Option<String>,
+    plugins: Option<Vec<PluginAuthorityPair>>,
+    external_plugins: Option<Vec<PluginAuthorityPair>>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl AddCollectionExternalPluginV1Builder {
+impl CreateV2Builder {
     pub fn new() -> Self {
         Self::default()
     }
-    /// The address of the asset
+    /// The address of the new asset
     #[inline(always)]
-    pub fn collection(&mut self, collection: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.collection = Some(collection);
+    pub fn asset(&mut self, asset: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.asset = Some(asset);
+        self
+    }
+    /// `[optional account]`
+    /// The collection to which the asset belongs
+    #[inline(always)]
+    pub fn collection(&mut self, collection: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.collection = collection;
+        self
+    }
+    /// `[optional account]`
+    /// The authority signing for creation
+    #[inline(always)]
+    pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.authority = authority;
         self
     }
     /// The account paying for the storage fees
@@ -150,10 +201,20 @@ impl AddCollectionExternalPluginV1Builder {
         self
     }
     /// `[optional account]`
-    /// The owner or delegate of the asset
+    /// The owner of the new asset. Defaults to the authority if not present.
     #[inline(always)]
-    pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
-        self.authority = authority;
+    pub fn owner(&mut self, owner: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.owner = owner;
+        self
+    }
+    /// `[optional account]`
+    /// The authority on the new asset
+    #[inline(always)]
+    pub fn update_authority(
+        &mut self,
+        update_authority: Option<solana_program::pubkey::Pubkey>,
+    ) -> &mut Self {
+        self.update_authority = update_authority;
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
@@ -174,34 +235,30 @@ impl AddCollectionExternalPluginV1Builder {
         self
     }
     #[inline(always)]
-    pub fn plugin_key(&mut self, plugin_key: ExternalPluginKey) -> &mut Self {
-        self.plugin_key = Some(plugin_key);
+    pub fn data_state(&mut self, data_state: DataState) -> &mut Self {
+        self.data_state = Some(data_state);
         self
     }
     #[inline(always)]
-    pub fn plugin(&mut self, plugin: ExternalPlugin) -> &mut Self {
-        self.plugin = Some(plugin);
+    pub fn name(&mut self, name: String) -> &mut Self {
+        self.name = Some(name);
         self
     }
-    /// `[optional argument]`
     #[inline(always)]
-    pub fn init_authority(&mut self, init_authority: PluginAuthority) -> &mut Self {
-        self.init_authority = Some(init_authority);
-        self
-    }
-    /// `[optional argument]`
-    #[inline(always)]
-    pub fn lifecycle_checks(
-        &mut self,
-        lifecycle_checks: Vec<(LifecycleEvent, ExternalCheckResult)>,
-    ) -> &mut Self {
-        self.lifecycle_checks = Some(lifecycle_checks);
+    pub fn uri(&mut self, uri: String) -> &mut Self {
+        self.uri = Some(uri);
         self
     }
     /// `[optional argument]`
     #[inline(always)]
-    pub fn data(&mut self, data: Vec<u8>) -> &mut Self {
-        self.data = Some(data);
+    pub fn plugins(&mut self, plugins: Vec<PluginAuthorityPair>) -> &mut Self {
+        self.plugins = Some(plugins);
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn external_plugins(&mut self, external_plugins: Vec<PluginAuthorityPair>) -> &mut Self {
+        self.external_plugins = Some(external_plugins);
         self
     }
     /// Add an aditional account to the instruction.
@@ -224,70 +281,88 @@ impl AddCollectionExternalPluginV1Builder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = AddCollectionExternalPluginV1 {
-            collection: self.collection.expect("collection is not set"),
-            payer: self.payer.expect("payer is not set"),
+        let accounts = CreateV2 {
+            asset: self.asset.expect("asset is not set"),
+            collection: self.collection,
             authority: self.authority,
+            payer: self.payer.expect("payer is not set"),
+            owner: self.owner,
+            update_authority: self.update_authority,
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
             log_wrapper: self.log_wrapper,
         };
-        let args = AddCollectionExternalPluginV1InstructionArgs {
-            plugin_key: self.plugin_key.clone().expect("plugin_key is not set"),
-            plugin: self.plugin.clone().expect("plugin is not set"),
-            init_authority: self.init_authority.clone(),
-            lifecycle_checks: self.lifecycle_checks.clone(),
-            data: self.data.clone(),
+        let args = CreateV2InstructionArgs {
+            data_state: self.data_state.clone().expect("data_state is not set"),
+            name: self.name.clone().expect("name is not set"),
+            uri: self.uri.clone().expect("uri is not set"),
+            plugins: self.plugins.clone(),
+            external_plugins: self.external_plugins.clone(),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
     }
 }
 
-/// `add_collection_external_plugin_v1` CPI accounts.
-pub struct AddCollectionExternalPluginV1CpiAccounts<'a, 'b> {
-    /// The address of the asset
-    pub collection: &'b solana_program::account_info::AccountInfo<'a>,
+/// `create_v2` CPI accounts.
+pub struct CreateV2CpiAccounts<'a, 'b> {
+    /// The address of the new asset
+    pub asset: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The collection to which the asset belongs
+    pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The authority signing for creation
+    pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The owner or delegate of the asset
-    pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The owner of the new asset. Defaults to the authority if not present.
+    pub owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The authority on the new asset
+    pub update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-/// `add_collection_external_plugin_v1` CPI instruction.
-pub struct AddCollectionExternalPluginV1Cpi<'a, 'b> {
+/// `create_v2` CPI instruction.
+pub struct CreateV2Cpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The address of the asset
-    pub collection: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The address of the new asset
+    pub asset: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The collection to which the asset belongs
+    pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The authority signing for creation
+    pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The owner or delegate of the asset
-    pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The owner of the new asset. Defaults to the authority if not present.
+    pub owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The authority on the new asset
+    pub update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The SPL Noop Program
     pub log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The arguments for the instruction.
-    pub __args: AddCollectionExternalPluginV1InstructionArgs,
+    pub __args: CreateV2InstructionArgs,
 }
 
-impl<'a, 'b> AddCollectionExternalPluginV1Cpi<'a, 'b> {
+impl<'a, 'b> CreateV2Cpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: AddCollectionExternalPluginV1CpiAccounts<'a, 'b>,
-        args: AddCollectionExternalPluginV1InstructionArgs,
+        accounts: CreateV2CpiAccounts<'a, 'b>,
+        args: CreateV2InstructionArgs,
     ) -> Self {
         Self {
             __program: program,
+            asset: accounts.asset,
             collection: accounts.collection,
-            payer: accounts.payer,
             authority: accounts.authority,
+            payer: accounts.payer,
+            owner: accounts.owner,
+            update_authority: accounts.update_authority,
             system_program: accounts.system_program,
             log_wrapper: accounts.log_wrapper,
             __args: args,
@@ -326,19 +401,51 @@ impl<'a, 'b> AddCollectionExternalPluginV1Cpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(8 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.collection.key,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.payer.key,
+            *self.asset.key,
             true,
         ));
+        if let Some(collection) = self.collection {
+            accounts.push(solana_program::instruction::AccountMeta::new(
+                *collection.key,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_CORE_ID,
+                false,
+            ));
+        }
         if let Some(authority) = self.authority {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 *authority.key,
                 true,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_CORE_ID,
+                false,
+            ));
+        }
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.payer.key,
+            true,
+        ));
+        if let Some(owner) = self.owner {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *owner.key, false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_CORE_ID,
+                false,
+            ));
+        }
+        if let Some(update_authority) = self.update_authority {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *update_authority.key,
+                false,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -368,9 +475,7 @@ impl<'a, 'b> AddCollectionExternalPluginV1Cpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = AddCollectionExternalPluginV1InstructionData::new()
-            .try_to_vec()
-            .unwrap();
+        let mut data = CreateV2InstructionData::new().try_to_vec().unwrap();
         let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
@@ -379,12 +484,21 @@ impl<'a, 'b> AddCollectionExternalPluginV1Cpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(8 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.collection.clone());
-        account_infos.push(self.payer.clone());
+        account_infos.push(self.asset.clone());
+        if let Some(collection) = self.collection {
+            account_infos.push(collection.clone());
+        }
         if let Some(authority) = self.authority {
             account_infos.push(authority.clone());
+        }
+        account_infos.push(self.payer.clone());
+        if let Some(owner) = self.owner {
+            account_infos.push(owner.clone());
+        }
+        if let Some(update_authority) = self.update_authority {
+            account_infos.push(update_authority.clone());
         }
         account_infos.push(self.system_program.clone());
         if let Some(log_wrapper) = self.log_wrapper {
@@ -402,44 +516,67 @@ impl<'a, 'b> AddCollectionExternalPluginV1Cpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `AddCollectionExternalPluginV1` via CPI.
+/// Instruction builder for `CreateV2` via CPI.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` collection
-///   1. `[writable, signer]` payer
+///   0. `[writable, signer]` asset
+///   1. `[writable, optional]` collection
 ///   2. `[signer, optional]` authority
-///   3. `[]` system_program
-///   4. `[optional]` log_wrapper
-pub struct AddCollectionExternalPluginV1CpiBuilder<'a, 'b> {
-    instruction: Box<AddCollectionExternalPluginV1CpiBuilderInstruction<'a, 'b>>,
+///   3. `[writable, signer]` payer
+///   4. `[optional]` owner
+///   5. `[optional]` update_authority
+///   6. `[]` system_program
+///   7. `[optional]` log_wrapper
+pub struct CreateV2CpiBuilder<'a, 'b> {
+    instruction: Box<CreateV2CpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> AddCollectionExternalPluginV1CpiBuilder<'a, 'b> {
+impl<'a, 'b> CreateV2CpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(AddCollectionExternalPluginV1CpiBuilderInstruction {
+        let instruction = Box::new(CreateV2CpiBuilderInstruction {
             __program: program,
+            asset: None,
             collection: None,
-            payer: None,
             authority: None,
+            payer: None,
+            owner: None,
+            update_authority: None,
             system_program: None,
             log_wrapper: None,
-            plugin_key: None,
-            plugin: None,
-            init_authority: None,
-            lifecycle_checks: None,
-            data: None,
+            data_state: None,
+            name: None,
+            uri: None,
+            plugins: None,
+            external_plugins: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
     }
-    /// The address of the asset
+    /// The address of the new asset
+    #[inline(always)]
+    pub fn asset(&mut self, asset: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.asset = Some(asset);
+        self
+    }
+    /// `[optional account]`
+    /// The collection to which the asset belongs
     #[inline(always)]
     pub fn collection(
         &mut self,
-        collection: &'b solana_program::account_info::AccountInfo<'a>,
+        collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
-        self.instruction.collection = Some(collection);
+        self.instruction.collection = collection;
+        self
+    }
+    /// `[optional account]`
+    /// The authority signing for creation
+    #[inline(always)]
+    pub fn authority(
+        &mut self,
+        authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.authority = authority;
         self
     }
     /// The account paying for the storage fees
@@ -449,13 +586,23 @@ impl<'a, 'b> AddCollectionExternalPluginV1CpiBuilder<'a, 'b> {
         self
     }
     /// `[optional account]`
-    /// The owner or delegate of the asset
+    /// The owner of the new asset. Defaults to the authority if not present.
     #[inline(always)]
-    pub fn authority(
+    pub fn owner(
         &mut self,
-        authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+        owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
-        self.instruction.authority = authority;
+        self.instruction.owner = owner;
+        self
+    }
+    /// `[optional account]`
+    /// The authority on the new asset
+    #[inline(always)]
+    pub fn update_authority(
+        &mut self,
+        update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.update_authority = update_authority;
         self
     }
     /// The system program
@@ -478,34 +625,30 @@ impl<'a, 'b> AddCollectionExternalPluginV1CpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn plugin_key(&mut self, plugin_key: ExternalPluginKey) -> &mut Self {
-        self.instruction.plugin_key = Some(plugin_key);
+    pub fn data_state(&mut self, data_state: DataState) -> &mut Self {
+        self.instruction.data_state = Some(data_state);
         self
     }
     #[inline(always)]
-    pub fn plugin(&mut self, plugin: ExternalPlugin) -> &mut Self {
-        self.instruction.plugin = Some(plugin);
+    pub fn name(&mut self, name: String) -> &mut Self {
+        self.instruction.name = Some(name);
         self
     }
-    /// `[optional argument]`
     #[inline(always)]
-    pub fn init_authority(&mut self, init_authority: PluginAuthority) -> &mut Self {
-        self.instruction.init_authority = Some(init_authority);
-        self
-    }
-    /// `[optional argument]`
-    #[inline(always)]
-    pub fn lifecycle_checks(
-        &mut self,
-        lifecycle_checks: Vec<(LifecycleEvent, ExternalCheckResult)>,
-    ) -> &mut Self {
-        self.instruction.lifecycle_checks = Some(lifecycle_checks);
+    pub fn uri(&mut self, uri: String) -> &mut Self {
+        self.instruction.uri = Some(uri);
         self
     }
     /// `[optional argument]`
     #[inline(always)]
-    pub fn data(&mut self, data: Vec<u8>) -> &mut Self {
-        self.instruction.data = Some(data);
+    pub fn plugins(&mut self, plugins: Vec<PluginAuthorityPair>) -> &mut Self {
+        self.instruction.plugins = Some(plugins);
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn external_plugins(&mut self, external_plugins: Vec<PluginAuthorityPair>) -> &mut Self {
+        self.instruction.external_plugins = Some(external_plugins);
         self
     }
     /// Add an additional account to the instruction.
@@ -549,25 +692,31 @@ impl<'a, 'b> AddCollectionExternalPluginV1CpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let args = AddCollectionExternalPluginV1InstructionArgs {
-            plugin_key: self
+        let args = CreateV2InstructionArgs {
+            data_state: self
                 .instruction
-                .plugin_key
+                .data_state
                 .clone()
-                .expect("plugin_key is not set"),
-            plugin: self.instruction.plugin.clone().expect("plugin is not set"),
-            init_authority: self.instruction.init_authority.clone(),
-            lifecycle_checks: self.instruction.lifecycle_checks.clone(),
-            data: self.instruction.data.clone(),
+                .expect("data_state is not set"),
+            name: self.instruction.name.clone().expect("name is not set"),
+            uri: self.instruction.uri.clone().expect("uri is not set"),
+            plugins: self.instruction.plugins.clone(),
+            external_plugins: self.instruction.external_plugins.clone(),
         };
-        let instruction = AddCollectionExternalPluginV1Cpi {
+        let instruction = CreateV2Cpi {
             __program: self.instruction.__program,
 
-            collection: self.instruction.collection.expect("collection is not set"),
+            asset: self.instruction.asset.expect("asset is not set"),
+
+            collection: self.instruction.collection,
+
+            authority: self.instruction.authority,
 
             payer: self.instruction.payer.expect("payer is not set"),
 
-            authority: self.instruction.authority,
+            owner: self.instruction.owner,
+
+            update_authority: self.instruction.update_authority,
 
             system_program: self
                 .instruction
@@ -584,18 +733,21 @@ impl<'a, 'b> AddCollectionExternalPluginV1CpiBuilder<'a, 'b> {
     }
 }
 
-struct AddCollectionExternalPluginV1CpiBuilderInstruction<'a, 'b> {
+struct CreateV2CpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
+    asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    plugin_key: Option<ExternalPluginKey>,
-    plugin: Option<ExternalPlugin>,
-    init_authority: Option<PluginAuthority>,
-    lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
-    data: Option<Vec<u8>>,
+    data_state: Option<DataState>,
+    name: Option<String>,
+    uri: Option<String>,
+    plugins: Option<Vec<PluginAuthorityPair>>,
+    external_plugins: Option<Vec<PluginAuthorityPair>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

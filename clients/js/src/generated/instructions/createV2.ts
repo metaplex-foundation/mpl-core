@@ -8,6 +8,8 @@
 
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -16,10 +18,11 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
-  bytes,
+  array,
   mapSerializer,
+  option,
+  string,
   struct,
-  u32,
   u8,
 } from '@metaplex-foundation/umi/serializers';
 import {
@@ -28,21 +31,28 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
-  getExternalPluginKeySerializer,
+  DataState,
+  DataStateArgs,
+  PluginAuthorityPair,
+  PluginAuthorityPairArgs,
+  getDataStateSerializer,
+  getPluginAuthorityPairSerializer,
 } from '../types';
 
 // Accounts.
-export type UpdateExternalPluginV1InstructionAccounts = {
-  /** The address of the asset */
-  asset: PublicKey | Pda;
+export type CreateV2InstructionAccounts = {
+  /** The address of the new asset */
+  asset: Signer;
   /** The collection to which the asset belongs */
   collection?: PublicKey | Pda;
+  /** The authority signing for creation */
+  authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The owner or delegate of the asset */
-  authority?: Signer;
+  /** The owner of the new asset. Defaults to the authority if not present. */
+  owner?: PublicKey | Pda;
+  /** The authority on the new asset */
+  updateAuthority?: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
@@ -50,50 +60,54 @@ export type UpdateExternalPluginV1InstructionAccounts = {
 };
 
 // Data.
-export type UpdateExternalPluginV1InstructionData = {
+export type CreateV2InstructionData = {
   discriminator: number;
-  pluginKey: ExternalPluginKey;
-  data: Uint8Array;
+  dataState: DataState;
+  name: string;
+  uri: string;
+  plugins: Option<Array<PluginAuthorityPair>>;
+  externalPlugins: Option<Array<PluginAuthorityPair>>;
 };
 
-export type UpdateExternalPluginV1InstructionDataArgs = {
-  pluginKey: ExternalPluginKeyArgs;
-  data: Uint8Array;
+export type CreateV2InstructionDataArgs = {
+  dataState: DataStateArgs;
+  name: string;
+  uri: string;
+  plugins: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
+  externalPlugins: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
 };
 
-export function getUpdateExternalPluginV1InstructionDataSerializer(): Serializer<
-  UpdateExternalPluginV1InstructionDataArgs,
-  UpdateExternalPluginV1InstructionData
+export function getCreateV2InstructionDataSerializer(): Serializer<
+  CreateV2InstructionDataArgs,
+  CreateV2InstructionData
 > {
   return mapSerializer<
-    UpdateExternalPluginV1InstructionDataArgs,
+    CreateV2InstructionDataArgs,
     any,
-    UpdateExternalPluginV1InstructionData
+    CreateV2InstructionData
   >(
-    struct<UpdateExternalPluginV1InstructionData>(
+    struct<CreateV2InstructionData>(
       [
         ['discriminator', u8()],
-        ['pluginKey', getExternalPluginKeySerializer()],
-        ['data', bytes({ size: u32() })],
+        ['dataState', getDataStateSerializer()],
+        ['name', string()],
+        ['uri', string()],
+        ['plugins', option(array(getPluginAuthorityPairSerializer()))],
+        ['externalPlugins', option(array(getPluginAuthorityPairSerializer()))],
       ],
-      { description: 'UpdateExternalPluginV1InstructionData' }
+      { description: 'CreateV2InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 26 })
-  ) as Serializer<
-    UpdateExternalPluginV1InstructionDataArgs,
-    UpdateExternalPluginV1InstructionData
-  >;
+    (value) => ({ ...value, discriminator: 20 })
+  ) as Serializer<CreateV2InstructionDataArgs, CreateV2InstructionData>;
 }
 
 // Args.
-export type UpdateExternalPluginV1InstructionArgs =
-  UpdateExternalPluginV1InstructionDataArgs;
+export type CreateV2InstructionArgs = CreateV2InstructionDataArgs;
 
 // Instruction.
-export function updateExternalPluginV1(
+export function createV2(
   context: Pick<Context, 'payer' | 'programs'>,
-  input: UpdateExternalPluginV1InstructionAccounts &
-    UpdateExternalPluginV1InstructionArgs
+  input: CreateV2InstructionAccounts & CreateV2InstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -113,30 +127,40 @@ export function updateExternalPluginV1(
       isWritable: true as boolean,
       value: input.collection ?? null,
     },
-    payer: {
-      index: 2,
-      isWritable: true as boolean,
-      value: input.payer ?? null,
-    },
     authority: {
-      index: 3,
+      index: 2,
       isWritable: false as boolean,
       value: input.authority ?? null,
     },
-    systemProgram: {
+    payer: {
+      index: 3,
+      isWritable: true as boolean,
+      value: input.payer ?? null,
+    },
+    owner: {
       index: 4,
+      isWritable: false as boolean,
+      value: input.owner ?? null,
+    },
+    updateAuthority: {
+      index: 5,
+      isWritable: false as boolean,
+      value: input.updateAuthority ?? null,
+    },
+    systemProgram: {
+      index: 6,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
-      index: 5,
+      index: 7,
       isWritable: false as boolean,
       value: input.logWrapper ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
-  const resolvedArgs: UpdateExternalPluginV1InstructionArgs = { ...input };
+  const resolvedArgs: CreateV2InstructionArgs = { ...input };
 
   // Default values.
   if (!resolvedAccounts.payer.value) {
@@ -163,8 +187,8 @@ export function updateExternalPluginV1(
   );
 
   // Data.
-  const data = getUpdateExternalPluginV1InstructionDataSerializer().serialize(
-    resolvedArgs as UpdateExternalPluginV1InstructionDataArgs
+  const data = getCreateV2InstructionDataSerializer().serialize(
+    resolvedArgs as CreateV2InstructionDataArgs
   );
 
   // Bytes Created On Chain.

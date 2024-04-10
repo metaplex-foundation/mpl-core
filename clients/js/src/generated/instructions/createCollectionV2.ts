@@ -8,6 +8,8 @@
 
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -16,10 +18,11 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
-  bytes,
+  array,
   mapSerializer,
+  option,
+  string,
   struct,
-  u32,
   u8,
 } from '@metaplex-foundation/umi/serializers';
 import {
@@ -28,72 +31,74 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
-  getExternalPluginKeySerializer,
+  PluginAuthorityPair,
+  PluginAuthorityPairArgs,
+  getPluginAuthorityPairSerializer,
 } from '../types';
 
 // Accounts.
-export type UpdateExternalPluginV1InstructionAccounts = {
-  /** The address of the asset */
-  asset: PublicKey | Pda;
-  /** The collection to which the asset belongs */
-  collection?: PublicKey | Pda;
+export type CreateCollectionV2InstructionAccounts = {
+  /** The address of the new asset */
+  collection: Signer;
+  /** The authority of the new asset */
+  updateAuthority?: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The owner or delegate of the asset */
-  authority?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;
-  /** The SPL Noop Program */
-  logWrapper?: PublicKey | Pda;
 };
 
 // Data.
-export type UpdateExternalPluginV1InstructionData = {
+export type CreateCollectionV2InstructionData = {
   discriminator: number;
-  pluginKey: ExternalPluginKey;
-  data: Uint8Array;
+  name: string;
+  uri: string;
+  plugins: Option<Array<PluginAuthorityPair>>;
+  externalPlugins: Option<Array<PluginAuthorityPair>>;
 };
 
-export type UpdateExternalPluginV1InstructionDataArgs = {
-  pluginKey: ExternalPluginKeyArgs;
-  data: Uint8Array;
+export type CreateCollectionV2InstructionDataArgs = {
+  name: string;
+  uri: string;
+  plugins: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
+  externalPlugins: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
 };
 
-export function getUpdateExternalPluginV1InstructionDataSerializer(): Serializer<
-  UpdateExternalPluginV1InstructionDataArgs,
-  UpdateExternalPluginV1InstructionData
+export function getCreateCollectionV2InstructionDataSerializer(): Serializer<
+  CreateCollectionV2InstructionDataArgs,
+  CreateCollectionV2InstructionData
 > {
   return mapSerializer<
-    UpdateExternalPluginV1InstructionDataArgs,
+    CreateCollectionV2InstructionDataArgs,
     any,
-    UpdateExternalPluginV1InstructionData
+    CreateCollectionV2InstructionData
   >(
-    struct<UpdateExternalPluginV1InstructionData>(
+    struct<CreateCollectionV2InstructionData>(
       [
         ['discriminator', u8()],
-        ['pluginKey', getExternalPluginKeySerializer()],
-        ['data', bytes({ size: u32() })],
+        ['name', string()],
+        ['uri', string()],
+        ['plugins', option(array(getPluginAuthorityPairSerializer()))],
+        ['externalPlugins', option(array(getPluginAuthorityPairSerializer()))],
       ],
-      { description: 'UpdateExternalPluginV1InstructionData' }
+      { description: 'CreateCollectionV2InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 26 })
+    (value) => ({ ...value, discriminator: 21 })
   ) as Serializer<
-    UpdateExternalPluginV1InstructionDataArgs,
-    UpdateExternalPluginV1InstructionData
+    CreateCollectionV2InstructionDataArgs,
+    CreateCollectionV2InstructionData
   >;
 }
 
 // Args.
-export type UpdateExternalPluginV1InstructionArgs =
-  UpdateExternalPluginV1InstructionDataArgs;
+export type CreateCollectionV2InstructionArgs =
+  CreateCollectionV2InstructionDataArgs;
 
 // Instruction.
-export function updateExternalPluginV1(
+export function createCollectionV2(
   context: Pick<Context, 'payer' | 'programs'>,
-  input: UpdateExternalPluginV1InstructionAccounts &
-    UpdateExternalPluginV1InstructionArgs
+  input: CreateCollectionV2InstructionAccounts &
+    CreateCollectionV2InstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -103,40 +108,30 @@ export function updateExternalPluginV1(
 
   // Accounts.
   const resolvedAccounts = {
-    asset: {
+    collection: {
       index: 0,
       isWritable: true as boolean,
-      value: input.asset ?? null,
-    },
-    collection: {
-      index: 1,
-      isWritable: true as boolean,
       value: input.collection ?? null,
+    },
+    updateAuthority: {
+      index: 1,
+      isWritable: false as boolean,
+      value: input.updateAuthority ?? null,
     },
     payer: {
       index: 2,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
-    authority: {
+    systemProgram: {
       index: 3,
       isWritable: false as boolean,
-      value: input.authority ?? null,
-    },
-    systemProgram: {
-      index: 4,
-      isWritable: false as boolean,
       value: input.systemProgram ?? null,
-    },
-    logWrapper: {
-      index: 5,
-      isWritable: false as boolean,
-      value: input.logWrapper ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
-  const resolvedArgs: UpdateExternalPluginV1InstructionArgs = { ...input };
+  const resolvedArgs: CreateCollectionV2InstructionArgs = { ...input };
 
   // Default values.
   if (!resolvedAccounts.payer.value) {
@@ -163,8 +158,8 @@ export function updateExternalPluginV1(
   );
 
   // Data.
-  const data = getUpdateExternalPluginV1InstructionDataSerializer().serialize(
-    resolvedArgs as UpdateExternalPluginV1InstructionDataArgs
+  const data = getCreateCollectionV2InstructionDataSerializer().serialize(
+    resolvedArgs as CreateCollectionV2InstructionDataArgs
   );
 
   // Bytes Created On Chain.

@@ -71,7 +71,7 @@ export function getRemoveCollectionExternalPluginV1InstructionDataSerializer(): 
       ],
       { description: 'RemoveCollectionExternalPluginV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 23 })
+    (value) => ({ ...value, discriminator: 25 })
   ) as Serializer<
     RemoveCollectionExternalPluginV1InstructionDataArgs,
     RemoveCollectionExternalPluginV1InstructionData

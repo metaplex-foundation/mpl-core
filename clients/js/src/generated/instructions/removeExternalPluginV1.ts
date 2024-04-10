@@ -73,7 +73,7 @@ export function getRemoveExternalPluginV1InstructionDataSerializer(): Serializer
       ],
       { description: 'RemoveExternalPluginV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 22 })
+    (value) => ({ ...value, discriminator: 24 })
   ) as Serializer<
     RemoveExternalPluginV1InstructionDataArgs,
     RemoveExternalPluginV1InstructionData

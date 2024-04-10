@@ -114,7 +114,7 @@ export function getAddCollectionExternalPluginV1InstructionDataSerializer(): Ser
       ],
       { description: 'AddCollectionExternalPluginV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 21 })
+    (value) => ({ ...value, discriminator: 23 })
   ) as Serializer<
     AddCollectionExternalPluginV1InstructionDataArgs,
     AddCollectionExternalPluginV1InstructionData

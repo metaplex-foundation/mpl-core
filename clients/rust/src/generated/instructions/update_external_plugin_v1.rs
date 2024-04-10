@@ -102,7 +102,7 @@ struct UpdateExternalPluginV1InstructionData {
 
 impl UpdateExternalPluginV1InstructionData {
     fn new() -> Self {
-        Self { discriminator: 24 }
+        Self { discriminator: 26 }
     }
 }
 
