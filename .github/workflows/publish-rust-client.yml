@@ -85,7 +85,9 @@ jobs:
             git config user.email ${{ env.COMMIT_USER_EMAIL }}
           fi
 
+          echo "Cargo logging in"
           cargo login ${{ secrets.CRATES_TOKEN }}
+          echo "Cargo release"
           cargo release $BUMP $OPTIONS
 
           if [ "${{ inputs.dry_run }}" == "false" ]; then

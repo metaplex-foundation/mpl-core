@@ -6,10 +6,10 @@ on:
       program:
         description: Program
         required: true
-        default: mpl-core
+        default: core
         type: choice
         options:
-          - mpl-core
+          - core
       cluster:
         description: Cluster environment
         required: true
@@ -47,7 +47,7 @@ jobs:
     uses: ./.github/workflows/test-programs.yml
     secrets: inherit
     with:
-      program_matrix: '["${{ inputs.program }}"]'
+      program_matrix: '["mpl-${{ inputs.program }}"]'
 
   test_js:
     name: JS client
@@ -103,7 +103,7 @@ jobs:
 
       - name: Determine program version
         run: |
-          IDL_NAME="mpl_${{ inputs.program }}_program"
+          IDL_NAME="mpl_${{ inputs.program }}"
           VERSION=`jq '.version' ./idls/${IDL_NAME}.json | sed 's/"//g'`
           MAJOR=`echo ${VERSION} | cut -d. -f1`
           MINOR=`echo ${VERSION} | cut -d. -f2`
@@ -149,7 +149,7 @@ jobs:
           rm ./program-id.json
 
       - name: Version program
-        working-directory: ./programs/${{ inputs.program }}/program
+        working-directory: ./programs/mpl-${{ inputs.program }}/program
         if: github.event.inputs.version_program == 'true'
         run: |
           git stash
