@@ -11,6 +11,7 @@ pub mod collection;
 pub use collection::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
+use num_traits::FromPrimitive;
 use std::{cmp::Ordering, mem::size_of};
 
 use crate::{
@@ -19,24 +20,6 @@ use crate::{
     types::{Key, Plugin, PluginType, RegistryRecord},
 };
 use solana_program::account_info::AccountInfo;
-
-impl PluginType {
-    // Needed to determine if a plugin is a known or unknown type.
-    pub fn from_u8(n: u8) -> Option<PluginType> {
-        match n {
-            0 => Some(PluginType::Royalties),
-            1 => Some(PluginType::FreezeDelegate),
-            2 => Some(PluginType::BurnDelegate),
-            3 => Some(PluginType::TransferDelegate),
-            4 => Some(PluginType::UpdateDelegate),
-            5 => Some(PluginType::PermanentFreezeDelegate),
-            6 => Some(PluginType::Attributes),
-            7 => Some(PluginType::PermanentTransferDelegate),
-            8 => Some(PluginType::PermanentBurnDelegate),
-            _ => None,
-        }
-    }
-}
 
 impl From<&Plugin> for PluginType {
     fn from(plugin: &Plugin) -> Self {
@@ -110,20 +93,6 @@ impl SolanaAccount for PluginRegistryV1 {
 impl SolanaAccount for PluginHeaderV1 {
     fn key() -> Key {
         Key::PluginHeaderV1
-    }
-}
-
-impl Key {
-    pub fn from_u8(value: u8) -> Option<Self> {
-        match value {
-            0 => Some(Key::Uninitialized),
-            1 => Some(Key::AssetV1),
-            2 => Some(Key::HashedAssetV1),
-            3 => Some(Key::PluginHeaderV1),
-            4 => Some(Key::PluginRegistryV1),
-            5 => Some(Key::CollectionV1),
-            _ => None,
-        }
     }
 }
 

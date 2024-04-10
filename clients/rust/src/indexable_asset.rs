@@ -1,5 +1,6 @@
 use base64::prelude::*;
 use borsh::BorshDeserialize;
+use num_traits::FromPrimitive;
 use solana_program::pubkey::Pubkey;
 use std::{collections::HashMap, io::ErrorKind};
 

@@ -1,4 +1,5 @@
 use borsh::BorshDeserialize;
+use num_traits::FromPrimitive;
 use solana_program::account_info::AccountInfo;
 
 use crate::{
