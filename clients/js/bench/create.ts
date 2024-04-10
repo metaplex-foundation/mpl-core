@@ -20,13 +20,13 @@ test('create a new, empty asset', async (t) => {
     const space = account.exists ? account.data.length : 0;
 
     const cuResult = {
-        name: t.title,
+        name: `CU: ${t.title}`,
         unit: "Compute Units",
         value: compute,
     }
 
     const spaceResult = {
-        name: t.title,
+        name: `Space: ${t.title}`,
         unit: "Bytes",
         value: space,
     }
@@ -72,13 +72,13 @@ test('create a new, empty asset with empty collection', async (t) => {
     const space = account.exists ? account.data.length : 0;
 
     const cuResult = {
-        name: t.title,
+        name: `CU: ${t.title}`,
         unit: "Compute Units",
         value: compute,
     }
 
     const spaceResult = {
-        name: t.title,
+        name: `Space: ${t.title}`,
         unit: "Bytes",
         value: space,
     }
