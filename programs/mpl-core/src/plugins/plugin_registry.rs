@@ -96,10 +96,8 @@ pub struct ExternalPluginRecord {
     pub plugin_key: ExternalPluginKey,
     /// The authority of the external plugin.
     pub authority: Authority,
-    /// The lifecyle events for which the the third party plugin is active.
+    /// The lifecyle events for which the the external plugin is active.
     pub lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
-    /// The offset to the external plugin header in the account.
-    pub header_offset: usize,
-    /// The offset to the external plugin data in the account.
-    pub data_offset: Option<usize>,
+    /// The offset to the plugin in the account.
+    pub offset: usize, // 8
 }

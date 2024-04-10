@@ -23,11 +23,11 @@ pub enum ExternalPluginKey {
     DataStore(Authority),
 }
 
-/// Definition of the external plugin header variants, each containing a link to the plugin header
+/// Definition of the external plugin variants, each containing a link to the external plugin
 /// struct.
 #[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub enum ExternalPluginHeader {
+pub enum ExternalPlugin {
     /// Lifecycle Hook.
     LifecycleHook(LifecycleHook),
     /// Oracle.
