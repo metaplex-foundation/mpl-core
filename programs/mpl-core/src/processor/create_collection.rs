@@ -9,8 +9,8 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::CreateCollectionV2Accounts,
     plugins::{
-        create_plugin_meta, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
-        PluginType, ValidationResult,
+        create_plugin_meta, initialize_plugin, CheckResult, ExternalPluginInitInfo, Plugin,
+        PluginAuthorityPair, PluginType, ValidationResult,
     },
     state::{Authority, CollectionV1, Key},
 };
@@ -29,7 +29,7 @@ pub(crate) struct CreateCollectionV2Args {
     pub(crate) name: String,
     pub(crate) uri: String,
     pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
-    pub(crate) external_plugins: Option<Vec<PluginAuthorityPair>>,
+    pub(crate) external_plugins: Option<Vec<ExternalPluginInitInfo>>,
 }
 
 impl From<CreateCollectionV1Args> for CreateCollectionV2Args {

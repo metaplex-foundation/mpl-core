@@ -3,7 +3,7 @@ use solana_program::pubkey::Pubkey;
 
 use strum::EnumCount;
 
-use super::{Authority, DataStore, LifecycleHook, Oracle};
+use super::{Authority, DataStore, ExternalCheckResult, LifecycleEvent, LifecycleHook, Oracle};
 
 /// List of third party plugin types.
 #[repr(C)]
@@ -34,6 +34,22 @@ pub enum ExternalPlugin {
     Oracle(Oracle),
     /// Data Store.
     DataStore(DataStore),
+}
+
+/// Required and optional information needed to initialize an external plugin.
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct ExternalPluginInitInfo {
+    /// External plugin key.
+    pub plugin_key: ExternalPluginKey,
+    /// External plugin.
+    pub plugin: ExternalPlugin,
+    /// Initial authority.
+    pub init_authority: Option<Authority>,
+    /// The lifecyle events for which the the external plugin is active.
+    pub lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
+    /// External plugin initial data.
+    pub data: Option<Vec<u8>>,
 }
 
 /// Type used to specify extra accounts for external plugins.

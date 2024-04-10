@@ -9,8 +9,8 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::CreateV2Accounts,
     plugins::{
-        create_plugin_meta, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
-        PluginType, ValidationResult,
+        create_plugin_meta, initialize_plugin, CheckResult, ExternalPluginInitInfo, Plugin,
+        PluginAuthorityPair, PluginType, ValidationResult,
     },
     state::{AssetV1, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT},
     utils::resolve_authority,
@@ -32,7 +32,7 @@ pub(crate) struct CreateV2Args {
     pub(crate) name: String,
     pub(crate) uri: String,
     pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
-    pub(crate) external_plugins: Option<Vec<PluginAuthorityPair>>,
+    pub(crate) external_plugins: Option<Vec<ExternalPluginInitInfo>>,
 }
 
 impl From<CreateV1Args> for CreateV2Args {
