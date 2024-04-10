@@ -1,5 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
     error::MplCoreError,
@@ -7,7 +7,7 @@ use crate::{
     state::{Authority, DataBlob},
 };
 
-use super::{Plugin, PluginValidation, ValidationResult};
+use super::{Plugin, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// This plugin manages additional permissions to burn.
 /// Any authorities approved are given permission to burn the asset on behalf of the owner.
@@ -46,8 +46,7 @@ impl DataBlob for UpdateDelegate {
 impl PluginValidation for UpdateDelegate {
     fn validate_create(
         &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
+        _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if !self.additional_delegates.is_empty() {
             return Err(MplCoreError::NotAvailable.into());
@@ -57,20 +56,18 @@ impl PluginValidation for UpdateDelegate {
 
     fn validate_add_plugin(
         &self,
-        authority_info: &AccountInfo,
-        authority: &Authority,
-        new_plugin: Option<&Plugin>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(new_plugin) = new_plugin {
+        if let Some(new_plugin) = ctx.target_plugin {
             if let Plugin::UpdateDelegate(update_delegate) = new_plugin {
                 if !update_delegate.additional_delegates.is_empty() {
                     return Err(MplCoreError::NotAvailable.into());
                 }
             }
 
-            if authority
+            if ctx.self_authority
                 == (&Authority::Address {
-                    address: *authority_info.key,
+                    address: *ctx.authority_info.key,
                 })
                 && new_plugin.manager() == Authority::UpdateAuthority
             {
@@ -85,14 +82,12 @@ impl PluginValidation for UpdateDelegate {
 
     fn validate_remove_plugin(
         &self,
-        authority_info: &AccountInfo,
-        authority: &Authority,
-        plugin_to_remove: Option<&Plugin>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(plugin_to_remove) = plugin_to_remove {
-            if authority
+        if let Some(plugin_to_remove) = ctx.target_plugin {
+            if ctx.self_authority
                 == (&Authority::Address {
-                    address: *authority_info.key,
+                    address: *ctx.authority_info.key,
                 })
                 && plugin_to_remove.manager() == Authority::UpdateAuthority
             {
@@ -108,18 +103,16 @@ impl PluginValidation for UpdateDelegate {
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        authority_info: &AccountInfo,
-        authority: &Authority,
-        plugin_to_revoke: Option<&Plugin>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("authority_info: {:?}", authority_info.key);
-        solana_program::msg!("authority: {:?}", authority);
-        if authority
+        solana_program::msg!("authority_info: {:?}", ctx.authority_info.key);
+        solana_program::msg!("authority: {:?}", ctx.self_authority);
+        if ctx.self_authority
             == &(Authority::Address {
-                address: *authority_info.key,
+                address: *ctx.authority_info.key,
             })
-            && plugin_to_revoke.is_some()
-            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::UpdateDelegate
+            && ctx.target_plugin.is_some()
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::UpdateDelegate
         {
             Ok(ValidationResult::Approved)
         } else {
@@ -129,12 +122,11 @@ impl PluginValidation for UpdateDelegate {
 
     fn validate_update(
         &self,
-        authority_info: &AccountInfo,
-        authority: &Authority,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if authority
+        if ctx.self_authority
             == (&Authority::Address {
-                address: *authority_info.key,
+                address: *ctx.authority_info.key,
             })
         {
             Ok(ValidationResult::Approved)
@@ -145,11 +137,9 @@ impl PluginValidation for UpdateDelegate {
 
     fn validate_update_plugin(
         &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-        _resolved_authorities: &[Authority],
-        plugin_to_update: &Plugin,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        let plugin_to_update = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
         if let Plugin::UpdateDelegate(update_delegate) = plugin_to_update {
             if !update_delegate.additional_delegates.is_empty() {
                 return Err(MplCoreError::NotAvailable.into());

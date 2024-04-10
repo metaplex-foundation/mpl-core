@@ -13,7 +13,8 @@ use crate::{
     error::MplCoreError,
     plugins::{
         create_meta_idempotent, initialize_plugin, validate_plugin_checks, CheckResult, Plugin,
-        PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord, ValidationResult,
+        PluginHeaderV1, PluginRegistryV1, PluginType, PluginValidationContext, RegistryRecord,
+        ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, Compressible, CompressionProof, CoreAsset, DataBlob,
@@ -193,11 +194,11 @@ pub(crate) fn resize_or_reallocate_account<'a>(
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 /// Validate asset permissions using lifecycle validations for asset, collection, and plugins.
-pub fn validate_asset_permissions<'a>(
-    authority_info: &AccountInfo<'a>,
+pub(crate) fn validate_asset_permissions<'a>(
+    authority_info: &'a AccountInfo<'a>,
     asset: &AccountInfo<'a>,
     collection: Option<&AccountInfo<'a>>,
-    new_owner: Option<&AccountInfo<'a>>,
+    new_owner: Option<&'a AccountInfo<'a>>,
     new_plugin: Option<&Plugin>,
     asset_check_fp: fn() -> CheckResult,
     collection_check_fp: fn() -> CheckResult,
@@ -214,11 +215,7 @@ pub fn validate_asset_permissions<'a>(
     ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
-        &AccountInfo,
-        Option<&AccountInfo>,
-        &Authority,
-        Option<&Plugin>,
-        Option<&[Authority]>,
+        &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<(AssetV1, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
     let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<AssetV1>(asset)?;
@@ -346,8 +343,8 @@ pub fn validate_asset_permissions<'a>(
 
 /// Validate collection permissions using lifecycle validations for collection and plugins.
 #[allow(clippy::type_complexity)]
-pub fn validate_collection_permissions<'a>(
-    authority_info: &AccountInfo<'a>,
+pub(crate) fn validate_collection_permissions<'a>(
+    authority_info: &'a AccountInfo<'a>,
     collection: &AccountInfo<'a>,
     new_plugin: Option<&Plugin>,
     collection_check_fp: fn() -> CheckResult,
@@ -359,11 +356,7 @@ pub fn validate_collection_permissions<'a>(
     ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
-        &AccountInfo,
-        Option<&AccountInfo>,
-        &Authority,
-        Option<&Plugin>,
-        Option<&[Authority]>,
+        &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<
     (

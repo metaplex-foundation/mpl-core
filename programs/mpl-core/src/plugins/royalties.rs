@@ -1,11 +1,11 @@
 use std::collections::HashSet;
 
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{error::MplCoreError, plugins::PluginType, state::Authority};
 
-use super::{Plugin, PluginValidation, ValidationResult};
+use super::{Plugin, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
@@ -67,24 +67,22 @@ fn validate_royalties(royalties: &Royalties) -> Result<ValidationResult, Program
 impl PluginValidation for Royalties {
     fn validate_create(
         &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
+        _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         validate_royalties(self)
     }
 
     fn validate_transfer(
         &self,
-        authority_info: &AccountInfo,
-        new_owner: &AccountInfo,
-        _authority: &Authority,
-        _resolved_authorities: Option<&[Authority]>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        let new_owner = ctx.new_owner.ok_or(MplCoreError::MissingNewOwner)?;
         match &self.rule_set {
             RuleSet::None => Ok(ValidationResult::Pass),
             RuleSet::ProgramAllowList(allow_list) => {
                 solana_program::msg!("Evaluating royalties");
-                if allow_list.contains(authority_info.owner) || allow_list.contains(new_owner.owner)
+                if allow_list.contains(ctx.authority_info.owner)
+                    || allow_list.contains(new_owner.owner)
                 {
                     Ok(ValidationResult::Pass)
                 } else {
@@ -92,7 +90,9 @@ impl PluginValidation for Royalties {
                 }
             }
             RuleSet::ProgramDenyList(deny_list) => {
-                if deny_list.contains(authority_info.owner) || deny_list.contains(new_owner.owner) {
+                if deny_list.contains(ctx.authority_info.owner)
+                    || deny_list.contains(new_owner.owner)
+                {
                     Ok(ValidationResult::Rejected)
                 } else {
                     Ok(ValidationResult::Pass)
@@ -103,26 +103,25 @@ impl PluginValidation for Royalties {
 
     fn validate_add_plugin(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _new_plugin: Option<&Plugin>,
+        _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         validate_royalties(self)
     }
 
     fn validate_update_plugin(
         &self,
-        _authority_info: &AccountInfo,
-        authority: &Authority,
-        resolved_authorities: &[Authority],
-        plugin_to_update: &Plugin,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("authority: {:?}", authority);
-        solana_program::msg!("resolved_authority: {:?}", resolved_authorities);
+        solana_program::msg!("authority: {:?}", ctx.self_authority);
+        solana_program::msg!("resolved_authority: {:?}", ctx.resolved_authorities);
+        let plugin_to_update = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
+        let resolved_authorities = ctx
+            .resolved_authorities
+            .ok_or(MplCoreError::InvalidAuthority)?;
 
         // Perform validation on the new royalties plugin data.
         if let Plugin::Royalties(royalties) = plugin_to_update {
-            if resolved_authorities.contains(authority) {
+            if resolved_authorities.contains(ctx.self_authority) {
                 solana_program::msg!("Validating royalties");
                 validate_royalties(royalties)
             } else {
@@ -136,18 +135,16 @@ impl PluginValidation for Royalties {
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        authority_info: &AccountInfo,
-        authority: &Authority,
-        plugin_to_revoke: Option<&Plugin>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("authority_info: {:?}", authority_info.key);
-        solana_program::msg!("authority: {:?}", authority);
-        if authority
+        solana_program::msg!("authority_info: {:?}", ctx.authority_info.key);
+        solana_program::msg!("authority: {:?}", ctx.self_authority);
+        if ctx.self_authority
             == &(Authority::Address {
-                address: *authority_info.key,
+                address: *ctx.authority_info.key,
             })
-            && plugin_to_revoke.is_some()
-            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::Royalties
+            && ctx.target_plugin.is_some()
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Royalties
         {
             Ok(ValidationResult::Approved)
         } else {
