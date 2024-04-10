@@ -5,11 +5,11 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{
-        BurnV1Accounts, CompressV1Accounts, CreateV1Accounts, DecompressV1Accounts,
+        BurnV1Accounts, CompressV1Accounts, CreateV2Accounts, DecompressV1Accounts,
         TransferV1Accounts, UpdateV1Accounts,
     },
     plugins::{fetch_plugin, CheckResult, PluginType, UpdateDelegate, ValidationResult},
-    processor::CreateV1Args,
+    processor::CreateV2Args,
     state::{Authority, CollectionV1, SolanaAccount},
     utils::assert_collection_authority,
 };
@@ -48,8 +48,8 @@ impl UpdateAuthority {
     /// Validate the create lifecycle event.
     pub(crate) fn validate_create(
         &self,
-        ctx: &CreateV1Accounts,
-        _args: &CreateV1Args,
+        ctx: &CreateV2Accounts,
+        _args: &CreateV2Args,
     ) -> Result<ValidationResult, ProgramError> {
         match (ctx.collection, self) {
             // If you're trying to add a collection, then check the authority.

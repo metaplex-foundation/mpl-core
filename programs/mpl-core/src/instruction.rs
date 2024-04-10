@@ -5,12 +5,12 @@ use shank::{ShankContext, ShankInstruction};
 use crate::processor::{
     AddCollectionExternalPluginV1Args, AddCollectionPluginV1Args, AddExternalPluginV1Args,
     AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args, ApprovePluginAuthorityV1Args,
-    BurnCollectionV1Args, BurnV1Args, CompressV1Args, CreateCollectionV1Args, CreateV1Args,
-    DecompressV1Args, RemoveCollectionExternalPluginV1Args, RemoveCollectionPluginV1Args,
-    RemoveExternalPluginV1Args, RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args,
-    RevokePluginAuthorityV1Args, TransferV1Args, UpdateCollectionExternalPluginV1Args,
-    UpdateCollectionPluginV1Args, UpdateCollectionV1Args, UpdateExternalPluginV1Args,
-    UpdatePluginV1Args, UpdateV1Args,
+    BurnCollectionV1Args, BurnV1Args, CompressV1Args, CreateCollectionV1Args,
+    CreateCollectionV2Args, CreateV1Args, CreateV2Args, DecompressV1Args,
+    RemoveCollectionExternalPluginV1Args, RemoveCollectionPluginV1Args, RemoveExternalPluginV1Args,
+    RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args, RevokePluginAuthorityV1Args,
+    TransferV1Args, UpdateCollectionExternalPluginV1Args, UpdateCollectionPluginV1Args,
+    UpdateCollectionV1Args, UpdateExternalPluginV1Args, UpdatePluginV1Args, UpdateV1Args,
 };
 
 /// Instructions supported by the mpl-core program.
@@ -190,6 +190,26 @@ pub(crate) enum MplAssetInstruction {
     #[account(0, writable, name="recipient1", desc = "The address of the recipient 1")]
     #[account(1, writable, name="recipient2", desc = "The address of the recipient 2")]
     Collect,
+
+    /// Create a new mpl-core Asset V2.
+    /// This function creates the initial Asset, with or without internal/external plugins.
+    #[account(0, writable, signer, name="asset", desc = "The address of the new asset")]
+    #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
+    #[account(2, optional, signer, name="authority", desc = "The authority signing for creation")]
+    #[account(3, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(4, optional, name="owner", desc = "The owner of the new asset. Defaults to the authority if not present.")]
+    #[account(5, optional, name="update_authority", desc = "The authority on the new asset")]
+    #[account(6, name="system_program", desc = "The system program")]
+    #[account(7, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    CreateV2(CreateV2Args),
+
+    /// Create a new mpl-core Collection V2.
+    /// This function creates the initial Collection, with or without internal/external plugins.
+    #[account(0, writable, signer, name="collection", desc = "The address of the new asset")]
+    #[account(1, optional, name="update_authority", desc = "The authority of the new asset")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, name="system_program", desc = "The system program")]
+    CreateCollectionV2(CreateCollectionV2Args),
 
     /// Add an external plugin to an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]

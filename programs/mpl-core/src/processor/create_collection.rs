@@ -7,7 +7,7 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::CreateCollectionV1Accounts,
+    instruction::accounts::CreateCollectionV2Accounts,
     plugins::{
         create_plugin_meta, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
         PluginType, ValidationResult,
@@ -23,12 +23,45 @@ pub(crate) struct CreateCollectionV1Args {
     pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
 }
 
-pub(crate) fn create_collection<'a>(
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct CreateCollectionV2Args {
+    pub(crate) name: String,
+    pub(crate) uri: String,
+    pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
+    pub(crate) external_plugins: Option<Vec<PluginAuthorityPair>>,
+}
+
+impl From<CreateCollectionV1Args> for CreateCollectionV2Args {
+    fn from(item: CreateCollectionV1Args) -> Self {
+        CreateCollectionV2Args {
+            name: item.name,
+            uri: item.uri,
+            plugins: item.plugins,
+            external_plugins: None,
+        }
+    }
+}
+
+pub(crate) fn create_collection_v1<'a>(
     accounts: &'a [AccountInfo<'a>],
     args: CreateCollectionV1Args,
 ) -> ProgramResult {
+    process_create_collection(accounts, CreateCollectionV2Args::from(args))
+}
+pub(crate) fn create_collection_v2<'a>(
+    accounts: &'a [AccountInfo<'a>],
+    args: CreateCollectionV2Args,
+) -> ProgramResult {
+    process_create_collection(accounts, args)
+}
+
+pub(crate) fn process_create_collection<'a>(
+    accounts: &'a [AccountInfo<'a>],
+    args: CreateCollectionV2Args,
+) -> ProgramResult {
     // Accounts.
-    let ctx = CreateCollectionV1Accounts::context(accounts)?;
+    let ctx = CreateCollectionV2Accounts::context(accounts)?;
     let rent = Rent::get()?;
 
     // Guards.

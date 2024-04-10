@@ -47,11 +47,11 @@ pub fn process_instruction<'a>(
     match instruction {
         MplAssetInstruction::CreateV1(args) => {
             msg!("Instruction: Create");
-            create(accounts, args)
+            create_v1(accounts, args)
         }
         MplAssetInstruction::CreateCollectionV1(args) => {
             msg!("Instruction: CreateCollection");
-            create_collection(accounts, args)
+            create_collection_v1(accounts, args)
         }
         MplAssetInstruction::AddPluginV1(args) => {
             msg!("Instruction: AddPlugin");
@@ -122,6 +122,14 @@ pub fn process_instruction<'a>(
             decompress(accounts, args)
         }
         MplAssetInstruction::Collect => collect(accounts),
+        MplAssetInstruction::CreateV2(args) => {
+            msg!("Instruction: CreateV2");
+            create_v2(accounts, args)
+        }
+        MplAssetInstruction::CreateCollectionV2(args) => {
+            msg!("Instruction: CreateCollectionV2");
+            create_collection_v2(accounts, args)
+        }
         MplAssetInstruction::AddExternalPluginV1(args) => {
             msg!("Instruction: AddExternalPlugin");
             add_external_plugin(accounts, args)
