@@ -16,6 +16,7 @@ export * from './dataStore';
 export * from './edition';
 export * from './externalCheckResult';
 export * from './externalPlugin';
+export * from './externalPluginInitInfo';
 export * from './externalPluginKey';
 export * from './externalPluginRecord';
 export * from './externalPluginSchema';

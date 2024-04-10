@@ -2030,6 +2030,57 @@
       }
     },
     {
+      "name": "ExternalPluginInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pluginKey",
+            "type": {
+              "defined": "ExternalPluginKey"
+            }
+          },
+          {
+            "name": "plugin",
+            "type": {
+              "defined": "ExternalPlugin"
+            }
+          },
+          {
+            "name": "initAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "LifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "data",
+            "type": {
+              "option": "bytes"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "FreezeDelegate",
       "type": {
         "kind": "struct",
@@ -2251,46 +2302,9 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "pluginKey",
+            "name": "externalPluginInitInfo",
             "type": {
-              "defined": "ExternalPluginKey"
-            }
-          },
-          {
-            "name": "plugin",
-            "type": {
-              "defined": "ExternalPlugin"
-            }
-          },
-          {
-            "name": "initAuthority",
-            "type": {
-              "option": {
-                "defined": "Authority"
-              }
-            }
-          },
-          {
-            "name": "lifecycleChecks",
-            "type": {
-              "option": {
-                "vec": {
-                  "tuple": [
-                    {
-                      "defined": "LifecycleEvent"
-                    },
-                    {
-                      "defined": "ExternalCheckResult"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          {
-            "name": "data",
-            "type": {
-              "option": "bytes"
+              "defined": "ExternalPluginInitInfo"
             }
           }
         ]
@@ -2302,46 +2316,9 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "pluginKey",
+            "name": "externalPluginInitInfo",
             "type": {
-              "defined": "ExternalPluginKey"
-            }
-          },
-          {
-            "name": "plugin",
-            "type": {
-              "defined": "ExternalPlugin"
-            }
-          },
-          {
-            "name": "initAuthority",
-            "type": {
-              "option": {
-                "defined": "Authority"
-              }
-            }
-          },
-          {
-            "name": "lifecycleChecks",
-            "type": {
-              "option": {
-                "vec": {
-                  "tuple": [
-                    {
-                      "defined": "LifecycleEvent"
-                    },
-                    {
-                      "defined": "ExternalCheckResult"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          {
-            "name": "data",
-            "type": {
-              "option": "bytes"
+              "defined": "ExternalPluginInitInfo"
             }
           }
         ]
@@ -2536,7 +2513,7 @@
             "type": {
               "option": {
                 "vec": {
-                  "defined": "PluginAuthorityPair"
+                  "defined": "ExternalPluginInitInfo"
                 }
               }
             }
@@ -2598,7 +2575,7 @@
             "type": {
               "option": {
                 "vec": {
-                  "defined": "PluginAuthorityPair"
+                  "defined": "ExternalPluginInitInfo"
                 }
               }
             }

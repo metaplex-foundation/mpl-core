@@ -6,6 +6,7 @@
 //!
 
 use crate::generated::types::DataState;
+use crate::generated::types::ExternalPluginInitInfo;
 use crate::generated::types::PluginAuthorityPair;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
@@ -137,7 +138,7 @@ pub struct CreateV2InstructionArgs {
     pub name: String,
     pub uri: String,
     pub plugins: Option<Vec<PluginAuthorityPair>>,
-    pub external_plugins: Option<Vec<PluginAuthorityPair>>,
+    pub external_plugins: Option<Vec<ExternalPluginInitInfo>>,
 }
 
 /// Instruction builder for `CreateV2`.
@@ -166,7 +167,7 @@ pub struct CreateV2Builder {
     name: Option<String>,
     uri: Option<String>,
     plugins: Option<Vec<PluginAuthorityPair>>,
-    external_plugins: Option<Vec<PluginAuthorityPair>>,
+    external_plugins: Option<Vec<ExternalPluginInitInfo>>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -257,7 +258,7 @@ impl CreateV2Builder {
     }
     /// `[optional argument]`
     #[inline(always)]
-    pub fn external_plugins(&mut self, external_plugins: Vec<PluginAuthorityPair>) -> &mut Self {
+    pub fn external_plugins(&mut self, external_plugins: Vec<ExternalPluginInitInfo>) -> &mut Self {
         self.external_plugins = Some(external_plugins);
         self
     }
@@ -647,7 +648,7 @@ impl<'a, 'b> CreateV2CpiBuilder<'a, 'b> {
     }
     /// `[optional argument]`
     #[inline(always)]
-    pub fn external_plugins(&mut self, external_plugins: Vec<PluginAuthorityPair>) -> &mut Self {
+    pub fn external_plugins(&mut self, external_plugins: Vec<ExternalPluginInitInfo>) -> &mut Self {
         self.instruction.external_plugins = Some(external_plugins);
         self
     }
@@ -747,7 +748,7 @@ struct CreateV2CpiBuilderInstruction<'a, 'b> {
     name: Option<String>,
     uri: Option<String>,
     plugins: Option<Vec<PluginAuthorityPair>>,
-    external_plugins: Option<Vec<PluginAuthorityPair>>,
+    external_plugins: Option<Vec<ExternalPluginInitInfo>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

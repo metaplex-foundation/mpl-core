@@ -33,9 +33,12 @@ import {
 import {
   DataState,
   DataStateArgs,
+  ExternalPluginInitInfo,
+  ExternalPluginInitInfoArgs,
   PluginAuthorityPair,
   PluginAuthorityPairArgs,
   getDataStateSerializer,
+  getExternalPluginInitInfoSerializer,
   getPluginAuthorityPairSerializer,
 } from '../types';
 
@@ -66,7 +69,7 @@ export type CreateV2InstructionData = {
   name: string;
   uri: string;
   plugins: Option<Array<PluginAuthorityPair>>;
-  externalPlugins: Option<Array<PluginAuthorityPair>>;
+  externalPlugins: Option<Array<ExternalPluginInitInfo>>;
 };
 
 export type CreateV2InstructionDataArgs = {
@@ -74,7 +77,7 @@ export type CreateV2InstructionDataArgs = {
   name: string;
   uri: string;
   plugins: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
-  externalPlugins: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
+  externalPlugins: OptionOrNullable<Array<ExternalPluginInitInfoArgs>>;
 };
 
 export function getCreateV2InstructionDataSerializer(): Serializer<
@@ -93,7 +96,10 @@ export function getCreateV2InstructionDataSerializer(): Serializer<
         ['name', string()],
         ['uri', string()],
         ['plugins', option(array(getPluginAuthorityPairSerializer()))],
-        ['externalPlugins', option(array(getPluginAuthorityPairSerializer()))],
+        [
+          'externalPlugins',
+          option(array(getExternalPluginInitInfoSerializer())),
+        ],
       ],
       { description: 'CreateV2InstructionData' }
     ),

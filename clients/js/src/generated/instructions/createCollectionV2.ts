@@ -31,8 +31,11 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
+  ExternalPluginInitInfo,
+  ExternalPluginInitInfoArgs,
   PluginAuthorityPair,
   PluginAuthorityPairArgs,
+  getExternalPluginInitInfoSerializer,
   getPluginAuthorityPairSerializer,
 } from '../types';
 
@@ -54,14 +57,14 @@ export type CreateCollectionV2InstructionData = {
   name: string;
   uri: string;
   plugins: Option<Array<PluginAuthorityPair>>;
-  externalPlugins: Option<Array<PluginAuthorityPair>>;
+  externalPlugins: Option<Array<ExternalPluginInitInfo>>;
 };
 
 export type CreateCollectionV2InstructionDataArgs = {
   name: string;
   uri: string;
   plugins: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
-  externalPlugins: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
+  externalPlugins: OptionOrNullable<Array<ExternalPluginInitInfoArgs>>;
 };
 
 export function getCreateCollectionV2InstructionDataSerializer(): Serializer<
@@ -79,7 +82,10 @@ export function getCreateCollectionV2InstructionDataSerializer(): Serializer<
         ['name', string()],
         ['uri', string()],
         ['plugins', option(array(getPluginAuthorityPairSerializer()))],
-        ['externalPlugins', option(array(getPluginAuthorityPairSerializer()))],
+        [
+          'externalPlugins',
+          option(array(getExternalPluginInitInfoSerializer())),
+        ],
       ],
       { description: 'CreateCollectionV2InstructionData' }
     ),

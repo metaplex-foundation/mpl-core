@@ -8,8 +8,6 @@
 
 import {
   Context,
-  Option,
-  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -18,13 +16,8 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
-  array,
-  bytes,
   mapSerializer,
-  option,
   struct,
-  tuple,
-  u32,
   u8,
 } from '@metaplex-foundation/umi/serializers';
 import {
@@ -33,21 +26,9 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  ExternalCheckResult,
-  ExternalCheckResultArgs,
-  ExternalPlugin,
-  ExternalPluginArgs,
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
-  LifecycleEvent,
-  LifecycleEventArgs,
-  PluginAuthority,
-  PluginAuthorityArgs,
-  getExternalCheckResultSerializer,
-  getExternalPluginKeySerializer,
-  getExternalPluginSerializer,
-  getLifecycleEventSerializer,
-  getPluginAuthoritySerializer,
+  ExternalPluginInitInfo,
+  ExternalPluginInitInfoArgs,
+  getExternalPluginInitInfoSerializer,
 } from '../types';
 
 // Accounts.
@@ -69,21 +50,11 @@ export type AddExternalPluginV1InstructionAccounts = {
 // Data.
 export type AddExternalPluginV1InstructionData = {
   discriminator: number;
-  pluginKey: ExternalPluginKey;
-  plugin: ExternalPlugin;
-  initAuthority: Option<PluginAuthority>;
-  lifecycleChecks: Option<Array<[LifecycleEvent, ExternalCheckResult]>>;
-  data: Option<Uint8Array>;
+  externalPluginInitInfo: ExternalPluginInitInfo;
 };
 
 export type AddExternalPluginV1InstructionDataArgs = {
-  pluginKey: ExternalPluginKeyArgs;
-  plugin: ExternalPluginArgs;
-  initAuthority: OptionOrNullable<PluginAuthorityArgs>;
-  lifecycleChecks: OptionOrNullable<
-    Array<[LifecycleEventArgs, ExternalCheckResultArgs]>
-  >;
-  data: OptionOrNullable<Uint8Array>;
+  externalPluginInitInfo: ExternalPluginInitInfoArgs;
 };
 
 export function getAddExternalPluginV1InstructionDataSerializer(): Serializer<
@@ -98,21 +69,7 @@ export function getAddExternalPluginV1InstructionDataSerializer(): Serializer<
     struct<AddExternalPluginV1InstructionData>(
       [
         ['discriminator', u8()],
-        ['pluginKey', getExternalPluginKeySerializer()],
-        ['plugin', getExternalPluginSerializer()],
-        ['initAuthority', option(getPluginAuthoritySerializer())],
-        [
-          'lifecycleChecks',
-          option(
-            array(
-              tuple([
-                getLifecycleEventSerializer(),
-                getExternalCheckResultSerializer(),
-              ])
-            )
-          ),
-        ],
-        ['data', option(bytes({ size: u32() }))],
+        ['externalPluginInitInfo', getExternalPluginInitInfoSerializer()],
       ],
       { description: 'AddExternalPluginV1InstructionData' }
     ),
