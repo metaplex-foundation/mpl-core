@@ -16,11 +16,19 @@ test('create a new, empty asset', async (t) => {
     }).sendAndConfirm(umi);
 
     const compute = Number((await umi.rpc.getTransaction(tx.signature))?.meta.computeUnitsConsumed);
+    const account = await umi.rpc.getAccount(assetAddress.publicKey);
+    const space = account.exists ? account.data.length : 0;
 
-    const result = {
+    const cuResult = {
         name: t.title,
         unit: "Compute Units",
         value: compute,
+    }
+
+    const spaceResult = {
+        name: t.title,
+        unit: "Bytes",
+        value: space,
     }
 
     // Read the results array from output.json
@@ -30,7 +38,8 @@ test('create a new, empty asset', async (t) => {
     }
 
     // Push the result to the array
-    output.push(result);
+    output.push(cuResult);
+    output.push(spaceResult);
     // Write the array to output.json
     writeFileSync("./output.json", JSON.stringify(output, null, 2));
 
@@ -59,11 +68,19 @@ test('create a new, empty asset with empty collection', async (t) => {
     const tx = await builder.sendAndConfirm(umi);
 
     const compute = Number((await umi.rpc.getTransaction(tx.signature))?.meta.computeUnitsConsumed);
+    const account = await umi.rpc.getAccount(assetAddress.publicKey);
+    const space = account.exists ? account.data.length : 0;
 
-    const result = {
+    const cuResult = {
         name: t.title,
         unit: "Compute Units",
         value: compute,
+    }
+
+    const spaceResult = {
+        name: t.title,
+        unit: "Bytes",
+        value: space,
     }
 
     // Read the results array from output.json
@@ -73,7 +90,8 @@ test('create a new, empty asset with empty collection', async (t) => {
     }
 
     // Push the result to the array
-    output.push(result);
+    output.push(cuResult);
+    output.push(spaceResult);
     // Write the array to output.json
     writeFileSync("./output.json", JSON.stringify(output, null, 2));
 
