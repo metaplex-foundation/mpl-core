@@ -25,14 +25,14 @@ import {
 
 export type LifecycleHook = {
   extraAccounts: Option<Array<ExtraAccount>>;
-  schema: Option<ExternalPluginSchema>;
+  schema: ExternalPluginSchema;
   dataOffset: bigint;
   dataLen: bigint;
 };
 
 export type LifecycleHookArgs = {
   extraAccounts: OptionOrNullable<Array<ExtraAccountArgs>>;
-  schema: OptionOrNullable<ExternalPluginSchemaArgs>;
+  schema: ExternalPluginSchemaArgs;
   dataOffset: number | bigint;
   dataLen: number | bigint;
 };
@@ -44,7 +44,7 @@ export function getLifecycleHookSerializer(): Serializer<
   return struct<LifecycleHook>(
     [
       ['extraAccounts', option(array(getExtraAccountSerializer()))],
-      ['schema', option(getExternalPluginSchemaSerializer())],
+      ['schema', getExternalPluginSchemaSerializer()],
       ['dataOffset', u64()],
       ['dataLen', u64()],
     ],

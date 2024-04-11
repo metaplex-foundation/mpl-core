@@ -28,7 +28,10 @@ import {
 import {
   ExternalPluginInitInfo,
   ExternalPluginInitInfoArgs,
+  ExternalPluginKey,
+  ExternalPluginKeyArgs,
   getExternalPluginInitInfoSerializer,
+  getExternalPluginKeySerializer,
 } from '../types';
 
 // Accounts.
@@ -50,11 +53,13 @@ export type AddExternalPluginV1InstructionAccounts = {
 // Data.
 export type AddExternalPluginV1InstructionData = {
   discriminator: number;
-  externalPluginInitInfo: ExternalPluginInitInfo;
+  key: ExternalPluginKey;
+  initInfo: ExternalPluginInitInfo;
 };
 
 export type AddExternalPluginV1InstructionDataArgs = {
-  externalPluginInitInfo: ExternalPluginInitInfoArgs;
+  key: ExternalPluginKeyArgs;
+  initInfo: ExternalPluginInitInfoArgs;
 };
 
 export function getAddExternalPluginV1InstructionDataSerializer(): Serializer<
@@ -69,7 +74,8 @@ export function getAddExternalPluginV1InstructionDataSerializer(): Serializer<
     struct<AddExternalPluginV1InstructionData>(
       [
         ['discriminator', u8()],
-        ['externalPluginInitInfo', getExternalPluginInitInfoSerializer()],
+        ['key', getExternalPluginKeySerializer()],
+        ['initInfo', getExternalPluginInitInfoSerializer()],
       ],
       { description: 'AddExternalPluginV1InstructionData' }
     ),

@@ -6,13 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Option, OptionOrNullable } from '@metaplex-foundation/umi';
-import {
-  Serializer,
-  option,
-  struct,
-  u64,
-} from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalPluginSchema,
   ExternalPluginSchemaArgs,
@@ -20,13 +14,13 @@ import {
 } from '.';
 
 export type DataStore = {
-  schema: Option<ExternalPluginSchema>;
+  schema: ExternalPluginSchema;
   dataOffset: bigint;
   dataLen: bigint;
 };
 
 export type DataStoreArgs = {
-  schema: OptionOrNullable<ExternalPluginSchemaArgs>;
+  schema: ExternalPluginSchemaArgs;
   dataOffset: number | bigint;
   dataLen: number | bigint;
 };
@@ -34,7 +28,7 @@ export type DataStoreArgs = {
 export function getDataStoreSerializer(): Serializer<DataStoreArgs, DataStore> {
   return struct<DataStore>(
     [
-      ['schema', option(getExternalPluginSchemaSerializer())],
+      ['schema', getExternalPluginSchemaSerializer()],
       ['dataOffset', u64()],
       ['dataLen', u64()],
     ],

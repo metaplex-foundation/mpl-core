@@ -5,14 +5,16 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::ExternalPluginSchema;
+use crate::generated::types::DataStoreUpdateInfo;
+use crate::generated::types::LifecycleHookUpdateInfo;
+use crate::generated::types::OracleUpdateInfo;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct DataStore {
-    pub schema: ExternalPluginSchema,
-    pub data_offset: u64,
-    pub data_len: u64,
+pub enum ExternalPluginUpdateInfo {
+    LifecycleHook(LifecycleHookUpdateInfo),
+    Oracle(OracleUpdateInfo),
+    DataStore(DataStoreUpdateInfo),
 }

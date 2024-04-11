@@ -6,6 +6,7 @@
 //!
 
 use crate::generated::types::ExternalPluginInitInfo;
+use crate::generated::types::ExternalPluginKey;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -98,7 +99,8 @@ impl AddCollectionExternalPluginV1InstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AddCollectionExternalPluginV1InstructionArgs {
-    pub external_plugin_init_info: ExternalPluginInitInfo,
+    pub key: ExternalPluginKey,
+    pub init_info: ExternalPluginInitInfo,
 }
 
 /// Instruction builder for `AddCollectionExternalPluginV1`.
@@ -117,7 +119,8 @@ pub struct AddCollectionExternalPluginV1Builder {
     authority: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
-    external_plugin_init_info: Option<ExternalPluginInitInfo>,
+    key: Option<ExternalPluginKey>,
+    init_info: Option<ExternalPluginInitInfo>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -162,11 +165,13 @@ impl AddCollectionExternalPluginV1Builder {
         self
     }
     #[inline(always)]
-    pub fn external_plugin_init_info(
-        &mut self,
-        external_plugin_init_info: ExternalPluginInitInfo,
-    ) -> &mut Self {
-        self.external_plugin_init_info = Some(external_plugin_init_info);
+    pub fn key(&mut self, key: ExternalPluginKey) -> &mut Self {
+        self.key = Some(key);
+        self
+    }
+    #[inline(always)]
+    pub fn init_info(&mut self, init_info: ExternalPluginInitInfo) -> &mut Self {
+        self.init_info = Some(init_info);
         self
     }
     /// Add an aditional account to the instruction.
@@ -199,10 +204,8 @@ impl AddCollectionExternalPluginV1Builder {
             log_wrapper: self.log_wrapper,
         };
         let args = AddCollectionExternalPluginV1InstructionArgs {
-            external_plugin_init_info: self
-                .external_plugin_init_info
-                .clone()
-                .expect("external_plugin_init_info is not set"),
+            key: self.key.clone().expect("key is not set"),
+            init_info: self.init_info.clone().expect("init_info is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -388,7 +391,8 @@ impl<'a, 'b> AddCollectionExternalPluginV1CpiBuilder<'a, 'b> {
             authority: None,
             system_program: None,
             log_wrapper: None,
-            external_plugin_init_info: None,
+            key: None,
+            init_info: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -438,11 +442,13 @@ impl<'a, 'b> AddCollectionExternalPluginV1CpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn external_plugin_init_info(
-        &mut self,
-        external_plugin_init_info: ExternalPluginInitInfo,
-    ) -> &mut Self {
-        self.instruction.external_plugin_init_info = Some(external_plugin_init_info);
+    pub fn key(&mut self, key: ExternalPluginKey) -> &mut Self {
+        self.instruction.key = Some(key);
+        self
+    }
+    #[inline(always)]
+    pub fn init_info(&mut self, init_info: ExternalPluginInitInfo) -> &mut Self {
+        self.instruction.init_info = Some(init_info);
         self
     }
     /// Add an additional account to the instruction.
@@ -487,11 +493,12 @@ impl<'a, 'b> AddCollectionExternalPluginV1CpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = AddCollectionExternalPluginV1InstructionArgs {
-            external_plugin_init_info: self
+            key: self.instruction.key.clone().expect("key is not set"),
+            init_info: self
                 .instruction
-                .external_plugin_init_info
+                .init_info
                 .clone()
-                .expect("external_plugin_init_info is not set"),
+                .expect("init_info is not set"),
         };
         let instruction = AddCollectionExternalPluginV1Cpi {
             __program: self.instruction.__program,
@@ -524,7 +531,8 @@ struct AddCollectionExternalPluginV1CpiBuilderInstruction<'a, 'b> {
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    external_plugin_init_info: Option<ExternalPluginInitInfo>,
+    key: Option<ExternalPluginKey>,
+    init_info: Option<ExternalPluginInitInfo>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

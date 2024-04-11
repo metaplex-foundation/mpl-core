@@ -6,74 +6,96 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Option, OptionOrNullable } from '@metaplex-foundation/umi';
 import {
+  GetDataEnumKind,
+  GetDataEnumKindContent,
   Serializer,
-  array,
-  bytes,
-  option,
+  dataEnum,
   struct,
   tuple,
-  u32,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  ExternalCheckResult,
-  ExternalCheckResultArgs,
-  ExternalPlugin,
-  ExternalPluginArgs,
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
-  LifecycleEvent,
-  LifecycleEventArgs,
-  PluginAuthority,
-  PluginAuthorityArgs,
-  getExternalCheckResultSerializer,
-  getExternalPluginKeySerializer,
-  getExternalPluginSerializer,
-  getLifecycleEventSerializer,
-  getPluginAuthoritySerializer,
+  DataStoreInitInfo,
+  DataStoreInitInfoArgs,
+  LifecycleHookInitInfo,
+  LifecycleHookInitInfoArgs,
+  OracleInitInfo,
+  OracleInitInfoArgs,
+  getDataStoreInitInfoSerializer,
+  getLifecycleHookInitInfoSerializer,
+  getOracleInitInfoSerializer,
 } from '.';
 
-export type ExternalPluginInitInfo = {
-  pluginKey: ExternalPluginKey;
-  plugin: ExternalPlugin;
-  initAuthority: Option<PluginAuthority>;
-  lifecycleChecks: Option<Array<[LifecycleEvent, ExternalCheckResult]>>;
-  data: Option<Uint8Array>;
-};
+export type ExternalPluginInitInfo =
+  | { __kind: 'LifecycleHook'; fields: [LifecycleHookInitInfo] }
+  | { __kind: 'Oracle'; fields: [OracleInitInfo] }
+  | { __kind: 'DataStore'; fields: [DataStoreInitInfo] };
 
-export type ExternalPluginInitInfoArgs = {
-  pluginKey: ExternalPluginKeyArgs;
-  plugin: ExternalPluginArgs;
-  initAuthority: OptionOrNullable<PluginAuthorityArgs>;
-  lifecycleChecks: OptionOrNullable<
-    Array<[LifecycleEventArgs, ExternalCheckResultArgs]>
-  >;
-  data: OptionOrNullable<Uint8Array>;
-};
+export type ExternalPluginInitInfoArgs =
+  | { __kind: 'LifecycleHook'; fields: [LifecycleHookInitInfoArgs] }
+  | { __kind: 'Oracle'; fields: [OracleInitInfoArgs] }
+  | { __kind: 'DataStore'; fields: [DataStoreInitInfoArgs] };
 
 export function getExternalPluginInitInfoSerializer(): Serializer<
   ExternalPluginInitInfoArgs,
   ExternalPluginInitInfo
 > {
-  return struct<ExternalPluginInitInfo>(
+  return dataEnum<ExternalPluginInitInfo>(
     [
-      ['pluginKey', getExternalPluginKeySerializer()],
-      ['plugin', getExternalPluginSerializer()],
-      ['initAuthority', option(getPluginAuthoritySerializer())],
       [
-        'lifecycleChecks',
-        option(
-          array(
-            tuple([
-              getLifecycleEventSerializer(),
-              getExternalCheckResultSerializer(),
-            ])
-          )
+        'LifecycleHook',
+        struct<GetDataEnumKindContent<ExternalPluginInitInfo, 'LifecycleHook'>>(
+          [['fields', tuple([getLifecycleHookInitInfoSerializer()])]]
         ),
       ],
-      ['data', option(bytes({ size: u32() }))],
+      [
+        'Oracle',
+        struct<GetDataEnumKindContent<ExternalPluginInitInfo, 'Oracle'>>([
+          ['fields', tuple([getOracleInitInfoSerializer()])],
+        ]),
+      ],
+      [
+        'DataStore',
+        struct<GetDataEnumKindContent<ExternalPluginInitInfo, 'DataStore'>>([
+          ['fields', tuple([getDataStoreInitInfoSerializer()])],
+        ]),
+      ],
     ],
     { description: 'ExternalPluginInitInfo' }
   ) as Serializer<ExternalPluginInitInfoArgs, ExternalPluginInitInfo>;
+}
+
+// Data Enum Helpers.
+export function externalPluginInitInfo(
+  kind: 'LifecycleHook',
+  data: GetDataEnumKindContent<
+    ExternalPluginInitInfoArgs,
+    'LifecycleHook'
+  >['fields']
+): GetDataEnumKind<ExternalPluginInitInfoArgs, 'LifecycleHook'>;
+export function externalPluginInitInfo(
+  kind: 'Oracle',
+  data: GetDataEnumKindContent<ExternalPluginInitInfoArgs, 'Oracle'>['fields']
+): GetDataEnumKind<ExternalPluginInitInfoArgs, 'Oracle'>;
+export function externalPluginInitInfo(
+  kind: 'DataStore',
+  data: GetDataEnumKindContent<
+    ExternalPluginInitInfoArgs,
+    'DataStore'
+  >['fields']
+): GetDataEnumKind<ExternalPluginInitInfoArgs, 'DataStore'>;
+export function externalPluginInitInfo<
+  K extends ExternalPluginInitInfoArgs['__kind']
+>(kind: K, data?: any): Extract<ExternalPluginInitInfoArgs, { __kind: K }> {
+  return Array.isArray(data)
+    ? { __kind: kind, fields: data }
+    : { __kind: kind, ...(data ?? {}) };
+}
+export function isExternalPluginInitInfo<
+  K extends ExternalPluginInitInfo['__kind']
+>(
+  kind: K,
+  value: ExternalPluginInitInfo
+): value is ExternalPluginInitInfo & { __kind: K } {
+  return value.__kind === kind;
 }

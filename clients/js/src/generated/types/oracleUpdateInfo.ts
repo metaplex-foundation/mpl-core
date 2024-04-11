@@ -13,47 +13,37 @@ import {
   option,
   struct,
   tuple,
-  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalCheckResult,
   ExternalCheckResultArgs,
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
+  ExtraAccount,
+  ExtraAccountArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
-  PluginAuthority,
-  PluginAuthorityArgs,
   getExternalCheckResultSerializer,
-  getExternalPluginKeySerializer,
+  getExtraAccountSerializer,
   getHookableLifecycleEventSerializer,
-  getPluginAuthoritySerializer,
 } from '.';
 
-export type ExternalPluginRecord = {
-  pluginKey: ExternalPluginKey;
-  authority: PluginAuthority;
+export type OracleUpdateInfo = {
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
-  offset: bigint;
+  pda: Option<ExtraAccount>;
 };
 
-export type ExternalPluginRecordArgs = {
-  pluginKey: ExternalPluginKeyArgs;
-  authority: PluginAuthorityArgs;
+export type OracleUpdateInfoArgs = {
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
-  offset: number | bigint;
+  pda: OptionOrNullable<ExtraAccountArgs>;
 };
 
-export function getExternalPluginRecordSerializer(): Serializer<
-  ExternalPluginRecordArgs,
-  ExternalPluginRecord
+export function getOracleUpdateInfoSerializer(): Serializer<
+  OracleUpdateInfoArgs,
+  OracleUpdateInfo
 > {
-  return struct<ExternalPluginRecord>(
+  return struct<OracleUpdateInfo>(
     [
-      ['pluginKey', getExternalPluginKeySerializer()],
-      ['authority', getPluginAuthoritySerializer()],
       [
         'lifecycleChecks',
         option(
@@ -65,8 +55,8 @@ export function getExternalPluginRecordSerializer(): Serializer<
           )
         ),
       ],
-      ['offset', u64()],
+      ['pda', option(getExtraAccountSerializer())],
     ],
-    { description: 'ExternalPluginRecord' }
-  ) as Serializer<ExternalPluginRecordArgs, ExternalPluginRecord>;
+    { description: 'OracleUpdateInfo' }
+  ) as Serializer<OracleUpdateInfoArgs, OracleUpdateInfo>;
 }

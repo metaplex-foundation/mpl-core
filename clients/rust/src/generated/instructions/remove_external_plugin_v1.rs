@@ -109,7 +109,7 @@ impl RemoveExternalPluginV1InstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RemoveExternalPluginV1InstructionArgs {
-    pub plugin_key: ExternalPluginKey,
+    pub key: ExternalPluginKey,
 }
 
 /// Instruction builder for `RemoveExternalPluginV1`.
@@ -130,7 +130,7 @@ pub struct RemoveExternalPluginV1Builder {
     authority: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
-    plugin_key: Option<ExternalPluginKey>,
+    key: Option<ExternalPluginKey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -182,8 +182,8 @@ impl RemoveExternalPluginV1Builder {
         self
     }
     #[inline(always)]
-    pub fn plugin_key(&mut self, plugin_key: ExternalPluginKey) -> &mut Self {
-        self.plugin_key = Some(plugin_key);
+    pub fn key(&mut self, key: ExternalPluginKey) -> &mut Self {
+        self.key = Some(key);
         self
     }
     /// Add an aditional account to the instruction.
@@ -217,7 +217,7 @@ impl RemoveExternalPluginV1Builder {
             log_wrapper: self.log_wrapper,
         };
         let args = RemoveExternalPluginV1InstructionArgs {
-            plugin_key: self.plugin_key.clone().expect("plugin_key is not set"),
+            key: self.key.clone().expect("key is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -424,7 +424,7 @@ impl<'a, 'b> RemoveExternalPluginV1CpiBuilder<'a, 'b> {
             authority: None,
             system_program: None,
             log_wrapper: None,
-            plugin_key: None,
+            key: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -481,8 +481,8 @@ impl<'a, 'b> RemoveExternalPluginV1CpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn plugin_key(&mut self, plugin_key: ExternalPluginKey) -> &mut Self {
-        self.instruction.plugin_key = Some(plugin_key);
+    pub fn key(&mut self, key: ExternalPluginKey) -> &mut Self {
+        self.instruction.key = Some(key);
         self
     }
     /// Add an additional account to the instruction.
@@ -527,11 +527,7 @@ impl<'a, 'b> RemoveExternalPluginV1CpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = RemoveExternalPluginV1InstructionArgs {
-            plugin_key: self
-                .instruction
-                .plugin_key
-                .clone()
-                .expect("plugin_key is not set"),
+            key: self.instruction.key.clone().expect("key is not set"),
         };
         let instruction = RemoveExternalPluginV1Cpi {
             __program: self.instruction.__program,
@@ -567,7 +563,7 @@ struct RemoveExternalPluginV1CpiBuilderInstruction<'a, 'b> {
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    plugin_key: Option<ExternalPluginKey>,
+    key: Option<ExternalPluginKey>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

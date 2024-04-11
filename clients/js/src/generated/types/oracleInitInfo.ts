@@ -13,47 +13,43 @@ import {
   option,
   struct,
   tuple,
-  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalCheckResult,
   ExternalCheckResultArgs,
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
+  ExtraAccount,
+  ExtraAccountArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
   PluginAuthority,
   PluginAuthorityArgs,
   getExternalCheckResultSerializer,
-  getExternalPluginKeySerializer,
+  getExtraAccountSerializer,
   getHookableLifecycleEventSerializer,
   getPluginAuthoritySerializer,
 } from '.';
 
-export type ExternalPluginRecord = {
-  pluginKey: ExternalPluginKey;
-  authority: PluginAuthority;
+export type OracleInitInfo = {
+  initAuthority: Option<PluginAuthority>;
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
-  offset: bigint;
+  pda: Option<ExtraAccount>;
 };
 
-export type ExternalPluginRecordArgs = {
-  pluginKey: ExternalPluginKeyArgs;
-  authority: PluginAuthorityArgs;
+export type OracleInitInfoArgs = {
+  initAuthority: OptionOrNullable<PluginAuthorityArgs>;
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
-  offset: number | bigint;
+  pda: OptionOrNullable<ExtraAccountArgs>;
 };
 
-export function getExternalPluginRecordSerializer(): Serializer<
-  ExternalPluginRecordArgs,
-  ExternalPluginRecord
+export function getOracleInitInfoSerializer(): Serializer<
+  OracleInitInfoArgs,
+  OracleInitInfo
 > {
-  return struct<ExternalPluginRecord>(
+  return struct<OracleInitInfo>(
     [
-      ['pluginKey', getExternalPluginKeySerializer()],
-      ['authority', getPluginAuthoritySerializer()],
+      ['initAuthority', option(getPluginAuthoritySerializer())],
       [
         'lifecycleChecks',
         option(
@@ -65,8 +61,8 @@ export function getExternalPluginRecordSerializer(): Serializer<
           )
         ),
       ],
-      ['offset', u64()],
+      ['pda', option(getExtraAccountSerializer())],
     ],
-    { description: 'ExternalPluginRecord' }
-  ) as Serializer<ExternalPluginRecordArgs, ExternalPluginRecord>;
+    { description: 'OracleInitInfo' }
+  ) as Serializer<OracleInitInfoArgs, OracleInitInfo>;
 }

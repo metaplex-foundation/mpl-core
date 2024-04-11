@@ -2001,9 +2001,7 @@
           {
             "name": "schema",
             "type": {
-              "option": {
-                "defined": "ExternalPluginSchema"
-              }
+              "defined": "ExternalPluginSchema"
             }
           },
           {
@@ -2018,34 +2016,10 @@
       }
     },
     {
-      "name": "Edition",
+      "name": "DataStoreInitInfo",
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "number",
-            "type": "u32"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ExternalPluginInitInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "pluginKey",
-            "type": {
-              "defined": "ExternalPluginKey"
-            }
-          },
-          {
-            "name": "plugin",
-            "type": {
-              "defined": "ExternalPlugin"
-            }
-          },
           {
             "name": "initAuthority",
             "type": {
@@ -2061,7 +2035,7 @@
                 "vec": {
                   "tuple": [
                     {
-                      "defined": "LifecycleEvent"
+                      "defined": "HookableLifecycleEvent"
                     },
                     {
                       "defined": "ExternalCheckResult"
@@ -2072,10 +2046,63 @@
             }
           },
           {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginSchema"
+              }
+            }
+          },
+          {
             "name": "data",
             "type": {
               "option": "bytes"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "DataStoreUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Edition",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "number",
+            "type": "u32"
           }
         ]
       }
@@ -2110,9 +2137,7 @@
           {
             "name": "schema",
             "type": {
-              "option": {
-                "defined": "ExternalPluginSchema"
-              }
+              "defined": "ExternalPluginSchema"
             }
           },
           {
@@ -2127,10 +2152,184 @@
       }
     },
     {
+      "name": "LifecycleHookInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginSchema"
+              }
+            }
+          },
+          {
+            "name": "data",
+            "type": {
+              "option": "bytes"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LifecycleHookUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Oracle",
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "pda",
+            "type": {
+              "option": {
+                "defined": "ExtraAccount"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "pda",
+            "type": {
+              "option": {
+                "defined": "ExtraAccount"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
           {
             "name": "pda",
             "type": {
@@ -2216,7 +2415,7 @@
                 "vec": {
                   "tuple": [
                     {
-                      "defined": "LifecycleEvent"
+                      "defined": "HookableLifecycleEvent"
                     },
                     {
                       "defined": "ExternalCheckResult"
@@ -2302,7 +2501,13 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "externalPluginInitInfo",
+            "name": "key",
+            "type": {
+              "defined": "ExternalPluginKey"
+            }
+          },
+          {
+            "name": "initInfo",
             "type": {
               "defined": "ExternalPluginInitInfo"
             }
@@ -2316,7 +2521,13 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "externalPluginInitInfo",
+            "name": "key",
+            "type": {
+              "defined": "ExternalPluginKey"
+            }
+          },
+          {
+            "name": "initInfo",
             "type": {
               "defined": "ExternalPluginInitInfo"
             }
@@ -2603,7 +2814,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "pluginKey",
+            "name": "key",
             "type": {
               "defined": "ExternalPluginKey"
             }
@@ -2617,7 +2828,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "pluginKey",
+            "name": "key",
             "type": {
               "defined": "ExternalPluginKey"
             }
@@ -2751,14 +2962,16 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "pluginKey",
+            "name": "key",
             "type": {
               "defined": "ExternalPluginKey"
             }
           },
           {
-            "name": "data",
-            "type": "bytes"
+            "name": "updateInfo",
+            "type": {
+              "defined": "ExternalPluginUpdateInfo"
+            }
           }
         ]
       }
@@ -2775,8 +2988,10 @@
             }
           },
           {
-            "name": "data",
-            "type": "bytes"
+            "name": "updateInfo",
+            "type": {
+              "defined": "ExternalPluginUpdateInfo"
+            }
           }
         ]
       }
@@ -3086,6 +3301,26 @@
       }
     },
     {
+      "name": "HookableLifecycleEvent",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Create"
+          },
+          {
+            "name": "Transfer"
+          },
+          {
+            "name": "Burn"
+          },
+          {
+            "name": "Update"
+          }
+        ]
+      }
+    },
+    {
       "name": "ExtraAccount",
       "type": {
         "kind": "enum",
@@ -3243,42 +3478,65 @@
       }
     },
     {
-      "name": "LifecycleEvent",
+      "name": "ExternalPluginInitInfo",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "AddPlugin"
+            "name": "LifecycleHook",
+            "fields": [
+              {
+                "defined": "LifecycleHookInitInfo"
+              }
+            ]
           },
           {
-            "name": "RemovePlugin"
+            "name": "Oracle",
+            "fields": [
+              {
+                "defined": "OracleInitInfo"
+              }
+            ]
           },
           {
-            "name": "UpdatePlugin"
+            "name": "DataStore",
+            "fields": [
+              {
+                "defined": "DataStoreInitInfo"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExternalPluginUpdateInfo",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "LifecycleHook",
+            "fields": [
+              {
+                "defined": "LifecycleHookUpdateInfo"
+              }
+            ]
           },
           {
-            "name": "ApprovePluginAuthority"
+            "name": "Oracle",
+            "fields": [
+              {
+                "defined": "OracleUpdateInfo"
+              }
+            ]
           },
           {
-            "name": "RevokePluginAuthority"
-          },
-          {
-            "name": "Create"
-          },
-          {
-            "name": "Transfer"
-          },
-          {
-            "name": "Burn"
-          },
-          {
-            "name": "Update"
-          },
-          {
-            "name": "Compress"
-          },
-          {
-            "name": "Decompress"
+            "name": "DataStore",
+            "fields": [
+              {
+                "defined": "DataStoreUpdateInfo"
+              }
+            ]
           }
         ]
       }

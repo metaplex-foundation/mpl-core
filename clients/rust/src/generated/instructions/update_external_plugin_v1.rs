@@ -6,6 +6,7 @@
 //!
 
 use crate::generated::types::ExternalPluginKey;
+use crate::generated::types::ExternalPluginUpdateInfo;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -109,8 +110,8 @@ impl UpdateExternalPluginV1InstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UpdateExternalPluginV1InstructionArgs {
-    pub plugin_key: ExternalPluginKey,
-    pub data: Vec<u8>,
+    pub key: ExternalPluginKey,
+    pub update_info: ExternalPluginUpdateInfo,
 }
 
 /// Instruction builder for `UpdateExternalPluginV1`.
@@ -131,8 +132,8 @@ pub struct UpdateExternalPluginV1Builder {
     authority: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
-    plugin_key: Option<ExternalPluginKey>,
-    data: Option<Vec<u8>>,
+    key: Option<ExternalPluginKey>,
+    update_info: Option<ExternalPluginUpdateInfo>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -184,13 +185,13 @@ impl UpdateExternalPluginV1Builder {
         self
     }
     #[inline(always)]
-    pub fn plugin_key(&mut self, plugin_key: ExternalPluginKey) -> &mut Self {
-        self.plugin_key = Some(plugin_key);
+    pub fn key(&mut self, key: ExternalPluginKey) -> &mut Self {
+        self.key = Some(key);
         self
     }
     #[inline(always)]
-    pub fn data(&mut self, data: Vec<u8>) -> &mut Self {
-        self.data = Some(data);
+    pub fn update_info(&mut self, update_info: ExternalPluginUpdateInfo) -> &mut Self {
+        self.update_info = Some(update_info);
         self
     }
     /// Add an aditional account to the instruction.
@@ -224,8 +225,8 @@ impl UpdateExternalPluginV1Builder {
             log_wrapper: self.log_wrapper,
         };
         let args = UpdateExternalPluginV1InstructionArgs {
-            plugin_key: self.plugin_key.clone().expect("plugin_key is not set"),
-            data: self.data.clone().expect("data is not set"),
+            key: self.key.clone().expect("key is not set"),
+            update_info: self.update_info.clone().expect("update_info is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -432,8 +433,8 @@ impl<'a, 'b> UpdateExternalPluginV1CpiBuilder<'a, 'b> {
             authority: None,
             system_program: None,
             log_wrapper: None,
-            plugin_key: None,
-            data: None,
+            key: None,
+            update_info: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -490,13 +491,13 @@ impl<'a, 'b> UpdateExternalPluginV1CpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn plugin_key(&mut self, plugin_key: ExternalPluginKey) -> &mut Self {
-        self.instruction.plugin_key = Some(plugin_key);
+    pub fn key(&mut self, key: ExternalPluginKey) -> &mut Self {
+        self.instruction.key = Some(key);
         self
     }
     #[inline(always)]
-    pub fn data(&mut self, data: Vec<u8>) -> &mut Self {
-        self.instruction.data = Some(data);
+    pub fn update_info(&mut self, update_info: ExternalPluginUpdateInfo) -> &mut Self {
+        self.instruction.update_info = Some(update_info);
         self
     }
     /// Add an additional account to the instruction.
@@ -541,12 +542,12 @@ impl<'a, 'b> UpdateExternalPluginV1CpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = UpdateExternalPluginV1InstructionArgs {
-            plugin_key: self
+            key: self.instruction.key.clone().expect("key is not set"),
+            update_info: self
                 .instruction
-                .plugin_key
+                .update_info
                 .clone()
-                .expect("plugin_key is not set"),
-            data: self.instruction.data.clone().expect("data is not set"),
+                .expect("update_info is not set"),
         };
         let instruction = UpdateExternalPluginV1Cpi {
             __program: self.instruction.__program,
@@ -582,8 +583,8 @@ struct UpdateExternalPluginV1CpiBuilderInstruction<'a, 'b> {
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    plugin_key: Option<ExternalPluginKey>,
-    data: Option<Vec<u8>>,
+    key: Option<ExternalPluginKey>,
+    update_info: Option<ExternalPluginUpdateInfo>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

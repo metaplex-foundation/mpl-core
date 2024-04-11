@@ -16,10 +16,8 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
-  bytes,
   mapSerializer,
   struct,
-  u32,
   u8,
 } from '@metaplex-foundation/umi/serializers';
 import {
@@ -30,7 +28,10 @@ import {
 import {
   ExternalPluginKey,
   ExternalPluginKeyArgs,
+  ExternalPluginUpdateInfo,
+  ExternalPluginUpdateInfoArgs,
   getExternalPluginKeySerializer,
+  getExternalPluginUpdateInfoSerializer,
 } from '../types';
 
 // Accounts.
@@ -51,12 +52,12 @@ export type UpdateCollectionExternalPluginV1InstructionAccounts = {
 export type UpdateCollectionExternalPluginV1InstructionData = {
   discriminator: number;
   pluginKey: ExternalPluginKey;
-  data: Uint8Array;
+  updateInfo: ExternalPluginUpdateInfo;
 };
 
 export type UpdateCollectionExternalPluginV1InstructionDataArgs = {
   pluginKey: ExternalPluginKeyArgs;
-  data: Uint8Array;
+  updateInfo: ExternalPluginUpdateInfoArgs;
 };
 
 export function getUpdateCollectionExternalPluginV1InstructionDataSerializer(): Serializer<
@@ -72,7 +73,7 @@ export function getUpdateCollectionExternalPluginV1InstructionDataSerializer(): 
       [
         ['discriminator', u8()],
         ['pluginKey', getExternalPluginKeySerializer()],
-        ['data', bytes({ size: u32() })],
+        ['updateInfo', getExternalPluginUpdateInfoSerializer()],
       ],
       { description: 'UpdateCollectionExternalPluginV1InstructionData' }
     ),

@@ -50,11 +50,11 @@ export type RemoveExternalPluginV1InstructionAccounts = {
 // Data.
 export type RemoveExternalPluginV1InstructionData = {
   discriminator: number;
-  pluginKey: ExternalPluginKey;
+  key: ExternalPluginKey;
 };
 
 export type RemoveExternalPluginV1InstructionDataArgs = {
-  pluginKey: ExternalPluginKeyArgs;
+  key: ExternalPluginKeyArgs;
 };
 
 export function getRemoveExternalPluginV1InstructionDataSerializer(): Serializer<
@@ -69,7 +69,7 @@ export function getRemoveExternalPluginV1InstructionDataSerializer(): Serializer
     struct<RemoveExternalPluginV1InstructionData>(
       [
         ['discriminator', u8()],
-        ['pluginKey', getExternalPluginKeySerializer()],
+        ['key', getExternalPluginKeySerializer()],
       ],
       { description: 'RemoveExternalPluginV1InstructionData' }
     ),
