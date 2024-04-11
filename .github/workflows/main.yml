@@ -111,7 +111,7 @@ jobs:
     secrets: inherit
 
   benchmark:
-    if: ${{github.event_name}} == 'push'
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     name: Benchmark
     needs: generate_clients
     uses: ./.github/workflows/benchmark.yml
