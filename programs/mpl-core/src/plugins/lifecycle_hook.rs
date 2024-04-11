@@ -1,6 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 
-use super::{ExternalPluginSchema, ExtraAccount};
+use super::{
+    Authority, ExternalCheckResult, ExternalPluginSchema, ExtraAccount, HookableLifecycleEvent,
+};
 
 /// Lifecycle hook that CPIs into a hooked program specified in the `ExternalPluginKey`.  This hook
 /// is used for any lifecycle events that were selected in the `ExternalPluginRecord` for the
@@ -14,9 +16,35 @@ pub struct LifecycleHook {
     /// The extra accounts to use for the lifecycle hook.
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     /// Schema for the data used by the plugin.
-    pub schema: Option<ExternalPluginSchema>,
+    pub schema: ExternalPluginSchema,
     /// The offset to the plugin data in the account.
     pub data_offset: usize,
     /// The length of the plugin data.
     pub data_len: usize,
+}
+
+/// Lifecycle hook initialization info.
+#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
+pub struct LifecycleHookInitInfo {
+    /// Initial authority.
+    pub init_authority: Option<Authority>,
+    /// The lifecyle events for which the the external plugin is active.
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
+    /// The extra accounts to use for the lifecycle hook.
+    pub extra_accounts: Option<Vec<ExtraAccount>>,
+    /// Schema for the data used by the plugin.
+    pub schema: Option<ExternalPluginSchema>,
+    /// External plugin initial data.
+    pub data: Option<Vec<u8>>,
+}
+
+/// Lifecycle hook update info.
+#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
+pub struct LifecycleHookUpdateInfo {
+    /// The lifecyle events for which the the external plugin is active.
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
+    /// The extra accounts to use for the lifecycle hook.
+    pub extra_accounts: Option<Vec<ExtraAccount>>,
+    /// Schema for the data used by the plugin.
+    pub schema: Option<ExternalPluginSchema>,
 }

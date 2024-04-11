@@ -7,7 +7,7 @@ use crate::{error::MplCoreError, plugins::ExternalPluginKey};
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct RemoveExternalPluginV1Args {
     /// External plugin key.
-    pub plugin_key: ExternalPluginKey,
+    pub key: ExternalPluginKey,
 }
 
 pub(crate) fn remove_external_plugin<'a>(
@@ -21,7 +21,7 @@ pub(crate) fn remove_external_plugin<'a>(
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct RemoveCollectionExternalPluginV1Args {
     /// External plugin key.
-    pub plugin_key: ExternalPluginKey,
+    pub key: ExternalPluginKey,
 }
 
 pub(crate) fn remove_collection_external_plugin<'a>(

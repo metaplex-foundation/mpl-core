@@ -9,34 +9,6 @@ use crate::{
 
 use super::{Plugin, PluginType, RegistryRecord};
 
-#[repr(C)]
-#[derive(Eq, PartialEq, Clone, BorshSerialize, BorshDeserialize, Debug, PartialOrd, Ord, Hash)]
-/// An enum listing all the lifecyle events.
-pub enum LifecycleEvent {
-    /// Add a plugin.
-    AddPlugin,
-    /// Remove a plugin.
-    RemovePlugin,
-    /// Update the data for a plugin.
-    UpdatePlugin,
-    /// Approve an authority for a plugin.
-    ApprovePluginAuthority,
-    /// Revoke the authority for plugin such that it returns to the default authority.
-    RevokePluginAuthority,
-    /// Create an Asset or Collection.
-    Create,
-    /// Transfer an Asset.
-    Transfer,
-    /// Burn an Asset or a Collection.
-    Burn,
-    /// Update an Asset or a Collection.
-    Update,
-    /// Compress and Asset.
-    Compress,
-    /// Decompress an Asset.
-    Decompress,
-}
-
 /// Lifecycle permissions
 /// Plugins use this field to indicate their permission to approve or deny
 /// a lifecycle action.

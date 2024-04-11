@@ -1,15 +1,18 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
-use crate::{error::MplCoreError, plugins::ExternalPluginKey};
+use crate::{
+    error::MplCoreError,
+    plugins::{ExternalPluginKey, ExternalPluginUpdateInfo},
+};
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct UpdateExternalPluginV1Args {
     /// External plugin key.
-    pub plugin_key: ExternalPluginKey,
-    /// Data to update.
-    pub data: Vec<u8>,
+    pub key: ExternalPluginKey,
+    /// Plugin info to update.
+    pub update_info: ExternalPluginUpdateInfo,
 }
 
 pub(crate) fn update_external_plugin<'a>(
@@ -24,8 +27,8 @@ pub(crate) fn update_external_plugin<'a>(
 pub(crate) struct UpdateCollectionExternalPluginV1Args {
     /// External plugin key.
     pub plugin_key: ExternalPluginKey,
-    /// Data to update.
-    pub data: Vec<u8>,
+    /// Plugin info to update.
+    pub update_info: ExternalPluginUpdateInfo,
 }
 
 pub(crate) fn update_collection_external_plugin<'a>(

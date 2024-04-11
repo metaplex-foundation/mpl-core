@@ -1,13 +1,18 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
-use crate::{error::MplCoreError, plugins::ExternalPluginInitInfo};
+use crate::{
+    error::MplCoreError,
+    plugins::{ExternalPluginInitInfo, ExternalPluginKey},
+};
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct AddExternalPluginV1Args {
+    /// External plugin key.
+    pub key: ExternalPluginKey,
     /// External plugin initialization info.
-    external_plugin_init_info: ExternalPluginInitInfo,
+    pub init_info: ExternalPluginInitInfo,
 }
 
 pub(crate) fn add_external_plugin<'a>(
@@ -20,8 +25,10 @@ pub(crate) fn add_external_plugin<'a>(
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct AddCollectionExternalPluginV1Args {
+    /// External plugin key.
+    pub key: ExternalPluginKey,
     /// External plugin initialization info.
-    external_plugin_init_info: ExternalPluginInitInfo,
+    pub init_info: ExternalPluginInitInfo,
 }
 
 pub(crate) fn add_collection_external_plugin<'a>(

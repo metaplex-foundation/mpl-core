@@ -3,7 +3,10 @@ use solana_program::pubkey::Pubkey;
 
 use strum::EnumCount;
 
-use super::{Authority, DataStore, ExternalCheckResult, LifecycleEvent, LifecycleHook, Oracle};
+use super::{
+    Authority, DataStore, DataStoreInitInfo, DataStoreUpdateInfo, LifecycleHook,
+    LifecycleHookInitInfo, LifecycleHookUpdateInfo, Oracle, OracleInitInfo, OracleUpdateInfo,
+};
 
 /// List of third party plugin types.
 #[repr(C)]
@@ -36,22 +39,21 @@ pub enum ExternalPlugin {
     DataStore(DataStore),
 }
 
-/// Required and optional information needed to initialize an external plugin.
 #[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct ExternalPluginInitInfo {
-    /// External plugin key.
-    pub plugin_key: ExternalPluginKey,
-    /// External plugin.
-    pub plugin: ExternalPlugin,
-    /// Initial authority.
-    pub init_authority: Option<Authority>,
-    /// The lifecyle events for which the the external plugin is active.
-    pub lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
-    /// External plugin initial data.
-    pub data: Option<Vec<u8>>,
+#[derive(Eq, PartialEq, Clone, BorshSerialize, BorshDeserialize, Debug, PartialOrd, Ord, Hash)]
+/// An enum listing all the lifecyle events available for external plugin hooks.  Note that some
+/// lifecycle events such as adding and removing plugins will be checked by default as they are
+/// inherently part of the external plugin system.
+pub enum HookableLifecycleEvent {
+    /// Add a plugin.
+    Create,
+    /// Transfer an Asset.
+    Transfer,
+    /// Burn an Asset or a Collection.
+    Burn,
+    /// Update an Asset or a Collection.
+    Update,
 }
-
 /// Type used to specify extra accounts for external plugins.
 #[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
@@ -141,4 +143,28 @@ pub enum ExternalPluginSchema {
     Json,
     /// MessagePack serialized data.
     MsgPack,
+}
+
+/// Information needed to initialize an external plugin.
+#[repr(C)]
+#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
+pub enum ExternalPluginInitInfo {
+    /// Lifecycle Hook.
+    LifecycleHook(LifecycleHookInitInfo),
+    /// Oracle.
+    Oracle(OracleInitInfo),
+    /// Data Store.
+    DataStore(DataStoreInitInfo),
+}
+
+/// Information needed to update an external plugin.
+#[repr(C)]
+#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
+pub enum ExternalPluginUpdateInfo {
+    /// Lifecycle Hook.
+    LifecycleHook(LifecycleHookUpdateInfo),
+    /// Oracle.
+    Oracle(OracleUpdateInfo),
+    /// Data Store.
+    DataStore(DataStoreUpdateInfo),
 }

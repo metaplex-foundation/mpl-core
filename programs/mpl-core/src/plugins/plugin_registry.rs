@@ -4,7 +4,9 @@ use std::{cmp::Ordering, collections::BTreeMap};
 
 use crate::state::{Authority, DataBlob, Key, SolanaAccount};
 
-use super::{CheckResult, ExternalCheckResult, ExternalPluginKey, LifecycleEvent, PluginType};
+use super::{
+    CheckResult, ExternalCheckResult, ExternalPluginKey, HookableLifecycleEvent, PluginType,
+};
 
 /// The Plugin Registry stores a record of all plugins, their location, and their authorities.
 #[repr(C)]
@@ -38,7 +40,7 @@ impl PluginRegistryV1 {
     pub(crate) fn check_external_registry(
         &self,
         key: Key,
-        lifecycle_event: &LifecycleEvent,
+        lifecycle_event: &HookableLifecycleEvent,
         result: &mut BTreeMap<ExternalPluginKey, (Key, ExternalCheckResult, ExternalPluginRecord)>,
     ) {
         for record in &self.external_plugins {
@@ -97,7 +99,7 @@ pub struct ExternalPluginRecord {
     /// The authority of the external plugin.
     pub authority: Authority,
     /// The lifecyle events for which the the external plugin is active.
-    pub lifecycle_checks: Option<Vec<(LifecycleEvent, ExternalCheckResult)>>,
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// The offset to the plugin in the account.
     pub offset: usize, // 8
 }
