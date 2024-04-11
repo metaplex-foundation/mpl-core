@@ -407,7 +407,6 @@ impl Plugin {
         plugin_to_update: Option<&Plugin>,
         resolved_authorities: Option<&[Authority]>,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("Validating update plugin");
         let resolved_authorities = resolved_authorities.ok_or(MplCoreError::InvalidAuthority)?;
         let plugin_to_update = plugin_to_update.ok_or(MplCoreError::InvalidPlugin)?;
         let base_result = if resolved_authorities.contains(authority) {
@@ -415,8 +414,6 @@ impl Plugin {
         } else {
             ValidationResult::Pass
         };
-
-        solana_program::msg!("Base result: {:?}", base_result);
 
         let result = match plugin {
             Plugin::Royalties(royalties) => royalties.validate_update_plugin(

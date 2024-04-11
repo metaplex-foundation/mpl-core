@@ -300,9 +300,6 @@ pub fn delete_plugin<'a, T: DataBlob>(
             .checked_sub(serialized_plugin.len())
             .ok_or(MplCoreError::NumericalOverflow)?;
 
-        solana_program::msg!("size: {:?}", account.data_len());
-        solana_program::msg!("new_size: {:?}", new_size);
-
         let new_registry_offset = header
             .plugin_registry_offset
             .checked_sub(serialized_plugin.len())

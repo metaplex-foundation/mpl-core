@@ -112,8 +112,6 @@ impl PluginValidation for UpdateDelegate {
         authority: &Authority,
         plugin_to_revoke: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("authority_info: {:?}", authority_info.key);
-        solana_program::msg!("authority: {:?}", authority);
         if authority
             == &(Authority::Address {
                 address: *authority_info.key,
