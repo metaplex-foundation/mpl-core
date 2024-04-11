@@ -10,50 +10,50 @@ import { Option, OptionOrNullable } from '@metaplex-foundation/umi';
 import {
   Serializer,
   array,
+  bytes,
   option,
   struct,
   tuple,
-  u64,
+  u32,
 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalCheckResult,
   ExternalCheckResultArgs,
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
+  ExternalPluginSchema,
+  ExternalPluginSchemaArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
   PluginAuthority,
   PluginAuthorityArgs,
   getExternalCheckResultSerializer,
-  getExternalPluginKeySerializer,
+  getExternalPluginSchemaSerializer,
   getHookableLifecycleEventSerializer,
   getPluginAuthoritySerializer,
 } from '.';
 
-export type ExternalPluginRecord = {
-  pluginKey: ExternalPluginKey;
-  authority: PluginAuthority;
+export type DataStoreInitInfo = {
+  initAuthority: Option<PluginAuthority>;
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
-  offset: bigint;
+  schema: Option<ExternalPluginSchema>;
+  data: Option<Uint8Array>;
 };
 
-export type ExternalPluginRecordArgs = {
-  pluginKey: ExternalPluginKeyArgs;
-  authority: PluginAuthorityArgs;
+export type DataStoreInitInfoArgs = {
+  initAuthority: OptionOrNullable<PluginAuthorityArgs>;
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
-  offset: number | bigint;
+  schema: OptionOrNullable<ExternalPluginSchemaArgs>;
+  data: OptionOrNullable<Uint8Array>;
 };
 
-export function getExternalPluginRecordSerializer(): Serializer<
-  ExternalPluginRecordArgs,
-  ExternalPluginRecord
+export function getDataStoreInitInfoSerializer(): Serializer<
+  DataStoreInitInfoArgs,
+  DataStoreInitInfo
 > {
-  return struct<ExternalPluginRecord>(
+  return struct<DataStoreInitInfo>(
     [
-      ['pluginKey', getExternalPluginKeySerializer()],
-      ['authority', getPluginAuthoritySerializer()],
+      ['initAuthority', option(getPluginAuthoritySerializer())],
       [
         'lifecycleChecks',
         option(
@@ -65,8 +65,9 @@ export function getExternalPluginRecordSerializer(): Serializer<
           )
         ),
       ],
-      ['offset', u64()],
+      ['schema', option(getExternalPluginSchemaSerializer())],
+      ['data', option(bytes({ size: u32() }))],
     ],
-    { description: 'ExternalPluginRecord' }
-  ) as Serializer<ExternalPluginRecordArgs, ExternalPluginRecord>;
+    { description: 'DataStoreInitInfo' }
+  ) as Serializer<DataStoreInitInfoArgs, DataStoreInitInfo>;
 }

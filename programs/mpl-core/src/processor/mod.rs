@@ -1,45 +1,41 @@
-use crate::instruction::MplAssetInstruction;
+mod add_external_plugin;
+mod add_plugin;
+mod approve_plugin_authority;
+mod burn;
+mod collect;
+mod compress;
+mod create;
+mod create_collection;
+mod decompress;
+mod remove_external_plugin;
+mod remove_plugin;
+mod revoke_plugin_authority;
+mod transfer;
+mod update;
+mod update_external_plugin;
+mod update_plugin;
+
+pub(crate) use add_external_plugin::*;
+pub(crate) use add_plugin::*;
+pub(crate) use approve_plugin_authority::*;
+pub(crate) use burn::*;
+pub(crate) use collect::*;
+pub(crate) use compress::*;
+pub(crate) use create::*;
+pub(crate) use create_collection::*;
+pub(crate) use decompress::*;
+pub(crate) use remove_external_plugin::*;
+pub(crate) use remove_plugin::*;
+pub(crate) use revoke_plugin_authority::*;
+pub(crate) use transfer::*;
+pub(crate) use update::*;
+pub(crate) use update_external_plugin::*;
+pub(crate) use update_plugin::*;
+
 use borsh::BorshDeserialize;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, pubkey::Pubkey};
 
-mod create;
-pub(crate) use create::*;
-
-mod create_collection;
-pub(crate) use create_collection::*;
-
-mod add_plugin;
-pub(crate) use add_plugin::*;
-
-mod remove_plugin;
-pub(crate) use remove_plugin::*;
-
-mod approve_plugin_authority;
-pub(crate) use approve_plugin_authority::*;
-
-mod revoke_plugin_authority;
-pub(crate) use revoke_plugin_authority::*;
-
-mod burn;
-pub(crate) use burn::*;
-
-mod transfer;
-pub(crate) use transfer::*;
-
-mod update;
-pub(crate) use update::*;
-
-mod compress;
-pub(crate) use compress::*;
-
-mod decompress;
-pub(crate) use decompress::*;
-
-mod update_plugin;
-pub(crate) use update_plugin::*;
-
-mod collect;
-pub(crate) use collect::*;
+use crate::instruction::MplAssetInstruction;
 
 /// Standard processor that deserializes and instruction and routes it to the appropriate handler.
 pub fn process_instruction<'a>(
@@ -51,11 +47,11 @@ pub fn process_instruction<'a>(
     match instruction {
         MplAssetInstruction::CreateV1(args) => {
             msg!("Instruction: Create");
-            create(accounts, args)
+            create_v1(accounts, args)
         }
         MplAssetInstruction::CreateCollectionV1(args) => {
             msg!("Instruction: CreateCollection");
-            create_collection(accounts, args)
+            create_collection_v1(accounts, args)
         }
         MplAssetInstruction::AddPluginV1(args) => {
             msg!("Instruction: AddPlugin");
@@ -125,7 +121,38 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Decompress");
             decompress(accounts, args)
         }
-
         MplAssetInstruction::Collect => collect(accounts),
+        MplAssetInstruction::CreateV2(args) => {
+            msg!("Instruction: CreateV2");
+            create_v2(accounts, args)
+        }
+        MplAssetInstruction::CreateCollectionV2(args) => {
+            msg!("Instruction: CreateCollectionV2");
+            create_collection_v2(accounts, args)
+        }
+        MplAssetInstruction::AddExternalPluginV1(args) => {
+            msg!("Instruction: AddExternalPlugin");
+            add_external_plugin(accounts, args)
+        }
+        MplAssetInstruction::AddCollectionExternalPluginV1(args) => {
+            msg!("Instruction: AddCollectionExternalPlugin");
+            add_collection_external_plugin(accounts, args)
+        }
+        MplAssetInstruction::RemoveExternalPluginV1(args) => {
+            msg!("Instruction: RemoveExternalPlugin");
+            remove_external_plugin(accounts, args)
+        }
+        MplAssetInstruction::RemoveCollectionExternalPluginV1(args) => {
+            msg!("Instruction: RemoveCollectionExternalPlugin");
+            remove_collection_external_plugin(accounts, args)
+        }
+        MplAssetInstruction::UpdateExternalPluginV1(args) => {
+            msg!("Instruction: UpdateExternalPlugin");
+            update_external_plugin(accounts, args)
+        }
+        MplAssetInstruction::UpdateCollectionExternalPluginV1(args) => {
+            msg!("Instruction: UpdateCollectionExternalPlugin");
+            update_collection_external_plugin(accounts, args)
+        }
     }
 }

@@ -7,10 +7,10 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::CreateV1Accounts,
+    instruction::accounts::CreateV2Accounts,
     plugins::{
-        create_plugin_meta, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
-        PluginType, ValidationResult,
+        create_plugin_meta, initialize_plugin, CheckResult, ExternalPluginInitInfo, Plugin,
+        PluginAuthorityPair, PluginType, ValidationResult,
     },
     state::{AssetV1, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT},
     utils::resolve_authority,
@@ -25,9 +25,41 @@ pub(crate) struct CreateV1Args {
     pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
 }
 
-pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) -> ProgramResult {
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct CreateV2Args {
+    pub(crate) data_state: DataState,
+    pub(crate) name: String,
+    pub(crate) uri: String,
+    pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
+    pub(crate) external_plugins: Option<Vec<ExternalPluginInitInfo>>,
+}
+
+impl From<CreateV1Args> for CreateV2Args {
+    fn from(item: CreateV1Args) -> Self {
+        CreateV2Args {
+            data_state: item.data_state,
+            name: item.name,
+            uri: item.uri,
+            plugins: item.plugins,
+            external_plugins: None,
+        }
+    }
+}
+
+pub(crate) fn create_v1<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) -> ProgramResult {
+    process_create(accounts, CreateV2Args::from(args))
+}
+pub(crate) fn create_v2<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV2Args) -> ProgramResult {
+    process_create(accounts, args)
+}
+
+pub(crate) fn process_create<'a>(
+    accounts: &'a [AccountInfo<'a>],
+    args: CreateV2Args,
+) -> ProgramResult {
     // Accounts.
-    let ctx = CreateV1Accounts::context(accounts)?;
+    let ctx = CreateV2Accounts::context(accounts)?;
     let rent = Rent::get()?;
 
     // Guards.

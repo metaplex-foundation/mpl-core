@@ -5,18 +5,16 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::ExternalCheckResult;
-use crate::generated::types::ExternalPluginKey;
-use crate::generated::types::HookableLifecycleEvent;
-use crate::generated::types::PluginAuthority;
+use crate::generated::types::ExternalPluginSchema;
+use crate::generated::types::ExtraAccount;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct ExternalPluginRecord {
-    pub plugin_key: ExternalPluginKey,
-    pub authority: PluginAuthority,
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
-    pub offset: u64,
+pub struct LifecycleHook {
+    pub extra_accounts: Option<Vec<ExtraAccount>>,
+    pub schema: ExternalPluginSchema,
+    pub data_offset: u64,
+    pub data_len: u64,
 }

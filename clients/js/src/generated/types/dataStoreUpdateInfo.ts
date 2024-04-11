@@ -13,47 +13,37 @@ import {
   option,
   struct,
   tuple,
-  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalCheckResult,
   ExternalCheckResultArgs,
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
+  ExternalPluginSchema,
+  ExternalPluginSchemaArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
-  PluginAuthority,
-  PluginAuthorityArgs,
   getExternalCheckResultSerializer,
-  getExternalPluginKeySerializer,
+  getExternalPluginSchemaSerializer,
   getHookableLifecycleEventSerializer,
-  getPluginAuthoritySerializer,
 } from '.';
 
-export type ExternalPluginRecord = {
-  pluginKey: ExternalPluginKey;
-  authority: PluginAuthority;
+export type DataStoreUpdateInfo = {
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
-  offset: bigint;
+  schema: Option<ExternalPluginSchema>;
 };
 
-export type ExternalPluginRecordArgs = {
-  pluginKey: ExternalPluginKeyArgs;
-  authority: PluginAuthorityArgs;
+export type DataStoreUpdateInfoArgs = {
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
-  offset: number | bigint;
+  schema: OptionOrNullable<ExternalPluginSchemaArgs>;
 };
 
-export function getExternalPluginRecordSerializer(): Serializer<
-  ExternalPluginRecordArgs,
-  ExternalPluginRecord
+export function getDataStoreUpdateInfoSerializer(): Serializer<
+  DataStoreUpdateInfoArgs,
+  DataStoreUpdateInfo
 > {
-  return struct<ExternalPluginRecord>(
+  return struct<DataStoreUpdateInfo>(
     [
-      ['pluginKey', getExternalPluginKeySerializer()],
-      ['authority', getPluginAuthoritySerializer()],
       [
         'lifecycleChecks',
         option(
@@ -65,8 +55,8 @@ export function getExternalPluginRecordSerializer(): Serializer<
           )
         ),
       ],
-      ['offset', u64()],
+      ['schema', option(getExternalPluginSchemaSerializer())],
     ],
-    { description: 'ExternalPluginRecord' }
-  ) as Serializer<ExternalPluginRecordArgs, ExternalPluginRecord>;
+    { description: 'DataStoreUpdateInfo' }
+  ) as Serializer<DataStoreUpdateInfoArgs, DataStoreUpdateInfo>;
 }

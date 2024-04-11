@@ -1,6 +1,6 @@
-use std::collections::BTreeMap;
-
+use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
+use std::collections::BTreeMap;
 
 use crate::{
     error::MplCoreError,
@@ -22,6 +22,19 @@ pub enum CheckResult {
     None,
     /// Certain plugins can force approve a lifecycle action.
     CanForceApprove,
+}
+
+/// Lifecycle permissions for external, third party plugins.
+/// Third party plugins use this field to indicate their permission to approve, deny, or just
+/// listen to a lifecycle action.
+#[derive(BorshSerialize, BorshDeserialize, Eq, PartialEq, Copy, Clone, Debug)]
+pub enum ExternalCheckResult {
+    /// A plugin is permitted to approve a lifecycle action.
+    CanApprove,
+    /// A plugin is permitted to reject a lifecycle action.
+    CanReject,
+    /// A plugin will be notified of a lifecyle action but will not approve or reject.
+    CanListen,
 }
 
 impl PluginType {
@@ -683,7 +696,7 @@ impl Plugin {
 
 /// Lifecycle validations
 /// Plugins utilize this to indicate whether they approve or reject a lifecycle action.
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone, BorshDeserialize, BorshSerialize)]
 pub enum ValidationResult {
     /// The plugin approves the lifecycle action.
     Approved,

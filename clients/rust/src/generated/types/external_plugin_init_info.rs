@@ -5,18 +5,16 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::ExternalCheckResult;
-use crate::generated::types::ExternalPluginKey;
-use crate::generated::types::HookableLifecycleEvent;
-use crate::generated::types::PluginAuthority;
+use crate::generated::types::DataStoreInitInfo;
+use crate::generated::types::LifecycleHookInitInfo;
+use crate::generated::types::OracleInitInfo;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct ExternalPluginRecord {
-    pub plugin_key: ExternalPluginKey,
-    pub authority: PluginAuthority,
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
-    pub offset: u64,
+pub enum ExternalPluginInitInfo {
+    LifecycleHook(LifecycleHookInitInfo),
+    Oracle(OracleInitInfo),
+    DataStore(DataStoreInitInfo),
 }

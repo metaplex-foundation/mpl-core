@@ -13,47 +13,42 @@ import {
   option,
   struct,
   tuple,
-  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalCheckResult,
   ExternalCheckResultArgs,
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
+  ExternalPluginSchema,
+  ExternalPluginSchemaArgs,
+  ExtraAccount,
+  ExtraAccountArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
-  PluginAuthority,
-  PluginAuthorityArgs,
   getExternalCheckResultSerializer,
-  getExternalPluginKeySerializer,
+  getExternalPluginSchemaSerializer,
+  getExtraAccountSerializer,
   getHookableLifecycleEventSerializer,
-  getPluginAuthoritySerializer,
 } from '.';
 
-export type ExternalPluginRecord = {
-  pluginKey: ExternalPluginKey;
-  authority: PluginAuthority;
+export type LifecycleHookUpdateInfo = {
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
-  offset: bigint;
+  extraAccounts: Option<Array<ExtraAccount>>;
+  schema: Option<ExternalPluginSchema>;
 };
 
-export type ExternalPluginRecordArgs = {
-  pluginKey: ExternalPluginKeyArgs;
-  authority: PluginAuthorityArgs;
+export type LifecycleHookUpdateInfoArgs = {
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
-  offset: number | bigint;
+  extraAccounts: OptionOrNullable<Array<ExtraAccountArgs>>;
+  schema: OptionOrNullable<ExternalPluginSchemaArgs>;
 };
 
-export function getExternalPluginRecordSerializer(): Serializer<
-  ExternalPluginRecordArgs,
-  ExternalPluginRecord
+export function getLifecycleHookUpdateInfoSerializer(): Serializer<
+  LifecycleHookUpdateInfoArgs,
+  LifecycleHookUpdateInfo
 > {
-  return struct<ExternalPluginRecord>(
+  return struct<LifecycleHookUpdateInfo>(
     [
-      ['pluginKey', getExternalPluginKeySerializer()],
-      ['authority', getPluginAuthoritySerializer()],
       [
         'lifecycleChecks',
         option(
@@ -65,8 +60,9 @@ export function getExternalPluginRecordSerializer(): Serializer<
           )
         ),
       ],
-      ['offset', u64()],
+      ['extraAccounts', option(array(getExtraAccountSerializer()))],
+      ['schema', option(getExternalPluginSchemaSerializer())],
     ],
-    { description: 'ExternalPluginRecord' }
-  ) as Serializer<ExternalPluginRecordArgs, ExternalPluginRecord>;
+    { description: 'LifecycleHookUpdateInfo' }
+  ) as Serializer<LifecycleHookUpdateInfoArgs, LifecycleHookUpdateInfo>;
 }
