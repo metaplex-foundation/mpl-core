@@ -25,6 +25,6 @@
     "skipLibCheck": true,
     "useUnknownInCatchVariables": false
   },
-  "include": ["src", "test"],
+  "include": ["src", "test", "bench"],
   "exclude": ["node_modules", "dist", "build", "lib"]
 }
