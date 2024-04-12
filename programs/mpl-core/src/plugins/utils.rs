@@ -102,15 +102,14 @@ pub fn assert_plugins_initialized(account: &AccountInfo) -> ProgramResult {
 /// Fetch the plugin from the registry.
 pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
     account: &AccountInfo,
+    core: &T,
     plugin_type: PluginType,
 ) -> Result<(Authority, U, usize), ProgramError> {
-    let asset = T::load(account, 0)?;
-
-    if asset.get_size() == account.data_len() {
+    if core.get_size() == account.data_len() {
         return Err(MplCoreError::PluginNotFound.into());
     }
 
-    let header = PluginHeaderV1::load(account, asset.get_size())?;
+    let header = PluginHeaderV1::load(account, core.get_size())?;
     let PluginRegistryV1 { registry, .. } =
         PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 

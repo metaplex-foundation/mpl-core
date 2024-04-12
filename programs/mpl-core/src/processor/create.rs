@@ -50,9 +50,9 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
     }
 
     let (update_authority, collection) = match ctx.accounts.collection {
-        Some(collection) => (
-            UpdateAuthority::Collection(*collection.key),
-            Some(CollectionV1::load(collection, 0)?),
+        Some(collection_info) => (
+            UpdateAuthority::Collection(*collection_info.key),
+            Some(CollectionV1::load(collection_info, 0)?),
         ),
         None => (
             UpdateAuthority::Address(
@@ -65,7 +65,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
         ),
     };
 
-    if update_authority.validate_create(&ctx.accounts, &args)? == ValidationResult::Rejected {
+    if update_authority.validate_create(&ctx.accounts, &collection)? == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 

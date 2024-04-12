@@ -3,14 +3,12 @@ use mpl_utils::assert_signer;
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
-    error::MplCoreError,
     instruction::accounts::{
         BurnV1Accounts, CompressV1Accounts, CreateV1Accounts, DecompressV1Accounts,
         TransferV1Accounts, UpdateV1Accounts,
     },
     plugins::{fetch_plugin, CheckResult, PluginType, UpdateDelegate, ValidationResult},
-    processor::CreateV1Args,
-    state::{Authority, CollectionV1, SolanaAccount},
+    state::{Authority, CollectionV1},
     utils::assert_collection_authority,
 };
 
@@ -49,15 +47,12 @@ impl UpdateAuthority {
     pub(crate) fn validate_create(
         &self,
         ctx: &CreateV1Accounts,
-        _args: &CreateV1Args,
+        collection: &Option<CollectionV1>,
     ) -> Result<ValidationResult, ProgramError> {
-        match (ctx.collection, self) {
+        match (collection, self) {
             // If you're trying to add a collection, then check the authority.
-            (Some(collection_info), UpdateAuthority::Collection(collection_address)) => {
-                if collection_info.key != collection_address {
-                    return Err(MplCoreError::InvalidCollection.into());
-                }
-                let collection = CollectionV1::load(collection_info, 0)?;
+            (Some(collection), UpdateAuthority::Collection(_)) => {
+                // let collection = CollectionV1::load(collection_info, 0)?;
 
                 let authority_info = match ctx.authority {
                     Some(authority) => {
@@ -68,14 +63,15 @@ impl UpdateAuthority {
                 };
 
                 let maybe_update_delegate = fetch_plugin::<CollectionV1, UpdateDelegate>(
-                    collection_info,
+                    ctx.collection.unwrap(),
+                    collection,
                     PluginType::UpdateDelegate,
                 );
 
                 if let Ok((authority, _, _)) = maybe_update_delegate {
-                    if assert_collection_authority(&collection, authority_info, &authority).is_err()
+                    if assert_collection_authority(collection, authority_info, &authority).is_err()
                         && assert_collection_authority(
-                            &collection,
+                            collection,
                             authority_info,
                             &Authority::UpdateAuthority,
                         )
