@@ -306,7 +306,6 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("Validating update plugin");
         let resolved_authorities = ctx
             .resolved_authorities
             .ok_or(MplCoreError::InvalidAuthority)?;
@@ -315,8 +314,6 @@ impl Plugin {
         } else {
             ValidationResult::Pass
         };
-
-        solana_program::msg!("Base result: {:?}", base_result);
 
         let result = match plugin {
             Plugin::Royalties(royalties) => royalties.validate_update_plugin(ctx),

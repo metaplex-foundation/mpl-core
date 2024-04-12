@@ -105,8 +105,6 @@ impl PluginValidation for UpdateDelegate {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("authority_info: {:?}", ctx.authority_info.key);
-        solana_program::msg!("authority: {:?}", ctx.self_authority);
         if ctx.self_authority
             == &(Authority::Address {
                 address: *ctx.authority_info.key,

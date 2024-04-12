@@ -80,7 +80,6 @@ impl PluginValidation for Royalties {
         match &self.rule_set {
             RuleSet::None => Ok(ValidationResult::Pass),
             RuleSet::ProgramAllowList(allow_list) => {
-                solana_program::msg!("Evaluating royalties");
                 if allow_list.contains(ctx.authority_info.owner)
                     || allow_list.contains(new_owner.owner)
                 {
@@ -112,8 +111,6 @@ impl PluginValidation for Royalties {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("authority: {:?}", ctx.self_authority);
-        solana_program::msg!("resolved_authority: {:?}", ctx.resolved_authorities);
         let plugin_to_update = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
         let resolved_authorities = ctx
             .resolved_authorities
@@ -122,7 +119,6 @@ impl PluginValidation for Royalties {
         // Perform validation on the new royalties plugin data.
         if let Plugin::Royalties(royalties) = plugin_to_update {
             if resolved_authorities.contains(ctx.self_authority) {
-                solana_program::msg!("Validating royalties");
                 validate_royalties(royalties)
             } else {
                 Ok(ValidationResult::Pass)
@@ -137,8 +133,6 @@ impl PluginValidation for Royalties {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("authority_info: {:?}", ctx.authority_info.key);
-        solana_program::msg!("authority: {:?}", ctx.self_authority);
         if ctx.self_authority
             == &(Authority::Address {
                 address: *ctx.authority_info.key,
