@@ -3602,49 +3602,6 @@
       }
     },
     {
-      "name": "ExtraAccounts",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "None"
-          },
-          {
-            "name": "SplHook",
-            "fields": [
-              {
-                "name": "extra_account_metas",
-                "type": "publicKey"
-              }
-            ]
-          },
-          {
-            "name": "MplHook",
-            "fields": [
-              {
-                "name": "mint_pda",
-                "type": {
-                  "option": "publicKey"
-                }
-              },
-              {
-                "name": "collection_pda",
-                "type": {
-                  "option": "publicKey"
-                }
-              },
-              {
-                "name": "owner_pda",
-                "type": {
-                  "option": "publicKey"
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
       "name": "Key",
       "type": {
         "kind": "enum",

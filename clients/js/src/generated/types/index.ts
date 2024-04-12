@@ -24,7 +24,6 @@ export * from './externalPluginRecord';
 export * from './externalPluginSchema';
 export * from './externalPluginUpdateInfo';
 export * from './extraAccount';
-export * from './extraAccounts';
 export * from './freezeDelegate';
 export * from './hashablePluginSchema';
 export * from './hashedAssetSchema';
