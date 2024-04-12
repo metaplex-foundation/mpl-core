@@ -18,8 +18,11 @@ pub struct DataStore {
 /// Data store initialization info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct DataStoreInitInfo {
-    /// Initial authority.
-    pub init_authority: Option<Authority>,
+    /// Data authority who can update the data store.  Cannot be changed after plugin is
+    /// added.
+    pub data_authority: Authority,
+    /// Initial plugin authority who can update plugin properties.
+    pub init_plugin_authority: Option<Authority>,
     /// The lifecyle events for which the the external plugin is active.
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// Schema for the data used by the plugin.

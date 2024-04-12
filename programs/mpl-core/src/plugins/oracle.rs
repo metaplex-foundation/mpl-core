@@ -1,4 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use solana_program::pubkey::Pubkey;
 
 use super::{Authority, ExternalCheckResult, ExtraAccount, HookableLifecycleEvent};
 
@@ -15,8 +16,11 @@ pub struct Oracle {
 /// Oracle initialization info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct OracleInitInfo {
-    /// Initial authority.
-    pub init_authority: Option<Authority>,
+    /// The address of the oracle, or if using the `pda` option, a program ID from which
+    /// to derive a PDA.
+    pub base_address: Pubkey,
+    /// Initial plugin authority.
+    pub init_plugin_authority: Option<Authority>,
     /// The lifecyle events for which the the external plugin is active.
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// Optional PDA (derived from Pubkey attached to `ExternalPluginKey`).
