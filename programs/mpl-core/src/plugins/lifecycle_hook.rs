@@ -37,8 +37,6 @@ pub struct LifecycleHookInitInfo {
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
-    /// External plugin initial data.
-    pub data: Option<Vec<u8>>,
 }
 
 /// Lifecycle hook update info.

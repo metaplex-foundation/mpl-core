@@ -26,5 +26,4 @@ pub struct LifecycleHookInitInfo {
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     pub schema: Option<ExternalPluginSchema>,
-    pub data: Option<Vec<u8>>,
 }

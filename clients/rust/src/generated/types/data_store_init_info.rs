@@ -5,9 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::ExternalCheckResult;
 use crate::generated::types::ExternalPluginSchema;
-use crate::generated::types::HookableLifecycleEvent;
 use crate::generated::types::PluginAuthority;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
@@ -17,7 +15,5 @@ use borsh::BorshSerialize;
 pub struct DataStoreInitInfo {
     pub data_authority: PluginAuthority,
     pub init_plugin_authority: Option<PluginAuthority>,
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     pub schema: Option<ExternalPluginSchema>,
-    pub data: Option<Vec<u8>>,
 }

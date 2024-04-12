@@ -2035,34 +2035,11 @@
             }
           },
           {
-            "name": "lifecycleChecks",
-            "type": {
-              "option": {
-                "vec": {
-                  "tuple": [
-                    {
-                      "defined": "HookableLifecycleEvent"
-                    },
-                    {
-                      "defined": "ExternalCheckResult"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          {
             "name": "schema",
             "type": {
               "option": {
                 "defined": "ExternalPluginSchema"
               }
-            }
-          },
-          {
-            "name": "data",
-            "type": {
-              "option": "bytes"
             }
           }
         ]
@@ -2073,23 +2050,6 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "lifecycleChecks",
-            "type": {
-              "option": {
-                "vec": {
-                  "tuple": [
-                    {
-                      "defined": "HookableLifecycleEvent"
-                    },
-                    {
-                      "defined": "ExternalCheckResult"
-                    }
-                  ]
-                }
-              }
-            }
-          },
           {
             "name": "schema",
             "type": {
@@ -2207,12 +2167,6 @@
               "option": {
                 "defined": "ExternalPluginSchema"
               }
-            }
-          },
-          {
-            "name": "data",
-            "type": {
-              "option": "bytes"
             }
           }
         ]

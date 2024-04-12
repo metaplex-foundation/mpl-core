@@ -10,12 +10,10 @@ import { Option, OptionOrNullable, PublicKey } from '@metaplex-foundation/umi';
 import {
   Serializer,
   array,
-  bytes,
   option,
   publicKey as publicKeySerializer,
   struct,
   tuple,
-  u32,
 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalCheckResult,
@@ -41,7 +39,6 @@ export type LifecycleHookInitInfo = {
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   extraAccounts: Option<Array<ExtraAccount>>;
   schema: Option<ExternalPluginSchema>;
-  data: Option<Uint8Array>;
 };
 
 export type LifecycleHookInitInfoArgs = {
@@ -52,7 +49,6 @@ export type LifecycleHookInitInfoArgs = {
   >;
   extraAccounts: OptionOrNullable<Array<ExtraAccountArgs>>;
   schema: OptionOrNullable<ExternalPluginSchemaArgs>;
-  data: OptionOrNullable<Uint8Array>;
 };
 
 export function getLifecycleHookInitInfoSerializer(): Serializer<
@@ -76,7 +72,6 @@ export function getLifecycleHookInitInfoSerializer(): Serializer<
       ],
       ['extraAccounts', option(array(getExtraAccountSerializer()))],
       ['schema', option(getExternalPluginSchemaSerializer())],
-      ['data', option(bytes({ size: u32() }))],
     ],
     { description: 'LifecycleHookInitInfo' }
   ) as Serializer<LifecycleHookInitInfoArgs, LifecycleHookInitInfo>;
