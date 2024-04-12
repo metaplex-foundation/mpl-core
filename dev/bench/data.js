@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1712881384745,
+  "lastUpdate": 1712938670791,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -251,6 +251,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "CU: transfer an empty asset with empty collection",
             "value": 10995,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "90809591+blockiosaurus@users.noreply.github.com",
+            "name": "blockiosaurus",
+            "username": "blockiosaurus"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2e1df8c4d913b4492dc6f83d7443e5f1d1329019",
+          "message": "Merge pull request #63 from metaplex-foundation/feat/plugin-validation-context\n\nAdding a generic plugin validation context",
+          "timestamp": "2024-04-12T12:13:12-04:00",
+          "tree_id": "9a55100ee671858ba7038522431220fdc49a4c90",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/2e1df8c4d913b4492dc6f83d7443e5f1d1329019"
+        },
+        "date": 1712938669853,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 17359,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 36126,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 41967,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 7404,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 8630,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 10921,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 69873,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 68767,
             "unit": "Compute Units"
           }
         ]
