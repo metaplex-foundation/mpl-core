@@ -2021,7 +2021,13 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "initAuthority",
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "initPluginAuthority",
             "type": {
               "option": {
                 "defined": "Authority"
@@ -2157,7 +2163,11 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "initAuthority",
+            "name": "hookedProgram",
+            "type": "publicKey"
+          },
+          {
+            "name": "initPluginAuthority",
             "type": {
               "option": {
                 "defined": "Authority"
@@ -2273,7 +2283,11 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "initAuthority",
+            "name": "baseAddress",
+            "type": "publicKey"
+          },
+          {
+            "name": "initPluginAuthority",
             "type": {
               "option": {
                 "defined": "Authority"
@@ -2501,12 +2515,6 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "key",
-            "type": {
-              "defined": "ExternalPluginKey"
-            }
-          },
-          {
             "name": "initInfo",
             "type": {
               "defined": "ExternalPluginInitInfo"
@@ -2520,12 +2528,6 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "ExternalPluginKey"
-            }
-          },
           {
             "name": "initInfo",
             "type": {
