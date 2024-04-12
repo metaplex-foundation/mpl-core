@@ -12,13 +12,13 @@ import {
   struct,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  ExternalPluginRecord,
-  ExternalPluginRecordArgs,
+  ExternalRegistryRecord,
+  ExternalRegistryRecordArgs,
   Key,
   KeyArgs,
   RegistryRecord,
   RegistryRecordArgs,
-  getExternalPluginRecordSerializer,
+  getExternalRegistryRecordSerializer,
   getKeySerializer,
   getRegistryRecordSerializer,
 } from '.';
@@ -26,13 +26,13 @@ import {
 export type PluginRegistryV1AccountData = {
   key: Key;
   registry: Array<RegistryRecord>;
-  externalPlugins: Array<ExternalPluginRecord>;
+  externalRegistry: Array<ExternalRegistryRecord>;
 };
 
 export type PluginRegistryV1AccountDataArgs = {
   key: KeyArgs;
   registry: Array<RegistryRecordArgs>;
-  externalPlugins: Array<ExternalPluginRecordArgs>;
+  externalRegistry: Array<ExternalRegistryRecordArgs>;
 };
 
 export function getPluginRegistryV1AccountDataSerializer(): Serializer<
@@ -43,7 +43,7 @@ export function getPluginRegistryV1AccountDataSerializer(): Serializer<
     [
       ['key', getKeySerializer()],
       ['registry', array(getRegistryRecordSerializer())],
-      ['externalPlugins', array(getExternalPluginRecordSerializer())],
+      ['externalRegistry', array(getExternalRegistryRecordSerializer())],
     ],
     { description: 'PluginRegistryV1AccountData' }
   ) as Serializer<PluginRegistryV1AccountDataArgs, PluginRegistryV1AccountData>;

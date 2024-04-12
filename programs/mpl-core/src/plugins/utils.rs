@@ -31,7 +31,7 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
         let registry = PluginRegistryV1 {
             key: Key::PluginRegistryV1,
             registry: vec![],
-            external_plugins: vec![],
+            external_registry: vec![],
         };
 
         resize_or_reallocate_account(
@@ -71,7 +71,7 @@ pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
     let registry = PluginRegistryV1 {
         key: Key::PluginRegistryV1,
         registry: vec![],
-        external_plugins: vec![],
+        external_registry: vec![],
     };
 
     resize_or_reallocate_account(

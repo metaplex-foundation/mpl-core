@@ -30,14 +30,14 @@ import {
   getPluginAuthoritySerializer,
 } from '.';
 
-export type ExternalPluginRecord = {
+export type ExternalRegistryRecord = {
   pluginKey: ExternalPluginKey;
   authority: PluginAuthority;
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   offset: bigint;
 };
 
-export type ExternalPluginRecordArgs = {
+export type ExternalRegistryRecordArgs = {
   pluginKey: ExternalPluginKeyArgs;
   authority: PluginAuthorityArgs;
   lifecycleChecks: OptionOrNullable<
@@ -46,11 +46,11 @@ export type ExternalPluginRecordArgs = {
   offset: number | bigint;
 };
 
-export function getExternalPluginRecordSerializer(): Serializer<
-  ExternalPluginRecordArgs,
-  ExternalPluginRecord
+export function getExternalRegistryRecordSerializer(): Serializer<
+  ExternalRegistryRecordArgs,
+  ExternalRegistryRecord
 > {
-  return struct<ExternalPluginRecord>(
+  return struct<ExternalRegistryRecord>(
     [
       ['pluginKey', getExternalPluginKeySerializer()],
       ['authority', getPluginAuthoritySerializer()],
@@ -67,6 +67,6 @@ export function getExternalPluginRecordSerializer(): Serializer<
       ],
       ['offset', u64()],
     ],
-    { description: 'ExternalPluginRecord' }
-  ) as Serializer<ExternalPluginRecordArgs, ExternalPluginRecord>;
+    { description: 'ExternalRegistryRecord' }
+  ) as Serializer<ExternalRegistryRecordArgs, ExternalRegistryRecord>;
 }

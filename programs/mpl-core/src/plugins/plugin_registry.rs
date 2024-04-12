@@ -17,7 +17,7 @@ pub struct PluginRegistryV1 {
     /// The registry of all plugins.
     pub registry: Vec<RegistryRecord>, // 4
     /// The registry of all external, third party, plugins.
-    pub external_plugins: Vec<ExternalPluginRecord>, // 4
+    pub external_registry: Vec<ExternalRegistryRecord>, // 4
 }
 
 impl PluginRegistryV1 {
@@ -41,9 +41,12 @@ impl PluginRegistryV1 {
         &self,
         key: Key,
         lifecycle_event: &HookableLifecycleEvent,
-        result: &mut BTreeMap<ExternalPluginKey, (Key, ExternalCheckResult, ExternalPluginRecord)>,
+        result: &mut BTreeMap<
+            ExternalPluginKey,
+            (Key, ExternalCheckResult, ExternalRegistryRecord),
+        >,
     ) {
-        for record in &self.external_plugins {
+        for record in &self.external_registry {
             if let Some(lifecycle_checks) = &record.lifecycle_checks {
                 for (event, check_result) in lifecycle_checks {
                     if event == lifecycle_event {
@@ -93,7 +96,7 @@ impl RegistryRecord {
 /// A type to store the mapping of third party plugin type to third party plugin header and data.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
-pub struct ExternalPluginRecord {
+pub struct ExternalRegistryRecord {
     /// The third party plugin key.
     pub plugin_key: ExternalPluginKey,
     /// The authority of the external plugin.
