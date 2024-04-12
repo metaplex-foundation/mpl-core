@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 
-use super::{Authority, ExternalCheckResult, ExternalPluginSchema, HookableLifecycleEvent};
+use super::{Authority, ExternalPluginSchema};
 
 /// The data store third party plugin contains arbitrary data that can be written to by the
 /// authority specified in the `ExternalPluginKey`.  Note this is different then the plugin
@@ -23,19 +23,13 @@ pub struct DataStoreInitInfo {
     pub data_authority: Authority,
     /// Initial plugin authority who can update plugin properties.
     pub init_plugin_authority: Option<Authority>,
-    /// The lifecyle events for which the the external plugin is active.
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
-    /// External plugin initial data.
-    pub data: Option<Vec<u8>>,
 }
 
 /// Data store update info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct DataStoreUpdateInfo {
-    /// The lifecyle events for which the the external plugin is active.
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
 }
