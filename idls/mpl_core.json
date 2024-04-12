@@ -1825,10 +1825,10 @@
             }
           },
           {
-            "name": "externalPlugins",
+            "name": "externalRegistry",
             "type": {
               "vec": {
-                "defined": "ExternalPluginRecord"
+                "defined": "ExternalRegistryRecord"
               }
             }
           }
@@ -2360,7 +2360,7 @@
       }
     },
     {
-      "name": "ExternalPluginRecord",
+      "name": "ExternalRegistryRecord",
       "type": {
         "kind": "struct",
         "fields": [
