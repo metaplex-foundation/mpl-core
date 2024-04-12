@@ -32,14 +32,16 @@ import {
 } from '.';
 
 export type DataStoreInitInfo = {
-  initAuthority: Option<PluginAuthority>;
+  dataAuthority: PluginAuthority;
+  initPluginAuthority: Option<PluginAuthority>;
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   schema: Option<ExternalPluginSchema>;
   data: Option<Uint8Array>;
 };
 
 export type DataStoreInitInfoArgs = {
-  initAuthority: OptionOrNullable<PluginAuthorityArgs>;
+  dataAuthority: PluginAuthorityArgs;
+  initPluginAuthority: OptionOrNullable<PluginAuthorityArgs>;
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
@@ -53,7 +55,8 @@ export function getDataStoreInitInfoSerializer(): Serializer<
 > {
   return struct<DataStoreInitInfo>(
     [
-      ['initAuthority', option(getPluginAuthoritySerializer())],
+      ['dataAuthority', getPluginAuthoritySerializer()],
+      ['initPluginAuthority', option(getPluginAuthoritySerializer())],
       [
         'lifecycleChecks',
         option(

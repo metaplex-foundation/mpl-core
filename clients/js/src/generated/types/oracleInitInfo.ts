@@ -6,11 +6,12 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Option, OptionOrNullable } from '@metaplex-foundation/umi';
+import { Option, OptionOrNullable, PublicKey } from '@metaplex-foundation/umi';
 import {
   Serializer,
   array,
   option,
+  publicKey as publicKeySerializer,
   struct,
   tuple,
 } from '@metaplex-foundation/umi/serializers';
@@ -30,13 +31,15 @@ import {
 } from '.';
 
 export type OracleInitInfo = {
-  initAuthority: Option<PluginAuthority>;
+  baseAddress: PublicKey;
+  initPluginAuthority: Option<PluginAuthority>;
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   pda: Option<ExtraAccount>;
 };
 
 export type OracleInitInfoArgs = {
-  initAuthority: OptionOrNullable<PluginAuthorityArgs>;
+  baseAddress: PublicKey;
+  initPluginAuthority: OptionOrNullable<PluginAuthorityArgs>;
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
@@ -49,7 +52,8 @@ export function getOracleInitInfoSerializer(): Serializer<
 > {
   return struct<OracleInitInfo>(
     [
-      ['initAuthority', option(getPluginAuthoritySerializer())],
+      ['baseAddress', publicKeySerializer()],
+      ['initPluginAuthority', option(getPluginAuthoritySerializer())],
       [
         'lifecycleChecks',
         option(

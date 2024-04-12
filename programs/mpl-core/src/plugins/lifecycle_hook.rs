@@ -1,4 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use solana_program::pubkey::Pubkey;
 
 use super::{
     Authority, ExternalCheckResult, ExternalPluginSchema, ExtraAccount, HookableLifecycleEvent,
@@ -26,8 +27,10 @@ pub struct LifecycleHook {
 /// Lifecycle hook initialization info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct LifecycleHookInitInfo {
-    /// Initial authority.
-    pub init_authority: Option<Authority>,
+    /// The `Pubkey` for the hooked program.
+    pub hooked_program: Pubkey,
+    /// Initial plugin authority.
+    pub init_plugin_authority: Option<Authority>,
     /// The lifecyle events for which the the external plugin is active.
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// The extra accounts to use for the lifecycle hook.

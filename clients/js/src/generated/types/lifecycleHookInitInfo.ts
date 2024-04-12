@@ -6,12 +6,13 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Option, OptionOrNullable } from '@metaplex-foundation/umi';
+import { Option, OptionOrNullable, PublicKey } from '@metaplex-foundation/umi';
 import {
   Serializer,
   array,
   bytes,
   option,
+  publicKey as publicKeySerializer,
   struct,
   tuple,
   u32,
@@ -35,7 +36,8 @@ import {
 } from '.';
 
 export type LifecycleHookInitInfo = {
-  initAuthority: Option<PluginAuthority>;
+  hookedProgram: PublicKey;
+  initPluginAuthority: Option<PluginAuthority>;
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   extraAccounts: Option<Array<ExtraAccount>>;
   schema: Option<ExternalPluginSchema>;
@@ -43,7 +45,8 @@ export type LifecycleHookInitInfo = {
 };
 
 export type LifecycleHookInitInfoArgs = {
-  initAuthority: OptionOrNullable<PluginAuthorityArgs>;
+  hookedProgram: PublicKey;
+  initPluginAuthority: OptionOrNullable<PluginAuthorityArgs>;
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
@@ -58,7 +61,8 @@ export function getLifecycleHookInitInfoSerializer(): Serializer<
 > {
   return struct<LifecycleHookInitInfo>(
     [
-      ['initAuthority', option(getPluginAuthoritySerializer())],
+      ['hookedProgram', publicKeySerializer()],
+      ['initPluginAuthority', option(getPluginAuthoritySerializer())],
       [
         'lifecycleChecks',
         option(

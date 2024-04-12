@@ -11,11 +11,17 @@ use crate::generated::types::HookableLifecycleEvent;
 use crate::generated::types::PluginAuthority;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
+use solana_program::pubkey::Pubkey;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct OracleInitInfo {
-    pub init_authority: Option<PluginAuthority>,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
+    )]
+    pub base_address: Pubkey,
+    pub init_plugin_authority: Option<PluginAuthority>,
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     pub pda: Option<ExtraAccount>,
 }

@@ -15,7 +15,8 @@ use borsh::BorshSerialize;
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DataStoreInitInfo {
-    pub init_authority: Option<PluginAuthority>,
+    pub data_authority: PluginAuthority,
+    pub init_plugin_authority: Option<PluginAuthority>,
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     pub schema: Option<ExternalPluginSchema>,
     pub data: Option<Vec<u8>>,
