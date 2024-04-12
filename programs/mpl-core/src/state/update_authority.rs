@@ -58,7 +58,6 @@ impl UpdateAuthority {
                     return Err(MplCoreError::InvalidCollection.into());
                 }
                 let collection = CollectionV1::load(collection_info, 0)?;
-                solana_program::msg!("Collection: {:?}", collection);
 
                 let authority_info = match ctx.authority {
                     Some(authority) => {
