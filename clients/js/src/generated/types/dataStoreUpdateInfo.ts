@@ -9,32 +9,18 @@
 import { Option, OptionOrNullable } from '@metaplex-foundation/umi';
 import {
   Serializer,
-  array,
   option,
   struct,
-  tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  ExternalCheckResult,
-  ExternalCheckResultArgs,
   ExternalPluginSchema,
   ExternalPluginSchemaArgs,
-  HookableLifecycleEvent,
-  HookableLifecycleEventArgs,
-  getExternalCheckResultSerializer,
   getExternalPluginSchemaSerializer,
-  getHookableLifecycleEventSerializer,
 } from '.';
 
-export type DataStoreUpdateInfo = {
-  lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
-  schema: Option<ExternalPluginSchema>;
-};
+export type DataStoreUpdateInfo = { schema: Option<ExternalPluginSchema> };
 
 export type DataStoreUpdateInfoArgs = {
-  lifecycleChecks: OptionOrNullable<
-    Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
-  >;
   schema: OptionOrNullable<ExternalPluginSchemaArgs>;
 };
 
@@ -43,20 +29,7 @@ export function getDataStoreUpdateInfoSerializer(): Serializer<
   DataStoreUpdateInfo
 > {
   return struct<DataStoreUpdateInfo>(
-    [
-      [
-        'lifecycleChecks',
-        option(
-          array(
-            tuple([
-              getHookableLifecycleEventSerializer(),
-              getExternalCheckResultSerializer(),
-            ])
-          )
-        ),
-      ],
-      ['schema', option(getExternalPluginSchemaSerializer())],
-    ],
+    [['schema', option(getExternalPluginSchemaSerializer())]],
     { description: 'DataStoreUpdateInfo' }
   ) as Serializer<DataStoreUpdateInfoArgs, DataStoreUpdateInfo>;
 }
