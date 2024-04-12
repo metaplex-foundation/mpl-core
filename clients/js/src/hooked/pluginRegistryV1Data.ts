@@ -92,7 +92,7 @@ export function getPluginRegistryV1AccountDataSerializer(): Serializer<
         getRegistryRecordSerializer()
       ).deserialize(buffer, keyOffset);
 
-      // TODO deserialize externalPlugins once they are defined, purposefully ignore them now
+      // TODO deserialize externalRegistry of plugins once they are defined, purposefully ignore them now
 
       return [
         {
@@ -100,7 +100,7 @@ export function getPluginRegistryV1AccountDataSerializer(): Serializer<
           registry: registry.filter(
             (record: RegistryRecordWithUnknown) => !record.isUnknown
           ),
-          externalPlugins: [],
+          externalRegistry: [],
         },
         registryOffset,
       ];
