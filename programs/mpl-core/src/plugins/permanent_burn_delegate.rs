@@ -1,9 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{account_info::AccountInfo, program_error::ProgramError};
+use solana_program::program_error::ProgramError;
 
-use crate::state::{Authority, DataBlob};
+use crate::state::DataBlob;
 
-use super::{Plugin, PluginType, PluginValidation, ValidationResult};
+use super::{PluginType, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The permanent burn plugin allows any authority to burn the asset.
 /// The default authority for this plugin is the update authority.
@@ -24,14 +24,12 @@ impl DataBlob for PermanentBurnDelegate {
 impl PluginValidation for PermanentBurnDelegate {
     fn validate_add_plugin(
         &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-        new_plugin: Option<&Plugin>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
         // always reject it.
-        if new_plugin.is_some()
-            && PluginType::from(new_plugin.unwrap()) == PluginType::PermanentBurnDelegate
+        if ctx.target_plugin.is_some()
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentBurnDelegate
         {
             Ok(ValidationResult::Rejected)
         } else {
@@ -41,21 +39,17 @@ impl PluginValidation for PermanentBurnDelegate {
 
     fn validate_revoke_plugin_authority(
         &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-        _plugin_to_revoke: Option<&Plugin>,
+        _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Approved)
     }
 
     fn validate_burn(
         &self,
-        _authority_info: &AccountInfo,
-        authority: &Authority,
-        resolved_authorities: Option<&[Authority]>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(resolved_authorities) = resolved_authorities {
-            if resolved_authorities.contains(authority) {
+        if let Some(resolved_authorities) = ctx.resolved_authorities {
+            if resolved_authorities.contains(ctx.self_authority) {
                 return Ok(ValidationResult::ForceApproved);
             }
         }

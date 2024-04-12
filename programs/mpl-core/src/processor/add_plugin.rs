@@ -5,7 +5,10 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{AddCollectionPluginV1Accounts, AddPluginV1Accounts},
-    plugins::{create_meta_idempotent, initialize_plugin, Plugin, PluginType, ValidationResult},
+    plugins::{
+        create_meta_idempotent, initialize_plugin, Plugin, PluginType, PluginValidationContext,
+        ValidationResult,
+    },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
         load_key, resolve_authority, validate_asset_permissions, validate_collection_permissions,
@@ -45,15 +48,14 @@ pub(crate) fn add_plugin<'a>(
     }
 
     //TODO: Seed with Rejected
-    if Plugin::validate_add_plugin(
-        &args.plugin,
-        authority,
-        None,
-        &args.init_authority.unwrap_or(args.plugin.manager()),
-        Some(&args.plugin),
-        None,
-    )? == ValidationResult::Rejected
-    {
+    let validation_ctx = PluginValidationContext {
+        self_authority: &args.init_authority.unwrap_or(args.plugin.manager()),
+        authority_info: authority,
+        resolved_authorities: None,
+        new_owner: None,
+        target_plugin: Some(&args.plugin),
+    };
+    if Plugin::validate_add_plugin(&args.plugin, &validation_ctx)? == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
@@ -111,14 +113,14 @@ pub(crate) fn add_collection_plugin<'a>(
         }
     }
 
-    if Plugin::validate_add_plugin(
-        &args.plugin,
-        authority,
-        None,
-        &args.init_authority.unwrap_or(args.plugin.manager()),
-        Some(&args.plugin),
-        None,
-    )? == ValidationResult::Rejected
+    let validation_context = PluginValidationContext {
+        self_authority: &args.init_authority.unwrap_or(args.plugin.manager()),
+        authority_info: authority,
+        resolved_authorities: None,
+        new_owner: None,
+        target_plugin: Some(&args.plugin),
+    };
+    if Plugin::validate_add_plugin(&args.plugin, &validation_context)? == ValidationResult::Rejected
     {
         return Err(MplCoreError::InvalidAuthority.into());
     }

@@ -1,12 +1,12 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{account_info::AccountInfo, program_error::ProgramError};
+use solana_program::program_error::ProgramError;
 
 use crate::{
     plugins::PluginType,
     state::{Authority, DataBlob},
 };
 
-use super::{Plugin, PluginValidation, ValidationResult};
+use super::{PluginValidation, PluginValidationContext, ValidationResult};
 
 /// This plugin manages the ability to transfer an asset and any authorities
 /// approved are permitted to transfer the asset on behalf of the owner.
@@ -40,13 +40,11 @@ impl DataBlob for TransferDelegate {
 impl PluginValidation for TransferDelegate {
     fn validate_burn(
         &self,
-        authority_info: &AccountInfo,
-        authority: &Authority,
-        _resolved_authorities: Option<&[Authority]>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if authority
+        if ctx.self_authority
             == (&Authority::Address {
-                address: *authority_info.key,
+                address: *ctx.authority_info.key,
             })
         {
             Ok(ValidationResult::Approved)
@@ -57,14 +55,11 @@ impl PluginValidation for TransferDelegate {
 
     fn validate_transfer(
         &self,
-        authority_info: &AccountInfo,
-        _new_owner: &AccountInfo,
-        authority: &Authority,
-        _resolved_authorities: Option<&[Authority]>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if authority
+        if ctx.self_authority
             == (&Authority::Address {
-                address: *authority_info.key,
+                address: *ctx.authority_info.key,
             })
         {
             Ok(ValidationResult::Approved)
@@ -76,16 +71,14 @@ impl PluginValidation for TransferDelegate {
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        authority_info: &AccountInfo,
-        authority: &Authority,
-        plugin_to_revoke: Option<&Plugin>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if authority
+        if ctx.self_authority
             == &(Authority::Address {
-                address: *authority_info.key,
+                address: *ctx.authority_info.key,
             })
-            && plugin_to_revoke.is_some()
-            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::TransferDelegate
+            && ctx.target_plugin.is_some()
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::TransferDelegate
         {
             Ok(ValidationResult::Approved)
         } else {

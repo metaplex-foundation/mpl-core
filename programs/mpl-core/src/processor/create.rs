@@ -10,7 +10,7 @@ use crate::{
     instruction::accounts::CreateV1Accounts,
     plugins::{
         create_plugin_meta, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
-        PluginType, ValidationResult,
+        PluginType, PluginValidationContext, ValidationResult,
     },
     state::{AssetV1, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT},
     utils::resolve_authority,
@@ -127,14 +127,14 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
             for plugin in &plugins {
                 if PluginType::check_create(&PluginType::from(&plugin.plugin)) != CheckResult::None
                 {
-                    match Plugin::validate_create(
-                        &plugin.plugin,
-                        authority,
-                        None,
-                        &plugin.authority.unwrap_or(plugin.plugin.manager()),
-                        None,
-                        None,
-                    )? {
+                    let validation_ctx = PluginValidationContext {
+                        self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
+                        authority_info: authority,
+                        resolved_authorities: None,
+                        new_owner: None,
+                        target_plugin: None,
+                    };
+                    match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
                         ValidationResult::Rejected => approved = false,
                         ValidationResult::ForceApproved => force_approved = true,
                         _ => (),

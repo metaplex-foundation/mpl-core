@@ -10,7 +10,7 @@ use crate::{
     instruction::accounts::CreateCollectionV1Accounts,
     plugins::{
         create_plugin_meta, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
-        PluginType, ValidationResult,
+        PluginType, PluginValidationContext, ValidationResult,
     },
     state::{Authority, CollectionV1, Key},
 };
@@ -101,14 +101,14 @@ pub(crate) fn create_collection<'a>(
                 }
 
                 if PluginType::check_create(&plugin_type) != CheckResult::None {
-                    match Plugin::validate_create(
-                        &plugin.plugin,
-                        ctx.accounts.payer,
-                        None,
-                        &plugin.authority.unwrap_or(plugin.plugin.manager()),
-                        None,
-                        None,
-                    )? {
+                    let validation_ctx = PluginValidationContext {
+                        self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
+                        authority_info: ctx.accounts.payer,
+                        resolved_authorities: None,
+                        new_owner: None,
+                        target_plugin: None,
+                    };
+                    match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
                         ValidationResult::Rejected => approved = false,
                         ValidationResult::ForceApproved => force_approved = true,
                         _ => (),
