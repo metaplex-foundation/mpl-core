@@ -522,7 +522,7 @@ pub(crate) fn resolve_pubkey_to_authorities(
     maybe_collection_info: Option<&AccountInfo>,
     asset: &AssetV1,
 ) -> Result<Vec<Authority>, ProgramError> {
-    let mut authorities = vec![];
+    let mut authorities = Vec::with_capacity(3);
     if authority_info.key == &asset.owner {
         authorities.push(Authority::Owner);
     }
@@ -556,7 +556,7 @@ pub(crate) fn resolve_pubkey_to_authorities_collection(
     collection_info: &AccountInfo,
 ) -> Result<Vec<Authority>, ProgramError> {
     let collection: CollectionV1 = CollectionV1::load(collection_info, 0)?;
-    let mut authorities = vec![];
+    let mut authorities = Vec::with_capacity(3);
     if authority_info.key == collection.owner() {
         authorities.push(Authority::Owner);
     }

@@ -94,11 +94,11 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
     if let (Some(plugin_header), Some(mut plugin_registry)) =
         (plugin_header, plugin_registry.clone())
     {
-        for record in plugin_registry.registry.iter_mut() {
+        plugin_registry.registry.iter_mut().for_each(|record| {
             if record.plugin_type.manager() == Authority::Owner {
                 record.authority = Authority::Owner;
             }
-        }
+        });
 
         // Save the plugin registry.
         plugin_registry.save(ctx.accounts.asset, plugin_header.plugin_registry_offset)?;

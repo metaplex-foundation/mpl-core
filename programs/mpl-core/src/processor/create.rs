@@ -35,7 +35,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if *ctx.accounts.system_program.key != system_program::id() {
+    if *ctx.accounts.system_program.key != system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
@@ -99,7 +99,7 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
             ctx.accounts.asset.key,
             lamports,
             serialized_data.len() as u64,
-            &crate::id(),
+            &crate::ID,
         ),
         &[
             ctx.accounts.payer.clone(),
