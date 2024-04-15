@@ -257,8 +257,6 @@ pub(crate) fn validate_asset_permissions<'a>(
         registry.check_registry(Key::AssetV1, plugin_check_fp, &mut checks);
     }
 
-    solana_program::msg!("checks: {:#?}", checks);
-
     // Do the core validation.
     let mut approved = false;
     let mut rejected = false;
@@ -272,7 +270,6 @@ pub(crate) fn validate_asset_permissions<'a>(
             }
         }
     };
-    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
 
     if collection_check != CheckResult::None {
         match collection_validate_fp(
@@ -288,7 +285,6 @@ pub(crate) fn validate_asset_permissions<'a>(
             }
         }
     };
-    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
 
     match validate_plugin_checks(
         Key::CollectionV1,
@@ -309,8 +305,6 @@ pub(crate) fn validate_asset_permissions<'a>(
         }
     };
 
-    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
-
     match validate_plugin_checks(
         Key::AssetV1,
         &checks,
@@ -329,8 +323,6 @@ pub(crate) fn validate_asset_permissions<'a>(
             return Ok((deserialized_asset, plugin_header, plugin_registry))
         }
     };
-
-    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
 
     if rejected {
         return Err(MplCoreError::InvalidAuthority.into());
@@ -379,8 +371,6 @@ pub(crate) fn validate_collection_permissions<'a>(
         registry.check_registry(Key::CollectionV1, plugin_check_fp, &mut checks);
     }
 
-    solana_program::msg!("checks: {:#?}", checks);
-
     // Do the core validation.
     let mut approved = false;
     let mut rejected = false;
@@ -406,7 +396,6 @@ pub(crate) fn validate_collection_permissions<'a>(
             }
         }
     };
-    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
 
     match validate_plugin_checks(
         Key::CollectionV1,
@@ -426,8 +415,6 @@ pub(crate) fn validate_collection_permissions<'a>(
             return Ok((deserialized_collection, plugin_header, plugin_registry))
         }
     };
-
-    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
 
     if rejected || !approved {
         return Err(MplCoreError::InvalidAuthority.into());

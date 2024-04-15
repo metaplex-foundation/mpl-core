@@ -47,6 +47,7 @@ impl PluginValidation for BurnDelegate {
                 address: *ctx.authority_info.key,
             })
         {
+            solana_program::msg!("BurnDelegate: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -65,6 +66,7 @@ impl PluginValidation for BurnDelegate {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::BurnDelegate
         {
+            solana_program::msg!("BurnDelegate: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)

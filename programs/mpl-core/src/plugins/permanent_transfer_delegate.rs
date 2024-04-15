@@ -31,6 +31,7 @@ impl PluginValidation for PermanentTransferDelegate {
         if ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentTransferDelegate
         {
+            solana_program::msg!("PermanentTransferDelegate: Rejected");
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)
@@ -41,6 +42,7 @@ impl PluginValidation for PermanentTransferDelegate {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        solana_program::msg!("PermanentTransferDelegate: Approved");
         Ok(ValidationResult::Approved)
     }
 
@@ -50,6 +52,7 @@ impl PluginValidation for PermanentTransferDelegate {
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(resolved_authorities) = ctx.resolved_authorities {
             if resolved_authorities.contains(ctx.self_authority) {
+                solana_program::msg!("PermanentTransferDelegate: ForceApproved");
                 return Ok(ValidationResult::ForceApproved);
             }
         }

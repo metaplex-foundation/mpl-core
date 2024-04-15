@@ -47,6 +47,7 @@ impl PluginValidation for TransferDelegate {
                 address: *ctx.authority_info.key,
             })
         {
+            solana_program::msg!("TransferDelegate: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -62,6 +63,7 @@ impl PluginValidation for TransferDelegate {
                 address: *ctx.authority_info.key,
             })
         {
+            solana_program::msg!("TransferDelegate: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -80,6 +82,7 @@ impl PluginValidation for TransferDelegate {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::TransferDelegate
         {
+            solana_program::msg!("TransferDelegate: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
