@@ -229,6 +229,7 @@ impl Plugin {
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if ctx.self_authority == &Authority::None {
+            solana_program::msg!("Base: Rejected");
             return Ok(ValidationResult::Rejected);
         }
 
@@ -310,6 +311,7 @@ impl Plugin {
             .resolved_authorities
             .ok_or(MplCoreError::InvalidAuthority)?;
         let base_result = if resolved_authorities.contains(ctx.self_authority) {
+            solana_program::msg!("Base: Approved");
             ValidationResult::Approved
         } else {
             ValidationResult::Pass
@@ -333,8 +335,6 @@ impl Plugin {
             }
             Plugin::Edition(edition) => edition.validate_update_plugin(ctx),
         }?;
-
-        solana_program::msg!("Result: {:?}", result);
 
         match (&base_result, &result) {
             (ValidationResult::Approved, ValidationResult::Approved) => {
@@ -611,7 +611,6 @@ pub(crate) fn validate_plugin_checks<'a>(
                 CheckResult::CanApprove | CheckResult::CanReject
             )
         {
-            solana_program::msg!("Validating plugin checks");
             let account = match key {
                 Key::CollectionV1 => collection.ok_or(MplCoreError::InvalidCollection)?,
                 Key::AssetV1 => asset.ok_or(MplCoreError::InvalidAsset)?,

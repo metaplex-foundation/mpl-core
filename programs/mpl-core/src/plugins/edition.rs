@@ -31,6 +31,7 @@ impl PluginValidation for Edition {
         if ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Edition
         {
+            solana_program::msg!("Edition: Rejected");
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)
@@ -46,6 +47,7 @@ impl PluginValidation for Edition {
         if ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Edition
         {
+            solana_program::msg!("Edition: Rejected");
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)
@@ -63,6 +65,7 @@ impl PluginValidation for Edition {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Edition
         {
+            solana_program::msg!("Edition: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)

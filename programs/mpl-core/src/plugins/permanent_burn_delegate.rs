@@ -31,6 +31,7 @@ impl PluginValidation for PermanentBurnDelegate {
         if ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentBurnDelegate
         {
+            solana_program::msg!("PermanentBurnDelegate: Rejected");
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)
@@ -41,6 +42,7 @@ impl PluginValidation for PermanentBurnDelegate {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        solana_program::msg!("PermanentBurnDelegate: Approved");
         Ok(ValidationResult::Approved)
     }
 
@@ -50,6 +52,7 @@ impl PluginValidation for PermanentBurnDelegate {
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(resolved_authorities) = ctx.resolved_authorities {
             if resolved_authorities.contains(ctx.self_authority) {
+                solana_program::msg!("PermanentBurnDelegate: ForceApproved");
                 return Ok(ValidationResult::ForceApproved);
             }
         }

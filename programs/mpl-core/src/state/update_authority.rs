@@ -81,9 +81,11 @@ impl UpdateAuthority {
                         )
                         .is_err()
                     {
+                        solana_program::msg!("UA: Rejected");
                         return Ok(ValidationResult::Rejected);
                     }
                 } else if authority_info.key != &collection.update_authority {
+                    solana_program::msg!("UA: Rejected");
                     return Ok(ValidationResult::Rejected);
                 }
 
@@ -108,6 +110,7 @@ impl UpdateAuthority {
         };
 
         if ctx.authority.unwrap_or(ctx.payer).key == authority {
+            solana_program::msg!("UA: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)

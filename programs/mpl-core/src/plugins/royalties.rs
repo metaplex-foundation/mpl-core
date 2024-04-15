@@ -85,6 +85,7 @@ impl PluginValidation for Royalties {
                 {
                     Ok(ValidationResult::Pass)
                 } else {
+                    solana_program::msg!("Royalties: Rejected");
                     Ok(ValidationResult::Rejected)
                 }
             }
@@ -92,6 +93,7 @@ impl PluginValidation for Royalties {
                 if deny_list.contains(ctx.authority_info.owner)
                     || deny_list.contains(new_owner.owner)
                 {
+                    solana_program::msg!("Royalties: Rejected");
                     Ok(ValidationResult::Rejected)
                 } else {
                     Ok(ValidationResult::Pass)
@@ -140,6 +142,7 @@ impl PluginValidation for Royalties {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Royalties
         {
+            solana_program::msg!("Royalties: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)

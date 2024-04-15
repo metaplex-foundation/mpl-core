@@ -43,6 +43,7 @@ impl PluginValidation for FreezeDelegate {
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
+            solana_program::msg!("FreezeDelegate: Rejected");
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)
@@ -54,6 +55,7 @@ impl PluginValidation for FreezeDelegate {
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
+            solana_program::msg!("FreezeDelegate: Rejected");
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)
@@ -66,6 +68,7 @@ impl PluginValidation for FreezeDelegate {
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(Plugin::FreezeDelegate(freeze)) = ctx.target_plugin {
             if freeze.frozen {
+                solana_program::msg!("FreezeDelegate: Rejected");
                 return Ok(ValidationResult::Rejected);
             }
         }
@@ -79,12 +82,14 @@ impl PluginValidation for FreezeDelegate {
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(Plugin::FreezeDelegate(freeze)) = ctx.target_plugin {
             if freeze.frozen {
+                solana_program::msg!("FreezeDelegate: Rejected");
                 return Ok(ValidationResult::Rejected);
             } else if ctx.self_authority
                 == &(Authority::Address {
                     address: *ctx.authority_info.key,
                 })
             {
+                solana_program::msg!("FreezeDelegate: Approved");
                 return Ok(ValidationResult::Approved);
             }
         }
@@ -98,6 +103,7 @@ impl PluginValidation for FreezeDelegate {
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if ctx.target_plugin.is_some() && self.frozen {
+            solana_program::msg!("FreezeDelegate: Rejected");
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)

@@ -130,6 +130,7 @@ impl AssetV1 {
             || (UpdateAuthority::Address(*authority_info.key) == self.update_authority
                 && new_plugin.manager() == Authority::UpdateAuthority)
         {
+            solana_program::msg!("Asset: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -143,6 +144,7 @@ impl AssetV1 {
         _plugin_to_remove: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.owner {
+            solana_program::msg!("Asset: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -169,6 +171,7 @@ impl AssetV1 {
                 && self.update_authority == UpdateAuthority::Address(*authority_info.key))
                 || (plugin.manager() == Authority::Owner && authority_info.key == &self.owner)
             {
+                solana_program::msg!("Asset: Approved");
                 Ok(ValidationResult::Approved)
             } else {
                 Ok(ValidationResult::Pass)
@@ -189,6 +192,7 @@ impl AssetV1 {
                 && self.update_authority == UpdateAuthority::Address(*authority_info.key))
                 || (plugin.manager() == Authority::Owner && authority_info.key == &self.owner)
             {
+                solana_program::msg!("Asset: Approved");
                 Ok(ValidationResult::Approved)
             } else {
                 Ok(ValidationResult::Pass)
@@ -205,6 +209,7 @@ impl AssetV1 {
         _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.update_authority.key() {
+            solana_program::msg!("Asset: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -218,6 +223,7 @@ impl AssetV1 {
         _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.owner {
+            solana_program::msg!("Asset: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -231,6 +237,7 @@ impl AssetV1 {
         _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.owner {
+            solana_program::msg!("Asset: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -244,6 +251,7 @@ impl AssetV1 {
         _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.owner {
+            solana_program::msg!("Asset: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -257,6 +265,7 @@ impl AssetV1 {
         _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.owner {
+            solana_program::msg!("Asset: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
