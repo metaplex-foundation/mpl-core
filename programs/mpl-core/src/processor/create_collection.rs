@@ -35,7 +35,7 @@ pub(crate) fn create_collection<'a>(
     assert_signer(ctx.accounts.collection)?;
     assert_signer(ctx.accounts.payer)?;
 
-    if *ctx.accounts.system_program.key != system_program::id() {
+    if *ctx.accounts.system_program.key != system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
@@ -63,7 +63,7 @@ pub(crate) fn create_collection<'a>(
             ctx.accounts.collection.key,
             lamports,
             serialized_data.len() as u64,
-            &crate::id(),
+            &crate::ID,
         ),
         &[
             ctx.accounts.payer.clone(),

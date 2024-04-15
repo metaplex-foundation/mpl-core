@@ -30,7 +30,7 @@ pub(crate) fn decompress<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if *ctx.accounts.system_program.key != system_program::id() {
+    if *ctx.accounts.system_program.key != system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
