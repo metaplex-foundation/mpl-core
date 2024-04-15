@@ -141,9 +141,17 @@ impl AssetV1 {
     pub fn validate_remove_plugin(
         &self,
         authority_info: &AccountInfo,
-        _plugin_to_remove: Option<&Plugin>,
+        plugin_to_remove: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        if authority_info.key == &self.owner {
+        let plugin = match plugin_to_remove {
+            Some(plugin) => plugin,
+            None => return Err(MplCoreError::InvalidPlugin.into()),
+        };
+
+        if (plugin.manager() == Authority::UpdateAuthority
+            && self.update_authority == UpdateAuthority::Address(*authority_info.key))
+            || (plugin.manager() == Authority::Owner && authority_info.key == &self.owner)
+        {
             solana_program::msg!("Asset: Approved");
             Ok(ValidationResult::Approved)
         } else {

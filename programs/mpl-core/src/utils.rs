@@ -229,6 +229,8 @@ pub(crate) fn validate_asset_permissions<'a>(
         } else if collection.unwrap().key != &collection_address {
             return Err(MplCoreError::InvalidCollection.into());
         }
+    } else if collection.is_some() {
+        return Err(MplCoreError::InvalidCollection.into());
     }
 
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();

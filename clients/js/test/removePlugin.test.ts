@@ -609,3 +609,106 @@ test('it cannot use an invalid noop program for collections', async (t) => {
 
   await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
 });
+
+test('it cannot remove an authority managed plugin from an asset if not the authority', async (t) => {
+  const umi = await createUmi();
+
+  const assetAuth = generateSigner(umi);
+  const asset = await createAsset(umi, {
+    updateAuthority: assetAuth,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Attributes',
+        data: { attributeList: [{ key: 'key', value: 'value' }] },
+      }),
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: assetAuth.publicKey },
+    attributes: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      attributeList: [{ key: 'key', value: 'value' }],
+    },
+  });
+
+  const result = removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.Attributes,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: assetAuth.publicKey },
+    attributes: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      attributeList: [{ key: 'key', value: 'value' }],
+    },
+  });
+});
+
+test('it cannot use an invalid collection to remove a plugin on an asset', async (t) => {
+  const umi = await createUmi();
+
+  const assetAuth = generateSigner(umi);
+  const asset = await createAsset(umi, {
+    updateAuthority: assetAuth,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Attributes',
+        data: { attributeList: [{ key: 'key', value: 'value' }] },
+      }),
+    ],
+  });
+
+  const collectionAuth = generateSigner(umi);
+  const wrongCollection = await createCollection(umi, {
+    updateAuthority: collectionAuth.publicKey,
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: assetAuth.publicKey },
+    attributes: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      attributeList: [{ key: 'key', value: 'value' }],
+    },
+  });
+
+  const result = removePluginV1(umi, {
+    asset: asset.publicKey,
+    collection: wrongCollection.publicKey,
+    pluginType: PluginType.Attributes,
+    authority: collectionAuth,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidCollection' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: assetAuth.publicKey },
+    attributes: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      attributeList: [{ key: 'key', value: 'value' }],
+    },
+  });
+});
