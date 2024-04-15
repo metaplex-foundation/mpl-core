@@ -94,7 +94,7 @@ test('it can remove authority managed plugin from collection', async (t) => {
   t.is(collection2.updateDelegate, undefined);
 });
 
-test('it can remove authority managed plugin from asset using update auth', async (t) => {
+test('it can remove authority managed plugin from asset in collection using update auth', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const updateAuth = generateSigner(umi);
@@ -135,6 +135,48 @@ test('it can remove authority managed plugin from asset using update auth', asyn
   const asset2 = await fetchAssetV1(umi, asset.publicKey);
 
   t.is(asset2.royalties, undefined);
+});
+
+test('it can remove authority managed plugin from asset not in collection using update auth', async (t) => {
+  const umi = await createUmi();
+
+  const assetAuth = generateSigner(umi);
+  const asset = await createAsset(umi, {
+    updateAuthority: assetAuth,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Attributes',
+        data: { attributeList: [{ key: 'key', value: 'value' }] },
+      }),
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: assetAuth.publicKey },
+    attributes: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      attributeList: [{ key: 'key', value: 'value' }],
+    },
+  });
+
+  await removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.Attributes,
+    authority: assetAuth,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: assetAuth.publicKey },
+    attributes: undefined,
+  });
 });
 
 test('it can remove authority managed plugin from collection using delegate auth', async (t) => {
