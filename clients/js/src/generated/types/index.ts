@@ -21,6 +21,7 @@ export * from './externalPlugin';
 export * from './externalPluginInitInfo';
 export * from './externalPluginKey';
 export * from './externalPluginSchema';
+export * from './externalPluginType';
 export * from './externalPluginUpdateInfo';
 export * from './externalRegistryRecord';
 export * from './extraAccount';

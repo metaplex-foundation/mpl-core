@@ -6,11 +6,12 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Option, OptionOrNullable } from '@metaplex-foundation/umi';
+import { Option, OptionOrNullable, PublicKey } from '@metaplex-foundation/umi';
 import {
   Serializer,
   array,
   option,
+  publicKey as publicKeySerializer,
   struct,
   u64,
 } from '@metaplex-foundation/umi/serializers';
@@ -24,6 +25,7 @@ import {
 } from '.';
 
 export type LifecycleHook = {
+  hookedProgram: PublicKey;
   extraAccounts: Option<Array<ExtraAccount>>;
   schema: ExternalPluginSchema;
   dataOffset: bigint;
@@ -31,6 +33,7 @@ export type LifecycleHook = {
 };
 
 export type LifecycleHookArgs = {
+  hookedProgram: PublicKey;
   extraAccounts: OptionOrNullable<Array<ExtraAccountArgs>>;
   schema: ExternalPluginSchemaArgs;
   dataOffset: number | bigint;
@@ -43,6 +46,7 @@ export function getLifecycleHookSerializer(): Serializer<
 > {
   return struct<LifecycleHook>(
     [
+      ['hookedProgram', publicKeySerializer()],
       ['extraAccounts', option(array(getExtraAccountSerializer()))],
       ['schema', getExternalPluginSchemaSerializer()],
       ['dataOffset', u64()],

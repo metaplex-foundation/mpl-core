@@ -10,16 +10,21 @@ import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalPluginSchema,
   ExternalPluginSchemaArgs,
+  PluginAuthority,
+  PluginAuthorityArgs,
   getExternalPluginSchemaSerializer,
+  getPluginAuthoritySerializer,
 } from '.';
 
 export type DataStore = {
+  dataAuthority: PluginAuthority;
   schema: ExternalPluginSchema;
   dataOffset: bigint;
   dataLen: bigint;
 };
 
 export type DataStoreArgs = {
+  dataAuthority: PluginAuthorityArgs;
   schema: ExternalPluginSchemaArgs;
   dataOffset: number | bigint;
   dataLen: number | bigint;
@@ -28,6 +33,7 @@ export type DataStoreArgs = {
 export function getDataStoreSerializer(): Serializer<DataStoreArgs, DataStore> {
   return struct<DataStore>(
     [
+      ['dataAuthority', getPluginAuthoritySerializer()],
       ['schema', getExternalPluginSchemaSerializer()],
       ['dataOffset', u64()],
       ['dataLen', u64()],

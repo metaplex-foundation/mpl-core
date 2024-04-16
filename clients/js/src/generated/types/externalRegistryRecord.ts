@@ -18,27 +18,27 @@ import {
 import {
   ExternalCheckResult,
   ExternalCheckResultArgs,
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
+  ExternalPluginType,
+  ExternalPluginTypeArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
   PluginAuthority,
   PluginAuthorityArgs,
   getExternalCheckResultSerializer,
-  getExternalPluginKeySerializer,
+  getExternalPluginTypeSerializer,
   getHookableLifecycleEventSerializer,
   getPluginAuthoritySerializer,
 } from '.';
 
 export type ExternalRegistryRecord = {
-  pluginKey: ExternalPluginKey;
+  pluginType: ExternalPluginType;
   authority: PluginAuthority;
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   offset: bigint;
 };
 
 export type ExternalRegistryRecordArgs = {
-  pluginKey: ExternalPluginKeyArgs;
+  pluginType: ExternalPluginTypeArgs;
   authority: PluginAuthorityArgs;
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
@@ -52,7 +52,7 @@ export function getExternalRegistryRecordSerializer(): Serializer<
 > {
   return struct<ExternalRegistryRecord>(
     [
-      ['pluginKey', getExternalPluginKeySerializer()],
+      ['pluginType', getExternalPluginTypeSerializer()],
       ['authority', getPluginAuthoritySerializer()],
       [
         'lifecycleChecks',
