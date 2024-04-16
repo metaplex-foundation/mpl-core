@@ -15,34 +15,34 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseExtraAccount,
+  BaseExtraAccountArgs,
   ExternalCheckResult,
   ExternalCheckResultArgs,
-  ExtraAccount,
-  ExtraAccountArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
+  getBaseExtraAccountSerializer,
   getExternalCheckResultSerializer,
-  getExtraAccountSerializer,
   getHookableLifecycleEventSerializer,
 } from '.';
 
-export type OracleUpdateInfo = {
+export type BaseOracleUpdateInfo = {
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
-  pda: Option<ExtraAccount>;
+  pda: Option<BaseExtraAccount>;
 };
 
-export type OracleUpdateInfoArgs = {
+export type BaseOracleUpdateInfoArgs = {
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
-  pda: OptionOrNullable<ExtraAccountArgs>;
+  pda: OptionOrNullable<BaseExtraAccountArgs>;
 };
 
-export function getOracleUpdateInfoSerializer(): Serializer<
-  OracleUpdateInfoArgs,
-  OracleUpdateInfo
+export function getBaseOracleUpdateInfoSerializer(): Serializer<
+  BaseOracleUpdateInfoArgs,
+  BaseOracleUpdateInfo
 > {
-  return struct<OracleUpdateInfo>(
+  return struct<BaseOracleUpdateInfo>(
     [
       [
         'lifecycleChecks',
@@ -55,8 +55,8 @@ export function getOracleUpdateInfoSerializer(): Serializer<
           )
         ),
       ],
-      ['pda', option(getExtraAccountSerializer())],
+      ['pda', option(getBaseExtraAccountSerializer())],
     ],
-    { description: 'OracleUpdateInfo' }
-  ) as Serializer<OracleUpdateInfoArgs, OracleUpdateInfo>;
+    { description: 'BaseOracleUpdateInfo' }
+  ) as Serializer<BaseOracleUpdateInfoArgs, BaseOracleUpdateInfo>;
 }

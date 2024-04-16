@@ -16,44 +16,44 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseExtraAccount,
+  BaseExtraAccountArgs,
+  BasePluginAuthority,
+  BasePluginAuthorityArgs,
   ExternalCheckResult,
   ExternalCheckResultArgs,
-  ExtraAccount,
-  ExtraAccountArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
-  PluginAuthority,
-  PluginAuthorityArgs,
+  getBaseExtraAccountSerializer,
+  getBasePluginAuthoritySerializer,
   getExternalCheckResultSerializer,
-  getExtraAccountSerializer,
   getHookableLifecycleEventSerializer,
-  getPluginAuthoritySerializer,
 } from '.';
 
-export type OracleInitInfo = {
+export type BaseOracleInitInfo = {
   baseAddress: PublicKey;
-  initPluginAuthority: Option<PluginAuthority>;
+  initPluginAuthority: Option<BasePluginAuthority>;
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
-  pda: Option<ExtraAccount>;
+  pda: Option<BaseExtraAccount>;
 };
 
-export type OracleInitInfoArgs = {
+export type BaseOracleInitInfoArgs = {
   baseAddress: PublicKey;
-  initPluginAuthority: OptionOrNullable<PluginAuthorityArgs>;
+  initPluginAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
-  pda: OptionOrNullable<ExtraAccountArgs>;
+  pda: OptionOrNullable<BaseExtraAccountArgs>;
 };
 
-export function getOracleInitInfoSerializer(): Serializer<
-  OracleInitInfoArgs,
-  OracleInitInfo
+export function getBaseOracleInitInfoSerializer(): Serializer<
+  BaseOracleInitInfoArgs,
+  BaseOracleInitInfo
 > {
-  return struct<OracleInitInfo>(
+  return struct<BaseOracleInitInfo>(
     [
       ['baseAddress', publicKeySerializer()],
-      ['initPluginAuthority', option(getPluginAuthoritySerializer())],
+      ['initPluginAuthority', option(getBasePluginAuthoritySerializer())],
       [
         'lifecycleChecks',
         option(
@@ -65,8 +65,8 @@ export function getOracleInitInfoSerializer(): Serializer<
           )
         ),
       ],
-      ['pda', option(getExtraAccountSerializer())],
+      ['pda', option(getBaseExtraAccountSerializer())],
     ],
-    { description: 'OracleInitInfo' }
-  ) as Serializer<OracleInitInfoArgs, OracleInitInfo>;
+    { description: 'BaseOracleInitInfo' }
+  ) as Serializer<BaseOracleInitInfoArgs, BaseOracleInitInfo>;
 }

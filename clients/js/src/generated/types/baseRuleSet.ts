@@ -19,55 +19,60 @@ import {
   unit,
 } from '@metaplex-foundation/umi/serializers';
 
-export type RuleSet =
+export type BaseRuleSet =
   | { __kind: 'None' }
   | { __kind: 'ProgramAllowList'; fields: [Array<PublicKey>] }
   | { __kind: 'ProgramDenyList'; fields: [Array<PublicKey>] };
 
-export type RuleSetArgs = RuleSet;
+export type BaseRuleSetArgs = BaseRuleSet;
 
-export function getRuleSetSerializer(): Serializer<RuleSetArgs, RuleSet> {
-  return dataEnum<RuleSet>(
+export function getBaseRuleSetSerializer(): Serializer<
+  BaseRuleSetArgs,
+  BaseRuleSet
+> {
+  return dataEnum<BaseRuleSet>(
     [
       ['None', unit()],
       [
         'ProgramAllowList',
-        struct<GetDataEnumKindContent<RuleSet, 'ProgramAllowList'>>([
+        struct<GetDataEnumKindContent<BaseRuleSet, 'ProgramAllowList'>>([
           ['fields', tuple([array(publicKeySerializer())])],
         ]),
       ],
       [
         'ProgramDenyList',
-        struct<GetDataEnumKindContent<RuleSet, 'ProgramDenyList'>>([
+        struct<GetDataEnumKindContent<BaseRuleSet, 'ProgramDenyList'>>([
           ['fields', tuple([array(publicKeySerializer())])],
         ]),
       ],
     ],
-    { description: 'RuleSet' }
-  ) as Serializer<RuleSetArgs, RuleSet>;
+    { description: 'BaseRuleSet' }
+  ) as Serializer<BaseRuleSetArgs, BaseRuleSet>;
 }
 
 // Data Enum Helpers.
-export function ruleSet(kind: 'None'): GetDataEnumKind<RuleSetArgs, 'None'>;
-export function ruleSet(
+export function baseRuleSet(
+  kind: 'None'
+): GetDataEnumKind<BaseRuleSetArgs, 'None'>;
+export function baseRuleSet(
   kind: 'ProgramAllowList',
-  data: GetDataEnumKindContent<RuleSetArgs, 'ProgramAllowList'>['fields']
-): GetDataEnumKind<RuleSetArgs, 'ProgramAllowList'>;
-export function ruleSet(
+  data: GetDataEnumKindContent<BaseRuleSetArgs, 'ProgramAllowList'>['fields']
+): GetDataEnumKind<BaseRuleSetArgs, 'ProgramAllowList'>;
+export function baseRuleSet(
   kind: 'ProgramDenyList',
-  data: GetDataEnumKindContent<RuleSetArgs, 'ProgramDenyList'>['fields']
-): GetDataEnumKind<RuleSetArgs, 'ProgramDenyList'>;
-export function ruleSet<K extends RuleSetArgs['__kind']>(
+  data: GetDataEnumKindContent<BaseRuleSetArgs, 'ProgramDenyList'>['fields']
+): GetDataEnumKind<BaseRuleSetArgs, 'ProgramDenyList'>;
+export function baseRuleSet<K extends BaseRuleSetArgs['__kind']>(
   kind: K,
   data?: any
-): Extract<RuleSetArgs, { __kind: K }> {
+): Extract<BaseRuleSetArgs, { __kind: K }> {
   return Array.isArray(data)
     ? { __kind: kind, fields: data }
     : { __kind: kind, ...(data ?? {}) };
 }
-export function isRuleSet<K extends RuleSet['__kind']>(
+export function isBaseRuleSet<K extends BaseRuleSet['__kind']>(
   kind: K,
-  value: RuleSet
-): value is RuleSet & { __kind: K } {
+  value: BaseRuleSet
+): value is BaseRuleSet & { __kind: K } {
   return value.__kind === kind;
 }

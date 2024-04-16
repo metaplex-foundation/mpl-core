@@ -18,18 +18,18 @@ import {
   getExternalPluginSchemaSerializer,
 } from '.';
 
-export type DataStoreUpdateInfo = { schema: Option<ExternalPluginSchema> };
+export type BaseDataStoreUpdateInfo = { schema: Option<ExternalPluginSchema> };
 
-export type DataStoreUpdateInfoArgs = {
+export type BaseDataStoreUpdateInfoArgs = {
   schema: OptionOrNullable<ExternalPluginSchemaArgs>;
 };
 
-export function getDataStoreUpdateInfoSerializer(): Serializer<
-  DataStoreUpdateInfoArgs,
-  DataStoreUpdateInfo
+export function getBaseDataStoreUpdateInfoSerializer(): Serializer<
+  BaseDataStoreUpdateInfoArgs,
+  BaseDataStoreUpdateInfo
 > {
-  return struct<DataStoreUpdateInfo>(
+  return struct<BaseDataStoreUpdateInfo>(
     [['schema', option(getExternalPluginSchemaSerializer())]],
-    { description: 'DataStoreUpdateInfo' }
-  ) as Serializer<DataStoreUpdateInfoArgs, DataStoreUpdateInfo>;
+    { description: 'BaseDataStoreUpdateInfo' }
+  ) as Serializer<BaseDataStoreUpdateInfoArgs, BaseDataStoreUpdateInfo>;
 }

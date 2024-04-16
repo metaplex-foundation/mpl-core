@@ -13,33 +13,36 @@ import {
   u16,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseRuleSet,
+  BaseRuleSetArgs,
   Creator,
   CreatorArgs,
-  RuleSet,
-  RuleSetArgs,
+  getBaseRuleSetSerializer,
   getCreatorSerializer,
-  getRuleSetSerializer,
 } from '.';
 
-export type Royalties = {
+export type BaseRoyalties = {
   basisPoints: number;
   creators: Array<Creator>;
-  ruleSet: RuleSet;
+  ruleSet: BaseRuleSet;
 };
 
-export type RoyaltiesArgs = {
+export type BaseRoyaltiesArgs = {
   basisPoints: number;
   creators: Array<CreatorArgs>;
-  ruleSet: RuleSetArgs;
+  ruleSet: BaseRuleSetArgs;
 };
 
-export function getRoyaltiesSerializer(): Serializer<RoyaltiesArgs, Royalties> {
-  return struct<Royalties>(
+export function getBaseRoyaltiesSerializer(): Serializer<
+  BaseRoyaltiesArgs,
+  BaseRoyalties
+> {
+  return struct<BaseRoyalties>(
     [
       ['basisPoints', u16()],
       ['creators', array(getCreatorSerializer())],
-      ['ruleSet', getRuleSetSerializer()],
+      ['ruleSet', getBaseRuleSetSerializer()],
     ],
-    { description: 'Royalties' }
-  ) as Serializer<RoyaltiesArgs, Royalties>;
+    { description: 'BaseRoyalties' }
+  ) as Serializer<BaseRoyaltiesArgs, BaseRoyalties>;
 }

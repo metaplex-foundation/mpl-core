@@ -11,20 +11,22 @@ import {
   AssetV1AccountDataArgs as GenAssetV1AccountDataArgs,
   getAssetV1AccountDataSerializer as genGetAssetV1AccountDataSerializer,
 } from '../generated/types/assetV1AccountData';
-import { BaseUpdateAuthority, PluginsList } from '../types';
-import { registryRecordsToPluginsList } from '../plugins';
+
+import { PluginsList, registryRecordsToPluginsList, UpdateAuthority } from '../plugins';
 import {
   PluginRegistryV1AccountData,
   getPluginRegistryV1AccountDataSerializer,
 } from './pluginRegistryV1Data';
+import { ExternalPluginsList } from '../plugins/externalPlugins';
 
 export type AssetV1AccountData = Omit<
   GenAssetV1AccountData,
   'updateAuthority'
 > &
-  PluginsList & {
+  PluginsList &
+  ExternalPluginsList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
-    updateAuthority: BaseUpdateAuthority;
+    updateAuthority: UpdateAuthority;
   };
 
 export type AssetV1AccountDataArgs = Omit<
@@ -33,7 +35,7 @@ export type AssetV1AccountDataArgs = Omit<
 > &
   PluginsList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
-    updateAuthority: BaseUpdateAuthority;
+    updateAuthority: UpdateAuthority;
   };
 
 export const getAssetV1AccountDataSerializer = (): Serializer<

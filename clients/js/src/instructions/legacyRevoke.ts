@@ -1,8 +1,7 @@
 import { Context, transactionBuilder } from '@metaplex-foundation/umi';
 import { AssetV1, PluginType, revokePluginAuthorityV1 } from '../generated';
 import { ERR_CANNOT_REVOKE } from './errors';
-import { pluginKeyToPluginType } from '../plugins';
-import { PluginsList } from '../types';
+import { pluginKeyToPluginType , PluginsList } from '../plugins';
 
 export function legacyRevoke(
   context: Pick<Context, 'payer' | 'programs'>,

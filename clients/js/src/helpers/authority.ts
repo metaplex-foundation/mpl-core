@@ -1,17 +1,17 @@
 import { PublicKey, publicKey } from '@metaplex-foundation/umi';
 import { AssetV1, CollectionV1 } from '../generated';
-import { BasePluginAuthority } from '../types';
 import { deriveAssetPlugins, isAssetOwner } from './state';
+import { PluginAuthority } from '../types';
 
 /**
  * Check if the given pubkey has the Address authority for the plugin.
  * @param {PublicKey | string} pubkey Pubkey
- * @param {BasePluginAuthority} authority Plugin authority
+ * @param {PluginAuthority} authority Plugin authority
  * @returns {boolean} True if the pubkey has the authority
  */
 export function hasPluginAddressAuthority(
   pubkey: PublicKey | string,
-  authority: BasePluginAuthority
+  authority: PluginAuthority
 ): boolean {
   return (
     authority.type === 'Address' && authority.address === publicKey(pubkey)
@@ -20,13 +20,13 @@ export function hasPluginAddressAuthority(
 /**
  * Check if the given pubkey has the Owner authority for the plugin.
  * @param {PublicKey | string} pubkey Pubkey
- * @param {BasePluginAuthority} authority Plugin authority
+ * @param {PluginAuthority} authority Plugin authority
  * @param {AssetV1} asset Asset
  * @returns {boolean} True if the pubkey has the authority
  */
 export function hasPluginOwnerAuthority(
   pubkey: PublicKey | string,
-  authority: BasePluginAuthority,
+  authority: PluginAuthority,
   asset: AssetV1
 ): boolean {
   return authority.type === 'Owner' && isAssetOwner(pubkey, asset);
@@ -34,14 +34,14 @@ export function hasPluginOwnerAuthority(
 /**
  * Check if the given pubkey has the UpdateAuthority authority for the plugin.
  * @param {PublicKey | string} pubkey Pubkey
- * @param {BasePluginAuthority} authority Plugin authority
+ * @param {PluginAuthority} authority Plugin authority
  * @param {AssetV1} asset Asset
  * @param {CollectionV1 | undefined} collection Collection
  * @returns {boolean} True if the pubkey has the authority
  */
 export function hasPluginUpdateAuthority(
   pubkey: PublicKey | string,
-  authority: BasePluginAuthority,
+  authority: PluginAuthority,
   asset: AssetV1,
   collection?: CollectionV1
 ): boolean {

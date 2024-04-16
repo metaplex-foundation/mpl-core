@@ -31,14 +31,14 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
+  BaseExternalPluginInitInfo,
+  BaseExternalPluginInitInfoArgs,
   DataState,
   DataStateArgs,
-  ExternalPluginInitInfo,
-  ExternalPluginInitInfoArgs,
   PluginAuthorityPair,
   PluginAuthorityPairArgs,
+  getBaseExternalPluginInitInfoSerializer,
   getDataStateSerializer,
-  getExternalPluginInitInfoSerializer,
   getPluginAuthorityPairSerializer,
 } from '../types';
 
@@ -69,7 +69,7 @@ export type CreateV2InstructionData = {
   name: string;
   uri: string;
   plugins: Option<Array<PluginAuthorityPair>>;
-  externalPlugins: Option<Array<ExternalPluginInitInfo>>;
+  externalPlugins: Option<Array<BaseExternalPluginInitInfo>>;
 };
 
 export type CreateV2InstructionDataArgs = {
@@ -77,7 +77,7 @@ export type CreateV2InstructionDataArgs = {
   name: string;
   uri: string;
   plugins: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
-  externalPlugins: OptionOrNullable<Array<ExternalPluginInitInfoArgs>>;
+  externalPlugins: OptionOrNullable<Array<BaseExternalPluginInitInfoArgs>>;
 };
 
 export function getCreateV2InstructionDataSerializer(): Serializer<
@@ -98,7 +98,7 @@ export function getCreateV2InstructionDataSerializer(): Serializer<
         ['plugins', option(array(getPluginAuthorityPairSerializer()))],
         [
           'externalPlugins',
-          option(array(getExternalPluginInitInfoSerializer())),
+          option(array(getBaseExternalPluginInitInfoSerializer())),
         ],
       ],
       { description: 'CreateV2InstructionData' }

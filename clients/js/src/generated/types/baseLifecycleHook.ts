@@ -15,39 +15,39 @@ import {
   u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseExtraAccount,
+  BaseExtraAccountArgs,
   ExternalPluginSchema,
   ExternalPluginSchemaArgs,
-  ExtraAccount,
-  ExtraAccountArgs,
+  getBaseExtraAccountSerializer,
   getExternalPluginSchemaSerializer,
-  getExtraAccountSerializer,
 } from '.';
 
-export type LifecycleHook = {
-  extraAccounts: Option<Array<ExtraAccount>>;
+export type BaseLifecycleHook = {
+  extraAccounts: Option<Array<BaseExtraAccount>>;
   schema: ExternalPluginSchema;
   dataOffset: bigint;
   dataLen: bigint;
 };
 
-export type LifecycleHookArgs = {
-  extraAccounts: OptionOrNullable<Array<ExtraAccountArgs>>;
+export type BaseLifecycleHookArgs = {
+  extraAccounts: OptionOrNullable<Array<BaseExtraAccountArgs>>;
   schema: ExternalPluginSchemaArgs;
   dataOffset: number | bigint;
   dataLen: number | bigint;
 };
 
-export function getLifecycleHookSerializer(): Serializer<
-  LifecycleHookArgs,
-  LifecycleHook
+export function getBaseLifecycleHookSerializer(): Serializer<
+  BaseLifecycleHookArgs,
+  BaseLifecycleHook
 > {
-  return struct<LifecycleHook>(
+  return struct<BaseLifecycleHook>(
     [
-      ['extraAccounts', option(array(getExtraAccountSerializer()))],
+      ['extraAccounts', option(array(getBaseExtraAccountSerializer()))],
       ['schema', getExternalPluginSchemaSerializer()],
       ['dataOffset', u64()],
       ['dataLen', u64()],
     ],
-    { description: 'LifecycleHook' }
-  ) as Serializer<LifecycleHookArgs, LifecycleHook>;
+    { description: 'BaseLifecycleHook' }
+  ) as Serializer<BaseLifecycleHookArgs, BaseLifecycleHook>;
 }

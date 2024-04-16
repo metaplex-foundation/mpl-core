@@ -18,7 +18,7 @@ import {
   unit,
 } from '@metaplex-foundation/umi/serializers';
 
-export type Seed =
+export type BaseSeed =
   | { __kind: 'Program' }
   | { __kind: 'Collection' }
   | { __kind: 'Owner' }
@@ -26,10 +26,10 @@ export type Seed =
   | { __kind: 'Asset' }
   | { __kind: 'Bytes'; fields: [Uint8Array] };
 
-export type SeedArgs = Seed;
+export type BaseSeedArgs = BaseSeed;
 
-export function getSeedSerializer(): Serializer<SeedArgs, Seed> {
-  return dataEnum<Seed>(
+export function getBaseSeedSerializer(): Serializer<BaseSeedArgs, BaseSeed> {
+  return dataEnum<BaseSeed>(
     [
       ['Program', unit()],
       ['Collection', unit()],
@@ -38,38 +38,42 @@ export function getSeedSerializer(): Serializer<SeedArgs, Seed> {
       ['Asset', unit()],
       [
         'Bytes',
-        struct<GetDataEnumKindContent<Seed, 'Bytes'>>([
+        struct<GetDataEnumKindContent<BaseSeed, 'Bytes'>>([
           ['fields', tuple([bytes({ size: u32() })])],
         ]),
       ],
     ],
-    { description: 'Seed' }
-  ) as Serializer<SeedArgs, Seed>;
+    { description: 'BaseSeed' }
+  ) as Serializer<BaseSeedArgs, BaseSeed>;
 }
 
 // Data Enum Helpers.
-export function seed(kind: 'Program'): GetDataEnumKind<SeedArgs, 'Program'>;
-export function seed(
+export function baseSeed(
+  kind: 'Program'
+): GetDataEnumKind<BaseSeedArgs, 'Program'>;
+export function baseSeed(
   kind: 'Collection'
-): GetDataEnumKind<SeedArgs, 'Collection'>;
-export function seed(kind: 'Owner'): GetDataEnumKind<SeedArgs, 'Owner'>;
-export function seed(kind: 'Recipient'): GetDataEnumKind<SeedArgs, 'Recipient'>;
-export function seed(kind: 'Asset'): GetDataEnumKind<SeedArgs, 'Asset'>;
-export function seed(
+): GetDataEnumKind<BaseSeedArgs, 'Collection'>;
+export function baseSeed(kind: 'Owner'): GetDataEnumKind<BaseSeedArgs, 'Owner'>;
+export function baseSeed(
+  kind: 'Recipient'
+): GetDataEnumKind<BaseSeedArgs, 'Recipient'>;
+export function baseSeed(kind: 'Asset'): GetDataEnumKind<BaseSeedArgs, 'Asset'>;
+export function baseSeed(
   kind: 'Bytes',
-  data: GetDataEnumKindContent<SeedArgs, 'Bytes'>['fields']
-): GetDataEnumKind<SeedArgs, 'Bytes'>;
-export function seed<K extends SeedArgs['__kind']>(
+  data: GetDataEnumKindContent<BaseSeedArgs, 'Bytes'>['fields']
+): GetDataEnumKind<BaseSeedArgs, 'Bytes'>;
+export function baseSeed<K extends BaseSeedArgs['__kind']>(
   kind: K,
   data?: any
-): Extract<SeedArgs, { __kind: K }> {
+): Extract<BaseSeedArgs, { __kind: K }> {
   return Array.isArray(data)
     ? { __kind: kind, fields: data }
     : { __kind: kind, ...(data ?? {}) };
 }
-export function isSeed<K extends Seed['__kind']>(
+export function isBaseSeed<K extends BaseSeed['__kind']>(
   kind: K,
-  value: Seed
-): value is Seed & { __kind: K } {
+  value: BaseSeed
+): value is BaseSeed & { __kind: K } {
   return value.__kind === kind;
 }

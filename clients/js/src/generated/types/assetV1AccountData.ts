@@ -16,18 +16,18 @@ import {
   u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseUpdateAuthority,
+  BaseUpdateAuthorityArgs,
   Key,
   KeyArgs,
-  UpdateAuthority,
-  UpdateAuthorityArgs,
+  getBaseUpdateAuthoritySerializer,
   getKeySerializer,
-  getUpdateAuthoritySerializer,
 } from '.';
 
 export type AssetV1AccountData = {
   key: Key;
   owner: PublicKey;
-  updateAuthority: UpdateAuthority;
+  updateAuthority: BaseUpdateAuthority;
   name: string;
   uri: string;
   seq: Option<bigint>;
@@ -36,7 +36,7 @@ export type AssetV1AccountData = {
 export type AssetV1AccountDataArgs = {
   key: KeyArgs;
   owner: PublicKey;
-  updateAuthority: UpdateAuthorityArgs;
+  updateAuthority: BaseUpdateAuthorityArgs;
   name: string;
   uri: string;
   seq: OptionOrNullable<number | bigint>;
@@ -50,7 +50,7 @@ export function getAssetV1AccountDataSerializer(): Serializer<
     [
       ['key', getKeySerializer()],
       ['owner', publicKeySerializer()],
-      ['updateAuthority', getUpdateAuthoritySerializer()],
+      ['updateAuthority', getBaseUpdateAuthoritySerializer()],
       ['name', string()],
       ['uri', string()],
       ['seq', option(u64())],

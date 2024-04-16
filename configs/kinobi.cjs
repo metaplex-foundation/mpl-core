@@ -137,6 +137,65 @@ kinobi.update(
   })
 );
 
+kinobi.update(
+  new k.updateDefinedTypesVisitor({
+    ruleSet: {
+      name: "baseRuleSet"
+    },
+    royalties: {
+      name: "baseRoyalties"
+    },
+    pluginAuthority: {
+      name: "basePluginAuthority"
+    },
+    updateAuthority: {
+      name: "baseUpdateAuthority"
+    },
+    seed: {
+      name: "baseSeed"
+    },
+    extraAccount: {
+      name: "baseExtraAccount"
+    },
+    externalPluginKey: {
+      name: "baseExternalPluginKey"
+    },
+    externalPluginInitInfo: {
+      name: "baseExternalPluginInitInfo"
+    },
+    externalPluginUpdateInfo: {
+      name: "baseExternalPluginUpdateInfo"
+    },
+    oracle: {
+      name: "baseOracle"
+    },
+    oracleInitInfo: {
+      name: "baseOracleInitInfo"
+    },
+    oracleUpdateInfo: {
+      name: "baseOracleUpdateInfo"
+    },
+    lifecycleHook: {
+      name: "baseLifecycleHook"
+    },
+    lifecycleHookInitInfo: {
+      name: "baseLifecycleHookInitInfo"
+    },
+    lifecycleHookUpdateInfo: {
+      name: "baseLifecycleHookUpdateInfo"
+    },
+    dataStore: {
+      name: "baseDataStore"
+    },
+    dataStoreInitInfo: {
+      name: "baseDataStoreInitInfo"
+    },
+    dataStoreUpdateInfo: {
+      name: "baseDataStoreUpdateInfo"
+    },
+  })
+)
+
 // Render JavaScript.
 const jsDir = path.join(clientDir, "js", "src", "generated");
 const prettier = require(path.join(clientDir, "js", ".prettierrc.json"));

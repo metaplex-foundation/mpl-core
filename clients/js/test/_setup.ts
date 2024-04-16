@@ -20,7 +20,7 @@ import {
   AssetV1,
   PluginsList,
   PluginAuthorityPairArgs,
-  BaseUpdateAuthority,
+  UpdateAuthority,
 } from '../src';
 
 export const createUmi = async () => (await basecreateUmi()).use(mplCore());
@@ -140,7 +140,7 @@ export const assertAsset = async (
   input: {
     asset: PublicKey | Signer;
     owner: PublicKey | Signer;
-    updateAuthority?: BaseUpdateAuthority;
+    updateAuthority?: UpdateAuthority;
     name?: string | RegExp;
     uri?: string | RegExp;
   } & PluginsList

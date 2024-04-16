@@ -1,9 +1,6 @@
 import { PublicKey } from '@metaplex-foundation/umi';
-import {
-  PluginAuthority,
-  pluginAuthority,
-} from './generated/types/pluginAuthority';
-import { BasePluginAuthority } from './types';
+import { BasePluginAuthority } from './generated';
+import { PluginAuthority, pluginAuthority } from './plugins';
 
 // Authorities data helpers
 export function nonePluginAuthority() {
@@ -23,8 +20,8 @@ export function addressPluginAuthority(address: PublicKey) {
 }
 
 export function mapPluginAuthority(
-  authority: PluginAuthority
-): BasePluginAuthority {
+  authority: BasePluginAuthority
+): PluginAuthority {
   return {
     type: authority.__kind,
     address: (authority as any).address,

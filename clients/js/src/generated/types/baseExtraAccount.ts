@@ -17,9 +17,9 @@ import {
   publicKey as publicKeySerializer,
   struct,
 } from '@metaplex-foundation/umi/serializers';
-import { Seed, SeedArgs, getSeedSerializer } from '.';
+import { BaseSeed, BaseSeedArgs, getBaseSeedSerializer } from '.';
 
-export type ExtraAccount =
+export type BaseExtraAccount =
   | { __kind: 'PreconfiguredProgram'; isSigner: boolean; isWritable: boolean }
   | {
       __kind: 'PreconfiguredCollection';
@@ -31,7 +31,7 @@ export type ExtraAccount =
   | { __kind: 'PreconfiguredAsset'; isSigner: boolean; isWritable: boolean }
   | {
       __kind: 'CustomPda';
-      seeds: Array<Seed>;
+      seeds: Array<BaseSeed>;
       isSigner: boolean;
       isWritable: boolean;
     }
@@ -42,7 +42,7 @@ export type ExtraAccount =
       isWritable: boolean;
     };
 
-export type ExtraAccountArgs =
+export type BaseExtraAccountArgs =
   | { __kind: 'PreconfiguredProgram'; isSigner: boolean; isWritable: boolean }
   | {
       __kind: 'PreconfiguredCollection';
@@ -54,7 +54,7 @@ export type ExtraAccountArgs =
   | { __kind: 'PreconfiguredAsset'; isSigner: boolean; isWritable: boolean }
   | {
       __kind: 'CustomPda';
-      seeds: Array<SeedArgs>;
+      seeds: Array<BaseSeedArgs>;
       isSigner: boolean;
       isWritable: boolean;
     }
@@ -65,110 +65,114 @@ export type ExtraAccountArgs =
       isWritable: boolean;
     };
 
-export function getExtraAccountSerializer(): Serializer<
-  ExtraAccountArgs,
-  ExtraAccount
+export function getBaseExtraAccountSerializer(): Serializer<
+  BaseExtraAccountArgs,
+  BaseExtraAccount
 > {
-  return dataEnum<ExtraAccount>(
+  return dataEnum<BaseExtraAccount>(
     [
       [
         'PreconfiguredProgram',
-        struct<GetDataEnumKindContent<ExtraAccount, 'PreconfiguredProgram'>>([
+        struct<
+          GetDataEnumKindContent<BaseExtraAccount, 'PreconfiguredProgram'>
+        >([
           ['isSigner', bool()],
           ['isWritable', bool()],
         ]),
       ],
       [
         'PreconfiguredCollection',
-        struct<GetDataEnumKindContent<ExtraAccount, 'PreconfiguredCollection'>>(
-          [
-            ['isSigner', bool()],
-            ['isWritable', bool()],
-          ]
-        ),
+        struct<
+          GetDataEnumKindContent<BaseExtraAccount, 'PreconfiguredCollection'>
+        >([
+          ['isSigner', bool()],
+          ['isWritable', bool()],
+        ]),
       ],
       [
         'PreconfiguredOwner',
-        struct<GetDataEnumKindContent<ExtraAccount, 'PreconfiguredOwner'>>([
+        struct<GetDataEnumKindContent<BaseExtraAccount, 'PreconfiguredOwner'>>([
           ['isSigner', bool()],
           ['isWritable', bool()],
         ]),
       ],
       [
         'PreconfiguredRecipient',
-        struct<GetDataEnumKindContent<ExtraAccount, 'PreconfiguredRecipient'>>([
+        struct<
+          GetDataEnumKindContent<BaseExtraAccount, 'PreconfiguredRecipient'>
+        >([
           ['isSigner', bool()],
           ['isWritable', bool()],
         ]),
       ],
       [
         'PreconfiguredAsset',
-        struct<GetDataEnumKindContent<ExtraAccount, 'PreconfiguredAsset'>>([
+        struct<GetDataEnumKindContent<BaseExtraAccount, 'PreconfiguredAsset'>>([
           ['isSigner', bool()],
           ['isWritable', bool()],
         ]),
       ],
       [
         'CustomPda',
-        struct<GetDataEnumKindContent<ExtraAccount, 'CustomPda'>>([
-          ['seeds', array(getSeedSerializer())],
+        struct<GetDataEnumKindContent<BaseExtraAccount, 'CustomPda'>>([
+          ['seeds', array(getBaseSeedSerializer())],
           ['isSigner', bool()],
           ['isWritable', bool()],
         ]),
       ],
       [
         'Address',
-        struct<GetDataEnumKindContent<ExtraAccount, 'Address'>>([
+        struct<GetDataEnumKindContent<BaseExtraAccount, 'Address'>>([
           ['address', publicKeySerializer()],
           ['isSigner', bool()],
           ['isWritable', bool()],
         ]),
       ],
     ],
-    { description: 'ExtraAccount' }
-  ) as Serializer<ExtraAccountArgs, ExtraAccount>;
+    { description: 'BaseExtraAccount' }
+  ) as Serializer<BaseExtraAccountArgs, BaseExtraAccount>;
 }
 
 // Data Enum Helpers.
-export function extraAccount(
+export function baseExtraAccount(
   kind: 'PreconfiguredProgram',
-  data: GetDataEnumKindContent<ExtraAccountArgs, 'PreconfiguredProgram'>
-): GetDataEnumKind<ExtraAccountArgs, 'PreconfiguredProgram'>;
-export function extraAccount(
+  data: GetDataEnumKindContent<BaseExtraAccountArgs, 'PreconfiguredProgram'>
+): GetDataEnumKind<BaseExtraAccountArgs, 'PreconfiguredProgram'>;
+export function baseExtraAccount(
   kind: 'PreconfiguredCollection',
-  data: GetDataEnumKindContent<ExtraAccountArgs, 'PreconfiguredCollection'>
-): GetDataEnumKind<ExtraAccountArgs, 'PreconfiguredCollection'>;
-export function extraAccount(
+  data: GetDataEnumKindContent<BaseExtraAccountArgs, 'PreconfiguredCollection'>
+): GetDataEnumKind<BaseExtraAccountArgs, 'PreconfiguredCollection'>;
+export function baseExtraAccount(
   kind: 'PreconfiguredOwner',
-  data: GetDataEnumKindContent<ExtraAccountArgs, 'PreconfiguredOwner'>
-): GetDataEnumKind<ExtraAccountArgs, 'PreconfiguredOwner'>;
-export function extraAccount(
+  data: GetDataEnumKindContent<BaseExtraAccountArgs, 'PreconfiguredOwner'>
+): GetDataEnumKind<BaseExtraAccountArgs, 'PreconfiguredOwner'>;
+export function baseExtraAccount(
   kind: 'PreconfiguredRecipient',
-  data: GetDataEnumKindContent<ExtraAccountArgs, 'PreconfiguredRecipient'>
-): GetDataEnumKind<ExtraAccountArgs, 'PreconfiguredRecipient'>;
-export function extraAccount(
+  data: GetDataEnumKindContent<BaseExtraAccountArgs, 'PreconfiguredRecipient'>
+): GetDataEnumKind<BaseExtraAccountArgs, 'PreconfiguredRecipient'>;
+export function baseExtraAccount(
   kind: 'PreconfiguredAsset',
-  data: GetDataEnumKindContent<ExtraAccountArgs, 'PreconfiguredAsset'>
-): GetDataEnumKind<ExtraAccountArgs, 'PreconfiguredAsset'>;
-export function extraAccount(
+  data: GetDataEnumKindContent<BaseExtraAccountArgs, 'PreconfiguredAsset'>
+): GetDataEnumKind<BaseExtraAccountArgs, 'PreconfiguredAsset'>;
+export function baseExtraAccount(
   kind: 'CustomPda',
-  data: GetDataEnumKindContent<ExtraAccountArgs, 'CustomPda'>
-): GetDataEnumKind<ExtraAccountArgs, 'CustomPda'>;
-export function extraAccount(
+  data: GetDataEnumKindContent<BaseExtraAccountArgs, 'CustomPda'>
+): GetDataEnumKind<BaseExtraAccountArgs, 'CustomPda'>;
+export function baseExtraAccount(
   kind: 'Address',
-  data: GetDataEnumKindContent<ExtraAccountArgs, 'Address'>
-): GetDataEnumKind<ExtraAccountArgs, 'Address'>;
-export function extraAccount<K extends ExtraAccountArgs['__kind']>(
+  data: GetDataEnumKindContent<BaseExtraAccountArgs, 'Address'>
+): GetDataEnumKind<BaseExtraAccountArgs, 'Address'>;
+export function baseExtraAccount<K extends BaseExtraAccountArgs['__kind']>(
   kind: K,
   data?: any
-): Extract<ExtraAccountArgs, { __kind: K }> {
+): Extract<BaseExtraAccountArgs, { __kind: K }> {
   return Array.isArray(data)
     ? { __kind: kind, fields: data }
     : { __kind: kind, ...(data ?? {}) };
 }
-export function isExtraAccount<K extends ExtraAccount['__kind']>(
+export function isBaseExtraAccount<K extends BaseExtraAccount['__kind']>(
   kind: K,
-  value: ExtraAccount
-): value is ExtraAccount & { __kind: K } {
+  value: BaseExtraAccount
+): value is BaseExtraAccount & { __kind: K } {
   return value.__kind === kind;
 }

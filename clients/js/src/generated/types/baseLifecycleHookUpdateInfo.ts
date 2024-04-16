@@ -15,39 +15,39 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseExtraAccount,
+  BaseExtraAccountArgs,
   ExternalCheckResult,
   ExternalCheckResultArgs,
   ExternalPluginSchema,
   ExternalPluginSchemaArgs,
-  ExtraAccount,
-  ExtraAccountArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
+  getBaseExtraAccountSerializer,
   getExternalCheckResultSerializer,
   getExternalPluginSchemaSerializer,
-  getExtraAccountSerializer,
   getHookableLifecycleEventSerializer,
 } from '.';
 
-export type LifecycleHookUpdateInfo = {
+export type BaseLifecycleHookUpdateInfo = {
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
-  extraAccounts: Option<Array<ExtraAccount>>;
+  extraAccounts: Option<Array<BaseExtraAccount>>;
   schema: Option<ExternalPluginSchema>;
 };
 
-export type LifecycleHookUpdateInfoArgs = {
+export type BaseLifecycleHookUpdateInfoArgs = {
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
-  extraAccounts: OptionOrNullable<Array<ExtraAccountArgs>>;
+  extraAccounts: OptionOrNullable<Array<BaseExtraAccountArgs>>;
   schema: OptionOrNullable<ExternalPluginSchemaArgs>;
 };
 
-export function getLifecycleHookUpdateInfoSerializer(): Serializer<
-  LifecycleHookUpdateInfoArgs,
-  LifecycleHookUpdateInfo
+export function getBaseLifecycleHookUpdateInfoSerializer(): Serializer<
+  BaseLifecycleHookUpdateInfoArgs,
+  BaseLifecycleHookUpdateInfo
 > {
-  return struct<LifecycleHookUpdateInfo>(
+  return struct<BaseLifecycleHookUpdateInfo>(
     [
       [
         'lifecycleChecks',
@@ -60,9 +60,9 @@ export function getLifecycleHookUpdateInfoSerializer(): Serializer<
           )
         ),
       ],
-      ['extraAccounts', option(array(getExtraAccountSerializer()))],
+      ['extraAccounts', option(array(getBaseExtraAccountSerializer()))],
       ['schema', option(getExternalPluginSchemaSerializer())],
     ],
-    { description: 'LifecycleHookUpdateInfo' }
-  ) as Serializer<LifecycleHookUpdateInfoArgs, LifecycleHookUpdateInfo>;
+    { description: 'BaseLifecycleHookUpdateInfo' }
+  ) as Serializer<BaseLifecycleHookUpdateInfoArgs, BaseLifecycleHookUpdateInfo>;
 }

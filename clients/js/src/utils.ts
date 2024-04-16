@@ -1,3 +1,7 @@
+export type RenameField<T, K extends keyof T, R extends PropertyKey> = Omit<T, K> & (undefined extends T[K] ? { [P in R]?: T[K] } : { [P in R]: T[K] })
+
+export type RenameToType<T extends {'__kind': string}> = T extends T ? RenameField<T, '__kind', 'type'> : never
+
 export function toWords(str: string) {
   const camelCaseRegex = /([a-z0-9])([A-Z])/g;
   return str.replace(camelCaseRegex, '$1 $2');

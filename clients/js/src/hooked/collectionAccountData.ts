@@ -11,15 +11,15 @@ import {
   CollectionV1AccountDataArgs as GenCollectionV1AccountDataArgs,
   getCollectionV1AccountDataSerializer as genGetCollectionV1AccountDataSerializer,
 } from '../generated/types/collectionV1AccountData';
-import { PluginsList } from '../types';
-import { registryRecordsToPluginsList } from '../plugins';
+import { ExternalPluginsList, PluginsList, registryRecordsToPluginsList } from '../plugins';
 import {
   PluginRegistryV1AccountData,
   getPluginRegistryV1AccountDataSerializer,
 } from './pluginRegistryV1Data';
 
 export type CollectionV1AccountData = GenCollectionV1AccountData &
-  PluginsList & {
+  PluginsList &
+  ExternalPluginsList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
   };
 

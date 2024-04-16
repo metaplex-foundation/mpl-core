@@ -1,21 +1,29 @@
 import { Serializer, array, u64 } from '@metaplex-foundation/umi/serializers';
+import { some } from '@metaplex-foundation/umi';
 import {
   Key,
   PluginType,
   RegistryRecord,
   RegistryRecordArgs,
   getKeySerializer,
-  getPluginAuthoritySerializer,
+  getBasePluginAuthoritySerializer,
   getPluginTypeSerializer,
+  ExternalRegistryRecordArgs,
+  ExternalRegistryRecord,
 } from '../generated';
 import {
   PluginRegistryV1AccountData,
   PluginRegistryV1AccountDataArgs,
 } from '../generated/types/pluginRegistryV1AccountData';
+import { nonePluginAuthority } from '../authority';
 
 export { PluginRegistryV1AccountData } from '../generated/types/pluginRegistryV1AccountData';
 
 export type RegistryRecordWithUnknown = RegistryRecord & {
+  isUnknown?: boolean;
+};
+
+export type ExternalRegistryRecordWithUnknown = ExternalRegistryRecord & {
   isUnknown?: boolean;
 };
 
@@ -49,7 +57,7 @@ export function getRegistryRecordSerializer(): Serializer<
         // Do nothing, unknown plugin type
       }
       const [authority, authorityOffset] =
-        getPluginAuthoritySerializer().deserialize(buffer, pluginTypeOffset);
+        getBasePluginAuthoritySerializer().deserialize(buffer, pluginTypeOffset);
       const [pluginOffset, pluginOffsetOffset] = u64().deserialize(
         buffer,
         authorityOffset
@@ -63,6 +71,51 @@ export function getRegistryRecordSerializer(): Serializer<
           isUnknown,
         },
         pluginOffsetOffset,
+      ];
+    },
+  };
+}
+
+export function getExternalRegistryRecordSerializer(): Serializer<
+  ExternalRegistryRecordArgs,
+  ExternalRegistryRecordWithUnknown
+> {
+  return {
+    description: 'ExternalRegistryRecordWithUnknown',
+    fixedSize: null,
+    maxSize: null,
+    serialize: () => {
+      throw new Error('Operation not supported.');
+    },
+    deserialize: (
+      buffer: Uint8Array,
+      offset = 0
+    ): [ExternalRegistryRecordWithUnknown, number] => {
+
+      try {
+        const [externalRegistryRecord, externalRegistryRecordOffset] = getExternalRegistryRecordSerializer().deserialize(
+          buffer,
+          offset
+        )
+        return [{
+          ...externalRegistryRecord,
+          isUnknown: false,
+        }, externalRegistryRecordOffset]
+      } catch (e) {
+        // TODO need to find the right offset for the next item
+      }
+
+      return [
+        {
+          pluginKey: {
+            __kind: 'DataStore',
+            fields: [nonePluginAuthority()],
+          },
+          authority: nonePluginAuthority(),
+          lifecycleChecks: some([]),
+          offset: BigInt(0),
+        },
+        offset,
       ];
     },
   };
@@ -92,7 +145,9 @@ export function getPluginRegistryV1AccountDataSerializer(): Serializer<
         getRegistryRecordSerializer()
       ).deserialize(buffer, keyOffset);
 
-      // TODO deserialize externalRegistry of plugins once they are defined, purposefully ignore them now
+      const [externalRegistry, externalRegistryOffset] = array(
+        getExternalRegistryRecordSerializer()
+      ).deserialize(buffer, registryOffset);
 
       return [
         {
@@ -100,9 +155,11 @@ export function getPluginRegistryV1AccountDataSerializer(): Serializer<
           registry: registry.filter(
             (record: RegistryRecordWithUnknown) => !record.isUnknown
           ),
-          externalRegistry: [],
+          externalRegistry: externalRegistry.filter(
+            (record: ExternalRegistryRecordWithUnknown) => !record.isUnknown
+          ),
         },
-        registryOffset,
+        externalRegistryOffset,
       ];
     },
   };

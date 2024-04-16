@@ -13,25 +13,28 @@ import {
   getExternalPluginSchemaSerializer,
 } from '.';
 
-export type DataStore = {
+export type BaseDataStore = {
   schema: ExternalPluginSchema;
   dataOffset: bigint;
   dataLen: bigint;
 };
 
-export type DataStoreArgs = {
+export type BaseDataStoreArgs = {
   schema: ExternalPluginSchemaArgs;
   dataOffset: number | bigint;
   dataLen: number | bigint;
 };
 
-export function getDataStoreSerializer(): Serializer<DataStoreArgs, DataStore> {
-  return struct<DataStore>(
+export function getBaseDataStoreSerializer(): Serializer<
+  BaseDataStoreArgs,
+  BaseDataStore
+> {
+  return struct<BaseDataStore>(
     [
       ['schema', getExternalPluginSchemaSerializer()],
       ['dataOffset', u64()],
       ['dataLen', u64()],
     ],
-    { description: 'DataStore' }
-  ) as Serializer<DataStoreArgs, DataStore>;
+    { description: 'BaseDataStore' }
+  ) as Serializer<BaseDataStoreArgs, BaseDataStore>;
 }
