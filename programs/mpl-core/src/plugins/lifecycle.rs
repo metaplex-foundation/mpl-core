@@ -1,4 +1,6 @@
+use bitflags::bitflags;
 use borsh::{BorshDeserialize, BorshSerialize};
+use modular_bitfield::{bitfield, specifiers::B5};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 use std::collections::BTreeMap;
 
@@ -25,16 +27,69 @@ pub enum CheckResult {
 }
 
 /// Lifecycle permissions for external, third party plugins.
-/// Third party plugins use this field to indicate their permission to approve, deny, or just
-/// listen to a lifecycle action.
-#[derive(BorshSerialize, BorshDeserialize, Eq, PartialEq, Copy, Clone, Debug)]
-pub enum ExternalCheckResult {
-    /// A plugin is permitted to approve a lifecycle action.
-    CanApprove,
-    /// A plugin is permitted to reject a lifecycle action.
-    CanReject,
-    /// A plugin will be notified of a lifecyle action but will not approve or reject.
-    CanListen,
+/// Third party plugins use this field to indicate their permission to listen, approve, and/or
+/// deny a lifecycle event.
+#[derive(BorshDeserialize, BorshSerialize, Eq, PartialEq, Copy, Clone, Debug)]
+pub struct ExternalCheckResult {
+    /// Bitfield for external check results.
+    flags: u8,
+}
+
+//-----------------
+// bitflags version
+//-----------------
+bitflags! {
+    /// Bit representation of lifecycle permissions for external, third party plugins.
+    #[repr(transparent)]
+    #[derive(Eq, PartialEq, Copy, Clone, Debug)]
+    pub struct ExternalCheckResultBitflags: u8 {
+        /// A plugin will be notified of a lifecyle action but will not approve or reject.
+        const CAN_LISTEN = 0b00000001;
+        /// A plugin is permitted to approve a lifecycle action.
+        const CAN_APPROVE = 0b00000010;
+        /// A plugin is permitted to reject a lifecycle action.
+        const CAN_REJECT = 0b00000100;
+    }
+}
+
+impl From<ExternalCheckResult> for ExternalCheckResultBitflags {
+    fn from(check_result: ExternalCheckResult) -> Self {
+        // Convert from a bits value, unsetting any unknown bits.
+        ExternalCheckResultBitflags::from_bits_truncate(check_result.flags)
+    }
+}
+
+impl From<ExternalCheckResultBitflags> for ExternalCheckResult {
+    fn from(bits: ExternalCheckResultBitflags) -> Self {
+        ExternalCheckResult { flags: bits.bits() }
+    }
+}
+
+//--------------------------
+// modular-bitfields version
+//--------------------------
+/// Bit representation of lifecycle permissions for external, third party plugins.
+#[bitfield(bits = 8)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+pub struct ExternalCheckResultModularBitfields {
+    pub can_listen: bool,
+    pub can_approve: bool,
+    pub can_reject: bool,
+    pub empty_bits: B5,
+}
+
+impl From<ExternalCheckResult> for ExternalCheckResultModularBitfields {
+    fn from(check_result: ExternalCheckResult) -> Self {
+        ExternalCheckResultModularBitfields::from_bytes(check_result.flags.to_le_bytes())
+    }
+}
+
+impl From<ExternalCheckResultModularBitfields> for ExternalCheckResult {
+    fn from(bits: ExternalCheckResultModularBitfields) -> Self {
+        ExternalCheckResult {
+            flags: bits.into_bytes()[0],
+        }
+    }
 }
 
 impl PluginType {

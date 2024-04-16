@@ -13,17 +13,13 @@ use super::{
 #[derive(
     Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq, EnumCount, PartialOrd, Ord,
 )]
-pub enum ExternalPluginKey {
-    /// Lifecycle Hook.  Extra accounts are specified in the external plugin header.  The attached
-    /// `Pubkey` is the hooked program, which is called at specified lifecycle events and will
-    /// return a validation result and new data to store.
-    LifecycleHook(Pubkey),
-    /// Oracle.  Get a `ValidationResult` result from an account either specified by or derived
-    /// from the attached `Pubkey`.
-    Oracle(Pubkey),
-    /// Data Store.  Arbitrary data that can be written to by the attached `Authority`.  Note this
-    /// is different then the plugin authority as it cannot update/revoke authority for the plugin.
-    DataStore(Authority),
+pub enum ExternalPluginType {
+    /// Lifecycle Hook.
+    LifecycleHook,
+    /// Oracle.
+    Oracle,
+    /// Data Store.
+    DataStore,
 }
 
 /// Definition of the external plugin variants, each containing a link to the external plugin
@@ -31,11 +27,15 @@ pub enum ExternalPluginKey {
 #[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum ExternalPlugin {
-    /// Lifecycle Hook.
+    /// Lifecycle Hook.  The hooked program and extra accounts are specified in the attached
+    /// struct.  The hooked program is called at specified lifecycle events and will return a
+    /// validation result and new data to store.
     LifecycleHook(LifecycleHook),
-    /// Oracle.
+    /// Oracle.  Get a `ValidationResult` result from an account either specified by or derived
+    /// from a `Pubkey` stored in the attached struct.
     Oracle(Oracle),
-    /// Data Store.
+    /// Arbitrary data that can be written to by the data `Authority` stored in the attached
+    /// struct.  Note this data authority is different then the plugin authority.
     DataStore(DataStore),
 }
 
@@ -167,4 +167,18 @@ pub enum ExternalPluginUpdateInfo {
     Oracle(OracleUpdateInfo),
     /// Data Store.
     DataStore(DataStoreUpdateInfo),
+}
+
+/// Key used to uniquely specify an external plugin after it is created.
+#[repr(C)]
+#[derive(
+    Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq, EnumCount, PartialOrd, Ord,
+)]
+pub enum ExternalPluginKey {
+    /// Lifecycle Hook.
+    LifecycleHook(Pubkey),
+    /// Oracle.
+    Oracle(Pubkey),
+    /// Data Store.
+    DataStore(Authority),
 }
