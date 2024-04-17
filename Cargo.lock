@@ -2099,7 +2099,6 @@ dependencies = [
 name = "mpl-core-program"
 version = "0.1.0"
 dependencies = [
- "bitflags 2.5.0",
  "borsh 0.10.3",
  "bytemuck",
  "modular-bitfield",

@@ -10,7 +10,6 @@ publish = false
 crate-type = ["cdylib", "lib"]
 
 [dependencies]
-bitflags = "2.5.0"
 borsh = "^0.10"
 shank = "0.4.2"
 modular-bitfield = "0.11.2"
