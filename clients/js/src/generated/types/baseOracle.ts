@@ -6,10 +6,11 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Option, OptionOrNullable } from '@metaplex-foundation/umi';
+import { Option, OptionOrNullable, PublicKey } from '@metaplex-foundation/umi';
 import {
   Serializer,
   option,
+  publicKey as publicKeySerializer,
   struct,
 } from '@metaplex-foundation/umi/serializers';
 import {
@@ -18,16 +19,25 @@ import {
   getBaseExtraAccountSerializer,
 } from '.';
 
-export type BaseOracle = { pda: Option<BaseExtraAccount> };
+export type BaseOracle = {
+  baseAddress: PublicKey;
+  pda: Option<BaseExtraAccount>;
+};
 
-export type BaseOracleArgs = { pda: OptionOrNullable<BaseExtraAccountArgs> };
+export type BaseOracleArgs = {
+  baseAddress: PublicKey;
+  pda: OptionOrNullable<BaseExtraAccountArgs>;
+};
 
 export function getBaseOracleSerializer(): Serializer<
   BaseOracleArgs,
   BaseOracle
 > {
   return struct<BaseOracle>(
-    [['pda', option(getBaseExtraAccountSerializer())]],
+    [
+      ['baseAddress', publicKeySerializer()],
+      ['pda', option(getBaseExtraAccountSerializer())],
+    ],
     { description: 'BaseOracle' }
   ) as Serializer<BaseOracleArgs, BaseOracle>;
 }

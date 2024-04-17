@@ -1,4 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use modular_bitfield::{bitfield, specifiers::B5};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 use std::collections::BTreeMap;
 
@@ -25,16 +26,36 @@ pub enum CheckResult {
 }
 
 /// Lifecycle permissions for external, third party plugins.
-/// Third party plugins use this field to indicate their permission to approve, deny, or just
-/// listen to a lifecycle action.
-#[derive(BorshSerialize, BorshDeserialize, Eq, PartialEq, Copy, Clone, Debug)]
-pub enum ExternalCheckResult {
-    /// A plugin is permitted to approve a lifecycle action.
-    CanApprove,
-    /// A plugin is permitted to reject a lifecycle action.
-    CanReject,
-    /// A plugin will be notified of a lifecyle action but will not approve or reject.
-    CanListen,
+/// Third party plugins use this field to indicate their permission to listen, approve, and/or
+/// deny a lifecycle event.
+#[derive(BorshDeserialize, BorshSerialize, Eq, PartialEq, Copy, Clone, Debug)]
+pub struct ExternalCheckResult {
+    /// Bitfield for external check results.
+    flags: u8,
+}
+
+/// Bitfield representation of lifecycle permissions for external, third party plugins.
+#[bitfield(bits = 8)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+pub struct ExternalCheckResultBits {
+    pub can_listen: bool,
+    pub can_approve: bool,
+    pub can_reject: bool,
+    pub empty_bits: B5,
+}
+
+impl From<ExternalCheckResult> for ExternalCheckResultBits {
+    fn from(check_result: ExternalCheckResult) -> Self {
+        ExternalCheckResultBits::from_bytes(check_result.flags.to_le_bytes())
+    }
+}
+
+impl From<ExternalCheckResultBits> for ExternalCheckResult {
+    fn from(bits: ExternalCheckResultBits) -> Self {
+        ExternalCheckResult {
+            flags: bits.into_bytes()[0],
+        }
+    }
 }
 
 impl PluginType {

@@ -34,6 +34,7 @@ export * from './edition';
 export * from './externalCheckResult';
 export * from './externalPlugin';
 export * from './externalPluginSchema';
+export * from './externalPluginType';
 export * from './externalRegistryRecord';
 export * from './freezeDelegate';
 export * from './hashablePluginSchema';

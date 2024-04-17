@@ -1999,6 +1999,12 @@
         "kind": "struct",
         "fields": [
           {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
             "name": "schema",
             "type": {
               "defined": "ExternalPluginSchema"
@@ -2086,10 +2092,26 @@
       }
     },
     {
+      "name": "ExternalCheckResult",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "flags",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
       "name": "LifecycleHook",
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "hookedProgram",
+            "type": "publicKey"
+          },
           {
             "name": "extraAccounts",
             "type": {
@@ -2220,6 +2242,10 @@
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "baseAddress",
+            "type": "publicKey"
+          },
           {
             "name": "pda",
             "type": {
@@ -2365,9 +2391,9 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "pluginKey",
+            "name": "pluginType",
             "type": {
-              "defined": "ExternalPluginKey"
+              "defined": "ExternalPluginType"
             }
           },
           {
@@ -3197,29 +3223,18 @@
       }
     },
     {
-      "name": "ExternalPluginKey",
+      "name": "ExternalPluginType",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "LifecycleHook",
-            "fields": [
-              "publicKey"
-            ]
+            "name": "LifecycleHook"
           },
           {
-            "name": "Oracle",
-            "fields": [
-              "publicKey"
-            ]
+            "name": "Oracle"
           },
           {
-            "name": "DataStore",
-            "fields": [
-              {
-                "defined": "Authority"
-              }
-            ]
+            "name": "DataStore"
           }
         ]
       }
@@ -3498,18 +3513,29 @@
       }
     },
     {
-      "name": "ExternalCheckResult",
+      "name": "ExternalPluginKey",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "CanApprove"
+            "name": "LifecycleHook",
+            "fields": [
+              "publicKey"
+            ]
           },
           {
-            "name": "CanReject"
+            "name": "Oracle",
+            "fields": [
+              "publicKey"
+            ]
           },
           {
-            "name": "CanListen"
+            "name": "DataStore",
+            "fields": [
+              {
+                "defined": "Authority"
+              }
+            ]
           }
         ]
       }

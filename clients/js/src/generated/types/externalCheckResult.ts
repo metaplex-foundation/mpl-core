@@ -6,13 +6,9 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct, u8 } from '@metaplex-foundation/umi/serializers';
 
-export enum ExternalCheckResult {
-  CanApprove,
-  CanReject,
-  CanListen,
-}
+export type ExternalCheckResult = { flags: number };
 
 export type ExternalCheckResultArgs = ExternalCheckResult;
 
@@ -20,7 +16,7 @@ export function getExternalCheckResultSerializer(): Serializer<
   ExternalCheckResultArgs,
   ExternalCheckResult
 > {
-  return scalarEnum<ExternalCheckResult>(ExternalCheckResult, {
+  return struct<ExternalCheckResult>([['flags', u8()]], {
     description: 'ExternalCheckResult',
   }) as Serializer<ExternalCheckResultArgs, ExternalCheckResult>;
 }
