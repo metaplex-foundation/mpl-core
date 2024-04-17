@@ -5,7 +5,7 @@ use std::{cmp::Ordering, collections::BTreeMap};
 use crate::state::{Authority, DataBlob, Key, SolanaAccount};
 
 use super::{
-    CheckResult, ExternalCheckResult, ExternalPluginKey, HookableLifecycleEvent, PluginType,
+    CheckResult, ExternalCheckResult, ExternalPluginType, HookableLifecycleEvent, PluginType,
 };
 
 /// The Plugin Registry stores a record of all plugins, their location, and their authorities.
@@ -36,26 +36,26 @@ impl PluginRegistryV1 {
         }
     }
 
-    /// Evaluate checks for all external plugins in the registry.
-    pub(crate) fn check_external_registry(
-        &self,
-        key: Key,
-        lifecycle_event: &HookableLifecycleEvent,
-        result: &mut BTreeMap<
-            ExternalPluginKey,
-            (Key, ExternalCheckResult, ExternalRegistryRecord),
-        >,
-    ) {
-        for record in &self.external_registry {
-            if let Some(lifecycle_checks) = &record.lifecycle_checks {
-                for (event, check_result) in lifecycle_checks {
-                    if event == lifecycle_event {
-                        result.insert(record.plugin_key, (key, *check_result, record.clone()));
-                    }
-                }
-            }
-        }
-    }
+    // Evaluate checks for all external plugins in the registry.
+    // pub(crate) fn check_external_registry(
+    //     &self,
+    //     key: Key,
+    //     lifecycle_event: &HookableLifecycleEvent,
+    //     result: &mut BTreeMap<
+    //         ExternalPluginKey,
+    //         (Key, ExternalCheckResult, ExternalRegistryRecord),
+    //     >,
+    // ) {
+    //     for record in &self.external_registry {
+    //         if let Some(lifecycle_checks) = &record.lifecycle_checks {
+    //             for (event, check_result) in lifecycle_checks {
+    //                 if event == lifecycle_event {
+    //                     result.insert(record.plugin_key, (key, *check_result, record.clone()));
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 impl DataBlob for PluginRegistryV1 {
@@ -97,8 +97,8 @@ impl RegistryRecord {
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct ExternalRegistryRecord {
-    /// The third party plugin key.
-    pub plugin_key: ExternalPluginKey,
+    /// The external, third party plugin type.
+    pub plugin_type: ExternalPluginType,
     /// The authority of the external plugin.
     pub authority: Authority,
     /// The lifecyle events for which the the external plugin is active.
