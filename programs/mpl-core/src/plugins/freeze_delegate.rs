@@ -1,9 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{account_info::AccountInfo, program_error::ProgramError};
+use solana_program::program_error::ProgramError;
 
 use crate::state::{Authority, DataBlob};
 
-use super::{Plugin, PluginValidation, ValidationResult};
+use super::{Plugin, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The freeze delegate plugin allows any authority to lock the asset so it's no longer transferable.
 /// The default authority for this plugin is the owner.
@@ -40,11 +40,10 @@ impl DataBlob for FreezeDelegate {
 impl PluginValidation for FreezeDelegate {
     fn validate_burn(
         &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-        _resolved_authorities: Option<&[Authority]>,
+        _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
+            solana_program::msg!("FreezeDelegate: Rejected");
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)
@@ -53,12 +52,10 @@ impl PluginValidation for FreezeDelegate {
 
     fn validate_transfer(
         &self,
-        _authority_info: &AccountInfo,
-        _new_owner: &AccountInfo,
-        _authority: &Authority,
-        _resolved_authorities: Option<&[Authority]>,
+        _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
+            solana_program::msg!("FreezeDelegate: Rejected");
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)
@@ -67,12 +64,11 @@ impl PluginValidation for FreezeDelegate {
 
     fn validate_approve_plugin_authority(
         &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-        plugin_to_approve: Option<&Plugin>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(Plugin::FreezeDelegate(freeze)) = plugin_to_approve {
+        if let Some(Plugin::FreezeDelegate(freeze)) = ctx.target_plugin {
             if freeze.frozen {
+                solana_program::msg!("FreezeDelegate: Rejected");
                 return Ok(ValidationResult::Rejected);
             }
         }
@@ -82,18 +78,18 @@ impl PluginValidation for FreezeDelegate {
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        authority_info: &AccountInfo,
-        authority: &Authority,
-        plugin_to_revoke: Option<&Plugin>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(Plugin::FreezeDelegate(freeze)) = plugin_to_revoke {
+        if let Some(Plugin::FreezeDelegate(freeze)) = ctx.target_plugin {
             if freeze.frozen {
+                solana_program::msg!("FreezeDelegate: Rejected");
                 return Ok(ValidationResult::Rejected);
-            } else if authority
+            } else if ctx.self_authority
                 == &(Authority::Address {
-                    address: *authority_info.key,
+                    address: *ctx.authority_info.key,
                 })
             {
+                solana_program::msg!("FreezeDelegate: Approved");
                 return Ok(ValidationResult::Approved);
             }
         }
@@ -104,11 +100,10 @@ impl PluginValidation for FreezeDelegate {
     /// Validate the remove plugin lifecycle action.
     fn validate_remove_plugin(
         &self,
-        _authority_info: &AccountInfo,
-        _authority: &Authority,
-        plugin_to_revoke: Option<&Plugin>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if plugin_to_revoke.is_some() && self.frozen {
+        if ctx.target_plugin.is_some() && self.frozen {
+            solana_program::msg!("FreezeDelegate: Rejected");
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)

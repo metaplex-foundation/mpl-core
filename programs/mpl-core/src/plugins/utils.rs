@@ -141,15 +141,23 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
 /// Fetch the plugin from the registry.
 pub fn fetch_wrapped_plugin<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
+    core: Option<&T>,
     plugin_type: PluginType,
 ) -> Result<(Authority, Plugin), ProgramError> {
-    let asset = T::load(account, 0)?;
+    let size = match core {
+        Some(core) => core.get_size(),
+        None => {
+            let asset = T::load(account, 0)?;
 
-    if asset.get_size() == account.data_len() {
-        return Err(MplCoreError::PluginNotFound.into());
-    }
+            if asset.get_size() == account.data_len() {
+                return Err(MplCoreError::PluginNotFound.into());
+            }
 
-    let header = PluginHeaderV1::load(account, asset.get_size())?;
+            asset.get_size()
+        }
+    };
+
+    let header = PluginHeaderV1::load(account, size)?;
     let PluginRegistryV1 { registry, .. } =
         PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
@@ -299,9 +307,6 @@ pub fn delete_plugin<'a, T: DataBlob>(
             .ok_or(MplCoreError::NumericalOverflow)?
             .checked_sub(serialized_plugin.len())
             .ok_or(MplCoreError::NumericalOverflow)?;
-
-        solana_program::msg!("size: {:?}", account.data_len());
-        solana_program::msg!("new_size: {:?}", new_size);
 
         let new_registry_offset = header
             .plugin_registry_offset

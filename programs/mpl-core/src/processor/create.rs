@@ -10,7 +10,7 @@ use crate::{
     instruction::accounts::CreateV2Accounts,
     plugins::{
         create_plugin_meta, initialize_plugin, CheckResult, ExternalPluginInitInfo, Plugin,
-        PluginAuthorityPair, PluginType, ValidationResult,
+        PluginAuthorityPair, PluginType, PluginValidationContext, ValidationResult,
     },
     state::{AssetV1, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT},
     utils::resolve_authority,
@@ -67,7 +67,7 @@ pub(crate) fn process_create<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if *ctx.accounts.system_program.key != system_program::id() {
+    if *ctx.accounts.system_program.key != system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
@@ -131,7 +131,7 @@ pub(crate) fn process_create<'a>(
             ctx.accounts.asset.key,
             lamports,
             serialized_data.len() as u64,
-            &crate::id(),
+            &crate::ID,
         ),
         &[
             ctx.accounts.payer.clone(),
@@ -159,14 +159,14 @@ pub(crate) fn process_create<'a>(
             for plugin in &plugins {
                 if PluginType::check_create(&PluginType::from(&plugin.plugin)) != CheckResult::None
                 {
-                    match Plugin::validate_create(
-                        &plugin.plugin,
-                        authority,
-                        None,
-                        &plugin.authority.unwrap_or(plugin.plugin.manager()),
-                        None,
-                        None,
-                    )? {
+                    let validation_ctx = PluginValidationContext {
+                        self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
+                        authority_info: authority,
+                        resolved_authorities: None,
+                        new_owner: None,
+                        target_plugin: None,
+                    };
+                    match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
                         ValidationResult::Rejected => approved = false,
                         ValidationResult::ForceApproved => force_approved = true,
                         _ => (),

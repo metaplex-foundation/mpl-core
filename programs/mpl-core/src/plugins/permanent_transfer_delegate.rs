@@ -1,9 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{account_info::AccountInfo, program_error::ProgramError};
+use solana_program::program_error::ProgramError;
 
-use crate::state::{Authority, DataBlob};
+use crate::state::DataBlob;
 
-use super::{Plugin, PluginType, PluginValidation, ValidationResult};
+use super::{PluginType, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The permanent transfer plugin allows any authority to transfer the asset.
 /// The default authority for this plugin is the update authority.
@@ -24,15 +24,14 @@ impl DataBlob for PermanentTransferDelegate {
 impl PluginValidation for PermanentTransferDelegate {
     fn validate_add_plugin(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        new_plugin: Option<&Plugin>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
         // always reject it.
-        if new_plugin.is_some()
-            && PluginType::from(new_plugin.unwrap()) == PluginType::PermanentTransferDelegate
+        if ctx.target_plugin.is_some()
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentTransferDelegate
         {
+            solana_program::msg!("PermanentTransferDelegate: Rejected");
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)
@@ -41,22 +40,19 @@ impl PluginValidation for PermanentTransferDelegate {
 
     fn validate_revoke_plugin_authority(
         &self,
-        _authority: &AccountInfo,
-        _authorities: &Authority,
-        _plugin_to_revoke: Option<&Plugin>,
+        _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        solana_program::msg!("PermanentTransferDelegate: Approved");
         Ok(ValidationResult::Approved)
     }
 
     fn validate_transfer(
         &self,
-        _authority_info: &AccountInfo,
-        _new_owner: &AccountInfo,
-        authority: &Authority,
-        resolved_authorities: Option<&[Authority]>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(resolved_authorities) = resolved_authorities {
-            if resolved_authorities.contains(authority) {
+        if let Some(resolved_authorities) = ctx.resolved_authorities {
+            if resolved_authorities.contains(ctx.self_authority) {
+                solana_program::msg!("PermanentTransferDelegate: ForceApproved");
                 return Ok(ValidationResult::ForceApproved);
             }
         }

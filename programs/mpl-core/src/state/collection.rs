@@ -112,6 +112,7 @@ impl CollectionV1 {
         if *authority_info.key == self.update_authority
             && new_plugin.manager() == Authority::UpdateAuthority
         {
+            solana_program::msg!("Collection: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -132,6 +133,7 @@ impl CollectionV1 {
         if *authority_info.key == self.update_authority
             && plugin_to_remove.manager() == Authority::UpdateAuthority
         {
+            solana_program::msg!("Collection: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -161,6 +163,7 @@ impl CollectionV1 {
         if *authority_info.key == self.update_authority
             && plugin.manager() == Authority::UpdateAuthority
         {
+            solana_program::msg!("Collection: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -181,6 +184,7 @@ impl CollectionV1 {
         if *authority_info.key == self.update_authority
             && plugin.manager() == Authority::UpdateAuthority
         {
+            solana_program::msg!("Collection: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -212,6 +216,7 @@ impl CollectionV1 {
         _: Option<&Plugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.update_authority {
+            solana_program::msg!("Collection: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)

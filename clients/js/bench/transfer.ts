@@ -160,6 +160,7 @@ test('transfer an asset with plugins and empty collection', async (t) => {
     }));
     builder = builder.add(createV1(umi, {
         asset: assetAddress,
+        collection: collectionAddress.publicKey,
         name: "Test",
         uri: "www.test.com",
         plugins: [
