@@ -345,7 +345,7 @@ pub(crate) fn validate_asset_permissions<'a>(
 }
 
 /// Validate collection permissions using lifecycle validations for collection and plugins.
-#[allow(clippy::type_complexity)]
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 pub(crate) fn validate_collection_permissions<'a>(
     authority_info: &'a AccountInfo<'a>,
     collection: &AccountInfo<'a>,
