@@ -1,50 +1,102 @@
-import { BaseDataStore, BaseDataStoreInitInfoArgs, BaseDataStoreUpdateInfoArgs, ExternalPluginSchema } from "../generated";
-import { ExternalPluginKey } from "./externalPluginKey";
-import { ExternalPluginManifest } from "./externalPluginManifest";
-import { BaseExternalPlugin } from "./externalPlugins";
-import { LifecycleChecks } from "./lifecycleChecks";
-import { PluginAuthority, pluginAuthorityToBase } from "./pluginAuthority";
+import {
+  BaseDataStore,
+  BaseDataStoreInitInfoArgs,
+  BaseDataStoreUpdateInfoArgs,
+  ExternalPluginSchema,
+} from '../generated';
+import { ExternalPluginKey } from './externalPluginKey';
+import { ExternalPluginManifest } from './externalPluginManifest';
+import {
+  BaseExternalPlugin,
+  ExternalPluginData,
+  parseExternalPluginData,
+} from './externalPlugins';
+import { LifecycleChecks } from './lifecycleChecks';
+import {
+  PluginAuthority,
+  pluginAuthorityFromBase,
+  pluginAuthorityToBase,
+} from './pluginAuthority';
 
-export type DataStore = BaseDataStore & {
-  data?: any
-}
+export type DataStore = Omit<
+  BaseDataStore,
+  'dataAuthority' | 'dataOffset' | 'dataLen'
+> &
+  ExternalPluginData & {
+    dataAuthority: PluginAuthority;
+    dataOffset: number;
+    dataLen: number;
+    data?: any;
+  };
 
-export type DataStorePlugin = BaseExternalPlugin & DataStore & {
-  type: 'DataStore',
-  dataAuthority: PluginAuthority,
-}
+export type DataStorePlugin = BaseExternalPlugin &
+  DataStore & {
+    type: 'DataStore';
+    dataAuthority: PluginAuthority;
+  };
 
-export type DataStoreInitInfoArgs = Omit<BaseDataStoreInitInfoArgs, 'initPluginAuthority' | 'lifecycleChecks' | 'dataAuthority'> & {
-  type: 'DataStore'
-  initPluginAuthority?: PluginAuthority
-  lifecycleChecks?: LifecycleChecks
-  schema?: ExternalPluginSchema
-  dataAuthority: PluginAuthority
-}
+export type DataStoreInitInfoArgs = Omit<
+  BaseDataStoreInitInfoArgs,
+  'initPluginAuthority' | 'lifecycleChecks' | 'dataAuthority'
+> & {
+  type: 'DataStore';
+  initPluginAuthority?: PluginAuthority;
+  lifecycleChecks?: LifecycleChecks;
+  schema?: ExternalPluginSchema;
+  dataAuthority: PluginAuthority;
+};
 
-export type DataStoreUpdateInfoArgs = Omit<BaseDataStoreUpdateInfoArgs, 'schema'> & {
-  key: ExternalPluginKey,
-  schema?: ExternalPluginSchema
-}
+export type DataStoreUpdateInfoArgs = Omit<
+  BaseDataStoreUpdateInfoArgs,
+  'schema'
+> & {
+  key: ExternalPluginKey;
+  schema?: ExternalPluginSchema;
+};
 
-export function dataStoreInitInfoArgsToBase(d: DataStoreInitInfoArgs): BaseDataStoreInitInfoArgs {
+export function dataStoreInitInfoArgsToBase(
+  d: DataStoreInitInfoArgs
+): BaseDataStoreInitInfoArgs {
   return {
-   dataAuthority: pluginAuthorityToBase(d.dataAuthority),
-   initPluginAuthority: d.initPluginAuthority ? pluginAuthorityToBase(d.initPluginAuthority) : null,
-   schema: d.schema ? d.schema : null,
-  }
+    dataAuthority: pluginAuthorityToBase(d.dataAuthority),
+    initPluginAuthority: d.initPluginAuthority
+      ? pluginAuthorityToBase(d.initPluginAuthority)
+      : null,
+    schema: d.schema ? d.schema : null,
+  };
 }
 
-export function dataStoreUpdateInfoArgsToBase(d: DataStoreUpdateInfoArgs): BaseDataStoreUpdateInfoArgs {
+export function dataStoreUpdateInfoArgsToBase(
+  d: DataStoreUpdateInfoArgs
+): BaseDataStoreUpdateInfoArgs {
   return {
     schema: d.schema ? d.schema : null,
-  }
+  };
+}
+
+export function dataStoreFromBase(
+  s: BaseDataStore,
+  account: Uint8Array
+): DataStore {
+  return {
+    ...s,
+    dataAuthority: pluginAuthorityFromBase(s.dataAuthority),
+    dataOffset: Number(s.dataOffset),
+    dataLen: Number(s.dataLen),
+    data: parseExternalPluginData(s, account),
+  };
 }
 
 export const dataStoreManifest: ExternalPluginManifest<
-  DataStoreInitInfoArgs, BaseDataStoreInitInfoArgs,
-  DataStoreUpdateInfoArgs, BaseDataStoreUpdateInfoArgs> = {
-    type: 'LifecycleHook',
-    initToBase: dataStoreInitInfoArgsToBase,
-    updateToBase: dataStoreUpdateInfoArgsToBase,
-  }
+  DataStore,
+  BaseDataStore,
+  DataStoreInitInfoArgs,
+  BaseDataStoreInitInfoArgs,
+  DataStoreUpdateInfoArgs,
+  BaseDataStoreUpdateInfoArgs
+> = {
+  type: 'DataStore',
+  fromBase: dataStoreFromBase,
+  initToBase: dataStoreInitInfoArgsToBase,
+  updateToBase: dataStoreUpdateInfoArgsToBase,
+};

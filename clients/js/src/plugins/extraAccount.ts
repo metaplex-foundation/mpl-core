@@ -4,7 +4,7 @@ import {
   publicKey as publicKeySerializer,
 } from '@metaplex-foundation/umi/serializers';
 import { BaseExtraAccount } from '../generated';
-import { Seed, seedToBase } from './seed';
+import { Seed, seedFromBase, seedToBase } from './seed';
 import { RenameToType } from '../utils';
 
 export const PRECONFIGURED_SEED = 'mpl-core';
@@ -163,6 +163,31 @@ export function extraAccountToBase(s: ExtraAccount): BaseExtraAccount {
 
   return {
     __kind: s.type,
+    isSigner: s.isSigner,
+    isWritable: s.isWritable,
+  };
+}
+
+export function extraAccountFromBase(s: BaseExtraAccount): ExtraAccount {
+  if (s.__kind === 'CustomPda') {
+    return {
+      type: 'CustomPda',
+      isSigner: s.isSigner,
+      isWritable: s.isWritable,
+      seeds: s.seeds.map(seedFromBase),
+    };
+  }
+  if (s.__kind === 'Address') {
+    return {
+      type: 'Address',
+      isSigner: s.isSigner,
+      isWritable: s.isWritable,
+      address: s.address,
+    };
+  }
+
+  return {
+    type: s.__kind,
     isSigner: s.isSigner,
     isWritable: s.isWritable,
   };

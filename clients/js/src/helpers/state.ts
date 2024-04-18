@@ -3,7 +3,10 @@ import { AssetV1, CollectionV1 } from '../generated';
 import { ExternalPluginsList } from '../plugins';
 import { OracleInitInfoArgs, OraclePlugin } from '../plugins/oracle';
 import { DataStoreInitInfoArgs, DataStorePlugin } from '../plugins/dataStore';
-import { LifecycleHookInitInfoArgs, LifecycleHookPlugin } from '../plugins/lifecycleHook';
+import {
+  LifecycleHookInitInfoArgs,
+  LifecycleHookPlugin,
+} from '../plugins/lifecycleHook';
 
 /**
  * Find the collection address for the given asset if it is part of a collection.
@@ -24,13 +27,21 @@ const externalPluginKeys: (keyof ExternalPluginsList)[] = [
   'lifecycleHooks',
 ];
 export const getExternalPluginKeyAsString = (
-  plugin: OraclePlugin | DataStorePlugin | LifecycleHookPlugin | OracleInitInfoArgs | LifecycleHookInitInfoArgs | DataStoreInitInfoArgs
+  plugin:
+    | OraclePlugin
+    | DataStorePlugin
+    | LifecycleHookPlugin
+    | OracleInitInfoArgs
+    | LifecycleHookInitInfoArgs
+    | DataStoreInitInfoArgs
 ) => {
-  switch(plugin.type) {
+  switch (plugin.type) {
     case 'Oracle':
       return `${plugin.type}-${plugin.baseAddress}`;
     case 'DataStore':
-      return `${plugin.type}-${plugin.dataAuthority.type}${plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''}`;
+      return `${plugin.type}-${plugin.dataAuthority.type}${
+        plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
+      }`;
     case 'LifecycleHook':
     default:
       return `${plugin.type}-${plugin.hookedProgram}`;

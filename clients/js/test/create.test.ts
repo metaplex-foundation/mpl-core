@@ -139,7 +139,7 @@ test('it can create a new asset in account state with plugins', async (t) => {
       authority: {
         type: 'Owner',
       },
-      offset: BigInt(119),
+      offset: 119,
       frozen: false,
     },
   });

@@ -10,7 +10,7 @@ import {
   AssetV1,
   PluginType,
 } from '../generated';
-import { createPlugin, pluginKeyToPluginType , PluginsList } from '../plugins';
+import { createPlugin, pluginKeyToPluginType, PluginsList } from '../plugins';
 import { addressPluginAuthority } from '../authority';
 
 export function legacyDelegate(

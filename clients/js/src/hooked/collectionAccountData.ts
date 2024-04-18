@@ -11,7 +11,12 @@ import {
   CollectionV1AccountDataArgs as GenCollectionV1AccountDataArgs,
   getCollectionV1AccountDataSerializer as genGetCollectionV1AccountDataSerializer,
 } from '../generated/types/collectionV1AccountData';
-import { ExternalPluginsList, PluginsList, registryRecordsToPluginsList } from '../plugins';
+import {
+  ExternalPluginsList,
+  externalRegistryRecordsToExternalPluginList,
+  PluginsList,
+  registryRecordsToPluginsList,
+} from '../plugins';
 import {
   PluginRegistryV1AccountData,
   getPluginRegistryV1AccountDataSerializer,
@@ -57,6 +62,7 @@ export const getCollectionV1AccountDataSerializer = (): Serializer<
     let pluginHeader: PluginHeaderV1AccountData | undefined;
     let pluginRegistry: PluginRegistryV1AccountData | undefined;
     let pluginsList: PluginsList | undefined;
+    let externalPluginsList: ExternalPluginsList | undefined;
     let finalOffset = collectionOffset;
 
     if (buffer.length !== collectionOffset) {
@@ -75,12 +81,18 @@ export const getCollectionV1AccountDataSerializer = (): Serializer<
         pluginRegistry.registry,
         buffer
       );
+
+      externalPluginsList = externalRegistryRecordsToExternalPluginList(
+        pluginRegistry.externalRegistry,
+        buffer
+      );
     }
 
     return [
       {
         pluginHeader,
         ...pluginsList,
+        ...externalPluginsList,
         ...collection,
       },
       finalOffset,

@@ -1,4 +1,3 @@
-
 // export async function update() {
 // }
 
@@ -37,4 +36,3 @@
 // export async function fetchAssetsByCollection () {
 
 // }
-

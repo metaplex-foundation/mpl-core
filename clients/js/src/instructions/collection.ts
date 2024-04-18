@@ -1,7 +1,3 @@
-import {
-  createCollectionV2 as createCollection
-} from "../generated";
+import { createCollectionV2 as createCollection } from '../generated';
 
-export {
-  createCollection,
-}
+export { createCollection };

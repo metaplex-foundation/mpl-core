@@ -1,5 +1,10 @@
-import { Serializer, array, u64 } from '@metaplex-foundation/umi/serializers';
-import { some } from '@metaplex-foundation/umi';
+import {
+  Serializer,
+  array,
+  option,
+  tuple,
+  u64,
+} from '@metaplex-foundation/umi/serializers';
 import {
   Key,
   PluginType,
@@ -10,12 +15,15 @@ import {
   getPluginTypeSerializer,
   ExternalRegistryRecordArgs,
   ExternalRegistryRecord,
+  getExternalPluginTypeSerializer,
+  ExternalPluginType,
+  getHookableLifecycleEventSerializer,
+  getExternalCheckResultSerializer,
 } from '../generated';
 import {
   PluginRegistryV1AccountData,
   PluginRegistryV1AccountDataArgs,
 } from '../generated/types/pluginRegistryV1AccountData';
-import { nonePluginAuthority } from '../authority';
 
 export { PluginRegistryV1AccountData } from '../generated/types/pluginRegistryV1AccountData';
 
@@ -57,7 +65,10 @@ export function getRegistryRecordSerializer(): Serializer<
         // Do nothing, unknown plugin type
       }
       const [authority, authorityOffset] =
-        getBasePluginAuthoritySerializer().deserialize(buffer, pluginTypeOffset);
+        getBasePluginAuthoritySerializer().deserialize(
+          buffer,
+          pluginTypeOffset
+        );
       const [pluginOffset, pluginOffsetOffset] = u64().deserialize(
         buffer,
         authorityOffset
@@ -91,31 +102,46 @@ export function getExternalRegistryRecordSerializer(): Serializer<
       buffer: Uint8Array,
       offset = 0
     ): [ExternalRegistryRecordWithUnknown, number] => {
-
+      let [pluginType, pluginTypeOffset, isUnknown] = [
+        ExternalPluginType.DataStore,
+        offset + 1,
+        true,
+      ];
       try {
-        const [externalRegistryRecord, externalRegistryRecordOffset] = getExternalRegistryRecordSerializer().deserialize(
-          buffer,
-          offset
-        )
-        return [{
-          ...externalRegistryRecord,
-          isUnknown: false,
-        }, externalRegistryRecordOffset]
+        [pluginType, pluginTypeOffset] =
+          getExternalPluginTypeSerializer().deserialize(buffer, offset);
+        isUnknown = false;
       } catch (e) {
-        // TODO need to find the right offset for the next item
+        // do nothing
       }
 
+      const [authority, authorityOffset] =
+        getBasePluginAuthoritySerializer().deserialize(
+          buffer,
+          pluginTypeOffset
+        );
+      const [lifecycleChecks, lifecycleChecksOffset] = option(
+        array(
+          tuple([
+            getHookableLifecycleEventSerializer(),
+            getExternalCheckResultSerializer(),
+          ])
+        )
+      ).deserialize(buffer, authorityOffset);
+
+      const [pluginOffset, pluginOffsetOffset] = u64().deserialize(
+        buffer,
+        lifecycleChecksOffset
+      );
       return [
         {
-          pluginKey: {
-            __kind: 'DataStore',
-            fields: [nonePluginAuthority()],
-          },
-          authority: nonePluginAuthority(),
-          lifecycleChecks: some([]),
-          offset: BigInt(0),
+          pluginType,
+          authority,
+          lifecycleChecks,
+          offset: pluginOffset,
+          isUnknown,
         },
-        offset,
+        pluginOffsetOffset,
       ];
     },
   };

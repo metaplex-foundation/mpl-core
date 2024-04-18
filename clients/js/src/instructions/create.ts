@@ -1,75 +1,89 @@
-import { Context, publicKey } from "@metaplex-foundation/umi";
-import { CollectionV1, createV2, ExternalPluginSchema } from "../generated";
-import { PluginAuthorityPairHelperArgsV2, createExternalPluginInitInfo, findExtraAccounts, pluginAuthorityPairV2 } from "../plugins";
-import { deriveExternalPlugins } from "../helpers";
-import { ExternalPluginInitInfoArgs, ExternalPluginsList } from "../plugins/externalPlugins";
+import { Context, publicKey } from '@metaplex-foundation/umi';
+import { CollectionV1, createV2, ExternalPluginSchema } from '../generated';
+import {
+  PluginAuthorityPairHelperArgsV2,
+  createExternalPluginInitInfo,
+  findExtraAccounts,
+  pluginAuthorityPairV2,
+} from '../plugins';
+import { deriveExternalPlugins } from '../helpers';
+import {
+  ExternalPluginInitInfoArgs,
+  ExternalPluginsList,
+} from '../plugins/externalPlugins';
 
-export type CreateArgs = Omit<Parameters<typeof createV2>[1], 'plugins' | 'externalPlugins' | 'collection'> & {
-  collection?: CollectionV1,
-  plugins?: PluginAuthorityPairHelperArgsV2[],
-  externalPlugins?: ExternalPluginInitInfoArgs[],
-}
+export type CreateArgs = Omit<
+  Parameters<typeof createV2>[1],
+  'plugins' | 'externalPlugins' | 'collection'
+> & {
+  collection?: CollectionV1;
+  plugins?: PluginAuthorityPairHelperArgsV2[];
+  externalPlugins?: ExternalPluginInitInfoArgs[];
+};
 
 export const create = (
-  context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>, {
-    asset,
-    plugins,
-    externalPlugins,
-    collection,
-    ...args
-  }: CreateArgs
+  context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
+  { asset, plugins, externalPlugins, collection, ...args }: CreateArgs
 ) => {
-  const owner = args.owner || args.updateAuthority || args.payer
+  const owner = args.owner || args.updateAuthority || args.payer;
 
   const assetExternalPlugins: ExternalPluginsList = {
     oracles: [],
     lifecycleHooks: [],
-  }
+  };
 
   externalPlugins?.forEach((plugin) => {
-    switch(plugin.type) {
+    switch (plugin.type) {
       case 'Oracle':
         assetExternalPlugins.oracles?.push({
           ...plugin,
           baseAddress: plugin.baseAddress,
           authority: plugin.initPluginAuthority || {
-            type: 'UpdateAuthority'
+            type: 'UpdateAuthority',
           },
           type: 'Oracle',
-        })
-        break
+        });
+        break;
       case 'DataStore':
         // Do nothing, datastore has no extra accounts
-        break
+        break;
       case 'LifecycleHook':
       default:
         assetExternalPlugins.lifecycleHooks?.push({
           ...plugin,
           hookedProgram: plugin.hookedProgram,
           authority: plugin.initPluginAuthority || {
-            type: 'UpdateAuthority'
+            type: 'UpdateAuthority',
           },
-          dataLen: BigInt(0),
-          dataOffset: BigInt(0),
+          dataLen: 0,
+          dataOffset: 0,
           type: 'LifecycleHook',
           schema: plugin.schema || ExternalPluginSchema.Binary,
-        })
+        });
     }
-  })
+  });
 
-  const derivedExternalPlugins = deriveExternalPlugins(assetExternalPlugins, collection)
-  const extraAccounts = findExtraAccounts(context, 'create', derivedExternalPlugins, {
-    asset: asset.publicKey,
-    collection: collection ? collection.publicKey : undefined,
-    // need to replicate program behavior
-    owner: owner ? publicKey(owner) : context.identity.publicKey
-  })
+  const derivedExternalPlugins = deriveExternalPlugins(
+    assetExternalPlugins,
+    collection
+  );
+  const extraAccounts = findExtraAccounts(
+    context,
+    'create',
+    derivedExternalPlugins,
+    {
+      asset: asset.publicKey,
+      collection: collection ? collection.publicKey : undefined,
+      // need to replicate program behavior
+      owner: owner ? publicKey(owner) : context.identity.publicKey,
+    }
+  );
 
   return createV2(context, {
     ...args,
     plugins: plugins?.map(pluginAuthorityPairV2) || [],
     externalPlugins: externalPlugins?.map(createExternalPluginInitInfo) || [],
     asset,
-    collection: collection ? collection.publicKey : undefined
-  }).addRemainingAccounts(extraAccounts)
-}
+    collection: collection ? collection.publicKey : undefined,
+  }).addRemainingAccounts(extraAccounts);
+};

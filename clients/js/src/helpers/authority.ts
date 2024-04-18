@@ -1,7 +1,7 @@
 import { PublicKey, publicKey } from '@metaplex-foundation/umi';
 import { AssetV1, CollectionV1 } from '../generated';
 import { deriveAssetPlugins, isAssetOwner } from './state';
-import { PluginAuthority } from '../types';
+import { PluginAuthority } from '../plugins';
 
 /**
  * Check if the given pubkey has the Address authority for the plugin.

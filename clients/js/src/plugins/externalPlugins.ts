@@ -1,37 +1,44 @@
+import { AccountMeta, Context, PublicKey } from '@metaplex-foundation/umi';
 import {
+  lifecycleHookFromBase,
   LifecycleHookInitInfoArgs,
   lifecycleHookManifest,
   LifecycleHookPlugin,
   LifecycleHookUpdateInfoArgs,
-  mapPluginFields,
-  PluginAuthority,
+  pluginAuthorityFromBase,
 } from '.';
-import { mapPluginAuthority } from '../authority';
 import {
   BaseExternalPluginInitInfoArgs,
   BaseExternalPluginKey,
   BaseExternalPluginUpdateInfoArgs,
-  ExternalPlugin,
+  ExternalPluginSchema,
   ExternalRegistryRecord,
   getExternalPluginSerializer,
 } from '../generated';
-import { toWords } from '../utils';
+
 import {
+  dataStoreFromBase,
   DataStoreInitInfoArgs,
   dataStoreManifest,
   DataStorePlugin,
   DataStoreUpdateInfoArgs,
 } from './dataStore';
-import { LifecycleChecksContainer } from './lifecycleChecks';
 import {
+  LifecycleChecksContainer,
+  lifecycleChecksFromBase,
+  LifecycleEvent,
+} from './lifecycleChecks';
+import {
+  oracleFromBase,
   OracleInitInfoArgs,
   oracleManifest,
   OraclePlugin,
   OracleUpdateInfoArgs,
 } from './oracle';
 import { BasePlugin } from './types';
+import { extraAccountToAccountMeta } from './extraAccount';
 
-export type ExternalPluginType = BaseExternalPluginKey['__kind'];
+export type ExternalPluginTypeString = BaseExternalPluginKey['__kind'];
 
 export type BaseExternalPlugin = BasePlugin & LifecycleChecksContainer;
 
@@ -69,51 +76,64 @@ export const externalPluginManifests = {
   LifecycleHook: lifecycleHookManifest,
 };
 
-export function mapExternalPlugin({
-  plugin: plug,
-  authority,
-  offset,
-}: {
-  plugin: ExternalPlugin;
-  authority: PluginAuthority;
-  offset: bigint;
-}): ExternalPluginsList {
-  const pluginKey = toWords(plug.__kind)
-    .toLowerCase()
-    .split(' ')
-    .reduce((s, c) => s + (c.charAt(0).toUpperCase() + c.slice(1)));
+export type ExternalPluginData = {
+  dataLen: number;
+  dataOffset: number;
+};
 
-  return {
-    [pluginKey]: {
-      authority,
-      offset,
-      ...('fields' in plug ? mapPluginFields(plug.fields) : {}),
-    },
-  };
-}
-
-export function externalRegistryRecordToExternalPluginList(
+export function externalRegistryRecordsToExternalPluginList(
   records: ExternalRegistryRecord[],
   accountData: Uint8Array
 ): ExternalPluginsList {
-  return records.reduce((acc: ExternalPluginsList, record) => {
-    const mappedAuthority = mapPluginAuthority(record.authority);
+  const result: ExternalPluginsList = {};
+
+  records.forEach((record) => {
     const deserializedPlugin = getExternalPluginSerializer().deserialize(
       accountData,
       Number(record.offset)
     )[0];
 
-    acc = {
-      ...acc,
-      ...mapExternalPlugin({
-        plugin: deserializedPlugin,
-        authority: mappedAuthority,
-        offset: record.offset,
-      }),
+    const mappedPlugin: BaseExternalPlugin = {
+      lifecycleChecks:
+        record.lifecycleChecks.__option === 'Some'
+          ? lifecycleChecksFromBase(record.lifecycleChecks.value)
+          : undefined,
+      authority: pluginAuthorityFromBase(record.authority),
+      offset: Number(record.offset),
     };
 
-    return acc;
-  }, {});
+    if (deserializedPlugin.__kind === 'Oracle') {
+      if (!result.oracles) {
+        result.oracles = [];
+      }
+
+      result.oracles.push({
+        type: 'Oracle',
+        ...mappedPlugin,
+        ...oracleFromBase(deserializedPlugin.fields[0], accountData),
+      });
+    } else if (deserializedPlugin.__kind === 'DataStore') {
+      if (!result.dataStores) {
+        result.dataStores = [];
+      }
+      result.dataStores.push({
+        type: 'DataStore',
+        ...mappedPlugin,
+        ...dataStoreFromBase(deserializedPlugin.fields[0], accountData),
+      });
+    } else if (deserializedPlugin.__kind === 'LifecycleHook') {
+      if (!result.lifecycleHooks) {
+        result.lifecycleHooks = [];
+      }
+      result.lifecycleHooks.push({
+        type: 'LifecycleHook',
+        ...mappedPlugin,
+        ...lifecycleHookFromBase(deserializedPlugin.fields[0], accountData),
+      });
+    }
+  });
+
+  return result;
 }
 
 export const isExternalPluginType = (plugin: { type: string }) => {
@@ -147,4 +167,92 @@ export function createExternalPluginUpdateInfo({
     __kind: type,
     fields: [manifest.updateToBase(args as any)] as any,
   };
+}
+
+export const findExtraAccounts = (
+  context: Pick<Context, 'eddsa'>,
+  lifecycle: LifecycleEvent,
+  externalPlugins: ExternalPluginsList,
+  inputs: {
+    asset: PublicKey;
+    collection?: PublicKey;
+    owner: PublicKey;
+    recipient?: PublicKey;
+  }
+): AccountMeta[] => {
+  const accounts: AccountMeta[] = [];
+  const { asset, collection, owner, recipient } = inputs;
+
+  externalPlugins.oracles?.forEach((oracle) => {
+    if (oracle.lifecycleChecks?.[lifecycle]) {
+      if (oracle.pda) {
+        accounts.push(
+          extraAccountToAccountMeta(context, oracle.pda, {
+            program: oracle.baseAddress,
+            asset,
+            collection,
+            recipient,
+          })
+        );
+      } else {
+        accounts.push({
+          pubkey: oracle.baseAddress,
+          isSigner: false,
+          isWritable: false,
+        });
+      }
+    }
+  });
+
+  externalPlugins.lifecycleHooks?.forEach((hook) => {
+    if (hook.lifecycleChecks?.[lifecycle]) {
+      accounts.push({
+        pubkey: hook.hookedProgram,
+        isSigner: false,
+        isWritable: false,
+      });
+
+      hook.extraAccounts?.forEach((extra) => {
+        accounts.push(
+          extraAccountToAccountMeta(context, extra, {
+            program: hook.hookedProgram,
+            asset,
+            collection,
+            recipient,
+            owner,
+          })
+        );
+      });
+    }
+  });
+
+  return accounts;
+};
+
+export function parseExternalPluginData(
+  plugin: {
+    schema: ExternalPluginSchema;
+    dataLen: bigint | number;
+    dataOffset: bigint | number;
+  },
+  account: Uint8Array
+): any {
+  let data;
+  const dataSlice = account.slice(
+    Number(plugin.dataOffset),
+    Number(plugin.dataOffset) + Number(plugin.dataLen)
+  );
+
+  if (plugin.schema === ExternalPluginSchema.Binary) {
+    data = dataSlice;
+  } else if (plugin.schema === ExternalPluginSchema.Json) {
+    data = JSON.parse(new TextDecoder().decode(dataSlice));
+  } else if (plugin.schema === ExternalPluginSchema.MsgPack) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      'MsgPack schema currently not supported, falling back to binary'
+    );
+    data = dataSlice;
+  }
+  return data;
 }

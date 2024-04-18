@@ -1,4 +1,4 @@
-import { AccountMeta, Context, none, PublicKey, some } from '@metaplex-foundation/umi';
+import { none, some } from '@metaplex-foundation/umi';
 
 import {
   Key,
@@ -8,19 +8,21 @@ import {
   RegistryRecord,
   PluginAuthorityPair,
   PluginType,
-  BaseExternalPluginInitInfoArgs,
-  BaseExternalPluginUpdateInfoArgs,
-  ExternalRegistryRecord,
-  BaseExternalPluginKeyArgs,
 } from '../generated';
 
-import { mapPluginAuthority } from '../authority';
 import { toWords } from '../utils';
-import { CreatePluginArgs, CreatePluginArgsV2, PluginAuthorityPairHelperArgs, PluginAuthorityPairHelperArgsV2, PluginsList  } from "./types";
-import { LifecycleEvent } from './lifecycleChecks';
-import { PluginAuthority, pluginAuthorityToBase } from './pluginAuthority';
-import { extraAccountToAccountMeta } from './extraAccount';
-import { ExternalPluginInitInfoArgs, externalPluginManifests, ExternalPluginsList, ExternalPluginUpdateInfoArgs } from './externalPlugins';
+import {
+  CreatePluginArgs,
+  CreatePluginArgsV2,
+  PluginAuthorityPairHelperArgs,
+  PluginAuthorityPairHelperArgsV2,
+  PluginsList,
+} from './types';
+import {
+  PluginAuthority,
+  pluginAuthorityFromBase,
+  pluginAuthorityToBase,
+} from './pluginAuthority';
 import { royaltiesToBase } from './royalties';
 
 export function formPluginHeaderV1(
@@ -64,7 +66,7 @@ export function pluginAuthorityPair(
 
 export function createPluginV2(args: CreatePluginArgsV2): BasePlugin {
   // TODO refactor when there are more required empty fields in plugins
-  const { type } = args
+  const { type } = args;
   if (type === 'UpdateDelegate') {
     return {
       __kind: type,
@@ -87,12 +89,13 @@ export function createPluginV2(args: CreatePluginArgsV2): BasePlugin {
   };
 }
 
-
-export function pluginAuthorityPairV2(
-  { type, authority, ...args }: PluginAuthorityPairHelperArgsV2
-): PluginAuthorityPair {
+export function pluginAuthorityPairV2({
+  type,
+  authority,
+  ...args
+}: PluginAuthorityPairHelperArgsV2): PluginAuthorityPair {
   return {
-    plugin: createPluginV2({ 
+    plugin: createPluginV2({
       type,
       ...args,
     } as any),
@@ -133,7 +136,7 @@ export function registryRecordsToPluginsList(
   accountData: Uint8Array
 ) {
   return registryRecords.reduce((acc: PluginsList, record) => {
-    const mappedAuthority = mapPluginAuthority(record.authority);
+    const mappedAuthority = pluginAuthorityFromBase(record.authority);
     const deserializedPlugin = getPluginSerializer().deserialize(
       accountData,
       Number(record.offset)
@@ -155,56 +158,4 @@ export function registryRecordsToPluginsList(
 export function pluginKeyToPluginType(pluginKey: keyof PluginsList) {
   return (pluginKey.charAt(0).toUpperCase() +
     pluginKey.slice(1)) as keyof typeof PluginType;
-}
-
-
-export const findExtraAccounts = (context: Pick<Context, 'eddsa'>, lifecycle: LifecycleEvent, externalPlugins: ExternalPluginsList, inputs: {
-  asset: PublicKey,
-  collection?: PublicKey,
-  owner: PublicKey,
-  recipient?: PublicKey,
-}): AccountMeta[] => {
-  const accounts: AccountMeta[] = []
-  const {asset, collection, owner, recipient} = inputs
-  
-  externalPlugins.oracles?.forEach((oracle) => {
-    if(oracle.lifecycleChecks?.[lifecycle]) {
-      if (oracle.pda) {
-        accounts.push(extraAccountToAccountMeta(context, oracle.pda, {
-          program: oracle.baseAddress,
-          asset,
-          collection,
-          recipient,
-        }))
-      } else {
-        accounts.push({
-          pubkey: oracle.baseAddress,
-          isSigner: false,
-          isWritable: false
-        })
-      }
-    }
-  })
-
-  externalPlugins.lifecycleHooks?.forEach((hook) => {
-    if(hook.lifecycleChecks?.[lifecycle]) {
-      accounts.push({
-        pubkey: hook.hookedProgram,
-        isSigner: false,
-        isWritable: false
-      })
-
-      hook.extraAccounts?.forEach((extra) => {
-        accounts.push(extraAccountToAccountMeta(context, extra, {
-          program: hook.hookedProgram,
-          asset,
-          collection,
-          recipient,
-          owner,
-        }))
-      })
-    }
-  })
-
-  return accounts
 }

@@ -19,25 +19,16 @@ import {
   EditionArgs,
   BasePluginAuthority,
   BaseRoyaltiesArgs,
-  BaseExternalPluginKey,
 } from '../generated';
 import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
 import { PluginAuthority } from './pluginAuthority';
-import { OracleInitInfoArgs, OraclePlugin, OracleUpdateInfoArgs } from './oracle';
-import { LifecycleChecksContainer } from './lifecycleChecks';
-import { DataStoreInitInfoArgs, DataStorePlugin, DataStoreUpdateInfoArgs } from './dataStore';
-import { LifecycleHookInitInfoArgs, LifecycleHookPlugin, LifecycleHookUpdateInfoArgs } from './lifecycleHook';
 
 // for backwards compatibility
-export {
-  pluginAuthority,
-  updateAuthority,
-  ruleSet,
-}
+export { pluginAuthority, updateAuthority, ruleSet };
 
 export type BasePlugin = {
   authority: PluginAuthority;
-  offset?: bigint;
+  offset?: number;
 };
 
 export type PluginAuthorityPairHelperArgs = CreatePluginArgs & {
