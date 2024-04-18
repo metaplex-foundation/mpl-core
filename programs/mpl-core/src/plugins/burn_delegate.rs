@@ -1,12 +1,12 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{account_info::AccountInfo, program_error::ProgramError};
+use solana_program::program_error::ProgramError;
 
 use crate::{
     plugins::PluginType,
     state::{Authority, DataBlob},
 };
 
-use super::{Plugin, PluginValidation, ValidationResult};
+use super::{PluginValidation, PluginValidationContext, ValidationResult};
 
 /// This plugin manages additional permissions to burn.
 /// Any authorities approved are given permission to burn the asset on behalf of the owner.
@@ -40,15 +40,14 @@ impl DataBlob for BurnDelegate {
 impl PluginValidation for BurnDelegate {
     fn validate_burn(
         &self,
-        authority_info: &AccountInfo,
-        authority: &Authority,
-        _resolved_authorities: Option<&[Authority]>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if authority
+        if ctx.self_authority
             == (&Authority::Address {
-                address: *authority_info.key,
+                address: *ctx.authority_info.key,
             })
         {
+            solana_program::msg!("BurnDelegate: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)
@@ -58,19 +57,16 @@ impl PluginValidation for BurnDelegate {
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        authority_info: &AccountInfo,
-        authority: &Authority,
-        plugin_to_revoke: Option<&Plugin>,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("authority_info: {:?}", authority_info.key);
-        solana_program::msg!("authority: {:?}", authority);
-        if authority
+        if ctx.self_authority
             == &(Authority::Address {
-                address: *authority_info.key,
+                address: *ctx.authority_info.key,
             })
-            && plugin_to_revoke.is_some()
-            && PluginType::from(plugin_to_revoke.unwrap()) == PluginType::BurnDelegate
+            && ctx.target_plugin.is_some()
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::BurnDelegate
         {
+            solana_program::msg!("BurnDelegate: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)

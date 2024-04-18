@@ -10,7 +10,7 @@ use crate::{
     instruction::accounts::CreateCollectionV2Accounts,
     plugins::{
         create_plugin_meta, initialize_plugin, CheckResult, ExternalPluginInitInfo, Plugin,
-        PluginAuthorityPair, PluginType, ValidationResult,
+        PluginAuthorityPair, PluginType, PluginValidationContext, ValidationResult,
     },
     state::{Authority, CollectionV1, Key},
 };
@@ -68,7 +68,7 @@ pub(crate) fn process_create_collection<'a>(
     assert_signer(ctx.accounts.collection)?;
     assert_signer(ctx.accounts.payer)?;
 
-    if *ctx.accounts.system_program.key != system_program::id() {
+    if *ctx.accounts.system_program.key != system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
@@ -96,7 +96,7 @@ pub(crate) fn process_create_collection<'a>(
             ctx.accounts.collection.key,
             lamports,
             serialized_data.len() as u64,
-            &crate::id(),
+            &crate::ID,
         ),
         &[
             ctx.accounts.payer.clone(),
@@ -134,14 +134,14 @@ pub(crate) fn process_create_collection<'a>(
                 }
 
                 if PluginType::check_create(&plugin_type) != CheckResult::None {
-                    match Plugin::validate_create(
-                        &plugin.plugin,
-                        ctx.accounts.payer,
-                        None,
-                        &plugin.authority.unwrap_or(plugin.plugin.manager()),
-                        None,
-                        None,
-                    )? {
+                    let validation_ctx = PluginValidationContext {
+                        self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
+                        authority_info: ctx.accounts.payer,
+                        resolved_authorities: None,
+                        new_owner: None,
+                        target_plugin: None,
+                    };
+                    match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
                         ValidationResult::Rejected => approved = false,
                         ValidationResult::ForceApproved => force_approved = true,
                         _ => (),

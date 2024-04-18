@@ -1,8 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::pubkey::Pubkey;
+use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use super::{
     Authority, ExternalCheckResult, ExternalPluginSchema, ExtraAccount, HookableLifecycleEvent,
+    PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// Lifecycle hook that CPIs into the `hooked_program`.  This hook is used for any lifecycle events
@@ -14,15 +15,27 @@ use super::{
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct LifecycleHook {
     /// The `Pubkey` for the hooked program.
-    pub hooked_program: Pubkey,
+    pub hooked_program: Pubkey, // 32
     /// The extra accounts to use for the lifecycle hook.
-    pub extra_accounts: Option<Vec<ExtraAccount>>,
+    pub extra_accounts: Option<Vec<ExtraAccount>>, //
     /// Schema for the data used by the plugin.
-    pub schema: ExternalPluginSchema,
+    pub schema: ExternalPluginSchema, // 1
     /// The offset to the plugin data in the account.
-    pub data_offset: usize,
+    pub data_offset: usize, // 8
     /// The length of the plugin data.
-    pub data_len: usize,
+    pub data_len: usize, // 8
+}
+
+impl From<&LifecycleHookInitInfo> for LifecycleHook {
+    fn from(init_info: &LifecycleHookInitInfo) -> Self {
+        Self {
+            hooked_program: init_info.hooked_program,
+            extra_accounts: init_info.extra_accounts.clone(),
+            schema: init_info.schema.unwrap_or_default(),
+            data_offset: 0,
+            data_len: 0,
+        }
+    }
 }
 
 /// Lifecycle hook initialization info.
@@ -38,6 +51,15 @@ pub struct LifecycleHookInitInfo {
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
+}
+
+impl PluginValidation for LifecycleHookInitInfo {
+    fn validate_add_external_plugin(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Approved)
+    }
 }
 
 /// Lifecycle hook update info.

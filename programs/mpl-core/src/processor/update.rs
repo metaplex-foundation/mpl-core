@@ -52,6 +52,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
         ctx.accounts.collection,
         None,
         None,
+        None,
         AssetV1::check_update,
         CollectionV1::check_update,
         PluginType::check_update,
@@ -135,6 +136,7 @@ pub(crate) fn update_collection<'a>(
     let (mut collection, plugin_header, plugin_registry) = validate_collection_permissions(
         authority,
         ctx.accounts.collection,
+        None,
         None,
         CollectionV1::check_update,
         PluginType::check_update,
