@@ -10,7 +10,9 @@ use crate::{
         Plugin, PluginType, PluginValidationContext, ValidationResult,
     },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
-    utils::{load_key, resolve_authority, validate_asset_permissions},
+    utils::{
+        load_key, resolve_authority, validate_asset_permissions, validate_collection_permissions,
+    },
 };
 
 #[repr(C)]
@@ -97,7 +99,7 @@ pub(crate) struct AddCollectionExternalPluginV1Args {
 
 pub(crate) fn add_collection_external_plugin<'a>(
     accounts: &'a [AccountInfo<'a>],
-    _args: AddCollectionExternalPluginV1Args,
+    args: AddCollectionExternalPluginV1Args,
 ) -> ProgramResult {
     let ctx = AddCollectionExternalPluginV1Accounts::context(accounts)?;
 
@@ -115,7 +117,38 @@ pub(crate) fn add_collection_external_plugin<'a>(
         }
     }
 
-    Err(MplCoreError::NotAvailable.into())
+    let validation_ctx = PluginValidationContext {
+        self_authority: &Authority::UpdateAuthority,
+        authority_info: authority,
+        resolved_authorities: None,
+        new_owner: None,
+        target_plugin: None,
+    };
+
+    if ExternalPlugin::validate_add_external_plugin(&args.init_info, &validation_ctx)?
+        == ValidationResult::Rejected
+    {
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
+
+    // Validate collection permissions.
+    let _ = validate_collection_permissions(
+        authority,
+        ctx.accounts.collection,
+        None,
+        Some(&args.init_info),
+        CollectionV1::check_add_external_plugin,
+        PluginType::check_add_external_plugin,
+        CollectionV1::validate_add_external_plugin,
+        Plugin::validate_add_external_plugin,
+    )?;
+
+    process_add_external_plugin::<AssetV1>(
+        ctx.accounts.collection,
+        ctx.accounts.payer,
+        ctx.accounts.system_program,
+        &args.init_info,
+    )
 }
 
 fn process_add_external_plugin<'a, T: DataBlob + SolanaAccount>(
@@ -124,22 +157,6 @@ fn process_add_external_plugin<'a, T: DataBlob + SolanaAccount>(
     system_program: &AccountInfo<'a>,
     init_info: &ExternalPluginInitInfo,
 ) -> ProgramResult {
-    // Convert the ExternalPluginInitInfo into an ExternalPlugin.
-    // let mut external_plugin = ExternalPlugin::from(init_info);
-
-    // If the plugin is a LifecycleHook or DataStore, then we need to set the data offset and length.
-    // match &mut external_plugin {
-    //     ExternalPlugin::LifecycleHook(hook) => {
-    //         hook.data_offset = 0;
-    //         hook.data_len = 0;
-    //     }
-    //     ExternalPlugin::DataStore(data_store) => {
-    //         data_store.data_offset = 0;
-    //         data_store.data_len = 0;
-    //     }
-    //     _ => {}
-    // };
-
     let (_, mut plugin_header, mut plugin_registry) =
         create_meta_idempotent::<T>(account, payer, system_program)?;
     initialize_external_plugin::<T>(

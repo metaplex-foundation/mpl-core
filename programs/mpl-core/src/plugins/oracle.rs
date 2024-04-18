@@ -46,7 +46,7 @@ impl PluginValidation for OracleInitInfo {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Approved)
+        Ok(ValidationResult::Pass)
     }
 }
 

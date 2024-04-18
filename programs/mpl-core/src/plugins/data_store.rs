@@ -51,7 +51,7 @@ impl PluginValidation for DataStoreInitInfo {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Approved)
+        Ok(ValidationResult::Pass)
     }
 }
 

@@ -58,7 +58,7 @@ impl PluginValidation for LifecycleHookInitInfo {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Approved)
+        Ok(ValidationResult::Pass)
     }
 }
 
