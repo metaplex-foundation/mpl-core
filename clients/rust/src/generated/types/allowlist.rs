@@ -5,14 +5,13 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::PluginType;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
-use solana_program::pubkey::Pubkey;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub enum RuleSet {
-    None,
-    ProgramAllowList(Vec<Pubkey>),
-    ProgramDenyList(Vec<Pubkey>),
+pub struct Allowlist {
+    pub must_be_empty: bool,
+    pub plugins: Vec<PluginType>,
 }

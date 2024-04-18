@@ -94,12 +94,12 @@ impl UpdateV1 {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct UpdateV1InstructionData {
+struct UpdateV1InstructionData {
     discriminator: u8,
 }
 
 impl UpdateV1InstructionData {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self { discriminator: 15 }
     }
 }

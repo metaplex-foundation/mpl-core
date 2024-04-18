@@ -86,12 +86,12 @@ impl ApproveCollectionPluginAuthorityV1 {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct ApproveCollectionPluginAuthorityV1InstructionData {
+struct ApproveCollectionPluginAuthorityV1InstructionData {
     discriminator: u8,
 }
 
 impl ApproveCollectionPluginAuthorityV1InstructionData {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self { discriminator: 9 }
     }
 }

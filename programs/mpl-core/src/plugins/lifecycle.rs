@@ -34,7 +34,7 @@ impl PluginType {
             PluginType::PermanentTransferDelegate => CheckResult::CanReject,
             PluginType::PermanentBurnDelegate => CheckResult::CanReject,
             PluginType::Edition => CheckResult::CanReject,
-            PluginType::Immutable => CheckResult::CanReject,
+            PluginType::Allowlist => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -47,7 +47,7 @@ impl PluginType {
             PluginType::FreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::Edition => CheckResult::CanReject,
-            PluginType::Immutable => CheckResult::CanReject,
+            PluginType::Allowlist => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -56,7 +56,6 @@ impl PluginType {
     pub fn check_update_plugin(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            PluginType::Immutable => CheckResult::CanReject,
             _ => CheckResult::CanApprove,
         }
     }
@@ -94,7 +93,7 @@ impl PluginType {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
             PluginType::UpdateDelegate => CheckResult::CanApprove,
-            PluginType::Immutable => CheckResult::CanReject,
+            PluginType::ImmutableMetadata => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -162,7 +161,10 @@ impl Plugin {
                 permanent_burn.validate_add_plugin(ctx)
             }
             Plugin::Edition(edition) => edition.validate_add_plugin(ctx),
-            Plugin::Immutable(immutable) => immutable.validate_add_plugin(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_add_plugin(ctx)
+            }
+            Plugin::Allowlist(allowlist) => allowlist.validate_add_plugin(ctx),
         }
     }
 
@@ -188,7 +190,10 @@ impl Plugin {
                 permanent_burn.validate_remove_plugin(ctx)
             }
             Plugin::Edition(edition) => edition.validate_remove_plugin(ctx),
-            Plugin::Immutable(immutable) => immutable.validate_remove_plugin(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_remove_plugin(ctx)
+            }
+            Plugin::Allowlist(allowlist) => allowlist.validate_remove_plugin(ctx),
         }
     }
 
@@ -226,7 +231,10 @@ impl Plugin {
                 permanent_burn.validate_approve_plugin_authority(ctx)
             }
             Plugin::Edition(edition) => edition.validate_approve_plugin_authority(ctx),
-            Plugin::Immutable(immutable) => immutable.validate_approve_plugin_authority(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_approve_plugin_authority(ctx)
+            }
+            Plugin::Allowlist(allowlist) => allowlist.validate_approve_plugin_authority(ctx),
         }
     }
 
@@ -259,7 +267,10 @@ impl Plugin {
                 permanent_burn.validate_revoke_plugin_authority(ctx)
             }
             Plugin::Edition(edition) => edition.validate_revoke_plugin_authority(ctx),
-            Plugin::Immutable(immutable) => immutable.validate_revoke_plugin_authority(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_revoke_plugin_authority(ctx)
+            }
+            Plugin::Allowlist(allowlist) => allowlist.validate_revoke_plugin_authority(ctx),
         }
     }
 
@@ -283,7 +294,10 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_create(ctx),
             Plugin::Edition(edition) => edition.validate_create(ctx),
-            Plugin::Immutable(immutable) => immutable.validate_create(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_create(ctx)
+            }
+            Plugin::Allowlist(allowlist) => allowlist.validate_revoke_plugin_authority(ctx),
         }
     }
 
@@ -307,7 +321,10 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_update(ctx),
             Plugin::Edition(edition) => edition.validate_update(ctx),
-            Plugin::Immutable(immutable) => immutable.validate_update(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_update(ctx)
+            }
+            Plugin::Allowlist(allowlist) => allowlist.validate_update(ctx),
         }
     }
 
@@ -344,7 +361,10 @@ impl Plugin {
                 permanent_burn.validate_update_plugin(ctx)
             }
             Plugin::Edition(edition) => edition.validate_update_plugin(ctx),
-            Plugin::Immutable(immutable) => immutable.validate_update_plugin(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_update_plugin(ctx)
+            }
+            Plugin::Allowlist(allowlist) => allowlist.validate_update_plugin(ctx),
         }?;
 
         match (&base_result, &result) {
@@ -387,7 +407,8 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_burn(ctx),
             Plugin::Edition(edition) => edition.validate_burn(ctx),
-            Plugin::Immutable(immutable) => immutable.validate_burn(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.validate_burn(ctx),
+            Plugin::Allowlist(allowlist) => allowlist.validate_update(ctx),
         }
     }
 
@@ -411,7 +432,10 @@ impl Plugin {
             Plugin::Attributes(attributes_transfer) => attributes_transfer.validate_transfer(ctx),
             Plugin::PermanentBurnDelegate(burn_transfer) => burn_transfer.validate_transfer(ctx),
             Plugin::Edition(edition) => edition.validate_transfer(ctx),
-            Plugin::Immutable(immutable) => immutable.validate_transfer(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_transfer(ctx)
+            }
+            Plugin::Allowlist(allowlist) => allowlist.validate_transfer(ctx),
         }
     }
 
@@ -435,7 +459,10 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(burn_transfer) => burn_transfer.validate_compress(ctx),
             Plugin::Edition(edition) => edition.validate_compress(ctx),
-            Plugin::Immutable(immutable) => immutable.validate_compress(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_compress(ctx)
+            }
+            Plugin::Allowlist(allowlist) => allowlist.validate_compress(ctx),
         }
     }
 
@@ -461,7 +488,10 @@ impl Plugin {
                 permanent_burn.validate_decompress(ctx)
             }
             Plugin::Edition(edition) => edition.validate_decompress(ctx),
-            Plugin::Immutable(immutable) => immutable.validate_decompress(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_decompress(ctx)
+            }
+            Plugin::Allowlist(allowlist) => allowlist.validate_decompress(ctx),
         }
     }
 }

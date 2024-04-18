@@ -6,6 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+export * from './allowlist';
 export * from './attribute';
 export * from './attributes';
 export * from './burnDelegate';
@@ -18,6 +19,7 @@ export * from './extraAccounts';
 export * from './freezeDelegate';
 export * from './hashablePluginSchema';
 export * from './hashedAssetSchema';
+export * from './immutableMetadata';
 export * from './key';
 export * from './permanentBurnDelegate';
 export * from './permanentFreezeDelegate';

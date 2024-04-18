@@ -5,10 +5,12 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::Allowlist;
 use crate::generated::types::Attributes;
 use crate::generated::types::BurnDelegate;
 use crate::generated::types::Edition;
 use crate::generated::types::FreezeDelegate;
+use crate::generated::types::ImmutableMetadata;
 use crate::generated::types::PermanentBurnDelegate;
 use crate::generated::types::PermanentFreezeDelegate;
 use crate::generated::types::PermanentTransferDelegate;
@@ -21,6 +23,7 @@ use borsh::BorshSerialize;
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Plugin {
+    Allowlist(Allowlist),
     Royalties(Royalties),
     FreezeDelegate(FreezeDelegate),
     BurnDelegate(BurnDelegate),
@@ -31,4 +34,5 @@ pub enum Plugin {
     PermanentTransferDelegate(PermanentTransferDelegate),
     PermanentBurnDelegate(PermanentBurnDelegate),
     Edition(Edition),
+    ImmutableMetadata(ImmutableMetadata),
 }

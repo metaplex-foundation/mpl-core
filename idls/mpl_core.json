@@ -1438,6 +1438,26 @@
       }
     },
     {
+      "name": "Allowlist",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mustBeEmpty",
+            "type": "bool"
+          },
+          {
+            "name": "plugins",
+            "type": {
+              "vec": {
+                "defined": "PluginType"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Attribute",
       "type": {
         "kind": "struct",
@@ -1498,6 +1518,13 @@
             "type": "bool"
           }
         ]
+      }
+    },
+    {
+      "name": "ImmutableMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": []
       }
     },
     {
@@ -2070,6 +2097,14 @@
         "kind": "enum",
         "variants": [
           {
+            "name": "Allowlist",
+            "fields": [
+              {
+                "defined": "Allowlist"
+              }
+            ]
+          },
+          {
             "name": "Royalties",
             "fields": [
               {
@@ -2148,6 +2183,14 @@
                 "defined": "Edition"
               }
             ]
+          },
+          {
+            "name": "ImmutableMetadata",
+            "fields": [
+              {
+                "defined": "ImmutableMetadata"
+              }
+            ]
           }
         ]
       }
@@ -2186,6 +2229,12 @@
           },
           {
             "name": "Edition"
+          },
+          {
+            "name": "ImmutableMetadata"
+          },
+          {
+            "name": "Allowlist"
           }
         ]
       }

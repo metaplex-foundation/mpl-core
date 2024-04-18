@@ -19,6 +19,8 @@ export enum PluginType {
   PermanentTransferDelegate,
   PermanentBurnDelegate,
   Edition,
+  ImmutableMetadata,
+  Allowlist,
 }
 
 export type PluginTypeArgs = PluginType;
