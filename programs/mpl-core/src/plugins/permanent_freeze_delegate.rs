@@ -71,14 +71,14 @@ impl PluginValidation for PermanentFreezeDelegate {
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
         // always reject it.
-        if ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentFreezeDelegate
-        {
-            solana_program::msg!("PermanentFreezeDelegate: Rejected");
-            Ok(ValidationResult::Rejected)
-        } else {
-            Ok(ValidationResult::Pass)
+        if let Some(plugin) = ctx.target_plugin {
+            if PluginType::from(plugin) == PluginType::PermanentFreezeDelegate {
+                solana_program::msg!("PermanentFreezeDelegate: Rejected");
+                return Ok(ValidationResult::Rejected);
+            }
         }
+
+        Ok(ValidationResult::Pass)
     }
 
     /// Validate the revoke plugin authority lifecycle action.
@@ -86,18 +86,19 @@ impl PluginValidation for PermanentFreezeDelegate {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority
-            == &(Authority::Address {
-                address: *ctx.authority_info.key,
-            })
-            && ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentFreezeDelegate
-        {
-            solana_program::msg!("PermanentFreezeDelegate: Approved");
-            Ok(ValidationResult::Approved)
-        } else {
-            Ok(ValidationResult::Pass)
+        if let Some(plugin) = ctx.target_plugin {
+            if PluginType::from(plugin) == PluginType::PermanentFreezeDelegate
+                && ctx.self_authority
+                    == &(Authority::Address {
+                        address: *ctx.authority_info.key,
+                    })
+            {
+                solana_program::msg!("PermanentFreezeDelegate: Approved");
+                return Ok(ValidationResult::Approved);
+            }
         }
+
+        Ok(ValidationResult::Pass)
     }
 
     /// Validate the remove plugin lifecycle action.

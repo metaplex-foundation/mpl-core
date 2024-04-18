@@ -2,6 +2,7 @@ mod attributes;
 mod burn_delegate;
 mod edition;
 mod freeze_delegate;
+mod immutable;
 mod lifecycle;
 mod permanent_burn_delegate;
 mod permanent_freeze_delegate;
@@ -17,6 +18,7 @@ pub use attributes::*;
 pub use burn_delegate::*;
 pub use edition::*;
 pub use freeze_delegate::*;
+pub use immutable::*;
 pub use lifecycle::*;
 use num_derive::ToPrimitive;
 pub use permanent_burn_delegate::*;
@@ -65,6 +67,8 @@ pub enum Plugin {
     PermanentBurnDelegate(PermanentBurnDelegate),
     /// Edition plugin allows creators to add an edition number to the asset
     Edition(Edition),
+    /// Immutable plugin allows to make parts of the asset be immutable. Also, it can prevent certain plugins from being added/revoked.
+    Immutable(Immutable),
 }
 
 impl Plugin {
@@ -129,6 +133,8 @@ pub enum PluginType {
     PermanentBurnDelegate,
     /// The Edition plugin.
     Edition,
+    /// Immutability plugin.
+    Immutable,
 }
 
 impl DataBlob for PluginType {
@@ -154,6 +160,7 @@ impl From<&Plugin> for PluginType {
             Plugin::PermanentTransferDelegate(_) => PluginType::PermanentTransferDelegate,
             Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
             Plugin::Edition(_) => PluginType::Edition,
+            Plugin::Immutable(_) => PluginType::Immutable,
         }
     }
 }
@@ -172,6 +179,7 @@ impl PluginType {
             PluginType::PermanentTransferDelegate => Authority::UpdateAuthority,
             PluginType::PermanentBurnDelegate => Authority::UpdateAuthority,
             PluginType::Edition => Authority::UpdateAuthority,
+            PluginType::Immutable => Authority::None,
         }
     }
 }

@@ -15,6 +15,7 @@ import {
   PluginType,
   UpdateDelegateArgs,
   EditionArgs,
+  ImmutableArgs,
 } from './generated';
 import { BasePluginAuthority, PluginsList } from './types';
 import { mapPluginAuthority } from './authority';
@@ -69,6 +70,10 @@ export type CreatePluginArgs =
   | {
       type: 'Edition';
       data: EditionArgs;
+    }
+  | {
+      type: 'Immutable';
+      data: ImmutableArgs;
     };
 
 export function createPlugin(args: CreatePluginArgs): BasePlugin {
