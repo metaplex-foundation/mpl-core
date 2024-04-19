@@ -17,6 +17,7 @@ import {
   create,
   createCollection as baseCreateCollection,
 } from '../src';
+import { DEFAULT_ASSET, DEFAULT_COLLECTION } from './_setupRaw';
 
 export type CreateAssetHelperArgs = {
   owner?: PublicKey | Signer;
@@ -31,17 +32,6 @@ export type CreateAssetHelperArgs = {
   plugins?: PluginAuthorityPairHelperArgsV2[];
   externalPlugins?: ExternalPluginInitInfoArgs[];
 };
-
-export const DEFAULT_ASSET = {
-  name: 'Test Asset',
-  uri: 'https://example.com/asset',
-};
-
-export const DEFAULT_COLLECTION = {
-  name: 'Test Collection',
-  uri: 'https://example.com/collection',
-};
-
 export const createAsset = async (
   umi: Umi,
   input: CreateAssetHelperArgs = {}

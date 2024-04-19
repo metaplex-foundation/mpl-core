@@ -23,7 +23,7 @@ import {
   pluginAuthorityFromBase,
   pluginAuthorityToBase,
 } from './pluginAuthority';
-import { royaltiesToBase } from './royalties';
+import { royaltiesFromBase, royaltiesToBase } from './royalties';
 
 export function formPluginHeaderV1(
   pluginRegistryOffset: bigint
@@ -120,12 +120,21 @@ export function mapPlugin({
     .toLowerCase()
     .split(' ')
     .reduce((s, c) => s + (c.charAt(0).toUpperCase() + c.slice(1)));
+  
+  if (plug.__kind === 'Royalties') {
+    return {
+      [pluginKey]: {
+        authority,
+        offset,
+        ...royaltiesFromBase(plug.fields[0])
+      },
+    };
+  }
 
   return {
     [pluginKey]: {
       authority,
       offset,
-      // TODO deserialize royalties nicely
       ...('fields' in plug ? mapPluginFields(plug.fields) : {}),
     },
   };
