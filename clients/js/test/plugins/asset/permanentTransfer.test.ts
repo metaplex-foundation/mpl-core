@@ -19,7 +19,7 @@ import {
   createAssetWithCollection,
   createCollection,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('it cannot add permanentTransfer after creation', async (t) => {
   // Given a Umi instance and a new signer.

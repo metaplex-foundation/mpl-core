@@ -21,7 +21,7 @@ import {
   createAsset,
   createAssetWithCollection,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('it can transfer an asset with royalties', async (t) => {
   // Given a Umi instance and a new signer.

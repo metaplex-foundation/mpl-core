@@ -12,7 +12,7 @@ import {
   createAsset,
   createAssetWithCollection,
   createUmi,
-} from '../_setup';
+} from '../_setupRaw';
 
 test('it can use the freeze helper to freeze an asset', async (t) => {
   const umi = await createUmi();

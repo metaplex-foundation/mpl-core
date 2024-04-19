@@ -17,7 +17,7 @@ import {
   createAsset,
   createCollection,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('it can create asset with edition plugin', async (t) => {
   const umi = await createUmi();

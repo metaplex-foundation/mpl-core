@@ -18,7 +18,7 @@ import {
   createCollection as baseCreateCollection,
 } from '../src';
 
-export type SdkCreateAssetHelperArgs = {
+export type CreateAssetHelperArgs = {
   owner?: PublicKey | Signer;
   payer?: Signer;
   asset?: Signer;
@@ -42,9 +42,9 @@ export const DEFAULT_COLLECTION = {
   uri: 'https://example.com/collection',
 };
 
-export const sdkCreateAsset = async (
+export const createAsset = async (
   umi: Umi,
-  input: SdkCreateAssetHelperArgs = {}
+  input: CreateAssetHelperArgs = {}
 ) => {
   const payer = input.payer || umi.identity;
   const owner = publicKey(input.owner || input.payer || umi.identity);
@@ -74,7 +74,7 @@ export const sdkCreateAsset = async (
   return fetchAssetV1(umi, publicKey(asset));
 };
 
-export type SdkCreateCollectionHelperArgs = {
+export type CreateCollectionHelperArgs = {
   payer?: Signer;
   collection?: Signer;
   name?: string;
@@ -84,9 +84,9 @@ export type SdkCreateCollectionHelperArgs = {
   externalPlugins?: ExternalPluginInitInfoArgs[];
 };
 
-export const sdkCreateCollection = async (
+export const createCollection = async (
   umi: Umi,
-  input: SdkCreateCollectionHelperArgs = {}
+  input: CreateCollectionHelperArgs = {}
 ) => {
   const payer = input.payer || umi.identity;
   const collection = input.collection || generateSigner(umi);
@@ -106,21 +106,21 @@ export const sdkCreateCollection = async (
 
 export const createAssetWithCollection: (
   umi: Umi,
-  assetInput: SdkCreateAssetHelperArgs & { collection?: PublicKey | Signer },
-  collectionInput?: SdkCreateCollectionHelperArgs
+  assetInput: CreateAssetHelperArgs & { collection?: PublicKey | Signer },
+  collectionInput?: CreateCollectionHelperArgs
 ) => Promise<{
   asset: AssetV1;
   collection: CollectionV1;
 }> = async (umi, assetInput, collectionInput = {}) => {
   const collection = assetInput.collection
     ? await fetchCollectionV1(umi, publicKey(assetInput.collection))
-    : await sdkCreateCollection(umi, {
+    : await createCollection(umi, {
         payer: assetInput.payer,
         updateAuthority: assetInput.updateAuthority,
         ...collectionInput,
       });
 
-  const asset = await sdkCreateAsset(umi, {
+  const asset = await createAsset(umi, {
     ...assetInput,
     collection,
   });

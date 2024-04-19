@@ -8,7 +8,7 @@ import {
   createAssetWithCollection,
   createCollection,
   createUmi,
-} from './_setup';
+} from './_setupRaw';
 
 test('it can transfer an asset as the owner', async (t) => {
   // Given a Umi instance and a new signer.

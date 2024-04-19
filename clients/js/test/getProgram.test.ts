@@ -1,6 +1,6 @@
 import test from 'ava';
 import { MPL_CORE_PROGRAM_ID } from '../src';
-import { createUmi } from './_setup';
+import { createUmi } from './_setupRaw';
 
 test('it registers the program', async (t) => {
   // Given a Umi instance using the project's plugin.

@@ -1,6 +1,6 @@
 import test from 'ava';
 import { isFrozen, pluginAuthorityPair } from '../../src';
-import { createAsset, createAssetWithCollection, createUmi } from '../_setup';
+import { createAsset, createAssetWithCollection, createUmi } from '../_setupRaw';
 
 test('it can detect frozen from freeze delegate', async (t) => {
   const umi = await createUmi();

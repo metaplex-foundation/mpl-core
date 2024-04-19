@@ -13,7 +13,7 @@ import {
   HashedAssetSchema,
 } from '../src';
 
-import { createAsset, createUmi } from './_setup';
+import { createAsset, createUmi } from './_setupRaw';
 
 test.skip('it can compress an asset without any plugins as the owner', async (t) => {
   // Given a Umi instance and a new signer.

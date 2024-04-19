@@ -16,7 +16,7 @@ import {
   createCollection,
   createUmi,
   DEFAULT_ASSET,
-} from './_setup';
+} from './_setupRaw';
 
 test('it can create a new asset in account state', async (t) => {
   // Given an Umi instance and a new signer.
