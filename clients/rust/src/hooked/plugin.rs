@@ -208,11 +208,6 @@ pub(crate) fn registry_records_to_external_plugin_list(
             .iter()
             .try_fold(ExternalPluginsList::default(), |mut acc, record| {
                 if ExternalPluginType::from_u8(record.plugin_type).is_some() {
-                    let authority: BaseAuthority = record.authority.clone().into();
-                    let base = BasePlugin {
-                        authority,
-                        offset: Some(record.offset),
-                    };
                     let plugin =
                         ExternalPlugin::deserialize(&mut &account_data[record.offset as usize..])?;
 

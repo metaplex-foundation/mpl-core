@@ -33,6 +33,8 @@ pub(crate) mod r#update_collection_v1;
 pub(crate) mod r#update_external_plugin_v1;
 pub(crate) mod r#update_plugin_v1;
 pub(crate) mod r#update_v1;
+pub(crate) mod r#write_collection_external_plugin_data_v1;
+pub(crate) mod r#write_external_plugin_data_v1;
 
 pub use self::r#add_collection_external_plugin_v1::*;
 pub use self::r#add_collection_plugin_v1::*;
@@ -62,3 +64,5 @@ pub use self::r#update_collection_v1::*;
 pub use self::r#update_external_plugin_v1::*;
 pub use self::r#update_plugin_v1::*;
 pub use self::r#update_v1::*;
+pub use self::r#write_collection_external_plugin_data_v1::*;
+pub use self::r#write_external_plugin_data_v1::*;

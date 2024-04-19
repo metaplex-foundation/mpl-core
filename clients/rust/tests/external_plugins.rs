@@ -4,7 +4,7 @@ use mpl_core::{
     instructions::AddExternalPluginV1Builder,
     types::{
         DataStoreInitInfo, ExternalCheckResult, ExternalPluginInitInfo, HookableLifecycleEvent,
-        LifecycleHookInitInfo, OracleInitInfo, Plugin, PluginAuthority, UpdateAuthority,
+        LifecycleHookInitInfo, OracleInitInfo, PluginAuthority, UpdateAuthority,
     },
     Asset,
 };
@@ -64,6 +64,7 @@ async fn test_add_lifecycle_hook() {
                     ExternalCheckResult { flags: 1 },
                 )]),
                 extra_accounts: None,
+                data_authority: Some(PluginAuthority::UpdateAuthority),
                 schema: None,
             },
         ))

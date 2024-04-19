@@ -34,3 +34,5 @@ export * from './updateCollectionV1';
 export * from './updateExternalPluginV1';
 export * from './updatePluginV1';
 export * from './updateV1';
+export * from './writeCollectionExternalPluginDataV1';
+export * from './writeExternalPluginDataV1';

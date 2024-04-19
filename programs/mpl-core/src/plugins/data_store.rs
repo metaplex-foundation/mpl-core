@@ -37,8 +37,8 @@ impl From<&DataStoreInitInfo> for DataStore {
 /// Data store initialization info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct DataStoreInitInfo {
-    /// Data authority who can update the data store.  Cannot be changed after plugin is
-    /// added.
+    /// Data authority who can update the data store.  This field cannot be
+    /// changed after the plugin is added.
     pub data_authority: Authority,
     /// Initial plugin authority who can update plugin properties.
     pub init_plugin_authority: Option<Authority>,

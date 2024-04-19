@@ -7,6 +7,7 @@
 
 use crate::generated::types::ExternalPluginSchema;
 use crate::generated::types::ExtraAccount;
+use crate::generated::types::PluginAuthority;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_program::pubkey::Pubkey;
@@ -20,6 +21,7 @@ pub struct LifecycleHook {
     )]
     pub hooked_program: Pubkey,
     pub extra_accounts: Option<Vec<ExtraAccount>>,
+    pub data_authority: Option<PluginAuthority>,
     pub schema: ExternalPluginSchema,
     pub data_offset: u64,
     pub data_len: u64,

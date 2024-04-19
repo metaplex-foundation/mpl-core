@@ -17,7 +17,11 @@ pub struct LifecycleHook {
     /// The `Pubkey` for the hooked program.
     pub hooked_program: Pubkey, // 32
     /// The extra accounts to use for the lifecycle hook.
-    pub extra_accounts: Option<Vec<ExtraAccount>>, //
+    pub extra_accounts: Option<Vec<ExtraAccount>>,
+    /// The authority of who can update the Lifecycle Hook data. This can be for the purposes
+    /// of initialization of data, or schema migration. This field cannot be changed after
+    /// the plugin is added.
+    pub data_authority: Option<Authority>,
     /// Schema for the data used by the plugin.
     pub schema: ExternalPluginSchema, // 1
     /// The offset to the plugin data in the account.
@@ -31,6 +35,7 @@ impl From<&LifecycleHookInitInfo> for LifecycleHook {
         Self {
             hooked_program: init_info.hooked_program,
             extra_accounts: init_info.extra_accounts.clone(),
+            data_authority: init_info.data_authority,
             schema: init_info.schema.unwrap_or_default(),
             data_offset: 0,
             data_len: 0,
@@ -49,6 +54,10 @@ pub struct LifecycleHookInitInfo {
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// The extra accounts to use for the lifecycle hook.
     pub extra_accounts: Option<Vec<ExtraAccount>>,
+    /// The authority of who can update the Lifecycle Hook data. This can be for the purposes
+    /// of initialization of data, or schema migration. This field cannot be changed after
+    /// the plugin is added.
+    pub data_authority: Option<Authority>,
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
 }
