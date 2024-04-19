@@ -6,11 +6,7 @@ import {
 } from '../generated';
 import { ExternalPluginKey } from './externalPluginKey';
 import { ExternalPluginManifest } from './externalPluginManifest';
-import {
-  BaseExternalPlugin,
-  ExternalPluginData,
-  parseExternalPluginData,
-} from './externalPlugins';
+import { BaseExternalPlugin, parseExternalPluginData } from './externalPlugins';
 import { LifecycleChecks } from './lifecycleChecks';
 import {
   PluginAuthority,
@@ -18,16 +14,10 @@ import {
   pluginAuthorityToBase,
 } from './pluginAuthority';
 
-export type DataStore = Omit<
-  BaseDataStore,
-  'dataAuthority' | 'dataOffset' | 'dataLen'
-> &
-  ExternalPluginData & {
-    dataAuthority: PluginAuthority;
-    dataOffset: number;
-    dataLen: number;
-    data?: any;
-  };
+export type DataStore = Omit<BaseDataStore, 'dataAuthority'> & {
+  dataAuthority: PluginAuthority;
+  data?: any;
+};
 
 export type DataStorePlugin = BaseExternalPlugin &
   DataStore & {
@@ -81,8 +71,8 @@ export function dataStoreFromBase(
   return {
     ...s,
     dataAuthority: pluginAuthorityFromBase(s.dataAuthority),
-    dataOffset: Number(s.dataOffset),
-    dataLen: Number(s.dataLen),
+    dataOffset: s.dataOffset,
+    dataLen: s.dataLen,
     data: parseExternalPluginData(s, account),
   };
 }

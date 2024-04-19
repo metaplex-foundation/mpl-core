@@ -77,8 +77,8 @@ export const externalPluginManifests = {
 };
 
 export type ExternalPluginData = {
-  dataLen: number;
-  dataOffset: number;
+  dataLen: bigint;
+  dataOffset: bigint;
 };
 
 export function externalRegistryRecordsToExternalPluginList(

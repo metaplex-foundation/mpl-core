@@ -32,6 +32,7 @@ export const create = (
     lifecycleHooks: [],
   };
 
+  // Create dummy external plugins to resuse findExtraAccounts method
   externalPlugins?.forEach((plugin) => {
     switch (plugin.type) {
       case 'Oracle':
@@ -48,18 +49,20 @@ export const create = (
         // Do nothing, datastore has no extra accounts
         break;
       case 'LifecycleHook':
-      default:
         assetExternalPlugins.lifecycleHooks?.push({
           ...plugin,
           hookedProgram: plugin.hookedProgram,
           authority: plugin.initPluginAuthority || {
             type: 'UpdateAuthority',
           },
-          dataLen: 0,
-          dataOffset: 0,
+          dataLen: 0n,
+          dataOffset: 0n,
           type: 'LifecycleHook',
           schema: plugin.schema || ExternalPluginSchema.Binary,
         });
+        break;
+      default:
+      // Do nothing
     }
   });
 

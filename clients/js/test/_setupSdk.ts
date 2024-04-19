@@ -1,0 +1,132 @@
+/* eslint-disable import/no-extraneous-dependencies */
+import {
+  PublicKey,
+  Signer,
+  Umi,
+  generateSigner,
+  publicKey,
+} from '@metaplex-foundation/umi';
+import {
+  DataState,
+  fetchAssetV1,
+  fetchCollectionV1,
+  CollectionV1,
+  AssetV1,
+  PluginAuthorityPairHelperArgsV2,
+  ExternalPluginInitInfoArgs,
+  create,
+  createCollection as baseCreateCollection,
+} from '../src';
+
+export type SdkCreateAssetHelperArgs = {
+  owner?: PublicKey | Signer;
+  payer?: Signer;
+  asset?: Signer;
+  dataState?: DataState;
+  name?: string;
+  uri?: string;
+  authority?: Signer;
+  updateAuthority?: PublicKey | Signer;
+  collection?: PublicKey | CollectionV1;
+  plugins?: PluginAuthorityPairHelperArgsV2[];
+  externalPlugins?: ExternalPluginInitInfoArgs[];
+};
+
+export const DEFAULT_ASSET = {
+  name: 'Test Asset',
+  uri: 'https://example.com/asset',
+};
+
+export const DEFAULT_COLLECTION = {
+  name: 'Test Collection',
+  uri: 'https://example.com/collection',
+};
+
+export const sdkCreateAsset = async (
+  umi: Umi,
+  input: SdkCreateAssetHelperArgs = {}
+) => {
+  const payer = input.payer || umi.identity;
+  const owner = publicKey(input.owner || input.payer || umi.identity);
+  const asset = input.asset || generateSigner(umi);
+  const updateAuthority = input.updateAuthority
+    ? publicKey(input.updateAuthority)
+    : undefined;
+
+  const col = (input.collection as PublicKey).__publicKey
+    ? await fetchCollectionV1(umi, input.collection as PublicKey)
+    : (input.collection as CollectionV1 | undefined);
+
+  await create(umi, {
+    owner,
+    payer,
+    dataState: input.dataState,
+    asset,
+    updateAuthority,
+    name: input.name || DEFAULT_ASSET.name,
+    uri: input.uri || DEFAULT_ASSET.uri,
+    plugins: input.plugins,
+    externalPlugins: input.externalPlugins,
+    collection: col,
+    authority: input.authority,
+  }).sendAndConfirm(umi);
+
+  return fetchAssetV1(umi, publicKey(asset));
+};
+
+export type SdkCreateCollectionHelperArgs = {
+  payer?: Signer;
+  collection?: Signer;
+  name?: string;
+  uri?: string;
+  updateAuthority?: PublicKey | Signer;
+  plugins?: PluginAuthorityPairHelperArgsV2[];
+  externalPlugins?: ExternalPluginInitInfoArgs[];
+};
+
+export const sdkCreateCollection = async (
+  umi: Umi,
+  input: SdkCreateCollectionHelperArgs = {}
+) => {
+  const payer = input.payer || umi.identity;
+  const collection = input.collection || generateSigner(umi);
+  const updateAuthority = publicKey(input.updateAuthority || payer);
+  await baseCreateCollection(umi, {
+    name: input.name || DEFAULT_COLLECTION.name,
+    uri: input.uri || DEFAULT_COLLECTION.uri,
+    collection,
+    payer,
+    updateAuthority,
+    plugins: input.plugins,
+    externalPlugins: input.externalPlugins,
+  }).sendAndConfirm(umi);
+
+  return fetchCollectionV1(umi, publicKey(collection));
+};
+
+export const createAssetWithCollection: (
+  umi: Umi,
+  assetInput: SdkCreateAssetHelperArgs & { collection?: PublicKey | Signer },
+  collectionInput?: SdkCreateCollectionHelperArgs
+) => Promise<{
+  asset: AssetV1;
+  collection: CollectionV1;
+}> = async (umi, assetInput, collectionInput = {}) => {
+  const collection = assetInput.collection
+    ? await fetchCollectionV1(umi, publicKey(assetInput.collection))
+    : await sdkCreateCollection(umi, {
+        payer: assetInput.payer,
+        updateAuthority: assetInput.updateAuthority,
+        ...collectionInput,
+      });
+
+  const asset = await sdkCreateAsset(umi, {
+    ...assetInput,
+    collection,
+  });
+
+  return {
+    asset,
+    collection,
+  };
+};

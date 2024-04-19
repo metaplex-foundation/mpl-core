@@ -59,7 +59,7 @@ export const createAsset = async (
   const updateAuthority = input.updateAuthority
     ? publicKey(input.updateAuthority)
     : undefined;
-  // const tx =
+
   await createV1(umi, {
     owner,
     payer,

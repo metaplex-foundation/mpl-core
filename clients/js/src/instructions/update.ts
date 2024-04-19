@@ -1,19 +1,26 @@
 import { Context } from '@metaplex-foundation/umi';
-import { CollectionV1, updateV1, AssetV1 } from '../generated';
+import {
+  CollectionV1,
+  updateV1,
+  AssetV1,
+  UpdateV1InstructionDataArgs,
+} from '../generated';
 import { findExtraAccounts } from '../plugins';
 import { deriveExternalPlugins } from '../helpers';
 
 export type UpdateArgs = Omit<
   Parameters<typeof updateV1>[1],
-  'asset' | 'collection'
+  'asset' | 'collection' | 'newName' | 'newUri'
 > & {
   asset: AssetV1;
   collection?: CollectionV1;
+  name: UpdateV1InstructionDataArgs['newName'];
+  uri: UpdateV1InstructionDataArgs['newUri'];
 };
 
 export const update = (
   context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
-  { asset, collection, ...args }: UpdateArgs
+  { asset, collection, name, uri, ...args }: UpdateArgs
 ) => {
   const derivedExternalPlugins = deriveExternalPlugins(asset, collection);
 
@@ -32,5 +39,7 @@ export const update = (
     ...args,
     asset: asset.publicKey,
     collection: collection?.publicKey,
+    newName: name,
+    newUri: uri,
   }).addRemainingAccounts(extraAccounts);
 };

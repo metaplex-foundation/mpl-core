@@ -77,12 +77,34 @@ kinobi.update(
         }
       }
     },
+    createV2: {
+      arguments: {
+        plugins: {
+          defaultValue: k.arrayValueNode([])
+        },
+        externalPlugins: {
+          defaultValue: k.arrayValueNode([])
+        },
+        dataState: {
+          defaultValue: k.enumValueNode('DataState', 'AccountState')
+        }
+      }
+    },
     createCollectionV1: {
       arguments: {
         plugins: {
           defaultValue: k.noneValueNode()
-
         }
+      }
+    },
+    createCollectionV2: {
+      arguments: {
+        plugins: {
+          defaultValue: k.noneValueNode()
+        },
+        externalPlugins: {
+          defaultValue: k.arrayValueNode([])
+        },
       }
     },
     collect: {
@@ -99,7 +121,23 @@ kinobi.update(
       arguments: {
         newUpdateAuthority: {
           defaultValue: k.noneValueNode()
-        }
+        },
+        newName: {
+          defaultValue: k.noneValueNode()
+        },
+        newUri: {
+          defaultValue: k.noneValueNode()
+        },
+      }
+    },
+    updateCollectionV1: {
+      arguments: {
+        newName: {
+          defaultValue: k.noneValueNode()
+        },
+        newUri: {
+          defaultValue: k.noneValueNode()
+        },
       }
     }
   })

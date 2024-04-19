@@ -12,22 +12,14 @@ import {
 } from '../generated';
 import { LifecycleChecks, lifecycleChecksToBase } from './lifecycleChecks';
 import { PluginAuthority, pluginAuthorityToBase } from './pluginAuthority';
-import {
-  BaseExternalPlugin,
-  ExternalPluginData,
-  parseExternalPluginData,
-} from './externalPlugins';
+import { BaseExternalPlugin, parseExternalPluginData } from './externalPlugins';
 import { ExternalPluginManifest } from './externalPluginManifest';
 import { ExternalPluginKey } from './externalPluginKey';
 
-export type LifecycleHook = Omit<
-  BaseLifecycleHook,
-  'extraAccounts' | 'dataOffset' | 'dataLen'
-> &
-  ExternalPluginData & {
-    extraAccounts?: Array<ExtraAccount>;
-    data?: any;
-  };
+export type LifecycleHook = Omit<BaseLifecycleHook, 'extraAccounts'> & {
+  extraAccounts?: Array<ExtraAccount>;
+  data?: any;
+};
 
 export type LifecycleHookPlugin = BaseExternalPlugin &
   LifecycleHook & {
@@ -94,8 +86,8 @@ export function lifecycleHookFromBase(
 ): LifecycleHook {
   return {
     ...s,
-    dataOffset: Number(s.dataOffset),
-    dataLen: Number(s.dataLen),
+    dataOffset: s.dataOffset,
+    dataLen: s.dataLen,
     extraAccounts:
       s.extraAccounts.__option === 'Some'
         ? s.extraAccounts.value.map(extraAccountFromBase)

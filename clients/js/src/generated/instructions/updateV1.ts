@@ -61,8 +61,8 @@ export type UpdateV1InstructionData = {
 };
 
 export type UpdateV1InstructionDataArgs = {
-  newName: OptionOrNullable<string>;
-  newUri: OptionOrNullable<string>;
+  newName?: OptionOrNullable<string>;
+  newUri?: OptionOrNullable<string>;
   newUpdateAuthority?: OptionOrNullable<BaseUpdateAuthorityArgs>;
 };
 
@@ -87,6 +87,8 @@ export function getUpdateV1InstructionDataSerializer(): Serializer<
     (value) => ({
       ...value,
       discriminator: 15,
+      newName: value.newName ?? none(),
+      newUri: value.newUri ?? none(),
       newUpdateAuthority: value.newUpdateAuthority ?? none(),
     })
   ) as Serializer<UpdateV1InstructionDataArgs, UpdateV1InstructionData>;
