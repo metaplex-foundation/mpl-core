@@ -2392,6 +2392,10 @@
             }
           },
           {
+            "name": "maxSize",
+            "type": "u64"
+          },
+          {
             "name": "dataOffset",
             "type": "u64"
           },
@@ -2518,6 +2522,10 @@
             }
           },
           {
+            "name": "maxSize",
+            "type": "u64"
+          },
+          {
             "name": "dataOffset",
             "type": "u64"
           },
@@ -2587,6 +2595,10 @@
                 "defined": "ExternalPluginSchema"
               }
             }
+          },
+          {
+            "name": "maxSize",
+            "type": "u64"
           }
         ]
       }
@@ -2630,6 +2642,10 @@
                 "defined": "ExternalPluginSchema"
               }
             }
+          },
+          {
+            "name": "maxSize",
+            "type": "u64"
           }
         ]
       }
