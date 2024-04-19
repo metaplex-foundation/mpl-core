@@ -34,6 +34,12 @@ pub struct ExternalCheckResult {
     flags: u8,
 }
 
+impl ExternalCheckResult {
+    pub(crate) fn none() -> Self {
+        Self { flags: 0 }
+    }
+}
+
 /// Bitfield representation of lifecycle permissions for external, third party plugins.
 #[bitfield(bits = 8)]
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]

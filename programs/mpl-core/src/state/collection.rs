@@ -273,7 +273,7 @@ impl CollectionV1 {
         _: Option<&Plugin>,
         _new_plugin: Option<&ExternalPluginInitInfo>,
     ) -> Result<ValidationResult, ProgramError> {
-        // If it's not in a collection, then it can be added.
+        // Approve if the update authority matches the authority.
         if *authority_info.key == self.update_authority {
             solana_program::msg!("Asset: Approved");
             Ok(ValidationResult::Approved)

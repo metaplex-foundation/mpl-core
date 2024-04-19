@@ -59,7 +59,7 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
 
 /// Create plugin header and registry
 pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
-    asset: T,
+    asset: &T,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
@@ -316,8 +316,8 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
         _ => {}
     };
 
-    let plugin_data = plugin.try_to_vec()?;
-    let plugin_size = plugin_data.len();
+    let plugin_metadata = plugin.try_to_vec()?;
+    let plugin_size = plugin_metadata.len();
 
     let size_increase = plugin_size
         .checked_add(new_registry_record.try_to_vec()?.len())

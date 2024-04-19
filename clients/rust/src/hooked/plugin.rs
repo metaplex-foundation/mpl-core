@@ -121,8 +121,7 @@ pub fn list_plugins(account_data: &[u8]) -> Result<Vec<PluginType>, std::io::Err
 }
 
 // Convert a slice of `RegistryRecordSafe` into the `PluginsList` type, dropping any unknown
-// plugins (i.e. `PluginType`s that are too new for this client to know about). Note this also does
-// not support external plugins for now, and will be updated when those are defined.
+// plugins (i.e. `PluginType`s that are too new for this client to know about).
 pub(crate) fn registry_records_to_plugin_list(
     registry_records: &[RegistryRecordSafe],
     account_data: &[u8],
@@ -196,9 +195,8 @@ pub(crate) fn registry_records_to_plugin_list(
     result
 }
 
-// Convert a slice of `RegistryRecordSafe` into the `PluginsList` type, dropping any unknown
-// plugins (i.e. `PluginType`s that are too new for this client to know about). Note this also does
-// not support external plugins for now, and will be updated when those are defined.
+// Convert a slice of `ExternalRegistryRecordSafe` into the `ExternalPluginsList` type, dropping any unknown
+// plugins (i.e. `ExternalPluginType`s that are too new for this client to know about).
 pub(crate) fn registry_records_to_external_plugin_list(
     registry_records: &[ExternalRegistryRecordSafe],
     account_data: &[u8],

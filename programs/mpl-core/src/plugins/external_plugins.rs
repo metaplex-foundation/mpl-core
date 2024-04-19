@@ -9,9 +9,9 @@ use strum::EnumCount;
 use crate::error::MplCoreError;
 
 use super::{
-    Authority, DataStore, DataStoreInitInfo, DataStoreUpdateInfo, LifecycleHook,
-    LifecycleHookInitInfo, LifecycleHookUpdateInfo, Oracle, OracleInitInfo, OracleUpdateInfo,
-    PluginValidation, PluginValidationContext, ValidationResult,
+    Authority, DataStore, DataStoreInitInfo, DataStoreUpdateInfo, ExternalCheckResult,
+    LifecycleHook, LifecycleHookInitInfo, LifecycleHookUpdateInfo, Oracle, OracleInitInfo,
+    OracleUpdateInfo, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// List of third party plugin types.
@@ -56,6 +56,53 @@ pub enum ExternalPlugin {
 }
 
 impl ExternalPlugin {
+    /// Check if a plugin is permitted to approve or deny a create action.
+    pub fn check_create(plugin: &ExternalPluginInitInfo) -> ExternalCheckResult {
+        match plugin {
+            ExternalPluginInitInfo::LifecycleHook(init_info) => {
+                if let Some(lifecycle_checks) = &init_info.lifecycle_checks {
+                    if let Some(checks) = lifecycle_checks
+                        .iter()
+                        .find(|event| event.0 == HookableLifecycleEvent::Create)
+                    {
+                        checks.1
+                    } else {
+                        ExternalCheckResult::none()
+                    }
+                } else {
+                    ExternalCheckResult::none()
+                }
+            }
+            ExternalPluginInitInfo::Oracle(init_info) => {
+                if let Some(lifecycle_checks) = &init_info.lifecycle_checks {
+                    if let Some(checks) = lifecycle_checks
+                        .iter()
+                        .find(|event| event.0 == HookableLifecycleEvent::Create)
+                    {
+                        checks.1
+                    } else {
+                        ExternalCheckResult::none()
+                    }
+                } else {
+                    ExternalCheckResult::none()
+                }
+            }
+            ExternalPluginInitInfo::DataStore(_) => ExternalCheckResult::none(),
+        }
+    }
+
+    /// Validate the add external plugin lifecycle event.
+    pub(crate) fn validate_create(
+        init_info: &ExternalPluginInitInfo,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        match init_info {
+            ExternalPluginInitInfo::LifecycleHook(init_info) => init_info.validate_create(ctx),
+            ExternalPluginInitInfo::Oracle(init_info) => init_info.validate_create(ctx),
+            ExternalPluginInitInfo::DataStore(init_info) => init_info.validate_create(ctx),
+        }
+    }
+
     /// Validate the add external plugin lifecycle event.
     pub(crate) fn validate_add_external_plugin(
         init_info: &ExternalPluginInitInfo,

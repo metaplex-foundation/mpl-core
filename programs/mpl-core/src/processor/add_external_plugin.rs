@@ -47,8 +47,6 @@ pub(crate) fn add_external_plugin<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    // let (asset, plugin_header, plugin_registry) = fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
-
     let validation_ctx = PluginValidationContext {
         self_authority: &Authority::UpdateAuthority,
         authority_info: authority,
@@ -143,7 +141,7 @@ pub(crate) fn add_collection_external_plugin<'a>(
         Plugin::validate_add_external_plugin,
     )?;
 
-    process_add_external_plugin::<AssetV1>(
+    process_add_external_plugin::<CollectionV1>(
         ctx.accounts.collection,
         ctx.accounts.payer,
         ctx.accounts.system_program,
