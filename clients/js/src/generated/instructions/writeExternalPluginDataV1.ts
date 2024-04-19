@@ -82,7 +82,7 @@ export function getWriteExternalPluginDataV1InstructionDataSerializer(): Seriali
       ],
       { description: 'WriteExternalPluginDataV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 30 })
+    (value) => ({ ...value, discriminator: 28 })
   ) as Serializer<
     WriteExternalPluginDataV1InstructionDataArgs,
     WriteExternalPluginDataV1InstructionData

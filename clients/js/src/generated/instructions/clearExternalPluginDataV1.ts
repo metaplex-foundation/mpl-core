@@ -73,7 +73,7 @@ export function getClearExternalPluginDataV1InstructionDataSerializer(): Seriali
       ],
       { description: 'ClearExternalPluginDataV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 32 })
+    (value) => ({ ...value, discriminator: 30 })
   ) as Serializer<
     ClearExternalPluginDataV1InstructionDataArgs,
     ClearExternalPluginDataV1InstructionData

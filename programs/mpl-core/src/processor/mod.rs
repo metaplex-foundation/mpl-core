@@ -1,6 +1,5 @@
 mod add_external_plugin;
 mod add_plugin;
-mod allocate_external_plugin_data;
 mod approve_plugin_authority;
 mod burn;
 mod clear_external_plugin_data;
@@ -20,7 +19,6 @@ mod write_external_plugin_data;
 
 pub(crate) use add_external_plugin::*;
 pub(crate) use add_plugin::*;
-pub(crate) use allocate_external_plugin_data::*;
 pub(crate) use approve_plugin_authority::*;
 pub(crate) use burn::*;
 pub(crate) use clear_external_plugin_data::*;
@@ -159,14 +157,6 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::UpdateCollectionExternalPluginV1(args) => {
             msg!("Instruction: UpdateCollectionExternalPlugin");
             update_collection_external_plugin(accounts, args)
-        }
-        MplAssetInstruction::AllocateExternalPluginDataV1(args) => {
-            msg!("Instruction: AllocateExternalPluginDataV1");
-            allocate_external_plugin_data(accounts, args)
-        }
-        MplAssetInstruction::AllocateCollectionExternalPluginDataV1(args) => {
-            msg!("Instruction: AllocateCollectionExternalPluginDataV1");
-            allocate_collection_external_plugin_data(accounts, args)
         }
         MplAssetInstruction::WriteExternalPluginDataV1(args) => {
             msg!("Instruction: WriteExternalPluginDataV1");

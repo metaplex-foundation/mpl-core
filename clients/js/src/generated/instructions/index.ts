@@ -10,8 +10,6 @@ export * from './addCollectionExternalPluginV1';
 export * from './addCollectionPluginV1';
 export * from './addExternalPluginV1';
 export * from './addPluginV1';
-export * from './allocateCollectionExternalPluginDataV1';
-export * from './allocateExternalPluginDataV1';
 export * from './approveCollectionPluginAuthorityV1';
 export * from './approvePluginAuthorityV1';
 export * from './burnCollectionV1';

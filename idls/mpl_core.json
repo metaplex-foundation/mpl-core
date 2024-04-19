@@ -1786,133 +1786,6 @@
       }
     },
     {
-      "name": "AllocateExternalPluginDataV1",
-      "accounts": [
-        {
-          "name": "asset",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The address of the asset"
-          ]
-        },
-        {
-          "name": "collection",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The collection to which the asset belongs"
-          ]
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The account paying for the storage fees"
-          ]
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "isOptional": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The system program"
-          ]
-        },
-        {
-          "name": "logWrapper",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The SPL Noop Program"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "allocateExternalPluginDataV1Args",
-          "type": {
-            "defined": "AllocateExternalPluginDataV1Args"
-          }
-        }
-      ],
-      "discriminant": {
-        "type": "u8",
-        "value": 28
-      }
-    },
-    {
-      "name": "AllocateCollectionExternalPluginDataV1",
-      "accounts": [
-        {
-          "name": "collection",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The address of the asset"
-          ]
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The account paying for the storage fees"
-          ]
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "isOptional": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The system program"
-          ]
-        },
-        {
-          "name": "logWrapper",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The SPL Noop Program"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "allocateCollectionExternalPluginDataV1Args",
-          "type": {
-            "defined": "AllocateCollectionExternalPluginDataV1Args"
-          }
-        }
-      ],
-      "discriminant": {
-        "type": "u8",
-        "value": 29
-      }
-    },
-    {
       "name": "WriteExternalPluginDataV1",
       "accounts": [
         {
@@ -1977,7 +1850,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 30
+        "value": 28
       }
     },
     {
@@ -2036,7 +1909,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 31
+        "value": 29
       }
     },
     {
@@ -2104,7 +1977,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 32
+        "value": 30
       }
     },
     {
@@ -2163,7 +2036,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 33
+        "value": 31
       }
     }
   ],
@@ -2970,42 +2843,6 @@
                 "defined": "Authority"
               }
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "AllocateExternalPluginDataV1Args",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "ExternalPluginKey"
-            }
-          },
-          {
-            "name": "targetSize",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "AllocateCollectionExternalPluginDataV1Args",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "ExternalPluginKey"
-            }
-          },
-          {
-            "name": "targetSize",
-            "type": "u64"
           }
         ]
       }

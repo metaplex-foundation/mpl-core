@@ -102,7 +102,7 @@ struct ClearExternalPluginDataV1InstructionData {
 
 impl ClearExternalPluginDataV1InstructionData {
     fn new() -> Self {
-        Self { discriminator: 32 }
+        Self { discriminator: 30 }
     }
 }
 

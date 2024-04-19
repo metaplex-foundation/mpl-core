@@ -91,7 +91,7 @@ struct WriteCollectionExternalPluginDataV1InstructionData {
 
 impl WriteCollectionExternalPluginDataV1InstructionData {
     fn new() -> Self {
-        Self { discriminator: 31 }
+        Self { discriminator: 29 }
     }
 }
 
