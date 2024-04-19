@@ -25,5 +25,6 @@ pub struct LifecycleHookInitInfo {
     pub init_plugin_authority: Option<PluginAuthority>,
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     pub extra_accounts: Option<Vec<ExtraAccount>>,
+    pub data_authority: Option<PluginAuthority>,
     pub schema: Option<ExternalPluginSchema>,
 }

@@ -85,14 +85,14 @@ export function externalPluginUpdateInfo(
   >['fields']
 ): GetDataEnumKind<ExternalPluginUpdateInfoArgs, 'DataStore'>;
 export function externalPluginUpdateInfo<
-  K extends ExternalPluginUpdateInfoArgs['__kind']
+  K extends ExternalPluginUpdateInfoArgs['__kind'],
 >(kind: K, data?: any): Extract<ExternalPluginUpdateInfoArgs, { __kind: K }> {
   return Array.isArray(data)
     ? { __kind: kind, fields: data }
     : { __kind: kind, ...(data ?? {}) };
 }
 export function isExternalPluginUpdateInfo<
-  K extends ExternalPluginUpdateInfo['__kind']
+  K extends ExternalPluginUpdateInfo['__kind'],
 >(
   kind: K,
   value: ExternalPluginUpdateInfo
