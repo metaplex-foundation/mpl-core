@@ -32,6 +32,8 @@ pub struct DataStoreInitInfo {
     pub init_plugin_authority: Option<Authority>,
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
+    /// The maximum size of the data store.
+    pub max_size: usize,
 }
 
 /// Data store update info.
@@ -39,4 +41,6 @@ pub struct DataStoreInitInfo {
 pub struct DataStoreUpdateInfo {
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
+    /// The maximum size of the data store.
+    pub max_size: usize,
 }
