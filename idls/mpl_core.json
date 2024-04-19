@@ -1819,7 +1819,7 @@
           "isSigner": true,
           "isOptional": true,
           "docs": [
-            "The owner or delegate of the asset"
+            "The Data Authority of the External Plugin"
           ]
         },
         {
@@ -1878,7 +1878,7 @@
           "isSigner": true,
           "isOptional": true,
           "docs": [
-            "The owner or delegate of the asset"
+            "The Data Authority of the External Plugin"
           ]
         },
         {

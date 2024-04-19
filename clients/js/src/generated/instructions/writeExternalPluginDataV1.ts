@@ -41,7 +41,7 @@ export type WriteExternalPluginDataV1InstructionAccounts = {
   collection?: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The owner or delegate of the asset */
+  /** The Data Authority of the External Plugin */
   authority?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;
