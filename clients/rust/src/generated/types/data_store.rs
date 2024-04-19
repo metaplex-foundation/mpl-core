@@ -15,7 +15,6 @@ use borsh::BorshSerialize;
 pub struct DataStore {
     pub data_authority: PluginAuthority,
     pub schema: ExternalPluginSchema,
-    pub max_size: u64,
     pub data_offset: u64,
     pub data_len: u64,
 }

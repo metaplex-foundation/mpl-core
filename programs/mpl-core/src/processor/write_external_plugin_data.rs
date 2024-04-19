@@ -8,8 +8,6 @@ use crate::{error::MplCoreError, plugins::ExternalPluginKey};
 pub(crate) struct WriteExternalPluginDataV1Args {
     /// External plugin key.
     pub key: ExternalPluginKey,
-    /// The offset of the data to write.
-    pub offset: usize,
     /// The data to write.
     pub data: Vec<u8>,
 }
@@ -26,8 +24,6 @@ pub(crate) fn write_external_plugin_data<'a>(
 pub(crate) struct WriteCollectionExternalPluginDataV1Args {
     /// External plugin key.
     pub key: ExternalPluginKey,
-    /// The offset of the data to write.
-    pub offset: usize,
     /// The data to write.
     pub data: Vec<u8>,
 }

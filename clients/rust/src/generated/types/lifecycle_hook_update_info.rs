@@ -18,5 +18,4 @@ pub struct LifecycleHookUpdateInfo {
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     pub schema: Option<ExternalPluginSchema>,
-    pub max_size: u64,
 }

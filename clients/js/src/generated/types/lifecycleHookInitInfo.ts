@@ -14,7 +14,6 @@ import {
   publicKey as publicKeySerializer,
   struct,
   tuple,
-  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalCheckResult,
@@ -41,7 +40,6 @@ export type LifecycleHookInitInfo = {
   extraAccounts: Option<Array<ExtraAccount>>;
   dataAuthority: Option<PluginAuthority>;
   schema: Option<ExternalPluginSchema>;
-  maxSize: bigint;
 };
 
 export type LifecycleHookInitInfoArgs = {
@@ -53,7 +51,6 @@ export type LifecycleHookInitInfoArgs = {
   extraAccounts: OptionOrNullable<Array<ExtraAccountArgs>>;
   dataAuthority: OptionOrNullable<PluginAuthorityArgs>;
   schema: OptionOrNullable<ExternalPluginSchemaArgs>;
-  maxSize: number | bigint;
 };
 
 export function getLifecycleHookInitInfoSerializer(): Serializer<
@@ -78,7 +75,6 @@ export function getLifecycleHookInitInfoSerializer(): Serializer<
       ['extraAccounts', option(array(getExtraAccountSerializer()))],
       ['dataAuthority', option(getPluginAuthoritySerializer())],
       ['schema', option(getExternalPluginSchemaSerializer())],
-      ['maxSize', u64()],
     ],
     { description: 'LifecycleHookInitInfo' }
   ) as Serializer<LifecycleHookInitInfoArgs, LifecycleHookInitInfo>;

@@ -14,8 +14,6 @@ export * from './approveCollectionPluginAuthorityV1';
 export * from './approvePluginAuthorityV1';
 export * from './burnCollectionV1';
 export * from './burnV1';
-export * from './clearCollectionExternalPluginDataV1';
-export * from './clearExternalPluginDataV1';
 export * from './collect';
 export * from './compressV1';
 export * from './createCollectionV1';

@@ -19,7 +19,6 @@ import {
 export type DataStore = {
   dataAuthority: PluginAuthority;
   schema: ExternalPluginSchema;
-  maxSize: bigint;
   dataOffset: bigint;
   dataLen: bigint;
 };
@@ -27,7 +26,6 @@ export type DataStore = {
 export type DataStoreArgs = {
   dataAuthority: PluginAuthorityArgs;
   schema: ExternalPluginSchemaArgs;
-  maxSize: number | bigint;
   dataOffset: number | bigint;
   dataLen: number | bigint;
 };
@@ -37,7 +35,6 @@ export function getDataStoreSerializer(): Serializer<DataStoreArgs, DataStore> {
     [
       ['dataAuthority', getPluginAuthoritySerializer()],
       ['schema', getExternalPluginSchemaSerializer()],
-      ['maxSize', u64()],
       ['dataOffset', u64()],
       ['dataLen', u64()],
     ],

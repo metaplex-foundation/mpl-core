@@ -23,8 +23,6 @@ pub struct LifecycleHook {
     pub data_authority: Option<Authority>,
     /// Schema for the data used by the plugin.
     pub schema: ExternalPluginSchema,
-    /// The maximum size of the lifecycle hook data.
-    pub max_size: usize,
     /// The offset to the plugin data in the account.
     pub data_offset: usize,
     /// The length of the plugin data.
@@ -48,8 +46,6 @@ pub struct LifecycleHookInitInfo {
     pub data_authority: Option<Authority>,
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
-    /// The maximum size of the lifecycle hook data.
-    pub max_size: usize,
 }
 
 /// Lifecycle hook update info.
@@ -61,6 +57,4 @@ pub struct LifecycleHookUpdateInfo {
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
-    /// The maximum size of the lifecycle hook data.
-    pub max_size: usize,
 }

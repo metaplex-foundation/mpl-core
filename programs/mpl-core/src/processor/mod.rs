@@ -2,7 +2,6 @@ mod add_external_plugin;
 mod add_plugin;
 mod approve_plugin_authority;
 mod burn;
-mod clear_external_plugin_data;
 mod collect;
 mod compress;
 mod create;
@@ -21,7 +20,6 @@ pub(crate) use add_external_plugin::*;
 pub(crate) use add_plugin::*;
 pub(crate) use approve_plugin_authority::*;
 pub(crate) use burn::*;
-pub(crate) use clear_external_plugin_data::*;
 pub(crate) use collect::*;
 pub(crate) use compress::*;
 pub(crate) use create::*;
@@ -165,14 +163,6 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::WriteCollectionExternalPluginDataV1(args) => {
             msg!("Instruction: WriteCollectionExternalPluginDataV1");
             write_collection_external_plugin_data(accounts, args)
-        }
-        MplAssetInstruction::ClearExternalPluginDataV1(args) => {
-            msg!("Instruction: ClearExternalPluginDataV1");
-            clear_external_plugin_data(accounts, args)
-        }
-        MplAssetInstruction::ClearCollectionExternalPluginDataV1(args) => {
-            msg!("Instruction: ClearCollectionExternalPluginDataV1");
-            clear_collection_external_plugin_data(accounts, args)
         }
     }
 }

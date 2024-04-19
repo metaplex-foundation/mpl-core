@@ -27,5 +27,4 @@ pub struct LifecycleHookInitInfo {
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     pub data_authority: Option<PluginAuthority>,
     pub schema: Option<ExternalPluginSchema>,
-    pub max_size: u64,
 }

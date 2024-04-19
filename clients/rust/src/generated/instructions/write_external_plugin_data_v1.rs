@@ -110,7 +110,6 @@ impl WriteExternalPluginDataV1InstructionData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct WriteExternalPluginDataV1InstructionArgs {
     pub key: ExternalPluginKey,
-    pub offset: u64,
     pub data: Vec<u8>,
 }
 
@@ -133,7 +132,6 @@ pub struct WriteExternalPluginDataV1Builder {
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
     key: Option<ExternalPluginKey>,
-    offset: Option<u64>,
     data: Option<Vec<u8>>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
@@ -191,11 +189,6 @@ impl WriteExternalPluginDataV1Builder {
         self
     }
     #[inline(always)]
-    pub fn offset(&mut self, offset: u64) -> &mut Self {
-        self.offset = Some(offset);
-        self
-    }
-    #[inline(always)]
     pub fn data(&mut self, data: Vec<u8>) -> &mut Self {
         self.data = Some(data);
         self
@@ -232,7 +225,6 @@ impl WriteExternalPluginDataV1Builder {
         };
         let args = WriteExternalPluginDataV1InstructionArgs {
             key: self.key.clone().expect("key is not set"),
-            offset: self.offset.clone().expect("offset is not set"),
             data: self.data.clone().expect("data is not set"),
         };
 
@@ -441,7 +433,6 @@ impl<'a, 'b> WriteExternalPluginDataV1CpiBuilder<'a, 'b> {
             system_program: None,
             log_wrapper: None,
             key: None,
-            offset: None,
             data: None,
             __remaining_accounts: Vec::new(),
         });
@@ -504,11 +495,6 @@ impl<'a, 'b> WriteExternalPluginDataV1CpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn offset(&mut self, offset: u64) -> &mut Self {
-        self.instruction.offset = Some(offset);
-        self
-    }
-    #[inline(always)]
     pub fn data(&mut self, data: Vec<u8>) -> &mut Self {
         self.instruction.data = Some(data);
         self
@@ -556,7 +542,6 @@ impl<'a, 'b> WriteExternalPluginDataV1CpiBuilder<'a, 'b> {
     ) -> solana_program::entrypoint::ProgramResult {
         let args = WriteExternalPluginDataV1InstructionArgs {
             key: self.instruction.key.clone().expect("key is not set"),
-            offset: self.instruction.offset.clone().expect("offset is not set"),
             data: self.instruction.data.clone().expect("data is not set"),
         };
         let instruction = WriteExternalPluginDataV1Cpi {
@@ -594,7 +579,6 @@ struct WriteExternalPluginDataV1CpiBuilderInstruction<'a, 'b> {
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     key: Option<ExternalPluginKey>,
-    offset: Option<u64>,
     data: Option<Vec<u8>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(

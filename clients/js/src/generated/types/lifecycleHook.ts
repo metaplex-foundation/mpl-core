@@ -32,7 +32,6 @@ export type LifecycleHook = {
   extraAccounts: Option<Array<ExtraAccount>>;
   dataAuthority: Option<PluginAuthority>;
   schema: ExternalPluginSchema;
-  maxSize: bigint;
   dataOffset: bigint;
   dataLen: bigint;
 };
@@ -42,7 +41,6 @@ export type LifecycleHookArgs = {
   extraAccounts: OptionOrNullable<Array<ExtraAccountArgs>>;
   dataAuthority: OptionOrNullable<PluginAuthorityArgs>;
   schema: ExternalPluginSchemaArgs;
-  maxSize: number | bigint;
   dataOffset: number | bigint;
   dataLen: number | bigint;
 };
@@ -57,7 +55,6 @@ export function getLifecycleHookSerializer(): Serializer<
       ['extraAccounts', option(array(getExtraAccountSerializer()))],
       ['dataAuthority', option(getPluginAuthoritySerializer())],
       ['schema', getExternalPluginSchemaSerializer()],
-      ['maxSize', u64()],
       ['dataOffset', u64()],
       ['dataLen', u64()],
     ],

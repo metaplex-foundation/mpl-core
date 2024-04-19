@@ -20,7 +20,6 @@ import {
   mapSerializer,
   struct,
   u32,
-  u64,
   u8,
 } from '@metaplex-foundation/umi/serializers';
 import {
@@ -54,13 +53,11 @@ export type WriteExternalPluginDataV1InstructionAccounts = {
 export type WriteExternalPluginDataV1InstructionData = {
   discriminator: number;
   key: ExternalPluginKey;
-  offset: bigint;
   data: Uint8Array;
 };
 
 export type WriteExternalPluginDataV1InstructionDataArgs = {
   key: ExternalPluginKeyArgs;
-  offset: number | bigint;
   data: Uint8Array;
 };
 
@@ -77,7 +74,6 @@ export function getWriteExternalPluginDataV1InstructionDataSerializer(): Seriali
       [
         ['discriminator', u8()],
         ['key', getExternalPluginKeySerializer()],
-        ['offset', u64()],
         ['data', bytes({ size: u32() })],
       ],
       { description: 'WriteExternalPluginDataV1InstructionData' }

@@ -13,7 +13,6 @@ import {
   option,
   struct,
   tuple,
-  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalCheckResult,
@@ -34,7 +33,6 @@ export type LifecycleHookUpdateInfo = {
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   extraAccounts: Option<Array<ExtraAccount>>;
   schema: Option<ExternalPluginSchema>;
-  maxSize: bigint;
 };
 
 export type LifecycleHookUpdateInfoArgs = {
@@ -43,7 +41,6 @@ export type LifecycleHookUpdateInfoArgs = {
   >;
   extraAccounts: OptionOrNullable<Array<ExtraAccountArgs>>;
   schema: OptionOrNullable<ExternalPluginSchemaArgs>;
-  maxSize: number | bigint;
 };
 
 export function getLifecycleHookUpdateInfoSerializer(): Serializer<
@@ -65,7 +62,6 @@ export function getLifecycleHookUpdateInfoSerializer(): Serializer<
       ],
       ['extraAccounts', option(array(getExtraAccountSerializer()))],
       ['schema', option(getExternalPluginSchemaSerializer())],
-      ['maxSize', u64()],
     ],
     { description: 'LifecycleHookUpdateInfo' }
   ) as Serializer<LifecycleHookUpdateInfoArgs, LifecycleHookUpdateInfo>;
