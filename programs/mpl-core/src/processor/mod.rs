@@ -14,6 +14,7 @@ mod transfer;
 mod update;
 mod update_external_plugin;
 mod update_plugin;
+mod write_external_plugin_data;
 
 pub(crate) use add_external_plugin::*;
 pub(crate) use add_plugin::*;
@@ -31,6 +32,7 @@ pub(crate) use transfer::*;
 pub(crate) use update::*;
 pub(crate) use update_external_plugin::*;
 pub(crate) use update_plugin::*;
+pub(crate) use write_external_plugin_data::*;
 
 use borsh::BorshDeserialize;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, pubkey::Pubkey};
@@ -153,6 +155,14 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::UpdateCollectionExternalPluginV1(args) => {
             msg!("Instruction: UpdateCollectionExternalPlugin");
             update_collection_external_plugin(accounts, args)
+        }
+        MplAssetInstruction::WriteExternalPluginDataV1(args) => {
+            msg!("Instruction: WriteExternalPluginDataV1");
+            write_external_plugin_data(accounts, args)
+        }
+        MplAssetInstruction::WriteCollectionExternalPluginDataV1(args) => {
+            msg!("Instruction: WriteCollectionExternalPluginDataV1");
+            write_collection_external_plugin_data(accounts, args)
         }
     }
 }

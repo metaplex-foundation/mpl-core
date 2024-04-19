@@ -85,14 +85,14 @@ export function externalPluginInitInfo(
   >['fields']
 ): GetDataEnumKind<ExternalPluginInitInfoArgs, 'DataStore'>;
 export function externalPluginInitInfo<
-  K extends ExternalPluginInitInfoArgs['__kind']
+  K extends ExternalPluginInitInfoArgs['__kind'],
 >(kind: K, data?: any): Extract<ExternalPluginInitInfoArgs, { __kind: K }> {
   return Array.isArray(data)
     ? { __kind: kind, fields: data }
     : { __kind: kind, ...(data ?? {}) };
 }
 export function isExternalPluginInitInfo<
-  K extends ExternalPluginInitInfo['__kind']
+  K extends ExternalPluginInitInfo['__kind'],
 >(
   kind: K,
   value: ExternalPluginInitInfo
