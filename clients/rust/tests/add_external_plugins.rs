@@ -32,6 +32,7 @@ async fn test_add_lifecycle_hook() {
             update_authority: None,
             collection: None,
             plugins: vec![],
+            external_plugins: vec![],
         },
     )
     .await
@@ -108,6 +109,7 @@ async fn test_add_oracle() {
             update_authority: None,
             collection: None,
             plugins: vec![],
+            external_plugins: vec![],
         },
     )
     .await
@@ -180,6 +182,7 @@ async fn test_add_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
+            external_plugins: vec![],
         },
     )
     .await

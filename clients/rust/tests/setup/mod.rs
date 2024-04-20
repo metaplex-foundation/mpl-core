@@ -1,6 +1,6 @@
 use mpl_core::{
-    instructions::{CreateCollectionV1Builder, CreateV1Builder},
-    types::{DataState, Key, Plugin, PluginAuthorityPair, UpdateAuthority},
+    instructions::{CreateCollectionV1Builder, CreateV2Builder},
+    types::{DataState, ExternalPluginInitInfo, Key, Plugin, PluginAuthorityPair, UpdateAuthority},
     Asset, Collection,
 };
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
@@ -31,6 +31,7 @@ pub struct CreateAssetHelperArgs<'a> {
     pub collection: Option<Pubkey>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
+    pub external_plugins: Vec<ExternalPluginInitInfo>,
 }
 
 pub async fn create_asset<'a>(
@@ -38,7 +39,7 @@ pub async fn create_asset<'a>(
     input: CreateAssetHelperArgs<'a>,
 ) -> Result<(), BanksClientError> {
     let payer = input.payer.unwrap_or(&context.payer);
-    let create_ix = CreateV1Builder::new()
+    let create_ix = CreateV2Builder::new()
         .asset(input.asset.pubkey())
         .collection(input.collection)
         .authority(input.authority)
@@ -50,6 +51,7 @@ pub async fn create_asset<'a>(
         .name(input.name.unwrap_or(DEFAULT_ASSET_NAME.to_owned()))
         .uri(input.uri.unwrap_or(DEFAULT_ASSET_URI.to_owned()))
         .plugins(input.plugins)
+        .external_plugins(input.external_plugins)
         .instruction();
 
     let mut signers = vec![input.asset, &context.payer];
