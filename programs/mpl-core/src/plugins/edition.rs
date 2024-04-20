@@ -21,6 +21,12 @@ impl Edition {
     }
 }
 
+impl Default for Edition {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PluginValidation for Edition {
     fn validate_add_plugin(
         &self,

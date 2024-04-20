@@ -10,7 +10,10 @@ use crate::{
     utils::resize_or_reallocate_account,
 };
 
-use super::{Plugin, PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord};
+use super::{
+    ExternalPlugin, ExternalPluginInitInfo, ExternalRegistryRecord, Plugin, PluginHeaderV1,
+    PluginRegistryV1, PluginType, RegistryRecord,
+};
 
 /// Create plugin header and registry if it doesn't exist
 pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
@@ -56,7 +59,7 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
 
 /// Create plugin header and registry
 pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
-    asset: T,
+    asset: &T,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
@@ -252,6 +255,82 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     plugin_header.plugin_registry_offset = new_registry_offset;
 
     plugin_registry.registry.push(new_registry_record);
+
+    let new_size = account
+        .data_len()
+        .checked_add(size_increase)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
+    resize_or_reallocate_account(account, payer, system_program, new_size)?;
+    plugin_header.save(account, header_offset)?;
+    plugin.save(account, old_registry_offset)?;
+    plugin_registry.save(account, new_registry_offset)?;
+
+    Ok(())
+}
+
+/// Add an external plugin to the registry and initialize it.
+pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
+    init_info: &ExternalPluginInitInfo,
+    plugin_header: &mut PluginHeaderV1,
+    plugin_registry: &mut PluginRegistryV1,
+    account: &AccountInfo<'a>,
+    payer: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+) -> ProgramResult {
+    let core = T::load(account, 0)?;
+    let header_offset = core.get_size();
+    let plugin_type = init_info.into();
+
+    let (authority, lifecycle_checks) = match &init_info {
+        ExternalPluginInitInfo::LifecycleHook(init_info) => {
+            (init_info.init_plugin_authority, &init_info.lifecycle_checks)
+        }
+        ExternalPluginInitInfo::Oracle(init_info) => {
+            (init_info.init_plugin_authority, &init_info.lifecycle_checks)
+        }
+        ExternalPluginInitInfo::DataStore(init_info) => (init_info.init_plugin_authority, &None),
+    };
+
+    let old_registry_offset = plugin_header.plugin_registry_offset;
+
+    let new_registry_record = ExternalRegistryRecord {
+        plugin_type,
+        authority: authority.unwrap_or(Authority::UpdateAuthority),
+        lifecycle_checks: lifecycle_checks.clone(),
+        offset: old_registry_offset,
+    };
+
+    let mut plugin = ExternalPlugin::from(init_info);
+
+    // If the plugin is a LifecycleHook or DataStore, then we need to set the data offset and length.
+    match &mut plugin {
+        ExternalPlugin::LifecycleHook(hook) => {
+            hook.data_offset = old_registry_offset;
+            hook.data_len = 0;
+        }
+        ExternalPlugin::DataStore(data_store) => {
+            data_store.data_offset = old_registry_offset;
+            data_store.data_len = 0;
+        }
+        _ => {}
+    };
+
+    let plugin_metadata = plugin.try_to_vec()?;
+    let plugin_size = plugin_metadata.len();
+
+    let size_increase = plugin_size
+        .checked_add(new_registry_record.try_to_vec()?.len())
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
+    let new_registry_offset = plugin_header
+        .plugin_registry_offset
+        .checked_add(plugin_size)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
+    plugin_header.plugin_registry_offset = new_registry_offset;
+
+    plugin_registry.external_registry.push(new_registry_record);
 
     let new_size = account
         .data_len()

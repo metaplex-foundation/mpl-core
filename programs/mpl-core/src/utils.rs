@@ -12,9 +12,9 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     plugins::{
-        create_meta_idempotent, initialize_plugin, validate_plugin_checks, CheckResult, Plugin,
-        PluginHeaderV1, PluginRegistryV1, PluginType, PluginValidationContext, RegistryRecord,
-        ValidationResult,
+        create_meta_idempotent, initialize_plugin, validate_plugin_checks, CheckResult,
+        ExternalPluginInitInfo, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType,
+        PluginValidationContext, RegistryRecord, ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, Compressible, CompressionProof, CoreAsset, DataBlob,
@@ -200,6 +200,7 @@ pub(crate) fn validate_asset_permissions<'a>(
     collection: Option<&AccountInfo<'a>>,
     new_owner: Option<&'a AccountInfo<'a>>,
     new_plugin: Option<&Plugin>,
+    new_external_plugin: Option<&ExternalPluginInitInfo>,
     asset_check_fp: fn() -> CheckResult,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
@@ -207,11 +208,13 @@ pub(crate) fn validate_asset_permissions<'a>(
         &AssetV1,
         &AccountInfo,
         Option<&Plugin>,
+        Option<&ExternalPluginInitInfo>,
     ) -> Result<ValidationResult, ProgramError>,
     collection_validate_fp: fn(
         &CollectionV1,
         &AccountInfo,
         Option<&Plugin>,
+        Option<&ExternalPluginInitInfo>,
     ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
@@ -263,7 +266,12 @@ pub(crate) fn validate_asset_permissions<'a>(
     let mut approved = false;
     let mut rejected = false;
     if asset_check != CheckResult::None {
-        match asset_validate_fp(&deserialized_asset, authority_info, new_plugin)? {
+        match asset_validate_fp(
+            &deserialized_asset,
+            authority_info,
+            new_plugin,
+            new_external_plugin,
+        )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
             ValidationResult::Pass => (),
@@ -278,6 +286,7 @@ pub(crate) fn validate_asset_permissions<'a>(
             &CollectionV1::load(collection.ok_or(MplCoreError::MissingCollection)?, 0)?,
             authority_info,
             new_plugin,
+            new_external_plugin,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
@@ -336,17 +345,19 @@ pub(crate) fn validate_asset_permissions<'a>(
 }
 
 /// Validate collection permissions using lifecycle validations for collection and plugins.
-#[allow(clippy::type_complexity)]
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 pub(crate) fn validate_collection_permissions<'a>(
     authority_info: &'a AccountInfo<'a>,
     collection: &AccountInfo<'a>,
     new_plugin: Option<&Plugin>,
+    new_external_plugin: Option<&ExternalPluginInitInfo>,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
     collection_validate_fp: fn(
         &CollectionV1,
         &AccountInfo,
         Option<&Plugin>,
+        Option<&ExternalPluginInitInfo>,
     ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
@@ -384,9 +395,12 @@ pub(crate) fn validate_collection_permissions<'a>(
         )
     ) {
         let result = match core_check.0 {
-            Key::CollectionV1 => {
-                collection_validate_fp(&deserialized_collection, authority_info, new_plugin)?
-            }
+            Key::CollectionV1 => collection_validate_fp(
+                &deserialized_collection,
+                authority_info,
+                new_plugin,
+                new_external_plugin,
+            )?,
             _ => return Err(MplCoreError::IncorrectAccount.into()),
         };
         match result {

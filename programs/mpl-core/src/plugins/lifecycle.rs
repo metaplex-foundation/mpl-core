@@ -34,6 +34,12 @@ pub struct ExternalCheckResult {
     flags: u8,
 }
 
+impl ExternalCheckResult {
+    pub(crate) fn none() -> Self {
+        Self { flags: 0 }
+    }
+}
+
 /// Bitfield representation of lifecycle permissions for external, third party plugins.
 #[bitfield(bits = 8)]
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
@@ -162,6 +168,30 @@ impl PluginType {
 
     /// Check if a plugin is permitted to approve or deny a decompress action.
     pub fn check_decompress(plugin_type: &PluginType) -> CheckResult {
+        #[allow(clippy::match_single_binding)]
+        match plugin_type {
+            _ => CheckResult::None,
+        }
+    }
+
+    /// Check permissions for the add external plugin lifecycle event.
+    pub fn check_add_external_plugin(plugin_type: &PluginType) -> CheckResult {
+        #[allow(clippy::match_single_binding)]
+        match plugin_type {
+            _ => CheckResult::None,
+        }
+    }
+
+    /// Check permissions for the remove external plugin lifecycle event.
+    pub fn check_remove_external_plugin(plugin_type: &PluginType) -> CheckResult {
+        #[allow(clippy::match_single_binding)]
+        match plugin_type {
+            _ => CheckResult::None,
+        }
+    }
+
+    /// Check permissions for the update external plugin lifecycle event.
+    pub fn check_update_external_plugin(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
             _ => CheckResult::None,
@@ -483,6 +513,117 @@ impl Plugin {
             Plugin::Edition(edition) => edition.validate_decompress(ctx),
         }
     }
+
+    /// Validate the add external plugin lifecycle event.
+    pub(crate) fn validate_add_external_plugin(
+        plugin: &Plugin,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        match plugin {
+            Plugin::Royalties(royalties) => royalties.validate_add_external_plugin(ctx),
+            Plugin::FreezeDelegate(freeze) => freeze.validate_add_external_plugin(ctx),
+            Plugin::BurnDelegate(burn) => burn.validate_add_external_plugin(ctx),
+            Plugin::TransferDelegate(transfer) => transfer.validate_add_external_plugin(ctx),
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_add_external_plugin(ctx)
+            }
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
+                permanent_freeze.validate_add_external_plugin(ctx)
+            }
+            Plugin::Attributes(attributes) => attributes.validate_add_external_plugin(ctx),
+            Plugin::PermanentTransferDelegate(permanent_transfer) => {
+                permanent_transfer.validate_add_external_plugin(ctx)
+            }
+            Plugin::PermanentBurnDelegate(permanent_burn) => {
+                permanent_burn.validate_add_external_plugin(ctx)
+            }
+            Plugin::Edition(edition) => edition.validate_add_external_plugin(ctx),
+        }
+    }
+
+    /// Validate the remove plugin lifecycle event.
+    pub(crate) fn validate_remove_external_plugin(
+        plugin: &Plugin,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        match plugin {
+            Plugin::Royalties(royalties) => royalties.validate_remove_external_plugin(ctx),
+            Plugin::FreezeDelegate(freeze) => freeze.validate_remove_external_plugin(ctx),
+            Plugin::BurnDelegate(burn) => burn.validate_remove_external_plugin(ctx),
+            Plugin::TransferDelegate(transfer) => transfer.validate_remove_external_plugin(ctx),
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_remove_external_plugin(ctx)
+            }
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
+                permanent_freeze.validate_remove_external_plugin(ctx)
+            }
+            Plugin::Attributes(attributes) => attributes.validate_remove_external_plugin(ctx),
+            Plugin::PermanentTransferDelegate(permanent_transfer) => {
+                permanent_transfer.validate_remove_external_plugin(ctx)
+            }
+            Plugin::PermanentBurnDelegate(permanent_burn) => {
+                permanent_burn.validate_remove_external_plugin(ctx)
+            }
+            Plugin::Edition(edition) => edition.validate_remove_external_plugin(ctx),
+        }
+    }
+
+    /// Route the validation of the update_plugin action to the appropriate plugin.
+    /// There is no check for updating a plugin because the plugin itself MUST validate the change.
+    pub(crate) fn validate_update_external_plugin(
+        plugin: &Plugin,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        let resolved_authorities = ctx
+            .resolved_authorities
+            .ok_or(MplCoreError::InvalidAuthority)?;
+        let base_result = if resolved_authorities.contains(ctx.self_authority) {
+            solana_program::msg!("Base: Approved");
+            ValidationResult::Approved
+        } else {
+            ValidationResult::Pass
+        };
+
+        let result = match plugin {
+            Plugin::Royalties(royalties) => royalties.validate_update_external_plugin(ctx),
+            Plugin::FreezeDelegate(freeze) => freeze.validate_update_external_plugin(ctx),
+            Plugin::BurnDelegate(burn) => burn.validate_update_external_plugin(ctx),
+            Plugin::TransferDelegate(transfer) => transfer.validate_update_external_plugin(ctx),
+            Plugin::UpdateDelegate(update_delegate) => {
+                update_delegate.validate_update_external_plugin(ctx)
+            }
+            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
+                permanent_freeze.validate_update_external_plugin(ctx)
+            }
+            Plugin::Attributes(attributes) => attributes.validate_update_external_plugin(ctx),
+            Plugin::PermanentTransferDelegate(permanent_transfer) => {
+                permanent_transfer.validate_update_external_plugin(ctx)
+            }
+            Plugin::PermanentBurnDelegate(permanent_burn) => {
+                permanent_burn.validate_update_external_plugin(ctx)
+            }
+            Plugin::Edition(edition) => edition.validate_update_external_plugin(ctx),
+        }?;
+
+        match (&base_result, &result) {
+            (ValidationResult::Approved, ValidationResult::Approved) => {
+                Ok(ValidationResult::Approved)
+            }
+            (ValidationResult::Approved, ValidationResult::Rejected) => {
+                Ok(ValidationResult::Rejected)
+            }
+            (ValidationResult::Rejected, ValidationResult::Approved) => {
+                Ok(ValidationResult::Rejected)
+            }
+            (ValidationResult::Rejected, ValidationResult::Rejected) => {
+                Ok(ValidationResult::Rejected)
+            }
+            (ValidationResult::Pass, _) => Ok(result),
+            (ValidationResult::ForceApproved, _) => Ok(ValidationResult::ForceApproved),
+            (_, ValidationResult::Pass) => Ok(base_result),
+            (_, ValidationResult::ForceApproved) => Ok(ValidationResult::ForceApproved),
+        }
+    }
 }
 
 /// Lifecycle validations
@@ -526,6 +667,22 @@ pub(crate) trait PluginValidation {
 
     /// Validate the remove plugin lifecycle action.
     fn validate_remove_plugin(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    /// Validate the add plugin lifecycle action.
+    fn validate_add_external_plugin(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    /// Validate the remove plugin lifecycle action.
+    fn validate_remove_external_plugin(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
@@ -614,6 +771,14 @@ pub(crate) trait PluginValidation {
 
     /// Validate the add_authority lifecycle action.
     fn validate_remove_authority(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    /// Validate the update_plugin lifecycle action.
+    fn validate_update_external_plugin(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {

@@ -27,6 +27,7 @@ async fn transfer_asset_as_owner() {
             update_authority: None,
             collection: None,
             plugins: vec![],
+            external_plugins: vec![],
         },
     )
     .await
@@ -92,6 +93,7 @@ async fn transfer_asset_with_royalties() {
                     rule_set: RuleSet::ProgramDenyList(vec![]),
                 }),
             }],
+            external_plugins: vec![],
         },
     )
     .await

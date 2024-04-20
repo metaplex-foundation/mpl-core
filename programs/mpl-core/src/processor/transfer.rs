@@ -82,6 +82,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
         ctx.accounts.collection,
         Some(ctx.accounts.new_owner),
         None,
+        None,
         AssetV1::check_transfer,
         CollectionV1::check_transfer,
         PluginType::check_transfer,

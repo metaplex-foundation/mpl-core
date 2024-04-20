@@ -1,11 +1,17 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::pubkey::Pubkey;
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
+    pubkey::Pubkey,
+};
 
 use strum::EnumCount;
 
+use crate::error::MplCoreError;
+
 use super::{
-    Authority, DataStore, DataStoreInitInfo, DataStoreUpdateInfo, LifecycleHook,
-    LifecycleHookInitInfo, LifecycleHookUpdateInfo, Oracle, OracleInitInfo, OracleUpdateInfo,
+    Authority, DataStore, DataStoreInitInfo, DataStoreUpdateInfo, ExternalCheckResult,
+    LifecycleHook, LifecycleHookInitInfo, LifecycleHookUpdateInfo, Oracle, OracleInitInfo,
+    OracleUpdateInfo, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// List of third party plugin types.
@@ -20,6 +26,16 @@ pub enum ExternalPluginType {
     Oracle,
     /// Data Store.
     DataStore,
+}
+
+impl From<&ExternalPluginInitInfo> for ExternalPluginType {
+    fn from(init_info: &ExternalPluginInitInfo) -> Self {
+        match init_info {
+            ExternalPluginInitInfo::LifecycleHook(_) => ExternalPluginType::LifecycleHook,
+            ExternalPluginInitInfo::Oracle(_) => ExternalPluginType::Oracle,
+            ExternalPluginInitInfo::DataStore(_) => ExternalPluginType::DataStore,
+        }
+    }
 }
 
 /// Definition of the external plugin variants, each containing a link to the external plugin
@@ -37,6 +53,106 @@ pub enum ExternalPlugin {
     /// Arbitrary data that can be written to by the data `Authority` stored in the attached
     /// struct.  Note this data authority is different then the plugin authority.
     DataStore(DataStore),
+}
+
+impl ExternalPlugin {
+    /// Check if a plugin is permitted to approve or deny a create action.
+    pub fn check_create(plugin: &ExternalPluginInitInfo) -> ExternalCheckResult {
+        match plugin {
+            ExternalPluginInitInfo::LifecycleHook(init_info) => {
+                if let Some(lifecycle_checks) = &init_info.lifecycle_checks {
+                    if let Some(checks) = lifecycle_checks
+                        .iter()
+                        .find(|event| event.0 == HookableLifecycleEvent::Create)
+                    {
+                        checks.1
+                    } else {
+                        ExternalCheckResult::none()
+                    }
+                } else {
+                    ExternalCheckResult::none()
+                }
+            }
+            ExternalPluginInitInfo::Oracle(init_info) => {
+                if let Some(lifecycle_checks) = &init_info.lifecycle_checks {
+                    if let Some(checks) = lifecycle_checks
+                        .iter()
+                        .find(|event| event.0 == HookableLifecycleEvent::Create)
+                    {
+                        checks.1
+                    } else {
+                        ExternalCheckResult::none()
+                    }
+                } else {
+                    ExternalCheckResult::none()
+                }
+            }
+            ExternalPluginInitInfo::DataStore(_) => ExternalCheckResult::none(),
+        }
+    }
+
+    /// Validate the add external plugin lifecycle event.
+    pub(crate) fn validate_create(
+        init_info: &ExternalPluginInitInfo,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        match init_info {
+            ExternalPluginInitInfo::LifecycleHook(init_info) => init_info.validate_create(ctx),
+            ExternalPluginInitInfo::Oracle(init_info) => init_info.validate_create(ctx),
+            ExternalPluginInitInfo::DataStore(init_info) => init_info.validate_create(ctx),
+        }
+    }
+
+    /// Validate the add external plugin lifecycle event.
+    pub(crate) fn validate_add_external_plugin(
+        init_info: &ExternalPluginInitInfo,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        match init_info {
+            ExternalPluginInitInfo::LifecycleHook(init_info) => {
+                init_info.validate_add_external_plugin(ctx)
+            }
+            ExternalPluginInitInfo::Oracle(init_info) => {
+                init_info.validate_add_external_plugin(ctx)
+            }
+            ExternalPluginInitInfo::DataStore(init_info) => {
+                init_info.validate_add_external_plugin(ctx)
+            }
+        }
+    }
+
+    /// Load and deserialize a plugin from an offset in the account.
+    pub fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
+        let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
+        Self::deserialize(&mut bytes).map_err(|error| {
+            msg!("Error: {}", error);
+            MplCoreError::DeserializationError.into()
+        })
+    }
+
+    /// Save and serialize a plugin to an offset in the account.
+    pub fn save(&self, account: &AccountInfo, offset: usize) -> ProgramResult {
+        borsh::to_writer(&mut account.data.borrow_mut()[offset..], self).map_err(|error| {
+            msg!("Error: {}", error);
+            MplCoreError::SerializationError.into()
+        })
+    }
+}
+
+impl From<&ExternalPluginInitInfo> for ExternalPlugin {
+    fn from(init_info: &ExternalPluginInitInfo) -> Self {
+        match init_info {
+            ExternalPluginInitInfo::LifecycleHook(init_info) => {
+                ExternalPlugin::LifecycleHook(LifecycleHook::from(init_info))
+            }
+            ExternalPluginInitInfo::Oracle(init_info) => {
+                ExternalPlugin::Oracle(Oracle::from(init_info))
+            }
+            ExternalPluginInitInfo::DataStore(init_info) => {
+                ExternalPlugin::DataStore(DataStore::from(init_info))
+            }
+        }
+    }
 }
 
 #[repr(C)]
@@ -135,9 +251,10 @@ pub enum Seed {
 
 /// Schema used for third party plugin data.
 #[repr(C)]
-#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq, Default)]
 pub enum ExternalPluginSchema {
     /// Raw binary data.
+    #[default]
     Binary,
     /// JSON.
     Json,
