@@ -89,6 +89,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
         ctx.accounts.collection,
         None,
         None,
+        None,
         AssetV1::check_burn,
         CollectionV1::check_burn,
         PluginType::check_burn,
@@ -131,6 +132,7 @@ pub(crate) fn burn_collection<'a>(
     let _ = validate_collection_permissions(
         authority,
         ctx.accounts.collection,
+        None,
         None,
         CollectionV1::check_burn,
         PluginType::check_burn,

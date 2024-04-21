@@ -47,7 +47,7 @@ pub(crate) fn approve_plugin_authority<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    let (_, plugin) = fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, args.plugin_type)?;
+    let (_, plugin) = fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, None, args.plugin_type)?;
 
     // Validate asset permissions.
     let (mut asset, _, _) = validate_asset_permissions(
@@ -56,6 +56,7 @@ pub(crate) fn approve_plugin_authority<'a>(
         ctx.accounts.collection,
         None,
         Some(&plugin),
+        None,
         AssetV1::check_approve_plugin_authority,
         CollectionV1::check_approve_plugin_authority,
         PluginType::check_approve_plugin_authority,
@@ -104,13 +105,14 @@ pub(crate) fn approve_collection_plugin_authority<'a>(
     }
 
     let (_, plugin) =
-        fetch_wrapped_plugin::<CollectionV1>(ctx.accounts.collection, args.plugin_type)?;
+        fetch_wrapped_plugin::<CollectionV1>(ctx.accounts.collection, None, args.plugin_type)?;
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
         authority,
         ctx.accounts.collection,
         Some(&plugin),
+        None,
         CollectionV1::check_approve_plugin_authority,
         PluginType::check_approve_plugin_authority,
         CollectionV1::validate_approve_plugin_authority,

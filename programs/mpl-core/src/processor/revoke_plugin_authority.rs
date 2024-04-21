@@ -53,7 +53,8 @@ pub(crate) fn revoke_plugin_authority<'a>(
     let (mut asset, plugin_header, mut plugin_registry) =
         fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
 
-    let (_, plugin) = fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, args.plugin_type)?;
+    let (_, plugin) =
+        fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, Some(&asset), args.plugin_type)?;
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
@@ -62,6 +63,7 @@ pub(crate) fn revoke_plugin_authority<'a>(
         ctx.accounts.collection,
         None,
         Some(&plugin),
+        None,
         AssetV1::check_revoke_plugin_authority,
         CollectionV1::check_revoke_plugin_authority,
         PluginType::check_revoke_plugin_authority,
@@ -117,17 +119,21 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
         }
     }
 
-    let (_, plugin_header, mut plugin_registry) =
+    let (collection, plugin_header, mut plugin_registry) =
         fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;
 
-    let (_, plugin) =
-        fetch_wrapped_plugin::<CollectionV1>(ctx.accounts.collection, args.plugin_type)?;
+    let (_, plugin) = fetch_wrapped_plugin::<CollectionV1>(
+        ctx.accounts.collection,
+        Some(&collection),
+        args.plugin_type,
+    )?;
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
         authority,
         ctx.accounts.collection,
         Some(&plugin),
+        None,
         CollectionV1::check_revoke_plugin_authority,
         PluginType::check_revoke_plugin_authority,
         CollectionV1::validate_revoke_plugin_authority,

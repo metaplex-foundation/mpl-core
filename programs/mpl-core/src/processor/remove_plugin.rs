@@ -53,7 +53,7 @@ pub(crate) fn remove_plugin<'a>(
     }
 
     let (_, plugin_to_remove) =
-        fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, args.plugin_type)?;
+        fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, Some(&asset), args.plugin_type)?;
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
@@ -62,6 +62,7 @@ pub(crate) fn remove_plugin<'a>(
         ctx.accounts.collection,
         None,
         Some(&plugin_to_remove),
+        None,
         AssetV1::check_remove_plugin,
         CollectionV1::check_remove_plugin,
         PluginType::check_remove_plugin,
@@ -116,14 +117,18 @@ pub(crate) fn remove_collection_plugin<'a>(
         return Err(MplCoreError::PluginNotFound.into());
     }
 
-    let (_, plugin_to_remove) =
-        fetch_wrapped_plugin::<CollectionV1>(ctx.accounts.collection, args.plugin_type)?;
+    let (_, plugin_to_remove) = fetch_wrapped_plugin::<CollectionV1>(
+        ctx.accounts.collection,
+        Some(&collection),
+        args.plugin_type,
+    )?;
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
         authority,
         ctx.accounts.collection,
         Some(&plugin_to_remove),
+        None,
         CollectionV1::check_remove_plugin,
         PluginType::check_remove_plugin,
         CollectionV1::validate_remove_plugin,

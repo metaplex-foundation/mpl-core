@@ -12,8 +12,9 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     plugins::{
-        create_meta_idempotent, initialize_plugin, validate_plugin_checks, CheckResult, Plugin,
-        PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord, ValidationResult,
+        create_meta_idempotent, initialize_plugin, validate_plugin_checks, CheckResult,
+        ExternalPluginInitInfo, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType,
+        PluginValidationContext, RegistryRecord, ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, Compressible, CompressionProof, CoreAsset, DataBlob,
@@ -193,12 +194,13 @@ pub(crate) fn resize_or_reallocate_account<'a>(
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 /// Validate asset permissions using lifecycle validations for asset, collection, and plugins.
-pub fn validate_asset_permissions<'a>(
-    authority_info: &AccountInfo<'a>,
+pub(crate) fn validate_asset_permissions<'a>(
+    authority_info: &'a AccountInfo<'a>,
     asset: &AccountInfo<'a>,
     collection: Option<&AccountInfo<'a>>,
-    new_owner: Option<&AccountInfo<'a>>,
+    new_owner: Option<&'a AccountInfo<'a>>,
     new_plugin: Option<&Plugin>,
+    new_external_plugin: Option<&ExternalPluginInitInfo>,
     asset_check_fp: fn() -> CheckResult,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
@@ -206,19 +208,17 @@ pub fn validate_asset_permissions<'a>(
         &AssetV1,
         &AccountInfo,
         Option<&Plugin>,
+        Option<&ExternalPluginInitInfo>,
     ) -> Result<ValidationResult, ProgramError>,
     collection_validate_fp: fn(
         &CollectionV1,
         &AccountInfo,
         Option<&Plugin>,
+        Option<&ExternalPluginInitInfo>,
     ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
-        &AccountInfo,
-        Option<&AccountInfo>,
-        &Authority,
-        Option<&Plugin>,
-        Option<&[Authority]>,
+        &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<(AssetV1, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
     let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<AssetV1>(asset)?;
@@ -232,6 +232,8 @@ pub fn validate_asset_permissions<'a>(
         } else if collection.unwrap().key != &collection_address {
             return Err(MplCoreError::InvalidCollection.into());
         }
+    } else if collection.is_some() {
+        return Err(MplCoreError::InvalidCollection.into());
     }
 
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
@@ -260,28 +262,15 @@ pub fn validate_asset_permissions<'a>(
         registry.check_registry(Key::AssetV1, plugin_check_fp, &mut checks);
     }
 
-    solana_program::msg!("checks: {:#?}", checks);
-
     // Do the core validation.
     let mut approved = false;
     let mut rejected = false;
     if asset_check != CheckResult::None {
-        match asset_validate_fp(&deserialized_asset, authority_info, new_plugin)? {
-            ValidationResult::Approved => approved = true,
-            ValidationResult::Rejected => rejected = true,
-            ValidationResult::Pass => (),
-            ValidationResult::ForceApproved => {
-                return Ok((deserialized_asset, plugin_header, plugin_registry))
-            }
-        }
-    };
-    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
-
-    if collection_check != CheckResult::None {
-        match collection_validate_fp(
-            &CollectionV1::load(collection.ok_or(MplCoreError::MissingCollection)?, 0)?,
+        match asset_validate_fp(
+            &deserialized_asset,
             authority_info,
             new_plugin,
+            new_external_plugin,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
@@ -291,7 +280,22 @@ pub fn validate_asset_permissions<'a>(
             }
         }
     };
-    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
+
+    if collection_check != CheckResult::None {
+        match collection_validate_fp(
+            &CollectionV1::load(collection.ok_or(MplCoreError::MissingCollection)?, 0)?,
+            authority_info,
+            new_plugin,
+            new_external_plugin,
+        )? {
+            ValidationResult::Approved => approved = true,
+            ValidationResult::Rejected => rejected = true,
+            ValidationResult::Pass => (),
+            ValidationResult::ForceApproved => {
+                return Ok((deserialized_asset, plugin_header, plugin_registry))
+            }
+        }
+    };
 
     match validate_plugin_checks(
         Key::CollectionV1,
@@ -312,8 +316,6 @@ pub fn validate_asset_permissions<'a>(
         }
     };
 
-    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
-
     match validate_plugin_checks(
         Key::AssetV1,
         &checks,
@@ -333,8 +335,6 @@ pub fn validate_asset_permissions<'a>(
         }
     };
 
-    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
-
     if rejected {
         return Err(MplCoreError::InvalidAuthority.into());
     } else if !approved {
@@ -345,25 +345,23 @@ pub fn validate_asset_permissions<'a>(
 }
 
 /// Validate collection permissions using lifecycle validations for collection and plugins.
-#[allow(clippy::type_complexity)]
-pub fn validate_collection_permissions<'a>(
-    authority_info: &AccountInfo<'a>,
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
+pub(crate) fn validate_collection_permissions<'a>(
+    authority_info: &'a AccountInfo<'a>,
     collection: &AccountInfo<'a>,
     new_plugin: Option<&Plugin>,
+    new_external_plugin: Option<&ExternalPluginInitInfo>,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
     collection_validate_fp: fn(
         &CollectionV1,
         &AccountInfo,
         Option<&Plugin>,
+        Option<&ExternalPluginInitInfo>,
     ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
-        &AccountInfo,
-        Option<&AccountInfo>,
-        &Authority,
-        Option<&Plugin>,
-        Option<&[Authority]>,
+        &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<
     (
@@ -386,8 +384,6 @@ pub fn validate_collection_permissions<'a>(
         registry.check_registry(Key::CollectionV1, plugin_check_fp, &mut checks);
     }
 
-    solana_program::msg!("checks: {:#?}", checks);
-
     // Do the core validation.
     let mut approved = false;
     let mut rejected = false;
@@ -399,9 +395,12 @@ pub fn validate_collection_permissions<'a>(
         )
     ) {
         let result = match core_check.0 {
-            Key::CollectionV1 => {
-                collection_validate_fp(&deserialized_collection, authority_info, new_plugin)?
-            }
+            Key::CollectionV1 => collection_validate_fp(
+                &deserialized_collection,
+                authority_info,
+                new_plugin,
+                new_external_plugin,
+            )?,
             _ => return Err(MplCoreError::IncorrectAccount.into()),
         };
         match result {
@@ -413,7 +412,6 @@ pub fn validate_collection_permissions<'a>(
             }
         }
     };
-    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
 
     match validate_plugin_checks(
         Key::CollectionV1,
@@ -433,8 +431,6 @@ pub fn validate_collection_permissions<'a>(
             return Ok((deserialized_collection, plugin_header, plugin_registry))
         }
     };
-
-    solana_program::msg!("approved: {:?} rejected {:?}", approved, rejected);
 
     if rejected || !approved {
         return Err(MplCoreError::InvalidAuthority.into());
@@ -542,7 +538,7 @@ pub(crate) fn resolve_pubkey_to_authorities(
     maybe_collection_info: Option<&AccountInfo>,
     asset: &AssetV1,
 ) -> Result<Vec<Authority>, ProgramError> {
-    let mut authorities = vec![];
+    let mut authorities = Vec::with_capacity(3);
     if authority_info.key == &asset.owner {
         authorities.push(Authority::Owner);
     }
@@ -576,7 +572,7 @@ pub(crate) fn resolve_pubkey_to_authorities_collection(
     collection_info: &AccountInfo,
 ) -> Result<Vec<Authority>, ProgramError> {
     let collection: CollectionV1 = CollectionV1::load(collection_info, 0)?;
-    let mut authorities = vec![];
+    let mut authorities = Vec::with_capacity(3);
     if authority_info.key == collection.owner() {
         authorities.push(Authority::Owner);
     }

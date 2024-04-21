@@ -49,6 +49,7 @@ pub(crate) fn compress<'a>(
                 ctx.accounts.collection,
                 None,
                 None,
+                None,
                 AssetV1::check_compress,
                 CollectionV1::check_compress,
                 PluginType::check_compress,

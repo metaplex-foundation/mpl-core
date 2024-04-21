@@ -58,7 +58,6 @@ impl UpdateAuthority {
                     return Err(MplCoreError::InvalidCollection.into());
                 }
                 let collection = CollectionV1::load(collection_info, 0)?;
-                solana_program::msg!("Collection: {:?}", collection);
 
                 let authority_info = match ctx.authority {
                     Some(authority) => {
@@ -82,9 +81,11 @@ impl UpdateAuthority {
                         )
                         .is_err()
                     {
+                        solana_program::msg!("UA: Rejected");
                         return Ok(ValidationResult::Rejected);
                     }
                 } else if authority_info.key != &collection.update_authority {
+                    solana_program::msg!("UA: Rejected");
                     return Ok(ValidationResult::Rejected);
                 }
 
@@ -109,6 +110,7 @@ impl UpdateAuthority {
         };
 
         if ctx.authority.unwrap_or(ctx.payer).key == authority {
+            solana_program::msg!("UA: Approved");
             Ok(ValidationResult::Approved)
         } else {
             Ok(ValidationResult::Pass)

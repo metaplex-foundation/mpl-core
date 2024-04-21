@@ -38,6 +38,7 @@ export type BaseLifecycleHookInitInfo = {
   initPluginAuthority: Option<BasePluginAuthority>;
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   extraAccounts: Option<Array<BaseExtraAccount>>;
+  dataAuthority: Option<BasePluginAuthority>;
   schema: Option<ExternalPluginSchema>;
 };
 
@@ -48,6 +49,7 @@ export type BaseLifecycleHookInitInfoArgs = {
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
   extraAccounts: OptionOrNullable<Array<BaseExtraAccountArgs>>;
+  dataAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
   schema: OptionOrNullable<ExternalPluginSchemaArgs>;
 };
 
@@ -71,6 +73,7 @@ export function getBaseLifecycleHookInitInfoSerializer(): Serializer<
         ),
       ],
       ['extraAccounts', option(array(getBaseExtraAccountSerializer()))],
+      ['dataAuthority', option(getBasePluginAuthoritySerializer())],
       ['schema', option(getExternalPluginSchemaSerializer())],
     ],
     { description: 'BaseLifecycleHookInitInfo' }

@@ -18,15 +18,19 @@ import {
 import {
   BaseExtraAccount,
   BaseExtraAccountArgs,
+  BasePluginAuthority,
+  BasePluginAuthorityArgs,
   ExternalPluginSchema,
   ExternalPluginSchemaArgs,
   getBaseExtraAccountSerializer,
+  getBasePluginAuthoritySerializer,
   getExternalPluginSchemaSerializer,
 } from '.';
 
 export type BaseLifecycleHook = {
   hookedProgram: PublicKey;
   extraAccounts: Option<Array<BaseExtraAccount>>;
+  dataAuthority: Option<BasePluginAuthority>;
   schema: ExternalPluginSchema;
   dataOffset: bigint;
   dataLen: bigint;
@@ -35,6 +39,7 @@ export type BaseLifecycleHook = {
 export type BaseLifecycleHookArgs = {
   hookedProgram: PublicKey;
   extraAccounts: OptionOrNullable<Array<BaseExtraAccountArgs>>;
+  dataAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
   schema: ExternalPluginSchemaArgs;
   dataOffset: number | bigint;
   dataLen: number | bigint;
@@ -48,6 +53,7 @@ export function getBaseLifecycleHookSerializer(): Serializer<
     [
       ['hookedProgram', publicKeySerializer()],
       ['extraAccounts', option(array(getBaseExtraAccountSerializer()))],
+      ['dataAuthority', option(getBasePluginAuthoritySerializer())],
       ['schema', getExternalPluginSchemaSerializer()],
       ['dataOffset', u64()],
       ['dataLen', u64()],
