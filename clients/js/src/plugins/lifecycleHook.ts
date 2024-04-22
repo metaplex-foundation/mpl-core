@@ -11,13 +11,14 @@ import {
   ExternalPluginSchema,
 } from '../generated';
 import { LifecycleChecks, lifecycleChecksToBase } from './lifecycleChecks';
-import { PluginAuthority, pluginAuthorityToBase } from './pluginAuthority';
+import { PluginAuthority, pluginAuthorityFromBase, pluginAuthorityToBase } from './pluginAuthority';
 import { BaseExternalPlugin, parseExternalPluginData } from './externalPlugins';
 import { ExternalPluginManifest } from './externalPluginManifest';
 import { ExternalPluginKey } from './externalPluginKey';
 
-export type LifecycleHook = Omit<BaseLifecycleHook, 'extraAccounts'> & {
+export type LifecycleHook = Omit<BaseLifecycleHook, 'extraAccounts' | 'dataAuthority'> & {
   extraAccounts?: Array<ExtraAccount>;
+  dataAuthority?: PluginAuthority;
   data?: any;
 };
 
@@ -29,13 +30,14 @@ export type LifecycleHookPlugin = BaseExternalPlugin &
 
 export type LifecycleHookInitInfoArgs = Omit<
   BaseLifecycleHookInitInfoArgs,
-  'initPluginAuthority' | 'lifecycleChecks' | 'schema'
+  'initPluginAuthority' | 'lifecycleChecks' | 'schema' | 'dataAuthority'
 > & {
   type: 'LifecycleHook';
   initPluginAuthority?: PluginAuthority;
   lifecycleChecks?: LifecycleChecks;
   schema?: ExternalPluginSchema;
   extraAccounts?: Array<ExtraAccount>;
+  dataAuthority?: PluginAuthority;
 };
 
 export type LifecycleHookUpdateInfoArgs = Omit<
@@ -63,6 +65,7 @@ export function lifecycleHookInitInfoArgsToBase(
       ? lifecycleChecksToBase(l.lifecycleChecks)
       : null,
     schema: l.schema ? l.schema : null,
+    dataAuthority: l.dataAuthority ? pluginAuthorityToBase(l.dataAuthority) : null,
   };
 }
 
@@ -77,6 +80,7 @@ export function lifecycleHookUpdateInfoArgsToBase(
       ? l.extraAccounts.map(extraAccountToBase)
       : null,
     schema: l.schema ? l.schema : null,
+    // TODO update dataAuthority?
   };
 }
 
@@ -93,6 +97,7 @@ export function lifecycleHookFromBase(
         ? s.extraAccounts.value.map(extraAccountFromBase)
         : undefined,
     data: parseExternalPluginData(s, account),
+    dataAuthority: s.dataAuthority.__option === 'Some' ? pluginAuthorityFromBase(s.dataAuthority.value) : undefined,
   };
 }
 

@@ -14,8 +14,8 @@ export type UpdateArgs = Omit<
 > & {
   asset: AssetV1;
   collection?: CollectionV1;
-  name: UpdateV1InstructionDataArgs['newName'];
-  uri: UpdateV1InstructionDataArgs['newUri'];
+  name?: UpdateV1InstructionDataArgs['newName'];
+  uri?: UpdateV1InstructionDataArgs['newUri'];
 };
 
 export const update = (

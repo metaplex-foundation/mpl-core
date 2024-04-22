@@ -99,7 +99,7 @@ export function externalRegistryRecordsToExternalPluginList(
           ? lifecycleChecksFromBase(record.lifecycleChecks.value)
           : undefined,
       authority: pluginAuthorityFromBase(record.authority),
-      offset: Number(record.offset),
+      offset: record.offset,
     };
 
     if (deserializedPlugin.__kind === 'Oracle') {

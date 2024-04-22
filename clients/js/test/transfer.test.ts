@@ -148,7 +148,7 @@ test('authorities on owner-managed plugins are reset on transfer', async (t) => 
         type: 'Address',
         address: freezeDelegate.publicKey,
       },
-      offset: 119,
+      offset: 119n,
       frozen: false,
     },
   });
@@ -166,7 +166,7 @@ test('authorities on owner-managed plugins are reset on transfer', async (t) => 
       authority: {
         type: 'Owner',
       },
-      offset: 119,
+      offset: 119n,
       frozen: false,
     },
   });
@@ -199,7 +199,7 @@ test('authorities on permanent plugins should not be reset on transfer', async (
         type: 'Address',
         address: freezeDelegate.publicKey,
       },
-      offset: 119,
+      offset: 119n,
       frozen: false,
     },
   });
@@ -218,7 +218,7 @@ test('authorities on permanent plugins should not be reset on transfer', async (
         type: 'Address',
         address: freezeDelegate.publicKey,
       },
-      offset: 119,
+      offset: 119n,
       frozen: false,
     },
   });
@@ -249,7 +249,7 @@ test('authorities on authority-managed plugin should not be reset on transfer', 
         type: 'Address',
         address: delegate.publicKey,
       },
-      offset: 119,
+      offset: 119n,
       attributeList: [],
     },
   });
@@ -268,7 +268,7 @@ test('authorities on authority-managed plugin should not be reset on transfer', 
         type: 'Address',
         address: delegate.publicKey,
       },
-      offset: 119,
+      offset: 119n,
       attributeList: [],
     },
   });

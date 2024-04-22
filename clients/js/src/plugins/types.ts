@@ -11,7 +11,6 @@ import {
   basePluginAuthority as pluginAuthority,
   baseUpdateAuthority as updateAuthority,
   baseRuleSet as ruleSet,
-  BaseRoyalties,
   FreezeDelegateArgs,
   UpdateDelegateArgs,
   AttributesArgs,
@@ -28,7 +27,7 @@ export { pluginAuthority, updateAuthority, ruleSet };
 
 export type BasePlugin = {
   authority: PluginAuthority;
-  offset?: number;
+  offset?: bigint;
 };
 
 export type PluginAuthorityPairHelperArgs = CreatePluginArgs & {
@@ -122,8 +121,7 @@ export type PermanentBurnDelegatePlugin = BasePlugin & PermanentBurnDelegate;
 export type EditionPlugin = BasePlugin & Edition;
 
 export type PluginsList = {
-  // for backwards compatibility
-  royalties?: RoyaltiesPlugin | (BasePlugin & BaseRoyalties);
+  royalties?: RoyaltiesPlugin;
   freezeDelegate?: FreezeDelegatePlugin;
   burnDelegate?: BurnDelegatePlugin;
   transferDelegate?: TransferDelegatePlugin;

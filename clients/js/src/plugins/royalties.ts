@@ -2,24 +2,21 @@ import { PublicKey } from '@metaplex-foundation/umi';
 import { BaseRoyalties, BaseRuleSet } from '../generated';
 import { BasePlugin } from './types';
 
-export type RuleSet =
+// do jank stuff for backwards compatibility
+export type UnwrappedRuleSet =
   | {
       type: 'None';
-      __kind?: 'None';
     }
   | {
       type: 'ProgramAllowList';
-      // TODO allow this kind of backwards compatibility?
-      __kind?: 'ProgramAllowList';
       addresses: PublicKey[];
-      fields?: [Array<PublicKey>];
     }
   | {
       type: 'ProgramDenyList';
-      __kind?: 'ProgramDenyList';
       addresses: PublicKey[];
-      fields?: [Array<PublicKey>];
-    };
+    }
+
+export type RuleSet = UnwrappedRuleSet | BaseRuleSet;
 
 export type Royalties = Omit<BaseRoyalties, 'ruleSet'> & {
   ruleSet: RuleSet;
@@ -29,22 +26,27 @@ export type RoyaltiesArgs = Royalties;
 
 export type RoyaltiesPlugin = BasePlugin & Royalties;
 
-export function royaltiesToBase(r: Royalties): BaseRoyalties {
-  let ruleSet: BaseRuleSet;
-  if (
-    r.ruleSet.type === 'ProgramAllowList' ||
-    r.ruleSet.type === 'ProgramDenyList'
-  ) {
-    ruleSet = {
-      __kind: r.ruleSet.type,
-      fields: [r.ruleSet.addresses],
-    };
-  } else {
-    ruleSet = { __kind: r.ruleSet.type };
+export function ruleSetToBase(r: RuleSet): BaseRuleSet {
+  const base = r as BaseRuleSet;
+  if (base.__kind) {
+    return r as BaseRuleSet
   }
+  const ruleSet = r as UnwrappedRuleSet;
+
+  if (ruleSet.type === 'ProgramAllowList' || ruleSet.type === 'ProgramDenyList') {
+    return {
+      __kind: ruleSet.type,
+      fields: [ruleSet.addresses],
+    };
+  } 
+  return { __kind: ruleSet.type };
+
+}
+
+export function royaltiesToBase(r: Royalties): BaseRoyalties {
   return {
     ...r,
-    ruleSet,
+    ruleSet: ruleSetToBase(r.ruleSet),
   };
 }
 

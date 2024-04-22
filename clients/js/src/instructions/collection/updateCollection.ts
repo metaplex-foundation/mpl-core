@@ -8,8 +8,8 @@ export type UpdateCollectionArgs = Omit<
   Parameters<typeof updateCollectionV1>[1],
   'newName' | 'newUri'
 > & {
-  name: UpdateCollectionV1InstructionDataArgs['newName'];
-  uri: UpdateCollectionV1InstructionDataArgs['newUri'];
+  name?: UpdateCollectionV1InstructionDataArgs['newName'];
+  uri?: UpdateCollectionV1InstructionDataArgs['newUri'];
 };
 
 export const updateCollection = (
