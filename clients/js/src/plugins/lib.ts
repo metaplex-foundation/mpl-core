@@ -120,13 +120,13 @@ export function mapPlugin({
     .toLowerCase()
     .split(' ')
     .reduce((s, c) => s + (c.charAt(0).toUpperCase() + c.slice(1)));
-  
+
   if (plug.__kind === 'Royalties') {
     return {
       [pluginKey]: {
         authority,
         offset,
-        ...royaltiesFromBase(plug.fields[0])
+        ...royaltiesFromBase(plug.fields[0]),
       },
     };
   }

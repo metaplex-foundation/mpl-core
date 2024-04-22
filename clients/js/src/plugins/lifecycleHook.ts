@@ -11,12 +11,19 @@ import {
   ExternalPluginSchema,
 } from '../generated';
 import { LifecycleChecks, lifecycleChecksToBase } from './lifecycleChecks';
-import { PluginAuthority, pluginAuthorityFromBase, pluginAuthorityToBase } from './pluginAuthority';
+import {
+  PluginAuthority,
+  pluginAuthorityFromBase,
+  pluginAuthorityToBase,
+} from './pluginAuthority';
 import { BaseExternalPlugin, parseExternalPluginData } from './externalPlugins';
 import { ExternalPluginManifest } from './externalPluginManifest';
 import { ExternalPluginKey } from './externalPluginKey';
 
-export type LifecycleHook = Omit<BaseLifecycleHook, 'extraAccounts' | 'dataAuthority'> & {
+export type LifecycleHook = Omit<
+  BaseLifecycleHook,
+  'extraAccounts' | 'dataAuthority'
+> & {
   extraAccounts?: Array<ExtraAccount>;
   dataAuthority?: PluginAuthority;
   data?: any;
@@ -65,7 +72,9 @@ export function lifecycleHookInitInfoArgsToBase(
       ? lifecycleChecksToBase(l.lifecycleChecks)
       : null,
     schema: l.schema ? l.schema : null,
-    dataAuthority: l.dataAuthority ? pluginAuthorityToBase(l.dataAuthority) : null,
+    dataAuthority: l.dataAuthority
+      ? pluginAuthorityToBase(l.dataAuthority)
+      : null,
   };
 }
 
@@ -97,7 +106,10 @@ export function lifecycleHookFromBase(
         ? s.extraAccounts.value.map(extraAccountFromBase)
         : undefined,
     data: parseExternalPluginData(s, account),
-    dataAuthority: s.dataAuthority.__option === 'Some' ? pluginAuthorityFromBase(s.dataAuthority.value) : undefined,
+    dataAuthority:
+      s.dataAuthority.__option === 'Some'
+        ? pluginAuthorityFromBase(s.dataAuthority.value)
+        : undefined,
   };
 }
 

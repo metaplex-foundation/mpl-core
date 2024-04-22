@@ -6,7 +6,11 @@ import {
   canTransfer,
   pluginAuthorityPair,
 } from '../../src';
-import { createAsset, createAssetWithCollection, createUmi } from '../_setupRaw';
+import {
+  createAsset,
+  createAssetWithCollection,
+  createUmi,
+} from '../_setupRaw';
 
 test('it can detect transferrable on basic asset', async (t) => {
   const umi = await createUmi();

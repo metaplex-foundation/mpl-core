@@ -14,7 +14,7 @@ export type UnwrappedRuleSet =
   | {
       type: 'ProgramDenyList';
       addresses: PublicKey[];
-    }
+    };
 
 export type RuleSet = UnwrappedRuleSet | BaseRuleSet;
 
@@ -29,18 +29,20 @@ export type RoyaltiesPlugin = BasePlugin & Royalties;
 export function ruleSetToBase(r: RuleSet): BaseRuleSet {
   const base = r as BaseRuleSet;
   if (base.__kind) {
-    return r as BaseRuleSet
+    return r as BaseRuleSet;
   }
   const ruleSet = r as UnwrappedRuleSet;
 
-  if (ruleSet.type === 'ProgramAllowList' || ruleSet.type === 'ProgramDenyList') {
+  if (
+    ruleSet.type === 'ProgramAllowList' ||
+    ruleSet.type === 'ProgramDenyList'
+  ) {
     return {
       __kind: ruleSet.type,
       fields: [ruleSet.addresses],
     };
-  } 
+  }
   return { __kind: ruleSet.type };
-
 }
 
 export function royaltiesToBase(r: Royalties): BaseRoyalties {
@@ -67,7 +69,7 @@ export function royaltiesFromBase(r: BaseRoyalties): Royalties {
   } else {
     ruleSet = {
       ...r.ruleSet,
-      type: r.ruleSet.__kind
+      type: r.ruleSet.__kind,
     };
   }
   return {
