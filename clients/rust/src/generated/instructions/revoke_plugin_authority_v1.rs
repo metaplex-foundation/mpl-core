@@ -96,12 +96,12 @@ impl RevokePluginAuthorityV1 {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct RevokePluginAuthorityV1InstructionData {
+struct RevokePluginAuthorityV1InstructionData {
     discriminator: u8,
 }
 
 impl RevokePluginAuthorityV1InstructionData {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self { discriminator: 10 }
     }
 }

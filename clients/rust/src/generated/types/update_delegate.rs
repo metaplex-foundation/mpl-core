@@ -12,9 +12,5 @@ use solana_program::pubkey::Pubkey;
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UpdateDelegate {
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "serde_with::As::<Vec<serde_with::DisplayFromStr>>")
-    )]
     pub additional_delegates: Vec<Pubkey>,
 }

@@ -95,12 +95,12 @@ impl AddPluginV1 {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct AddPluginV1InstructionData {
+struct AddPluginV1InstructionData {
     discriminator: u8,
 }
 
 impl AddPluginV1InstructionData {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self { discriminator: 2 }
     }
 }
