@@ -73,12 +73,12 @@ impl CreateCollectionV1 {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct CreateCollectionV1InstructionData {
+pub struct CreateCollectionV1InstructionData {
     discriminator: u8,
 }
 
 impl CreateCollectionV1InstructionData {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self { discriminator: 1 }
     }
 }
