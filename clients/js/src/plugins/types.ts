@@ -72,11 +72,25 @@ export type CreatePluginArgs =
       data: EditionArgs;
     };
 
-export type PluginAuthorityPairHelperArgsV2 = CreatePluginArgsV2 & {
+export type AuthorityArgsV2 = {
   authority?: PluginAuthority;
 };
 
-export type CreatePluginArgsV2 =
+export type CreateOnlyPluginArgsV2 =
+  | ({
+      type: 'PermanentFreezeDelegate';
+    } & PermanentFreezeDelegateArgs)
+  | {
+      type: 'PermanentTransferDelegate';
+    }
+  | {
+      type: 'PermanentBurnDelegate';
+    }
+  | ({
+      type: 'Edition';
+    } & EditionArgs);
+
+export type AddablePluginArgsV2 =
   | ({
       type: 'Royalties';
     } & RoyaltiesArgs)
@@ -94,19 +108,11 @@ export type CreatePluginArgsV2 =
     } & UpdateDelegateArgs)
   | ({
       type: 'Attributes';
-    } & AttributesArgs)
-  | ({
-      type: 'PermanentFreezeDelegate';
-    } & PermanentFreezeDelegateArgs)
-  | {
-      type: 'PermanentTransferDelegate';
-    }
-  | {
-      type: 'PermanentBurnDelegate';
-    }
-  | ({
-      type: 'Edition';
-    } & EditionArgs);
+    } & AttributesArgs);
+export type PluginArgsV2 = AddablePluginArgsV2 | CreateOnlyPluginArgsV2;
+export type PluginAuthorityPairArgsV2 = PluginArgsV2 & AuthorityArgsV2;
+export type AddablePluginAuthorityPairArgsV2 = AddablePluginArgsV2 &
+  AuthorityArgsV2;
 
 export type FreezeDelegatePlugin = BasePlugin & FreezeDelegate;
 export type BurnDelegatePlugin = BasePlugin & BurnDelegate;

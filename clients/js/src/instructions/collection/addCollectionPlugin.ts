@@ -3,10 +3,7 @@ import {
   addCollectionExternalPluginV1,
   addCollectionPluginV1,
 } from '../../generated';
-import {
-  PluginAuthorityPairHelperArgsV2,
-  pluginAuthorityPairV2,
-} from '../../plugins';
+import { AddablePluginArgsV2, pluginAuthorityPairV2 } from '../../plugins';
 
 import {
   createExternalPluginInitInfo,
@@ -18,7 +15,9 @@ export type AddCollectionPluginArgs = Omit<
   Parameters<typeof addCollectionPluginV1>[1],
   'plugin'
 > & {
-  plugin: PluginAuthorityPairHelperArgsV2 | ExternalPluginInitInfoArgs;
+  plugin:
+    | Exclude<AddablePluginArgsV2, { type: 'Edition ' }>
+    | ExternalPluginInitInfoArgs;
 };
 
 export const addCollectionPlugin = (
@@ -34,7 +33,7 @@ export const addCollectionPlugin = (
     });
   }
 
-  const pair = pluginAuthorityPairV2(plugin as PluginAuthorityPairHelperArgsV2);
+  const pair = pluginAuthorityPairV2(plugin as AddablePluginArgsV2);
   return addCollectionPluginV1(context, {
     ...args,
     plugin: pair.plugin,

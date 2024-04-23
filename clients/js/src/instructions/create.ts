@@ -1,15 +1,16 @@
 import { Context, publicKey } from '@metaplex-foundation/umi';
 import { CollectionV1, createV2, ExternalPluginSchema } from '../generated';
 import {
-  PluginAuthorityPairHelperArgsV2,
   createExternalPluginInitInfo,
   findExtraAccounts,
+  PluginArgsV2,
   pluginAuthorityPairV2,
 } from '../plugins';
 import { deriveExternalPlugins } from '../helpers';
 import {
   ExternalPluginInitInfoArgs,
   ExternalPluginsList,
+  isExternalPluginType,
 } from '../plugins/externalPlugins';
 
 export type CreateArgs = Omit<
@@ -17,13 +18,12 @@ export type CreateArgs = Omit<
   'plugins' | 'externalPlugins' | 'collection'
 > & {
   collection?: CollectionV1;
-  plugins?: PluginAuthorityPairHelperArgsV2[];
-  externalPlugins?: ExternalPluginInitInfoArgs[];
+  plugins?: (PluginArgsV2 | ExternalPluginInitInfoArgs)[];
 };
 
 export const create = (
   context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
-  { asset, plugins, externalPlugins, collection, ...args }: CreateArgs
+  { asset, plugins, collection, ...args }: CreateArgs
 ) => {
   const owner = args.owner || args.updateAuthority || args.payer;
 
@@ -32,37 +32,45 @@ export const create = (
     lifecycleHooks: [],
   };
 
+  const externalPlugins: ExternalPluginInitInfoArgs[] = [];
+  const firstPartyPlugins: PluginArgsV2[] = [];
+
   // Create dummy external plugins to resuse findExtraAccounts method
-  externalPlugins?.forEach((plugin) => {
-    switch (plugin.type) {
-      case 'Oracle':
-        assetExternalPlugins.oracles?.push({
-          ...plugin,
-          baseAddress: plugin.baseAddress,
-          authority: plugin.initPluginAuthority || {
-            type: 'UpdateAuthority',
-          },
-          type: 'Oracle',
-        });
-        break;
-      case 'DataStore':
-        // Do nothing, datastore has no extra accounts
-        break;
-      case 'LifecycleHook':
-        assetExternalPlugins.lifecycleHooks?.push({
-          ...plugin,
-          hookedProgram: plugin.hookedProgram,
-          authority: plugin.initPluginAuthority || {
-            type: 'UpdateAuthority',
-          },
-          dataLen: 0n,
-          dataOffset: 0n,
-          type: 'LifecycleHook',
-          schema: plugin.schema || ExternalPluginSchema.Binary,
-        });
-        break;
-      default:
-      // Do nothing
+  plugins?.forEach((plugin) => {
+    if (isExternalPluginType(plugin)) {
+      externalPlugins.push(plugin as ExternalPluginInitInfoArgs);
+      switch (plugin.type) {
+        case 'Oracle':
+          assetExternalPlugins.oracles?.push({
+            ...plugin,
+            baseAddress: plugin.baseAddress,
+            authority: plugin.initPluginAuthority || {
+              type: 'UpdateAuthority',
+            },
+            type: 'Oracle',
+          });
+          break;
+        case 'DataStore':
+          // Do nothing, datastore has no extra accounts
+          break;
+        case 'LifecycleHook':
+          assetExternalPlugins.lifecycleHooks?.push({
+            ...plugin,
+            hookedProgram: plugin.hookedProgram,
+            authority: plugin.initPluginAuthority || {
+              type: 'UpdateAuthority',
+            },
+            dataLen: 0n,
+            dataOffset: 0n,
+            type: 'LifecycleHook',
+            schema: plugin.schema || ExternalPluginSchema.Binary,
+          });
+          break;
+        default:
+        // Do nothing
+      }
+    } else {
+      firstPartyPlugins.push(plugin as PluginArgsV2);
     }
   });
 
@@ -84,8 +92,8 @@ export const create = (
 
   return createV2(context, {
     ...args,
-    plugins: plugins?.map(pluginAuthorityPairV2) || [],
-    externalPlugins: externalPlugins?.map(createExternalPluginInitInfo) || [],
+    plugins: firstPartyPlugins.map(pluginAuthorityPairV2),
+    externalPlugins: externalPlugins.map(createExternalPluginInitInfo),
     asset,
     collection: collection ? collection.publicKey : undefined,
   }).addRemainingAccounts(extraAccounts);

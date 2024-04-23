@@ -14,7 +14,7 @@ export type RemoveCollectionPluginArgs = Omit<
 > & {
   plugin:
     | {
-        type: keyof typeof PluginType;
+        type: Exclude<keyof typeof PluginType, 'Edition'>;
       }
     | ExternalPluginKey;
 };

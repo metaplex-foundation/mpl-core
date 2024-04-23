@@ -2,10 +2,10 @@ import { Context } from '@metaplex-foundation/umi';
 import { updatePluginV1, updateExternalPluginV1 } from '../generated';
 import {
   createExternalPluginUpdateInfo,
-  CreatePluginArgsV2,
   createPluginV2,
   externalPluginKeyToBase,
   isExternalPluginType,
+  PluginArgsV2,
 } from '../plugins';
 import { ExternalPluginUpdateInfoArgs } from '../plugins/externalPlugins';
 
@@ -13,7 +13,7 @@ export type UpdatePluginArgs = Omit<
   Parameters<typeof updatePluginV1>[1],
   'plugin'
 > & {
-  plugin: CreatePluginArgsV2 | ExternalPluginUpdateInfoArgs;
+  plugin: PluginArgsV2 | ExternalPluginUpdateInfoArgs;
 };
 
 export const updatePlugin = (
@@ -31,6 +31,6 @@ export const updatePlugin = (
 
   return updatePluginV1(context, {
     ...args,
-    plugin: createPluginV2(plugin as CreatePluginArgsV2),
+    plugin: createPluginV2(plugin as PluginArgsV2),
   });
 };

@@ -1,11 +1,11 @@
 import { assertAccountExists, generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
+  AddablePluginAuthorityPairArgsV2,
   addPlugin,
   burn,
-  CreatePluginArgsV2,
   Key,
-  PluginAuthorityPairHelperArgsV2,
+  PluginArgsV2,
   removePlugin,
   transfer,
   update,
@@ -394,7 +394,7 @@ test('it can add and remove all owner and update auth managed party plugins to a
   const umi = await createUmi();
   const asset = await createAsset(umi);
 
-  const plugins: PluginAuthorityPairHelperArgsV2[] = [
+  const plugins: AddablePluginAuthorityPairArgsV2[] = [
     {
       type: 'Royalties',
       basisPoints: 500,
@@ -561,7 +561,7 @@ test('it can update all updatable plugins on asset', async (t) => {
     ],
   });
 
-  const updates: CreatePluginArgsV2[] = [
+  const updates: PluginArgsV2[] = [
     {
       type: 'Royalties',
       basisPoints: 1000,
@@ -693,7 +693,7 @@ test('it can update all updatable plugins on collection', async (t) => {
     ],
   });
 
-  const updates: CreatePluginArgsV2[] = [
+  const updates: PluginArgsV2[] = [
     {
       type: 'Royalties',
       basisPoints: 1000,

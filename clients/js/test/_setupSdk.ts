@@ -12,7 +12,7 @@ import {
   fetchCollectionV1,
   CollectionV1,
   AssetV1,
-  PluginAuthorityPairHelperArgsV2,
+  PluginAuthorityPairArgsV2,
   ExternalPluginInitInfoArgs,
   create,
   createCollection as baseCreateCollection,
@@ -29,8 +29,7 @@ export type CreateAssetHelperArgs = {
   authority?: Signer;
   updateAuthority?: PublicKey | Signer;
   collection?: PublicKey | CollectionV1;
-  plugins?: PluginAuthorityPairHelperArgsV2[];
-  externalPlugins?: ExternalPluginInitInfoArgs[];
+  plugins?: (ExternalPluginInitInfoArgs | PluginAuthorityPairArgsV2)[];
 };
 export const createAsset = async (
   umi: Umi,
@@ -56,7 +55,6 @@ export const createAsset = async (
     name: input.name || DEFAULT_ASSET.name,
     uri: input.uri || DEFAULT_ASSET.uri,
     plugins: input.plugins,
-    externalPlugins: input.externalPlugins,
     collection: col,
     authority: input.authority,
   }).sendAndConfirm(umi);
@@ -70,8 +68,7 @@ export type CreateCollectionHelperArgs = {
   name?: string;
   uri?: string;
   updateAuthority?: PublicKey | Signer;
-  plugins?: PluginAuthorityPairHelperArgsV2[];
-  externalPlugins?: ExternalPluginInitInfoArgs[];
+  plugins?: (ExternalPluginInitInfoArgs | PluginAuthorityPairArgsV2)[];
 };
 
 export const createCollection = async (
@@ -88,7 +85,6 @@ export const createCollection = async (
     payer,
     updateAuthority,
     plugins: input.plugins,
-    externalPlugins: input.externalPlugins,
   }).sendAndConfirm(umi);
 
   return fetchCollectionV1(umi, publicKey(collection));

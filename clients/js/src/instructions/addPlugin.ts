@@ -1,8 +1,8 @@
 import { Context } from '@metaplex-foundation/umi';
 import { addPluginV1, addExternalPluginV1 } from '../generated';
 import {
+  AddablePluginAuthorityPairArgsV2,
   ExternalPluginInitInfoArgs,
-  PluginAuthorityPairHelperArgsV2,
   createExternalPluginInitInfo,
   isExternalPluginType,
   pluginAuthorityPairV2,
@@ -12,7 +12,7 @@ export type AddPluginArgs = Omit<
   Parameters<typeof addPluginV1>[1],
   'plugin'
 > & {
-  plugin: PluginAuthorityPairHelperArgsV2 | ExternalPluginInitInfoArgs;
+  plugin: AddablePluginAuthorityPairArgsV2 | ExternalPluginInitInfoArgs;
 };
 
 export const addPlugin = (
@@ -28,7 +28,9 @@ export const addPlugin = (
     });
   }
 
-  const pair = pluginAuthorityPairV2(plugin as PluginAuthorityPairHelperArgsV2);
+  const pair = pluginAuthorityPairV2(
+    plugin as AddablePluginAuthorityPairArgsV2
+  );
   return addPluginV1(context, {
     ...args,
     plugin: pair.plugin,
