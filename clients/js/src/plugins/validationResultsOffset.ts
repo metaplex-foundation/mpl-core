@@ -17,7 +17,7 @@ export function validationResultsOffsetToBase(
 
   return {
     __kind: e.type,
-  }
+  };
 }
 
 export function validationResultsOffsetFromBase(
@@ -32,5 +32,5 @@ export function validationResultsOffsetFromBase(
 
   return {
     type: e.__kind,
-  }
+  };
 }
