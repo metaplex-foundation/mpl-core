@@ -34,6 +34,7 @@ impl From<&Plugin> for PluginType {
             Plugin::PermanentTransferDelegate(_) => PluginType::PermanentTransferDelegate,
             Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
             Plugin::Edition(_) => PluginType::Edition,
+            Plugin::MasterEdition(_) => PluginType::MasterEdition,
         }
     }
 }
