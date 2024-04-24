@@ -16,13 +16,13 @@ import {
 } from '@metaplex-foundation/umi/serializers';
 
 export type MasterEdition = {
-  maxSupply: number;
+  maxSupply: Option<number>;
   name: Option<string>;
   uri: Option<string>;
 };
 
 export type MasterEditionArgs = {
-  maxSupply: number;
+  maxSupply: OptionOrNullable<number>;
   name: OptionOrNullable<string>;
   uri: OptionOrNullable<string>;
 };
@@ -33,7 +33,7 @@ export function getMasterEditionSerializer(): Serializer<
 > {
   return struct<MasterEdition>(
     [
-      ['maxSupply', u32()],
+      ['maxSupply', option(u32())],
       ['name', option(string())],
       ['uri', option(string())],
     ],

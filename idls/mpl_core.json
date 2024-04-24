@@ -1507,7 +1507,9 @@
         "fields": [
           {
             "name": "maxSupply",
-            "type": "u32"
+            "type": {
+              "option": "u32"
+            }
           },
           {
             "name": "name",

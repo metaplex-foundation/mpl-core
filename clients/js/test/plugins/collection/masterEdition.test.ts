@@ -39,7 +39,7 @@ test('it can add masterEdition to collection', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      maxSupply: 100,
+      maxSupply: some(100),
       name: some('name'),
       uri: some('uri'),
     },
@@ -71,7 +71,7 @@ test('it can create collection with masterEdition', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      maxSupply: 100,
+      maxSupply: some(100),
       name: some('name'),
       uri: some('uri'),
     },
@@ -86,7 +86,7 @@ test('it can create master edition with default values', async (t) => {
       pluginAuthorityPair({
         type: 'MasterEdition',
         data: {
-          maxSupply: 0,
+          maxSupply: null,
           name: null,
           uri: null,
         },
@@ -103,7 +103,7 @@ test('it can create master edition with default values', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      maxSupply: 0,
+      maxSupply: none(),
       name: none(),
       uri: none(),
     },

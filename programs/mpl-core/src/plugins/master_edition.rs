@@ -8,7 +8,7 @@ use super::PluginValidation;
 #[derive(Clone, BorshSerialize, BorshDeserialize, Default, Debug, PartialEq, Eq)]
 pub struct MasterEdition {
     /// The max supply of editions
-    pub max_supply: u32,
+    pub max_supply: Option<u32>,
     /// optional master edition name
     pub name: Option<String>,
     /// optional master edition uri

@@ -11,7 +11,7 @@ use borsh::BorshSerialize;
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MasterEdition {
-    pub max_supply: u32,
+    pub max_supply: Option<u32>,
     pub name: Option<String>,
     pub uri: Option<String>,
 }
