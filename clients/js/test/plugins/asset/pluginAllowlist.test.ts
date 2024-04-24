@@ -27,7 +27,7 @@ test('it can add a plugin if its allowlisted', async (t) => {
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Allowlist',
+        type: 'PluginAllowlist',
         data: { plugins: [PluginType.FreezeDelegate], mustBeEmpty: false },
       }),
     ],
@@ -68,7 +68,7 @@ test('it can revoke a plugin if its allowlisted', async (t) => {
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Allowlist',
+        type: 'PluginAllowlist',
         data: { plugins: [PluginType.FreezeDelegate], mustBeEmpty: false },
       }),
     ],
@@ -119,7 +119,7 @@ test('it cannot add a plugin if its not allowlisted and not owner-managed', asyn
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Allowlist',
+        type: 'PluginAllowlist',
         data: { plugins: [], mustBeEmpty: true },
       }),
     ],
@@ -142,7 +142,7 @@ test('it shows that owner-manager plugins cannot be added to allowlist', async (
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Allowlist',
+        type: 'PluginAllowlist',
         data: { plugins: [], mustBeEmpty: false },
       }),
     ],
@@ -166,7 +166,7 @@ test('it can add owner-managed plugins notwithstanding the allowlist', async (t)
   let asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Allowlist',
+        type: 'PluginAllowlist',
         data: { plugins: [], mustBeEmpty: true },
       }),
     ],
@@ -207,7 +207,7 @@ test('it can revoke owner-managed plugins notwithstanding the allowlist', async 
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Allowlist',
+        type: 'PluginAllowlist',
         data: { plugins: [], mustBeEmpty: true },
       }),
     ],
@@ -245,10 +245,10 @@ test('plugin is NOT updatable if its authority is None', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
-  let asset = await createAsset(umi, {
+  const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Allowlist',
+        type: 'PluginAllowlist',
         data: { plugins: [], mustBeEmpty: false },
       }),
     ],
@@ -259,7 +259,7 @@ test('plugin is NOT updatable if its authority is None', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    allowlist: {
+    pluginAllowlist: {
       authority: {
         type: 'None',
       },
@@ -271,7 +271,7 @@ test('plugin is NOT updatable if its authority is None', async (t) => {
   const result = updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
-      type: 'Allowlist',
+      type: 'PluginAllowlist',
       data: { plugins: [PluginType.PermanentBurnDelegate], mustBeEmpty: false },
     }),
   }).sendAndConfirm(umi);
@@ -288,7 +288,7 @@ test('plugin IS updatable if its authority IS NOT None', async (t) => {
   let asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
-        type: 'Allowlist',
+        type: 'PluginAllowlist',
         data: { plugins: [], mustBeEmpty: false },
         authority: pluginAuthority('UpdateAuthority'),
       }),
@@ -300,7 +300,7 @@ test('plugin IS updatable if its authority IS NOT None', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    allowlist: {
+    pluginAllowlist: {
       authority: {
         type: 'UpdateAuthority',
       },
@@ -313,7 +313,7 @@ test('plugin IS updatable if its authority IS NOT None', async (t) => {
   await updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
-      type: 'Allowlist',
+      type: 'PluginAllowlist',
       data: { plugins: [PluginType.PermanentBurnDelegate], mustBeEmpty: false },
     }),
   }).sendAndConfirm(umi);
@@ -323,7 +323,7 @@ test('plugin IS updatable if its authority IS NOT None', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    allowlist: {
+    pluginAllowlist: {
       authority: {
         type: 'UpdateAuthority',
       },
@@ -333,5 +333,5 @@ test('plugin IS updatable if its authority IS NOT None', async (t) => {
   });
 
   asset = await fetchAssetV1(umi, asset.publicKey);
-  t.is(asset.allowlist?.plugins[0], PluginType.PermanentBurnDelegate);
+  t.is(asset.pluginAllowlist?.plugins[0], PluginType.PermanentBurnDelegate);
 });

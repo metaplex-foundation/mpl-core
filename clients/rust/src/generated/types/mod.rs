@@ -5,7 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub(crate) mod r#allowlist;
 pub(crate) mod r#attribute;
 pub(crate) mod r#attributes;
 pub(crate) mod r#burn_delegate;
@@ -24,6 +23,7 @@ pub(crate) mod r#permanent_burn_delegate;
 pub(crate) mod r#permanent_freeze_delegate;
 pub(crate) mod r#permanent_transfer_delegate;
 pub(crate) mod r#plugin;
+pub(crate) mod r#plugin_allowlist;
 pub(crate) mod r#plugin_authority;
 pub(crate) mod r#plugin_authority_pair;
 pub(crate) mod r#plugin_type;
@@ -34,7 +34,6 @@ pub(crate) mod r#transfer_delegate;
 pub(crate) mod r#update_authority;
 pub(crate) mod r#update_delegate;
 
-pub use self::r#allowlist::*;
 pub use self::r#attribute::*;
 pub use self::r#attributes::*;
 pub use self::r#burn_delegate::*;
@@ -53,6 +52,7 @@ pub use self::r#permanent_burn_delegate::*;
 pub use self::r#permanent_freeze_delegate::*;
 pub use self::r#permanent_transfer_delegate::*;
 pub use self::r#plugin::*;
+pub use self::r#plugin_allowlist::*;
 pub use self::r#plugin_authority::*;
 pub use self::r#plugin_authority_pair::*;
 pub use self::r#plugin_type::*;

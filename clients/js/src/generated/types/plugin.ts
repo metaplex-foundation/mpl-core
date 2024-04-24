@@ -15,8 +15,6 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  Allowlist,
-  AllowlistArgs,
   Attributes,
   AttributesArgs,
   BurnDelegate,
@@ -33,13 +31,14 @@ import {
   PermanentFreezeDelegateArgs,
   PermanentTransferDelegate,
   PermanentTransferDelegateArgs,
+  PluginAllowlist,
+  PluginAllowlistArgs,
   Royalties,
   RoyaltiesArgs,
   TransferDelegate,
   TransferDelegateArgs,
   UpdateDelegate,
   UpdateDelegateArgs,
-  getAllowlistSerializer,
   getAttributesSerializer,
   getBurnDelegateSerializer,
   getEditionSerializer,
@@ -48,13 +47,14 @@ import {
   getPermanentBurnDelegateSerializer,
   getPermanentFreezeDelegateSerializer,
   getPermanentTransferDelegateSerializer,
+  getPluginAllowlistSerializer,
   getRoyaltiesSerializer,
   getTransferDelegateSerializer,
   getUpdateDelegateSerializer,
 } from '.';
 
 export type Plugin =
-  | { __kind: 'Allowlist'; fields: [Allowlist] }
+  | { __kind: 'PluginAllowlist'; fields: [PluginAllowlist] }
   | { __kind: 'Royalties'; fields: [Royalties] }
   | { __kind: 'FreezeDelegate'; fields: [FreezeDelegate] }
   | { __kind: 'BurnDelegate'; fields: [BurnDelegate] }
@@ -68,7 +68,7 @@ export type Plugin =
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadata] };
 
 export type PluginArgs =
-  | { __kind: 'Allowlist'; fields: [AllowlistArgs] }
+  | { __kind: 'PluginAllowlist'; fields: [PluginAllowlistArgs] }
   | { __kind: 'Royalties'; fields: [RoyaltiesArgs] }
   | { __kind: 'FreezeDelegate'; fields: [FreezeDelegateArgs] }
   | { __kind: 'BurnDelegate'; fields: [BurnDelegateArgs] }
@@ -88,9 +88,9 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
     [
       [
-        'Allowlist',
-        struct<GetDataEnumKindContent<Plugin, 'Allowlist'>>([
-          ['fields', tuple([getAllowlistSerializer()])],
+        'PluginAllowlist',
+        struct<GetDataEnumKindContent<Plugin, 'PluginAllowlist'>>([
+          ['fields', tuple([getPluginAllowlistSerializer()])],
         ]),
       ],
       [
@@ -166,9 +166,9 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
 
 // Data Enum Helpers.
 export function plugin(
-  kind: 'Allowlist',
-  data: GetDataEnumKindContent<PluginArgs, 'Allowlist'>['fields']
-): GetDataEnumKind<PluginArgs, 'Allowlist'>;
+  kind: 'PluginAllowlist',
+  data: GetDataEnumKindContent<PluginArgs, 'PluginAllowlist'>['fields']
+): GetDataEnumKind<PluginArgs, 'PluginAllowlist'>;
 export function plugin(
   kind: 'Royalties',
   data: GetDataEnumKindContent<PluginArgs, 'Royalties'>['fields']

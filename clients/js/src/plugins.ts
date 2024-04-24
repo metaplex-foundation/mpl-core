@@ -15,8 +15,7 @@ import {
   PluginType,
   UpdateDelegateArgs,
   EditionArgs,
-  ImmutableMetadataArgs,
-  AllowlistArgs,
+  PluginAllowlistArgs,
 } from './generated';
 import { BasePluginAuthority, PluginsList } from './types';
 import { mapPluginAuthority } from './authority';
@@ -74,11 +73,10 @@ export type CreatePluginArgs =
     }
   | {
       type: 'ImmutableMetadata';
-      data: ImmutableMetadataArgs;
     }
   | {
-      type: 'Allowlist';
-      data: AllowlistArgs;
+      type: 'PluginAllowlist';
+      data: PluginAllowlistArgs;
     };
 
 export function createPlugin(args: CreatePluginArgs): BasePlugin {

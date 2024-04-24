@@ -10,7 +10,6 @@ test('it can prevent the asset from metadata updating', async (t) => {
     plugins: [
       pluginAuthorityPair({
         type: 'ImmutableMetadata',
-        data: [],
       }),
     ],
   });

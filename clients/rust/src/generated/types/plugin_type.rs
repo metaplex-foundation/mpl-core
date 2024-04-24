@@ -22,5 +22,5 @@ pub enum PluginType {
     PermanentBurnDelegate,
     Edition,
     ImmutableMetadata,
-    Allowlist,
+    PluginAllowlist,
 }

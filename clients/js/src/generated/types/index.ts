@@ -6,7 +6,6 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-export * from './allowlist';
 export * from './attribute';
 export * from './attributes';
 export * from './burnDelegate';
@@ -25,6 +24,7 @@ export * from './permanentBurnDelegate';
 export * from './permanentFreezeDelegate';
 export * from './permanentTransferDelegate';
 export * from './plugin';
+export * from './pluginAllowlist';
 export * from './pluginAuthority';
 export * from './pluginAuthorityPair';
 export * from './pluginType';

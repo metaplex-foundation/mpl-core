@@ -20,7 +20,7 @@ export enum PluginType {
   PermanentBurnDelegate,
   Edition,
   ImmutableMetadata,
-  Allowlist,
+  PluginAllowlist,
 }
 
 export type PluginTypeArgs = PluginType;

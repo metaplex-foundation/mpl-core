@@ -34,7 +34,7 @@ impl PluginType {
             PluginType::PermanentTransferDelegate => CheckResult::CanReject,
             PluginType::PermanentBurnDelegate => CheckResult::CanReject,
             PluginType::Edition => CheckResult::CanReject,
-            PluginType::Allowlist => CheckResult::CanReject,
+            PluginType::PluginAllowlist => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -47,7 +47,7 @@ impl PluginType {
             PluginType::FreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::Edition => CheckResult::CanReject,
-            PluginType::Allowlist => CheckResult::CanReject,
+            PluginType::PluginAllowlist => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -164,7 +164,7 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_add_plugin(ctx)
             }
-            Plugin::Allowlist(allowlist) => allowlist.validate_add_plugin(ctx),
+            Plugin::PluginAllowlist(plugin_allowlist) => plugin_allowlist.validate_add_plugin(ctx),
         }
     }
 
@@ -193,7 +193,9 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_remove_plugin(ctx)
             }
-            Plugin::Allowlist(allowlist) => allowlist.validate_remove_plugin(ctx),
+            Plugin::PluginAllowlist(plugin_allowlist) => {
+                plugin_allowlist.validate_remove_plugin(ctx)
+            }
         }
     }
 
@@ -234,7 +236,9 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_approve_plugin_authority(ctx)
             }
-            Plugin::Allowlist(allowlist) => allowlist.validate_approve_plugin_authority(ctx),
+            Plugin::PluginAllowlist(plugin_allowlist) => {
+                plugin_allowlist.validate_approve_plugin_authority(ctx)
+            }
         }
     }
 
@@ -270,7 +274,9 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_revoke_plugin_authority(ctx)
             }
-            Plugin::Allowlist(allowlist) => allowlist.validate_revoke_plugin_authority(ctx),
+            Plugin::PluginAllowlist(plugin_allowlist) => {
+                plugin_allowlist.validate_revoke_plugin_authority(ctx)
+            }
         }
     }
 
@@ -297,7 +303,9 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_create(ctx)
             }
-            Plugin::Allowlist(allowlist) => allowlist.validate_revoke_plugin_authority(ctx),
+            Plugin::PluginAllowlist(plugin_allowlist) => {
+                plugin_allowlist.validate_revoke_plugin_authority(ctx)
+            }
         }
     }
 
@@ -324,7 +332,7 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_update(ctx)
             }
-            Plugin::Allowlist(allowlist) => allowlist.validate_update(ctx),
+            Plugin::PluginAllowlist(plugin_allowlist) => plugin_allowlist.validate_update(ctx),
         }
     }
 
@@ -364,7 +372,9 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_update_plugin(ctx)
             }
-            Plugin::Allowlist(allowlist) => allowlist.validate_update_plugin(ctx),
+            Plugin::PluginAllowlist(plugin_allowlist) => {
+                plugin_allowlist.validate_update_plugin(ctx)
+            }
         }?;
 
         match (&base_result, &result) {
@@ -408,7 +418,7 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_burn(ctx),
             Plugin::Edition(edition) => edition.validate_burn(ctx),
             Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.validate_burn(ctx),
-            Plugin::Allowlist(allowlist) => allowlist.validate_update(ctx),
+            Plugin::PluginAllowlist(plugin_allowlist) => plugin_allowlist.validate_update(ctx),
         }
     }
 
@@ -435,7 +445,7 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_transfer(ctx)
             }
-            Plugin::Allowlist(allowlist) => allowlist.validate_transfer(ctx),
+            Plugin::PluginAllowlist(plugin_allowlist) => plugin_allowlist.validate_transfer(ctx),
         }
     }
 
@@ -462,7 +472,7 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_compress(ctx)
             }
-            Plugin::Allowlist(allowlist) => allowlist.validate_compress(ctx),
+            Plugin::PluginAllowlist(plugin_allowlist) => plugin_allowlist.validate_compress(ctx),
         }
     }
 
@@ -491,7 +501,7 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_decompress(ctx)
             }
-            Plugin::Allowlist(allowlist) => allowlist.validate_decompress(ctx),
+            Plugin::PluginAllowlist(plugin_allowlist) => plugin_allowlist.validate_decompress(ctx),
         }
     }
 }

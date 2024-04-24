@@ -10,12 +10,12 @@ use super::{PluginType, PluginValidation, PluginValidationContext, ValidationRes
 /// The whitelist is immutable when the authority is None.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Default)]
-pub struct Allowlist {
+pub struct PluginAllowlist {
     must_be_empty: bool,
     plugins: Vec<PluginType>,
 }
 
-impl DataBlob for Allowlist {
+impl DataBlob for PluginAllowlist {
     fn get_initial_size() -> usize {
         1
     }
@@ -25,7 +25,7 @@ impl DataBlob for Allowlist {
     }
 }
 
-impl PluginValidation for Allowlist {
+impl PluginValidation for PluginAllowlist {
     /// Validate the add plugin lifecycle action.
     fn validate_add_plugin(
         &self,
@@ -78,7 +78,9 @@ impl PluginValidation for Allowlist {
             None => return Ok(ValidationResult::Pass),
         };
 
-        if ctx.self_authority != &Authority::None && target_plugin_type == PluginType::Allowlist {
+        if ctx.self_authority != &Authority::None
+            && target_plugin_type == PluginType::PluginAllowlist
+        {
             return Ok(ValidationResult::Pass);
         }
 

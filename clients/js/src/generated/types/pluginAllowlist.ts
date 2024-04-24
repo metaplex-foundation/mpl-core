@@ -14,19 +14,25 @@ import {
 } from '@metaplex-foundation/umi/serializers';
 import { PluginType, PluginTypeArgs, getPluginTypeSerializer } from '.';
 
-export type Allowlist = { mustBeEmpty: boolean; plugins: Array<PluginType> };
+export type PluginAllowlist = {
+  mustBeEmpty: boolean;
+  plugins: Array<PluginType>;
+};
 
-export type AllowlistArgs = {
+export type PluginAllowlistArgs = {
   mustBeEmpty: boolean;
   plugins: Array<PluginTypeArgs>;
 };
 
-export function getAllowlistSerializer(): Serializer<AllowlistArgs, Allowlist> {
-  return struct<Allowlist>(
+export function getPluginAllowlistSerializer(): Serializer<
+  PluginAllowlistArgs,
+  PluginAllowlist
+> {
+  return struct<PluginAllowlist>(
     [
       ['mustBeEmpty', bool()],
       ['plugins', array(getPluginTypeSerializer())],
     ],
-    { description: 'Allowlist' }
-  ) as Serializer<AllowlistArgs, Allowlist>;
+    { description: 'PluginAllowlist' }
+  ) as Serializer<PluginAllowlistArgs, PluginAllowlist>;
 }

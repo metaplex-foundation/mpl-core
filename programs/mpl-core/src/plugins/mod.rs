@@ -1,4 +1,3 @@
-mod allowlist;
 mod attributes;
 mod burn_delegate;
 mod edition;
@@ -8,6 +7,7 @@ mod lifecycle;
 mod permanent_burn_delegate;
 mod permanent_freeze_delegate;
 mod permanent_transfer_delegate;
+mod plugin_allowlist;
 mod plugin_header;
 mod plugin_registry;
 mod royalties;
@@ -15,7 +15,6 @@ mod transfer;
 mod update_delegate;
 mod utils;
 
-pub use allowlist::*;
 pub use attributes::*;
 pub use burn_delegate::*;
 pub use edition::*;
@@ -26,6 +25,7 @@ use num_derive::ToPrimitive;
 pub use permanent_burn_delegate::*;
 pub use permanent_freeze_delegate::*;
 pub use permanent_transfer_delegate::*;
+pub use plugin_allowlist::*;
 pub use plugin_header::*;
 pub use plugin_registry::*;
 pub use royalties::*;
@@ -50,7 +50,7 @@ use crate::{
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum Plugin {
     /// Allowlist plugin which forbids plugins from being added/revoked.
-    Allowlist(Allowlist),
+    PluginAllowlist(PluginAllowlist),
     /// Royalties plugin.
     Royalties(Royalties),
     /// Freeze Delegate plugin.
@@ -140,7 +140,7 @@ pub enum PluginType {
     /// Metadata immutability plugin.
     ImmutableMetadata,
     /// Allowlist plugin.
-    Allowlist,
+    PluginAllowlist,
 }
 
 impl DataBlob for PluginType {
@@ -167,7 +167,7 @@ impl From<&Plugin> for PluginType {
             Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
             Plugin::Edition(_) => PluginType::Edition,
             Plugin::ImmutableMetadata(_) => PluginType::ImmutableMetadata,
-            Plugin::Allowlist(_) => PluginType::Allowlist,
+            Plugin::PluginAllowlist(_) => PluginType::PluginAllowlist,
         }
     }
 }
@@ -187,7 +187,7 @@ impl PluginType {
             PluginType::PermanentBurnDelegate => Authority::UpdateAuthority,
             PluginType::Edition => Authority::UpdateAuthority,
             PluginType::ImmutableMetadata => Authority::None,
-            PluginType::Allowlist => Authority::None,
+            PluginType::PluginAllowlist => Authority::None,
         }
     }
 }
