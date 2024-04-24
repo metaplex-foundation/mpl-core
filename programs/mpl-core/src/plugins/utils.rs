@@ -196,9 +196,7 @@ pub fn fetch_wrapped_external_plugin<T: DataBlob + SolanaAccount>(
         }
     };
 
-    solana_program::msg!("Loading header");
     let header = PluginHeaderV1::load(account, size)?;
-    solana_program::msg!("Loading registry");
     let PluginRegistryV1 {
         external_registry, ..
     } = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
@@ -545,7 +543,6 @@ pub fn delete_external_plugin<'a, T: DataBlob>(
     }
 
     if let Some(index) = result {
-        solana_program::msg!("Found plugin to remove: {:?}", index);
         let registry_record = plugin_registry.external_registry.remove(index);
         let serialized_registry_record = registry_record.try_to_vec()?;
 
