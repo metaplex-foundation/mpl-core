@@ -16,22 +16,22 @@ import {
 import {
   BaseExtraAccount,
   BaseExtraAccountArgs,
-  ValidationResultsOffset,
-  ValidationResultsOffsetArgs,
+  BaseValidationResultsOffset,
+  BaseValidationResultsOffsetArgs,
   getBaseExtraAccountSerializer,
-  getValidationResultsOffsetSerializer,
+  getBaseValidationResultsOffsetSerializer,
 } from '.';
 
 export type BaseOracle = {
   baseAddress: PublicKey;
   pda: Option<BaseExtraAccount>;
-  resultsOffset: ValidationResultsOffset;
+  resultsOffset: BaseValidationResultsOffset;
 };
 
 export type BaseOracleArgs = {
   baseAddress: PublicKey;
   pda: OptionOrNullable<BaseExtraAccountArgs>;
-  resultsOffset: ValidationResultsOffsetArgs;
+  resultsOffset: BaseValidationResultsOffsetArgs;
 };
 
 export function getBaseOracleSerializer(): Serializer<
@@ -42,7 +42,7 @@ export function getBaseOracleSerializer(): Serializer<
     [
       ['baseAddress', publicKeySerializer()],
       ['pda', option(getBaseExtraAccountSerializer())],
-      ['resultsOffset', getValidationResultsOffsetSerializer()],
+      ['resultsOffset', getBaseValidationResultsOffsetSerializer()],
     ],
     { description: 'BaseOracle' }
   ) as Serializer<BaseOracleArgs, BaseOracle>;

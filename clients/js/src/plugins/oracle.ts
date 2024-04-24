@@ -13,6 +13,10 @@ import { PluginAuthority, pluginAuthorityToBase } from './pluginAuthority';
 import { ExternalPluginManifest } from './externalPluginManifest';
 import { BaseExternalPlugin } from './externalPlugins';
 import { ExternalPluginKey } from './externalPluginKey';
+import {
+  ValidationResultsOffset,
+  validationResultsOffsetToBase,
+} from './validationResultsOffset';
 
 export type Oracle = Omit<BaseOracle, 'pda'> & {
   pda?: ExtraAccount;
@@ -25,21 +29,23 @@ export type OraclePlugin = BaseExternalPlugin &
 
 export type OracleInitInfoArgs = Omit<
   BaseOracleInitInfoArgs,
-  'initPluginAuthority' | 'lifecycleChecks'
+  'initPluginAuthority' | 'lifecycleChecks' | 'pda' | 'resultsOffset'
 > & {
   type: 'Oracle';
   initPluginAuthority?: PluginAuthority;
   lifecycleChecks?: LifecycleChecks;
   pda?: ExtraAccount;
+  resultsOffset?: ValidationResultsOffset;
 };
 
 export type OracleUpdateInfoArgs = Omit<
   BaseOracleUpdateInfoArgs,
-  'lifecycleChecks' | 'pda'
+  'lifecycleChecks' | 'pda' | 'resultsOffset'
 > & {
   key: ExternalPluginKey;
   lifecycleChecks?: LifecycleChecks;
   pda?: ExtraAccount;
+  resultsOffset?: ValidationResultsOffset;
 };
 
 export function oracleInitInfoArgsToBase(
@@ -54,6 +60,9 @@ export function oracleInitInfoArgsToBase(
     initPluginAuthority: o.initPluginAuthority
       ? pluginAuthorityToBase(o.initPluginAuthority)
       : null,
+    resultsOffset: o.resultsOffset
+      ? validationResultsOffsetToBase(o.resultsOffset)
+      : null,
   };
 }
 
@@ -64,6 +73,9 @@ export function oracleUpdateInfoArgsToBase(
     pda: o.pda ? extraAccountToBase(o.pda) : null,
     lifecycleChecks: o.lifecycleChecks
       ? lifecycleChecksToBase(o.lifecycleChecks)
+      : null,
+    resultsOffset: o.resultsOffset
+      ? validationResultsOffsetToBase(o.resultsOffset)
       : null,
   };
 }

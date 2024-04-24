@@ -12,6 +12,7 @@ import {
   ExternalPluginsList,
   isExternalPluginType,
 } from '../plugins/externalPlugins';
+import { validationResultsOffsetToBase } from '../plugins/validationResultsOffset';
 
 export type CreateArgs = Omit<
   Parameters<typeof createV2>[1],
@@ -43,6 +44,9 @@ export const create = (
         case 'Oracle':
           assetExternalPlugins.oracles?.push({
             ...plugin,
+            resultsOffset: validationResultsOffsetToBase(
+              plugin.resultsOffset || { type: 'NoOffset' }
+            ),
             baseAddress: plugin.baseAddress,
             authority: plugin.initPluginAuthority || {
               type: 'UpdateAuthority',

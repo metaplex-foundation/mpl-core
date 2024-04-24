@@ -78,14 +78,14 @@ export function baseExternalPluginKey(
   data: GetDataEnumKindContent<BaseExternalPluginKeyArgs, 'DataStore'>['fields']
 ): GetDataEnumKind<BaseExternalPluginKeyArgs, 'DataStore'>;
 export function baseExternalPluginKey<
-  K extends BaseExternalPluginKeyArgs['__kind'],
+  K extends BaseExternalPluginKeyArgs['__kind']
 >(kind: K, data?: any): Extract<BaseExternalPluginKeyArgs, { __kind: K }> {
   return Array.isArray(data)
     ? { __kind: kind, fields: data }
     : { __kind: kind, ...(data ?? {}) };
 }
 export function isBaseExternalPluginKey<
-  K extends BaseExternalPluginKey['__kind'],
+  K extends BaseExternalPluginKey['__kind']
 >(
   kind: K,
   value: BaseExternalPluginKey
