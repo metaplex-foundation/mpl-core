@@ -31,7 +31,7 @@ pub enum CheckResult {
 #[derive(BorshDeserialize, BorshSerialize, Eq, PartialEq, Copy, Clone, Debug)]
 pub struct ExternalCheckResult {
     /// Bitfield for external check results.
-    flags: u8,
+    pub flags: u8,
 }
 
 impl ExternalCheckResult {
@@ -638,6 +638,18 @@ pub enum ValidationResult {
     Pass,
     /// The plugin force approves the lifecycle action.
     ForceApproved,
+}
+
+/// External plugins lifecycle validations
+/// External plugins utilize this to indicate whether they approve or reject a lifecycle action.
+#[derive(Eq, PartialEq, Debug, Clone, BorshDeserialize, BorshSerialize)]
+pub enum ExternalValidationResult {
+    /// The plugin approves the lifecycle action.
+    Approved,
+    /// The plugin rejects the lifecycle action.
+    Rejected,
+    /// The plugin abstains from approving or rejecting the lifecycle action.
+    Pass,
 }
 
 /// The required context for a plugin validation.

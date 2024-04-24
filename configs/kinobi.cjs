@@ -231,6 +231,9 @@ kinobi.update(
     dataStoreUpdateInfo: {
       name: "baseDataStoreUpdateInfo"
     },
+    validationResultsOffset: {
+      name: "baseValidationResultsOffset"
+    },
   })
 )
 

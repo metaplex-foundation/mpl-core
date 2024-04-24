@@ -43,6 +43,7 @@ export const create = (
         case 'Oracle':
           assetExternalPlugins.oracles?.push({
             ...plugin,
+            resultsOffset: plugin.resultsOffset || { type: 'NoOffset' },
             baseAddress: plugin.baseAddress,
             authority: plugin.initPluginAuthority || {
               type: 'UpdateAuthority',

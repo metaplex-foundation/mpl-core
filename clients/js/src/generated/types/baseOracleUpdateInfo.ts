@@ -17,11 +17,14 @@ import {
 import {
   BaseExtraAccount,
   BaseExtraAccountArgs,
+  BaseValidationResultsOffset,
+  BaseValidationResultsOffsetArgs,
   ExternalCheckResult,
   ExternalCheckResultArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
   getBaseExtraAccountSerializer,
+  getBaseValidationResultsOffsetSerializer,
   getExternalCheckResultSerializer,
   getHookableLifecycleEventSerializer,
 } from '.';
@@ -29,6 +32,7 @@ import {
 export type BaseOracleUpdateInfo = {
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   pda: Option<BaseExtraAccount>;
+  resultsOffset: Option<BaseValidationResultsOffset>;
 };
 
 export type BaseOracleUpdateInfoArgs = {
@@ -36,6 +40,7 @@ export type BaseOracleUpdateInfoArgs = {
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
   pda: OptionOrNullable<BaseExtraAccountArgs>;
+  resultsOffset: OptionOrNullable<BaseValidationResultsOffsetArgs>;
 };
 
 export function getBaseOracleUpdateInfoSerializer(): Serializer<
@@ -56,6 +61,7 @@ export function getBaseOracleUpdateInfoSerializer(): Serializer<
         ),
       ],
       ['pda', option(getBaseExtraAccountSerializer())],
+      ['resultsOffset', option(getBaseValidationResultsOffsetSerializer())],
     ],
     { description: 'BaseOracleUpdateInfo' }
   ) as Serializer<BaseOracleUpdateInfoArgs, BaseOracleUpdateInfo>;
