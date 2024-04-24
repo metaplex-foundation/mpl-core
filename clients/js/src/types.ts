@@ -12,7 +12,8 @@ import {
   UpdateAuthority,
   PermanentBurnDelegate,
   Edition,
-  Immutable,
+  Allowlist,
+  ImmutableMetadata,
 } from './generated';
 
 export type BasePluginAuthority = {
@@ -45,7 +46,8 @@ export type PermanentTransferDelegatePlugin = BasePlugin &
   PermanentTransferDelegate;
 export type PermanentBurnDelegatePlugin = BasePlugin & PermanentBurnDelegate;
 export type EditionPlugin = BasePlugin & Edition;
-export type ImmutablePlugin = BasePlugin & Immutable;
+export type ImmutableMetadataPlugin = BasePlugin & ImmutableMetadata;
+export type AllowlistPlugin = BasePlugin & Allowlist;
 
 export type PluginsList = {
   royalties?: RoyaltiesPlugin;
@@ -58,5 +60,6 @@ export type PluginsList = {
   permanentTransferDelegate?: PermanentTransferDelegatePlugin;
   permanentBurnDelegate?: PermanentBurnDelegatePlugin;
   edition?: EditionPlugin;
-  immutable?: ImmutablePlugin;
+  immutableMetadata?: ImmutableMetadataPlugin;
+  allowlist?: AllowlistPlugin;
 };
