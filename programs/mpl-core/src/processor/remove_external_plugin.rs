@@ -4,13 +4,18 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::RemoveExternalPluginV1Accounts,
+    instruction::accounts::{
+        RemoveCollectionExternalPluginV1Accounts, RemoveExternalPluginV1Accounts,
+    },
     plugins::{
         delete_external_plugin, fetch_wrapped_external_plugin, ExternalPluginKey, Plugin,
         PluginType,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key},
-    utils::{fetch_core_data, load_key, resolve_authority, validate_asset_permissions},
+    utils::{
+        fetch_core_data, load_key, resolve_authority, validate_asset_permissions,
+        validate_collection_permissions,
+    },
 };
 
 #[repr(C)]
@@ -52,11 +57,9 @@ pub(crate) fn remove_external_plugin<'a>(
         return Err(MplCoreError::PluginNotFound.into());
     }
 
-    msg!("Fetching wrapped external plugin");
     let (_, plugin_to_remove) =
         fetch_wrapped_external_plugin::<AssetV1>(ctx.accounts.asset, Some(&asset), &args.key)?;
 
-    msg!("Validating asset permissions");
     // Validate asset permissions.
     let _ = validate_asset_permissions(
         authority,
@@ -73,7 +76,6 @@ pub(crate) fn remove_external_plugin<'a>(
         Plugin::validate_remove_external_plugin,
     )?;
 
-    msg!("Processing remove external plugin");
     process_remove_external_plugin(
         &args.key,
         &asset,
@@ -91,10 +93,58 @@ pub(crate) struct RemoveCollectionExternalPluginV1Args {
 }
 
 pub(crate) fn remove_collection_external_plugin<'a>(
-    _accounts: &'a [AccountInfo<'a>],
-    _args: RemoveCollectionExternalPluginV1Args,
+    accounts: &'a [AccountInfo<'a>],
+    args: RemoveCollectionExternalPluginV1Args,
 ) -> ProgramResult {
-    Err(MplCoreError::NotAvailable.into())
+    let ctx = RemoveCollectionExternalPluginV1Accounts::context(accounts)?;
+
+    // Guards.
+    assert_signer(ctx.accounts.payer)?;
+    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
+
+    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+        return Err(MplCoreError::InvalidSystemProgram.into());
+    }
+
+    if let Some(log_wrapper) = ctx.accounts.log_wrapper {
+        if log_wrapper.key != &spl_noop::ID {
+            return Err(MplCoreError::InvalidLogWrapperProgram.into());
+        }
+    }
+
+    let (collection, plugin_header, plugin_registry) =
+        fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;
+
+    // We don't have anything to delete if there's no plugin meta.
+    if plugin_header.is_none() || plugin_registry.is_none() {
+        return Err(MplCoreError::PluginNotFound.into());
+    }
+
+    let (_, plugin_to_remove) = fetch_wrapped_external_plugin::<CollectionV1>(
+        ctx.accounts.collection,
+        Some(&collection),
+        &args.key,
+    )?;
+
+    // Validate asset permissions.
+    let _ = validate_collection_permissions(
+        authority,
+        ctx.accounts.collection,
+        None,
+        Some(&plugin_to_remove),
+        CollectionV1::check_remove_external_plugin,
+        PluginType::check_remove_external_plugin,
+        CollectionV1::validate_remove_external_plugin,
+        Plugin::validate_remove_external_plugin,
+    )?;
+
+    process_remove_external_plugin(
+        &args.key,
+        &collection,
+        ctx.accounts.collection,
+        ctx.accounts.payer,
+        ctx.accounts.system_program,
+    )
 }
 
 fn process_remove_external_plugin<'a, T: DataBlob>(
