@@ -5,6 +5,7 @@ import {
   updatePluginAuthority,
   createPlugin,
   addPluginV1,
+  addCollectionPluginV1,
 } from '../../../src';
 import {
   DEFAULT_COLLECTION,
@@ -16,20 +17,19 @@ import {
 
 test('it can add masterEdition to collection', async (t) => {
   const umi = await createUmi();
+  const collection = await createCollection(umi);
 
-  const collection = await createCollection(umi, {
-    plugins: [
-      pluginAuthorityPair({
-        type: 'MasterEdition',
-        data: {
-          maxSupply: 100,
-          name: 'name',
-          uri: 'uri',
-        },
-        authority: updatePluginAuthority(),
-      }),
-    ],
-  });
+  await addCollectionPluginV1(umi, {
+    collection: collection.publicKey,
+    plugin: createPlugin({
+      type: 'MasterEdition',
+      data: {
+        maxSupply: 100,
+        name: 'name',
+        uri: 'uri',
+      },
+    }),
+  }).sendAndConfirm(umi);
 
   await assertCollection(t, umi, {
     ...DEFAULT_COLLECTION,

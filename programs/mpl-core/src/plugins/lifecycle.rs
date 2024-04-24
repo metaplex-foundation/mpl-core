@@ -7,7 +7,7 @@ use crate::{
     state::{Authority, Key},
 };
 
-use super::{master_edition, Plugin, PluginType, RegistryRecord};
+use super::{Plugin, PluginType, RegistryRecord};
 
 /// Lifecycle permissions
 /// Plugins use this field to indicate their permission to approve or deny
