@@ -17,6 +17,8 @@ import {
 import {
   Attributes,
   AttributesArgs,
+  BaseRoyalties,
+  BaseRoyaltiesArgs,
   BurnDelegate,
   BurnDelegateArgs,
   Edition,
@@ -29,26 +31,24 @@ import {
   PermanentFreezeDelegateArgs,
   PermanentTransferDelegate,
   PermanentTransferDelegateArgs,
-  Royalties,
-  RoyaltiesArgs,
   TransferDelegate,
   TransferDelegateArgs,
   UpdateDelegate,
   UpdateDelegateArgs,
   getAttributesSerializer,
+  getBaseRoyaltiesSerializer,
   getBurnDelegateSerializer,
   getEditionSerializer,
   getFreezeDelegateSerializer,
   getPermanentBurnDelegateSerializer,
   getPermanentFreezeDelegateSerializer,
   getPermanentTransferDelegateSerializer,
-  getRoyaltiesSerializer,
   getTransferDelegateSerializer,
   getUpdateDelegateSerializer,
 } from '.';
 
 export type Plugin =
-  | { __kind: 'Royalties'; fields: [Royalties] }
+  | { __kind: 'Royalties'; fields: [BaseRoyalties] }
   | { __kind: 'FreezeDelegate'; fields: [FreezeDelegate] }
   | { __kind: 'BurnDelegate'; fields: [BurnDelegate] }
   | { __kind: 'TransferDelegate'; fields: [TransferDelegate] }
@@ -60,7 +60,7 @@ export type Plugin =
   | { __kind: 'Edition'; fields: [Edition] };
 
 export type PluginArgs =
-  | { __kind: 'Royalties'; fields: [RoyaltiesArgs] }
+  | { __kind: 'Royalties'; fields: [BaseRoyaltiesArgs] }
   | { __kind: 'FreezeDelegate'; fields: [FreezeDelegateArgs] }
   | { __kind: 'BurnDelegate'; fields: [BurnDelegateArgs] }
   | { __kind: 'TransferDelegate'; fields: [TransferDelegateArgs] }
@@ -80,7 +80,7 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
       [
         'Royalties',
         struct<GetDataEnumKindContent<Plugin, 'Royalties'>>([
-          ['fields', tuple([getRoyaltiesSerializer()])],
+          ['fields', tuple([getBaseRoyaltiesSerializer()])],
         ]),
       ],
       [

@@ -1,6 +1,6 @@
 import test from 'ava';
 import { burnV1, fetchCollectionV1 } from '../src';
-import { createUmi, createCollection, createAsset } from './_setup';
+import { createUmi, createCollection, createAsset } from './_setupRaw';
 
 test('it can burn an asset which is the part of a collection', async (t) => {
   // Given a Umi instance and a new signer.

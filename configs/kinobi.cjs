@@ -77,12 +77,34 @@ kinobi.update(
         }
       }
     },
+    createV2: {
+      arguments: {
+        plugins: {
+          defaultValue: k.arrayValueNode([])
+        },
+        externalPlugins: {
+          defaultValue: k.arrayValueNode([])
+        },
+        dataState: {
+          defaultValue: k.enumValueNode('DataState', 'AccountState')
+        }
+      }
+    },
     createCollectionV1: {
       arguments: {
         plugins: {
           defaultValue: k.noneValueNode()
-
         }
+      }
+    },
+    createCollectionV2: {
+      arguments: {
+        plugins: {
+          defaultValue: k.noneValueNode()
+        },
+        externalPlugins: {
+          defaultValue: k.arrayValueNode([])
+        },
       }
     },
     collect: {
@@ -99,7 +121,23 @@ kinobi.update(
       arguments: {
         newUpdateAuthority: {
           defaultValue: k.noneValueNode()
-        }
+        },
+        newName: {
+          defaultValue: k.noneValueNode()
+        },
+        newUri: {
+          defaultValue: k.noneValueNode()
+        },
+      }
+    },
+    updateCollectionV1: {
+      arguments: {
+        newName: {
+          defaultValue: k.noneValueNode()
+        },
+        newUri: {
+          defaultValue: k.noneValueNode()
+        },
       }
     }
   })
@@ -136,6 +174,65 @@ kinobi.update(
     }
   })
 );
+
+kinobi.update(
+  new k.updateDefinedTypesVisitor({
+    ruleSet: {
+      name: "baseRuleSet"
+    },
+    royalties: {
+      name: "baseRoyalties"
+    },
+    pluginAuthority: {
+      name: "basePluginAuthority"
+    },
+    updateAuthority: {
+      name: "baseUpdateAuthority"
+    },
+    seed: {
+      name: "baseSeed"
+    },
+    extraAccount: {
+      name: "baseExtraAccount"
+    },
+    externalPluginKey: {
+      name: "baseExternalPluginKey"
+    },
+    externalPluginInitInfo: {
+      name: "baseExternalPluginInitInfo"
+    },
+    externalPluginUpdateInfo: {
+      name: "baseExternalPluginUpdateInfo"
+    },
+    oracle: {
+      name: "baseOracle"
+    },
+    oracleInitInfo: {
+      name: "baseOracleInitInfo"
+    },
+    oracleUpdateInfo: {
+      name: "baseOracleUpdateInfo"
+    },
+    lifecycleHook: {
+      name: "baseLifecycleHook"
+    },
+    lifecycleHookInitInfo: {
+      name: "baseLifecycleHookInitInfo"
+    },
+    lifecycleHookUpdateInfo: {
+      name: "baseLifecycleHookUpdateInfo"
+    },
+    dataStore: {
+      name: "baseDataStore"
+    },
+    dataStoreInitInfo: {
+      name: "baseDataStoreInitInfo"
+    },
+    dataStoreUpdateInfo: {
+      name: "baseDataStoreUpdateInfo"
+    },
+  })
+)
 
 // Render JavaScript.
 const jsDir = path.join(clientDir, "js", "src", "generated");

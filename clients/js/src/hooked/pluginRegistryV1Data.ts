@@ -1,12 +1,24 @@
-import { Serializer, array, u64 } from '@metaplex-foundation/umi/serializers';
+import {
+  Serializer,
+  array,
+  option,
+  tuple,
+  u64,
+} from '@metaplex-foundation/umi/serializers';
 import {
   Key,
   PluginType,
   RegistryRecord,
   RegistryRecordArgs,
   getKeySerializer,
-  getPluginAuthoritySerializer,
+  getBasePluginAuthoritySerializer,
   getPluginTypeSerializer,
+  ExternalRegistryRecordArgs,
+  ExternalRegistryRecord,
+  getExternalPluginTypeSerializer,
+  ExternalPluginType,
+  getHookableLifecycleEventSerializer,
+  getExternalCheckResultSerializer,
 } from '../generated';
 import {
   PluginRegistryV1AccountData,
@@ -16,6 +28,10 @@ import {
 export { PluginRegistryV1AccountData } from '../generated/types/pluginRegistryV1AccountData';
 
 export type RegistryRecordWithUnknown = RegistryRecord & {
+  isUnknown?: boolean;
+};
+
+export type ExternalRegistryRecordWithUnknown = ExternalRegistryRecord & {
   isUnknown?: boolean;
 };
 
@@ -49,7 +65,10 @@ export function getRegistryRecordSerializer(): Serializer<
         // Do nothing, unknown plugin type
       }
       const [authority, authorityOffset] =
-        getPluginAuthoritySerializer().deserialize(buffer, pluginTypeOffset);
+        getBasePluginAuthoritySerializer().deserialize(
+          buffer,
+          pluginTypeOffset
+        );
       const [pluginOffset, pluginOffsetOffset] = u64().deserialize(
         buffer,
         authorityOffset
@@ -59,6 +78,66 @@ export function getRegistryRecordSerializer(): Serializer<
         {
           pluginType,
           authority,
+          offset: pluginOffset,
+          isUnknown,
+        },
+        pluginOffsetOffset,
+      ];
+    },
+  };
+}
+
+export function getExternalRegistryRecordSerializer(): Serializer<
+  ExternalRegistryRecordArgs,
+  ExternalRegistryRecordWithUnknown
+> {
+  return {
+    description: 'ExternalRegistryRecordWithUnknown',
+    fixedSize: null,
+    maxSize: null,
+    serialize: () => {
+      throw new Error('Operation not supported.');
+    },
+    deserialize: (
+      buffer: Uint8Array,
+      offset = 0
+    ): [ExternalRegistryRecordWithUnknown, number] => {
+      let [pluginType, pluginTypeOffset, isUnknown] = [
+        ExternalPluginType.DataStore,
+        offset + 1,
+        true,
+      ];
+      try {
+        [pluginType, pluginTypeOffset] =
+          getExternalPluginTypeSerializer().deserialize(buffer, offset);
+        isUnknown = false;
+      } catch (e) {
+        // do nothing
+      }
+
+      const [authority, authorityOffset] =
+        getBasePluginAuthoritySerializer().deserialize(
+          buffer,
+          pluginTypeOffset
+        );
+      const [lifecycleChecks, lifecycleChecksOffset] = option(
+        array(
+          tuple([
+            getHookableLifecycleEventSerializer(),
+            getExternalCheckResultSerializer(),
+          ])
+        )
+      ).deserialize(buffer, authorityOffset);
+
+      const [pluginOffset, pluginOffsetOffset] = u64().deserialize(
+        buffer,
+        lifecycleChecksOffset
+      );
+      return [
+        {
+          pluginType,
+          authority,
+          lifecycleChecks,
           offset: pluginOffset,
           isUnknown,
         },
@@ -92,7 +171,9 @@ export function getPluginRegistryV1AccountDataSerializer(): Serializer<
         getRegistryRecordSerializer()
       ).deserialize(buffer, keyOffset);
 
-      // TODO deserialize externalRegistry of plugins once they are defined, purposefully ignore them now
+      const [externalRegistry, externalRegistryOffset] = array(
+        getExternalRegistryRecordSerializer()
+      ).deserialize(buffer, registryOffset);
 
       return [
         {
@@ -100,9 +181,11 @@ export function getPluginRegistryV1AccountDataSerializer(): Serializer<
           registry: registry.filter(
             (record: RegistryRecordWithUnknown) => !record.isUnknown
           ),
-          externalRegistry: [],
+          externalRegistry: externalRegistry.filter(
+            (record: ExternalRegistryRecordWithUnknown) => !record.isUnknown
+          ),
         },
-        registryOffset,
+        externalRegistryOffset,
       ];
     },
   };

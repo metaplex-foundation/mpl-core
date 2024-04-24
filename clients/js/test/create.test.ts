@@ -16,7 +16,7 @@ import {
   createCollection,
   createUmi,
   DEFAULT_ASSET,
-} from './_setup';
+} from './_setupRaw';
 
 test('it can create a new asset in account state', async (t) => {
   // Given an Umi instance and a new signer.
@@ -139,7 +139,7 @@ test('it can create a new asset in account state with plugins', async (t) => {
       authority: {
         type: 'Owner',
       },
-      offset: BigInt(119),
+      offset: 119n,
       frozen: false,
     },
   });

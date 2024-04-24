@@ -17,7 +17,7 @@ import {
   assertAsset,
   createAsset,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('it can freeze and unfreeze an asset', async (t) => {
   // Given a Umi instance and a new signer.

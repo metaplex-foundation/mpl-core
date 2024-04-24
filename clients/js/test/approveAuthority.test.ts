@@ -18,7 +18,7 @@ import {
   createAsset,
   createCollection,
   createUmi,
-} from './_setup';
+} from './_setupRaw';
 
 test('it can add an authority to a plugin', async (t) => {
   // Given a Umi instance and a new signer.

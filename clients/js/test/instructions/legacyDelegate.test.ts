@@ -1,6 +1,6 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
-import { assertAsset, createAsset, createUmi } from '../_setup';
+import { assertAsset, createAsset, createUmi } from '../_setupRaw';
 import {
   addressPluginAuthority,
   pluginAuthorityPair,

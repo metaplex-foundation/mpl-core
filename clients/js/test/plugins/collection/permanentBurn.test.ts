@@ -12,7 +12,7 @@ import {
   assertCollection,
   createCollection,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('it can add permanentBurnDelegate to collection', async (t) => {
   const umi = await createUmi();

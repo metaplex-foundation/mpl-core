@@ -1,7 +1,7 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import { Key, getCollectionV1GpaBuilder } from '../src';
-import { createUmi, createCollection } from './_setup';
+import { createUmi, createCollection } from './_setupRaw';
 
 test('it can gpa fetch collections by updateAuthority', async (t) => {
   // Given a Umi instance and a new signer.
