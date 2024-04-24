@@ -19,6 +19,7 @@ export * from './freezeDelegate';
 export * from './hashablePluginSchema';
 export * from './hashedAssetSchema';
 export * from './key';
+export * from './masterEdition';
 export * from './permanentBurnDelegate';
 export * from './permanentFreezeDelegate';
 export * from './permanentTransferDelegate';

@@ -9,6 +9,7 @@ use crate::generated::types::Attributes;
 use crate::generated::types::BurnDelegate;
 use crate::generated::types::Edition;
 use crate::generated::types::FreezeDelegate;
+use crate::generated::types::MasterEdition;
 use crate::generated::types::PermanentBurnDelegate;
 use crate::generated::types::PermanentFreezeDelegate;
 use crate::generated::types::PermanentTransferDelegate;
@@ -31,4 +32,5 @@ pub enum Plugin {
     PermanentTransferDelegate(PermanentTransferDelegate),
     PermanentBurnDelegate(PermanentBurnDelegate),
     Edition(Edition),
+    MasterEdition(MasterEdition),
 }

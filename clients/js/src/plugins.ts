@@ -15,6 +15,7 @@ import {
   PluginType,
   UpdateDelegateArgs,
   EditionArgs,
+  MasterEditionArgs,
 } from './generated';
 import { BasePluginAuthority, PluginsList } from './types';
 import { mapPluginAuthority } from './authority';
@@ -69,6 +70,10 @@ export type CreatePluginArgs =
   | {
       type: 'Edition';
       data: EditionArgs;
+    }
+  | {
+      type: 'MasterEdition';
+      data: MasterEditionArgs;
     };
 
 export function createPlugin(args: CreatePluginArgs): BasePlugin {

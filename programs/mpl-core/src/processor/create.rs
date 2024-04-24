@@ -125,6 +125,11 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
             let mut approved = true;
             let mut force_approved = false;
             for plugin in &plugins {
+                // TODO move into plugin validation when asset/collection is part of validation context
+                let plugin_type = PluginType::from(&plugin.plugin);
+                if plugin_type == PluginType::MasterEdition {
+                    return Err(MplCoreError::InvalidPlugin.into());
+                }
                 if PluginType::check_create(&PluginType::from(&plugin.plugin)) != CheckResult::None
                 {
                     let validation_ctx = PluginValidationContext {

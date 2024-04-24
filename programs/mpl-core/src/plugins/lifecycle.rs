@@ -7,7 +7,7 @@ use crate::{
     state::{Authority, Key},
 };
 
-use super::{Plugin, PluginType, RegistryRecord};
+use super::{master_edition, Plugin, PluginType, RegistryRecord};
 
 /// Lifecycle permissions
 /// Plugins use this field to indicate their permission to approve or deny
@@ -158,6 +158,7 @@ impl Plugin {
                 permanent_burn.validate_add_plugin(ctx)
             }
             Plugin::Edition(edition) => edition.validate_add_plugin(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_add_plugin(ctx),
         }
     }
 
@@ -183,6 +184,7 @@ impl Plugin {
                 permanent_burn.validate_remove_plugin(ctx)
             }
             Plugin::Edition(edition) => edition.validate_remove_plugin(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_remove_plugin(ctx),
         }
     }
 
@@ -220,6 +222,9 @@ impl Plugin {
                 permanent_burn.validate_approve_plugin_authority(ctx)
             }
             Plugin::Edition(edition) => edition.validate_approve_plugin_authority(ctx),
+            Plugin::MasterEdition(master_edition) => {
+                master_edition.validate_approve_plugin_authority(ctx)
+            }
         }
     }
 
@@ -252,6 +257,9 @@ impl Plugin {
                 permanent_burn.validate_revoke_plugin_authority(ctx)
             }
             Plugin::Edition(edition) => edition.validate_revoke_plugin_authority(ctx),
+            Plugin::MasterEdition(master_edition) => {
+                master_edition.validate_revoke_plugin_authority(ctx)
+            }
         }
     }
 
@@ -275,6 +283,7 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_create(ctx),
             Plugin::Edition(edition) => edition.validate_create(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_create(ctx),
         }
     }
 
@@ -298,6 +307,7 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_update(ctx),
             Plugin::Edition(edition) => edition.validate_update(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_update(ctx),
         }
     }
 
@@ -334,6 +344,7 @@ impl Plugin {
                 permanent_burn.validate_update_plugin(ctx)
             }
             Plugin::Edition(edition) => edition.validate_update_plugin(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_update_plugin(ctx),
         }?;
 
         match (&base_result, &result) {
@@ -376,6 +387,7 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_burn(ctx),
             Plugin::Edition(edition) => edition.validate_burn(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_burn(ctx),
         }
     }
 
@@ -399,6 +411,7 @@ impl Plugin {
             Plugin::Attributes(attributes_transfer) => attributes_transfer.validate_transfer(ctx),
             Plugin::PermanentBurnDelegate(burn_transfer) => burn_transfer.validate_transfer(ctx),
             Plugin::Edition(edition) => edition.validate_transfer(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_transfer(ctx),
         }
     }
 
@@ -422,6 +435,7 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(burn_transfer) => burn_transfer.validate_compress(ctx),
             Plugin::Edition(edition) => edition.validate_compress(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_compress(ctx),
         }
     }
 
@@ -447,6 +461,7 @@ impl Plugin {
                 permanent_burn.validate_decompress(ctx)
             }
             Plugin::Edition(edition) => edition.validate_decompress(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_decompress(ctx),
         }
     }
 }
