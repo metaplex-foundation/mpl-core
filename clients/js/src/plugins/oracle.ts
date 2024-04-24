@@ -15,11 +15,13 @@ import { BaseExternalPlugin } from './externalPlugins';
 import { ExternalPluginKey } from './externalPluginKey';
 import {
   ValidationResultsOffset,
+  validationResultsOffsetFromBase,
   validationResultsOffsetToBase,
 } from './validationResultsOffset';
 
-export type Oracle = Omit<BaseOracle, 'pda'> & {
+export type Oracle = Omit<BaseOracle, 'pda' | 'resultsOffset'> & {
   pda?: ExtraAccount;
+  resultsOffset: ValidationResultsOffset;
 };
 
 export type OraclePlugin = BaseExternalPlugin &
@@ -83,8 +85,8 @@ export function oracleUpdateInfoArgsToBase(
 export function oracleFromBase(s: BaseOracle, account: Uint8Array): Oracle {
   return {
     ...s,
-    pda:
-      s.pda.__option === 'Some' ? extraAccountFromBase(s.pda.value) : undefined,
+    pda: s.pda.__option === 'Some' ? extraAccountFromBase(s.pda.value) : undefined,
+    resultsOffset: validationResultsOffsetFromBase(s.resultsOffset),
   };
 }
 

@@ -8,18 +8,29 @@ export type ValidationResultsOffset =
 export function validationResultsOffsetToBase(
   e: ValidationResultsOffset
 ): BaseValidationResultsOffset {
-  if (e.type === 'NoOffset') {
+  if (e.type === 'Custom') {
     return {
-      __kind: 'NoOffset',
+      __kind: 'Custom',
+      fields: [e.offset],
     };
   }
-  if (e.type === 'Anchor') {
-    return {
-      __kind: 'Anchor',
-    };
-  }
+
   return {
-    __kind: 'Custom',
-    fields: [e.offset],
-  };
+    __kind: e.type,
+  }
+}
+
+export function validationResultsOffsetFromBase(
+  e: BaseValidationResultsOffset
+): ValidationResultsOffset {
+  if (e.__kind === 'Custom') {
+    return {
+      type: 'Custom',
+      offset: e.fields[0],
+    };
+  }
+
+  return {
+    type: e.__kind,
+  }
 }
