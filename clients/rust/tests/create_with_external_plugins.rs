@@ -60,6 +60,7 @@ async fn test_add_lifecycle_hook() {
             name: None,
             uri: None,
             plugins: vec![],
+            external_plugins: vec![],
         },
     )
     .await;
@@ -118,6 +119,7 @@ async fn test_add_oracle() {
             name: None,
             uri: None,
             plugins: vec![],
+            external_plugins: vec![],
         },
     )
     .await;
@@ -172,6 +174,7 @@ async fn test_add_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
+            external_plugins: vec![],
         },
     )
     .await;

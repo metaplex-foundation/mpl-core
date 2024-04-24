@@ -84,6 +84,7 @@ async fn test_fetch_plugin() {
                     }),
                 },
             ],
+            external_plugins: vec![],
         },
     )
     .await;
@@ -193,6 +194,7 @@ async fn test_fetch_plugins() {
                     }),
                 },
             ],
+            external_plugins: vec![],
         },
     )
     .await;
@@ -303,6 +305,7 @@ async fn test_list_plugins() {
                     }),
                 },
             ],
+            external_plugins: vec![],
         },
     )
     .await;

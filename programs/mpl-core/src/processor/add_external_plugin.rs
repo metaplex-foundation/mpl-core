@@ -61,6 +61,8 @@ pub(crate) fn add_external_plugin<'a>(
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
+    let external_plugin = ExternalPlugin::from(&args.init_info);
+
     // Validate asset permissions.
     let (mut asset, _, _) = validate_asset_permissions(
         authority,
@@ -68,7 +70,7 @@ pub(crate) fn add_external_plugin<'a>(
         ctx.accounts.collection,
         None,
         None,
-        Some(&args.init_info),
+        Some(&external_plugin),
         AssetV1::check_add_external_plugin,
         CollectionV1::check_add_external_plugin,
         PluginType::check_add_external_plugin,
@@ -129,12 +131,14 @@ pub(crate) fn add_collection_external_plugin<'a>(
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
+    let external_plugin = ExternalPlugin::from(&args.init_info);
+
     // Validate collection permissions.
     let _ = validate_collection_permissions(
         authority,
         ctx.accounts.collection,
         None,
-        Some(&args.init_info),
+        Some(&external_plugin),
         CollectionV1::check_add_external_plugin,
         PluginType::check_add_external_plugin,
         CollectionV1::validate_add_external_plugin,

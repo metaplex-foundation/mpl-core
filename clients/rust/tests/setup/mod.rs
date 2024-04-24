@@ -1,6 +1,9 @@
 use mpl_core::{
     instructions::{CreateCollectionV1Builder, CreateV2Builder},
-    types::{DataState, ExternalPluginInitInfo, Key, Plugin, PluginAuthorityPair, UpdateAuthority},
+    types::{
+        DataState, ExternalPlugin, ExternalPluginInitInfo, ExternalPluginKey, Key, Plugin,
+        PluginAuthorityPair, UpdateAuthority,
+    },
     Asset, Collection,
 };
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
@@ -77,6 +80,7 @@ pub struct AssertAssetHelperArgs {
     pub uri: Option<String>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
+    pub external_plugins: Vec<ExternalPlugin>,
 }
 
 pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHelperArgs) {
@@ -126,6 +130,10 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
             }
             _ => panic!("unsupported plugin type"),
         }
+    }
+
+    for plugin in input.external_plugins {
+        let plugin_key = ExternalPluginKey::from(&plugin);
     }
 }
 

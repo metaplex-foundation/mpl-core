@@ -5,9 +5,10 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        Attributes, BurnDelegate, DataStore, Edition, ExternalCheckResult, FreezeDelegate, Key,
-        LifecycleHook, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
-        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
+        Attributes, BurnDelegate, DataStore, Edition, ExternalCheckResult, ExternalPlugin,
+        ExternalPluginKey, FreezeDelegate, Key, LifecycleHook, Oracle, PermanentBurnDelegate,
+        PermanentFreezeDelegate, PermanentTransferDelegate, PluginAuthority, Royalties,
+        TransferDelegate, UpdateDelegate,
     },
 };
 
@@ -248,5 +249,19 @@ impl PluginRegistryV1Safe {
             registry,
             external_registry,
         })
+    }
+}
+
+impl From<&ExternalPlugin> for ExternalPluginKey {
+    fn from(plugin: &ExternalPlugin) -> Self {
+        match plugin {
+            ExternalPlugin::DataStore(data_store) => {
+                ExternalPluginKey::DataStore(data_store.data_authority.clone())
+            }
+            ExternalPlugin::Oracle(oracle) => ExternalPluginKey::Oracle(oracle.base_address),
+            ExternalPlugin::LifecycleHook(lifecycle_hook) => {
+                ExternalPluginKey::LifecycleHook(lifecycle_hook.hooked_program)
+            }
+        }
     }
 }
