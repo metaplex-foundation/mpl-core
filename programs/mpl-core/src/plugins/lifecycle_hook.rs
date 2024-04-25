@@ -30,6 +30,22 @@ pub struct LifecycleHook {
     pub data_len: usize, // 8
 }
 
+impl PluginValidation for LifecycleHook {
+    fn validate_add_external_plugin(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    fn validate_transfer(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+}
+
 impl From<&LifecycleHookInitInfo> for LifecycleHook {
     fn from(init_info: &LifecycleHookInitInfo) -> Self {
         Self {
@@ -60,15 +76,6 @@ pub struct LifecycleHookInitInfo {
     pub data_authority: Option<Authority>,
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
-}
-
-impl PluginValidation for LifecycleHookInitInfo {
-    fn validate_add_external_plugin(
-        &self,
-        _ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
 }
 
 /// Lifecycle hook update info.

@@ -23,6 +23,22 @@ pub struct DataStore {
     pub data_len: usize,
 }
 
+impl PluginValidation for DataStore {
+    fn validate_add_external_plugin(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    fn validate_transfer(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+}
+
 impl From<&DataStoreInitInfo> for DataStore {
     fn from(init_info: &DataStoreInitInfo) -> Self {
         Self {
@@ -44,15 +60,6 @@ pub struct DataStoreInitInfo {
     pub init_plugin_authority: Option<Authority>,
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
-}
-
-impl PluginValidation for DataStoreInitInfo {
-    fn validate_add_external_plugin(
-        &self,
-        _ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
 }
 
 /// Data store update info.

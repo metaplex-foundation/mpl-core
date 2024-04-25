@@ -13,8 +13,8 @@ use crate::{
     error::MplCoreError,
     plugins::{
         create_meta_idempotent, initialize_plugin, validate_plugin_checks, CheckResult,
-        ExternalPluginInitInfo, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType,
-        PluginValidationContext, RegistryRecord, ValidationResult,
+        ExternalPlugin, ExternalPluginInitInfo, Plugin, PluginHeaderV1, PluginRegistryV1,
+        PluginType, PluginValidationContext, RegistryRecord, ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, Compressible, CompressionProof, CoreAsset, DataBlob,
@@ -220,6 +220,9 @@ pub(crate) fn validate_asset_permissions<'a>(
         &Plugin,
         &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
+    _external_plugin_validate_fp: Option<
+        fn(&ExternalPlugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
+    >,
 ) -> Result<(AssetV1, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
     let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<AssetV1>(asset)?;
     let resolved_authorities =
@@ -363,6 +366,9 @@ pub(crate) fn validate_collection_permissions<'a>(
         &Plugin,
         &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
+    _external_plugin_validate_fp: Option<
+        fn(&ExternalPlugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
+    >,
 ) -> Result<
     (
         CollectionV1,

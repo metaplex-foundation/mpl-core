@@ -811,7 +811,10 @@ pub(crate) fn validate_plugin_checks<'a>(
     asset: Option<&AccountInfo<'a>>,
     collection: Option<&AccountInfo<'a>>,
     resolved_authorities: &[Authority],
-    validate_fp: fn(&Plugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
+    plugin_validate_fp: fn(
+        &Plugin,
+        &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
     let mut rejected = false;
@@ -836,7 +839,7 @@ pub(crate) fn validate_plugin_checks<'a>(
                 target_plugin: new_plugin,
             };
 
-            let result = validate_fp(&Plugin::load(account, registry_record.offset)?, &ctx)?;
+            let result = plugin_validate_fp(&Plugin::load(account, registry_record.offset)?, &ctx)?;
             match result {
                 ValidationResult::Rejected => rejected = true,
                 ValidationResult::Approved => approved = true,
