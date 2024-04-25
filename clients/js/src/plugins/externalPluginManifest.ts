@@ -1,3 +1,4 @@
+import { ExternalRegistryRecord } from 'src/generated';
 import { ExternalPluginTypeString } from './externalPlugins';
 
 export type ExternalPluginManifest<
@@ -9,7 +10,7 @@ export type ExternalPluginManifest<
   UpdateBase extends Object
 > = {
   type: ExternalPluginTypeString;
-  fromBase: (input: Base, account: Uint8Array) => T;
+  fromBase: (input: Base, record: ExternalRegistryRecord, account: Uint8Array) => T;
   initToBase: (input: Init) => InitBase;
   updateToBase: (input: Update) => UpdateBase;
 };

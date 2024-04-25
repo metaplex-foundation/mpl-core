@@ -7,6 +7,7 @@ import {
   BaseOracle,
   BaseOracleInitInfoArgs,
   BaseOracleUpdateInfoArgs,
+  ExternalRegistryRecord,
 } from '../generated';
 import { LifecycleChecks, lifecycleChecksToBase } from './lifecycleChecks';
 import { PluginAuthority, pluginAuthorityToBase } from './pluginAuthority';
@@ -82,7 +83,7 @@ export function oracleUpdateInfoArgsToBase(
   };
 }
 
-export function oracleFromBase(s: BaseOracle, account: Uint8Array): Oracle {
+export function oracleFromBase(s: BaseOracle, r: ExternalRegistryRecord, account: Uint8Array): Oracle {
   return {
     ...s,
     pda:

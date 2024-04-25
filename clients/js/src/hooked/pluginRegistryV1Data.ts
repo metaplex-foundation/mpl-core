@@ -133,6 +133,9 @@ export function getExternalRegistryRecordSerializer(): Serializer<
         buffer,
         lifecycleChecksOffset
       );
+
+      const [dataOffset, dataOffsetOffset] = option(u64()).deserialize(buffer, pluginOffsetOffset);
+      const [dataLen] = option(u64()).deserialize(buffer, dataOffsetOffset);
       return [
         {
           pluginType,
@@ -140,6 +143,8 @@ export function getExternalRegistryRecordSerializer(): Serializer<
           lifecycleChecks,
           offset: pluginOffset,
           isUnknown,
+          dataOffset,
+          dataLen,
         },
         pluginOffsetOffset,
       ];

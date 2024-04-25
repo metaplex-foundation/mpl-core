@@ -3,6 +3,7 @@ import {
   BaseDataStoreInitInfoArgs,
   BaseDataStoreUpdateInfoArgs,
   ExternalPluginSchema,
+  ExternalRegistryRecord,
 } from '../generated';
 import { ExternalPluginKey } from './externalPluginKey';
 import { ExternalPluginManifest } from './externalPluginManifest';
@@ -66,14 +67,13 @@ export function dataStoreUpdateInfoArgsToBase(
 
 export function dataStoreFromBase(
   s: BaseDataStore,
+  r: ExternalRegistryRecord,
   account: Uint8Array
 ): DataStore {
   return {
     ...s,
     dataAuthority: pluginAuthorityFromBase(s.dataAuthority),
-    dataOffset: s.dataOffset,
-    dataLen: s.dataLen,
-    data: parseExternalPluginData(s, account),
+    data: parseExternalPluginData(s, r, account),
   };
 }
 

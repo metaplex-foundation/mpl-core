@@ -1,4 +1,4 @@
-import { AccountMeta, Context, PublicKey } from '@metaplex-foundation/umi';
+import { AccountMeta, Context, PublicKey, Option } from '@metaplex-foundation/umi';
 import {
   lifecycleHookFromBase,
   LifecycleHookInitInfoArgs,
@@ -50,25 +50,25 @@ export type ExternalPluginsList = {
 
 export type ExternalPluginInitInfoArgs =
   | ({
-      type: 'Oracle';
-    } & OracleInitInfoArgs)
+    type: 'Oracle';
+  } & OracleInitInfoArgs)
   | ({
-      type: 'LifecycleHook';
-    } & LifecycleHookInitInfoArgs)
+    type: 'LifecycleHook';
+  } & LifecycleHookInitInfoArgs)
   | ({
-      type: 'DataStore';
-    } & DataStoreInitInfoArgs);
+    type: 'DataStore';
+  } & DataStoreInitInfoArgs);
 
 export type ExternalPluginUpdateInfoArgs =
   | ({
-      type: 'Oracle';
-    } & OracleUpdateInfoArgs)
+    type: 'Oracle';
+  } & OracleUpdateInfoArgs)
   | ({
-      type: 'LifecycleHook';
-    } & LifecycleHookUpdateInfoArgs)
+    type: 'LifecycleHook';
+  } & LifecycleHookUpdateInfoArgs)
   | ({
-      type: 'DataStore';
-    } & DataStoreUpdateInfoArgs);
+    type: 'DataStore';
+  } & DataStoreUpdateInfoArgs);
 
 export const externalPluginManifests = {
   Oracle: oracleManifest,
@@ -110,7 +110,7 @@ export function externalRegistryRecordsToExternalPluginList(
       result.oracles.push({
         type: 'Oracle',
         ...mappedPlugin,
-        ...oracleFromBase(deserializedPlugin.fields[0], accountData),
+        ...oracleFromBase(deserializedPlugin.fields[0], record, accountData),
       });
     } else if (deserializedPlugin.__kind === 'DataStore') {
       if (!result.dataStores) {
@@ -119,7 +119,7 @@ export function externalRegistryRecordsToExternalPluginList(
       result.dataStores.push({
         type: 'DataStore',
         ...mappedPlugin,
-        ...dataStoreFromBase(deserializedPlugin.fields[0], accountData),
+        ...dataStoreFromBase(deserializedPlugin.fields[0], record, accountData),
       });
     } else if (deserializedPlugin.__kind === 'LifecycleHook') {
       if (!result.lifecycleHooks) {
@@ -128,7 +128,7 @@ export function externalRegistryRecordsToExternalPluginList(
       result.lifecycleHooks.push({
         type: 'LifecycleHook',
         ...mappedPlugin,
-        ...lifecycleHookFromBase(deserializedPlugin.fields[0], accountData),
+        ...lifecycleHookFromBase(deserializedPlugin.fields[0], record, accountData),
       });
     }
   });
@@ -232,15 +232,17 @@ export const findExtraAccounts = (
 export function parseExternalPluginData(
   plugin: {
     schema: ExternalPluginSchema;
-    dataLen: bigint | number;
-    dataOffset: bigint | number;
+  },
+  record: {
+    dataLen: Option<bigint | number>;
+    dataOffset: Option<bigint | number>;
   },
   account: Uint8Array
 ): any {
   let data;
   const dataSlice = account.slice(
-    Number(plugin.dataOffset),
-    Number(plugin.dataOffset) + Number(plugin.dataLen)
+    Number(record.dataOffset),
+    Number(record.dataOffset) + Number(record.dataLen)
   );
 
   if (plugin.schema === ExternalPluginSchema.Binary) {
