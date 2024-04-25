@@ -8,7 +8,7 @@ use crate::{
     state::{Authority, Key},
 };
 
-use super::{Plugin, PluginType, RegistryRecord};
+use super::{ExternalPlugin, Plugin, PluginType, RegistryRecord};
 
 /// Lifecycle permissions
 /// Plugins use this field to indicate their permission to approve or deny
@@ -811,7 +811,13 @@ pub(crate) fn validate_plugin_checks<'a>(
     asset: Option<&AccountInfo<'a>>,
     collection: Option<&AccountInfo<'a>>,
     resolved_authorities: &[Authority],
-    validate_fp: fn(&Plugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
+    plugin_validate_fp: fn(
+        &Plugin,
+        &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError>,
+    external_plugin_validate_fp: Option<
+        fn(&ExternalPlugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
+    >,
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
     let mut rejected = false;
@@ -836,7 +842,7 @@ pub(crate) fn validate_plugin_checks<'a>(
                 target_plugin: new_plugin,
             };
 
-            let result = validate_fp(&Plugin::load(account, registry_record.offset)?, &ctx)?;
+            let result = plugin_validate_fp(&Plugin::load(account, registry_record.offset)?, &ctx)?;
             match result {
                 ValidationResult::Rejected => rejected = true,
                 ValidationResult::Approved => approved = true,

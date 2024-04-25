@@ -20,6 +20,22 @@ pub struct Oracle {
     pub results_offset: ValidationResultsOffset,
 }
 
+impl PluginValidation for Oracle {
+    fn validate_add_external_plugin(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    fn validate_transfer(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+}
+
 impl From<&OracleInitInfo> for Oracle {
     fn from(init_info: &OracleInitInfo) -> Self {
         Self {
@@ -48,15 +64,6 @@ pub struct OracleInitInfo {
     /// Optional offset for validation results struct used in Oracle account.  Default
     /// is `ValidationResultsOffset::NoOffset`.
     pub results_offset: Option<ValidationResultsOffset>,
-}
-
-impl PluginValidation for OracleInitInfo {
-    fn validate_add_external_plugin(
-        &self,
-        _ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
 }
 
 /// Oracle update info.

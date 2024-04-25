@@ -72,6 +72,7 @@ pub(crate) fn decompress<'a>(
                 AssetV1::validate_decompress,
                 CollectionV1::validate_decompress,
                 Plugin::validate_decompress,
+                None,
             )?;
 
             // TODO Enable compression.
