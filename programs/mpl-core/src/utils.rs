@@ -380,7 +380,9 @@ pub(crate) fn validate_asset_permissions<'a>(
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
-            ValidationResult::Pass | ValidationResult::ForceApproved => (),
+            ValidationResult::Pass => (),
+            // Force approved will not be possible from external plugins.
+            ValidationResult::ForceApproved => unreachable!(),
         };
 
         match validate_external_plugin_checks(
@@ -396,7 +398,9 @@ pub(crate) fn validate_asset_permissions<'a>(
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
-            ValidationResult::Pass | ValidationResult::ForceApproved => (),
+            ValidationResult::Pass => (),
+            // Force approved will not be possible from external plugins.
+            ValidationResult::ForceApproved => unreachable!(),
         };
     }
 

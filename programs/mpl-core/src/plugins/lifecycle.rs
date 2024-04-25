@@ -882,7 +882,6 @@ pub(crate) fn validate_external_plugin_checks<'a>(
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
-    let mut rejected = false;
     for (check_key, check_result, external_registry_record) in external_checks.values() {
         if *check_key == key
             && (check_result.can_listen()
@@ -908,16 +907,16 @@ pub(crate) fn validate_external_plugin_checks<'a>(
                 &ctx,
             )?;
             match result {
-                ValidationResult::Rejected => rejected = true,
+                ValidationResult::Rejected => return Ok(ValidationResult::Rejected),
                 ValidationResult::Approved => approved = true,
-                ValidationResult::Pass | ValidationResult::ForceApproved => continue,
+                ValidationResult::Pass => continue,
+                // Force approved will not be possible from external plugins.
+                ValidationResult::ForceApproved => unreachable!(),
             }
         }
     }
 
-    if rejected {
-        Ok(ValidationResult::Rejected)
-    } else if approved {
+    if approved {
         Ok(ValidationResult::Approved)
     } else {
         Ok(ValidationResult::Pass)
