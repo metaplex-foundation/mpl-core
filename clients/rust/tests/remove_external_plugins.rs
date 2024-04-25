@@ -3,11 +3,10 @@ pub mod setup;
 use mpl_core::{
     instructions::RemoveExternalPluginV1Builder,
     types::{
-        DataStoreInitInfo, ExternalCheckResult, ExternalPluginInitInfo, ExternalPluginKey,
-        HookableLifecycleEvent, LifecycleHookInitInfo, OracleInitInfo, PluginAuthority,
-        UpdateAuthority,
+        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo,
+        ExternalPluginKey, ExternalPluginSchema, HookableLifecycleEvent, LifecycleHook,
+        LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority, UpdateAuthority,
     },
-    Asset,
 };
 pub use setup::*;
 
@@ -53,6 +52,26 @@ async fn test_remove_lifecycle_hook() {
 
     let owner = context.payer.pubkey();
     let update_authority = context.payer.pubkey();
+    assert_asset(
+        &mut context,
+        AssertAssetHelperArgs {
+            asset: asset.pubkey(),
+            owner,
+            update_authority: Some(UpdateAuthority::Address(update_authority)),
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugins: vec![ExternalPlugin::LifecycleHook(LifecycleHook {
+                hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+                extra_accounts: None,
+                data_authority: Some(PluginAuthority::UpdateAuthority),
+                schema: ExternalPluginSchema::Binary,
+                data_offset: 119,
+                data_len: 0,
+            })],
+        },
+    )
+    .await;
 
     let ix = RemoveExternalPluginV1Builder::new()
         .asset(asset.pubkey())
@@ -84,16 +103,6 @@ async fn test_remove_lifecycle_hook() {
         },
     )
     .await;
-
-    let asset_account = context
-        .banks_client
-        .get_account(asset.pubkey())
-        .await
-        .unwrap()
-        .unwrap();
-
-    let asset_data = Asset::from_bytes(&asset_account.data).unwrap();
-    println!("{:#?}", asset_data);
 }
 
 #[tokio::test]
@@ -130,6 +139,22 @@ async fn test_remove_oracle() {
 
     let owner = context.payer.pubkey();
     let update_authority = context.payer.pubkey();
+    assert_asset(
+        &mut context,
+        AssertAssetHelperArgs {
+            asset: asset.pubkey(),
+            owner,
+            update_authority: Some(UpdateAuthority::Address(update_authority)),
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugins: vec![ExternalPlugin::Oracle(Oracle {
+                base_address: Pubkey::default(),
+                pda: None,
+            })],
+        },
+    )
+    .await;
 
     let ix = RemoveExternalPluginV1Builder::new()
         .asset(asset.pubkey())
@@ -159,16 +184,6 @@ async fn test_remove_oracle() {
         },
     )
     .await;
-
-    let asset_account = context
-        .banks_client
-        .get_account(asset.pubkey())
-        .await
-        .unwrap()
-        .unwrap();
-
-    let asset_data = Asset::from_bytes(&asset_account.data).unwrap();
-    println!("{:#?}", asset_data);
 }
 
 #[tokio::test]
@@ -201,6 +216,24 @@ async fn test_remove_data_store() {
 
     let owner = context.payer.pubkey();
     let update_authority = context.payer.pubkey();
+    assert_asset(
+        &mut context,
+        AssertAssetHelperArgs {
+            asset: asset.pubkey(),
+            owner,
+            update_authority: Some(UpdateAuthority::Address(update_authority)),
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugins: vec![ExternalPlugin::DataStore(DataStore {
+                data_authority: PluginAuthority::UpdateAuthority,
+                schema: ExternalPluginSchema::Binary,
+                data_offset: 119,
+                data_len: 0,
+            })],
+        },
+    )
+    .await;
 
     let ix = RemoveExternalPluginV1Builder::new()
         .asset(asset.pubkey())
@@ -232,14 +265,4 @@ async fn test_remove_data_store() {
         },
     )
     .await;
-
-    let asset_account = context
-        .banks_client
-        .get_account(asset.pubkey())
-        .await
-        .unwrap()
-        .unwrap();
-
-    let asset_data = Asset::from_bytes(&asset_account.data).unwrap();
-    println!("{:#?}", asset_data);
 }

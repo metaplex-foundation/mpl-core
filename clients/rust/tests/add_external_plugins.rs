@@ -3,10 +3,10 @@ pub mod setup;
 use mpl_core::{
     instructions::AddExternalPluginV1Builder,
     types::{
-        DataStoreInitInfo, ExternalCheckResult, ExternalPluginInitInfo, HookableLifecycleEvent,
-        LifecycleHookInitInfo, OracleInitInfo, PluginAuthority, UpdateAuthority,
+        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo,
+        ExternalPluginSchema, HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle,
+        OracleInitInfo, PluginAuthority, UpdateAuthority,
     },
-    Asset,
 };
 pub use setup::*;
 
@@ -81,15 +81,26 @@ async fn test_add_lifecycle_hook() {
 
     context.banks_client.process_transaction(tx).await.unwrap();
 
-    let asset_account = context
-        .banks_client
-        .get_account(asset.pubkey())
-        .await
-        .unwrap()
-        .unwrap();
-
-    let asset_data = Asset::from_bytes(&asset_account.data).unwrap();
-    println!("{:#?}", asset_data);
+    assert_asset(
+        &mut context,
+        AssertAssetHelperArgs {
+            asset: asset.pubkey(),
+            owner,
+            update_authority: Some(UpdateAuthority::Address(update_authority)),
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugins: vec![ExternalPlugin::LifecycleHook(LifecycleHook {
+                hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+                extra_accounts: None,
+                data_authority: Some(PluginAuthority::UpdateAuthority),
+                schema: ExternalPluginSchema::Binary,
+                data_offset: 119,
+                data_len: 0,
+            })],
+        },
+    )
+    .await;
 }
 
 #[tokio::test]
@@ -155,15 +166,22 @@ async fn test_add_oracle() {
 
     context.banks_client.process_transaction(tx).await.unwrap();
 
-    let asset_account = context
-        .banks_client
-        .get_account(asset.pubkey())
-        .await
-        .unwrap()
-        .unwrap();
-
-    let asset_data = Asset::from_bytes(&asset_account.data).unwrap();
-    println!("{:#?}", asset_data);
+    assert_asset(
+        &mut context,
+        AssertAssetHelperArgs {
+            asset: asset.pubkey(),
+            owner,
+            update_authority: Some(UpdateAuthority::Address(update_authority)),
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugins: vec![ExternalPlugin::Oracle(Oracle {
+                base_address: Pubkey::default(),
+                pda: None,
+            })],
+        },
+    )
+    .await;
 }
 
 #[tokio::test]
@@ -225,13 +243,22 @@ async fn test_add_data_store() {
 
     context.banks_client.process_transaction(tx).await.unwrap();
 
-    let asset_account = context
-        .banks_client
-        .get_account(asset.pubkey())
-        .await
-        .unwrap()
-        .unwrap();
-
-    let asset_data = Asset::from_bytes(&asset_account.data).unwrap();
-    println!("{:#?}", asset_data);
+    assert_asset(
+        &mut context,
+        AssertAssetHelperArgs {
+            asset: asset.pubkey(),
+            owner,
+            update_authority: Some(UpdateAuthority::Address(update_authority)),
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugins: vec![ExternalPlugin::DataStore(DataStore {
+                data_authority: PluginAuthority::UpdateAuthority,
+                schema: ExternalPluginSchema::Binary,
+                data_offset: 119,
+                data_len: 0,
+            })],
+        },
+    )
+    .await;
 }
