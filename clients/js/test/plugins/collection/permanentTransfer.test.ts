@@ -13,7 +13,7 @@ import {
   createCollection,
   createUmi,
   DEFAULT_COLLECTION,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('it can add permanentTransferDelegate to collection', async (t) => {
   const umi = await createUmi();

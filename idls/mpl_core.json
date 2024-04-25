@@ -2396,6 +2396,12 @@
                 "defined": "ExtraAccount"
               }
             }
+          },
+          {
+            "name": "resultsOffset",
+            "type": {
+              "defined": "ValidationResultsOffset"
+            }
           }
         ]
       }
@@ -2441,6 +2447,14 @@
                 "defined": "ExtraAccount"
               }
             }
+          },
+          {
+            "name": "resultsOffset",
+            "type": {
+              "option": {
+                "defined": "ValidationResultsOffset"
+              }
+            }
           }
         ]
       }
@@ -2472,6 +2486,14 @@
             "type": {
               "option": {
                 "defined": "ExtraAccount"
+              }
+            }
+          },
+          {
+            "name": "resultsOffset",
+            "type": {
+              "option": {
+                "defined": "ValidationResultsOffset"
               }
             }
           }
@@ -3735,6 +3757,80 @@
           },
           {
             "name": "ForceApproved"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExternalValidationResult",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Approved"
+          },
+          {
+            "name": "Rejected"
+          },
+          {
+            "name": "Pass"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ValidationResultsOffset",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoOffset"
+          },
+          {
+            "name": "Anchor"
+          },
+          {
+            "name": "Custom",
+            "fields": [
+              "u64"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleValidation",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "V1",
+            "fields": [
+              {
+                "name": "create",
+                "type": {
+                  "defined": "ExternalValidationResult"
+                }
+              },
+              {
+                "name": "transfer",
+                "type": {
+                  "defined": "ExternalValidationResult"
+                }
+              },
+              {
+                "name": "burn",
+                "type": {
+                  "defined": "ExternalValidationResult"
+                }
+              },
+              {
+                "name": "update",
+                "type": {
+                  "defined": "ExternalValidationResult"
+                }
+              }
+            ]
           }
         ]
       }

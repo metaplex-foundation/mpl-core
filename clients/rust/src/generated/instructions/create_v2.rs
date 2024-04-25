@@ -121,12 +121,12 @@ impl CreateV2 {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct CreateV2InstructionData {
+pub struct CreateV2InstructionData {
     discriminator: u8,
 }
 
 impl CreateV2InstructionData {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self { discriminator: 20 }
     }
 }
@@ -235,6 +235,7 @@ impl CreateV2Builder {
         self.log_wrapper = log_wrapper;
         self
     }
+    /// `[optional argument, defaults to 'DataState::AccountState']`
     #[inline(always)]
     pub fn data_state(&mut self, data_state: DataState) -> &mut Self {
         self.data_state = Some(data_state);
@@ -295,7 +296,7 @@ impl CreateV2Builder {
             log_wrapper: self.log_wrapper,
         };
         let args = CreateV2InstructionArgs {
-            data_state: self.data_state.clone().expect("data_state is not set"),
+            data_state: self.data_state.clone().unwrap_or(DataState::AccountState),
             name: self.name.clone().expect("name is not set"),
             uri: self.uri.clone().expect("uri is not set"),
             plugins: self.plugins.clone(),
@@ -625,6 +626,7 @@ impl<'a, 'b> CreateV2CpiBuilder<'a, 'b> {
         self.instruction.log_wrapper = log_wrapper;
         self
     }
+    /// `[optional argument, defaults to 'DataState::AccountState']`
     #[inline(always)]
     pub fn data_state(&mut self, data_state: DataState) -> &mut Self {
         self.instruction.data_state = Some(data_state);
@@ -698,7 +700,7 @@ impl<'a, 'b> CreateV2CpiBuilder<'a, 'b> {
                 .instruction
                 .data_state
                 .clone()
-                .expect("data_state is not set"),
+                .unwrap_or(DataState::AccountState),
             name: self.instruction.name.clone().expect("name is not set"),
             uri: self.instruction.uri.clone().expect("uri is not set"),
             plugins: self.instruction.plugins.clone(),

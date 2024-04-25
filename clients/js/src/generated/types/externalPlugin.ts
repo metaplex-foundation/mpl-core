@@ -15,26 +15,26 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  DataStore,
-  DataStoreArgs,
-  LifecycleHook,
-  LifecycleHookArgs,
-  Oracle,
-  OracleArgs,
-  getDataStoreSerializer,
-  getLifecycleHookSerializer,
-  getOracleSerializer,
+  BaseDataStore,
+  BaseDataStoreArgs,
+  BaseLifecycleHook,
+  BaseLifecycleHookArgs,
+  BaseOracle,
+  BaseOracleArgs,
+  getBaseDataStoreSerializer,
+  getBaseLifecycleHookSerializer,
+  getBaseOracleSerializer,
 } from '.';
 
 export type ExternalPlugin =
-  | { __kind: 'LifecycleHook'; fields: [LifecycleHook] }
-  | { __kind: 'Oracle'; fields: [Oracle] }
-  | { __kind: 'DataStore'; fields: [DataStore] };
+  | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHook] }
+  | { __kind: 'Oracle'; fields: [BaseOracle] }
+  | { __kind: 'DataStore'; fields: [BaseDataStore] };
 
 export type ExternalPluginArgs =
-  | { __kind: 'LifecycleHook'; fields: [LifecycleHookArgs] }
-  | { __kind: 'Oracle'; fields: [OracleArgs] }
-  | { __kind: 'DataStore'; fields: [DataStoreArgs] };
+  | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookArgs] }
+  | { __kind: 'Oracle'; fields: [BaseOracleArgs] }
+  | { __kind: 'DataStore'; fields: [BaseDataStoreArgs] };
 
 export function getExternalPluginSerializer(): Serializer<
   ExternalPluginArgs,
@@ -45,19 +45,19 @@ export function getExternalPluginSerializer(): Serializer<
       [
         'LifecycleHook',
         struct<GetDataEnumKindContent<ExternalPlugin, 'LifecycleHook'>>([
-          ['fields', tuple([getLifecycleHookSerializer()])],
+          ['fields', tuple([getBaseLifecycleHookSerializer()])],
         ]),
       ],
       [
         'Oracle',
         struct<GetDataEnumKindContent<ExternalPlugin, 'Oracle'>>([
-          ['fields', tuple([getOracleSerializer()])],
+          ['fields', tuple([getBaseOracleSerializer()])],
         ]),
       ],
       [
         'DataStore',
         struct<GetDataEnumKindContent<ExternalPlugin, 'DataStore'>>([
-          ['fields', tuple([getDataStoreSerializer()])],
+          ['fields', tuple([getBaseDataStoreSerializer()])],
         ]),
       ],
     ],

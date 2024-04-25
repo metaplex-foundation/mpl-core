@@ -31,7 +31,7 @@ pub enum CheckResult {
 #[derive(BorshDeserialize, BorshSerialize, Eq, PartialEq, Copy, Clone, Debug)]
 pub struct ExternalCheckResult {
     /// Bitfield for external check results.
-    flags: u8,
+    pub flags: u8,
 }
 
 impl ExternalCheckResult {
@@ -640,6 +640,18 @@ pub enum ValidationResult {
     ForceApproved,
 }
 
+/// External plugins lifecycle validations
+/// External plugins utilize this to indicate whether they approve or reject a lifecycle action.
+#[derive(Eq, PartialEq, Debug, Clone, BorshDeserialize, BorshSerialize)]
+pub enum ExternalValidationResult {
+    /// The plugin approves the lifecycle action.
+    Approved,
+    /// The plugin rejects the lifecycle action.
+    Rejected,
+    /// The plugin abstains from approving or rejecting the lifecycle action.
+    Pass,
+}
+
 /// The required context for a plugin validation.
 #[allow(dead_code)]
 pub(crate) struct PluginValidationContext<'a, 'b> {
@@ -799,7 +811,10 @@ pub(crate) fn validate_plugin_checks<'a>(
     asset: Option<&AccountInfo<'a>>,
     collection: Option<&AccountInfo<'a>>,
     resolved_authorities: &[Authority],
-    validate_fp: fn(&Plugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
+    plugin_validate_fp: fn(
+        &Plugin,
+        &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
     let mut rejected = false;
@@ -824,7 +839,7 @@ pub(crate) fn validate_plugin_checks<'a>(
                 target_plugin: new_plugin,
             };
 
-            let result = validate_fp(&Plugin::load(account, registry_record.offset)?, &ctx)?;
+            let result = plugin_validate_fp(&Plugin::load(account, registry_record.offset)?, &ctx)?;
             match result {
                 ValidationResult::Rejected => rejected = true,
                 ValidationResult::Approved => approved = true,

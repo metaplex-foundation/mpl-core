@@ -10,9 +10,8 @@ import {
   AssetV1,
   PluginType,
 } from '../generated';
-import { createPlugin, pluginKeyToPluginType } from '../plugins';
+import { createPlugin, pluginKeyToPluginType, PluginsList } from '../plugins';
 import { addressPluginAuthority } from '../authority';
-import { PluginsList } from '../types';
 
 export function legacyDelegate(
   context: Pick<Context, 'payer' | 'programs'>,

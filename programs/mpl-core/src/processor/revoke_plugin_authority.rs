@@ -70,6 +70,7 @@ pub(crate) fn revoke_plugin_authority<'a>(
         AssetV1::validate_revoke_plugin_authority,
         CollectionV1::validate_revoke_plugin_authority,
         Plugin::validate_revoke_plugin_authority,
+        None,
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -138,6 +139,7 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
         PluginType::check_revoke_plugin_authority,
         CollectionV1::validate_revoke_plugin_authority,
         Plugin::validate_revoke_plugin_authority,
+        None,
     )?;
 
     let resolved_authorities =

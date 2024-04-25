@@ -174,8 +174,10 @@ pub(crate) fn process_create_collection<'a>(
                         new_owner: None,
                         target_plugin: None,
                     };
-                    if ExternalPlugin::validate_create(plugin_init_info, &validation_ctx)?
-                        == ValidationResult::Rejected
+                    if ExternalPlugin::validate_create(
+                        &ExternalPlugin::from(plugin_init_info),
+                        &validation_ctx,
+                    )? == ValidationResult::Rejected
                     {
                         approved = false;
                     };

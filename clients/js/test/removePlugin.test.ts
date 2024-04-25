@@ -20,7 +20,7 @@ import {
   createAssetWithCollection,
   createCollection,
   createUmi,
-} from './_setup';
+} from './_setupRaw';
 
 test('it can remove a plugin from an asset', async (t) => {
   // Given a Umi instance and a new signer.

@@ -31,10 +31,10 @@ import {
   getAssetV1AccountDataSerializer,
 } from '../../hooked';
 import {
+  BaseUpdateAuthorityArgs,
   KeyArgs,
-  UpdateAuthorityArgs,
+  getBaseUpdateAuthoritySerializer,
   getKeySerializer,
-  getUpdateAuthoritySerializer,
 } from '../types';
 
 export type AssetV1 = Account<AssetV1AccountData>;
@@ -108,14 +108,14 @@ export function getAssetV1GpaBuilder(
     .registerFields<{
       key: KeyArgs;
       owner: PublicKey;
-      updateAuthority: UpdateAuthorityArgs;
+      updateAuthority: BaseUpdateAuthorityArgs;
       name: string;
       uri: string;
       seq: OptionOrNullable<number | bigint>;
     }>({
       key: [0, getKeySerializer()],
       owner: [1, publicKeySerializer()],
-      updateAuthority: [33, getUpdateAuthoritySerializer()],
+      updateAuthority: [33, getBaseUpdateAuthoritySerializer()],
       name: [null, string()],
       uri: [null, string()],
       seq: [null, option(u64())],

@@ -20,7 +20,7 @@ import {
   createAsset,
   createCollection,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('it can burn an assets as an owner', async (t) => {
   // Given a Umi instance and a new signer.

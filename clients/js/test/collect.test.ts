@@ -16,7 +16,7 @@ import {
   pluginAuthorityPair,
   removePluginV1,
 } from '../src';
-import { createAsset, createUmi } from './_setup';
+import { createAsset, createUmi } from './_setupRaw';
 
 const recipient1 = publicKey('8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v');
 const recipient2 = publicKey('MmHsqX4LxTfifxoH8BVRLUKrwDn1LPCac6YcCZTHhwt');
