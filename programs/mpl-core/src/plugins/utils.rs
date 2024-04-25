@@ -197,56 +197,19 @@ pub fn fetch_wrapped_external_plugin<T: DataBlob + SolanaAccount>(
     };
 
     let header = PluginHeaderV1::load(account, size)?;
-    let PluginRegistryV1 {
-        external_registry, ..
-    } = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
+    let plugin_registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
     // Find the plugin in the registry.
-    let mut result = None;
-    for record in external_registry.iter() {
-        if record.plugin_type == ExternalPluginType::from(plugin_key)
-            && (match plugin_key {
-                ExternalPluginKey::LifecycleHook(address) | ExternalPluginKey::Oracle(address) => {
-                    let pubkey_offset = record
-                        .offset
-                        .checked_add(1)
-                        .ok_or(MplCoreError::NumericalOverflow)?;
-                    address
-                        == &match Pubkey::deserialize(&mut &account.data.borrow()[pubkey_offset..])
-                        {
-                            Ok(address) => address,
-                            Err(_) => return Err(MplCoreError::DeserializationError.into()),
-                        }
-                }
-                ExternalPluginKey::DataStore(authority) => {
-                    let authority_offset = record
-                        .offset
-                        .checked_add(1)
-                        .ok_or(MplCoreError::NumericalOverflow)?;
-                    authority
-                        == &match Authority::deserialize(
-                            &mut &account.data.borrow()[authority_offset..],
-                        ) {
-                            Ok(authority) => authority,
-                            Err(_) => return Err(MplCoreError::DeserializationError.into()),
-                        }
-                }
-            })
-        {
-            result = Some((record.offset, record.authority));
-            break;
-        }
-    }
+    let result = find_external_plugin(&plugin_registry, plugin_key, account)?;
 
-    match result {
-        None => Err(MplCoreError::ExternalPluginNotFound.into()),
-        Some((offset, authority)) => {
-            // Deserialize the plugin.
-            let plugin = ExternalPlugin::deserialize(&mut &(*account.data).borrow()[offset..])?;
+    if let (_, Some(record)) = result {
+        // Deserialize the plugin.
+        let plugin = ExternalPlugin::deserialize(&mut &(*account.data).borrow()[record.offset..])?;
 
-            // Return the plugin and its authority.
-            Ok((authority, plugin))
-        }
+        // Return the plugin and its authority.
+        Ok((record.authority, plugin))
+    } else {
+        Err(MplCoreError::ExternalPluginNotFound.into())
     }
 }
 
@@ -520,43 +483,9 @@ pub fn delete_external_plugin<'a, T: DataBlob>(
     let mut header = PluginHeaderV1::load(account, asset.get_size())?;
     let mut plugin_registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
-    let mut result = None;
-    for (i, record) in plugin_registry.external_registry.iter().enumerate() {
-        if record.plugin_type == ExternalPluginType::from(plugin_key)
-            && (match plugin_key {
-                ExternalPluginKey::LifecycleHook(address) | ExternalPluginKey::Oracle(address) => {
-                    let pubkey_offset = record
-                        .offset
-                        .checked_add(1)
-                        .ok_or(MplCoreError::NumericalOverflow)?;
-                    address
-                        == &match Pubkey::deserialize(&mut &account.data.borrow()[pubkey_offset..])
-                        {
-                            Ok(address) => address,
-                            Err(_) => return Err(MplCoreError::DeserializationError.into()),
-                        }
-                }
-                ExternalPluginKey::DataStore(authority) => {
-                    let authority_offset = record
-                        .offset
-                        .checked_add(1)
-                        .ok_or(MplCoreError::NumericalOverflow)?;
-                    authority
-                        == &match Authority::deserialize(
-                            &mut &account.data.borrow()[authority_offset..],
-                        ) {
-                            Ok(authority) => authority,
-                            Err(_) => return Err(MplCoreError::DeserializationError.into()),
-                        }
-                }
-            })
-        {
-            result = Some(i);
-            break;
-        }
-    }
+    let result = find_external_plugin(&plugin_registry, plugin_key, account)?;
 
-    if let Some(index) = result {
+    if let (Some(index), _) = result {
         let registry_record = plugin_registry.external_registry.remove(index);
         let serialized_registry_record = registry_record.try_to_vec()?;
 
@@ -686,4 +615,48 @@ pub fn revoke_authority_on_plugin<'a>(
     plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
 
     Ok(())
+}
+
+fn find_external_plugin<'b>(
+    plugin_registry: &'b PluginRegistryV1,
+    plugin_key: &ExternalPluginKey,
+    account: &AccountInfo<'_>,
+) -> Result<(Option<usize>, Option<&'b ExternalRegistryRecord>), ProgramError> {
+    let mut result = (None, None);
+    for (i, record) in plugin_registry.external_registry.iter().enumerate() {
+        if record.plugin_type == ExternalPluginType::from(plugin_key)
+            && (match plugin_key {
+                ExternalPluginKey::LifecycleHook(address) | ExternalPluginKey::Oracle(address) => {
+                    let pubkey_offset = record
+                        .offset
+                        .checked_add(1)
+                        .ok_or(MplCoreError::NumericalOverflow)?;
+                    address
+                        == &match Pubkey::deserialize(&mut &account.data.borrow()[pubkey_offset..])
+                        {
+                            Ok(address) => address,
+                            Err(_) => return Err(MplCoreError::DeserializationError.into()),
+                        }
+                }
+                ExternalPluginKey::DataStore(authority) => {
+                    let authority_offset = record
+                        .offset
+                        .checked_add(1)
+                        .ok_or(MplCoreError::NumericalOverflow)?;
+                    authority
+                        == &match Authority::deserialize(
+                            &mut &account.data.borrow()[authority_offset..],
+                        ) {
+                            Ok(authority) => authority,
+                            Err(_) => return Err(MplCoreError::DeserializationError.into()),
+                        }
+                }
+            })
+        {
+            result = (Some(i), Some(record));
+            break;
+        }
+    }
+
+    Ok(result)
 }
