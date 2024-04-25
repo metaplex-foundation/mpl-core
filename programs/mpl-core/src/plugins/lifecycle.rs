@@ -910,8 +910,7 @@ pub(crate) fn validate_external_plugin_checks<'a>(
             match result {
                 ValidationResult::Rejected => rejected = true,
                 ValidationResult::Approved => approved = true,
-                ValidationResult::Pass => continue,
-                ValidationResult::ForceApproved => return Ok(ValidationResult::ForceApproved),
+                ValidationResult::Pass | ValidationResult::ForceApproved => continue,
             }
         }
     }
