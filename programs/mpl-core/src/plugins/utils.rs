@@ -189,7 +189,7 @@ pub fn fetch_wrapped_external_plugin<T: DataBlob + SolanaAccount>(
             let asset = T::load(account, 0)?;
 
             if asset.get_size() == account.data_len() {
-                return Err(MplCoreError::PluginNotFound.into());
+                return Err(MplCoreError::ExternalPluginNotFound.into());
             }
 
             asset.get_size()
@@ -239,7 +239,7 @@ pub fn fetch_wrapped_external_plugin<T: DataBlob + SolanaAccount>(
     }
 
     match result {
-        None => Err(MplCoreError::PluginNotFound.into()),
+        None => Err(MplCoreError::ExternalPluginNotFound.into()),
         Some((offset, authority)) => {
             // Deserialize the plugin.
             let plugin = ExternalPlugin::deserialize(&mut &(*account.data).borrow()[offset..])?;
@@ -513,7 +513,7 @@ pub fn delete_external_plugin<'a, T: DataBlob>(
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
     if asset.get_size() == account.data_len() {
-        return Err(MplCoreError::PluginNotFound.into());
+        return Err(MplCoreError::ExternalPluginNotFound.into());
     }
 
     //TODO: Bytemuck this.
@@ -616,7 +616,7 @@ pub fn delete_external_plugin<'a, T: DataBlob>(
 
         resize_or_reallocate_account(account, payer, system_program, new_size)?;
     } else {
-        return Err(MplCoreError::PluginNotFound.into());
+        return Err(MplCoreError::ExternalPluginNotFound.into());
     }
 
     Ok(())
