@@ -537,7 +537,9 @@ pub(crate) fn validate_collection_permissions<'a>(
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
-            ValidationResult::Pass | ValidationResult::ForceApproved => (),
+            ValidationResult::Pass => (),
+            // Force approved will not be possible from external plugins.
+            ValidationResult::ForceApproved => unreachable!(),
         };
     }
 
