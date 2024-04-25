@@ -315,3 +315,52 @@ test('it cannot use an invalid noop program for collections', async (t) => {
 
   await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
 });
+
+test('it can revoke an authority from a plugin if another plugin is None', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const delegateAddress = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+      pluginAuthorityPair({ authority: nonePluginAuthority(), type: 'PermanentFreezeDelegate', data: { frozen: false } }),
+    ],
+  });
+
+  await approvePluginAuthorityV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.FreezeDelegate,
+    newAuthority: addressPluginAuthority(delegateAddress.publicKey),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Address',
+        address: delegateAddress.publicKey,
+      },
+      frozen: false,
+    },
+  });
+
+  await revokePluginAuthorityV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.FreezeDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: false,
+    },
+  });
+});
