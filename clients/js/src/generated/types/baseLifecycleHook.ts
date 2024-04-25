@@ -13,7 +13,6 @@ import {
   option,
   publicKey as publicKeySerializer,
   struct,
-  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
   BaseExtraAccount,
@@ -32,8 +31,6 @@ export type BaseLifecycleHook = {
   extraAccounts: Option<Array<BaseExtraAccount>>;
   dataAuthority: Option<BasePluginAuthority>;
   schema: ExternalPluginSchema;
-  dataOffset: bigint;
-  dataLen: bigint;
 };
 
 export type BaseLifecycleHookArgs = {
@@ -41,8 +38,6 @@ export type BaseLifecycleHookArgs = {
   extraAccounts: OptionOrNullable<Array<BaseExtraAccountArgs>>;
   dataAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
   schema: ExternalPluginSchemaArgs;
-  dataOffset: number | bigint;
-  dataLen: number | bigint;
 };
 
 export function getBaseLifecycleHookSerializer(): Serializer<
@@ -55,8 +50,6 @@ export function getBaseLifecycleHookSerializer(): Serializer<
       ['extraAccounts', option(array(getBaseExtraAccountSerializer()))],
       ['dataAuthority', option(getBasePluginAuthoritySerializer())],
       ['schema', getExternalPluginSchemaSerializer()],
-      ['dataOffset', u64()],
-      ['dataLen', u64()],
     ],
     { description: 'BaseLifecycleHook' }
   ) as Serializer<BaseLifecycleHookArgs, BaseLifecycleHook>;

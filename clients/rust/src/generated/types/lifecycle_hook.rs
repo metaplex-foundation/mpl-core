@@ -23,6 +23,4 @@ pub struct LifecycleHook {
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     pub data_authority: Option<PluginAuthority>,
     pub schema: ExternalPluginSchema,
-    pub data_offset: u64,
-    pub data_len: u64,
 }

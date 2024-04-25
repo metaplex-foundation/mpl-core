@@ -294,24 +294,22 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
 
     let old_registry_offset = plugin_header.plugin_registry_offset;
 
-    let new_registry_record = ExternalRegistryRecord {
+    let mut new_registry_record = ExternalRegistryRecord {
         plugin_type,
         authority: authority.unwrap_or(Authority::UpdateAuthority),
         lifecycle_checks: lifecycle_checks.clone(),
         offset: old_registry_offset,
+        data_offset: None,
+        data_len: None,
     };
 
     let mut plugin = ExternalPlugin::from(init_info);
 
     // If the plugin is a LifecycleHook or DataStore, then we need to set the data offset and length.
     match &mut plugin {
-        ExternalPlugin::LifecycleHook(hook) => {
-            hook.data_offset = old_registry_offset;
-            hook.data_len = 0;
-        }
-        ExternalPlugin::DataStore(data_store) => {
-            data_store.data_offset = old_registry_offset;
-            data_store.data_len = 0;
+        ExternalPlugin::LifecycleHook(_) | ExternalPlugin::DataStore(_) => {
+            new_registry_record.data_offset = Some(old_registry_offset);
+            new_registry_record.data_len = Some(0);
         }
         _ => {}
     };

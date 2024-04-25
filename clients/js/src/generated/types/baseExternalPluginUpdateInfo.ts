@@ -91,7 +91,7 @@ export function baseExternalPluginUpdateInfo(
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginUpdateInfoArgs, 'DataStore'>;
 export function baseExternalPluginUpdateInfo<
-  K extends BaseExternalPluginUpdateInfoArgs['__kind']
+  K extends BaseExternalPluginUpdateInfoArgs['__kind'],
 >(
   kind: K,
   data?: any
@@ -101,7 +101,7 @@ export function baseExternalPluginUpdateInfo<
     : { __kind: kind, ...(data ?? {}) };
 }
 export function isBaseExternalPluginUpdateInfo<
-  K extends BaseExternalPluginUpdateInfo['__kind']
+  K extends BaseExternalPluginUpdateInfo['__kind'],
 >(
   kind: K,
   value: BaseExternalPluginUpdateInfo
