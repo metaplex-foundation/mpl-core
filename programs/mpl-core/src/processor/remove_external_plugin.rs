@@ -74,6 +74,8 @@ pub(crate) fn remove_external_plugin<'a>(
         AssetV1::validate_remove_external_plugin,
         CollectionV1::validate_remove_external_plugin,
         Plugin::validate_remove_external_plugin,
+        None,
+        None,
     )?;
 
     process_remove_external_plugin(
@@ -136,6 +138,8 @@ pub(crate) fn remove_collection_external_plugin<'a>(
         PluginType::check_remove_external_plugin,
         CollectionV1::validate_remove_external_plugin,
         Plugin::validate_remove_external_plugin,
+        None,
+        None,
     )?;
 
     process_remove_external_plugin(

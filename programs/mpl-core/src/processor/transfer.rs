@@ -5,7 +5,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::TransferV1Accounts,
-    plugins::{ExternalPlugin, Plugin, PluginType},
+    plugins::{ExternalPlugin, HookableLifecycleEvent, Plugin, PluginType},
     state::{AssetV1, Authority, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         compress_into_account_space, load_key, rebuild_account_state_from_proof_data,
@@ -90,6 +90,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
         CollectionV1::validate_transfer,
         Plugin::validate_transfer,
         Some(ExternalPlugin::validate_transfer),
+        Some(HookableLifecycleEvent::Transfer),
     )?;
 
     // Reset every owner-managed plugin in the registry.

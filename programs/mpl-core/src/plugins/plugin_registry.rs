@@ -1,11 +1,13 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use std::{cmp::Ordering, collections::BTreeMap};
 
 use crate::state::{Authority, DataBlob, Key, SolanaAccount};
 
 use super::{
-    CheckResult, ExternalCheckResult, ExternalPluginType, HookableLifecycleEvent, PluginType,
+    CheckResult, ExternalCheckResult, ExternalCheckResultBits, ExternalPluginKey,
+    ExternalPluginType, HookableLifecycleEvent, PluginType,
 };
 
 /// The Plugin Registry stores a record of all plugins, their location, and their authorities.
@@ -36,26 +38,37 @@ impl PluginRegistryV1 {
         }
     }
 
-    // Evaluate checks for all external plugins in the registry.
-    // pub(crate) fn check_external_registry(
-    //     &self,
-    //     key: Key,
-    //     lifecycle_event: &HookableLifecycleEvent,
-    //     result: &mut BTreeMap<
-    //         ExternalPluginKey,
-    //         (Key, ExternalCheckResult, ExternalRegistryRecord),
-    //     >,
-    // ) {
-    //     for record in &self.external_registry {
-    //         if let Some(lifecycle_checks) = &record.lifecycle_checks {
-    //             for (event, check_result) in lifecycle_checks {
-    //                 if event == lifecycle_event {
-    //                     result.insert(record.plugin_key, (key, *check_result, record.clone()));
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+    pub(crate) fn check_external_registry(
+        &self,
+        account: &AccountInfo,
+        key: Key,
+        lifecycle_event: &HookableLifecycleEvent,
+        result: &mut BTreeMap<
+            ExternalPluginKey,
+            (Key, ExternalCheckResultBits, ExternalRegistryRecord),
+        >,
+    ) -> ProgramResult {
+        for record in &self.external_registry {
+            if let Some(lifecycle_checks) = &record.lifecycle_checks {
+                for (event, check_result) in lifecycle_checks {
+                    if event == lifecycle_event {
+                        let plugin_key = ExternalPluginKey::from_record(account, record)?;
+
+                        result.insert(
+                            plugin_key,
+                            (
+                                key,
+                                ExternalCheckResultBits::from(*check_result),
+                                record.clone(),
+                            ),
+                        );
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
 }
 
 impl DataBlob for PluginRegistryV1 {

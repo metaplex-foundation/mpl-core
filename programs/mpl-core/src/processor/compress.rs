@@ -57,6 +57,7 @@ pub(crate) fn compress<'a>(
                 CollectionV1::validate_compress,
                 Plugin::validate_compress,
                 None,
+                None,
             )?;
 
             // Compress the asset and plugin registry into account space.

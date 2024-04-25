@@ -10,8 +10,8 @@ use crate::error::MplCoreError;
 
 use super::{
     Authority, DataStore, DataStoreInitInfo, DataStoreUpdateInfo, ExternalCheckResult,
-    LifecycleHook, LifecycleHookInitInfo, LifecycleHookUpdateInfo, Oracle, OracleInitInfo,
-    OracleUpdateInfo, PluginValidation, PluginValidationContext, ValidationResult,
+    ExternalRegistryRecord, LifecycleHook, LifecycleHookInitInfo, LifecycleHookUpdateInfo, Oracle,
+    OracleInitInfo, OracleUpdateInfo, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// List of third party plugin types.
@@ -212,6 +212,7 @@ pub enum HookableLifecycleEvent {
     /// Update an Asset or a Collection.
     Update,
 }
+
 /// Type used to specify extra accounts for external plugins.
 #[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
@@ -340,4 +341,35 @@ pub enum ExternalPluginKey {
     Oracle(Pubkey),
     /// Data Store.
     DataStore(Authority),
+}
+
+impl ExternalPluginKey {
+    pub(crate) fn from_record(
+        account: &AccountInfo,
+        external_registry_record: &ExternalRegistryRecord,
+    ) -> Result<Self, ProgramError> {
+        let pubkey_or_authority_offset = external_registry_record
+            .offset
+            .checked_add(1)
+            .ok_or(MplCoreError::NumericalOverflow)?;
+
+        match external_registry_record.plugin_type {
+            ExternalPluginType::LifecycleHook => {
+                let pubkey =
+                    Pubkey::deserialize(&mut &account.data.borrow()[pubkey_or_authority_offset..])?;
+                Ok(Self::LifecycleHook(pubkey))
+            }
+            ExternalPluginType::Oracle => {
+                let pubkey =
+                    Pubkey::deserialize(&mut &account.data.borrow()[pubkey_or_authority_offset..])?;
+                Ok(Self::Oracle(pubkey))
+            }
+            ExternalPluginType::DataStore => {
+                let authority = Authority::deserialize(
+                    &mut &account.data.borrow()[pubkey_or_authority_offset..],
+                )?;
+                Ok(Self::DataStore(authority))
+            }
+        }
+    }
 }
