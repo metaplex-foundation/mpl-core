@@ -220,7 +220,7 @@ pub(crate) fn validate_asset_permissions<'a>(
         &Plugin,
         &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
-    _external_plugin_validate_fp: Option<
+    external_plugin_validate_fp: Option<
         fn(&ExternalPlugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
     >,
 ) -> Result<(AssetV1, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
@@ -310,6 +310,7 @@ pub(crate) fn validate_asset_permissions<'a>(
         collection,
         &resolved_authorities,
         plugin_validate_fp,
+        external_plugin_validate_fp,
     )? {
         ValidationResult::Approved => approved = true,
         ValidationResult::Rejected => rejected = true,
@@ -329,6 +330,7 @@ pub(crate) fn validate_asset_permissions<'a>(
         collection,
         &resolved_authorities,
         plugin_validate_fp,
+        external_plugin_validate_fp,
     )? {
         ValidationResult::Approved => approved = true,
         ValidationResult::Rejected => rejected = true,
@@ -366,7 +368,8 @@ pub(crate) fn validate_collection_permissions<'a>(
         &Plugin,
         &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
-    _external_plugin_validate_fp: Option<
+
+    external_plugin_validate_fp: Option<
         fn(&ExternalPlugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
     >,
 ) -> Result<
@@ -429,6 +432,7 @@ pub(crate) fn validate_collection_permissions<'a>(
         Some(collection),
         &resolved_authorities,
         plugin_validate_fp,
+        external_plugin_validate_fp,
     )? {
         ValidationResult::Approved => approved = true,
         ValidationResult::Rejected => rejected = true,
