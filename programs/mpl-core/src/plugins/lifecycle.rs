@@ -46,7 +46,8 @@ impl PluginType {
             PluginType::FreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::Edition => CheckResult::CanReject,
-            _ => CheckResult::None,
+            // We default to CanReject because Plugins with Authority::None cannot be removed.
+            _ => CheckResult::CanReject,
         }
     }
 
@@ -166,6 +167,14 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        if ctx.self_authority == &Authority::None
+            && ctx.target_plugin.is_some()
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::from(plugin)
+        {
+            solana_program::msg!("Base: Rejected");
+            return Ok(ValidationResult::Rejected);
+        }
+
         match plugin {
             Plugin::Royalties(royalties) => royalties.validate_remove_plugin(ctx),
             Plugin::FreezeDelegate(freeze) => freeze.validate_remove_plugin(ctx),
