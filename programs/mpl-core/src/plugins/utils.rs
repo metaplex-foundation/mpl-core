@@ -207,20 +207,27 @@ pub fn fetch_wrapped_external_plugin<T: DataBlob + SolanaAccount>(
         if record.plugin_type == ExternalPluginType::from(plugin_key)
             && (match plugin_key {
                 ExternalPluginKey::LifecycleHook(address) | ExternalPluginKey::Oracle(address) => {
+                    let pubkey_offset = record
+                        .offset
+                        .checked_add(1)
+                        .ok_or(MplCoreError::NumericalOverflow)?;
                     address
-                        == &match Pubkey::try_from_slice(
-                            &account.data.borrow()[(record.offset + 1)..(record.offset + 33)],
-                        ) {
+                        == &match Pubkey::deserialize(&mut &account.data.borrow()[pubkey_offset..])
+                        {
                             Ok(address) => address,
                             Err(_) => return Err(MplCoreError::DeserializationError.into()),
                         }
                 }
                 ExternalPluginKey::DataStore(authority) => {
+                    let authority_offset = record
+                        .offset
+                        .checked_add(1)
+                        .ok_or(MplCoreError::NumericalOverflow)?;
                     authority
-                        == &match Authority::try_from_slice(
-                            &account.data.borrow()[(record.offset + 1)..],
+                        == &match Authority::deserialize(
+                            &mut &account.data.borrow()[authority_offset..],
                         ) {
-                            Ok(address) => address,
+                            Ok(authority) => authority,
                             Err(_) => return Err(MplCoreError::DeserializationError.into()),
                         }
                 }
@@ -518,20 +525,27 @@ pub fn delete_external_plugin<'a, T: DataBlob>(
         if record.plugin_type == ExternalPluginType::from(plugin_key)
             && (match plugin_key {
                 ExternalPluginKey::LifecycleHook(address) | ExternalPluginKey::Oracle(address) => {
+                    let pubkey_offset = record
+                        .offset
+                        .checked_add(1)
+                        .ok_or(MplCoreError::NumericalOverflow)?;
                     address
-                        == &match Pubkey::try_from_slice(
-                            &account.data.borrow()[(record.offset + 1)..(record.offset + 33)],
-                        ) {
+                        == &match Pubkey::deserialize(&mut &account.data.borrow()[pubkey_offset..])
+                        {
                             Ok(address) => address,
                             Err(_) => return Err(MplCoreError::DeserializationError.into()),
                         }
                 }
                 ExternalPluginKey::DataStore(authority) => {
+                    let authority_offset = record
+                        .offset
+                        .checked_add(1)
+                        .ok_or(MplCoreError::NumericalOverflow)?;
                     authority
-                        == &match Authority::try_from_slice(
-                            &account.data.borrow()[(record.offset + 1)..],
+                        == &match Authority::deserialize(
+                            &mut &account.data.borrow()[authority_offset..],
                         ) {
-                            Ok(address) => address,
+                            Ok(authority) => authority,
                             Err(_) => return Err(MplCoreError::DeserializationError.into()),
                         }
                 }
