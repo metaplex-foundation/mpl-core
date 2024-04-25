@@ -324,7 +324,11 @@ test('it can revoke an authority from a plugin if another plugin is None', async
   const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
-      pluginAuthorityPair({ authority: nonePluginAuthority(), type: 'PermanentFreezeDelegate', data: { frozen: false } }),
+      pluginAuthorityPair({
+        authority: nonePluginAuthority(),
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: false },
+      }),
     ],
   });
 

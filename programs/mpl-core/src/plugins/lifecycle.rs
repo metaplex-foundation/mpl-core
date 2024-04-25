@@ -167,7 +167,10 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority == &Authority::None {
+        if ctx.self_authority == &Authority::None
+            && ctx.target_plugin.is_some()
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::from(plugin)
+        {
             solana_program::msg!("Base: Rejected");
             return Ok(ValidationResult::Rejected);
         }
