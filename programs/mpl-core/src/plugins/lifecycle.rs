@@ -8,7 +8,9 @@ use crate::{
     state::{Authority, Key},
 };
 
-use super::{Plugin, PluginType, RegistryRecord};
+use super::{
+    ExternalPlugin, ExternalPluginKey, ExternalRegistryRecord, Plugin, PluginType, RegistryRecord,
+};
 
 /// Lifecycle permissions
 /// Plugins use this field to indicate their permission to approve or deny
@@ -840,6 +842,71 @@ pub(crate) fn validate_plugin_checks<'a>(
             };
 
             let result = plugin_validate_fp(&Plugin::load(account, registry_record.offset)?, &ctx)?;
+            match result {
+                ValidationResult::Rejected => rejected = true,
+                ValidationResult::Approved => approved = true,
+                ValidationResult::Pass => continue,
+                ValidationResult::ForceApproved => return Ok(ValidationResult::ForceApproved),
+            }
+        }
+    }
+
+    if rejected {
+        Ok(ValidationResult::Rejected)
+    } else if approved {
+        Ok(ValidationResult::Approved)
+    } else {
+        Ok(ValidationResult::Pass)
+    }
+}
+
+/// This function iterates through all external plugin checks passed in and performs the validation
+/// by deserializing and calling validate on the plugin.
+/// The STRONGEST result is returned.
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+pub(crate) fn validate_external_plugin_checks<'a>(
+    key: Key,
+    external_checks: &BTreeMap<
+        ExternalPluginKey,
+        (Key, ExternalCheckResultBits, ExternalRegistryRecord),
+    >,
+    authority: &'a AccountInfo<'a>,
+    new_owner: Option<&'a AccountInfo<'a>>,
+    new_plugin: Option<&Plugin>,
+    asset: Option<&AccountInfo<'a>>,
+    collection: Option<&AccountInfo<'a>>,
+    resolved_authorities: &[Authority],
+    external_plugin_validate_fp: fn(
+        &ExternalPlugin,
+        &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError>,
+) -> Result<ValidationResult, ProgramError> {
+    let mut approved = false;
+    let mut rejected = false;
+    for (check_key, check_result, external_registry_record) in external_checks.values() {
+        if *check_key == key
+            && (check_result.can_listen()
+                || check_result.can_approve()
+                || check_result.can_reject())
+        {
+            let account = match key {
+                Key::CollectionV1 => collection.ok_or(MplCoreError::InvalidCollection)?,
+                Key::AssetV1 => asset.ok_or(MplCoreError::InvalidAsset)?,
+                _ => unreachable!(),
+            };
+
+            let ctx = PluginValidationContext {
+                self_authority: &external_registry_record.authority,
+                authority_info: authority,
+                resolved_authorities: Some(resolved_authorities),
+                new_owner,
+                target_plugin: new_plugin,
+            };
+
+            let result = external_plugin_validate_fp(
+                &ExternalPlugin::load(account, external_registry_record.offset)?,
+                &ctx,
+            )?;
             match result {
                 ValidationResult::Rejected => rejected = true,
                 ValidationResult::Approved => approved = true,

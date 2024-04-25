@@ -8,7 +8,8 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionV1Accounts, UpdateV1Accounts},
     plugins::{
-        ExternalPlugin, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord,
+        ExternalPlugin, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
+        PluginType, RegistryRecord,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
@@ -62,6 +63,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
         CollectionV1::validate_update,
         Plugin::validate_update,
         Some(ExternalPlugin::validate_update),
+        Some(HookableLifecycleEvent::Update),
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -146,6 +148,7 @@ pub(crate) fn update_collection<'a>(
         CollectionV1::validate_update,
         Plugin::validate_update,
         Some(ExternalPlugin::validate_update),
+        Some(HookableLifecycleEvent::Update),
     )?;
 
     let collection_size = collection.get_size() as isize;

@@ -12,9 +12,10 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     plugins::{
-        create_meta_idempotent, initialize_plugin, validate_plugin_checks, CheckResult,
-        ExternalPlugin, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType,
-        PluginValidationContext, RegistryRecord, ValidationResult,
+        create_meta_idempotent, initialize_plugin, validate_external_plugin_checks,
+        validate_plugin_checks, CheckResult, ExternalCheckResultBits, ExternalPlugin,
+        ExternalPluginKey, ExternalRegistryRecord, HookableLifecycleEvent, Plugin, PluginHeaderV1,
+        PluginRegistryV1, PluginType, PluginValidationContext, RegistryRecord, ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, Compressible, CompressionProof, CoreAsset, DataBlob,
@@ -220,10 +221,17 @@ pub(crate) fn validate_asset_permissions<'a>(
         &Plugin,
         &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
-    _external_plugin_validate_fp: Option<
+    external_plugin_validate_fp: Option<
         fn(&ExternalPlugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
     >,
+    hookable_lifecycle_event: Option<HookableLifecycleEvent>,
 ) -> Result<(AssetV1, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
+    if external_plugin_validate_fp.is_some() && hookable_lifecycle_event.is_none()
+        || external_plugin_validate_fp.is_none() && hookable_lifecycle_event.is_some()
+    {
+        panic!("Missing function parameters to validate_asset_permissions");
+    }
+
     let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<AssetV1>(asset)?;
     let resolved_authorities =
         resolve_pubkey_to_authorities(authority_info, collection, &deserialized_asset)?;
@@ -240,6 +248,10 @@ pub(crate) fn validate_asset_permissions<'a>(
     }
 
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
+    let mut external_checks: BTreeMap<
+        ExternalPluginKey,
+        (Key, ExternalCheckResultBits, ExternalRegistryRecord),
+    > = BTreeMap::new();
 
     // The asset approval overrides the collection approval.
     let asset_check = asset_check_fp();
@@ -251,18 +263,34 @@ pub(crate) fn validate_asset_permissions<'a>(
 
     // Check the collection plugins first.
     if let Some(collection_info) = collection {
-        fetch_core_data::<CollectionV1>(collection_info).map(|(_, _, registry)| {
-            registry.map(|r| {
-                r.check_registry(Key::CollectionV1, plugin_check_fp, &mut checks);
-                r
-            })
-        })?;
+        let (_, _, registry) = fetch_core_data::<CollectionV1>(collection_info)?;
+
+        if let Some(r) = registry {
+            r.check_registry(Key::CollectionV1, plugin_check_fp, &mut checks);
+
+            if let Some(lifecycle_event) = &hookable_lifecycle_event {
+                r.check_external_registry(
+                    collection_info,
+                    Key::CollectionV1,
+                    lifecycle_event,
+                    &mut external_checks,
+                )?;
+            }
+        }
     }
 
     // Next check the asset plugins. Plugins on the asset override the collection plugins,
     // so we don't need to validate the collection plugins if the asset has a plugin.
     if let Some(registry) = plugin_registry.as_ref() {
         registry.check_registry(Key::AssetV1, plugin_check_fp, &mut checks);
+        if let Some(lifecycle_event) = &hookable_lifecycle_event {
+            registry.check_external_registry(
+                asset,
+                Key::AssetV1,
+                lifecycle_event,
+                &mut external_checks,
+            )?;
+        }
     }
 
     // Do the core validation.
@@ -338,6 +366,40 @@ pub(crate) fn validate_asset_permissions<'a>(
         }
     };
 
+    if let Some(external_plugin_validate_fp) = external_plugin_validate_fp {
+        match validate_external_plugin_checks(
+            Key::CollectionV1,
+            &external_checks,
+            authority_info,
+            new_owner,
+            new_plugin,
+            Some(asset),
+            collection,
+            &resolved_authorities,
+            external_plugin_validate_fp,
+        )? {
+            ValidationResult::Approved => approved = true,
+            ValidationResult::Rejected => rejected = true,
+            ValidationResult::Pass | ValidationResult::ForceApproved => (),
+        };
+
+        match validate_external_plugin_checks(
+            Key::AssetV1,
+            &external_checks,
+            authority_info,
+            new_owner,
+            new_plugin,
+            Some(asset),
+            collection,
+            &resolved_authorities,
+            external_plugin_validate_fp,
+        )? {
+            ValidationResult::Approved => approved = true,
+            ValidationResult::Rejected => rejected = true,
+            ValidationResult::Pass | ValidationResult::ForceApproved => (),
+        };
+    }
+
     if rejected {
         return Err(MplCoreError::InvalidAuthority.into());
     } else if !approved {
@@ -369,6 +431,7 @@ pub(crate) fn validate_collection_permissions<'a>(
     external_plugin_validate_fp: Option<
         fn(&ExternalPlugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
     >,
+    hookable_lifecycle_event: Option<HookableLifecycleEvent>,
 ) -> Result<
     (
         CollectionV1,
@@ -377,17 +440,35 @@ pub(crate) fn validate_collection_permissions<'a>(
     ),
     ProgramError,
 > {
+    if external_plugin_validate_fp.is_some() && hookable_lifecycle_event.is_none()
+        || external_plugin_validate_fp.is_none() && hookable_lifecycle_event.is_some()
+    {
+        panic!("Missing function parameters to validate_asset_permissions");
+    }
+
     let (deserialized_collection, plugin_header, plugin_registry) =
         fetch_core_data::<CollectionV1>(collection)?;
     let resolved_authorities =
         resolve_pubkey_to_authorities_collection(authority_info, collection)?;
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
+    let mut external_checks: BTreeMap<
+        ExternalPluginKey,
+        (Key, ExternalCheckResultBits, ExternalRegistryRecord),
+    > = BTreeMap::new();
 
     let core_check = (Key::CollectionV1, collection_check_fp());
 
-    // Check the collection plugins first.
+    // Check the collection plugins.
     if let Some(registry) = plugin_registry.as_ref() {
         registry.check_registry(Key::CollectionV1, plugin_check_fp, &mut checks);
+        if let Some(lifecycle_event) = hookable_lifecycle_event {
+            registry.check_external_registry(
+                collection,
+                Key::CollectionV1,
+                &lifecycle_event,
+                &mut external_checks,
+            )?;
+        }
     }
 
     // Do the core validation.
@@ -437,6 +518,24 @@ pub(crate) fn validate_collection_permissions<'a>(
             return Ok((deserialized_collection, plugin_header, plugin_registry))
         }
     };
+
+    if let Some(external_plugin_validate_fp) = external_plugin_validate_fp {
+        match validate_external_plugin_checks(
+            Key::CollectionV1,
+            &external_checks,
+            authority_info,
+            None,
+            new_plugin,
+            None,
+            Some(collection),
+            &resolved_authorities,
+            external_plugin_validate_fp,
+        )? {
+            ValidationResult::Approved => approved = true,
+            ValidationResult::Rejected => rejected = true,
+            ValidationResult::Pass | ValidationResult::ForceApproved => (),
+        };
+    }
 
     if rejected || !approved {
         return Err(MplCoreError::InvalidAuthority.into());
