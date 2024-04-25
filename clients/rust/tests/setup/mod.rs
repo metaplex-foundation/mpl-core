@@ -1,6 +1,9 @@
 use mpl_core::{
     instructions::{CreateCollectionV1Builder, CreateV2Builder},
-    types::{DataState, ExternalPluginInitInfo, Key, Plugin, PluginAuthorityPair, UpdateAuthority},
+    types::{
+        DataState, ExternalPlugin, ExternalPluginInitInfo, Key, Plugin, PluginAuthorityPair,
+        UpdateAuthority,
+    },
     Asset, Collection,
 };
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
@@ -77,6 +80,7 @@ pub struct AssertAssetHelperArgs {
     pub uri: Option<String>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
+    pub external_plugins: Vec<ExternalPlugin>,
 }
 
 pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHelperArgs) {
@@ -125,6 +129,26 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
                 assert_eq!(plugin.royalties, royalties);
             }
             _ => panic!("unsupported plugin type"),
+        }
+    }
+
+    assert_eq!(
+        input.external_plugins.len(),
+        asset.external_plugin_list.lifecycle_hooks.len()
+            + asset.external_plugin_list.oracles.len()
+            + asset.external_plugin_list.data_stores.len()
+    );
+    for plugin in input.external_plugins {
+        match plugin {
+            ExternalPlugin::LifecycleHook(hook) => {
+                assert!(asset.external_plugin_list.lifecycle_hooks.contains(&hook))
+            }
+            ExternalPlugin::Oracle(oracle) => {
+                assert!(asset.external_plugin_list.oracles.contains(&oracle))
+            }
+            ExternalPlugin::DataStore(data_store) => {
+                assert!(asset.external_plugin_list.data_stores.contains(&data_store))
+            }
         }
     }
 }

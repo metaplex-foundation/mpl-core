@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
-    program_memory::sol_memcpy,
+    program_memory::sol_memcpy, pubkey::Pubkey,
 };
 
 use crate::{
@@ -11,8 +11,8 @@ use crate::{
 };
 
 use super::{
-    ExternalPlugin, ExternalPluginInitInfo, ExternalRegistryRecord, Plugin, PluginHeaderV1,
-    PluginRegistryV1, PluginType, RegistryRecord,
+    ExternalPlugin, ExternalPluginInitInfo, ExternalPluginKey, ExternalPluginType,
+    ExternalRegistryRecord, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord,
 };
 
 /// Create plugin header and registry if it doesn't exist
@@ -175,6 +175,42 @@ pub fn fetch_wrapped_plugin<T: DataBlob + SolanaAccount>(
 
     // Return the plugin and its authority.
     Ok((registry_record.authority, plugin))
+}
+
+/// Fetch the external plugin from the registry.
+pub fn fetch_wrapped_external_plugin<T: DataBlob + SolanaAccount>(
+    account: &AccountInfo,
+    core: Option<&T>,
+    plugin_key: &ExternalPluginKey,
+) -> Result<(Authority, ExternalPlugin), ProgramError> {
+    let size = match core {
+        Some(core) => core.get_size(),
+        None => {
+            let asset = T::load(account, 0)?;
+
+            if asset.get_size() == account.data_len() {
+                return Err(MplCoreError::ExternalPluginNotFound.into());
+            }
+
+            asset.get_size()
+        }
+    };
+
+    let header = PluginHeaderV1::load(account, size)?;
+    let plugin_registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
+
+    // Find the plugin in the registry.
+    let result = find_external_plugin(&plugin_registry, plugin_key, account)?;
+
+    if let (_, Some(record)) = result {
+        // Deserialize the plugin.
+        let plugin = ExternalPlugin::deserialize(&mut &(*account.data).borrow()[record.offset..])?;
+
+        // Return the plugin and its authority.
+        Ok((record.authority, plugin))
+    } else {
+        Err(MplCoreError::ExternalPluginNotFound.into())
+    }
 }
 
 /// Fetch the plugin registry.
@@ -415,11 +451,101 @@ pub fn delete_plugin<'a, T: DataBlob>(
             }
         }
 
+        for record in &mut plugin_registry.external_registry {
+            if plugin_offset < record.offset {
+                record.offset -= serialized_plugin.len()
+            }
+        }
+
         plugin_registry.save(account, new_registry_offset)?;
 
         resize_or_reallocate_account(account, payer, system_program, new_size)?;
     } else {
         return Err(MplCoreError::PluginNotFound.into());
+    }
+
+    Ok(())
+}
+
+/// Remove a plugin from the registry and delete it.
+pub fn delete_external_plugin<'a, T: DataBlob>(
+    plugin_key: &ExternalPluginKey,
+    asset: &T,
+    account: &AccountInfo<'a>,
+    payer: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+) -> ProgramResult {
+    if asset.get_size() == account.data_len() {
+        return Err(MplCoreError::ExternalPluginNotFound.into());
+    }
+
+    //TODO: Bytemuck this.
+    let mut header = PluginHeaderV1::load(account, asset.get_size())?;
+    let mut plugin_registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
+
+    let result = find_external_plugin(&plugin_registry, plugin_key, account)?;
+
+    if let (Some(index), _) = result {
+        let registry_record = plugin_registry.external_registry.remove(index);
+        let serialized_registry_record = registry_record.try_to_vec()?;
+
+        // Fetch the offset of the plugin to be removed.
+        let plugin_offset = registry_record.offset;
+        let plugin = ExternalPlugin::load(account, plugin_offset)?;
+        let serialized_plugin = plugin.try_to_vec()?;
+
+        // Get the offset of the plugin after the one being removed.
+        let next_plugin_offset = plugin_offset
+            .checked_add(serialized_plugin.len())
+            .ok_or(MplCoreError::NumericalOverflow)?;
+
+        // Calculate the new size of the account.
+        let new_size = account
+            .data_len()
+            .checked_sub(serialized_registry_record.len())
+            .ok_or(MplCoreError::NumericalOverflow)?
+            .checked_sub(serialized_plugin.len())
+            .ok_or(MplCoreError::NumericalOverflow)?;
+
+        let new_registry_offset = header
+            .plugin_registry_offset
+            .checked_sub(serialized_plugin.len())
+            .ok_or(MplCoreError::NumericalOverflow)?;
+
+        let data_to_move = header
+            .plugin_registry_offset
+            .checked_sub(next_plugin_offset)
+            .ok_or(MplCoreError::NumericalOverflow)?;
+
+        //TODO: This is memory intensive, we should use memmove instead probably.
+        let src = account.data.borrow()[next_plugin_offset..].to_vec();
+        sol_memcpy(
+            &mut account.data.borrow_mut()[plugin_offset..],
+            &src,
+            data_to_move,
+        );
+
+        header.plugin_registry_offset = new_registry_offset;
+        header.save(account, asset.get_size())?;
+
+        // Move offsets for existing registry records.
+        for record in &mut plugin_registry.external_registry {
+            if plugin_offset < record.offset {
+                record.offset -= serialized_plugin.len()
+            }
+        }
+
+        for record in &mut plugin_registry.registry {
+            if plugin_offset < record.offset {
+                record.offset -= serialized_plugin.len()
+            }
+        }
+
+        plugin_registry.save(account, new_registry_offset)?;
+
+        resize_or_reallocate_account(account, payer, system_program, new_size)?;
+    } else {
+        return Err(MplCoreError::ExternalPluginNotFound.into());
     }
 
     Ok(())
@@ -489,4 +615,48 @@ pub fn revoke_authority_on_plugin<'a>(
     plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
 
     Ok(())
+}
+
+fn find_external_plugin<'b>(
+    plugin_registry: &'b PluginRegistryV1,
+    plugin_key: &ExternalPluginKey,
+    account: &AccountInfo<'_>,
+) -> Result<(Option<usize>, Option<&'b ExternalRegistryRecord>), ProgramError> {
+    let mut result = (None, None);
+    for (i, record) in plugin_registry.external_registry.iter().enumerate() {
+        if record.plugin_type == ExternalPluginType::from(plugin_key)
+            && (match plugin_key {
+                ExternalPluginKey::LifecycleHook(address) | ExternalPluginKey::Oracle(address) => {
+                    let pubkey_offset = record
+                        .offset
+                        .checked_add(1)
+                        .ok_or(MplCoreError::NumericalOverflow)?;
+                    address
+                        == &match Pubkey::deserialize(&mut &account.data.borrow()[pubkey_offset..])
+                        {
+                            Ok(address) => address,
+                            Err(_) => return Err(MplCoreError::DeserializationError.into()),
+                        }
+                }
+                ExternalPluginKey::DataStore(authority) => {
+                    let authority_offset = record
+                        .offset
+                        .checked_add(1)
+                        .ok_or(MplCoreError::NumericalOverflow)?;
+                    authority
+                        == &match Authority::deserialize(
+                            &mut &account.data.borrow()[authority_offset..],
+                        ) {
+                            Ok(authority) => authority,
+                            Err(_) => return Err(MplCoreError::DeserializationError.into()),
+                        }
+                }
+            })
+        {
+            result = (Some(i), Some(record));
+            break;
+        }
+    }
+
+    Ok(result)
 }

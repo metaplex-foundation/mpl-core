@@ -13,8 +13,8 @@ use crate::{
     error::MplCoreError,
     plugins::{
         create_meta_idempotent, initialize_plugin, validate_plugin_checks, CheckResult,
-        ExternalPlugin, ExternalPluginInitInfo, Plugin, PluginHeaderV1, PluginRegistryV1,
-        PluginType, PluginValidationContext, RegistryRecord, ValidationResult,
+        ExternalPlugin, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType,
+        PluginValidationContext, RegistryRecord, ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, Compressible, CompressionProof, CoreAsset, DataBlob,
@@ -200,7 +200,7 @@ pub(crate) fn validate_asset_permissions<'a>(
     collection: Option<&AccountInfo<'a>>,
     new_owner: Option<&'a AccountInfo<'a>>,
     new_plugin: Option<&Plugin>,
-    new_external_plugin: Option<&ExternalPluginInitInfo>,
+    new_external_plugin: Option<&ExternalPlugin>,
     asset_check_fp: fn() -> CheckResult,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
@@ -208,13 +208,13 @@ pub(crate) fn validate_asset_permissions<'a>(
         &AssetV1,
         &AccountInfo,
         Option<&Plugin>,
-        Option<&ExternalPluginInitInfo>,
+        Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError>,
     collection_validate_fp: fn(
         &CollectionV1,
         &AccountInfo,
         Option<&Plugin>,
-        Option<&ExternalPluginInitInfo>,
+        Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
@@ -353,14 +353,14 @@ pub(crate) fn validate_collection_permissions<'a>(
     authority_info: &'a AccountInfo<'a>,
     collection: &AccountInfo<'a>,
     new_plugin: Option<&Plugin>,
-    new_external_plugin: Option<&ExternalPluginInitInfo>,
+    new_external_plugin: Option<&ExternalPlugin>,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
     collection_validate_fp: fn(
         &CollectionV1,
         &AccountInfo,
         Option<&Plugin>,
-        Option<&ExternalPluginInitInfo>,
+        Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,

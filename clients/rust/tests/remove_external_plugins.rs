@@ -1,18 +1,21 @@
 #![cfg(feature = "test-sbf")]
 pub mod setup;
-use mpl_core::types::{
-    DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo,
-    ExternalPluginSchema, HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle,
-    OracleInitInfo, PluginAuthority, UpdateAuthority,
+use mpl_core::{
+    instructions::RemoveExternalPluginV1Builder,
+    types::{
+        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo,
+        ExternalPluginKey, ExternalPluginSchema, HookableLifecycleEvent, LifecycleHook,
+        LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority, UpdateAuthority,
+    },
 };
 pub use setup::*;
 
 use solana_program::pubkey;
 use solana_program_test::tokio;
-use solana_sdk::{pubkey::Pubkey, signature::Keypair, signer::Signer};
+use solana_sdk::{pubkey::Pubkey, signature::Keypair, signer::Signer, transaction::Transaction};
 
 #[tokio::test]
-async fn test_create_lifecycle_hook() {
+async fn test_remove_lifecycle_hook() {
     let mut context = program_test().start_with_context().await;
 
     let asset = Keypair::new();
@@ -69,10 +72,41 @@ async fn test_create_lifecycle_hook() {
         },
     )
     .await;
+
+    let ix = RemoveExternalPluginV1Builder::new()
+        .asset(asset.pubkey())
+        .payer(context.payer.pubkey())
+        .key(ExternalPluginKey::LifecycleHook(pubkey!(
+            "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+        )))
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    assert_asset(
+        &mut context,
+        AssertAssetHelperArgs {
+            asset: asset.pubkey(),
+            owner,
+            update_authority: Some(UpdateAuthority::Address(update_authority)),
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugins: vec![],
+        },
+    )
+    .await;
 }
 
 #[tokio::test]
-async fn test_create_oracle() {
+async fn test_remove_oracle() {
     let mut context = program_test().start_with_context().await;
 
     let asset = Keypair::new();
@@ -97,7 +131,6 @@ async fn test_create_oracle() {
                     ExternalCheckResult { flags: 1 },
                 )]),
                 pda: None,
-                results_offset: None,
             })],
         },
     )
@@ -122,10 +155,39 @@ async fn test_create_oracle() {
         },
     )
     .await;
+
+    let ix = RemoveExternalPluginV1Builder::new()
+        .asset(asset.pubkey())
+        .payer(context.payer.pubkey())
+        .key(ExternalPluginKey::Oracle(Pubkey::default()))
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    assert_asset(
+        &mut context,
+        AssertAssetHelperArgs {
+            asset: asset.pubkey(),
+            owner,
+            update_authority: Some(UpdateAuthority::Address(update_authority)),
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugins: vec![],
+        },
+    )
+    .await;
 }
 
 #[tokio::test]
-async fn test_create_data_store() {
+async fn test_remove_data_store() {
     let mut context = program_test().start_with_context().await;
 
     let asset = Keypair::new();
@@ -169,6 +231,37 @@ async fn test_create_data_store() {
                 data_offset: 119,
                 data_len: 0,
             })],
+        },
+    )
+    .await;
+
+    let ix = RemoveExternalPluginV1Builder::new()
+        .asset(asset.pubkey())
+        .payer(context.payer.pubkey())
+        .key(ExternalPluginKey::DataStore(
+            PluginAuthority::UpdateAuthority,
+        ))
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    assert_asset(
+        &mut context,
+        AssertAssetHelperArgs {
+            asset: asset.pubkey(),
+            owner,
+            update_authority: Some(UpdateAuthority::Address(update_authority)),
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugins: vec![],
         },
     )
     .await;

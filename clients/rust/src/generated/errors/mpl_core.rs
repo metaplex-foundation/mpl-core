@@ -103,6 +103,9 @@ pub enum MplCoreError {
     /// 30 (0x1E) - Invalid Log Wrapper Program
     #[error("Invalid Log Wrapper Program")]
     InvalidLogWrapperProgram,
+    /// 31 (0x1F) - External Plugin not found
+    #[error("External Plugin not found")]
+    ExternalPluginNotFound,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

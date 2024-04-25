@@ -433,6 +433,19 @@ export class InvalidLogWrapperProgramError extends ProgramError {
 codeToErrorMap.set(0x1e, InvalidLogWrapperProgramError);
 nameToErrorMap.set('InvalidLogWrapperProgram', InvalidLogWrapperProgramError);
 
+/** ExternalPluginNotFound: External Plugin not found */
+export class ExternalPluginNotFoundError extends ProgramError {
+  override readonly name: string = 'ExternalPluginNotFound';
+
+  readonly code: number = 0x1f; // 31
+
+  constructor(program: Program, cause?: Error) {
+    super('External Plugin not found', program, cause);
+  }
+}
+codeToErrorMap.set(0x1f, ExternalPluginNotFoundError);
+nameToErrorMap.set('ExternalPluginNotFound', ExternalPluginNotFoundError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

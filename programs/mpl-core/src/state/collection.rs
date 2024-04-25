@@ -4,7 +4,7 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError, pub
 
 use crate::{
     error::MplCoreError,
-    plugins::{CheckResult, ExternalPluginInitInfo, Plugin, ValidationResult},
+    plugins::{CheckResult, ExternalPlugin, Plugin, ValidationResult},
 };
 
 use super::{Authority, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
@@ -118,7 +118,7 @@ impl CollectionV1 {
         &self,
         authority_info: &AccountInfo,
         new_plugin: Option<&Plugin>,
-        _: Option<&ExternalPluginInitInfo>,
+        _: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         let new_plugin = match new_plugin {
             Some(plugin) => plugin,
@@ -140,7 +140,7 @@ impl CollectionV1 {
         &self,
         authority_info: &AccountInfo,
         plugin_to_remove: Option<&Plugin>,
-        _: Option<&ExternalPluginInitInfo>,
+        _: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         let plugin_to_remove = match plugin_to_remove {
             Some(plugin) => plugin,
@@ -162,7 +162,7 @@ impl CollectionV1 {
         &self,
         _authority_info: &AccountInfo,
         _plugin: Option<&Plugin>,
-        _: Option<&ExternalPluginInitInfo>,
+        _: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -172,7 +172,7 @@ impl CollectionV1 {
         &self,
         authority_info: &AccountInfo,
         plugin: Option<&Plugin>,
-        _: Option<&ExternalPluginInitInfo>,
+        _: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         let plugin = match plugin {
             Some(plugin) => plugin,
@@ -194,7 +194,7 @@ impl CollectionV1 {
         &self,
         authority_info: &AccountInfo,
         plugin: Option<&Plugin>,
-        _: Option<&ExternalPluginInitInfo>,
+        _: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         let plugin = match plugin {
             Some(plugin) => plugin,
@@ -216,7 +216,7 @@ impl CollectionV1 {
         &self,
         _authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _: Option<&ExternalPluginInitInfo>,
+        _: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -226,7 +226,7 @@ impl CollectionV1 {
         &self,
         _authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _: Option<&ExternalPluginInitInfo>,
+        _: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -236,7 +236,7 @@ impl CollectionV1 {
         &self,
         authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _: Option<&ExternalPluginInitInfo>,
+        _: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.update_authority {
             solana_program::msg!("Collection: Approved");
@@ -251,7 +251,7 @@ impl CollectionV1 {
         &self,
         _authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _: Option<&ExternalPluginInitInfo>,
+        _: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -261,7 +261,7 @@ impl CollectionV1 {
         &self,
         _authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _: Option<&ExternalPluginInitInfo>,
+        _: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -271,7 +271,7 @@ impl CollectionV1 {
         &self,
         authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _new_plugin: Option<&ExternalPluginInitInfo>,
+        _new_plugin: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         // Approve if the update authority matches the authority.
         if *authority_info.key == self.update_authority {
@@ -287,7 +287,7 @@ impl CollectionV1 {
         &self,
         authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _plugin_to_remove: Option<&ExternalPluginInitInfo>,
+        _plugin_to_remove: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         if self.update_authority == *authority_info.key {
             solana_program::msg!("Asset: Approved");
@@ -302,7 +302,7 @@ impl CollectionV1 {
         &self,
         _authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _plugin: Option<&ExternalPluginInitInfo>,
+        _plugin: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }

@@ -28,6 +28,16 @@ pub enum ExternalPluginType {
     DataStore,
 }
 
+impl From<&ExternalPluginKey> for ExternalPluginType {
+    fn from(key: &ExternalPluginKey) -> Self {
+        match key {
+            ExternalPluginKey::LifecycleHook(_) => ExternalPluginType::LifecycleHook,
+            ExternalPluginKey::Oracle(_) => ExternalPluginType::Oracle,
+            ExternalPluginKey::DataStore(_) => ExternalPluginType::DataStore,
+        }
+    }
+}
+
 impl From<&ExternalPluginInitInfo> for ExternalPluginType {
     fn from(init_info: &ExternalPluginInitInfo) -> Self {
         match init_info {

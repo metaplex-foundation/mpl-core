@@ -4107,6 +4107,11 @@
       "code": 30,
       "name": "InvalidLogWrapperProgram",
       "msg": "Invalid Log Wrapper Program"
+    },
+    {
+      "code": 31,
+      "name": "ExternalPluginNotFound",
+      "msg": "External Plugin not found"
     }
   ],
   "metadata": {

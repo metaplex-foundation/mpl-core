@@ -132,6 +132,10 @@ pub enum MplCoreError {
     /// 30 - Invalid Log Wrapper Program
     #[error("Invalid Log Wrapper Program")]
     InvalidLogWrapperProgram,
+
+    /// 31 - External Plugin not found
+    #[error("External Plugin not found")]
+    ExternalPluginNotFound,
 }
 
 impl PrintProgramError for MplCoreError {
