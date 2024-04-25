@@ -8,7 +8,7 @@ use crate::{
     state::{Authority, Key},
 };
 
-use super::{ExternalPlugin, Plugin, PluginType, RegistryRecord};
+use super::{Plugin, PluginType, RegistryRecord};
 
 /// Lifecycle permissions
 /// Plugins use this field to indicate their permission to approve or deny
@@ -815,9 +815,6 @@ pub(crate) fn validate_plugin_checks<'a>(
         &Plugin,
         &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
-    external_plugin_validate_fp: Option<
-        fn(&ExternalPlugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
-    >,
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
     let mut rejected = false;
