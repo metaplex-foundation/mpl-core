@@ -8,17 +8,10 @@ use super::{PluginType, PluginValidation, PluginValidationContext, ValidationRes
 /// The edition plugin allows the creator to set an edition number on the asset
 /// The default authority for this plugin is the creator.
 #[repr(C)]
-#[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, Default, PartialEq, Eq)]
 pub struct Edition {
     /// The edition number.
     pub number: u32,
-}
-
-impl Edition {
-    /// Initialize the Edition plugin, 0 by default.
-    pub fn new() -> Self {
-        Self { number: 0 }
-    }
 }
 
 impl PluginValidation for Edition {

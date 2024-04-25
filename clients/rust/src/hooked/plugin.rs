@@ -7,9 +7,10 @@ use crate::{
     errors::MplCoreError,
     types::{Plugin, PluginAuthority, PluginType, RegistryRecord},
     AttributesPlugin, BaseAuthority, BasePlugin, BurnDelegatePlugin, DataBlob, EditionPlugin,
-    FreezeDelegatePlugin, PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin,
-    PermanentTransferDelegatePlugin, PluginRegistryV1Safe, PluginsList, RegistryRecordSafe,
-    RoyaltiesPlugin, SolanaAccount, TransferDelegatePlugin, UpdateDelegatePlugin,
+    FreezeDelegatePlugin, MasterEditionPlugin, PermanentBurnDelegatePlugin,
+    PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin, PluginRegistryV1Safe,
+    PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount, TransferDelegatePlugin,
+    UpdateDelegatePlugin,
 };
 
 /// Fetch the plugin from the registry.
@@ -185,6 +186,12 @@ pub(crate) fn registry_records_to_plugin_list(
                         })
                     }
                     Plugin::Edition(edition) => acc.edition = Some(EditionPlugin { base, edition }),
+                    Plugin::MasterEdition(master_edition) => {
+                        acc.master_edition = Some(MasterEditionPlugin {
+                            base,
+                            master_edition,
+                        })
+                    }
                 }
             }
             Ok(acc)

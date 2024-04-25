@@ -3,6 +3,7 @@ mod burn_delegate;
 mod edition;
 mod freeze_delegate;
 mod lifecycle;
+mod master_edition;
 mod permanent_burn_delegate;
 mod permanent_freeze_delegate;
 mod permanent_transfer_delegate;
@@ -18,6 +19,7 @@ pub use burn_delegate::*;
 pub use edition::*;
 pub use freeze_delegate::*;
 pub use lifecycle::*;
+pub use master_edition::*;
 use num_derive::ToPrimitive;
 pub use permanent_burn_delegate::*;
 pub use permanent_freeze_delegate::*;
@@ -65,6 +67,8 @@ pub enum Plugin {
     PermanentBurnDelegate(PermanentBurnDelegate),
     /// Edition plugin allows creators to add an edition number to the asset
     Edition(Edition),
+    /// Master Edition plugin allows creators to specify the max supply and master edition details
+    MasterEdition(MasterEdition),
 }
 
 impl Plugin {
@@ -129,6 +133,8 @@ pub enum PluginType {
     PermanentBurnDelegate,
     /// The Edition plugin.
     Edition,
+    /// The Master Edition plugin.
+    MasterEdition,
 }
 
 impl DataBlob for PluginType {
@@ -154,6 +160,7 @@ impl From<&Plugin> for PluginType {
             Plugin::PermanentTransferDelegate(_) => PluginType::PermanentTransferDelegate,
             Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
             Plugin::Edition(_) => PluginType::Edition,
+            Plugin::MasterEdition(_) => PluginType::MasterEdition,
         }
     }
 }
@@ -172,6 +179,7 @@ impl PluginType {
             PluginType::PermanentTransferDelegate => Authority::UpdateAuthority,
             PluginType::PermanentBurnDelegate => Authority::UpdateAuthority,
             PluginType::Edition => Authority::UpdateAuthority,
+            PluginType::MasterEdition => Authority::UpdateAuthority,
         }
     }
 }
