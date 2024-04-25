@@ -105,4 +105,8 @@ pub struct ExternalRegistryRecord {
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// The offset to the plugin in the account.
     pub offset: usize, // 8
+    /// For plugins with data, the offset to the data in the account.
+    pub data_offset: Option<usize>,
+    /// For plugins with data, the length of the data in the account.
+    pub data_len: Option<usize>,
 }

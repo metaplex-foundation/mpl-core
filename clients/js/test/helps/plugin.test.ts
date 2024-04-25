@@ -10,7 +10,7 @@ import {
   pluginTypeFromAssetPluginKey,
   updatePluginAuthority,
 } from '../../src';
-import { createAssetWithCollection, createUmi } from '../_setup';
+import { createAssetWithCollection, createUmi } from '../_setupRaw';
 
 test('it can convert plugin key to plugin type', async (t) => {
   const key: AssetPluginKey = 'royalties';

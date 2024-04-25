@@ -26,12 +26,12 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
-  ExternalPluginUpdateInfo,
-  ExternalPluginUpdateInfoArgs,
-  getExternalPluginKeySerializer,
-  getExternalPluginUpdateInfoSerializer,
+  BaseExternalPluginKey,
+  BaseExternalPluginKeyArgs,
+  BaseExternalPluginUpdateInfo,
+  BaseExternalPluginUpdateInfoArgs,
+  getBaseExternalPluginKeySerializer,
+  getBaseExternalPluginUpdateInfoSerializer,
 } from '../types';
 
 // Accounts.
@@ -51,13 +51,13 @@ export type UpdateCollectionExternalPluginV1InstructionAccounts = {
 // Data.
 export type UpdateCollectionExternalPluginV1InstructionData = {
   discriminator: number;
-  pluginKey: ExternalPluginKey;
-  updateInfo: ExternalPluginUpdateInfo;
+  pluginKey: BaseExternalPluginKey;
+  updateInfo: BaseExternalPluginUpdateInfo;
 };
 
 export type UpdateCollectionExternalPluginV1InstructionDataArgs = {
-  pluginKey: ExternalPluginKeyArgs;
-  updateInfo: ExternalPluginUpdateInfoArgs;
+  pluginKey: BaseExternalPluginKeyArgs;
+  updateInfo: BaseExternalPluginUpdateInfoArgs;
 };
 
 export function getUpdateCollectionExternalPluginV1InstructionDataSerializer(): Serializer<
@@ -72,8 +72,8 @@ export function getUpdateCollectionExternalPluginV1InstructionDataSerializer(): 
     struct<UpdateCollectionExternalPluginV1InstructionData>(
       [
         ['discriminator', u8()],
-        ['pluginKey', getExternalPluginKeySerializer()],
-        ['updateInfo', getExternalPluginUpdateInfoSerializer()],
+        ['pluginKey', getBaseExternalPluginKeySerializer()],
+        ['updateInfo', getBaseExternalPluginUpdateInfoSerializer()],
       ],
       { description: 'UpdateCollectionExternalPluginV1InstructionData' }
     ),

@@ -5,7 +5,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{BurnCollectionV1Accounts, BurnV1Accounts},
-    plugins::{Plugin, PluginType},
+    plugins::{ExternalPlugin, Plugin, PluginType},
     state::{AssetV1, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_authority,
@@ -96,6 +96,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
         AssetV1::validate_burn,
         CollectionV1::validate_burn,
         Plugin::validate_burn,
+        Some(ExternalPlugin::validate_burn),
     )?;
 
     process_burn(ctx.accounts.asset, authority)?;
@@ -138,6 +139,7 @@ pub(crate) fn burn_collection<'a>(
         PluginType::check_burn,
         CollectionV1::validate_burn,
         Plugin::validate_burn,
+        Some(ExternalPlugin::validate_burn),
     )?;
 
     process_burn(ctx.accounts.collection, authority)

@@ -9,6 +9,7 @@ use crate::generated::types::ExternalCheckResult;
 use crate::generated::types::ExtraAccount;
 use crate::generated::types::HookableLifecycleEvent;
 use crate::generated::types::PluginAuthority;
+use crate::generated::types::ValidationResultsOffset;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_program::pubkey::Pubkey;
@@ -24,4 +25,5 @@ pub struct OracleInitInfo {
     pub init_plugin_authority: Option<PluginAuthority>,
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     pub pda: Option<ExtraAccount>,
+    pub results_offset: Option<ValidationResultsOffset>,
 }

@@ -26,9 +26,9 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  ExternalPluginInitInfo,
-  ExternalPluginInitInfoArgs,
-  getExternalPluginInitInfoSerializer,
+  BaseExternalPluginInitInfo,
+  BaseExternalPluginInitInfoArgs,
+  getBaseExternalPluginInitInfoSerializer,
 } from '../types';
 
 // Accounts.
@@ -48,11 +48,11 @@ export type AddCollectionExternalPluginV1InstructionAccounts = {
 // Data.
 export type AddCollectionExternalPluginV1InstructionData = {
   discriminator: number;
-  initInfo: ExternalPluginInitInfo;
+  initInfo: BaseExternalPluginInitInfo;
 };
 
 export type AddCollectionExternalPluginV1InstructionDataArgs = {
-  initInfo: ExternalPluginInitInfoArgs;
+  initInfo: BaseExternalPluginInitInfoArgs;
 };
 
 export function getAddCollectionExternalPluginV1InstructionDataSerializer(): Serializer<
@@ -67,7 +67,7 @@ export function getAddCollectionExternalPluginV1InstructionDataSerializer(): Ser
     struct<AddCollectionExternalPluginV1InstructionData>(
       [
         ['discriminator', u8()],
-        ['initInfo', getExternalPluginInitInfoSerializer()],
+        ['initInfo', getBaseExternalPluginInitInfoSerializer()],
       ],
       { description: 'AddCollectionExternalPluginV1InstructionData' }
     ),

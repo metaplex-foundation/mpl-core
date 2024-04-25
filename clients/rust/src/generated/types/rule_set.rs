@@ -13,6 +13,14 @@ use solana_program::pubkey::Pubkey;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum RuleSet {
     None,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<Vec<serde_with::DisplayFromStr>>")
+    )]
     ProgramAllowList(Vec<Pubkey>),
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<Vec<serde_with::DisplayFromStr>>")
+    )]
     ProgramDenyList(Vec<Pubkey>),
 }

@@ -31,9 +31,9 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  UpdateAuthority,
-  UpdateAuthorityArgs,
-  getUpdateAuthoritySerializer,
+  BaseUpdateAuthority,
+  BaseUpdateAuthorityArgs,
+  getBaseUpdateAuthoritySerializer,
 } from '../types';
 
 // Accounts.
@@ -57,13 +57,13 @@ export type UpdateV1InstructionData = {
   discriminator: number;
   newName: Option<string>;
   newUri: Option<string>;
-  newUpdateAuthority: Option<UpdateAuthority>;
+  newUpdateAuthority: Option<BaseUpdateAuthority>;
 };
 
 export type UpdateV1InstructionDataArgs = {
-  newName: OptionOrNullable<string>;
-  newUri: OptionOrNullable<string>;
-  newUpdateAuthority?: OptionOrNullable<UpdateAuthorityArgs>;
+  newName?: OptionOrNullable<string>;
+  newUri?: OptionOrNullable<string>;
+  newUpdateAuthority?: OptionOrNullable<BaseUpdateAuthorityArgs>;
 };
 
 export function getUpdateV1InstructionDataSerializer(): Serializer<
@@ -80,13 +80,15 @@ export function getUpdateV1InstructionDataSerializer(): Serializer<
         ['discriminator', u8()],
         ['newName', option(string())],
         ['newUri', option(string())],
-        ['newUpdateAuthority', option(getUpdateAuthoritySerializer())],
+        ['newUpdateAuthority', option(getBaseUpdateAuthoritySerializer())],
       ],
       { description: 'UpdateV1InstructionData' }
     ),
     (value) => ({
       ...value,
       discriminator: 15,
+      newName: value.newName ?? none(),
+      newUri: value.newUri ?? none(),
       newUpdateAuthority: value.newUpdateAuthority ?? none(),
     })
   ) as Serializer<UpdateV1InstructionDataArgs, UpdateV1InstructionData>;

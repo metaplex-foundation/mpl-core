@@ -16,34 +16,38 @@ import {
   u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BasePluginAuthority,
+  BasePluginAuthorityArgs,
   ExternalCheckResult,
   ExternalCheckResultArgs,
   ExternalPluginType,
   ExternalPluginTypeArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
-  PluginAuthority,
-  PluginAuthorityArgs,
+  getBasePluginAuthoritySerializer,
   getExternalCheckResultSerializer,
   getExternalPluginTypeSerializer,
   getHookableLifecycleEventSerializer,
-  getPluginAuthoritySerializer,
 } from '.';
 
 export type ExternalRegistryRecord = {
   pluginType: ExternalPluginType;
-  authority: PluginAuthority;
+  authority: BasePluginAuthority;
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   offset: bigint;
+  dataOffset: Option<bigint>;
+  dataLen: Option<bigint>;
 };
 
 export type ExternalRegistryRecordArgs = {
   pluginType: ExternalPluginTypeArgs;
-  authority: PluginAuthorityArgs;
+  authority: BasePluginAuthorityArgs;
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
   offset: number | bigint;
+  dataOffset: OptionOrNullable<number | bigint>;
+  dataLen: OptionOrNullable<number | bigint>;
 };
 
 export function getExternalRegistryRecordSerializer(): Serializer<
@@ -53,7 +57,7 @@ export function getExternalRegistryRecordSerializer(): Serializer<
   return struct<ExternalRegistryRecord>(
     [
       ['pluginType', getExternalPluginTypeSerializer()],
-      ['authority', getPluginAuthoritySerializer()],
+      ['authority', getBasePluginAuthoritySerializer()],
       [
         'lifecycleChecks',
         option(
@@ -66,6 +70,8 @@ export function getExternalRegistryRecordSerializer(): Serializer<
         ),
       ],
       ['offset', u64()],
+      ['dataOffset', option(u64())],
+      ['dataLen', option(u64())],
     ],
     { description: 'ExternalRegistryRecord' }
   ) as Serializer<ExternalRegistryRecordArgs, ExternalRegistryRecord>;

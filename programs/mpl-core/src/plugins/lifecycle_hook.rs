@@ -24,10 +24,22 @@ pub struct LifecycleHook {
     pub data_authority: Option<Authority>,
     /// Schema for the data used by the plugin.
     pub schema: ExternalPluginSchema, // 1
-    /// The offset to the plugin data in the account.
-    pub data_offset: usize, // 8
-    /// The length of the plugin data.
-    pub data_len: usize, // 8
+}
+
+impl PluginValidation for LifecycleHook {
+    fn validate_add_external_plugin(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    fn validate_transfer(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 }
 
 impl From<&LifecycleHookInitInfo> for LifecycleHook {
@@ -37,8 +49,6 @@ impl From<&LifecycleHookInitInfo> for LifecycleHook {
             extra_accounts: init_info.extra_accounts.clone(),
             data_authority: init_info.data_authority,
             schema: init_info.schema.unwrap_or_default(),
-            data_offset: 0,
-            data_len: 0,
         }
     }
 }
@@ -60,15 +70,6 @@ pub struct LifecycleHookInitInfo {
     pub data_authority: Option<Authority>,
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
-}
-
-impl PluginValidation for LifecycleHookInitInfo {
-    fn validate_add_external_plugin(
-        &self,
-        _ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
 }
 
 /// Lifecycle hook update info.

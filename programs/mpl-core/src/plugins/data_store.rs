@@ -17,10 +17,22 @@ pub struct DataStore {
     pub data_authority: Authority,
     /// Schema for the data used by the plugin.
     pub schema: ExternalPluginSchema,
-    /// The offset to the plugin data in the account.
-    pub data_offset: usize,
-    /// The length of the plugin data.
-    pub data_len: usize,
+}
+
+impl PluginValidation for DataStore {
+    fn validate_add_external_plugin(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
+
+    fn validate_transfer(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        Ok(ValidationResult::Pass)
+    }
 }
 
 impl From<&DataStoreInitInfo> for DataStore {
@@ -28,8 +40,6 @@ impl From<&DataStoreInitInfo> for DataStore {
         Self {
             data_authority: init_info.data_authority,
             schema: init_info.schema.unwrap_or_default(),
-            data_offset: 0,
-            data_len: 0,
         }
     }
 }
@@ -44,15 +54,6 @@ pub struct DataStoreInitInfo {
     pub init_plugin_authority: Option<Authority>,
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginSchema>,
-}
-
-impl PluginValidation for DataStoreInitInfo {
-    fn validate_add_external_plugin(
-        &self,
-        _ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
-    }
 }
 
 /// Data store update info.

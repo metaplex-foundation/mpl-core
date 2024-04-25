@@ -97,6 +97,7 @@ async fn test_create_oracle() {
                     ExternalCheckResult { flags: 1 },
                 )]),
                 pda: None,
+                results_offset: None,
             })],
         },
     )

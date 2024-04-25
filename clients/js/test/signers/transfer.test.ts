@@ -5,7 +5,7 @@ import {
 } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-tests';
 import test from 'ava';
-import { assertAsset, createAsset } from '../_setup';
+import { assertAsset, createAsset } from '../_setupRaw';
 import { transferV1 } from '../../src';
 
 test('it can transfer an asset as the owner', async (t) => {

@@ -26,9 +26,9 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
-  getExternalPluginKeySerializer,
+  BaseExternalPluginKey,
+  BaseExternalPluginKeyArgs,
+  getBaseExternalPluginKeySerializer,
 } from '../types';
 
 // Accounts.
@@ -50,11 +50,11 @@ export type RemoveExternalPluginV1InstructionAccounts = {
 // Data.
 export type RemoveExternalPluginV1InstructionData = {
   discriminator: number;
-  key: ExternalPluginKey;
+  key: BaseExternalPluginKey;
 };
 
 export type RemoveExternalPluginV1InstructionDataArgs = {
-  key: ExternalPluginKeyArgs;
+  key: BaseExternalPluginKeyArgs;
 };
 
 export function getRemoveExternalPluginV1InstructionDataSerializer(): Serializer<
@@ -69,7 +69,7 @@ export function getRemoveExternalPluginV1InstructionDataSerializer(): Serializer
     struct<RemoveExternalPluginV1InstructionData>(
       [
         ['discriminator', u8()],
-        ['key', getExternalPluginKeySerializer()],
+        ['key', getBaseExternalPluginKeySerializer()],
       ],
       { description: 'RemoveExternalPluginV1InstructionData' }
     ),

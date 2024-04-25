@@ -6,6 +6,7 @@
 //!
 
 use crate::generated::types::ExtraAccount;
+use crate::generated::types::ValidationResultsOffset;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_program::pubkey::Pubkey;
@@ -19,4 +20,5 @@ pub struct Oracle {
     )]
     pub base_address: Pubkey,
     pub pda: Option<ExtraAccount>,
+    pub results_offset: ValidationResultsOffset,
 }

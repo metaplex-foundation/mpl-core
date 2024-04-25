@@ -7,7 +7,9 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionV1Accounts, UpdateV1Accounts},
-    plugins::{Plugin, PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord},
+    plugins::{
+        ExternalPlugin, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord,
+    },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
         load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
@@ -59,6 +61,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
         AssetV1::validate_update,
         CollectionV1::validate_update,
         Plugin::validate_update,
+        Some(ExternalPlugin::validate_update),
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -142,6 +145,7 @@ pub(crate) fn update_collection<'a>(
         PluginType::check_update,
         CollectionV1::validate_update,
         Plugin::validate_update,
+        Some(ExternalPlugin::validate_update),
     )?;
 
     let collection_size = collection.get_size() as isize;

@@ -6,7 +6,7 @@ import {
 } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-tests';
 import test from 'ava';
-import { DEFAULT_ASSET, assertAsset, createAsset } from '../_setup';
+import { DEFAULT_ASSET, assertAsset, createAsset } from '../_setupRaw';
 import { updateV1 } from '../../src';
 
 test('it can update an asset as the update authority', async (t) => {

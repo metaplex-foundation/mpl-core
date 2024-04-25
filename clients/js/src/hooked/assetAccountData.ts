@@ -11,20 +11,29 @@ import {
   AssetV1AccountDataArgs as GenAssetV1AccountDataArgs,
   getAssetV1AccountDataSerializer as genGetAssetV1AccountDataSerializer,
 } from '../generated/types/assetV1AccountData';
-import { BaseUpdateAuthority, PluginsList } from '../types';
-import { registryRecordsToPluginsList } from '../plugins';
+
+import {
+  PluginsList,
+  registryRecordsToPluginsList,
+  UpdateAuthority,
+} from '../plugins';
 import {
   PluginRegistryV1AccountData,
   getPluginRegistryV1AccountDataSerializer,
 } from './pluginRegistryV1Data';
+import {
+  ExternalPluginsList,
+  externalRegistryRecordsToExternalPluginList,
+} from '../plugins/externalPlugins';
 
 export type AssetV1AccountData = Omit<
   GenAssetV1AccountData,
   'updateAuthority'
 > &
-  PluginsList & {
+  PluginsList &
+  ExternalPluginsList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
-    updateAuthority: BaseUpdateAuthority;
+    updateAuthority: UpdateAuthority;
   };
 
 export type AssetV1AccountDataArgs = Omit<
@@ -33,7 +42,7 @@ export type AssetV1AccountDataArgs = Omit<
 > &
   PluginsList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
-    updateAuthority: BaseUpdateAuthority;
+    updateAuthority: UpdateAuthority;
   };
 
 export const getAssetV1AccountDataSerializer = (): Serializer<
@@ -60,6 +69,7 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
     let pluginHeader: PluginHeaderV1AccountData | undefined;
     let pluginRegistry: PluginRegistryV1AccountData | undefined;
     let pluginsList: PluginsList | undefined;
+    let externalPluginsList: ExternalPluginsList | undefined;
     let finalOffset = assetOffset;
 
     if (buffer.length !== assetOffset) {
@@ -78,6 +88,11 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
         pluginRegistry.registry,
         buffer
       );
+
+      externalPluginsList = externalRegistryRecordsToExternalPluginList(
+        pluginRegistry.externalRegistry,
+        buffer
+      );
     }
     const updateAuth = {
       type: asset.updateAuthority.__kind,
@@ -91,6 +106,7 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
       {
         pluginHeader,
         ...pluginsList,
+        ...externalPluginsList,
         ...asset,
         updateAuthority: updateAuth,
       },

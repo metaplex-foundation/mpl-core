@@ -28,9 +28,9 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  ExternalPluginKey,
-  ExternalPluginKeyArgs,
-  getExternalPluginKeySerializer,
+  BaseExternalPluginKey,
+  BaseExternalPluginKeyArgs,
+  getBaseExternalPluginKeySerializer,
 } from '../types';
 
 // Accounts.
@@ -50,12 +50,12 @@ export type WriteCollectionExternalPluginDataV1InstructionAccounts = {
 // Data.
 export type WriteCollectionExternalPluginDataV1InstructionData = {
   discriminator: number;
-  key: ExternalPluginKey;
+  key: BaseExternalPluginKey;
   data: Uint8Array;
 };
 
 export type WriteCollectionExternalPluginDataV1InstructionDataArgs = {
-  key: ExternalPluginKeyArgs;
+  key: BaseExternalPluginKeyArgs;
   data: Uint8Array;
 };
 
@@ -71,7 +71,7 @@ export function getWriteCollectionExternalPluginDataV1InstructionDataSerializer(
     struct<WriteCollectionExternalPluginDataV1InstructionData>(
       [
         ['discriminator', u8()],
-        ['key', getExternalPluginKeySerializer()],
+        ['key', getBaseExternalPluginKeySerializer()],
         ['data', bytes({ size: u32() })],
       ],
       { description: 'WriteCollectionExternalPluginDataV1InstructionData' }

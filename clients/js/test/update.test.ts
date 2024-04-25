@@ -14,7 +14,7 @@ import {
   createCollection,
   createUmi,
   DEFAULT_ASSET,
-} from './_setup';
+} from './_setupRaw';
 
 test('it can update an asset to be larger', async (t) => {
   // Given a Umi instance and a new signer.

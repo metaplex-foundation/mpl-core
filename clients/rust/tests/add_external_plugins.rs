@@ -154,6 +154,7 @@ async fn test_add_oracle() {
                 ExternalCheckResult { flags: 1 },
             )]),
             pda: None,
+            results_offset: None,
         }))
         .instruction();
 

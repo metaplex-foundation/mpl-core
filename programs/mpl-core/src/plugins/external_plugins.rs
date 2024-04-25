@@ -103,31 +103,63 @@ impl ExternalPlugin {
 
     /// Validate the add external plugin lifecycle event.
     pub(crate) fn validate_create(
-        init_info: &ExternalPluginInitInfo,
+        external_plugin: &ExternalPlugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match init_info {
-            ExternalPluginInitInfo::LifecycleHook(init_info) => init_info.validate_create(ctx),
-            ExternalPluginInitInfo::Oracle(init_info) => init_info.validate_create(ctx),
-            ExternalPluginInitInfo::DataStore(init_info) => init_info.validate_create(ctx),
+        match external_plugin {
+            ExternalPlugin::LifecycleHook(lifecycle_hook) => lifecycle_hook.validate_create(ctx),
+            ExternalPlugin::Oracle(oracle) => oracle.validate_create(ctx),
+            ExternalPlugin::DataStore(data_store) => data_store.validate_create(ctx),
+        }
+    }
+
+    /// Route the validation of the update action to the appropriate plugin.
+    pub(crate) fn validate_update(
+        external_plugin: &ExternalPlugin,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        match external_plugin {
+            ExternalPlugin::LifecycleHook(lifecycle_hook) => lifecycle_hook.validate_update(ctx),
+            ExternalPlugin::Oracle(oracle) => oracle.validate_update(ctx),
+            ExternalPlugin::DataStore(data_store) => data_store.validate_update(ctx),
+        }
+    }
+
+    /// Route the validation of the burn action to the appropriate plugin.
+    pub(crate) fn validate_burn(
+        external_plugin: &ExternalPlugin,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        match external_plugin {
+            ExternalPlugin::LifecycleHook(lifecycle_hook) => lifecycle_hook.validate_burn(ctx),
+            ExternalPlugin::Oracle(oracle) => oracle.validate_burn(ctx),
+            ExternalPlugin::DataStore(data_store) => data_store.validate_burn(ctx),
+        }
+    }
+
+    /// Route the validation of the transfer action to the appropriate external plugin.
+    pub(crate) fn validate_transfer(
+        external_plugin: &ExternalPlugin,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        match external_plugin {
+            ExternalPlugin::LifecycleHook(lifecycle_hook) => lifecycle_hook.validate_transfer(ctx),
+            ExternalPlugin::Oracle(oracle) => oracle.validate_transfer(ctx),
+            ExternalPlugin::DataStore(data_store) => data_store.validate_transfer(ctx),
         }
     }
 
     /// Validate the add external plugin lifecycle event.
     pub(crate) fn validate_add_external_plugin(
-        init_info: &ExternalPluginInitInfo,
+        external_plugin: &ExternalPlugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match init_info {
-            ExternalPluginInitInfo::LifecycleHook(init_info) => {
-                init_info.validate_add_external_plugin(ctx)
+        match external_plugin {
+            ExternalPlugin::LifecycleHook(lifecycle_hook) => {
+                lifecycle_hook.validate_add_external_plugin(ctx)
             }
-            ExternalPluginInitInfo::Oracle(init_info) => {
-                init_info.validate_add_external_plugin(ctx)
-            }
-            ExternalPluginInitInfo::DataStore(init_info) => {
-                init_info.validate_add_external_plugin(ctx)
-            }
+            ExternalPlugin::Oracle(oracle) => oracle.validate_add_external_plugin(ctx),
+            ExternalPlugin::DataStore(data_store) => data_store.validate_add_external_plugin(ctx),
         }
     }
 
