@@ -828,7 +828,7 @@ test('it cannot remove an owner managed plugin when the authority is None', asyn
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });
 
-test('it can remove an owner managed plugin from an asset the authority is None after transferring', async (t) => {
+test('it can remove an owner managed plugin from an asset when the authority is None, after transferring', async (t) => {
   const umi = await createUmi();
 
   const assetAuth = generateSigner(umi);
@@ -872,4 +872,45 @@ test('it can remove an owner managed plugin from an asset the authority is None 
     owner: newOwner.publicKey,
     updateAuthority: { type: 'Address', address: assetAuth.publicKey },
   });
+});
+
+test('it cannot remove an authority managed plugin from an asset when the authority is None, after transferring', async (t) => {
+  const umi = await createUmi();
+
+  const assetAuth = generateSigner(umi);
+  const newOwner = generateSigner(umi);
+  const asset = await createAsset(umi, {
+    updateAuthority: assetAuth,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentTransferDelegate',
+        authority: nonePluginAuthority(),
+      }),
+    ],
+  });
+
+  await transferV1(umi, {
+    asset: asset.publicKey,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
+    updateAuthority: { type: 'Address', address: assetAuth.publicKey },
+    permanentTransferDelegate: {
+      authority: {
+        type: 'None',
+      },
+    },
+  });
+
+  const result = removePluginV1(umi, {
+    asset: asset.publicKey,
+    authority: newOwner,
+    pluginType: PluginType.PermanentTransferDelegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });
