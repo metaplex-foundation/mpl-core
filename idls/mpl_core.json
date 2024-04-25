@@ -2136,14 +2136,6 @@
             "type": {
               "defined": "ExternalPluginSchema"
             }
-          },
-          {
-            "name": "dataOffset",
-            "type": "u64"
-          },
-          {
-            "name": "dataLen",
-            "type": "u64"
           }
         ]
       }
@@ -2262,14 +2254,6 @@
             "type": {
               "defined": "ExternalPluginSchema"
             }
-          },
-          {
-            "name": "dataOffset",
-            "type": "u64"
-          },
-          {
-            "name": "dataLen",
-            "type": "u64"
           }
         ]
       }
@@ -2587,6 +2571,18 @@
           {
             "name": "offset",
             "type": "u64"
+          },
+          {
+            "name": "dataOffset",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "dataLen",
+            "type": {
+              "option": "u64"
+            }
           }
         ]
       }

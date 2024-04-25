@@ -6,7 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
 import {
   BasePluginAuthority,
   BasePluginAuthorityArgs,
@@ -19,15 +19,11 @@ import {
 export type BaseDataStore = {
   dataAuthority: BasePluginAuthority;
   schema: ExternalPluginSchema;
-  dataOffset: bigint;
-  dataLen: bigint;
 };
 
 export type BaseDataStoreArgs = {
   dataAuthority: BasePluginAuthorityArgs;
   schema: ExternalPluginSchemaArgs;
-  dataOffset: number | bigint;
-  dataLen: number | bigint;
 };
 
 export function getBaseDataStoreSerializer(): Serializer<
@@ -38,8 +34,6 @@ export function getBaseDataStoreSerializer(): Serializer<
     [
       ['dataAuthority', getBasePluginAuthoritySerializer()],
       ['schema', getExternalPluginSchemaSerializer()],
-      ['dataOffset', u64()],
-      ['dataLen', u64()],
     ],
     { description: 'BaseDataStore' }
   ) as Serializer<BaseDataStoreArgs, BaseDataStore>;

@@ -61,8 +61,6 @@ export const create = (
             authority: plugin.initPluginAuthority || {
               type: 'UpdateAuthority',
             },
-            dataLen: 0n,
-            dataOffset: 0n,
             type: 'LifecycleHook',
             schema: plugin.schema || ExternalPluginSchema.Binary,
           });

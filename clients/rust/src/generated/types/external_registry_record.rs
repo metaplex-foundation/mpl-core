@@ -19,4 +19,6 @@ pub struct ExternalRegistryRecord {
     pub authority: PluginAuthority,
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     pub offset: u64,
+    pub data_offset: Option<u64>,
+    pub data_len: Option<u64>,
 }

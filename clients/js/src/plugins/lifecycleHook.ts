@@ -9,6 +9,7 @@ import {
   BaseLifecycleHookInitInfoArgs,
   BaseLifecycleHookUpdateInfoArgs,
   ExternalPluginSchema,
+  ExternalRegistryRecord,
 } from '../generated';
 import { LifecycleChecks, lifecycleChecksToBase } from './lifecycleChecks';
 import {
@@ -95,17 +96,16 @@ export function lifecycleHookUpdateInfoArgsToBase(
 
 export function lifecycleHookFromBase(
   s: BaseLifecycleHook,
+  r: ExternalRegistryRecord,
   account: Uint8Array
 ): LifecycleHook {
   return {
     ...s,
-    dataOffset: s.dataOffset,
-    dataLen: s.dataLen,
     extraAccounts:
       s.extraAccounts.__option === 'Some'
         ? s.extraAccounts.value.map(extraAccountFromBase)
         : undefined,
-    data: parseExternalPluginData(s, account),
+    data: parseExternalPluginData(s, r, account),
     dataAuthority:
       s.dataAuthority.__option === 'Some'
         ? pluginAuthorityFromBase(s.dataAuthority.value)

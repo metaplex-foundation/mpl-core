@@ -35,6 +35,8 @@ export type ExternalRegistryRecord = {
   authority: BasePluginAuthority;
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   offset: bigint;
+  dataOffset: Option<bigint>;
+  dataLen: Option<bigint>;
 };
 
 export type ExternalRegistryRecordArgs = {
@@ -44,6 +46,8 @@ export type ExternalRegistryRecordArgs = {
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
   offset: number | bigint;
+  dataOffset: OptionOrNullable<number | bigint>;
+  dataLen: OptionOrNullable<number | bigint>;
 };
 
 export function getExternalRegistryRecordSerializer(): Serializer<
@@ -66,6 +70,8 @@ export function getExternalRegistryRecordSerializer(): Serializer<
         ),
       ],
       ['offset', u64()],
+      ['dataOffset', option(u64())],
+      ['dataLen', option(u64())],
     ],
     { description: 'ExternalRegistryRecord' }
   ) as Serializer<ExternalRegistryRecordArgs, ExternalRegistryRecord>;
