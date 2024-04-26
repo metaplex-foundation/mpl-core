@@ -654,6 +654,16 @@ pub enum ExternalValidationResult {
     Pass,
 }
 
+impl From<ExternalValidationResult> for ValidationResult {
+    fn from(result: ExternalValidationResult) -> Self {
+        match result {
+            ExternalValidationResult::Approved => Self::Approved,
+            ExternalValidationResult::Rejected => Self::Rejected,
+            ExternalValidationResult::Pass => Self::Pass,
+        }
+    }
+}
+
 /// The required context for a plugin validation.
 #[allow(dead_code)]
 pub(crate) struct PluginValidationContext<'a, 'b> {
