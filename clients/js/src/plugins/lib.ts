@@ -24,6 +24,8 @@ import {
   pluginAuthorityToBase,
 } from './pluginAuthority';
 import { royaltiesFromBase, royaltiesToBase } from './royalties';
+import { masterEditionFromBase, masterEditionToBase } from './masterEdition';
+
 
 export function formPluginHeaderV1(
   pluginRegistryOffset: bigint
@@ -83,6 +85,13 @@ export function createPluginV2(args: PluginArgsV2): BasePlugin {
       fields: [royaltiesToBase(args)],
     };
   }
+  if (type === 'MasterEdition') {
+    return {
+      __kind: type,
+      fields: [masterEditionToBase(args)],
+    };
+  }
+
   return {
     __kind: type,
     fields: [(args as any) || {}],
@@ -127,6 +136,16 @@ export function mapPlugin({
         authority,
         offset,
         ...royaltiesFromBase(plug.fields[0]),
+      },
+    };
+  }
+
+  if (plug.__kind === 'MasterEdition') {
+    return {
+      [pluginKey]: {
+        authority,
+        offset,
+        ...masterEditionFromBase(plug.fields[0]),
       },
     };
   }

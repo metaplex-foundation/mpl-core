@@ -18,6 +18,7 @@ export * from './baseExtraAccount';
 export * from './baseLifecycleHook';
 export * from './baseLifecycleHookInitInfo';
 export * from './baseLifecycleHookUpdateInfo';
+export * from './baseMasterEdition';
 export * from './baseOracle';
 export * from './baseOracleInitInfo';
 export * from './baseOracleUpdateInfo';

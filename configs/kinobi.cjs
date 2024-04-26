@@ -234,6 +234,9 @@ kinobi.update(
     validationResultsOffset: {
       name: "baseValidationResultsOffset"
     },
+    masterEdition: {
+      name: "baseMasterEdition"
+    }
   })
 )
 
