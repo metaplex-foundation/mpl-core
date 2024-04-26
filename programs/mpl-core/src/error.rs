@@ -136,6 +136,10 @@ pub enum MplCoreError {
     /// 31 - External Plugin not found
     #[error("External Plugin not found")]
     ExternalPluginNotFound,
+
+    /// 32 - External Plugin already exists
+    #[error("External Plugin already exists")]
+    ExternalPluginAlreadyExists,
 }
 
 impl PrintProgramError for MplCoreError {
