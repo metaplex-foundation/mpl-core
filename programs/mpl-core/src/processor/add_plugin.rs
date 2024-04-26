@@ -120,7 +120,7 @@ pub(crate) fn add_collection_plugin<'a>(
         }
     }
 
-    let validation_context = PluginValidationContext {
+    let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: None,
         collection_info: Some(ctx.accounts.collection),
@@ -130,8 +130,7 @@ pub(crate) fn add_collection_plugin<'a>(
         new_owner: None,
         target_plugin: Some(&args.plugin),
     };
-    if Plugin::validate_add_plugin(&args.plugin, &validation_context)? == ValidationResult::Rejected
-    {
+    if Plugin::validate_add_plugin(&args.plugin, &validation_ctx)? == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
