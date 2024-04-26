@@ -44,6 +44,7 @@ pub(crate) fn compress<'a>(
 
             // Validate asset permissions.
             let _ = validate_asset_permissions(
+                accounts,
                 authority,
                 ctx.accounts.asset,
                 ctx.accounts.collection,

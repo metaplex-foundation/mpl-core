@@ -132,6 +132,9 @@ pub(crate) fn process_create_collection<'a>(
 
                 if PluginType::check_create(&plugin_type) != CheckResult::None {
                     let validation_ctx = PluginValidationContext {
+                        accounts,
+                        asset_info: None,
+                        collection_info: Some(ctx.accounts.collection),
                         self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
                         authority_info: ctx.accounts.payer,
                         resolved_authorities: None,
@@ -167,6 +170,9 @@ pub(crate) fn process_create_collection<'a>(
             for plugin_init_info in &plugins {
                 if ExternalPlugin::check_create(plugin_init_info) != ExternalCheckResult::none() {
                     let validation_ctx = PluginValidationContext {
+                        accounts,
+                        asset_info: None,
+                        collection_info: Some(ctx.accounts.collection),
                         // External plugins are always managed by the update authority.
                         self_authority: &Authority::UpdateAuthority,
                         authority_info: authority,

@@ -657,6 +657,12 @@ pub enum ExternalValidationResult {
 /// The required context for a plugin validation.
 #[allow(dead_code)]
 pub(crate) struct PluginValidationContext<'a, 'b> {
+    /// This list of all the accounts passed into the instruction.
+    pub accounts: &'a [AccountInfo<'a>],
+    /// The asset account.
+    pub asset_info: Option<&'a AccountInfo<'a>>,
+    /// The collection account.
+    pub collection_info: Option<&'a AccountInfo<'a>>,
     /// The authority.
     pub self_authority: &'b Authority,
     /// The authority account.
@@ -806,12 +812,13 @@ pub(crate) trait PluginValidation {
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn validate_plugin_checks<'a>(
     key: Key,
+    accounts: &'a [AccountInfo<'a>],
     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &'a AccountInfo<'a>,
     new_owner: Option<&'a AccountInfo<'a>>,
     new_plugin: Option<&Plugin>,
-    asset: Option<&AccountInfo<'a>>,
-    collection: Option<&AccountInfo<'a>>,
+    asset: Option<&'a AccountInfo<'a>>,
+    collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
     plugin_validate_fp: fn(
         &Plugin,
@@ -834,6 +841,9 @@ pub(crate) fn validate_plugin_checks<'a>(
             };
 
             let ctx = PluginValidationContext {
+                accounts,
+                asset_info: asset,
+                collection_info: collection,
                 self_authority: &registry_record.authority,
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),
@@ -866,6 +876,7 @@ pub(crate) fn validate_plugin_checks<'a>(
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn validate_external_plugin_checks<'a>(
     key: Key,
+    accounts: &'a [AccountInfo<'a>],
     external_checks: &BTreeMap<
         ExternalPluginKey,
         (Key, ExternalCheckResultBits, ExternalRegistryRecord),
@@ -873,8 +884,8 @@ pub(crate) fn validate_external_plugin_checks<'a>(
     authority: &'a AccountInfo<'a>,
     new_owner: Option<&'a AccountInfo<'a>>,
     new_plugin: Option<&Plugin>,
-    asset: Option<&AccountInfo<'a>>,
-    collection: Option<&AccountInfo<'a>>,
+    asset: Option<&'a AccountInfo<'a>>,
+    collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
     external_plugin_validate_fp: fn(
         &ExternalPlugin,
@@ -895,6 +906,9 @@ pub(crate) fn validate_external_plugin_checks<'a>(
             };
 
             let ctx = PluginValidationContext {
+                accounts,
+                asset_info: asset,
+                collection_info: collection,
                 self_authority: &external_registry_record.authority,
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),

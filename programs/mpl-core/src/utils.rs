@@ -196,9 +196,10 @@ pub(crate) fn resize_or_reallocate_account<'a>(
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 /// Validate asset permissions using lifecycle validations for asset, collection, and plugins.
 pub(crate) fn validate_asset_permissions<'a>(
+    accounts: &'a [AccountInfo<'a>],
     authority_info: &'a AccountInfo<'a>,
-    asset: &AccountInfo<'a>,
-    collection: Option<&AccountInfo<'a>>,
+    asset: &'a AccountInfo<'a>,
+    collection: Option<&'a AccountInfo<'a>>,
     new_owner: Option<&'a AccountInfo<'a>>,
     new_plugin: Option<&Plugin>,
     new_external_plugin: Option<&ExternalPlugin>,
@@ -330,6 +331,7 @@ pub(crate) fn validate_asset_permissions<'a>(
 
     match validate_plugin_checks(
         Key::CollectionV1,
+        accounts,
         &checks,
         authority_info,
         new_owner,
@@ -349,6 +351,7 @@ pub(crate) fn validate_asset_permissions<'a>(
 
     match validate_plugin_checks(
         Key::AssetV1,
+        accounts,
         &checks,
         authority_info,
         new_owner,
@@ -369,6 +372,7 @@ pub(crate) fn validate_asset_permissions<'a>(
     if let Some(external_plugin_validate_fp) = external_plugin_validate_fp {
         match validate_external_plugin_checks(
             Key::CollectionV1,
+            accounts,
             &external_checks,
             authority_info,
             new_owner,
@@ -387,6 +391,7 @@ pub(crate) fn validate_asset_permissions<'a>(
 
         match validate_external_plugin_checks(
             Key::AssetV1,
+            accounts,
             &external_checks,
             authority_info,
             new_owner,
@@ -416,8 +421,9 @@ pub(crate) fn validate_asset_permissions<'a>(
 /// Validate collection permissions using lifecycle validations for collection and plugins.
 #[allow(clippy::type_complexity, clippy::too_many_arguments)]
 pub(crate) fn validate_collection_permissions<'a>(
+    accounts: &'a [AccountInfo<'a>],
     authority_info: &'a AccountInfo<'a>,
-    collection: &AccountInfo<'a>,
+    collection: &'a AccountInfo<'a>,
     new_plugin: Option<&Plugin>,
     new_external_plugin: Option<&ExternalPlugin>,
     collection_check_fp: fn() -> CheckResult,
@@ -506,6 +512,7 @@ pub(crate) fn validate_collection_permissions<'a>(
 
     match validate_plugin_checks(
         Key::CollectionV1,
+        accounts,
         &checks,
         authority_info,
         None,
@@ -526,6 +533,7 @@ pub(crate) fn validate_collection_permissions<'a>(
     if let Some(external_plugin_validate_fp) = external_plugin_validate_fp {
         match validate_external_plugin_checks(
             Key::CollectionV1,
+            accounts,
             &external_checks,
             authority_info,
             None,

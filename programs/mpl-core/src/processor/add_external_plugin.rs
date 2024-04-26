@@ -48,6 +48,9 @@ pub(crate) fn add_external_plugin<'a>(
     }
 
     let validation_ctx = PluginValidationContext {
+        accounts,
+        asset_info: Some(ctx.accounts.asset),
+        collection_info: ctx.accounts.collection,
         self_authority: &Authority::UpdateAuthority,
         authority_info: authority,
         resolved_authorities: None,
@@ -67,6 +70,7 @@ pub(crate) fn add_external_plugin<'a>(
 
     // Validate asset permissions.
     let (mut asset, _, _) = validate_asset_permissions(
+        accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
@@ -122,6 +126,9 @@ pub(crate) fn add_collection_external_plugin<'a>(
     }
 
     let validation_ctx = PluginValidationContext {
+        accounts,
+        asset_info: None,
+        collection_info: Some(ctx.accounts.collection),
         self_authority: &Authority::UpdateAuthority,
         authority_info: authority,
         resolved_authorities: None,
@@ -141,6 +148,7 @@ pub(crate) fn add_collection_external_plugin<'a>(
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
+        accounts,
         authority,
         ctx.accounts.collection,
         None,
