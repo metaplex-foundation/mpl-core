@@ -319,7 +319,7 @@ impl ExtraAccount {
                 Ok(pubkey)
             }
             ExtraAccount::CustomPda { seeds, .. } => {
-                let seeds = transform_seeds(seeds, ctx)?;
+                let seeds = transform_seeds(seeds, program_id, ctx)?;
 
                 // Convert the Vec of Vec into Vec of u8 slices.
                 let vec_of_slices: Vec<&[u8]> = seeds.iter().map(Vec::as_slice).collect();
@@ -335,6 +335,7 @@ impl ExtraAccount {
 // Transform seeds from their tokens into actual seeds based on passed-in context values.
 fn transform_seeds(
     seeds: &Vec<Seed>,
+    program_id: &Pubkey,
     ctx: &PluginValidationContext,
 ) -> Result<Vec<Vec<u8>>, ProgramError> {
     let mut transformed_seeds = Vec::<Vec<u8>>::new();
@@ -342,7 +343,7 @@ fn transform_seeds(
     for seed in seeds {
         match seed {
             Seed::Program => {
-                transformed_seeds.push(crate::ID.as_ref().to_vec());
+                transformed_seeds.push(program_id.as_ref().to_vec());
             }
             Seed::Collection => {
                 let collection = ctx
