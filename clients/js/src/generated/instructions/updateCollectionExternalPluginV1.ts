@@ -51,12 +51,12 @@ export type UpdateCollectionExternalPluginV1InstructionAccounts = {
 // Data.
 export type UpdateCollectionExternalPluginV1InstructionData = {
   discriminator: number;
-  pluginKey: BaseExternalPluginKey;
+  key: BaseExternalPluginKey;
   updateInfo: BaseExternalPluginUpdateInfo;
 };
 
 export type UpdateCollectionExternalPluginV1InstructionDataArgs = {
-  pluginKey: BaseExternalPluginKeyArgs;
+  key: BaseExternalPluginKeyArgs;
   updateInfo: BaseExternalPluginUpdateInfoArgs;
 };
 
@@ -72,7 +72,7 @@ export function getUpdateCollectionExternalPluginV1InstructionDataSerializer(): 
     struct<UpdateCollectionExternalPluginV1InstructionData>(
       [
         ['discriminator', u8()],
-        ['pluginKey', getBaseExternalPluginKeySerializer()],
+        ['key', getBaseExternalPluginKeySerializer()],
         ['updateInfo', getBaseExternalPluginUpdateInfoSerializer()],
       ],
       { description: 'UpdateCollectionExternalPluginV1InstructionData' }
