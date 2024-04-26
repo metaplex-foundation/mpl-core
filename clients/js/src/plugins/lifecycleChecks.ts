@@ -71,12 +71,19 @@ export function hookableLifecycleEventToLifecycleCheckKey(
 export function lifecycleChecksToBase(
   l: LifecycleChecks
 ): [HookableLifecycleEvent, ExternalCheckResult][] {
-  return Object(l)
-    .keys()
-    .map((key: keyof LifecycleChecks) => [
-      lifecycleCheckKeyToEnum(key),
-      l[key],
-    ]);
+  return Object
+    .keys(l)
+    .map((key) => {
+      const k = key as keyof LifecycleChecks;
+      const value = l[k];
+      if (value) {
+        return [
+          lifecycleCheckKeyToEnum(k),
+          checkResultsToExternalCheckResult(value),
+        ]
+      }
+      return null
+    }).filter((x) => x !== null) as [HookableLifecycleEvent, ExternalCheckResult][];
 }
 
 export function lifecycleChecksFromBase(

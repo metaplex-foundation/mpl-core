@@ -4,6 +4,7 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 OUTPUT="./programs/.bin"
 # saves external programs binaries to the output directory
 source ${SCRIPT_DIR}/dump.sh ${OUTPUT}
+cp ~/src/mpl-core-oracle-example/target/deploy/mpl_core_oracle_example.so ${OUTPUT}/mpl_core_oracle_example.so
 # go to parent folder
 cd $(dirname $(dirname $(dirname ${SCRIPT_DIR})))
 
