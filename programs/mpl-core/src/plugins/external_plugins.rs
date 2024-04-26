@@ -284,33 +284,36 @@ impl ExtraAccount {
         program_id: &Pubkey,
         ctx: &PluginValidationContext,
     ) -> Result<Pubkey, ProgramError> {
-        match &self {
+        match self {
             ExtraAccount::PreconfiguredProgram { .. } => {
                 let seeds = &[MPL_CORE_PREFIX.as_bytes()];
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)
             }
             ExtraAccount::PreconfiguredCollection { .. } => {
-                let collection = ctx.collection_info.ok_or(MplCoreError::NotAvailable)?.key;
+                let collection = ctx
+                    .collection_info
+                    .ok_or(MplCoreError::MissingCollection)?
+                    .key;
                 let seeds = &[MPL_CORE_PREFIX.as_bytes(), collection.as_ref()];
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)
             }
             ExtraAccount::PreconfiguredOwner { .. } => {
-                let asset_info = ctx.asset_info.ok_or(MplCoreError::NotAvailable)?;
+                let asset_info = ctx.asset_info.ok_or(MplCoreError::MissingAsset)?;
                 let owner = AssetV1::load(asset_info, 0)?.owner;
                 let seeds = &[MPL_CORE_PREFIX.as_bytes(), owner.as_ref()];
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)
             }
             ExtraAccount::PreconfiguredRecipient { .. } => {
-                let recipient = ctx.new_owner.ok_or(MplCoreError::NotAvailable)?.key;
+                let recipient = ctx.new_owner.ok_or(MplCoreError::MissingNewOwner)?.key;
                 let seeds = &[MPL_CORE_PREFIX.as_bytes(), recipient.as_ref()];
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)
             }
             ExtraAccount::PreconfiguredAsset { .. } => {
-                let asset = ctx.asset_info.ok_or(MplCoreError::NotAvailable)?.key;
+                let asset = ctx.asset_info.ok_or(MplCoreError::MissingAsset)?.key;
                 let seeds = &[MPL_CORE_PREFIX.as_bytes(), asset.as_ref()];
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)

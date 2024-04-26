@@ -74,7 +74,7 @@ impl Oracle {
             .accounts
             .iter()
             .find(|account| *account.key == oracle_account)
-            .ok_or(MplCoreError::NotAvailable)?;
+            .ok_or(MplCoreError::MissingExternalAccount)?;
 
         let offset = self.results_offset.to_offset_usize();
         let validation_result =
