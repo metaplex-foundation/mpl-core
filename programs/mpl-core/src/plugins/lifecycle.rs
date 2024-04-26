@@ -88,7 +88,8 @@ impl PluginType {
             PluginType::FreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::Edition => CheckResult::CanReject,
-            _ => CheckResult::None,
+            // We default to CanReject because Plugins with Authority::None cannot be removed.
+            _ => CheckResult::CanReject,
         }
     }
 
@@ -224,6 +225,7 @@ impl Plugin {
                 permanent_burn.validate_add_plugin(ctx)
             }
             Plugin::Edition(edition) => edition.validate_add_plugin(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_add_plugin(ctx),
         }
     }
 
@@ -232,6 +234,14 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        if ctx.self_authority == &Authority::None
+            && ctx.target_plugin.is_some()
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::from(plugin)
+        {
+            solana_program::msg!("Base: Rejected");
+            return Ok(ValidationResult::Rejected);
+        }
+
         match plugin {
             Plugin::Royalties(royalties) => royalties.validate_remove_plugin(ctx),
             Plugin::FreezeDelegate(freeze) => freeze.validate_remove_plugin(ctx),
@@ -249,6 +259,7 @@ impl Plugin {
                 permanent_burn.validate_remove_plugin(ctx)
             }
             Plugin::Edition(edition) => edition.validate_remove_plugin(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_remove_plugin(ctx),
         }
     }
 
@@ -286,6 +297,9 @@ impl Plugin {
                 permanent_burn.validate_approve_plugin_authority(ctx)
             }
             Plugin::Edition(edition) => edition.validate_approve_plugin_authority(ctx),
+            Plugin::MasterEdition(master_edition) => {
+                master_edition.validate_approve_plugin_authority(ctx)
+            }
         }
     }
 
@@ -294,7 +308,11 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority == &Authority::None {
+        // If the plugin being checked is Authority::None then it can't be revoked.
+        if ctx.self_authority == &Authority::None
+            && ctx.target_plugin.is_some()
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::from(plugin)
+        {
             solana_program::msg!("Base: Rejected");
             return Ok(ValidationResult::Rejected);
         }
@@ -318,6 +336,9 @@ impl Plugin {
                 permanent_burn.validate_revoke_plugin_authority(ctx)
             }
             Plugin::Edition(edition) => edition.validate_revoke_plugin_authority(ctx),
+            Plugin::MasterEdition(master_edition) => {
+                master_edition.validate_revoke_plugin_authority(ctx)
+            }
         }
     }
 
@@ -341,6 +362,7 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_create(ctx),
             Plugin::Edition(edition) => edition.validate_create(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_create(ctx),
         }
     }
 
@@ -364,6 +386,7 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_update(ctx),
             Plugin::Edition(edition) => edition.validate_update(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_update(ctx),
         }
     }
 
@@ -400,6 +423,7 @@ impl Plugin {
                 permanent_burn.validate_update_plugin(ctx)
             }
             Plugin::Edition(edition) => edition.validate_update_plugin(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_update_plugin(ctx),
         }?;
 
         match (&base_result, &result) {
@@ -442,6 +466,7 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_burn(ctx),
             Plugin::Edition(edition) => edition.validate_burn(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_burn(ctx),
         }
     }
 
@@ -465,6 +490,7 @@ impl Plugin {
             Plugin::Attributes(attributes_transfer) => attributes_transfer.validate_transfer(ctx),
             Plugin::PermanentBurnDelegate(burn_transfer) => burn_transfer.validate_transfer(ctx),
             Plugin::Edition(edition) => edition.validate_transfer(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_transfer(ctx),
         }
     }
 
@@ -488,6 +514,7 @@ impl Plugin {
             }
             Plugin::PermanentBurnDelegate(burn_transfer) => burn_transfer.validate_compress(ctx),
             Plugin::Edition(edition) => edition.validate_compress(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_compress(ctx),
         }
     }
 
@@ -513,6 +540,7 @@ impl Plugin {
                 permanent_burn.validate_decompress(ctx)
             }
             Plugin::Edition(edition) => edition.validate_decompress(ctx),
+            Plugin::MasterEdition(master_edition) => master_edition.validate_decompress(ctx),
         }
     }
 
@@ -540,6 +568,9 @@ impl Plugin {
                 permanent_burn.validate_add_external_plugin(ctx)
             }
             Plugin::Edition(edition) => edition.validate_add_external_plugin(ctx),
+            Plugin::MasterEdition(master_edition) => {
+                master_edition.validate_add_external_plugin(ctx)
+            }
         }
     }
 
@@ -567,6 +598,9 @@ impl Plugin {
                 permanent_burn.validate_remove_external_plugin(ctx)
             }
             Plugin::Edition(edition) => edition.validate_remove_external_plugin(ctx),
+            Plugin::MasterEdition(master_edition) => {
+                master_edition.validate_remove_external_plugin(ctx)
+            }
         }
     }
 
@@ -605,6 +639,9 @@ impl Plugin {
                 permanent_burn.validate_update_external_plugin(ctx)
             }
             Plugin::Edition(edition) => edition.validate_update_external_plugin(ctx),
+            Plugin::MasterEdition(master_edition) => {
+                master_edition.validate_update_external_plugin(ctx)
+            }
         }?;
 
         match (&base_result, &result) {

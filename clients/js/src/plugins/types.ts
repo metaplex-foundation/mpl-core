@@ -18,9 +18,11 @@ import {
   EditionArgs,
   BasePluginAuthority,
   BaseRoyaltiesArgs,
+  BaseMasterEditionArgs,
 } from '../generated';
 import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
 import { PluginAuthority } from './pluginAuthority';
+import { MasterEdition, MasterEditionArgs } from './masterEdition';
 
 // for backwards compatibility
 export { pluginAuthority, updateAuthority, ruleSet };
@@ -70,7 +72,11 @@ export type CreatePluginArgs =
   | {
       type: 'Edition';
       data: EditionArgs;
-    };
+    }
+  | {
+    type: 'MasterEdition';
+    data: BaseMasterEditionArgs
+  };
 
 export type AuthorityArgsV2 = {
   authority?: PluginAuthority;
@@ -108,7 +114,11 @@ export type AddablePluginArgsV2 =
     } & UpdateDelegateArgs)
   | ({
       type: 'Attributes';
-    } & AttributesArgs);
+    } & AttributesArgs)
+  | ({
+      type: 'MasterEdition'
+  } & MasterEditionArgs)
+
 export type PluginArgsV2 = AddablePluginArgsV2 | CreateOnlyPluginArgsV2;
 export type PluginAuthorityPairArgsV2 = PluginArgsV2 & AuthorityArgsV2;
 export type AddablePluginAuthorityPairArgsV2 = AddablePluginArgsV2 &
@@ -125,6 +135,7 @@ export type PermanentTransferDelegatePlugin = BasePlugin &
   PermanentTransferDelegate;
 export type PermanentBurnDelegatePlugin = BasePlugin & PermanentBurnDelegate;
 export type EditionPlugin = BasePlugin & Edition;
+export type MasterEditionPlugin = BasePlugin & MasterEdition;
 
 export type PluginsList = {
   royalties?: RoyaltiesPlugin;
@@ -137,4 +148,5 @@ export type PluginsList = {
   permanentTransferDelegate?: PermanentTransferDelegatePlugin;
   permanentBurnDelegate?: PermanentBurnDelegatePlugin;
   edition?: EditionPlugin;
+  masterEdition?: MasterEditionPlugin;
 };

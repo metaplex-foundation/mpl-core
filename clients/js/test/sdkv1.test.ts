@@ -75,6 +75,12 @@ test('it can create asset and collection with all update auth managed party plug
           },
         ],
       },
+      {
+        type: 'MasterEdition',
+        maxSupply: 100,
+        name: 'master',
+        uri: 'uri master',
+      }
     ],
   });
 
@@ -125,6 +131,14 @@ test('it can create asset and collection with all update auth managed party plug
         type: 'UpdateAuthority',
       },
     },
+    masterEdition: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      maxSupply: 100,
+      name: 'master',
+      uri: 'uri master',
+    }
   });
 
   const asset = await createAsset(umi, {
@@ -428,9 +442,6 @@ test('it can add and remove all owner and update auth managed party plugins to a
     },
     {
       type: 'BurnDelegate',
-      authority: {
-        type: 'None',
-      },
     },
     {
       type: 'TransferDelegate',
@@ -488,7 +499,7 @@ test('it can add and remove all owner and update auth managed party plugins to a
     },
     burnDelegate: {
       authority: {
-        type: 'None',
+        type: 'Owner',
       },
     },
     transferDelegate: {
@@ -690,6 +701,12 @@ test('it can update all updatable plugins on collection', async (t) => {
         type: 'PermanentFreezeDelegate',
         frozen: false,
       },
+      {
+        type: 'MasterEdition',
+        maxSupply: 100,
+        name: 'master',
+        uri: 'uri master',
+      }
     ],
   });
 
@@ -721,6 +738,12 @@ test('it can update all updatable plugins on collection', async (t) => {
       type: 'PermanentFreezeDelegate',
       frozen: true,
     },
+    {
+      type: 'MasterEdition',
+      maxSupply: 200,
+      name: 'master2',
+      uri: 'uri master2',
+    }
   ];
 
   await Promise.all(
@@ -767,6 +790,14 @@ test('it can update all updatable plugins on collection', async (t) => {
         type: 'UpdateAuthority',
       },
     },
+    masterEdition: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      maxSupply: 200,
+      name: 'master2',
+      uri: 'uri master2',
+    }
   });
 });
 
