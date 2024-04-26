@@ -1,13 +1,20 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_memory::sol_memcpy,
+};
 
 use crate::{
     error::MplCoreError,
     instruction::accounts::UpdateExternalPluginV1Accounts,
-    plugins::{ExternalPluginKey, ExternalPluginUpdateInfo, Plugin, PluginType},
-    state::{AssetV1, CollectionV1, Key},
-    utils::{load_key, resolve_authority, validate_asset_permissions},
+    plugins::{
+        fetch_wrapped_external_plugin, find_external_plugin, ExternalPluginKey,
+        ExternalPluginUpdateInfo, Plugin, PluginType,
+    },
+    state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
+    utils::{
+        load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
+    },
 };
 
 #[repr(C)]
@@ -45,35 +52,39 @@ pub(crate) fn update_external_plugin<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
+    let (_, plugin) =
+        fetch_wrapped_external_plugin::<AssetV1>(ctx.accounts.asset, None, &args.key)?;
+
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
-        Some(&args.plugin),
         None,
-        AssetV1::check_update_plugin,
-        CollectionV1::check_update_plugin,
-        PluginType::check_update_plugin,
-        AssetV1::validate_update_plugin,
-        CollectionV1::validate_update_plugin,
-        Plugin::validate_update_plugin,
+        Some(&plugin),
+        AssetV1::check_update_external_plugin,
+        CollectionV1::check_update_external_plugin,
+        PluginType::check_update_external_plugin,
+        AssetV1::validate_update_external_plugin,
+        CollectionV1::validate_update_external_plugin,
+        Plugin::validate_update_external_plugin,
+        None,
+        None,
     )?;
 
     let mut plugin_registry = plugin_registry.ok_or(MplCoreError::PluginsNotInitialized)?;
     let mut plugin_header = plugin_header.ok_or(MplCoreError::PluginsNotInitialized)?;
 
     let plugin_registry_clone = plugin_registry.clone();
-    let plugin_type: PluginType = (&args.plugin).into();
-    let registry_record = plugin_registry_clone
-        .registry
-        .iter()
-        .find(|record| record.plugin_type == plugin_type)
-        .ok_or(MplCoreError::PluginNotFound)?;
+    let (_, record) = find_external_plugin(&plugin_registry_clone, &args.key, ctx.accounts.asset)?;
+    let mut registry_record = record.ok_or(MplCoreError::PluginNotFound)?.clone();
+    registry_record.update(&args.update_info);
 
-    let plugin = Plugin::load(ctx.accounts.asset, registry_record.offset)?;
+    let mut new_plugin = plugin.clone();
+    new_plugin.update(&args.update_info);
+
     let plugin_data = plugin.try_to_vec()?;
-    let new_plugin_data = args.plugin.try_to_vec()?;
+    let new_plugin_data = new_plugin.try_to_vec()?;
 
     // The difference in size between the new and old account which is used to calculate the new size of the account.
     let plugin_size = plugin_data.len() as isize;
@@ -120,28 +131,28 @@ pub(crate) fn update_external_plugin<'a>(
     );
 
     plugin_header.save(ctx.accounts.asset, asset.get_size())?;
-    plugin_registry.registry = plugin_registry
-        .registry
-        .clone()
-        .iter_mut()
-        .map(|record| {
-            let new_offset = if record.offset > registry_record.offset {
-                (record.offset as isize)
-                    .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?
-            } else {
-                record.offset as isize
-            };
-            Ok(RegistryRecord {
-                plugin_type: record.plugin_type,
-                offset: new_offset as usize,
-                authority: record.authority,
-            })
-        })
-        .collect::<Result<Vec<_>, MplCoreError>>()?;
+
+    // Move offsets for existing registry records.
+    for record in &mut plugin_registry.external_registry {
+        if registry_record.offset < record.offset {
+            record
+                .offset
+                .checked_add(size_diff as usize)
+                .ok_or(MplCoreError::NumericalOverflow)?;
+        }
+    }
+
+    for record in &mut plugin_registry.registry {
+        if registry_record.offset < record.offset {
+            record
+                .offset
+                .checked_add(size_diff as usize)
+                .ok_or(MplCoreError::NumericalOverflow)?;
+        }
+    }
+
     plugin_registry.save(ctx.accounts.asset, new_registry_offset as usize)?;
-    args.plugin
-        .save(ctx.accounts.asset, registry_record.offset)?;
+    new_plugin.save(ctx.accounts.asset, registry_record.offset)?;
 
     // Increment sequence number and save only if it is `Some(_)`.
     asset.increment_seq_and_save(ctx.accounts.asset)?;

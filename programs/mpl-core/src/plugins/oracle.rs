@@ -20,6 +20,18 @@ pub struct Oracle {
     pub results_offset: ValidationResultsOffset,
 }
 
+impl Oracle {
+    /// Updates the oracle with the new info.
+    pub fn update(&mut self, info: &OracleUpdateInfo) {
+        if let Some(pda) = &info.pda {
+            self.pda = Some(pda.clone());
+        }
+        if let Some(results_offset) = &info.results_offset {
+            self.results_offset = *results_offset;
+        }
+    }
+}
+
 impl PluginValidation for Oracle {
     fn validate_add_external_plugin(
         &self,
@@ -43,7 +55,6 @@ impl From<&OracleInitInfo> for Oracle {
             pda: init_info.pda.clone(),
             results_offset: init_info
                 .results_offset
-                .clone()
                 .unwrap_or(ValidationResultsOffset::NoOffset),
         }
     }
@@ -79,7 +90,7 @@ pub struct OracleUpdateInfo {
 }
 
 /// Offset to where the validation results struct is located in an Oracle account.
-#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum ValidationResultsOffset {
     /// The validation struct is located at the beginning of the account.
     NoOffset,

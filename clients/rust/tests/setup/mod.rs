@@ -141,6 +141,8 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
     for plugin in input.external_plugins {
         match plugin {
             ExternalPlugin::LifecycleHook(hook) => {
+                println!("{:?}", asset.external_plugin_list.lifecycle_hooks);
+                println!("{:?}", hook);
                 assert!(asset.external_plugin_list.lifecycle_hooks.contains(&hook))
             }
             ExternalPlugin::Oracle(oracle) => {

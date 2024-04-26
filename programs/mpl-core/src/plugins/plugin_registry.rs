@@ -7,7 +7,7 @@ use crate::state::{Authority, DataBlob, Key, SolanaAccount};
 
 use super::{
     CheckResult, ExternalCheckResult, ExternalCheckResultBits, ExternalPluginKey,
-    ExternalPluginType, HookableLifecycleEvent, PluginType,
+    ExternalPluginType, ExternalPluginUpdateInfo, HookableLifecycleEvent, PluginType,
 };
 
 /// The Plugin Registry stores a record of all plugins, their location, and their authorities.
@@ -122,4 +122,19 @@ pub struct ExternalRegistryRecord {
     pub data_offset: Option<usize>,
     /// For plugins with data, the length of the data in the account.
     pub data_len: Option<usize>,
+}
+
+impl ExternalRegistryRecord {
+    /// Update the external registry record with the new info, if relevant.
+    pub fn update(&mut self, update_info: &ExternalPluginUpdateInfo) {
+        match update_info {
+            ExternalPluginUpdateInfo::LifecycleHook(update_info) => {
+                self.lifecycle_checks = update_info.lifecycle_checks.clone()
+            }
+            ExternalPluginUpdateInfo::Oracle(update_info) => {
+                self.lifecycle_checks = update_info.lifecycle_checks.clone()
+            }
+            _ => {}
+        }
+    }
 }

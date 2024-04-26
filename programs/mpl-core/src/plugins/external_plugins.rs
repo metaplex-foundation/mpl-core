@@ -66,6 +66,28 @@ pub enum ExternalPlugin {
 }
 
 impl ExternalPlugin {
+    /// Update the plugin from the update info.
+    pub fn update(&mut self, update_info: &ExternalPluginUpdateInfo) {
+        match (self, update_info) {
+            (
+                ExternalPlugin::LifecycleHook(lifecycle_hook),
+                ExternalPluginUpdateInfo::LifecycleHook(update_info),
+            ) => {
+                lifecycle_hook.update(update_info);
+            }
+            (ExternalPlugin::Oracle(oracle), ExternalPluginUpdateInfo::Oracle(update_info)) => {
+                oracle.update(update_info);
+            }
+            (
+                ExternalPlugin::DataStore(data_store),
+                ExternalPluginUpdateInfo::DataStore(update_info),
+            ) => {
+                data_store.update(update_info);
+            }
+            _ => unreachable!(),
+        }
+    }
+
     /// Check if a plugin is permitted to approve or deny a create action.
     pub fn check_create(plugin: &ExternalPluginInitInfo) -> ExternalCheckResult {
         match plugin {
