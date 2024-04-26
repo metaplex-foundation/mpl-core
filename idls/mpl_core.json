@@ -4108,6 +4108,16 @@
       "code": 31,
       "name": "ExternalPluginNotFound",
       "msg": "External Plugin not found"
+    },
+    {
+      "code": 32,
+      "name": "MissingAsset",
+      "msg": "Missing asset needed for extra account PDA derivation"
+    },
+    {
+      "code": 33,
+      "name": "MissingExternalAccount",
+      "msg": "Missing account needed for external plugin"
     }
   ],
   "metadata": {
