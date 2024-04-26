@@ -6,6 +6,7 @@ use mpl_core::{
         DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo,
         ExternalPluginKey, ExternalPluginSchema, HookableLifecycleEvent, LifecycleHook,
         LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority, UpdateAuthority,
+        ValidationResultsOffset,
     },
 };
 pub use setup::*;
@@ -66,8 +67,6 @@ async fn test_remove_lifecycle_hook() {
                 extra_accounts: None,
                 data_authority: Some(PluginAuthority::UpdateAuthority),
                 schema: ExternalPluginSchema::Binary,
-                data_offset: 119,
-                data_len: 0,
             })],
         },
     )
@@ -131,6 +130,7 @@ async fn test_remove_oracle() {
                     ExternalCheckResult { flags: 1 },
                 )]),
                 pda: None,
+                results_offset: None,
             })],
         },
     )
@@ -151,6 +151,7 @@ async fn test_remove_oracle() {
             external_plugins: vec![ExternalPlugin::Oracle(Oracle {
                 base_address: Pubkey::default(),
                 pda: None,
+                results_offset: ValidationResultsOffset::NoOffset,
             })],
         },
     )
@@ -228,8 +229,6 @@ async fn test_remove_data_store() {
             external_plugins: vec![ExternalPlugin::DataStore(DataStore {
                 data_authority: PluginAuthority::UpdateAuthority,
                 schema: ExternalPluginSchema::Binary,
-                data_offset: 119,
-                data_len: 0,
             })],
         },
     )

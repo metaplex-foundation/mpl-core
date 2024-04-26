@@ -64,6 +64,7 @@ pub(crate) fn approve_plugin_authority<'a>(
         CollectionV1::validate_approve_plugin_authority,
         Plugin::validate_approve_plugin_authority,
         None,
+        None,
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -118,6 +119,7 @@ pub(crate) fn approve_collection_plugin_authority<'a>(
         PluginType::check_approve_plugin_authority,
         CollectionV1::validate_approve_plugin_authority,
         Plugin::validate_approve_plugin_authority,
+        None,
         None,
     )?;
 

@@ -74,6 +74,7 @@ pub(crate) fn add_plugin<'a>(
         CollectionV1::validate_add_plugin,
         Plugin::validate_add_plugin,
         None,
+        None,
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -142,6 +143,7 @@ pub(crate) fn add_collection_plugin<'a>(
         PluginType::check_add_plugin,
         CollectionV1::validate_add_plugin,
         Plugin::validate_add_plugin,
+        None,
         None,
     )?;
 

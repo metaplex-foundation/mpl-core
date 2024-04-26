@@ -70,6 +70,7 @@ pub(crate) fn remove_plugin<'a>(
         CollectionV1::validate_remove_plugin,
         Plugin::validate_remove_plugin,
         None,
+        None,
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -134,6 +135,7 @@ pub(crate) fn remove_collection_plugin<'a>(
         PluginType::check_remove_plugin,
         CollectionV1::validate_remove_plugin,
         Plugin::validate_remove_plugin,
+        None,
         None,
     )?;
 

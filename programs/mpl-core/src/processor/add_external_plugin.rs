@@ -79,7 +79,8 @@ pub(crate) fn add_external_plugin<'a>(
         AssetV1::validate_add_external_plugin,
         CollectionV1::validate_add_external_plugin,
         Plugin::validate_add_external_plugin,
-        Some(ExternalPlugin::validate_add_external_plugin),
+        None,
+        None,
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -148,7 +149,8 @@ pub(crate) fn add_collection_external_plugin<'a>(
         PluginType::check_add_external_plugin,
         CollectionV1::validate_add_external_plugin,
         Plugin::validate_add_external_plugin,
-        Some(ExternalPlugin::validate_add_external_plugin),
+        None,
+        None,
     )?;
 
     process_add_external_plugin::<CollectionV1>(

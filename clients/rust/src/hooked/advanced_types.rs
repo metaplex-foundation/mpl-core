@@ -184,6 +184,8 @@ pub struct ExternalRegistryRecordSafe {
     pub authority: PluginAuthority,
     pub lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
     pub offset: u64,
+    pub data_offset: Option<u64>,
+    pub data_len: Option<u64>,
 }
 
 impl ExternalRegistryRecordSafe {
@@ -235,12 +237,16 @@ impl PluginRegistryV1Safe {
             let lifecycle_checks =
                 Option::<Vec<(u8, ExternalCheckResult)>>::deserialize(&mut data)?;
             let offset = u64::deserialize(&mut data)?;
+            let data_offset = Option::<u64>::deserialize(&mut data)?;
+            let data_len = Option::<u64>::deserialize(&mut data)?;
 
             external_registry.push(ExternalRegistryRecordSafe {
                 plugin_type,
                 authority,
                 lifecycle_checks,
                 offset,
+                data_offset,
+                data_len,
             });
         }
 

@@ -3,7 +3,7 @@ pub mod setup;
 use mpl_core::types::{
     DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo,
     ExternalPluginSchema, HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle,
-    OracleInitInfo, PluginAuthority, UpdateAuthority,
+    OracleInitInfo, PluginAuthority, UpdateAuthority, ValidationResultsOffset,
 };
 pub use setup::*;
 
@@ -63,8 +63,6 @@ async fn test_create_lifecycle_hook() {
                 extra_accounts: None,
                 data_authority: Some(PluginAuthority::UpdateAuthority),
                 schema: ExternalPluginSchema::Binary,
-                data_offset: 119,
-                data_len: 0,
             })],
         },
     )
@@ -118,6 +116,7 @@ async fn test_create_oracle() {
             external_plugins: vec![ExternalPlugin::Oracle(Oracle {
                 base_address: Pubkey::default(),
                 pda: None,
+                results_offset: ValidationResultsOffset::NoOffset,
             })],
         },
     )
@@ -166,8 +165,6 @@ async fn test_create_data_store() {
             external_plugins: vec![ExternalPlugin::DataStore(DataStore {
                 data_authority: PluginAuthority::UpdateAuthority,
                 schema: ExternalPluginSchema::Binary,
-                data_offset: 119,
-                data_len: 0,
             })],
         },
     )
