@@ -145,7 +145,7 @@ test('it can use fixed address oracle to deny update via collection', async (t) 
   }).sendAndConfirm(umi);
 
   // create asset referencing the oracle account
-  const { asset } = await createAssetWithCollection(
+  const { asset, collection } = await createAssetWithCollection(
     umi,
     {},
     {
@@ -166,6 +166,7 @@ test('it can use fixed address oracle to deny update via collection', async (t) 
 
   const result = update(umi, {
     asset,
+    collection,
     name: 'new name',
   }).sendAndConfirm(umi);
 
@@ -187,6 +188,7 @@ test('it can use fixed address oracle to deny update via collection', async (t) 
 
   await update(umi, {
     asset,
+    collection,
     name: 'new name 2',
   }).sendAndConfirm(umi);
 
