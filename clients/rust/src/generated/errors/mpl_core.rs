@@ -106,6 +106,12 @@ pub enum MplCoreError {
     /// 31 (0x1F) - External Plugin not found
     #[error("External Plugin not found")]
     ExternalPluginNotFound,
+    /// 32 (0x20) - Missing asset needed for extra account PDA derivation
+    #[error("Missing asset needed for extra account PDA derivation")]
+    MissingAsset,
+    /// 33 (0x21) - Missing account needed for external plugin
+    #[error("Missing account needed for external plugin")]
+    MissingExternalAccount,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

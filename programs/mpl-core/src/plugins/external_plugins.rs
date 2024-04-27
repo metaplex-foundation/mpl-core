@@ -284,46 +284,106 @@ impl ExtraAccount {
         program_id: &Pubkey,
         ctx: &PluginValidationContext,
     ) -> Result<Pubkey, ProgramError> {
-        match &self {
+        match self {
             ExtraAccount::PreconfiguredProgram { .. } => {
                 let seeds = &[MPL_CORE_PREFIX.as_bytes()];
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)
             }
             ExtraAccount::PreconfiguredCollection { .. } => {
-                let collection = ctx.collection_info.ok_or(MplCoreError::NotAvailable)?.key;
+                let collection = ctx
+                    .collection_info
+                    .ok_or(MplCoreError::MissingCollection)?
+                    .key;
                 let seeds = &[MPL_CORE_PREFIX.as_bytes(), collection.as_ref()];
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)
             }
             ExtraAccount::PreconfiguredOwner { .. } => {
-                let asset_info = ctx.asset_info.ok_or(MplCoreError::NotAvailable)?;
+                let asset_info = ctx.asset_info.ok_or(MplCoreError::MissingAsset)?;
                 let owner = AssetV1::load(asset_info, 0)?.owner;
                 let seeds = &[MPL_CORE_PREFIX.as_bytes(), owner.as_ref()];
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)
             }
             ExtraAccount::PreconfiguredRecipient { .. } => {
-                let recipient = ctx.new_owner.ok_or(MplCoreError::NotAvailable)?.key;
+                let recipient = ctx.new_owner.ok_or(MplCoreError::MissingNewOwner)?.key;
                 let seeds = &[MPL_CORE_PREFIX.as_bytes(), recipient.as_ref()];
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)
             }
             ExtraAccount::PreconfiguredAsset { .. } => {
-                let asset = ctx.asset_info.ok_or(MplCoreError::NotAvailable)?.key;
+                let asset = ctx.asset_info.ok_or(MplCoreError::MissingAsset)?.key;
                 let seeds = &[MPL_CORE_PREFIX.as_bytes(), asset.as_ref()];
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)
             }
-            ExtraAccount::CustomPda { seeds: _seeds, .. } => {
-                // TODO merge prefix with user specified seeds.
-                let new_seeds = &[MPL_CORE_PREFIX.as_bytes()];
-                let (pubkey, _bump) = Pubkey::find_program_address(new_seeds, program_id);
+            ExtraAccount::CustomPda { seeds, .. } => {
+                let seeds = transform_seeds(seeds, program_id, ctx)?;
+
+                // Convert the Vec of Vec into Vec of u8 slices.
+                let vec_of_slices: Vec<&[u8]> = seeds.iter().map(Vec::as_slice).collect();
+
+                let (pubkey, _bump) = Pubkey::find_program_address(&vec_of_slices, program_id);
                 Ok(pubkey)
             }
             ExtraAccount::Address { address, .. } => Ok(*address),
         }
     }
+}
+
+// Transform seeds from their tokens into actual seeds based on passed-in context values.
+fn transform_seeds(
+    seeds: &Vec<Seed>,
+    program_id: &Pubkey,
+    ctx: &PluginValidationContext,
+) -> Result<Vec<Vec<u8>>, ProgramError> {
+    let mut transformed_seeds = Vec::<Vec<u8>>::new();
+
+    for seed in seeds {
+        match seed {
+            Seed::Program => {
+                transformed_seeds.push(program_id.as_ref().to_vec());
+            }
+            Seed::Collection => {
+                let collection = ctx
+                    .collection_info
+                    .ok_or(MplCoreError::MissingCollection)?
+                    .key
+                    .as_ref()
+                    .to_vec();
+                transformed_seeds.push(collection);
+            }
+            Seed::Owner => {
+                let asset_info = ctx.asset_info.ok_or(MplCoreError::MissingAsset)?;
+                let owner = AssetV1::load(asset_info, 0)?.owner.as_ref().to_vec();
+                transformed_seeds.push(owner);
+            }
+            Seed::Recipient => {
+                let recipient = ctx
+                    .new_owner
+                    .ok_or(MplCoreError::MissingNewOwner)?
+                    .key
+                    .as_ref()
+                    .to_vec();
+                transformed_seeds.push(recipient);
+            }
+            Seed::Asset => {
+                let asset = ctx
+                    .asset_info
+                    .ok_or(MplCoreError::MissingAsset)?
+                    .key
+                    .as_ref()
+                    .to_vec();
+                transformed_seeds.push(asset);
+            }
+            Seed::Bytes(val) => {
+                transformed_seeds.push(val.clone());
+            }
+        }
+    }
+
+    Ok(transformed_seeds)
 }
 
 /// Seeds to be used for extra account custom PDA derivations.

@@ -887,7 +887,7 @@ pub(crate) fn validate_plugin_checks<'a>(
                 _ => unreachable!(),
             };
 
-            let ctx = PluginValidationContext {
+            let validation_ctx = PluginValidationContext {
                 accounts,
                 asset_info: asset,
                 collection_info: collection,
@@ -898,7 +898,10 @@ pub(crate) fn validate_plugin_checks<'a>(
                 target_plugin: new_plugin,
             };
 
-            let result = plugin_validate_fp(&Plugin::load(account, registry_record.offset)?, &ctx)?;
+            let result = plugin_validate_fp(
+                &Plugin::load(account, registry_record.offset)?,
+                &validation_ctx,
+            )?;
             match result {
                 ValidationResult::Rejected => rejected = true,
                 ValidationResult::Approved => approved = true,
@@ -952,7 +955,7 @@ pub(crate) fn validate_external_plugin_checks<'a>(
                 _ => unreachable!(),
             };
 
-            let ctx = PluginValidationContext {
+            let validation_ctx = PluginValidationContext {
                 accounts,
                 asset_info: asset,
                 collection_info: collection,
@@ -965,11 +968,19 @@ pub(crate) fn validate_external_plugin_checks<'a>(
 
             let result = external_plugin_validate_fp(
                 &ExternalPlugin::load(account, external_registry_record.offset)?,
-                &ctx,
+                &validation_ctx,
             )?;
             match result {
-                ValidationResult::Rejected => return Ok(ValidationResult::Rejected),
-                ValidationResult::Approved => approved = true,
+                ValidationResult::Rejected => {
+                    if check_result.can_reject() {
+                        return Ok(ValidationResult::Rejected);
+                    }
+                }
+                ValidationResult::Approved => {
+                    if check_result.can_approve() {
+                        approved = true;
+                    }
+                }
                 ValidationResult::Pass => continue,
                 // Force approved will not be possible from external plugins.
                 ValidationResult::ForceApproved => unreachable!(),
