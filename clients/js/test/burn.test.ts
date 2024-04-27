@@ -1,15 +1,12 @@
-import {
-  assertAccountExists,
-  generateSigner,
-  sol,
-} from '@metaplex-foundation/umi';
+import { generateSigner, sol } from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import { burnCollectionV1, burnV1, Key, pluginAuthorityPair } from '../src';
+import { burnCollectionV1, burnV1, pluginAuthorityPair } from '../src';
 import {
   DEFAULT_ASSET,
   DEFAULT_COLLECTION,
   assertAsset,
+  assertBurned,
   assertCollection,
   createAsset,
   createAssetWithCollection,
@@ -33,12 +30,8 @@ test('it can burn an asset as the owner', async (t) => {
   }).sendAndConfirm(umi);
 
   // And the asset address still exists but was resized to 1.
-  const afterAsset = await umi.rpc.getAccount(asset.publicKey);
-  t.true(afterAsset.exists);
-  assertAccountExists(afterAsset);
+  const afterAsset = await assertBurned(t, umi, asset.publicKey);
   t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
-  t.is(afterAsset.data.length, 1);
-  t.is(afterAsset.data[0], Key.Uninitialized);
 });
 
 test('it cannot burn an asset if not the owner', async (t) => {

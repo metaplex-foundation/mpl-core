@@ -1,6 +1,8 @@
+import { Context, PublicKey } from '@metaplex-foundation/umi';
 import {
   ExtraAccount,
   extraAccountFromBase,
+  extraAccountToAccountMeta,
   extraAccountToBase,
 } from './extraAccount';
 import {
@@ -83,13 +85,37 @@ export function oracleUpdateInfoArgsToBase(
   };
 }
 
-export function oracleFromBase(s: BaseOracle, r: ExternalRegistryRecord, account: Uint8Array): Oracle {
+export function oracleFromBase(
+  s: BaseOracle,
+  r: ExternalRegistryRecord,
+  account: Uint8Array
+): Oracle {
   return {
     ...s,
     pda:
       s.pda.__option === 'Some' ? extraAccountFromBase(s.pda.value) : undefined,
     resultsOffset: validationResultsOffsetFromBase(s.resultsOffset),
   };
+}
+
+export function findOracleAccount(
+  context: Pick<Context, 'eddsa'>,
+  oracle: Pick<Oracle, 'baseAddress' | 'pda'>,
+  inputs: {
+    asset?: PublicKey;
+    collection?: PublicKey;
+    recipient?: PublicKey;
+    owner?: PublicKey;
+  }
+): PublicKey {
+  if (!oracle.pda) {
+    return oracle.baseAddress;
+  }
+
+  return extraAccountToAccountMeta(context, oracle.pda, {
+    ...inputs,
+    program: oracle.baseAddress,
+  }).pubkey;
 }
 
 export const oracleManifest: ExternalPluginManifest<

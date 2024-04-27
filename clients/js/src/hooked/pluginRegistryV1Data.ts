@@ -134,7 +134,10 @@ export function getExternalRegistryRecordSerializer(): Serializer<
         lifecycleChecksOffset
       );
 
-      const [dataOffset, dataOffsetOffset] = option(u64()).deserialize(buffer, pluginOffsetOffset);
+      const [dataOffset, dataOffsetOffset] = option(u64()).deserialize(
+        buffer,
+        pluginOffsetOffset
+      );
       const [dataLen] = option(u64()).deserialize(buffer, dataOffsetOffset);
       return [
         {

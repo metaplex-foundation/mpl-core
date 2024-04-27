@@ -20,21 +20,27 @@ export const findPreconfiguredPda = (
   ]);
 
 export type ExtraAccount =
-  | Exclude<
-      RenameToType<BaseExtraAccount>,
-      { type: 'CustomPda' } | { type: 'Address' }
-    >
+  | (Omit<
+      Exclude<
+        RenameToType<BaseExtraAccount>,
+        { type: 'CustomPda' } | { type: 'Address' }
+      >,
+      'isSigner' | 'isWritable'
+    > & {
+      isSigner?: boolean;
+      isWritable?: boolean;
+    })
   | {
       type: 'CustomPda';
       seeds: Array<Seed>;
-      isSigner: boolean;
-      isWritable: boolean;
+      isSigner?: boolean;
+      isWritable?: boolean;
     }
   | {
       type: 'Address';
       address: PublicKey;
-      isSigner: boolean;
-      isWritable: boolean;
+      isSigner?: boolean;
+      isWritable?: boolean;
     };
 
 export function extraAccountToAccountMeta(
@@ -48,55 +54,55 @@ export function extraAccountToAccountMeta(
     owner?: PublicKey;
   }
 ): AccountMeta {
+  const acccountMeta: Pick<AccountMeta, 'isSigner' | 'isWritable'> = {
+    isSigner: e.isSigner || false,
+    isWritable: e.isWritable || false,
+  };
+
   switch (e.type) {
     case 'PreconfiguredProgram':
       if (!inputs.program) throw new Error('Program address is required');
       return {
+        ...acccountMeta,
         pubkey: context.eddsa.findPda(inputs.program, [
           string({ size: 'variable' }).serialize(PRECONFIGURED_SEED),
         ])[0],
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
       };
     case 'PreconfiguredCollection':
       if (!inputs.program) throw new Error('Program address is required');
       if (!inputs.collection) throw new Error('Collection address is required');
       return {
+        ...acccountMeta,
         pubkey: findPreconfiguredPda(
           context,
           inputs.program,
           inputs.collection
         )[0],
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
       };
     case 'PreconfiguredOwner':
       if (!inputs.program) throw new Error('Program address is required');
       if (!inputs.owner) throw new Error('Owner address is required');
       return {
+        ...acccountMeta,
         pubkey: findPreconfiguredPda(context, inputs.program, inputs.owner)[0],
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
       };
     case 'PreconfiguredRecipient':
       if (!inputs.program) throw new Error('Program address is required');
       if (!inputs.recipient) throw new Error('Recipient address is required');
       return {
+        ...acccountMeta,
         pubkey: findPreconfiguredPda(
           context,
           inputs.program,
           inputs.recipient
         )[0],
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
       };
     case 'PreconfiguredAsset':
       if (!inputs.program) throw new Error('Program address is required');
       if (!inputs.asset) throw new Error('Asset address is required');
       return {
+        ...acccountMeta,
         pubkey: findPreconfiguredPda(context, inputs.program, inputs.asset)[0],
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
       };
     case 'CustomPda':
       if (!inputs.program) throw new Error('Program address is required');
@@ -129,14 +135,12 @@ export function extraAccountToAccountMeta(
             }
           })
         )[0],
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
+        ...acccountMeta,
       };
     case 'Address':
       return {
+        ...acccountMeta,
         pubkey: e.address,
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
       };
     default:
       throw new Error('Unknown extra account type');
@@ -144,27 +148,28 @@ export function extraAccountToAccountMeta(
 }
 
 export function extraAccountToBase(s: ExtraAccount): BaseExtraAccount {
+  const acccountMeta: Pick<BaseExtraAccount, 'isSigner' | 'isWritable'> = {
+    isSigner: s.isSigner || false,
+    isWritable: s.isWritable || false,
+  };
   if (s.type === 'CustomPda') {
     return {
       __kind: 'CustomPda',
-      isSigner: s.isSigner,
-      isWritable: s.isWritable,
+      ...acccountMeta,
       seeds: s.seeds.map(seedToBase),
     };
   }
   if (s.type === 'Address') {
     return {
       __kind: 'Address',
-      isSigner: s.isSigner,
-      isWritable: s.isWritable,
+      ...acccountMeta,
       address: s.address,
     };
   }
 
   return {
     __kind: s.type,
-    isSigner: s.isSigner,
-    isWritable: s.isWritable,
+    ...acccountMeta,
   };
 }
 

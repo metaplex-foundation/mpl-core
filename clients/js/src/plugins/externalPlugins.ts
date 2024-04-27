@@ -1,4 +1,9 @@
-import { AccountMeta, Context, PublicKey, Option } from '@metaplex-foundation/umi';
+import {
+  AccountMeta,
+  Context,
+  PublicKey,
+  Option,
+} from '@metaplex-foundation/umi';
 import {
   lifecycleHookFromBase,
   LifecycleHookInitInfoArgs,
@@ -50,25 +55,25 @@ export type ExternalPluginsList = {
 
 export type ExternalPluginInitInfoArgs =
   | ({
-    type: 'Oracle';
-  } & OracleInitInfoArgs)
+      type: 'Oracle';
+    } & OracleInitInfoArgs)
   | ({
-    type: 'LifecycleHook';
-  } & LifecycleHookInitInfoArgs)
+      type: 'LifecycleHook';
+    } & LifecycleHookInitInfoArgs)
   | ({
-    type: 'DataStore';
-  } & DataStoreInitInfoArgs);
+      type: 'DataStore';
+    } & DataStoreInitInfoArgs);
 
 export type ExternalPluginUpdateInfoArgs =
   | ({
-    type: 'Oracle';
-  } & OracleUpdateInfoArgs)
+      type: 'Oracle';
+    } & OracleUpdateInfoArgs)
   | ({
-    type: 'LifecycleHook';
-  } & LifecycleHookUpdateInfoArgs)
+      type: 'LifecycleHook';
+    } & LifecycleHookUpdateInfoArgs)
   | ({
-    type: 'DataStore';
-  } & DataStoreUpdateInfoArgs);
+      type: 'DataStore';
+    } & DataStoreUpdateInfoArgs);
 
 export const externalPluginManifests = {
   Oracle: oracleManifest,
@@ -128,7 +133,11 @@ export function externalRegistryRecordsToExternalPluginList(
       result.lifecycleHooks.push({
         type: 'LifecycleHook',
         ...mappedPlugin,
-        ...lifecycleHookFromBase(deserializedPlugin.fields[0], record, accountData),
+        ...lifecycleHookFromBase(
+          deserializedPlugin.fields[0],
+          record,
+          accountData
+        ),
       });
     }
   });
