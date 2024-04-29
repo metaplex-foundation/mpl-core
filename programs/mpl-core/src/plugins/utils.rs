@@ -265,7 +265,7 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     // You cannot add a duplicate plugin.
     if plugin_registry
         .registry
-        .iter_mut()
+        .iter()
         .any(|record| record.plugin_type == plugin_type)
     {
         return Err(MplCoreError::PluginAlreadyExists.into());
@@ -317,6 +317,13 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
     let core = T::load(account, 0)?;
     let header_offset = core.get_size();
     let plugin_type = init_info.into();
+
+    // You cannot add a duplicate plugin.
+    for record in plugin_registry.external_registry.iter() {
+        if ExternalPluginKey::from_record(account, record)? == ExternalPluginKey::from(init_info) {
+            return Err(MplCoreError::ExternalPluginAlreadyExists.into());
+        }
+    }
 
     let (authority, lifecycle_checks) = match &init_info {
         ExternalPluginInitInfo::LifecycleHook(init_info) => {

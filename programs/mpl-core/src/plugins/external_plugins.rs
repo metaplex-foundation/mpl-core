@@ -395,3 +395,19 @@ impl ExternalPluginKey {
         }
     }
 }
+
+impl From<&ExternalPluginInitInfo> for ExternalPluginKey {
+    fn from(init_info: &ExternalPluginInitInfo) -> Self {
+        match init_info {
+            ExternalPluginInitInfo::LifecycleHook(init_info) => {
+                ExternalPluginKey::LifecycleHook(init_info.hooked_program)
+            }
+            ExternalPluginInitInfo::Oracle(init_info) => {
+                ExternalPluginKey::Oracle(init_info.base_address)
+            }
+            ExternalPluginInitInfo::DataStore(init_info) => {
+                ExternalPluginKey::DataStore(init_info.data_authority)
+            }
+        }
+    }
+}

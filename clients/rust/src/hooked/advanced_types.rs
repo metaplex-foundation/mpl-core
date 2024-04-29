@@ -6,9 +6,9 @@ use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
         Attributes, BurnDelegate, DataStore, Edition, ExternalCheckResult, ExternalPlugin,
-        ExternalPluginKey, FreezeDelegate, Key, LifecycleHook, Oracle, PermanentBurnDelegate,
-        PermanentFreezeDelegate, PermanentTransferDelegate, PluginAuthority, Royalties,
-        TransferDelegate, UpdateDelegate,
+        ExternalPluginKey, FreezeDelegate, Key, LifecycleHook, MasterEdition, Oracle,
+        PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate, PluginAuthority,
+        Royalties, TransferDelegate, UpdateDelegate,
     },
 };
 
@@ -126,6 +126,12 @@ pub struct EditionPlugin {
     pub edition: Edition,
 }
 
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct MasterEditionPlugin {
+    pub base: BasePlugin,
+    pub master_edition: MasterEdition,
+}
+
 #[derive(Debug, Default)]
 pub struct PluginsList {
     pub royalties: Option<RoyaltiesPlugin>,
@@ -138,6 +144,7 @@ pub struct PluginsList {
     pub permanent_transfer_delegate: Option<PermanentTransferDelegatePlugin>,
     pub permanent_burn_delegate: Option<PermanentBurnDelegatePlugin>,
     pub edition: Option<EditionPlugin>,
+    pub master_edition: Option<MasterEditionPlugin>,
 }
 
 #[derive(Debug, Default)]

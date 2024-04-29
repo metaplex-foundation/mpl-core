@@ -17,6 +17,8 @@ import {
 import {
   Attributes,
   AttributesArgs,
+  BaseMasterEdition,
+  BaseMasterEditionArgs,
   BaseRoyalties,
   BaseRoyaltiesArgs,
   BurnDelegate,
@@ -36,6 +38,7 @@ import {
   UpdateDelegate,
   UpdateDelegateArgs,
   getAttributesSerializer,
+  getBaseMasterEditionSerializer,
   getBaseRoyaltiesSerializer,
   getBurnDelegateSerializer,
   getEditionSerializer,
@@ -57,7 +60,8 @@ export type Plugin =
   | { __kind: 'Attributes'; fields: [Attributes] }
   | { __kind: 'PermanentTransferDelegate'; fields: [PermanentTransferDelegate] }
   | { __kind: 'PermanentBurnDelegate'; fields: [PermanentBurnDelegate] }
-  | { __kind: 'Edition'; fields: [Edition] };
+  | { __kind: 'Edition'; fields: [Edition] }
+  | { __kind: 'MasterEdition'; fields: [BaseMasterEdition] };
 
 export type PluginArgs =
   | { __kind: 'Royalties'; fields: [BaseRoyaltiesArgs] }
@@ -72,7 +76,8 @@ export type PluginArgs =
       fields: [PermanentTransferDelegateArgs];
     }
   | { __kind: 'PermanentBurnDelegate'; fields: [PermanentBurnDelegateArgs] }
-  | { __kind: 'Edition'; fields: [EditionArgs] };
+  | { __kind: 'Edition'; fields: [EditionArgs] }
+  | { __kind: 'MasterEdition'; fields: [BaseMasterEditionArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -137,6 +142,12 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
           ['fields', tuple([getEditionSerializer()])],
         ]),
       ],
+      [
+        'MasterEdition',
+        struct<GetDataEnumKindContent<Plugin, 'MasterEdition'>>([
+          ['fields', tuple([getBaseMasterEditionSerializer()])],
+        ]),
+      ],
     ],
     { description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
@@ -186,6 +197,10 @@ export function plugin(
   kind: 'Edition',
   data: GetDataEnumKindContent<PluginArgs, 'Edition'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Edition'>;
+export function plugin(
+  kind: 'MasterEdition',
+  data: GetDataEnumKindContent<PluginArgs, 'MasterEdition'>['fields']
+): GetDataEnumKind<PluginArgs, 'MasterEdition'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any

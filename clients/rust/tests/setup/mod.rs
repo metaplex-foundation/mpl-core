@@ -276,3 +276,32 @@ pub async fn airdrop(
     context.banks_client.process_transaction(tx).await.unwrap();
     Ok(())
 }
+
+#[macro_export]
+macro_rules! assert_custom_instruction_error {
+    ($ix:expr, $error:expr, $matcher:pat) => {
+        match $error {
+            solana_program_test::BanksClientError::TransactionError(
+                solana_sdk::transaction::TransactionError::InstructionError(
+                    $ix,
+                    solana_sdk::instruction::InstructionError::Custom(x),
+                ),
+            ) => match num_traits::FromPrimitive::from_i32(x as i32) {
+                Some($matcher) => assert!(true),
+                Some(other) => {
+                    assert!(
+                        false,
+                        "Expected another custom instruction error than '{:#?}'",
+                        other
+                    )
+                }
+                None => assert!(false, "Expected custom instruction error"),
+            },
+            err => assert!(
+                false,
+                "Expected custom instruction error but got '{:#?}'",
+                err
+            ),
+        };
+    };
+}

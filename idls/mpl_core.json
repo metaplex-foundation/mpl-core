@@ -2365,6 +2365,32 @@
       }
     },
     {
+      "name": "MasterEdition",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "maxSupply",
+            "type": {
+              "option": "u32"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Oracle",
       "type": {
         "kind": "struct",
@@ -3377,6 +3403,14 @@
                 "defined": "Edition"
               }
             ]
+          },
+          {
+            "name": "MasterEdition",
+            "fields": [
+              {
+                "defined": "MasterEdition"
+              }
+            ]
           }
         ]
       }
@@ -3415,6 +3449,9 @@
           },
           {
             "name": "Edition"
+          },
+          {
+            "name": "MasterEdition"
           }
         ]
       }
@@ -4108,6 +4145,11 @@
       "code": 31,
       "name": "ExternalPluginNotFound",
       "msg": "External Plugin not found"
+    },
+    {
+      "code": 32,
+      "name": "ExternalPluginAlreadyExists",
+      "msg": "External Plugin already exists"
     }
   ],
   "metadata": {

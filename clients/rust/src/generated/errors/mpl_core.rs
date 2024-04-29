@@ -106,6 +106,9 @@ pub enum MplCoreError {
     /// 31 (0x1F) - External Plugin not found
     #[error("External Plugin not found")]
     ExternalPluginNotFound,
+    /// 32 (0x20) - External Plugin already exists
+    #[error("External Plugin already exists")]
+    ExternalPluginAlreadyExists,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {
