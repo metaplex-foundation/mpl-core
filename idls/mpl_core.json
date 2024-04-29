@@ -2217,7 +2217,7 @@
         "fields": [
           {
             "name": "flags",
-            "type": "u8"
+            "type": "u32"
           }
         ]
       }
