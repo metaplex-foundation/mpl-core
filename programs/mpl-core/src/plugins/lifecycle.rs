@@ -1,5 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use modular_bitfield::{bitfield, specifiers::B5};
+use modular_bitfield::{bitfield, specifiers::B29};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 use std::collections::BTreeMap;
 
@@ -33,7 +33,7 @@ pub enum CheckResult {
 #[derive(BorshDeserialize, BorshSerialize, Eq, PartialEq, Copy, Clone, Debug)]
 pub struct ExternalCheckResult {
     /// Bitfield for external check results.
-    pub flags: u8,
+    pub flags: u32,
 }
 
 impl ExternalCheckResult {
@@ -43,13 +43,13 @@ impl ExternalCheckResult {
 }
 
 /// Bitfield representation of lifecycle permissions for external, third party plugins.
-#[bitfield(bits = 8)]
+#[bitfield(bits = 32)]
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct ExternalCheckResultBits {
     pub can_listen: bool,
     pub can_approve: bool,
     pub can_reject: bool,
-    pub empty_bits: B5,
+    pub empty_bits: B29,
 }
 
 impl From<ExternalCheckResult> for ExternalCheckResultBits {
@@ -61,7 +61,7 @@ impl From<ExternalCheckResult> for ExternalCheckResultBits {
 impl From<ExternalCheckResultBits> for ExternalCheckResult {
     fn from(bits: ExternalCheckResultBits) -> Self {
         ExternalCheckResult {
-            flags: bits.into_bytes()[0],
+            flags: u32::from_le_bytes(bits.into_bytes()),
         }
     }
 }
