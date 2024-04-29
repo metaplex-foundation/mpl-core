@@ -4145,6 +4145,11 @@
       "code": 31,
       "name": "ExternalPluginNotFound",
       "msg": "External Plugin not found"
+    },
+    {
+      "code": 32,
+      "name": "ExternalPluginAlreadyExists",
+      "msg": "External Plugin already exists"
     }
   ],
   "metadata": {

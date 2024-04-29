@@ -446,6 +446,22 @@ export class ExternalPluginNotFoundError extends ProgramError {
 codeToErrorMap.set(0x1f, ExternalPluginNotFoundError);
 nameToErrorMap.set('ExternalPluginNotFound', ExternalPluginNotFoundError);
 
+/** ExternalPluginAlreadyExists: External Plugin already exists */
+export class ExternalPluginAlreadyExistsError extends ProgramError {
+  override readonly name: string = 'ExternalPluginAlreadyExists';
+
+  readonly code: number = 0x20; // 32
+
+  constructor(program: Program, cause?: Error) {
+    super('External Plugin already exists', program, cause);
+  }
+}
+codeToErrorMap.set(0x20, ExternalPluginAlreadyExistsError);
+nameToErrorMap.set(
+  'ExternalPluginAlreadyExists',
+  ExternalPluginAlreadyExistsError
+);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
