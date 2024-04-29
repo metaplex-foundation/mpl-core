@@ -4148,11 +4148,16 @@
     },
     {
       "code": 32,
+      "name": "ExternalPluginAlreadyExists",
+      "msg": "External Plugin already exists"
+    },
+    {
+      "code": 33,
       "name": "MissingAsset",
       "msg": "Missing asset needed for extra account PDA derivation"
     },
     {
-      "code": 33,
+      "code": 34,
       "name": "MissingExternalAccount",
       "msg": "Missing account needed for external plugin"
     }
