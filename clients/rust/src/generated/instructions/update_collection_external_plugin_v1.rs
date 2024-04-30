@@ -99,7 +99,7 @@ impl UpdateCollectionExternalPluginV1InstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UpdateCollectionExternalPluginV1InstructionArgs {
-    pub plugin_key: ExternalPluginKey,
+    pub key: ExternalPluginKey,
     pub update_info: ExternalPluginUpdateInfo,
 }
 
@@ -119,7 +119,7 @@ pub struct UpdateCollectionExternalPluginV1Builder {
     authority: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
-    plugin_key: Option<ExternalPluginKey>,
+    key: Option<ExternalPluginKey>,
     update_info: Option<ExternalPluginUpdateInfo>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
@@ -165,8 +165,8 @@ impl UpdateCollectionExternalPluginV1Builder {
         self
     }
     #[inline(always)]
-    pub fn plugin_key(&mut self, plugin_key: ExternalPluginKey) -> &mut Self {
-        self.plugin_key = Some(plugin_key);
+    pub fn key(&mut self, key: ExternalPluginKey) -> &mut Self {
+        self.key = Some(key);
         self
     }
     #[inline(always)]
@@ -204,7 +204,7 @@ impl UpdateCollectionExternalPluginV1Builder {
             log_wrapper: self.log_wrapper,
         };
         let args = UpdateCollectionExternalPluginV1InstructionArgs {
-            plugin_key: self.plugin_key.clone().expect("plugin_key is not set"),
+            key: self.key.clone().expect("key is not set"),
             update_info: self.update_info.clone().expect("update_info is not set"),
         };
 
@@ -391,7 +391,7 @@ impl<'a, 'b> UpdateCollectionExternalPluginV1CpiBuilder<'a, 'b> {
             authority: None,
             system_program: None,
             log_wrapper: None,
-            plugin_key: None,
+            key: None,
             update_info: None,
             __remaining_accounts: Vec::new(),
         });
@@ -442,8 +442,8 @@ impl<'a, 'b> UpdateCollectionExternalPluginV1CpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn plugin_key(&mut self, plugin_key: ExternalPluginKey) -> &mut Self {
-        self.instruction.plugin_key = Some(plugin_key);
+    pub fn key(&mut self, key: ExternalPluginKey) -> &mut Self {
+        self.instruction.key = Some(key);
         self
     }
     #[inline(always)]
@@ -493,11 +493,7 @@ impl<'a, 'b> UpdateCollectionExternalPluginV1CpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = UpdateCollectionExternalPluginV1InstructionArgs {
-            plugin_key: self
-                .instruction
-                .plugin_key
-                .clone()
-                .expect("plugin_key is not set"),
+            key: self.instruction.key.clone().expect("key is not set"),
             update_info: self
                 .instruction
                 .update_info
@@ -535,7 +531,7 @@ struct UpdateCollectionExternalPluginV1CpiBuilderInstruction<'a, 'b> {
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    plugin_key: Option<ExternalPluginKey>,
+    key: Option<ExternalPluginKey>,
     update_info: Option<ExternalPluginUpdateInfo>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(

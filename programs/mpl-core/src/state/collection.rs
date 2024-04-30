@@ -110,7 +110,7 @@ impl CollectionV1 {
 
     /// Check permissions for the update external plugin lifecycle event.
     pub fn check_update_external_plugin() -> CheckResult {
-        CheckResult::None
+        CheckResult::CanApprove
     }
 
     /// Validate the add plugin lifecycle event.
@@ -300,11 +300,16 @@ impl CollectionV1 {
     /// Validate the update external plugin lifecycle event.
     pub fn validate_update_external_plugin(
         &self,
-        _authority_info: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&Plugin>,
         _plugin: Option<&ExternalPlugin>,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        if self.update_authority == *authority_info.key {
+            solana_program::msg!("Asset: Approved");
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
     }
 
     /// Increment size of the Collection

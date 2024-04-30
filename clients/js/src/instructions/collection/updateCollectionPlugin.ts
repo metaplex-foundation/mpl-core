@@ -28,7 +28,7 @@ export const updateCollectionPlugin = (
     return updateCollectionExternalPluginV1(context, {
       ...args,
       updateInfo: createExternalPluginUpdateInfo(plug),
-      pluginKey: externalPluginKeyToBase(plug.key),
+      key: externalPluginKeyToBase(plug.key),
     });
   }
 

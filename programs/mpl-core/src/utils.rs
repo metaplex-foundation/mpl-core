@@ -165,6 +165,11 @@ pub(crate) fn resize_or_reallocate_account<'a>(
     system_program: &AccountInfo<'a>,
     new_size: usize,
 ) -> ProgramResult {
+    // If the account is already the correct size, return.
+    if new_size == target_account.data_len() {
+        return Ok(());
+    }
+
     let rent = Rent::get()?;
     let new_minimum_balance = rent.minimum_balance(new_size);
     let current_minimum_balance = rent.minimum_balance(target_account.data_len());

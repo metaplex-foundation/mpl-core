@@ -19,6 +19,15 @@ pub struct DataStore {
     pub schema: ExternalPluginSchema,
 }
 
+impl DataStore {
+    /// Updates the data store with the new info.
+    pub fn update(&mut self, info: &DataStoreUpdateInfo) {
+        if let Some(schema) = &info.schema {
+            self.schema = *schema;
+        }
+    }
+}
+
 impl PluginValidation for DataStore {
     fn validate_add_external_plugin(
         &self,

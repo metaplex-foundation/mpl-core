@@ -6,7 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, struct, u8 } from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct, u32 } from '@metaplex-foundation/umi/serializers';
 
 export type ExternalCheckResult = { flags: number };
 
@@ -16,7 +16,7 @@ export function getExternalCheckResultSerializer(): Serializer<
   ExternalCheckResultArgs,
   ExternalCheckResult
 > {
-  return struct<ExternalCheckResult>([['flags', u8()]], {
+  return struct<ExternalCheckResult>([['flags', u32()]], {
     description: 'ExternalCheckResult',
   }) as Serializer<ExternalCheckResultArgs, ExternalCheckResult>;
 }

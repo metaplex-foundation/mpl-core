@@ -446,11 +446,27 @@ export class ExternalPluginNotFoundError extends ProgramError {
 codeToErrorMap.set(0x1f, ExternalPluginNotFoundError);
 nameToErrorMap.set('ExternalPluginNotFound', ExternalPluginNotFoundError);
 
+/** ExternalPluginAlreadyExists: External Plugin already exists */
+export class ExternalPluginAlreadyExistsError extends ProgramError {
+  override readonly name: string = 'ExternalPluginAlreadyExists';
+
+  readonly code: number = 0x20; // 32
+
+  constructor(program: Program, cause?: Error) {
+    super('External Plugin already exists', program, cause);
+  }
+}
+codeToErrorMap.set(0x20, ExternalPluginAlreadyExistsError);
+nameToErrorMap.set(
+  'ExternalPluginAlreadyExists',
+  ExternalPluginAlreadyExistsError
+);
+
 /** MissingAsset: Missing asset needed for extra account PDA derivation */
 export class MissingAssetError extends ProgramError {
   override readonly name: string = 'MissingAsset';
 
-  readonly code: number = 0x20; // 32
+  readonly code: number = 0x21; // 33
 
   constructor(program: Program, cause?: Error) {
     super(
@@ -460,20 +476,20 @@ export class MissingAssetError extends ProgramError {
     );
   }
 }
-codeToErrorMap.set(0x20, MissingAssetError);
+codeToErrorMap.set(0x21, MissingAssetError);
 nameToErrorMap.set('MissingAsset', MissingAssetError);
 
 /** MissingExternalAccount: Missing account needed for external plugin */
 export class MissingExternalAccountError extends ProgramError {
   override readonly name: string = 'MissingExternalAccount';
 
-  readonly code: number = 0x21; // 33
+  readonly code: number = 0x22; // 34
 
   constructor(program: Program, cause?: Error) {
     super('Missing account needed for external plugin', program, cause);
   }
 }
-codeToErrorMap.set(0x21, MissingExternalAccountError);
+codeToErrorMap.set(0x22, MissingExternalAccountError);
 nameToErrorMap.set('MissingExternalAccount', MissingExternalAccountError);
 
 /**

@@ -2217,7 +2217,7 @@
         "fields": [
           {
             "name": "flags",
-            "type": "u8"
+            "type": "u32"
           }
         ]
       }
@@ -3151,7 +3151,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "pluginKey",
+            "name": "key",
             "type": {
               "defined": "ExternalPluginKey"
             }
@@ -3642,9 +3642,6 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "Program"
-          },
-          {
             "name": "Collection"
           },
           {
@@ -3655,6 +3652,12 @@
           },
           {
             "name": "Asset"
+          },
+          {
+            "name": "Address",
+            "fields": [
+              "publicKey"
+            ]
           },
           {
             "name": "Bytes",
@@ -4148,11 +4151,16 @@
     },
     {
       "code": 32,
+      "name": "ExternalPluginAlreadyExists",
+      "msg": "External Plugin already exists"
+    },
+    {
+      "code": 33,
       "name": "MissingAsset",
       "msg": "Missing asset needed for extra account PDA derivation"
     },
     {
-      "code": 33,
+      "code": 34,
       "name": "MissingExternalAccount",
       "msg": "Missing account needed for external plugin"
     }

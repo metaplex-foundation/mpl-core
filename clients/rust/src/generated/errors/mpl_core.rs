@@ -106,10 +106,13 @@ pub enum MplCoreError {
     /// 31 (0x1F) - External Plugin not found
     #[error("External Plugin not found")]
     ExternalPluginNotFound,
-    /// 32 (0x20) - Missing asset needed for extra account PDA derivation
+    /// 32 (0x20) - External Plugin already exists
+    #[error("External Plugin already exists")]
+    ExternalPluginAlreadyExists,
+    /// 33 (0x21) - Missing asset needed for extra account PDA derivation
     #[error("Missing asset needed for extra account PDA derivation")]
     MissingAsset,
-    /// 33 (0x21) - Missing account needed for external plugin
+    /// 34 (0x22) - Missing account needed for external plugin
     #[error("Missing account needed for external plugin")]
     MissingExternalAccount,
 }

@@ -68,6 +68,28 @@ pub enum ExternalPlugin {
 }
 
 impl ExternalPlugin {
+    /// Update the plugin from the update info.
+    pub fn update(&mut self, update_info: &ExternalPluginUpdateInfo) {
+        match (self, update_info) {
+            (
+                ExternalPlugin::LifecycleHook(lifecycle_hook),
+                ExternalPluginUpdateInfo::LifecycleHook(update_info),
+            ) => {
+                lifecycle_hook.update(update_info);
+            }
+            (ExternalPlugin::Oracle(oracle), ExternalPluginUpdateInfo::Oracle(update_info)) => {
+                oracle.update(update_info);
+            }
+            (
+                ExternalPlugin::DataStore(data_store),
+                ExternalPluginUpdateInfo::DataStore(update_info),
+            ) => {
+                data_store.update(update_info);
+            }
+            _ => unreachable!(),
+        }
+    }
+
     /// Check if a plugin is permitted to approve or deny a create action.
     pub fn check_create(plugin: &ExternalPluginInitInfo) -> ExternalCheckResult {
         match plugin {
@@ -319,7 +341,7 @@ impl ExtraAccount {
                 Ok(pubkey)
             }
             ExtraAccount::CustomPda { seeds, .. } => {
-                let seeds = transform_seeds(seeds, program_id, ctx)?;
+                let seeds = transform_seeds(seeds, ctx)?;
 
                 // Convert the Vec of Vec into Vec of u8 slices.
                 let vec_of_slices: Vec<&[u8]> = seeds.iter().map(Vec::as_slice).collect();
@@ -335,16 +357,12 @@ impl ExtraAccount {
 // Transform seeds from their tokens into actual seeds based on passed-in context values.
 fn transform_seeds(
     seeds: &Vec<Seed>,
-    program_id: &Pubkey,
     ctx: &PluginValidationContext,
 ) -> Result<Vec<Vec<u8>>, ProgramError> {
     let mut transformed_seeds = Vec::<Vec<u8>>::new();
 
     for seed in seeds {
         match seed {
-            Seed::Program => {
-                transformed_seeds.push(program_id.as_ref().to_vec());
-            }
             Seed::Collection => {
                 let collection = ctx
                     .collection_info
@@ -377,6 +395,9 @@ fn transform_seeds(
                     .to_vec();
                 transformed_seeds.push(asset);
             }
+            Seed::Address(pubkey) => {
+                transformed_seeds.push(pubkey.as_ref().to_vec());
+            }
             Seed::Bytes(val) => {
                 transformed_seeds.push(val.clone());
             }
@@ -390,17 +411,17 @@ fn transform_seeds(
 #[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum Seed {
-    /// Insert the program ID.
-    Program,
-    /// Insert the collection Pubkey.  If the asset has no collection the lifecycle action will
+    /// Insert the collection `Pubkey`.  If the asset has no collection the lifecycle action will
     /// fail.
     Collection,
-    /// Insert the owner Pubkey.
+    /// Insert the owner `Pubkey`.
     Owner,
-    /// Insert the recipient Pubkey.  If the lifecycle event has no recipient the action will fail.
+    /// Insert the recipient `Pubkey`.  If the lifecycle event has no recipient the action will fail.
     Recipient,
-    /// Insert the asset Pubkey.
+    /// Insert the asset `Pubkey`.
     Asset,
+    /// Insert the specified `Pubkey`.
+    Address(Pubkey),
     /// Insert the specified bytes.
     Bytes(Vec<u8>),
 }
@@ -482,6 +503,22 @@ impl ExternalPluginKey {
                     &mut &account.data.borrow()[pubkey_or_authority_offset..],
                 )?;
                 Ok(Self::DataStore(authority))
+            }
+        }
+    }
+}
+
+impl From<&ExternalPluginInitInfo> for ExternalPluginKey {
+    fn from(init_info: &ExternalPluginInitInfo) -> Self {
+        match init_info {
+            ExternalPluginInitInfo::LifecycleHook(init_info) => {
+                ExternalPluginKey::LifecycleHook(init_info.hooked_program)
+            }
+            ExternalPluginInitInfo::Oracle(init_info) => {
+                ExternalPluginKey::Oracle(init_info.base_address)
+            }
+            ExternalPluginInitInfo::DataStore(init_info) => {
+                ExternalPluginKey::DataStore(init_info.data_authority)
             }
         }
     }
