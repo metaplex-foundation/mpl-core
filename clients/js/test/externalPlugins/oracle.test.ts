@@ -588,11 +588,19 @@ test('it can use preconfigured program pda oracle to deny update', async (t) => 
   const account = findOracleAccount(umi, oraclePlugin, {});
 
   // Need to close program account from previous test runs on same amman/validator session.
-  await close(umi, {
-    account,
-    signer: umi.identity,
-    payer: umi.identity,
-  }).sendAndConfirm(umi);
+  try {
+    await close(umi, {
+      account,
+      signer: umi.identity,
+      payer: umi.identity,
+    }).sendAndConfirm(umi);
+  } catch (error) {
+    if (error.name === 'ProgramErrorNotRecognizedError') {
+      // Do nothing.
+    } else {
+      throw error;
+    }
+  }
 
   // write to the PDA which corresponds to the asset
   await preconfiguredProgramPdaInit(umi, {
