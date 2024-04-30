@@ -84,6 +84,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
+        accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
@@ -132,6 +133,7 @@ pub(crate) fn burn_collection<'a>(
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
+        accounts,
         authority,
         ctx.accounts.collection,
         None,

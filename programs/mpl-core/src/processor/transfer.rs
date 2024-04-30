@@ -77,6 +77,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
 
     // Validate asset permissions.
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
+        accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,

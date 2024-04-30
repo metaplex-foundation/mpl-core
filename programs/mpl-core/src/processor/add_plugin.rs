@@ -55,6 +55,9 @@ pub(crate) fn add_plugin<'a>(
 
     //TODO: Seed with Rejected
     let validation_ctx = PluginValidationContext {
+        accounts,
+        asset_info: Some(ctx.accounts.asset),
+        collection_info: ctx.accounts.collection,
         self_authority: &args.init_authority.unwrap_or(args.plugin.manager()),
         authority_info: authority,
         resolved_authorities: None,
@@ -67,6 +70,7 @@ pub(crate) fn add_plugin<'a>(
 
     // Validate asset permissions.
     let (mut asset, _, _) = validate_asset_permissions(
+        accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
@@ -122,15 +126,17 @@ pub(crate) fn add_collection_plugin<'a>(
         }
     }
 
-    let validation_context = PluginValidationContext {
+    let validation_ctx = PluginValidationContext {
+        accounts,
+        asset_info: None,
+        collection_info: Some(ctx.accounts.collection),
         self_authority: &args.init_authority.unwrap_or(args.plugin.manager()),
         authority_info: authority,
         resolved_authorities: None,
         new_owner: None,
         target_plugin: Some(&args.plugin),
     };
-    if Plugin::validate_add_plugin(&args.plugin, &validation_context)? == ValidationResult::Rejected
-    {
+    if Plugin::validate_add_plugin(&args.plugin, &validation_ctx)? == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
@@ -141,6 +147,7 @@ pub(crate) fn add_collection_plugin<'a>(
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
+        accounts,
         authority,
         ctx.accounts.collection,
         Some(&args.plugin),

@@ -140,6 +140,14 @@ pub enum MplCoreError {
     /// 32 - External Plugin already exists
     #[error("External Plugin already exists")]
     ExternalPluginAlreadyExists,
+
+    /// 33 - Missing asset needed for extra account PDA derivation
+    #[error("Missing asset needed for extra account PDA derivation")]
+    MissingAsset,
+
+    /// 34 - Missing account needed for external plugin
+    #[error("Missing account needed for external plugin")]
+    MissingExternalAccount,
 }
 
 impl PrintProgramError for MplCoreError {

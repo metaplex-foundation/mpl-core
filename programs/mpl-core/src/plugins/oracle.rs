@@ -1,6 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
+use crate::error::MplCoreError;
+
 use super::{
     Authority, ExternalCheckResult, ExternalValidationResult, ExtraAccount, HookableLifecycleEvent,
     PluginValidation, PluginValidationContext, ValidationResult,
@@ -28,11 +30,69 @@ impl PluginValidation for Oracle {
         Ok(ValidationResult::Pass)
     }
 
+    fn validate_create(
+        &self,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        self.validate_helper(ctx, HookableLifecycleEvent::Create)
+    }
+
     fn validate_transfer(
         &self,
-        _ctx: &PluginValidationContext,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        self.validate_helper(ctx, HookableLifecycleEvent::Transfer)
+    }
+
+    fn validate_burn(
+        &self,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        self.validate_helper(ctx, HookableLifecycleEvent::Burn)
+    }
+
+    fn validate_update(
+        &self,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        self.validate_helper(ctx, HookableLifecycleEvent::Update)
+    }
+}
+
+impl Oracle {
+    fn validate_helper(
+        &self,
+        ctx: &PluginValidationContext,
+        event: HookableLifecycleEvent,
+    ) -> Result<ValidationResult, ProgramError> {
+        let oracle_account = match &self.pda {
+            None => self.base_address,
+            Some(extra_account) => extra_account.derive(&self.base_address, ctx)?,
+        };
+
+        let oracle_account = ctx
+            .accounts
+            .iter()
+            .find(|account| *account.key == oracle_account)
+            .ok_or(MplCoreError::MissingExternalAccount)?;
+
+        let offset = self.results_offset.to_offset_usize();
+        let validation_result =
+            OracleValidation::deserialize(&mut &(*oracle_account.data).borrow()[offset..])?;
+
+        match validation_result {
+            OracleValidation::V1 {
+                create,
+                transfer,
+                burn,
+                update,
+            } => match event {
+                HookableLifecycleEvent::Create => Ok(ValidationResult::from(create)),
+                HookableLifecycleEvent::Transfer => Ok(ValidationResult::from(transfer)),
+                HookableLifecycleEvent::Burn => Ok(ValidationResult::from(burn)),
+                HookableLifecycleEvent::Update => Ok(ValidationResult::from(update)),
+            },
+        }
     }
 }
 
@@ -88,6 +148,17 @@ pub enum ValidationResultsOffset {
     Anchor,
     /// The validation struct is located at the specified offset within the account.
     Custom(usize),
+}
+
+impl ValidationResultsOffset {
+    /// Convert the `ValidationResultsOffset` to the correct offset value as a `usize`.
+    pub fn to_offset_usize(&self) -> usize {
+        match self {
+            Self::NoOffset => 0,
+            Self::Anchor => 8,
+            Self::Custom(offset) => *offset,
+        }
+    }
 }
 
 /// Validation results struct for an Oracle account.

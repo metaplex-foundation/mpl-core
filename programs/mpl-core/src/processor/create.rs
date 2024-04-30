@@ -10,7 +10,7 @@ use crate::{
     instruction::accounts::CreateV2Accounts,
     plugins::{
         create_meta_idempotent, create_plugin_meta, initialize_external_plugin, initialize_plugin,
-        CheckResult, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo, Plugin,
+        CheckResult, ExternalCheckResultBits, ExternalPlugin, ExternalPluginInitInfo, Plugin,
         PluginAuthorityPair, PluginType, PluginValidationContext, ValidationResult,
     },
     state::{
@@ -171,6 +171,9 @@ pub(crate) fn process_create<'a>(
                         != CheckResult::None
                     {
                         let validation_ctx = PluginValidationContext {
+                            accounts,
+                            asset_info: Some(ctx.accounts.asset),
+                            collection_info: ctx.accounts.collection,
                             self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
                             authority_info: authority,
                             resolved_authorities: None,
@@ -204,9 +207,15 @@ pub(crate) fn process_create<'a>(
                     ctx.accounts.system_program,
                 )?;
                 for plugin_init_info in &plugins {
-                    if ExternalPlugin::check_create(plugin_init_info) != ExternalCheckResult::none()
-                    {
+                    let external_check_result_bits = ExternalCheckResultBits::from(
+                        ExternalPlugin::check_create(plugin_init_info),
+                    );
+
+                    if external_check_result_bits.can_reject() {
                         let validation_ctx = PluginValidationContext {
+                            accounts,
+                            asset_info: Some(ctx.accounts.asset),
+                            collection_info: ctx.accounts.collection,
                             // External plugins are always managed by the update authority.
                             self_authority: &Authority::UpdateAuthority,
                             authority_info: authority,

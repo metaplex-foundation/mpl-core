@@ -1,5 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use modular_bitfield::{bitfield, specifiers::B5};
+use modular_bitfield::{bitfield, specifiers::B29};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
 use std::collections::BTreeMap;
 
@@ -33,7 +33,7 @@ pub enum CheckResult {
 #[derive(BorshDeserialize, BorshSerialize, Eq, PartialEq, Copy, Clone, Debug)]
 pub struct ExternalCheckResult {
     /// Bitfield for external check results.
-    pub flags: u8,
+    pub flags: u32,
 }
 
 impl ExternalCheckResult {
@@ -43,13 +43,13 @@ impl ExternalCheckResult {
 }
 
 /// Bitfield representation of lifecycle permissions for external, third party plugins.
-#[bitfield(bits = 8)]
+#[bitfield(bits = 32)]
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct ExternalCheckResultBits {
     pub can_listen: bool,
     pub can_approve: bool,
     pub can_reject: bool,
-    pub empty_bits: B5,
+    pub empty_bits: B29,
 }
 
 impl From<ExternalCheckResult> for ExternalCheckResultBits {
@@ -61,7 +61,7 @@ impl From<ExternalCheckResult> for ExternalCheckResultBits {
 impl From<ExternalCheckResultBits> for ExternalCheckResult {
     fn from(bits: ExternalCheckResultBits) -> Self {
         ExternalCheckResult {
-            flags: bits.into_bytes()[0],
+            flags: u32::from_le_bytes(bits.into_bytes()),
         }
     }
 }
@@ -691,9 +691,25 @@ pub enum ExternalValidationResult {
     Pass,
 }
 
+impl From<ExternalValidationResult> for ValidationResult {
+    fn from(result: ExternalValidationResult) -> Self {
+        match result {
+            ExternalValidationResult::Approved => Self::Approved,
+            ExternalValidationResult::Rejected => Self::Rejected,
+            ExternalValidationResult::Pass => Self::Pass,
+        }
+    }
+}
+
 /// The required context for a plugin validation.
 #[allow(dead_code)]
 pub(crate) struct PluginValidationContext<'a, 'b> {
+    /// This list of all the accounts passed into the instruction.
+    pub accounts: &'a [AccountInfo<'a>],
+    /// The asset account.
+    pub asset_info: Option<&'a AccountInfo<'a>>,
+    /// The collection account.
+    pub collection_info: Option<&'a AccountInfo<'a>>,
     /// The authority.
     pub self_authority: &'b Authority,
     /// The authority account.
@@ -843,12 +859,13 @@ pub(crate) trait PluginValidation {
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn validate_plugin_checks<'a>(
     key: Key,
+    accounts: &'a [AccountInfo<'a>],
     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &'a AccountInfo<'a>,
     new_owner: Option<&'a AccountInfo<'a>>,
     new_plugin: Option<&Plugin>,
-    asset: Option<&AccountInfo<'a>>,
-    collection: Option<&AccountInfo<'a>>,
+    asset: Option<&'a AccountInfo<'a>>,
+    collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
     plugin_validate_fp: fn(
         &Plugin,
@@ -870,7 +887,10 @@ pub(crate) fn validate_plugin_checks<'a>(
                 _ => unreachable!(),
             };
 
-            let ctx = PluginValidationContext {
+            let validation_ctx = PluginValidationContext {
+                accounts,
+                asset_info: asset,
+                collection_info: collection,
                 self_authority: &registry_record.authority,
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),
@@ -878,7 +898,10 @@ pub(crate) fn validate_plugin_checks<'a>(
                 target_plugin: new_plugin,
             };
 
-            let result = plugin_validate_fp(&Plugin::load(account, registry_record.offset)?, &ctx)?;
+            let result = plugin_validate_fp(
+                &Plugin::load(account, registry_record.offset)?,
+                &validation_ctx,
+            )?;
             match result {
                 ValidationResult::Rejected => rejected = true,
                 ValidationResult::Approved => approved = true,
@@ -903,6 +926,7 @@ pub(crate) fn validate_plugin_checks<'a>(
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn validate_external_plugin_checks<'a>(
     key: Key,
+    accounts: &'a [AccountInfo<'a>],
     external_checks: &BTreeMap<
         ExternalPluginKey,
         (Key, ExternalCheckResultBits, ExternalRegistryRecord),
@@ -910,8 +934,8 @@ pub(crate) fn validate_external_plugin_checks<'a>(
     authority: &'a AccountInfo<'a>,
     new_owner: Option<&'a AccountInfo<'a>>,
     new_plugin: Option<&Plugin>,
-    asset: Option<&AccountInfo<'a>>,
-    collection: Option<&AccountInfo<'a>>,
+    asset: Option<&'a AccountInfo<'a>>,
+    collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
     external_plugin_validate_fp: fn(
         &ExternalPlugin,
@@ -931,7 +955,10 @@ pub(crate) fn validate_external_plugin_checks<'a>(
                 _ => unreachable!(),
             };
 
-            let ctx = PluginValidationContext {
+            let validation_ctx = PluginValidationContext {
+                accounts,
+                asset_info: asset,
+                collection_info: collection,
                 self_authority: &external_registry_record.authority,
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),
@@ -941,11 +968,19 @@ pub(crate) fn validate_external_plugin_checks<'a>(
 
             let result = external_plugin_validate_fp(
                 &ExternalPlugin::load(account, external_registry_record.offset)?,
-                &ctx,
+                &validation_ctx,
             )?;
             match result {
-                ValidationResult::Rejected => return Ok(ValidationResult::Rejected),
-                ValidationResult::Approved => approved = true,
+                ValidationResult::Rejected => {
+                    if check_result.can_reject() {
+                        return Ok(ValidationResult::Rejected);
+                    }
+                }
+                ValidationResult::Approved => {
+                    if check_result.can_approve() {
+                        approved = true;
+                    }
+                }
                 ValidationResult::Pass => continue,
                 // Force approved will not be possible from external plugins.
                 ValidationResult::ForceApproved => unreachable!(),
