@@ -119,13 +119,10 @@ export function extraAccountToAccountMeta(
               case 'Asset':
                 if (!inputs.asset) throw new Error('Asset address is required');
                 return publicKeySerializer().serialize(inputs.asset);
+              case 'Address':
+                return publicKeySerializer().serialize(seed.pubkey);
               case 'Bytes':
                 return seed.bytes;
-              case 'Program':
-              default:
-                if (!inputs.program)
-                  throw new Error('Program address is required');
-                return publicKeySerializer().serialize(inputs.program);
             }
           })
         )[0],

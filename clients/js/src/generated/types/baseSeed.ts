@@ -6,12 +6,14 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+import { PublicKey } from '@metaplex-foundation/umi';
 import {
   GetDataEnumKind,
   GetDataEnumKindContent,
   Serializer,
   bytes,
   dataEnum,
+  publicKey as publicKeySerializer,
   struct,
   tuple,
   u32,
@@ -19,11 +21,11 @@ import {
 } from '@metaplex-foundation/umi/serializers';
 
 export type BaseSeed =
-  | { __kind: 'Program' }
   | { __kind: 'Collection' }
   | { __kind: 'Owner' }
   | { __kind: 'Recipient' }
   | { __kind: 'Asset' }
+  | { __kind: 'Address'; fields: [PublicKey] }
   | { __kind: 'Bytes'; fields: [Uint8Array] };
 
 export type BaseSeedArgs = BaseSeed;
@@ -31,11 +33,16 @@ export type BaseSeedArgs = BaseSeed;
 export function getBaseSeedSerializer(): Serializer<BaseSeedArgs, BaseSeed> {
   return dataEnum<BaseSeed>(
     [
-      ['Program', unit()],
       ['Collection', unit()],
       ['Owner', unit()],
       ['Recipient', unit()],
       ['Asset', unit()],
+      [
+        'Address',
+        struct<GetDataEnumKindContent<BaseSeed, 'Address'>>([
+          ['fields', tuple([publicKeySerializer()])],
+        ]),
+      ],
       [
         'Bytes',
         struct<GetDataEnumKindContent<BaseSeed, 'Bytes'>>([
@@ -49,9 +56,6 @@ export function getBaseSeedSerializer(): Serializer<BaseSeedArgs, BaseSeed> {
 
 // Data Enum Helpers.
 export function baseSeed(
-  kind: 'Program'
-): GetDataEnumKind<BaseSeedArgs, 'Program'>;
-export function baseSeed(
   kind: 'Collection'
 ): GetDataEnumKind<BaseSeedArgs, 'Collection'>;
 export function baseSeed(kind: 'Owner'): GetDataEnumKind<BaseSeedArgs, 'Owner'>;
@@ -59,6 +63,10 @@ export function baseSeed(
   kind: 'Recipient'
 ): GetDataEnumKind<BaseSeedArgs, 'Recipient'>;
 export function baseSeed(kind: 'Asset'): GetDataEnumKind<BaseSeedArgs, 'Asset'>;
+export function baseSeed(
+  kind: 'Address',
+  data: GetDataEnumKindContent<BaseSeedArgs, 'Address'>['fields']
+): GetDataEnumKind<BaseSeedArgs, 'Address'>;
 export function baseSeed(
   kind: 'Bytes',
   data: GetDataEnumKindContent<BaseSeedArgs, 'Bytes'>['fields']

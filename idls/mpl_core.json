@@ -3642,9 +3642,6 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "Program"
-          },
-          {
             "name": "Collection"
           },
           {
@@ -3655,6 +3652,12 @@
           },
           {
             "name": "Asset"
+          },
+          {
+            "name": "Address",
+            "fields": [
+              "publicKey"
+            ]
           },
           {
             "name": "Bytes",
