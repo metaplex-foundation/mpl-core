@@ -341,7 +341,7 @@ impl ExtraAccount {
                 Ok(pubkey)
             }
             ExtraAccount::CustomPda { seeds, .. } => {
-                let seeds = transform_seeds(seeds, program_id, ctx)?;
+                let seeds = transform_seeds(seeds, ctx)?;
 
                 // Convert the Vec of Vec into Vec of u8 slices.
                 let vec_of_slices: Vec<&[u8]> = seeds.iter().map(Vec::as_slice).collect();
@@ -357,16 +357,12 @@ impl ExtraAccount {
 // Transform seeds from their tokens into actual seeds based on passed-in context values.
 fn transform_seeds(
     seeds: &Vec<Seed>,
-    program_id: &Pubkey,
     ctx: &PluginValidationContext,
 ) -> Result<Vec<Vec<u8>>, ProgramError> {
     let mut transformed_seeds = Vec::<Vec<u8>>::new();
 
     for seed in seeds {
         match seed {
-            Seed::Program => {
-                transformed_seeds.push(program_id.as_ref().to_vec());
-            }
             Seed::Collection => {
                 let collection = ctx
                     .collection_info
@@ -399,6 +395,9 @@ fn transform_seeds(
                     .to_vec();
                 transformed_seeds.push(asset);
             }
+            Seed::Address(pubkey) => {
+                transformed_seeds.push(pubkey.as_ref().to_vec());
+            }
             Seed::Bytes(val) => {
                 transformed_seeds.push(val.clone());
             }
@@ -412,17 +411,17 @@ fn transform_seeds(
 #[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum Seed {
-    /// Insert the program ID.
-    Program,
-    /// Insert the collection Pubkey.  If the asset has no collection the lifecycle action will
+    /// Insert the collection `Pubkey`.  If the asset has no collection the lifecycle action will
     /// fail.
     Collection,
-    /// Insert the owner Pubkey.
+    /// Insert the owner `Pubkey`.
     Owner,
-    /// Insert the recipient Pubkey.  If the lifecycle event has no recipient the action will fail.
+    /// Insert the recipient `Pubkey`.  If the lifecycle event has no recipient the action will fail.
     Recipient,
-    /// Insert the asset Pubkey.
+    /// Insert the asset `Pubkey`.
     Asset,
+    /// Insert the specified `Pubkey`.
+    Address(Pubkey),
     /// Insert the specified bytes.
     Bytes(Vec<u8>),
 }
