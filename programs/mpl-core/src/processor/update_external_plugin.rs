@@ -59,6 +59,7 @@ pub(crate) fn update_external_plugin<'a>(
         fetch_wrapped_external_plugin::<AssetV1>(ctx.accounts.asset, None, &args.key)?;
 
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
+        accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
@@ -198,6 +199,7 @@ pub(crate) fn update_collection_external_plugin<'a>(
 
     // Validate collection permissions.
     let (collection, plugin_header, plugin_registry) = validate_collection_permissions(
+        accounts,
         authority,
         ctx.accounts.collection,
         None,

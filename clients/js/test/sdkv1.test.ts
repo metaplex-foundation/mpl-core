@@ -80,7 +80,7 @@ test('it can create asset and collection with all update auth managed party plug
         maxSupply: 100,
         name: 'master',
         uri: 'uri master',
-      }
+      },
     ],
   });
 
@@ -138,7 +138,7 @@ test('it can create asset and collection with all update auth managed party plug
       maxSupply: 100,
       name: 'master',
       uri: 'uri master',
-    }
+    },
   });
 
   const asset = await createAsset(umi, {
@@ -706,7 +706,7 @@ test('it can update all updatable plugins on collection', async (t) => {
         maxSupply: 100,
         name: 'master',
         uri: 'uri master',
-      }
+      },
     ],
   });
 
@@ -743,7 +743,7 @@ test('it can update all updatable plugins on collection', async (t) => {
       maxSupply: 200,
       name: 'master2',
       uri: 'uri master2',
-    }
+    },
   ];
 
   await Promise.all(
@@ -797,7 +797,7 @@ test('it can update all updatable plugins on collection', async (t) => {
       maxSupply: 200,
       name: 'master2',
       uri: 'uri master2',
-    }
+    },
   });
 });
 

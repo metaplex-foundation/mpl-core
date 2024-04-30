@@ -74,9 +74,9 @@ export type CreatePluginArgs =
       data: EditionArgs;
     }
   | {
-    type: 'MasterEdition';
-    data: BaseMasterEditionArgs
-  };
+      type: 'MasterEdition';
+      data: BaseMasterEditionArgs;
+    };
 
 export type AuthorityArgsV2 = {
   authority?: PluginAuthority;
@@ -116,8 +116,8 @@ export type AddablePluginArgsV2 =
       type: 'Attributes';
     } & AttributesArgs)
   | ({
-      type: 'MasterEdition'
-  } & MasterEditionArgs)
+      type: 'MasterEdition';
+    } & MasterEditionArgs);
 
 export type PluginArgsV2 = AddablePluginArgsV2 | CreateOnlyPluginArgsV2;
 export type PluginAuthorityPairArgsV2 = PluginArgsV2 & AuthorityArgsV2;

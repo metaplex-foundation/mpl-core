@@ -1,4 +1,4 @@
-import { none, Option, some } from "@metaplex-foundation/umi";
+import { none, Option, some } from '@metaplex-foundation/umi';
 
 export type RenameField<T, K extends keyof T, R extends PropertyKey> = Omit<
   T,
