@@ -81,7 +81,7 @@ test('it can use fixed address oracle to deny update', async (t) => {
           type: 'Anchor',
         },
         lifecycleChecks: {
-          update: [CheckResult.CAN_DENY],
+          update: [CheckResult.CAN_REJECT],
         },
         baseAddress: account.publicKey,
       },
@@ -156,7 +156,7 @@ test('it can use fixed address oracle to deny update via collection', async (t) 
             type: 'Anchor',
           },
           lifecycleChecks: {
-            update: [CheckResult.CAN_DENY],
+            update: [CheckResult.CAN_REJECT],
           },
           baseAddress: account.publicKey,
         },
@@ -231,7 +231,7 @@ test('it can use fixed address oracle to deny transfer', async (t) => {
           type: 'Anchor',
         },
         lifecycleChecks: {
-          transfer: [CheckResult.CAN_DENY],
+          transfer: [CheckResult.CAN_REJECT],
         },
         baseAddress: account.publicKey,
       },
@@ -423,7 +423,7 @@ test('it cannot use fixed address oracle to deny transfer if not registered for 
           type: 'Anchor',
         },
         lifecycleChecks: {
-          create: [CheckResult.CAN_DENY],
+          create: [CheckResult.CAN_REJECT],
         },
         baseAddress: account.publicKey,
       },
@@ -479,7 +479,7 @@ test('it can use fixed address oracle to deny create', async (t) => {
           type: 'Anchor',
         },
         lifecycleChecks: {
-          create: [CheckResult.CAN_DENY],
+          create: [CheckResult.CAN_REJECT],
         },
         baseAddress: account.publicKey,
       },
@@ -511,7 +511,7 @@ test('it can use fixed address oracle to deny create', async (t) => {
           type: 'Anchor',
         },
         lifecycleChecks: {
-          create: [CheckResult.CAN_DENY],
+          create: [CheckResult.CAN_REJECT],
         },
         baseAddress: account.publicKey,
       },
@@ -556,7 +556,7 @@ test('it can use fixed address oracle to deny burn', async (t) => {
           type: 'Anchor',
         },
         lifecycleChecks: {
-          burn: [CheckResult.CAN_DENY],
+          burn: [CheckResult.CAN_REJECT],
         },
         baseAddress: account.publicKey,
       },
@@ -600,7 +600,7 @@ test('it can use asset pda oracle to deny update', async (t) => {
       type: 'Anchor',
     },
     lifecycleChecks: {
-      update: [CheckResult.CAN_DENY],
+      update: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
     pda: {
