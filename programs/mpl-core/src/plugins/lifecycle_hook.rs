@@ -26,6 +26,18 @@ pub struct LifecycleHook {
     pub schema: ExternalPluginSchema, // 1
 }
 
+impl LifecycleHook {
+    /// Updates the lifecycle hook with the new info.
+    pub fn update(&mut self, info: &LifecycleHookUpdateInfo) {
+        if let Some(extra_accounts) = &info.extra_accounts {
+            self.extra_accounts = Some(extra_accounts.clone());
+        }
+        if let Some(schema) = &info.schema {
+            self.schema = *schema;
+        }
+    }
+}
+
 impl PluginValidation for LifecycleHook {
     fn validate_add_external_plugin(
         &self,

@@ -622,7 +622,7 @@ pub fn revoke_authority_on_plugin<'a>(
     Ok(())
 }
 
-fn find_external_plugin<'b>(
+pub(crate) fn find_external_plugin<'b>(
     plugin_registry: &'b PluginRegistryV1,
     plugin_key: &ExternalPluginKey,
     account: &AccountInfo<'_>,

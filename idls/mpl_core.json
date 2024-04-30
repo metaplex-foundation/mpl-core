@@ -3151,7 +3151,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "pluginKey",
+            "name": "key",
             "type": {
               "defined": "ExternalPluginKey"
             }
