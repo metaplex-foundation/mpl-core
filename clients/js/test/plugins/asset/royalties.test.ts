@@ -137,7 +137,9 @@ test('it can transfer an asset with royalties to an allowlisted program address'
         data: {
           basisPoints: 5,
           creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-          ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID, MPL_CORE_PROGRAM_ID]]),
+          ruleSet: ruleSet('ProgramAllowList', [
+            [SPL_SYSTEM_PROGRAM_ID, MPL_CORE_PROGRAM_ID],
+          ]),
         },
       }),
     ],
@@ -158,7 +160,9 @@ test('it can transfer an asset with royalties to an allowlisted program address'
       },
       basisPoints: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-      ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID, MPL_CORE_PROGRAM_ID]]),
+      ruleSet: ruleSet('ProgramAllowList', [
+        [SPL_SYSTEM_PROGRAM_ID, MPL_CORE_PROGRAM_ID],
+      ]),
     },
   });
 
@@ -186,7 +190,9 @@ test('it can transfer an asset with collection royalties to an allowlisted progr
           data: {
             basisPoints: 5,
             creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-            ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID, MPL_CORE_PROGRAM_ID]]),
+            ruleSet: ruleSet('ProgramAllowList', [
+              [SPL_SYSTEM_PROGRAM_ID, MPL_CORE_PROGRAM_ID],
+            ]),
           },
         }),
       ],
@@ -213,7 +219,9 @@ test('it can transfer an asset with collection royalties to an allowlisted progr
       },
       basisPoints: 5,
       creators: [{ address: umi.identity.publicKey, percentage: 100 }],
-      ruleSet: ruleSet('ProgramAllowList', [[SPL_SYSTEM_PROGRAM_ID, MPL_CORE_PROGRAM_ID]]),
+      ruleSet: ruleSet('ProgramAllowList', [
+        [SPL_SYSTEM_PROGRAM_ID, MPL_CORE_PROGRAM_ID],
+      ]),
     },
   });
 
@@ -272,7 +280,6 @@ test('it cannot transfer an asset with royalties to a program address not on the
     asset: asset.publicKey,
     newOwner: programOwned.publicKey,
   }).sendAndConfirm(umi);
-
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });
