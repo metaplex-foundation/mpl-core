@@ -10,7 +10,11 @@ export type ExternalPluginManifest<
   UpdateBase extends Object
 > = {
   type: ExternalPluginTypeString;
-  fromBase: (input: Base, record: ExternalRegistryRecord, account: Uint8Array) => T;
+  fromBase: (
+    input: Base,
+    record: ExternalRegistryRecord,
+    account: Uint8Array
+  ) => T;
   initToBase: (input: Init) => InitBase;
   updateToBase: (input: Update) => UpdateBase;
 };

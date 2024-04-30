@@ -62,7 +62,7 @@ export function baseUpdateAuthority(
   data: GetDataEnumKindContent<BaseUpdateAuthorityArgs, 'Collection'>['fields']
 ): GetDataEnumKind<BaseUpdateAuthorityArgs, 'Collection'>;
 export function baseUpdateAuthority<
-  K extends BaseUpdateAuthorityArgs['__kind'],
+  K extends BaseUpdateAuthorityArgs['__kind']
 >(kind: K, data?: any): Extract<BaseUpdateAuthorityArgs, { __kind: K }> {
   return Array.isArray(data)
     ? { __kind: kind, fields: data }

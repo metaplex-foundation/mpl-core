@@ -60,7 +60,7 @@ export function basePluginAuthority(
   data: GetDataEnumKindContent<BasePluginAuthorityArgs, 'Address'>
 ): GetDataEnumKind<BasePluginAuthorityArgs, 'Address'>;
 export function basePluginAuthority<
-  K extends BasePluginAuthorityArgs['__kind'],
+  K extends BasePluginAuthorityArgs['__kind']
 >(kind: K, data?: any): Extract<BasePluginAuthorityArgs, { __kind: K }> {
   return Array.isArray(data)
     ? { __kind: kind, fields: data }

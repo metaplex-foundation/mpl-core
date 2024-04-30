@@ -83,7 +83,11 @@ export function oracleUpdateInfoArgsToBase(
   };
 }
 
-export function oracleFromBase(s: BaseOracle, r: ExternalRegistryRecord, account: Uint8Array): Oracle {
+export function oracleFromBase(
+  s: BaseOracle,
+  r: ExternalRegistryRecord,
+  account: Uint8Array
+): Oracle {
   return {
     ...s,
     pda:

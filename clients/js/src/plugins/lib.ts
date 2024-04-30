@@ -26,7 +26,6 @@ import {
 import { royaltiesFromBase, royaltiesToBase } from './royalties';
 import { masterEditionFromBase, masterEditionToBase } from './masterEdition';
 
-
 export function formPluginHeaderV1(
   pluginRegistryOffset: bigint
 ): Omit<PluginHeaderV1, 'publicKey' | 'header'> {
