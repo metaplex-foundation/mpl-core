@@ -1,5 +1,4 @@
 import test from 'ava';
-import fs from 'fs';
 
 import {
   mplCoreOracleExample,
@@ -8,12 +7,17 @@ import {
   preconfiguredAssetPdaInit,
   MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
   preconfiguredAssetPdaSet,
+  preconfiguredProgramPdaInit,
+  preconfiguredProgramPdaSet,
+  preconfiguredOwnerPdaInit,
+  preconfiguredOwnerPdaSet,
+  preconfiguredRecipientPdaInit,
+  preconfiguredRecipientPdaSet,
+  customPdaAllSeedsInit,
+  customPdaAllSeedsSet,
+  close,
 } from '@metaplex-foundation/mpl-core-oracle-example';
-import {
-  createSignerFromKeypair,
-  Context,
-  generateSigner,
-} from '@metaplex-foundation/umi';
+import { generateSigner } from '@metaplex-foundation/umi';
 import { ExternalValidationResult } from '@metaplex-foundation/mpl-core-oracle-example/dist/src/hooked';
 import {
   assertAsset,
@@ -34,32 +38,15 @@ import {
 
 const createUmi = async () =>
   (await baseCreateUmi()).use(mplCoreOracleExample());
-function loadSecretFromFile(filename: string) {
-  const secret = JSON.parse(fs.readFileSync(filename).toString()) as number[];
-  const secretKey = Uint8Array.from(secret);
-  return secretKey;
-}
-
-const secret = loadSecretFromFile(
-  '../../../mpl-core-oracle-example/aaa48hFxxsUJb2MUeUVe8ABH42F6nho69oXUkSgKeSM.json'
-);
-function getAuthoritySigner(umi: Context) {
-  return createSignerFromKeypair(
-    umi,
-    umi.eddsa.createKeypairFromSecretKey(secret)
-  );
-}
 
 test('it can use fixed address oracle to deny update', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
 
-  const signer = getAuthoritySigner(umi);
-
   // write to example program oracle account
   await fixedAccountInit(umi, {
     account,
-    signer,
+    signer: umi.identity,
     payer: umi.identity,
     args: {
       oracleData: {
@@ -97,7 +84,7 @@ test('it can use fixed address oracle to deny update', async (t) => {
 
   await fixedAccountSet(umi, {
     account: account.publicKey,
-    signer,
+    signer: umi.identity,
     args: {
       oracleData: {
         __kind: 'V1',
@@ -126,12 +113,10 @@ test('it can use fixed address oracle to deny update via collection', async (t) 
   const umi = await createUmi();
   const account = generateSigner(umi);
 
-  const signer = getAuthoritySigner(umi);
-
   // write to example program oracle account
   await fixedAccountInit(umi, {
     account,
-    signer,
+    signer: umi.identity,
     payer: umi.identity,
     args: {
       oracleData: {
@@ -174,7 +159,7 @@ test('it can use fixed address oracle to deny update via collection', async (t) 
 
   await fixedAccountSet(umi, {
     account: account.publicKey,
-    signer,
+    signer: umi.identity,
     args: {
       oracleData: {
         __kind: 'V1',
@@ -204,12 +189,10 @@ test('it can use fixed address oracle to deny transfer', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
 
-  const signer = getAuthoritySigner(umi);
-
   // write to example program oracle account
   await fixedAccountInit(umi, {
     account,
-    signer,
+    signer: umi.identity,
     payer: umi.identity,
     args: {
       oracleData: {
@@ -249,7 +232,7 @@ test('it can use fixed address oracle to deny transfer', async (t) => {
 
   await fixedAccountSet(umi, {
     account: account.publicKey,
-    signer,
+    signer: umi.identity,
     args: {
       oracleData: {
         __kind: 'V1',
@@ -276,14 +259,12 @@ test('it can use fixed address oracle to deny transfer', async (t) => {
 test('it cannot use fixed address oracle to force approve transfer', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
-
-  const signer = getAuthoritySigner(umi);
   const owner = generateSigner(umi);
 
   // write to example program oracle account
   await fixedAccountInit(umi, {
     account,
-    signer,
+    signer: umi.identity,
     payer: umi.identity,
     args: {
       oracleData: {
@@ -338,14 +319,12 @@ test('it cannot use fixed address oracle to force approve transfer', async (t) =
 test('it cannot use fixed address oracle to deny transfer if not registered for lifecycle event but has same type', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
-
-  const signer = getAuthoritySigner(umi);
   const owner = generateSigner(umi);
 
   // write to example program oracle account
   await fixedAccountInit(umi, {
     account,
-    signer,
+    signer: umi.identity,
     payer: umi.identity,
     args: {
       oracleData: {
@@ -393,14 +372,12 @@ test('it cannot use fixed address oracle to deny transfer if not registered for 
 test('it cannot use fixed address oracle to deny transfer if not registered for lifecycle event', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
-
-  const signer = getAuthoritySigner(umi);
   const owner = generateSigner(umi);
 
   // write to example program oracle account
   await fixedAccountInit(umi, {
     account,
-    signer,
+    signer: umi.identity,
     payer: umi.identity,
     args: {
       oracleData: {
@@ -449,12 +426,10 @@ test('it can use fixed address oracle to deny create', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
 
-  const signer = getAuthoritySigner(umi);
-
   // write to example program oracle account
   await fixedAccountInit(umi, {
     account,
-    signer,
+    signer: umi.identity,
     payer: umi.identity,
     args: {
       oracleData: {
@@ -489,7 +464,7 @@ test('it can use fixed address oracle to deny create', async (t) => {
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
   await fixedAccountSet(umi, {
     account: account.publicKey,
-    signer,
+    signer: umi.identity,
     args: {
       oracleData: {
         __kind: 'V1',
@@ -529,12 +504,10 @@ test('it can use fixed address oracle to deny burn', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
 
-  const signer = getAuthoritySigner(umi);
-
   // write to example program oracle account
   await fixedAccountInit(umi, {
     account,
-    signer,
+    signer: umi.identity,
     payer: umi.identity,
     args: {
       oracleData: {
@@ -571,7 +544,7 @@ test('it can use fixed address oracle to deny burn', async (t) => {
 
   await fixedAccountSet(umi, {
     account: account.publicKey,
-    signer,
+    signer: umi.identity,
     args: {
       oracleData: {
         __kind: 'V1',
@@ -590,9 +563,338 @@ test('it can use fixed address oracle to deny burn', async (t) => {
   await assertBurned(t, umi, asset.publicKey);
 });
 
-test('it can use asset pda oracle to deny update', async (t) => {
+test('it can use preconfigured program pda oracle to deny update', async (t) => {
   const umi = await createUmi();
-  const signer = getAuthoritySigner(umi);
+
+  const oraclePlugin: OracleInitInfoArgs = {
+    type: 'Oracle',
+    resultsOffset: {
+      type: 'Anchor',
+    },
+    lifecycleChecks: {
+      update: [CheckResult.CAN_REJECT],
+    },
+    baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+    pda: {
+      type: 'PreconfiguredProgram',
+    },
+  };
+
+  const asset = await createAsset(umi, {
+    plugins: [oraclePlugin],
+  });
+
+  // Find the oracle PDA based on the asset we just created
+  const account = findOracleAccount(umi, oraclePlugin, {});
+
+  // Need to close program account from previous test runs on same amman/validator session.
+  await close(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+  }).sendAndConfirm(umi);
+
+  // write to the PDA which corresponds to the asset
+  await preconfiguredProgramPdaInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Rejected,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const result = update(umi, {
+    asset,
+    name: 'new name',
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await preconfiguredProgramPdaSet(umi, {
+    account,
+    signer: umi.identity,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await update(umi, {
+    asset,
+    name: 'new name 2',
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    name: 'new name 2',
+  });
+});
+
+test('it can use preconfigured collection pda oracle to deny update', async (t) => {
+  const umi = await createUmi();
+
+  const oraclePlugin: OracleInitInfoArgs = {
+    type: 'Oracle',
+    resultsOffset: {
+      type: 'Anchor',
+    },
+    lifecycleChecks: {
+      update: [CheckResult.CAN_REJECT],
+    },
+    baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+    pda: {
+      type: 'PreconfiguredCollection',
+    },
+  };
+
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {
+      plugins: [oraclePlugin],
+    },
+    {}
+  );
+
+  // Find the oracle PDA based on the asset we just created
+  const account = findOracleAccount(umi, oraclePlugin, {
+    collection: collection.publicKey,
+  });
+
+  // write to the PDA which corresponds to the asset
+  await preconfiguredAssetPdaInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      additionalPubkey: collection.publicKey,
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Rejected,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const result = update(umi, {
+    asset,
+    collection,
+    name: 'new name',
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await preconfiguredAssetPdaSet(umi, {
+    account,
+    signer: umi.identity,
+    args: {
+      additionalPubkey: collection.publicKey,
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await update(umi, {
+    asset,
+    collection,
+    name: 'new name 2',
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    owner: umi.identity.publicKey,
+    name: 'new name 2',
+  });
+});
+
+test('it can use preconfigured owner pda oracle to deny burn', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const oraclePlugin: OracleInitInfoArgs = {
+    type: 'Oracle',
+    resultsOffset: {
+      type: 'Anchor',
+    },
+    lifecycleChecks: {
+      burn: [CheckResult.CAN_REJECT],
+    },
+    baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+    pda: {
+      type: 'PreconfiguredOwner',
+    },
+  };
+
+  const asset = await createAsset(umi, {
+    owner,
+    plugins: [oraclePlugin],
+  });
+
+  // Find the oracle PDA based on the asset we just created
+  const account = findOracleAccount(umi, oraclePlugin, {
+    owner: owner.publicKey,
+  });
+
+  // write to the PDA which corresponds to the asset
+  await preconfiguredOwnerPdaInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      additionalPubkey: owner.publicKey,
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Rejected,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  // ********************
+  // ********************
+  // TODO:
+  // Error {
+  //   message: 'Owner address is required',
+  // }
+  // ********************
+  // ********************
+  const result = burn(umi, {
+    asset,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+  });
+
+  await preconfiguredOwnerPdaSet(umi, {
+    account,
+    signer: umi.identity,
+    args: {
+      additionalPubkey: owner.publicKey,
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await burn(umi, {
+    asset,
+  }).sendAndConfirm(umi);
+
+  await assertBurned(t, umi, asset.publicKey);
+});
+
+test('it can use preconfigured recipient pda oracle to deny transfer', async (t) => {
+  const umi = await createUmi();
+  const newOwner = generateSigner(umi);
+
+  const oraclePlugin: OracleInitInfoArgs = {
+    type: 'Oracle',
+    resultsOffset: {
+      type: 'Anchor',
+    },
+    lifecycleChecks: {
+      transfer: [CheckResult.CAN_REJECT],
+    },
+    baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+    pda: {
+      type: 'PreconfiguredRecipient',
+    },
+  };
+
+  const asset = await createAsset(umi, {
+    plugins: [oraclePlugin],
+  });
+
+  // Find the oracle PDA for the new owner.
+  const account = findOracleAccount(umi, oraclePlugin, {
+    recipient: newOwner.publicKey,
+  });
+
+  // write to the PDA which corresponds to the new owner.
+  await preconfiguredRecipientPdaInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      additionalPubkey: newOwner.publicKey,
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Rejected,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const result = transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await preconfiguredRecipientPdaSet(umi, {
+    account,
+    signer: umi.identity,
+    args: {
+      additionalPubkey: newOwner.publicKey,
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
+  });
+});
+
+test('it can use preconfigured asset pda oracle to deny update', async (t) => {
+  const umi = await createUmi();
 
   const oraclePlugin: OracleInitInfoArgs = {
     type: 'Oracle',
@@ -620,10 +922,10 @@ test('it can use asset pda oracle to deny update', async (t) => {
   // write to the PDA which corresponds to the asset
   await preconfiguredAssetPdaInit(umi, {
     account,
-    signer,
+    signer: umi.identity,
     payer: umi.identity,
     args: {
-      asset: asset.publicKey,
+      additionalPubkey: asset.publicKey,
       oracleData: {
         __kind: 'V1',
         create: ExternalValidationResult.Pass,
@@ -643,9 +945,9 @@ test('it can use asset pda oracle to deny update', async (t) => {
 
   await preconfiguredAssetPdaSet(umi, {
     account,
-    signer,
+    signer: umi.identity,
     args: {
-      asset: asset.publicKey,
+      additionalPubkey: asset.publicKey,
       oracleData: {
         __kind: 'V1',
         create: ExternalValidationResult.Pass,
@@ -666,5 +968,121 @@ test('it can use asset pda oracle to deny update', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     name: 'new name 2',
+  });
+});
+
+test('it can use custom pda oracle to deny transfer', async (t) => {
+  const umi = await createUmi();
+  const seedPubkey = generateSigner(umi).publicKey;
+  const owner = generateSigner(umi);
+  const newOwner = generateSigner(umi);
+
+  const oraclePlugin: OracleInitInfoArgs = {
+    type: 'Oracle',
+    resultsOffset: {
+      type: 'Anchor',
+    },
+    lifecycleChecks: {
+      transfer: [CheckResult.CAN_REJECT],
+    },
+    baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+    pda: {
+      type: 'CustomPda',
+      seeds: [
+        { type: 'Collection' },
+        { type: 'Owner' },
+        { type: 'Recipient' },
+        { type: 'Asset' },
+        { type: 'Address', pubkey: seedPubkey },
+        {
+          type: 'Bytes',
+          bytes: Buffer.from('example-seed-bytes', 'utf8'),
+        },
+      ],
+    },
+  };
+
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {
+      owner,
+      plugins: [oraclePlugin],
+    },
+    {}
+  );
+
+  // Find the oracle PDA based on the asset we just created
+  const account = findOracleAccount(umi, oraclePlugin, {
+    collection: collection.publicKey,
+    owner: owner.publicKey,
+    recipient: newOwner.publicKey,
+    asset: asset.publicKey,
+    // ********************
+    // ********************
+    // TODO: Need to specify more seeds
+    // ********************
+    // ********************
+    //address: seedPubkey,
+    //bytes: Buffer.from('example-seed-bytes', 'utf8'),
+  });
+
+  // write to the PDA which corresponds to the asset
+  await customPdaAllSeedsInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      collection: collection.publicKey,
+      owner: owner.publicKey,
+      recipient: newOwner.publicKey,
+      asset: asset.publicKey,
+      address: seedPubkey,
+      bytes: Buffer.from('example-seed-bytes', 'utf8'),
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Rejected,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const result = transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await customPdaAllSeedsSet(umi, {
+    account,
+    signer: umi.identity,
+    args: {
+      collection: collection.publicKey,
+      owner: owner.publicKey,
+      recipient: newOwner.publicKey,
+      asset: asset.publicKey,
+      address: seedPubkey,
+      bytes: Buffer.from('example-seed-bytes', 'utf8'),
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
   });
 });
