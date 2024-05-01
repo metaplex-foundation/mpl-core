@@ -1,30 +1,46 @@
 use borsh::BorshSerialize;
 
 use crate::{
-    accounts::{BaseCollectionV1, PluginHeaderV1},
-    registry_records_to_plugin_list, Collection, PluginRegistryV1Safe,
+    accounts::{BaseAssetV1, PluginHeaderV1},
+    registry_records_to_external_plugin_list, registry_records_to_plugin_list, ExternalPluginsList,
+    PluginRegistryV1Safe, PluginsList,
 };
 
-impl Collection {
+#[derive(Debug)]
+pub struct Asset {
+    pub base: BaseAssetV1,
+    pub plugin_list: PluginsList,
+    pub external_plugin_list: ExternalPluginsList,
+    pub plugin_header: Option<PluginHeaderV1>,
+}
+
+impl Asset {
     pub fn deserialize(data: &[u8]) -> Result<Self, std::io::Error> {
-        let base = BaseCollectionV1::from_bytes(data)?;
+        let base = BaseAssetV1::from_bytes(data)?;
         let base_data = base.try_to_vec()?;
-        let (plugin_header, plugin_list) = if base_data.len() != data.len() {
+        let (plugin_header, plugin_list, external_plugin_list) = if base_data.len() != data.len() {
             let plugin_header = PluginHeaderV1::from_bytes(&data[base_data.len()..])?;
             let plugin_registry = PluginRegistryV1Safe::from_bytes(
                 &data[plugin_header.plugin_registry_offset as usize..],
             )?;
 
             let plugin_list = registry_records_to_plugin_list(&plugin_registry.registry, data)?;
+            let external_plugin_list =
+                registry_records_to_external_plugin_list(&plugin_registry.external_registry, data)?;
 
-            (Some(plugin_header), Some(plugin_list))
+            (
+                Some(plugin_header),
+                Some(plugin_list),
+                Some(external_plugin_list),
+            )
         } else {
-            (None, None)
+            (None, None, None)
         };
 
         Ok(Self {
             base,
             plugin_list: plugin_list.unwrap_or_default(),
+            external_plugin_list: external_plugin_list.unwrap_or_default(),
             plugin_header,
         })
     }
@@ -35,7 +51,7 @@ impl Collection {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Collection {
+impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Asset {
     type Error = std::io::Error;
 
     fn try_from(

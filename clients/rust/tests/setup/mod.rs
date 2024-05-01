@@ -162,6 +162,7 @@ pub struct CreateCollectionHelperArgs<'a> {
     pub uri: Option<String>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
+    pub external_plugins: Vec<ExternalPluginInitInfo>,
 }
 
 pub async fn create_collection<'a>(
@@ -203,6 +204,7 @@ pub struct AssertCollectionHelperArgs {
     pub current_size: u32,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
+    pub external_plugins: Vec<ExternalPlugin>,
 }
 
 pub async fn assert_collection(
@@ -253,6 +255,32 @@ pub async fn assert_collection(
                 assert_eq!(plugin.royalties, royalties);
             }
             _ => panic!("unsupported plugin type"),
+        }
+    }
+
+    assert_eq!(
+        input.external_plugins.len(),
+        collection.external_plugin_list.lifecycle_hooks.len()
+            + collection.external_plugin_list.oracles.len()
+            + collection.external_plugin_list.data_stores.len()
+    );
+    for plugin in input.external_plugins {
+        match plugin {
+            ExternalPlugin::LifecycleHook(hook) => {
+                assert!(collection
+                    .external_plugin_list
+                    .lifecycle_hooks
+                    .contains(&hook))
+            }
+            ExternalPlugin::Oracle(oracle) => {
+                assert!(collection.external_plugin_list.oracles.contains(&oracle))
+            }
+            ExternalPlugin::DataStore(data_store) => {
+                assert!(collection
+                    .external_plugin_list
+                    .data_stores
+                    .contains(&data_store))
+            }
         }
     }
 }

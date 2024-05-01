@@ -1,14 +1,22 @@
 use borsh::BorshSerialize;
 
 use crate::{
-    accounts::{BaseAssetV1, PluginHeaderV1},
-    registry_records_to_external_plugin_list, registry_records_to_plugin_list, Asset,
-    PluginRegistryV1Safe,
+    accounts::{BaseCollectionV1, PluginHeaderV1},
+    registry_records_to_external_plugin_list, registry_records_to_plugin_list, ExternalPluginsList,
+    PluginRegistryV1Safe, PluginsList,
 };
 
-impl Asset {
+#[derive(Debug)]
+pub struct Collection {
+    pub base: BaseCollectionV1,
+    pub plugin_list: PluginsList,
+    pub external_plugin_list: ExternalPluginsList,
+    pub plugin_header: Option<PluginHeaderV1>,
+}
+
+impl Collection {
     pub fn deserialize(data: &[u8]) -> Result<Self, std::io::Error> {
-        let base = BaseAssetV1::from_bytes(data)?;
+        let base = BaseCollectionV1::from_bytes(data)?;
         let base_data = base.try_to_vec()?;
         let (plugin_header, plugin_list, external_plugin_list) = if base_data.len() != data.len() {
             let plugin_header = PluginHeaderV1::from_bytes(&data[base_data.len()..])?;
@@ -43,7 +51,7 @@ impl Asset {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Asset {
+impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Collection {
     type Error = std::io::Error;
 
     fn try_from(
