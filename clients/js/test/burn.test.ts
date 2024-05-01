@@ -248,6 +248,7 @@ test('it can burn using owner authority', async (t) => {
   // And the asset address still exists but was resized to 1.
   const afterAsset = await assertBurned(t, umi, asset.publicKey);
   t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
+})
 
 test('it cannot burn an asset with the wrong collection specified', async (t) => {
   // Given a Umi instance and a new signer.
@@ -262,4 +263,4 @@ test('it cannot burn an asset with the wrong collection specified', async (t) =>
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidCollection' });
-});
+})
