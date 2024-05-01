@@ -1095,8 +1095,8 @@ test('it can use preconfigured asset pda custom offset oracle to deny update', a
   // This test uses an oracle with the data struct:
   // pub struct CustomDataValidation {
   //     pub authority: Pubkey,
-  //    pub sequence_num: u64,
-  //    pub validation: OracleValidation,
+  //     pub sequence_num: u64,
+  //     pub validation: OracleValidation,
   // }
   //
   // Thus the `resultsOffset` below is set to 48.  This is because the anchor discriminator, the
