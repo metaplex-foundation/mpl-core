@@ -15,6 +15,8 @@ import {
   preconfiguredRecipientPdaSet,
   customPdaAllSeedsInit,
   customPdaAllSeedsSet,
+  preconfiguredAssetPdaCustomOffsetInit,
+  preconfiguredAssetPdaCustomOffsetSet,
   close,
 } from '@metaplex-foundation/mpl-core-oracle-example';
 import { generateSigner } from '@metaplex-foundation/umi';
@@ -1084,5 +1086,95 @@ test('it can use custom pda oracle to deny transfer', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: newOwner.publicKey,
+  });
+});
+
+test('it can use preconfigured asset pda custom offset oracle to deny update', async (t) => {
+  const umi = await createUmi();
+
+  // This test uses an oracle with the data struct:
+  // pub struct CustomDataValidation {
+  //     pub authority: Pubkey,
+  //    pub sequence_num: u64,
+  //    pub validation: OracleValidation,
+  // }
+  //
+  // Thus the `resultsOffset` below is set to 48.  This is because the anchor discriminator, the
+  // `authority` `Pubkey`, and the `sequence_num` all precede the `OracleValidation` struct
+  // within the account:
+  //
+  // 8 (anchor discriminator) + 32 (authority) + 8 (sequence number) = 48.
+  const oraclePlugin: OracleInitInfoArgs = {
+    type: 'Oracle',
+    resultsOffset: {
+      type: 'Custom',
+      offset: 48n,
+    },
+    lifecycleChecks: {
+      update: [CheckResult.CAN_REJECT],
+    },
+    baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+    pda: {
+      type: 'PreconfiguredAsset',
+    },
+  };
+
+  const asset = await createAsset(umi, {
+    plugins: [oraclePlugin],
+  });
+
+  // Find the oracle PDA based on the asset we just created
+  const account = findOracleAccount(umi, oraclePlugin, {
+    asset: asset.publicKey,
+  });
+
+  const dataAuthority = generateSigner(umi);
+  // write to the PDA which corresponds to the asset
+  await preconfiguredAssetPdaCustomOffsetInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    authority: dataAuthority.publicKey,
+    asset: asset.publicKey,
+    oracleData: {
+      __kind: 'V1',
+      create: ExternalValidationResult.Pass,
+      update: ExternalValidationResult.Rejected,
+      transfer: ExternalValidationResult.Pass,
+      burn: ExternalValidationResult.Pass,
+    },
+  }).sendAndConfirm(umi);
+
+  const result = update(umi, {
+    asset,
+    name: 'new name',
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await preconfiguredAssetPdaCustomOffsetSet(umi, {
+    account,
+    authority: dataAuthority,
+    sequenceNum: 1,
+    asset: asset.publicKey,
+    oracleData: {
+      __kind: 'V1',
+      create: ExternalValidationResult.Pass,
+      update: ExternalValidationResult.Pass,
+      transfer: ExternalValidationResult.Pass,
+      burn: ExternalValidationResult.Pass,
+    },
+  }).sendAndConfirm(umi);
+
+  await update(umi, {
+    asset,
+    name: 'new name 2',
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    name: 'new name 2',
   });
 });
