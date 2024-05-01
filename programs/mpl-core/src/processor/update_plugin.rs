@@ -6,12 +6,15 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::{UpdateCollectionPluginV1Accounts, UpdatePluginV1Accounts},
-    plugins::{Plugin, PluginType, RegistryRecord},
+    instruction::accounts::{
+        UpdateCollectionPluginV1Accounts, UpdateCollectionPluginV2Accounts, UpdatePluginV1Accounts,
+        UpdatePluginV2Accounts,
+    },
+    plugins::{Attribute, Attributes, Plugin, PluginType, RegistryRecord},
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
-        load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
-        validate_collection_permissions,
+        fetch_core_data, load_key, resize_or_reallocate_account, resolve_authority,
+        validate_asset_permissions, validate_collection_permissions,
     },
 };
 
@@ -152,6 +155,32 @@ pub(crate) fn update_plugin<'a>(
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct UpdatePluginV2Args {
+    pub plugin: Option<Plugin>,
+}
+
+pub(crate) fn update_plugin_v2<'a>(
+    accounts: &'a [AccountInfo<'a>],
+    args: UpdatePluginV2Args,
+) -> ProgramResult {
+    // Accounts.
+    let ctx = UpdatePluginV2Accounts::context(accounts)?;
+
+    // account checks will be done in update_plugin
+
+    let plugin: Plugin = if ctx.accounts.buffer_account.is_some() {
+        Plugin::try_from_slice(&ctx.accounts.buffer_account.unwrap().data.borrow()[..])?
+    } else {
+        args.plugin.unwrap()
+    };
+
+    update_plugin(accounts, UpdatePluginV1Args { plugin: plugin })?;
+
+    Ok(())
+}
+
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct UpdateCollectionPluginV1Args {
     pub plugin: Plugin,
 }
@@ -274,6 +303,32 @@ pub(crate) fn update_collection_plugin<'a>(
         .save(ctx.accounts.collection, registry_record.offset)?;
 
     process_update_plugin()
+}
+
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct UpdateCollectionPluginV2Args {
+    pub plugin: Option<Plugin>,
+}
+
+pub(crate) fn update_collection_plugin_v2<'a>(
+    accounts: &'a [AccountInfo<'a>],
+    args: UpdateCollectionPluginV2Args,
+) -> ProgramResult {
+    // Accounts.
+    let ctx = UpdateCollectionPluginV2Accounts::context(accounts)?;
+
+    // account checks will be done in update_plugin
+
+    let plugin: Plugin = if ctx.accounts.buffer_account.is_some() {
+        Plugin::try_from_slice(&ctx.accounts.buffer_account.unwrap().data.borrow()[..])?
+    } else {
+        args.plugin.unwrap()
+    };
+
+    update_collection_plugin(accounts, UpdateCollectionPluginV1Args { plugin: plugin })?;
+
+    Ok(())
 }
 
 //TODO
