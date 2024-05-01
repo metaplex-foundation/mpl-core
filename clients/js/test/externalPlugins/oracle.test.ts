@@ -19,6 +19,7 @@ import {
 } from '@metaplex-foundation/mpl-core-oracle-example';
 import { generateSigner } from '@metaplex-foundation/umi';
 import { ExternalValidationResult } from '@metaplex-foundation/mpl-core-oracle-example/dist/src/hooked';
+import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import {
   assertAsset,
   assertBurned,
@@ -739,7 +740,7 @@ test('it can use preconfigured collection pda oracle to deny update', async (t) 
 
 test('it can use preconfigured owner pda oracle to deny burn', async (t) => {
   const umi = await createUmi();
-  const owner = generateSigner(umi);
+  const owner = await generateSignerWithSol(umi);
   const oraclePlugin: OracleInitInfoArgs = {
     type: 'Oracle',
     resultsOffset: {
@@ -781,16 +782,9 @@ test('it can use preconfigured owner pda oracle to deny burn', async (t) => {
     },
   }).sendAndConfirm(umi);
 
-  // ********************
-  // ********************
-  // TODO:
-  // Error {
-  //   message: 'Owner address is required',
-  // }
-  // ********************
-  // ********************
   const result = burn(umi, {
     asset,
+    authority: owner,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
@@ -798,7 +792,7 @@ test('it can use preconfigured owner pda oracle to deny burn', async (t) => {
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
-    owner: umi.identity.publicKey,
+    owner,
   });
 
   await preconfiguredOwnerPdaSet(umi, {
@@ -818,6 +812,7 @@ test('it can use preconfigured owner pda oracle to deny burn', async (t) => {
 
   await burn(umi, {
     asset,
+    authority: owner,
   }).sendAndConfirm(umi);
 
   await assertBurned(t, umi, asset.publicKey);
@@ -1030,8 +1025,8 @@ test('it can use custom pda oracle to deny transfer', async (t) => {
     // TODO: Need to specify more seeds
     // ********************
     // ********************
-    //address: seedPubkey,
-    //bytes: Buffer.from('example-seed-bytes', 'utf8'),
+    // address: seedPubkey,
+    // bytes: Buffer.from('example-seed-bytes', 'utf8'),
   });
 
   // write to the PDA which corresponds to the asset

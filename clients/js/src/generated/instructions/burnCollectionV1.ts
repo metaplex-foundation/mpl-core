@@ -108,7 +108,7 @@ export function burnCollectionV1(
     },
     authority: {
       index: 2,
-      isWritable: false as boolean,
+      isWritable: true as boolean,
       value: input.authority ?? null,
     },
     logWrapper: {
