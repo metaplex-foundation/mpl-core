@@ -1438,6 +1438,13 @@
       }
     },
     {
+      "name": "AddBlocker",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
       "name": "Attribute",
       "type": {
         "kind": "struct",
@@ -1498,6 +1505,13 @@
             "type": "bool"
           }
         ]
+      }
+    },
+    {
+      "name": "ImmutableMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": []
       }
     },
     {
@@ -2096,6 +2110,14 @@
         "kind": "enum",
         "variants": [
           {
+            "name": "AddBlocker",
+            "fields": [
+              {
+                "defined": "AddBlocker"
+              }
+            ]
+          },
+          {
             "name": "Royalties",
             "fields": [
               {
@@ -2108,6 +2130,14 @@
             "fields": [
               {
                 "defined": "FreezeDelegate"
+              }
+            ]
+          },
+          {
+            "name": "ImmutableMetadata",
+            "fields": [
+              {
+                "defined": "ImmutableMetadata"
               }
             ]
           },
@@ -2191,6 +2221,12 @@
       "type": {
         "kind": "enum",
         "variants": [
+          {
+            "name": "AddBlocker"
+          },
+          {
+            "name": "ImmutableMetadata"
+          },
           {
             "name": "Royalties"
           },

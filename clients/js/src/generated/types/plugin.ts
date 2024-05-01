@@ -15,6 +15,8 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  AddBlocker,
+  AddBlockerArgs,
   Attributes,
   AttributesArgs,
   BurnDelegate,
@@ -23,6 +25,8 @@ import {
   EditionArgs,
   FreezeDelegate,
   FreezeDelegateArgs,
+  ImmutableMetadata,
+  ImmutableMetadataArgs,
   MasterEdition,
   MasterEditionArgs,
   PermanentBurnDelegate,
@@ -37,10 +41,12 @@ import {
   TransferDelegateArgs,
   UpdateDelegate,
   UpdateDelegateArgs,
+  getAddBlockerSerializer,
   getAttributesSerializer,
   getBurnDelegateSerializer,
   getEditionSerializer,
   getFreezeDelegateSerializer,
+  getImmutableMetadataSerializer,
   getMasterEditionSerializer,
   getPermanentBurnDelegateSerializer,
   getPermanentFreezeDelegateSerializer,
@@ -51,8 +57,10 @@ import {
 } from '.';
 
 export type Plugin =
+  | { __kind: 'AddBlocker'; fields: [AddBlocker] }
   | { __kind: 'Royalties'; fields: [Royalties] }
   | { __kind: 'FreezeDelegate'; fields: [FreezeDelegate] }
+  | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadata] }
   | { __kind: 'BurnDelegate'; fields: [BurnDelegate] }
   | { __kind: 'TransferDelegate'; fields: [TransferDelegate] }
   | { __kind: 'UpdateDelegate'; fields: [UpdateDelegate] }
@@ -64,8 +72,10 @@ export type Plugin =
   | { __kind: 'MasterEdition'; fields: [MasterEdition] };
 
 export type PluginArgs =
+  | { __kind: 'AddBlocker'; fields: [AddBlockerArgs] }
   | { __kind: 'Royalties'; fields: [RoyaltiesArgs] }
   | { __kind: 'FreezeDelegate'; fields: [FreezeDelegateArgs] }
+  | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadataArgs] }
   | { __kind: 'BurnDelegate'; fields: [BurnDelegateArgs] }
   | { __kind: 'TransferDelegate'; fields: [TransferDelegateArgs] }
   | { __kind: 'UpdateDelegate'; fields: [UpdateDelegateArgs] }
@@ -83,6 +93,12 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
     [
       [
+        'AddBlocker',
+        struct<GetDataEnumKindContent<Plugin, 'AddBlocker'>>([
+          ['fields', tuple([getAddBlockerSerializer()])],
+        ]),
+      ],
+      [
         'Royalties',
         struct<GetDataEnumKindContent<Plugin, 'Royalties'>>([
           ['fields', tuple([getRoyaltiesSerializer()])],
@@ -92,6 +108,12 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
         'FreezeDelegate',
         struct<GetDataEnumKindContent<Plugin, 'FreezeDelegate'>>([
           ['fields', tuple([getFreezeDelegateSerializer()])],
+        ]),
+      ],
+      [
+        'ImmutableMetadata',
+        struct<GetDataEnumKindContent<Plugin, 'ImmutableMetadata'>>([
+          ['fields', tuple([getImmutableMetadataSerializer()])],
         ]),
       ],
       [
@@ -155,6 +177,10 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
 
 // Data Enum Helpers.
 export function plugin(
+  kind: 'AddBlocker',
+  data: GetDataEnumKindContent<PluginArgs, 'AddBlocker'>['fields']
+): GetDataEnumKind<PluginArgs, 'AddBlocker'>;
+export function plugin(
   kind: 'Royalties',
   data: GetDataEnumKindContent<PluginArgs, 'Royalties'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Royalties'>;
@@ -162,6 +188,10 @@ export function plugin(
   kind: 'FreezeDelegate',
   data: GetDataEnumKindContent<PluginArgs, 'FreezeDelegate'>['fields']
 ): GetDataEnumKind<PluginArgs, 'FreezeDelegate'>;
+export function plugin(
+  kind: 'ImmutableMetadata',
+  data: GetDataEnumKindContent<PluginArgs, 'ImmutableMetadata'>['fields']
+): GetDataEnumKind<PluginArgs, 'ImmutableMetadata'>;
 export function plugin(
   kind: 'BurnDelegate',
   data: GetDataEnumKindContent<PluginArgs, 'BurnDelegate'>['fields']
