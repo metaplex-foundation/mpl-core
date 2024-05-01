@@ -15,6 +15,8 @@ import {
   preconfiguredRecipientPdaSet,
   customPdaAllSeedsInit,
   customPdaAllSeedsSet,
+  customPdaTypicalInit,
+  customPdaTypicalSet,
   preconfiguredAssetPdaCustomOffsetInit,
   preconfiguredAssetPdaCustomOffsetSet,
   close,
@@ -976,7 +978,7 @@ test('it can use preconfigured asset pda oracle to deny update', async (t) => {
   });
 });
 
-test('it can use custom pda oracle to deny transfer', async (t) => {
+test('it can use custom pda (all seeds) oracle to deny transfer', async (t) => {
   const umi = await createUmi();
   const seedPubkey = generateSigner(umi).publicKey;
   const owner = generateSigner(umi);
@@ -1089,6 +1091,109 @@ test('it can use custom pda oracle to deny transfer', async (t) => {
   });
 });
 
+test('it can use custom pda (typical) oracle to deny transfer', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const newOwner = generateSigner(umi);
+
+  const oraclePlugin: OracleInitInfoArgs = {
+    type: 'Oracle',
+    resultsOffset: {
+      type: 'Anchor',
+    },
+    lifecycleChecks: {
+      transfer: [CheckResult.CAN_REJECT],
+    },
+    baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+    pda: {
+      type: 'CustomPda',
+      seeds: [
+        {
+          type: 'Bytes',
+          bytes: Buffer.from('prefix-seed-bytes', 'utf8'),
+        },
+        { type: 'Collection' },
+        {
+          type: 'Bytes',
+          bytes: Buffer.from('additional-bytes-seed-bytes', 'utf8'),
+        },
+      ],
+    },
+  };
+
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {
+      owner,
+      plugins: [oraclePlugin],
+    },
+    {}
+  );
+
+  // Find the oracle PDA based on the asset we just created
+  const account = findOracleAccount(umi, oraclePlugin, {
+    collection: collection.publicKey,
+  });
+
+  // write to the PDA
+  await customPdaTypicalInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      prefixBytes: Buffer.from('prefix-seed-bytes', 'utf8'),
+      collection: collection.publicKey,
+      additionalBytes: Buffer.from('additional-bytes-seed-bytes', 'utf8'),
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Rejected,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const result = transfer(umi, {
+    asset,
+    collection,
+    newOwner: newOwner.publicKey,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await customPdaTypicalSet(umi, {
+    account,
+    signer: umi.identity,
+    args: {
+      prefixBytes: Buffer.from('prefix-seed-bytes', 'utf8'),
+      collection: collection.publicKey,
+      additionalBytes: Buffer.from('additional-bytes-seed-bytes', 'utf8'),
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await transfer(umi, {
+    asset,
+    collection,
+    newOwner: newOwner.publicKey,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
+  });
+});
+
 test('it can use preconfigured asset pda custom offset oracle to deny update', async (t) => {
   const umi = await createUmi();
 
@@ -1145,17 +1250,60 @@ test('it can use preconfigured asset pda custom offset oracle to deny update', a
     },
   }).sendAndConfirm(umi);
 
-  const result = update(umi, {
+  const update_result = update(umi, {
     asset,
     name: 'new name',
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(update_result, { name: 'InvalidAuthority' });
 
+  // Making sure the incorrect authority cannot update the oracle.  This is more just a test of the
+  // example program functionality.
+  const set_result = preconfiguredAssetPdaCustomOffsetSet(umi, {
+    account,
+    authority: umi.identity,
+    sequenceNum: 2,
+    asset: asset.publicKey,
+    oracleData: {
+      __kind: 'V1',
+      create: ExternalValidationResult.Pass,
+      update: ExternalValidationResult.Pass,
+      transfer: ExternalValidationResult.Pass,
+      burn: ExternalValidationResult.Pass,
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(set_result, { name: 'ProgramErrorNotRecognizedError' });
+
+  // Making sure a lower sequence number passes but does not update the oracle.  This is also just
+  // a test of the example program functionality.
   await preconfiguredAssetPdaCustomOffsetSet(umi, {
     account,
     authority: dataAuthority,
-    sequenceNum: 1,
+    sequenceNum: 0,
+    asset: asset.publicKey,
+    oracleData: {
+      __kind: 'V1',
+      create: ExternalValidationResult.Pass,
+      update: ExternalValidationResult.Pass,
+      transfer: ExternalValidationResult.Pass,
+      burn: ExternalValidationResult.Pass,
+    },
+  }).sendAndConfirm(umi);
+
+  // Validate still cannot update the mpl-core asset because the oracle did not change.
+  const update_result_2 = update(umi, {
+    asset,
+    name: 'new name',
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(update_result_2, { name: 'InvalidAuthority' });
+
+  // Oracle update that works.
+  await preconfiguredAssetPdaCustomOffsetSet(umi, {
+    account,
+    authority: dataAuthority,
+    sequenceNum: 2,
     asset: asset.publicKey,
     oracleData: {
       __kind: 'V1',
