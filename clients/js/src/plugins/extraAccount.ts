@@ -123,6 +123,8 @@ export function extraAccountToAccountMeta(
                 return publicKeySerializer().serialize(seed.pubkey);
               case 'Bytes':
                 return seed.bytes;
+              default:
+                throw new Error(`Unrecognized seed type`);
             }
           })
         )[0],
