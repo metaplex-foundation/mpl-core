@@ -28,6 +28,8 @@ export function canTransfer(
     return true;
   }
 
+  // TODO check oracle
+
   if (!isFrozen(asset, collection)) {
     if (dAsset.owner === authority) {
       return true;
@@ -66,6 +68,8 @@ export function canBurn(
     return true;
   }
 
+  // TODO check oracle
+
   if (!isFrozen(asset, collection)) {
     if (dAsset.owner === authority) {
       return true;
@@ -93,5 +97,7 @@ export function canUpdate(
   asset: AssetV1,
   collection?: CollectionV1
 ): boolean {
+  // TODO check oracle
+
   return hasAssetUpdateAuthority(authority, asset, collection);
 }

@@ -9,6 +9,9 @@ devDependencies:
   '@ava/typescript':
     specifier: ^3.0.1
     version: 3.0.1
+  '@metaplex-foundation/mpl-core-oracle-example':
+    specifier: ^0.0.1
+    version: 0.0.1(@metaplex-foundation/umi@0.8.10)(@noble/hashes@1.3.1)
   '@metaplex-foundation/mpl-toolbox':
     specifier: ^0.8.0
     version: 0.8.0(@metaplex-foundation/umi@0.8.10)
@@ -1855,6 +1858,16 @@ packages:
     transitivePeerDependencies:
       - encoding
       - supports-color
+    dev: true
+
+  /@metaplex-foundation/mpl-core-oracle-example@0.0.1(@metaplex-foundation/umi@0.8.10)(@noble/hashes@1.3.1):
+    resolution: {integrity: sha512-z2432DCY6eqPSUbMAqHNpZoN2keDu9kLo5tr0d/Kx7GbZ3LHIg7tiyber9gtIUJAJx3c0k3DX/awoA9Fd5kbdA==}
+    peerDependencies:
+      '@metaplex-foundation/umi': '>=0.8.2 < 1'
+      '@noble/hashes': ^1.3.1
+    dependencies:
+      '@metaplex-foundation/umi': 0.8.10
+      '@noble/hashes': 1.3.1
     dev: true
 
   /@metaplex-foundation/mpl-toolbox@0.8.0(@metaplex-foundation/umi@0.8.10):
