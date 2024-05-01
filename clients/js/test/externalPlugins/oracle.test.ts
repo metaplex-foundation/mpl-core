@@ -1020,13 +1020,6 @@ test('it can use custom pda oracle to deny transfer', async (t) => {
     owner: owner.publicKey,
     recipient: newOwner.publicKey,
     asset: asset.publicKey,
-    // ********************
-    // ********************
-    // TODO: Need to specify more seeds
-    // ********************
-    // ********************
-    // address: seedPubkey,
-    // bytes: Buffer.from('example-seed-bytes', 'utf8'),
   });
 
   // write to the PDA which corresponds to the asset
@@ -1053,7 +1046,9 @@ test('it can use custom pda oracle to deny transfer', async (t) => {
 
   const result = transfer(umi, {
     asset,
+    collection,
     newOwner: newOwner.publicKey,
+    authority: owner,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
@@ -1080,7 +1075,9 @@ test('it can use custom pda oracle to deny transfer', async (t) => {
 
   await transfer(umi, {
     asset,
+    collection,
     newOwner: newOwner.publicKey,
+    authority: owner,
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
