@@ -6,11 +6,21 @@
 //!
 
 use crate::generated::types::Key;
+#[cfg(feature = "anchor")]
+use anchor_lang::AnchorDeserialize;
+#[cfg(not(feature = "anchor"))]
 use borsh::BorshDeserialize;
-use borsh::BorshSerialize;
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(
+    not(feature = "anchor"),
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "anchor",
+    derive(anchor_lang::AnchorSerialize, anchor_lang::AnchorDeserialize)
+)]
 pub struct HashedAssetV1 {
     pub key: Key,
     pub hash: [u8; 32],
