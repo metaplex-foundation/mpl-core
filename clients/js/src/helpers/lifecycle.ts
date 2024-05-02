@@ -17,7 +17,8 @@ import {
 
 /**
  * Check if the given authority is eligible to transfer the asset.
- * This does NOT check if the asset's royalty rule sets or external plugins. Use `validateTransfer` for more comprehensive checks.
+ * This does NOT check the asset's royalty rule sets or external plugins. Use `validateTransfer` for more comprehensive checks.
+ * @deprecated since v1.0.0. Use `validateTransfer` instead.
  * @param {PublicKey | string} authority Pubkey
  * @param {AssetV1} asset Asset
  * @param {CollectionV1 | undefined} collection Collection
@@ -168,7 +169,8 @@ export async function validateTransfer(
 
 /**
  * Check if the given pubkey is eligible to burn the asset.
- * This does NOT external plugins, use `validateBurn` for more comprehensive checks.
+ * This does NOT check external plugins, use `validateBurn` for more comprehensive checks.
+ * @deprecated since v1.0.0. Use `validateBurn` instead.
  * @param {PublicKey | string} authority Pubkey
  * @param {AssetV1} asset Asset
  * @param {CollectionV1 | undefined} collection Collection
@@ -304,6 +306,7 @@ export async function validateBurn(
 /**
  * Check if the given pubkey is eligible to update the asset.
  * This does NOT check external plugins. Use `validateUpdate` for more comprehensive checks.
+ * @deprecated since v1.0.0. Use `validateTransfer` instead.
  * @param {PublicKey | string} authority Pubkey
  * @param {AssetV1} asset Asset
  * @param {CollectionV1 | undefined} collection Collection
