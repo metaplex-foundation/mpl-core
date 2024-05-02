@@ -7,7 +7,7 @@ export type ExternalPluginManifest<
   Init extends Object,
   InitBase extends Object,
   Update extends Object,
-  UpdateBase extends Object
+  UpdateBase extends Object,
 > = {
   type: ExternalPluginTypeString;
   fromBase: (

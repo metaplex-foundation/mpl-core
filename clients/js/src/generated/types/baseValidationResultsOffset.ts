@@ -61,7 +61,7 @@ export function baseValidationResultsOffset(
   >['fields']
 ): GetDataEnumKind<BaseValidationResultsOffsetArgs, 'Custom'>;
 export function baseValidationResultsOffset<
-  K extends BaseValidationResultsOffsetArgs['__kind']
+  K extends BaseValidationResultsOffsetArgs['__kind'],
 >(
   kind: K,
   data?: any
@@ -71,7 +71,7 @@ export function baseValidationResultsOffset<
     : { __kind: kind, ...(data ?? {}) };
 }
 export function isBaseValidationResultsOffset<
-  K extends BaseValidationResultsOffset['__kind']
+  K extends BaseValidationResultsOffset['__kind'],
 >(
   kind: K,
   value: BaseValidationResultsOffset
