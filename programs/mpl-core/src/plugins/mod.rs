@@ -51,14 +51,10 @@ use crate::{
 #[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum Plugin {
-    /// AddBlocker plugin. Prevents plugins from being added.
-    AddBlocker(AddBlocker),
     /// Royalties plugin.
     Royalties(Royalties),
     /// Freeze Delegate plugin.
     FreezeDelegate(FreezeDelegate),
-    /// ImmutableMetadata plugin. Makes metadata of the asset immutable.
-    ImmutableMetadata(ImmutableMetadata),
     /// Burn Delegate plugin.
     BurnDelegate(BurnDelegate),
     /// Transfer Delegate plugin.
@@ -77,6 +73,10 @@ pub enum Plugin {
     Edition(Edition),
     /// Master Edition plugin allows creators to specify the max supply and master edition details
     MasterEdition(MasterEdition),
+    /// AddBlocker plugin. Prevents plugins from being added.
+    AddBlocker(AddBlocker),
+    /// ImmutableMetadata plugin. Makes metadata of the asset immutable.
+    ImmutableMetadata(ImmutableMetadata),
 }
 
 impl Plugin {
@@ -121,10 +121,6 @@ impl Compressible for Plugin {}
     Ord,
 )]
 pub enum PluginType {
-    /// AddBlocker plugin.
-    AddBlocker,
-    /// ImmutableMetadata plugin.
-    ImmutableMetadata,
     /// Royalties plugin.
     Royalties,
     /// Freeze Delegate plugin.
@@ -147,6 +143,10 @@ pub enum PluginType {
     Edition,
     /// The Master Edition plugin.
     MasterEdition,
+    /// AddBlocker plugin.
+    AddBlocker,
+    /// ImmutableMetadata plugin.
+    ImmutableMetadata,
 }
 
 impl DataBlob for PluginType {
