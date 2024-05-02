@@ -4164,8 +4164,8 @@
     },
     {
       "code": 35,
-      "name": "OracleCanDenyOnly",
-      "msg": "Oracle external plugin can only be configured to deny"
+      "name": "OracleCanRejectOnly",
+      "msg": "Oracle external plugin can only be configured to reject"
     },
     {
       "code": 36,
