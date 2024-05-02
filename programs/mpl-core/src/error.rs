@@ -149,9 +149,9 @@ pub enum MplCoreError {
     #[error("Missing account needed for external plugin")]
     MissingExternalAccount,
 
-    /// 35 - Invalid setting for external plugin
-    #[error("Invalid setting for external plugin")]
-    InvalidExternalPluginSetting,
+    /// 35 - Oracle external plugin can only be configured to deny
+    #[error("Oracle external plugin can only be configured to deny")]
+    OracleCanDenyOnly,
 }
 
 impl PrintProgramError for MplCoreError {

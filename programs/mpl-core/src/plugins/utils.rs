@@ -334,8 +334,9 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
             // You cannot configure an Oracle plugin to approve lifecycle events.
             if let Some(lifecycle_checks) = &init_info.lifecycle_checks {
                 for (_, result) in lifecycle_checks {
-                    if ExternalCheckResultBits::from(*result).can_approve() {
-                        return Err(MplCoreError::InvalidExternalPluginSetting.into());
+                    let result_bits = ExternalCheckResultBits::from(*result);
+                    if result_bits.can_listen() || result_bits.can_approve() {
+                        return Err(MplCoreError::OracleCanDenyOnly.into());
                     }
                 }
             }
