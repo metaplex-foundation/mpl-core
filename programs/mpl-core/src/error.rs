@@ -148,6 +148,10 @@ pub enum MplCoreError {
     /// 34 - Missing account needed for external plugin
     #[error("Missing account needed for external plugin")]
     MissingExternalAccount,
+
+    /// 35 - Invalid setting for external plugin
+    #[error("Invalid setting for external plugin")]
+    InvalidExternalPluginSetting,
 }
 
 impl PrintProgramError for MplCoreError {
