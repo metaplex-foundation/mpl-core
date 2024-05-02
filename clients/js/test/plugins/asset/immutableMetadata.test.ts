@@ -1,11 +1,18 @@
 import test from 'ava';
+import { generateSigner } from '@metaplex-foundation/umi';
+
 import {
   addPluginV1,
   createPlugin,
   pluginAuthorityPair,
   updateV1,
 } from '../../../src';
-import { assertAsset, createAsset, createUmi } from '../../_setup';
+import {
+  DEFAULT_ASSET,
+  assertAsset,
+  createAsset,
+  createUmi,
+} from '../../_setup';
 
 test('it can prevent the asset from metadata updating', async (t) => {
   // Given a Umi instance and a new signer.
@@ -63,5 +70,56 @@ test('it can mutate its metadata unless ImmutableMetadata plugin is added', asyn
 
   await t.throwsAsync(result, {
     name: 'InvalidAuthority',
+  });
+});
+
+test('it states that UA is the only one who can add the ImmutableMetadata', async (t) => {
+  const umi = await createUmi();
+  const updateAuthority = generateSigner(umi);
+  const randomUser = generateSigner(umi);
+  const asset = await createAsset(umi, { updateAuthority });
+
+  // random keypair can't add ImmutableMetadata
+  let result = addPluginV1(umi, {
+    authority: randomUser,
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'ImmutableMetadata',
+    }),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, {
+    name: 'NoApprovals',
+  });
+
+  // Owner can't add ImmutableMetadata
+  result = addPluginV1(umi, {
+    authority: umi.identity,
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'ImmutableMetadata',
+    }),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, {
+    name: 'NoApprovals',
+  });
+
+  // UA CAN add ImmutableMetadata
+  await addPluginV1(umi, {
+    authority: updateAuthority,
+    asset: asset.publicKey,
+    plugin: createPlugin({ type: 'ImmutableMetadata' }),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    immutableMetadata: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+    },
   });
 });
