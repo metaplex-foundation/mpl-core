@@ -127,7 +127,7 @@ async fn test_remove_oracle() {
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 lifecycle_checks: Some(vec![(
                     HookableLifecycleEvent::Transfer,
-                    ExternalCheckResult { flags: 1 },
+                    ExternalCheckResult { flags: 2 },
                 )]),
                 pda: None,
                 results_offset: None,
