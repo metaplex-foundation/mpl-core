@@ -36,7 +36,7 @@ export type OracleInitInfoArgs = Omit<
 > & {
   type: 'Oracle';
   initPluginAuthority?: PluginAuthority;
-  lifecycleChecks?: LifecycleChecks;
+  lifecycleChecks: LifecycleChecks;
   pda?: ExtraAccount;
   resultsOffset?: ValidationResultsOffset;
 };
@@ -57,9 +57,7 @@ export function oracleInitInfoArgsToBase(
   return {
     baseAddress: o.baseAddress,
     pda: o.pda ? extraAccountToBase(o.pda) : null,
-    lifecycleChecks: o.lifecycleChecks
-      ? lifecycleChecksToBase(o.lifecycleChecks)
-      : null,
+    lifecycleChecks: lifecycleChecksToBase(o.lifecycleChecks),
     initPluginAuthority: o.initPluginAuthority
       ? pluginAuthorityToBase(o.initPluginAuthority)
       : null,
