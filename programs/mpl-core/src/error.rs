@@ -152,6 +152,10 @@ pub enum MplCoreError {
     /// 35 - Oracle external plugin can only be configured to deny
     #[error("Oracle external plugin can only be configured to deny")]
     OracleCanDenyOnly,
+
+    /// 36 - Oracle external plugin must have at least one lifecycle check
+    #[error("Oracle external plugin must have at least one lifecycle check")]
+    OracleRequiresLifecycleCheck,
 }
 
 impl PrintProgramError for MplCoreError {
