@@ -492,21 +492,22 @@ export class MissingExternalAccountError extends ProgramError {
 codeToErrorMap.set(0x22, MissingExternalAccountError);
 nameToErrorMap.set('MissingExternalAccount', MissingExternalAccountError);
 
-/** InvalidExternalPluginSetting: Invalid setting for external plugin */
-export class InvalidExternalPluginSettingError extends ProgramError {
-  override readonly name: string = 'InvalidExternalPluginSetting';
+/** OracleCanDenyOnly: Oracle external plugin can only be configured to deny */
+export class OracleCanDenyOnlyError extends ProgramError {
+  override readonly name: string = 'OracleCanDenyOnly';
 
   readonly code: number = 0x23; // 35
 
   constructor(program: Program, cause?: Error) {
-    super('Invalid setting for external plugin', program, cause);
+    super(
+      'Oracle external plugin can only be configured to deny',
+      program,
+      cause
+    );
   }
 }
-codeToErrorMap.set(0x23, InvalidExternalPluginSettingError);
-nameToErrorMap.set(
-  'InvalidExternalPluginSetting',
-  InvalidExternalPluginSettingError
-);
+codeToErrorMap.set(0x23, OracleCanDenyOnlyError);
+nameToErrorMap.set('OracleCanDenyOnly', OracleCanDenyOnlyError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.
