@@ -325,24 +325,26 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
         }
     }
 
-    let (authority, lifecycle_checks) = match &init_info {
-        ExternalPluginInitInfo::LifecycleHook(init_info) => {
-            (init_info.init_plugin_authority, &init_info.lifecycle_checks)
-        }
+    let (authority, lifecycle_checks) = match init_info {
+        ExternalPluginInitInfo::LifecycleHook(init_info) => (
+            init_info.init_plugin_authority,
+            init_info.lifecycle_checks.clone(),
+        ),
         ExternalPluginInitInfo::Oracle(init_info) => {
             // You cannot configure an Oracle plugin to approve lifecycle events.
-            if let Some(lifecycle_checks) = &init_info.lifecycle_checks {
-                for (_, result) in lifecycle_checks {
-                    // Deny is bit 2.
-                    if result.flags != 0x2 {
-                        return Err(MplCoreError::OracleCanDenyOnly.into());
-                    }
+            for (_, result) in &init_info.lifecycle_checks {
+                // Deny is bit 2.
+                if result.flags != 0x2 {
+                    return Err(MplCoreError::OracleCanDenyOnly.into());
                 }
             }
 
-            (init_info.init_plugin_authority, &init_info.lifecycle_checks)
+            (
+                init_info.init_plugin_authority,
+                Some(init_info.lifecycle_checks.clone()),
+            )
         }
-        ExternalPluginInitInfo::DataStore(init_info) => (init_info.init_plugin_authority, &None),
+        ExternalPluginInitInfo::DataStore(init_info) => (init_info.init_plugin_authority, None),
     };
 
     let old_registry_offset = plugin_header.plugin_registry_offset;
