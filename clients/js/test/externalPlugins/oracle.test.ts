@@ -299,7 +299,7 @@ test('it cannot configure oracle to approve', async (t) => {
     ],
   });
 
-  await t.throwsAsync(result, { name: 'InvalidExternalPluginSetting' });
+  await t.throwsAsync(result, { name: 'OracleCanDenyOnly' });
 });
 
 test('it cannot configure oracle to listen', async (t) => {
@@ -340,7 +340,7 @@ test('it cannot configure oracle to listen', async (t) => {
     ],
   });
 
-  await t.throwsAsync(result, { name: 'InvalidExternalPluginSetting' });
+  await t.throwsAsync(result, { name: 'OracleCanDenyOnly' });
 });
 
 test('it cannot use fixed address oracle to deny transfer if not registered for lifecycle event', async (t) => {
