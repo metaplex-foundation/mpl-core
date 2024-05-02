@@ -115,6 +115,9 @@ pub enum MplCoreError {
     /// 34 (0x22) - Missing account needed for external plugin
     #[error("Missing account needed for external plugin")]
     MissingExternalAccount,
+    /// 35 (0x23) - Invalid setting for external plugin
+    #[error("Invalid setting for external plugin")]
+    InvalidExternalPluginSetting,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {
