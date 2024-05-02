@@ -261,7 +261,7 @@ test('it can use fixed address oracle to deny transfer', async (t) => {
   });
 });
 
-test('it cannot use fixed address oracle to force approve transfer', async (t) => {
+test('it cannot configure oracle to approve', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
   const owner = generateSigner(umi);
@@ -282,8 +282,8 @@ test('it cannot use fixed address oracle to force approve transfer', async (t) =
     },
   }).sendAndConfirm(umi);
 
-  // create asset referencing the oracle account
-  const asset = await createAsset(umi, {
+  // Validate cannot have Oracle with `CheckResult.CAN_APPROVE`
+  const result = createAsset(umi, {
     owner,
     plugins: [
       {
@@ -299,29 +299,10 @@ test('it cannot use fixed address oracle to force approve transfer', async (t) =
     ],
   });
 
-  const newOwner = generateSigner(umi);
-
-  const result = transfer(umi, {
-    asset,
-    newOwner: newOwner.publicKey,
-  }).sendAndConfirm(umi);
-
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
-
-  await transfer(umi, {
-    asset,
-    newOwner: newOwner.publicKey,
-    authority: owner,
-  }).sendAndConfirm(umi);
-
-  await assertAsset(t, umi, {
-    ...DEFAULT_ASSET,
-    asset: asset.publicKey,
-    owner: newOwner.publicKey,
-  });
+  await t.throwsAsync(result, { name: 'InvalidExternalPluginSetting' });
 });
 
-test('it cannot use fixed address oracle to deny transfer if not registered for lifecycle event but has same type', async (t) => {
+test('it cannot configure oracle to listen', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
   const owner = generateSigner(umi);
@@ -336,14 +317,14 @@ test('it cannot use fixed address oracle to deny transfer if not registered for 
         __kind: 'V1',
         create: ExternalValidationResult.Pass,
         update: ExternalValidationResult.Pass,
-        transfer: ExternalValidationResult.Rejected,
+        transfer: ExternalValidationResult.Approved,
         burn: ExternalValidationResult.Pass,
       },
     },
   }).sendAndConfirm(umi);
 
-  // create asset referencing the oracle account
-  const asset = await createAsset(umi, {
+  // Validate cannot have Oracle with `CheckResult.CAN_LISTEN`
+  const result = createAsset(umi, {
     owner,
     plugins: [
       {
@@ -352,26 +333,14 @@ test('it cannot use fixed address oracle to deny transfer if not registered for 
           type: 'Anchor',
         },
         lifecycleChecks: {
-          transfer: [CheckResult.CAN_APPROVE],
+          transfer: [CheckResult.CAN_LISTEN],
         },
         baseAddress: account.publicKey,
       },
     ],
   });
 
-  const newOwner = generateSigner(umi);
-
-  await transfer(umi, {
-    asset,
-    newOwner: newOwner.publicKey,
-    authority: owner,
-  }).sendAndConfirm(umi);
-
-  await assertAsset(t, umi, {
-    ...DEFAULT_ASSET,
-    asset: asset.publicKey,
-    owner: newOwner.publicKey,
-  });
+  await t.throwsAsync(result, { name: 'InvalidExternalPluginSetting' });
 });
 
 test('it cannot use fixed address oracle to deny transfer if not registered for lifecycle event', async (t) => {
