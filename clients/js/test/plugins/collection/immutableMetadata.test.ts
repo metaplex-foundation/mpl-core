@@ -128,16 +128,20 @@ test('it prevents both collection and asset from their meta updating when Immuta
     ],
     updateAuthority,
   });
-  const asset = await createAsset(umi, collection);
+  const asset = await createAsset(umi, {
+    collection: collection.publicKey,
+    authority: updateAuthority,
+  });
 
   let result = updateV1(umi, {
+    collection: collection.publicKey,
     asset: asset.publicKey,
     newName: 'Test Bread 2',
     newUri: 'https://example.com/bread2',
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
-    name: 'NoApprovals',
+    name: 'InvalidAuthority',
   });
 
   result = updateCollectionV1(umi, {

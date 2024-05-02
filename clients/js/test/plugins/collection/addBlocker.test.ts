@@ -87,7 +87,7 @@ test('it cannot add UA-managed plugin to an asset in a collection if addBlocker 
   });
 });
 
-test('it prevents plugins from being added to both collection and plugins when AddBlocker is added to a collection', async (t) => {
+test('it prevents plugins from being added to both collection and plugins when collection is created with AddBlocker', async (t) => {
   const umi = await createUmi();
   const updateAuthority = generateSigner(umi);
   const collection = await createCollection(umi, {
@@ -99,7 +99,10 @@ test('it prevents plugins from being added to both collection and plugins when A
     ],
     updateAuthority,
   });
-  const asset = await createAsset(umi, collection);
+  const asset = await createAsset(umi, {
+    collection: collection.publicKey,
+    authority: updateAuthority,
+  });
 
   let result = addCollectionPluginV1(umi, {
     collection: collection.publicKey,
@@ -113,6 +116,7 @@ test('it prevents plugins from being added to both collection and plugins when A
   });
 
   result = addPluginV1(umi, {
+    collection: collection.publicKey,
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'ImmutableMetadata',
@@ -120,15 +124,14 @@ test('it prevents plugins from being added to both collection and plugins when A
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
-    name: 'NoApprovals',
+    name: 'InvalidAuthority',
   });
 });
 
-// TODO: stange behavior, test passes when it shouldn't
 test('it prevents plugins from being added to both collection and plugins when AddBlocker is added to a collection', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi);
-  const asset = await createAsset(umi, collection);
+  const asset = await createAsset(umi, { collection: collection.publicKey });
 
   await addCollectionPluginV1(umi, {
     collection: collection.publicKey,
@@ -149,6 +152,7 @@ test('it prevents plugins from being added to both collection and plugins when A
   });
 
   result = addPluginV1(umi, {
+    collection: collection.publicKey,
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'ImmutableMetadata',
@@ -156,6 +160,6 @@ test('it prevents plugins from being added to both collection and plugins when A
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
-    name: 'NoApprovals',
+    name: 'InvalidAuthority',
   });
 });

@@ -127,7 +127,9 @@ test('it states that UA is the only one who can add the AddBlocker', async (t) =
   const umi = await createUmi();
   const updateAuthority = generateSigner(umi);
   const randomUser = generateSigner(umi);
-  const asset = await createAsset(umi, { updateAuthority });
+  const asset = await createAsset(umi, {
+    updateAuthority: updateAuthority.publicKey,
+  });
 
   // random keypair can't add AddBlocker
   let result = addPluginV1(umi, {
