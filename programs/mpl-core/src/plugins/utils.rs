@@ -339,7 +339,7 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
             for (_, result) in &init_info.lifecycle_checks {
                 // Deny is bit 2.
                 if result.flags != 0x2 {
-                    return Err(MplCoreError::OracleCanDenyOnly.into());
+                    return Err(MplCoreError::OracleCanRejectOnly.into());
                 }
             }
 
