@@ -2110,14 +2110,6 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "AddBlocker",
-            "fields": [
-              {
-                "defined": "AddBlocker"
-              }
-            ]
-          },
-          {
             "name": "Royalties",
             "fields": [
               {
@@ -2130,14 +2122,6 @@
             "fields": [
               {
                 "defined": "FreezeDelegate"
-              }
-            ]
-          },
-          {
-            "name": "ImmutableMetadata",
-            "fields": [
-              {
-                "defined": "ImmutableMetadata"
               }
             ]
           },
@@ -2212,6 +2196,22 @@
                 "defined": "MasterEdition"
               }
             ]
+          },
+          {
+            "name": "AddBlocker",
+            "fields": [
+              {
+                "defined": "AddBlocker"
+              }
+            ]
+          },
+          {
+            "name": "ImmutableMetadata",
+            "fields": [
+              {
+                "defined": "ImmutableMetadata"
+              }
+            ]
           }
         ]
       }
@@ -2221,12 +2221,6 @@
       "type": {
         "kind": "enum",
         "variants": [
-          {
-            "name": "AddBlocker"
-          },
-          {
-            "name": "ImmutableMetadata"
-          },
           {
             "name": "Royalties"
           },
@@ -2259,6 +2253,12 @@
           },
           {
             "name": "MasterEdition"
+          },
+          {
+            "name": "AddBlocker"
+          },
+          {
+            "name": "ImmutableMetadata"
           }
         ]
       }

@@ -9,8 +9,6 @@
 import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 
 export enum PluginType {
-  AddBlocker,
-  ImmutableMetadata,
   Royalties,
   FreezeDelegate,
   BurnDelegate,
@@ -22,6 +20,8 @@ export enum PluginType {
   PermanentBurnDelegate,
   Edition,
   MasterEdition,
+  AddBlocker,
+  ImmutableMetadata,
 }
 
 export type PluginTypeArgs = PluginType;

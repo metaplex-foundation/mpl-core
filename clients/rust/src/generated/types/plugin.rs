@@ -24,10 +24,8 @@ use borsh::BorshSerialize;
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Plugin {
-    AddBlocker(AddBlocker),
     Royalties(Royalties),
     FreezeDelegate(FreezeDelegate),
-    ImmutableMetadata(ImmutableMetadata),
     BurnDelegate(BurnDelegate),
     TransferDelegate(TransferDelegate),
     UpdateDelegate(UpdateDelegate),
@@ -37,4 +35,6 @@ pub enum Plugin {
     PermanentBurnDelegate(PermanentBurnDelegate),
     Edition(Edition),
     MasterEdition(MasterEdition),
+    AddBlocker(AddBlocker),
+    ImmutableMetadata(ImmutableMetadata),
 }
