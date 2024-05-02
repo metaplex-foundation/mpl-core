@@ -509,6 +509,26 @@ export class OracleCanDenyOnlyError extends ProgramError {
 codeToErrorMap.set(0x23, OracleCanDenyOnlyError);
 nameToErrorMap.set('OracleCanDenyOnly', OracleCanDenyOnlyError);
 
+/** OracleRequiresLifecycleCheck: Oracle external plugin must have at least one lifecycle check */
+export class OracleRequiresLifecycleCheckError extends ProgramError {
+  override readonly name: string = 'OracleRequiresLifecycleCheck';
+
+  readonly code: number = 0x24; // 36
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Oracle external plugin must have at least one lifecycle check',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x24, OracleRequiresLifecycleCheckError);
+nameToErrorMap.set(
+  'OracleRequiresLifecycleCheck',
+  OracleRequiresLifecycleCheckError
+);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

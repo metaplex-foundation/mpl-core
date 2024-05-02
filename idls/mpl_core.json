@@ -4166,6 +4166,11 @@
       "code": 35,
       "name": "OracleCanDenyOnly",
       "msg": "Oracle external plugin can only be configured to deny"
+    },
+    {
+      "code": 36,
+      "name": "OracleRequiresLifecycleCheck",
+      "msg": "Oracle external plugin must have at least one lifecycle check"
     }
   ],
   "metadata": {
