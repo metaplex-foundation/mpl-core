@@ -1,6 +1,6 @@
+import { PublicKey } from '@metaplex-foundation/umi';
 import { BaseSeed } from '../generated';
 import { RenameToType } from '../utils';
-import { PublicKey } from '@metaplex-foundation/umi';
 
 export type Seed =
   | Exclude<RenameToType<BaseSeed>, { type: 'Address' } | { type: 'Bytes' }>
