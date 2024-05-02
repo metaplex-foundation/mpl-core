@@ -138,7 +138,10 @@ export function getExternalRegistryRecordSerializer(): Serializer<
         buffer,
         pluginOffsetOffset
       );
-      const [dataLen] = option(u64()).deserialize(buffer, dataOffsetOffset);
+      const [dataLen, dataLenOffset] = option(u64()).deserialize(
+        buffer,
+        dataOffsetOffset
+      );
       return [
         {
           pluginType,
@@ -149,7 +152,7 @@ export function getExternalRegistryRecordSerializer(): Serializer<
           dataOffset,
           dataLen,
         },
-        pluginOffsetOffset,
+        dataLenOffset,
       ];
     },
   };

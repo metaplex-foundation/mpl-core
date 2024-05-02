@@ -1250,16 +1250,16 @@ test('it can use preconfigured asset pda custom offset oracle to deny update', a
     },
   }).sendAndConfirm(umi);
 
-  const update_result = update(umi, {
+  const updateResult = update(umi, {
     asset,
     name: 'new name',
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(update_result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(updateResult, { name: 'InvalidAuthority' });
 
   // Making sure the incorrect authority cannot update the oracle.  This is more just a test of the
   // example program functionality.
-  const set_result = preconfiguredAssetPdaCustomOffsetSet(umi, {
+  const setResult = preconfiguredAssetPdaCustomOffsetSet(umi, {
     account,
     authority: umi.identity,
     sequenceNum: 2,
@@ -1273,7 +1273,7 @@ test('it can use preconfigured asset pda custom offset oracle to deny update', a
     },
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(set_result, { name: 'ProgramErrorNotRecognizedError' });
+  await t.throwsAsync(setResult, { name: 'ProgramErrorNotRecognizedError' });
 
   // Making sure a lower sequence number passes but does not update the oracle.  This is also just
   // a test of the example program functionality.
@@ -1292,12 +1292,12 @@ test('it can use preconfigured asset pda custom offset oracle to deny update', a
   }).sendAndConfirm(umi);
 
   // Validate still cannot update the mpl-core asset because the oracle did not change.
-  const update_result_2 = update(umi, {
+  const updateResult2 = update(umi, {
     asset,
     name: 'new name',
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(update_result_2, { name: 'InvalidAuthority' });
+  await t.throwsAsync(updateResult2, { name: 'InvalidAuthority' });
 
   // Oracle update that works.
   await preconfiguredAssetPdaCustomOffsetSet(umi, {

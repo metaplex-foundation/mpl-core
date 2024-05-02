@@ -10,6 +10,8 @@ import {
   BaseOracleInitInfoArgs,
   BaseOracleUpdateInfoArgs,
   ExternalRegistryRecord,
+  getOracleValidationSerializer,
+  OracleValidation,
 } from '../generated';
 import { LifecycleChecks, lifecycleChecksToBase } from './lifecycleChecks';
 import { PluginAuthority, pluginAuthorityToBase } from './pluginAuthority';
@@ -116,6 +118,20 @@ export function findOracleAccount(
     ...inputs,
     program: oracle.baseAddress,
   }).pubkey;
+}
+
+export function deserializeOracleValidation(
+  data: Uint8Array,
+  offset: ValidationResultsOffset
+): OracleValidation {
+  let offs = 0;
+  if (offset.type === 'Custom') {
+    offs = Number(offset.offset);
+  } else if (offset.type === 'Anchor') {
+    offs = 8;
+  }
+
+  return getOracleValidationSerializer().deserialize(data, offs)[0];
 }
 
 export const oracleManifest: ExternalPluginManifest<
