@@ -73,7 +73,7 @@ pub struct LifecycleHookInitInfo {
     /// Initial plugin authority.
     pub init_plugin_authority: Option<Authority>,
     /// The lifecyle events for which the the external plugin is active.
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
+    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
     /// The extra accounts to use for the lifecycle hook.
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     /// The authority of who can update the Lifecycle Hook data. This can be for the purposes

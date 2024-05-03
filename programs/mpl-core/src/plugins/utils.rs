@@ -329,24 +329,14 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
 
     let (authority, lifecycle_checks) = match init_info {
         ExternalPluginInitInfo::LifecycleHook(init_info) => {
-            if let Some(checks) = &init_info.lifecycle_checks {
-                validate_lifecycle_checks(checks)?;
-            }
+            validate_lifecycle_checks(&init_info.lifecycle_checks, false)?;
             (
                 init_info.init_plugin_authority,
-                init_info.lifecycle_checks.clone(),
+                Some(init_info.lifecycle_checks.clone()),
             )
         }
         ExternalPluginInitInfo::Oracle(init_info) => {
-            validate_lifecycle_checks(&init_info.lifecycle_checks)?;
-
-            // Oracle can only deny lifecycle events.
-            for (_, result) in &init_info.lifecycle_checks {
-                if *result != ExternalCheckResult::can_reject_only() {
-                    return Err(MplCoreError::OracleCanRejectOnly.into());
-                }
-            }
-
+            validate_lifecycle_checks(&init_info.lifecycle_checks, true)?;
             (
                 init_info.init_plugin_authority,
                 Some(init_info.lifecycle_checks.clone()),
@@ -406,8 +396,9 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
     Ok(())
 }
 
-fn validate_lifecycle_checks(
+pub(crate) fn validate_lifecycle_checks(
     lifecycle_checks: &Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
+    can_reject_only: bool,
 ) -> ProgramResult {
     if lifecycle_checks.is_empty() {
         return Err(MplCoreError::RequiresLifecycleCheck.into());
@@ -420,6 +411,16 @@ fn validate_lifecycle_checks(
     {
         // If `insert` returns false, it means the event was already in the set, indicating a duplicate
         return Err(MplCoreError::DuplicateLifecycleChecks.into());
+    }
+
+    if can_reject_only {
+        let reject_only = ExternalCheckResult::can_reject_only();
+        if lifecycle_checks
+            .iter()
+            .any(|(_, result)| *result != reject_only)
+        {
+            return Err(MplCoreError::OracleCanRejectOnly.into());
+        }
     }
 
     Ok(())
