@@ -7,7 +7,7 @@
 
 use crate::generated::types::PluginAuthority;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
     not(feature = "anchor"),
     derive(borsh::BorshSerialize, borsh::BorshDeserialize)
@@ -16,6 +16,7 @@ use crate::generated::types::PluginAuthority;
     feature = "anchor",
     derive(anchor_lang::AnchorSerialize, anchor_lang::AnchorDeserialize)
 )]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ExternalPluginRecord {
     pub authority: PluginAuthority,
     pub offset: u64,

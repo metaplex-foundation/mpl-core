@@ -17,7 +17,7 @@ use crate::generated::types::Royalties;
 use crate::generated::types::TransferDelegate;
 use crate::generated::types::UpdateDelegate;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
     not(feature = "anchor"),
     derive(borsh::BorshSerialize, borsh::BorshDeserialize)
@@ -26,6 +26,7 @@ use crate::generated::types::UpdateDelegate;
     feature = "anchor",
     derive(anchor_lang::AnchorSerialize, anchor_lang::AnchorDeserialize)
 )]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Plugin {
     Royalties(Royalties),
     FreezeDelegate(FreezeDelegate),

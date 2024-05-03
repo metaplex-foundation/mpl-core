@@ -9,7 +9,7 @@ use crate::generated::types::HashablePluginSchema;
 use crate::generated::types::UpdateAuthority;
 use solana_program::pubkey::Pubkey;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
     not(feature = "anchor"),
     derive(borsh::BorshSerialize, borsh::BorshDeserialize)
@@ -18,6 +18,7 @@ use solana_program::pubkey::Pubkey;
     feature = "anchor",
     derive(anchor_lang::AnchorSerialize, anchor_lang::AnchorDeserialize)
 )]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CompressionProof {
     #[cfg_attr(
         feature = "serde",
