@@ -282,7 +282,7 @@ test('it cannot create asset with oracle that has no lifecycle checks', async (t
     ],
   });
 
-  await t.throwsAsync(result, { name: 'OracleRequiresLifecycleCheck' });
+  await t.throwsAsync(result, { name: 'RequiresLifecycleCheck' });
 });
 
 test('it cannot add oracle with no lifecycle checks to asset', async (t) => {
@@ -313,7 +313,7 @@ test('it cannot add oracle with no lifecycle checks to asset', async (t) => {
     },
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'OracleRequiresLifecycleCheck' });
+  await t.throwsAsync(result, { name: 'RequiresLifecycleCheck' });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
