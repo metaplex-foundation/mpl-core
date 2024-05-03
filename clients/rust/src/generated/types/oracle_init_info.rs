@@ -23,7 +23,7 @@ pub struct OracleInitInfo {
     )]
     pub base_address: Pubkey,
     pub init_plugin_authority: Option<PluginAuthority>,
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
+    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
     pub pda: Option<ExtraAccount>,
     pub results_offset: Option<ValidationResultsOffset>,
 }

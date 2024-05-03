@@ -138,10 +138,10 @@ async fn test_update_oracle() {
             external_plugins: vec![ExternalPluginInitInfo::Oracle(OracleInitInfo {
                 base_address: Pubkey::default(),
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-                lifecycle_checks: Some(vec![(
+                lifecycle_checks: vec![(
                     HookableLifecycleEvent::Transfer,
                     ExternalCheckResult { flags: 4 },
-                )]),
+                )],
                 pda: None,
                 results_offset: None,
             })],

@@ -85,7 +85,7 @@ export function lifecycleChecksToBase(
     })
     .filter((x) => x !== null) as [
     HookableLifecycleEvent,
-    ExternalCheckResult
+    ExternalCheckResult,
   ][];
 }
 

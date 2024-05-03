@@ -218,7 +218,7 @@ test('it can detect non burnable from frozen asset', async (t) => {
   t.assert(!canBurn(owner.publicKey, asset));
   t.is(
     await validateBurn(umi, { authority: owner.publicKey, asset }),
-    LifecycleValidationError.AssetFrozen    
+    LifecycleValidationError.AssetFrozen
   );
 });
 

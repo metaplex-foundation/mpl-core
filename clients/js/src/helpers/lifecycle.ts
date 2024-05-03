@@ -96,7 +96,7 @@ export async function validateTransfer(
   }
 
   if (isFrozen(asset, collection)) {
-    return LifecycleValidationError.AssetFrozen
+    return LifecycleValidationError.AssetFrozen;
   }
 
   if (dAsset.oracles?.length) {

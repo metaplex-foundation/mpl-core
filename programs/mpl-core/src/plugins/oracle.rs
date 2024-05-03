@@ -129,7 +129,7 @@ pub struct OracleInitInfo {
     /// Initial plugin authority.
     pub init_plugin_authority: Option<Authority>,
     /// The lifecyle events for which the the external plugin is active.
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
+    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
     /// Optional PDA (derived from Pubkey attached to `ExternalPluginKey`).
     pub pda: Option<ExtraAccount>,
     /// Optional offset for validation results struct used in Oracle account.  Default

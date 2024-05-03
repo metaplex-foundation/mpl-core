@@ -492,22 +492,42 @@ export class MissingExternalAccountError extends ProgramError {
 codeToErrorMap.set(0x22, MissingExternalAccountError);
 nameToErrorMap.set('MissingExternalAccount', MissingExternalAccountError);
 
-/** OracleCanDenyOnly: Oracle external plugin can only be configured to deny */
-export class OracleCanDenyOnlyError extends ProgramError {
-  override readonly name: string = 'OracleCanDenyOnly';
+/** OracleCanRejectOnly: Oracle external plugin can only be configured to reject */
+export class OracleCanRejectOnlyError extends ProgramError {
+  override readonly name: string = 'OracleCanRejectOnly';
 
   readonly code: number = 0x23; // 35
 
   constructor(program: Program, cause?: Error) {
     super(
-      'Oracle external plugin can only be configured to deny',
+      'Oracle external plugin can only be configured to reject',
       program,
       cause
     );
   }
 }
-codeToErrorMap.set(0x23, OracleCanDenyOnlyError);
-nameToErrorMap.set('OracleCanDenyOnly', OracleCanDenyOnlyError);
+codeToErrorMap.set(0x23, OracleCanRejectOnlyError);
+nameToErrorMap.set('OracleCanRejectOnly', OracleCanRejectOnlyError);
+
+/** OracleRequiresLifecycleCheck: Oracle external plugin must have at least one lifecycle check */
+export class OracleRequiresLifecycleCheckError extends ProgramError {
+  override readonly name: string = 'OracleRequiresLifecycleCheck';
+
+  readonly code: number = 0x24; // 36
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Oracle external plugin must have at least one lifecycle check',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x24, OracleRequiresLifecycleCheckError);
+nameToErrorMap.set(
+  'OracleRequiresLifecycleCheck',
+  OracleRequiresLifecycleCheckError
+);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

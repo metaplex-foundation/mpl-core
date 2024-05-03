@@ -2436,17 +2436,15 @@
           {
             "name": "lifecycleChecks",
             "type": {
-              "option": {
-                "vec": {
-                  "tuple": [
-                    {
-                      "defined": "HookableLifecycleEvent"
-                    },
-                    {
-                      "defined": "ExternalCheckResult"
-                    }
-                  ]
-                }
+              "vec": {
+                "tuple": [
+                  {
+                    "defined": "HookableLifecycleEvent"
+                  },
+                  {
+                    "defined": "ExternalCheckResult"
+                  }
+                ]
               }
             }
           },
@@ -4166,8 +4164,13 @@
     },
     {
       "code": 35,
-      "name": "OracleCanDenyOnly",
-      "msg": "Oracle external plugin can only be configured to deny"
+      "name": "OracleCanRejectOnly",
+      "msg": "Oracle external plugin can only be configured to reject"
+    },
+    {
+      "code": 36,
+      "name": "OracleRequiresLifecycleCheck",
+      "msg": "Oracle external plugin must have at least one lifecycle check"
     }
   ],
   "metadata": {
