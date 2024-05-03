@@ -262,7 +262,7 @@ test('it can use fixed address oracle to deny transfer', async (t) => {
   });
 });
 
-test('it cannot create asset with oracle with no lifecycle checks', async (t) => {
+test('it cannot create asset with oracle that has no lifecycle checks', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
   const owner = generateSigner(umi);
@@ -347,7 +347,32 @@ test('it cannot create asset with oracle that can approve', async (t) => {
   await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
 });
 
-test('it cannot add oracle that can approve to asset', async (t) => {
+test('it cannot create asset with oracle that can approve in addition to reject', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  // Oracle with `CheckResult.CAN_APPROVE`
+  const result = createAsset(umi, {
+    owner,
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_APPROVE, CheckResult.CAN_REJECT],
+        },
+        baseAddress: account.publicKey,
+      },
+    ],
+  });
+
+  await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
+});
+
+test('it cannot add oracle to asset that can approve', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
   const owner = generateSigner(umi);
@@ -372,6 +397,45 @@ test('it cannot add oracle that can approve to asset', async (t) => {
       },
       lifecycleChecks: {
         transfer: [CheckResult.CAN_APPROVE],
+      },
+      baseAddress: account.publicKey,
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+});
+
+test('it cannot add oracle to asset that can approve in addition to reject', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner,
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+
+  // Oracle with `CheckResult.CAN_APPROVE`
+  const result = addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_APPROVE, CheckResult.CAN_REJECT],
       },
       baseAddress: account.publicKey,
     },
@@ -411,7 +475,7 @@ test('it cannot create asset with oracle that can listen', async (t) => {
   await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
 });
 
-test('it cannot add oracle that can listen to asset', async (t) => {
+test('it cannot add oracle to asset that can listen', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
   const owner = generateSigner(umi);
@@ -1400,5 +1464,103 @@ test('it can use preconfigured asset pda custom offset oracle to deny update', a
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     name: 'new name 2',
+  });
+});
+
+test('it can use one fixed address oracle to deny transfer when a second oracle allows it', async (t) => {
+  const umi = await createUmi();
+  const account1 = generateSigner(umi);
+  const account2 = generateSigner(umi);
+
+  // write to example program oracle account
+  await fixedAccountInit(umi, {
+    account: account1,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Rejected,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  // write to example program oracle account
+  await fixedAccountInit(umi, {
+    account: account2,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  // create asset referencing both oracle accounts
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: account1.publicKey,
+      },
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: account2.publicKey,
+      },
+    ],
+  });
+
+  const newOwner = generateSigner(umi);
+
+  const result = transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await fixedAccountSet(umi, {
+    account: account1.publicKey,
+    signer: umi.identity,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
   });
 });
