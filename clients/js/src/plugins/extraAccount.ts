@@ -20,21 +20,27 @@ export const findPreconfiguredPda = (
   ]);
 
 export type ExtraAccount =
-  | Exclude<
-      RenameToType<BaseExtraAccount>,
-      { type: 'CustomPda' } | { type: 'Address' }
-    >
+  | (Omit<
+      Exclude<
+        RenameToType<BaseExtraAccount>,
+        { type: 'CustomPda' } | { type: 'Address' }
+      >,
+      'isSigner' | 'isWritable'
+    > & {
+      isSigner?: boolean;
+      isWritable?: boolean;
+    })
   | {
       type: 'CustomPda';
       seeds: Array<Seed>;
-      isSigner: boolean;
-      isWritable: boolean;
+      isSigner?: boolean;
+      isWritable?: boolean;
     }
   | {
       type: 'Address';
       address: PublicKey;
-      isSigner: boolean;
-      isWritable: boolean;
+      isSigner?: boolean;
+      isWritable?: boolean;
     };
 
 export function extraAccountToAccountMeta(
@@ -48,94 +54,98 @@ export function extraAccountToAccountMeta(
     owner?: PublicKey;
   }
 ): AccountMeta {
+  const acccountMeta: Pick<AccountMeta, 'isSigner' | 'isWritable'> = {
+    isSigner: e.isSigner || false,
+    isWritable: e.isWritable || false,
+  };
+
+  const requiredInputs = getExtraAccountRequiredInputs(e);
+  const missing: string[] = [];
+
+  requiredInputs.forEach((input) => {
+    if (!inputs[input]) {
+      missing.push(input);
+    }
+  });
+
+  if (missing.length) {
+    throw new Error(
+      `Missing required inputs to derive account address: ${missing.join(', ')}`
+    );
+  }
   switch (e.type) {
     case 'PreconfiguredProgram':
-      if (!inputs.program) throw new Error('Program address is required');
       return {
-        pubkey: context.eddsa.findPda(inputs.program, [
+        ...acccountMeta,
+        pubkey: context.eddsa.findPda(inputs.program!, [
           string({ size: 'variable' }).serialize(PRECONFIGURED_SEED),
         ])[0],
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
       };
     case 'PreconfiguredCollection':
-      if (!inputs.program) throw new Error('Program address is required');
-      if (!inputs.collection) throw new Error('Collection address is required');
       return {
+        ...acccountMeta,
         pubkey: findPreconfiguredPda(
           context,
-          inputs.program,
-          inputs.collection
+          inputs.program!,
+          inputs.collection!
         )[0],
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
       };
     case 'PreconfiguredOwner':
-      if (!inputs.program) throw new Error('Program address is required');
-      if (!inputs.owner) throw new Error('Owner address is required');
       return {
-        pubkey: findPreconfiguredPda(context, inputs.program, inputs.owner)[0],
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
-      };
-    case 'PreconfiguredRecipient':
-      if (!inputs.program) throw new Error('Program address is required');
-      if (!inputs.recipient) throw new Error('Recipient address is required');
-      return {
+        ...acccountMeta,
         pubkey: findPreconfiguredPda(
           context,
-          inputs.program,
-          inputs.recipient
+          inputs.program!,
+          inputs.owner!
         )[0],
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
+      };
+    case 'PreconfiguredRecipient':
+      return {
+        ...acccountMeta,
+        pubkey: findPreconfiguredPda(
+          context,
+          inputs.program!,
+          inputs.recipient!
+        )[0],
       };
     case 'PreconfiguredAsset':
-      if (!inputs.program) throw new Error('Program address is required');
-      if (!inputs.asset) throw new Error('Asset address is required');
       return {
-        pubkey: findPreconfiguredPda(context, inputs.program, inputs.asset)[0],
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
+        ...acccountMeta,
+        pubkey: findPreconfiguredPda(
+          context,
+          inputs.program!,
+          inputs.asset!
+        )[0],
       };
     case 'CustomPda':
-      if (!inputs.program) throw new Error('Program address is required');
       return {
         pubkey: context.eddsa.findPda(
-          inputs.program,
+          inputs.program!,
           e.seeds.map((seed) => {
             switch (seed.type) {
               case 'Collection':
-                if (!inputs.collection)
-                  throw new Error('Collection address is required');
-                return publicKeySerializer().serialize(inputs.collection);
+                return publicKeySerializer().serialize(inputs.collection!);
               case 'Owner':
-                if (!inputs.owner) throw new Error('Owner address is required');
-                return publicKeySerializer().serialize(inputs.owner);
+                return publicKeySerializer().serialize(inputs.owner!);
               case 'Recipient':
-                if (!inputs.recipient)
-                  throw new Error('Recipient address is required');
-                return publicKeySerializer().serialize(inputs.recipient);
+                return publicKeySerializer().serialize(inputs.recipient!);
               case 'Asset':
-                if (!inputs.asset) throw new Error('Asset address is required');
-                return publicKeySerializer().serialize(inputs.asset);
+                return publicKeySerializer().serialize(inputs.asset!);
               case 'Address':
                 return publicKeySerializer().serialize(seed.pubkey);
               case 'Bytes':
                 return seed.bytes;
               default:
-                throw new Error(`Unrecognized seed type`);
+                throw new Error('Unknown seed type');
             }
           })
         )[0],
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
+        ...acccountMeta,
       };
     case 'Address':
       return {
+        ...acccountMeta,
         pubkey: e.address,
-        isSigner: e.isSigner,
-        isWritable: e.isWritable,
       };
     default:
       throw new Error('Unknown extra account type');
@@ -143,27 +153,28 @@ export function extraAccountToAccountMeta(
 }
 
 export function extraAccountToBase(s: ExtraAccount): BaseExtraAccount {
+  const acccountMeta: Pick<BaseExtraAccount, 'isSigner' | 'isWritable'> = {
+    isSigner: s.isSigner || false,
+    isWritable: s.isWritable || false,
+  };
   if (s.type === 'CustomPda') {
     return {
       __kind: 'CustomPda',
-      isSigner: s.isSigner,
-      isWritable: s.isWritable,
+      ...acccountMeta,
       seeds: s.seeds.map(seedToBase),
     };
   }
   if (s.type === 'Address') {
     return {
       __kind: 'Address',
-      isSigner: s.isSigner,
-      isWritable: s.isWritable,
+      ...acccountMeta,
       address: s.address,
     };
   }
 
   return {
     __kind: s.type,
-    isSigner: s.isSigner,
-    isWritable: s.isWritable,
+    ...acccountMeta,
   };
 }
 
@@ -190,4 +201,51 @@ export function extraAccountFromBase(s: BaseExtraAccount): ExtraAccount {
     isSigner: s.isSigner,
     isWritable: s.isWritable,
   };
+}
+
+export type ExtraAccountInput =
+  | 'owner'
+  | 'recipient'
+  | 'asset'
+  | 'collection'
+  | 'program';
+
+const EXTRA_ACCOUNT_INPUT_MAP: {
+  [type in ExtraAccount['type']]?: ExtraAccountInput;
+} = {
+  PreconfiguredOwner: 'owner',
+  PreconfiguredRecipient: 'recipient',
+  PreconfiguredAsset: 'asset',
+  PreconfiguredCollection: 'collection',
+  PreconfiguredProgram: 'program',
+};
+
+export function getExtraAccountRequiredInputs(
+  s: ExtraAccount
+): ExtraAccountInput[] {
+  const preconfigured = EXTRA_ACCOUNT_INPUT_MAP[s.type];
+  if (preconfigured) {
+    return [preconfigured];
+  }
+
+  if (s.type === 'CustomPda') {
+    return s.seeds
+      .map((seed) => {
+        switch (seed.type) {
+          case 'Collection':
+            return 'collection';
+          case 'Owner':
+            return 'owner';
+          case 'Recipient':
+            return 'recipient';
+          case 'Asset':
+            return 'asset';
+          default:
+            return null;
+        }
+      })
+      .filter((input) => input) as ExtraAccountInput[];
+  }
+
+  return [];
 }

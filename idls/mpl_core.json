@@ -803,7 +803,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "isOptional": true,
           "docs": [
@@ -863,7 +863,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "isOptional": true,
           "docs": [

@@ -8,7 +8,7 @@ export type LifecycleEvent = 'create' | 'update' | 'transfer' | 'burn';
 export enum CheckResult {
   CAN_LISTEN,
   CAN_APPROVE,
-  CAN_DENY,
+  CAN_REJECT,
 }
 
 export const externalCheckResultToCheckResults = (
@@ -22,7 +22,7 @@ export const externalCheckResultToCheckResults = (
     results.push(CheckResult.CAN_APPROVE);
   }
   if (check.flags & 4) {
-    results.push(CheckResult.CAN_DENY);
+    results.push(CheckResult.CAN_REJECT);
   }
   return results;
 };
@@ -39,7 +39,7 @@ export const checkResultsToExternalCheckResult = (
       case CheckResult.CAN_APPROVE:
         flags |= 2;
         break;
-      case CheckResult.CAN_DENY:
+      case CheckResult.CAN_REJECT:
         flags |= 4;
         break;
       default:
@@ -71,12 +71,22 @@ export function hookableLifecycleEventToLifecycleCheckKey(
 export function lifecycleChecksToBase(
   l: LifecycleChecks
 ): [HookableLifecycleEvent, ExternalCheckResult][] {
-  return Object(l)
-    .keys()
-    .map((key: keyof LifecycleChecks) => [
-      lifecycleCheckKeyToEnum(key),
-      l[key],
-    ]);
+  return Object.keys(l)
+    .map((key) => {
+      const k = key as keyof LifecycleChecks;
+      const value = l[k];
+      if (value) {
+        return [
+          lifecycleCheckKeyToEnum(k),
+          checkResultsToExternalCheckResult(value),
+        ];
+      }
+      return null;
+    })
+    .filter((x) => x !== null) as [
+    HookableLifecycleEvent,
+    ExternalCheckResult
+  ][];
 }
 
 export function lifecycleChecksFromBase(

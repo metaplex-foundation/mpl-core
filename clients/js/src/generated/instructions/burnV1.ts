@@ -114,7 +114,7 @@ export function burnV1(
     },
     authority: {
       index: 3,
-      isWritable: false as boolean,
+      isWritable: true as boolean,
       value: input.authority ?? null,
     },
     systemProgram: {

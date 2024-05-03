@@ -33,6 +33,7 @@
   "devDependencies": {
     "@metaplex-foundation/mpl-toolbox": "^0.8.0",
     "@ava/typescript": "^3.0.1",
+    "@metaplex-foundation/mpl-core-oracle-example": "^0.0.1",
     "@metaplex-foundation/umi": "^0.8.10",
     "@metaplex-foundation/umi-bundle-tests": "^0.8.10",
     "@solana/web3.js": "^1.73.0",

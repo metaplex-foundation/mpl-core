@@ -46,7 +46,7 @@ test.skip('fetch account info for ledger state', async (t) => {
   // Print the size of the account.
   const account = await umi.rpc.getAccount(assetAddress.publicKey);
   if (account.exists) {
-    console.log(`Account Size ${account.data.length} bytes`);
+    // console.log(`Account Size ${account.data.length} bytes`);
   }
 
   // Then an account was created with the correct data.

@@ -1,6 +1,8 @@
+import { Context, PublicKey } from '@metaplex-foundation/umi';
 import {
   ExtraAccount,
   extraAccountFromBase,
+  extraAccountToAccountMeta,
   extraAccountToBase,
 } from './extraAccount';
 import {
@@ -8,6 +10,8 @@ import {
   BaseOracleInitInfoArgs,
   BaseOracleUpdateInfoArgs,
   ExternalRegistryRecord,
+  getOracleValidationSerializer,
+  OracleValidation,
 } from '../generated';
 import { LifecycleChecks, lifecycleChecksToBase } from './lifecycleChecks';
 import { PluginAuthority, pluginAuthorityToBase } from './pluginAuthority';
@@ -94,6 +98,40 @@ export function oracleFromBase(
       s.pda.__option === 'Some' ? extraAccountFromBase(s.pda.value) : undefined,
     resultsOffset: validationResultsOffsetFromBase(s.resultsOffset),
   };
+}
+
+export function findOracleAccount(
+  context: Pick<Context, 'eddsa'>,
+  oracle: Pick<Oracle, 'baseAddress' | 'pda'>,
+  inputs: {
+    asset?: PublicKey;
+    collection?: PublicKey;
+    recipient?: PublicKey;
+    owner?: PublicKey;
+  }
+): PublicKey {
+  if (!oracle.pda) {
+    return oracle.baseAddress;
+  }
+
+  return extraAccountToAccountMeta(context, oracle.pda, {
+    ...inputs,
+    program: oracle.baseAddress,
+  }).pubkey;
+}
+
+export function deserializeOracleValidation(
+  data: Uint8Array,
+  offset: ValidationResultsOffset
+): OracleValidation {
+  let offs = 0;
+  if (offset.type === 'Custom') {
+    offs = Number(offset.offset);
+  } else if (offset.type === 'Anchor') {
+    offs = 8;
+  }
+
+  return getOracleValidationSerializer().deserialize(data, offs)[0];
 }
 
 export const oracleManifest: ExternalPluginManifest<

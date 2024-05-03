@@ -5,6 +5,7 @@ import {
   PublicKey,
   Signer,
   Umi,
+  assertAccountExists,
   generateSigner,
   publicKey,
 } from '@metaplex-foundation/umi';
@@ -203,4 +204,17 @@ export const assertCollection = async (
   }
 
   t.like(collectionWithPlugins, testObj);
+};
+
+export const assertBurned = async (
+  t: Assertions,
+  umi: Umi,
+  asset: PublicKey
+) => {
+  const account = await umi.rpc.getAccount(asset);
+  t.true(account.exists);
+  assertAccountExists(account);
+  t.is(account.data.length, 1);
+  t.is(account.data[0], Key.Uninitialized);
+  return account;
 };
