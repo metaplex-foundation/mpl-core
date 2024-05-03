@@ -115,6 +115,9 @@ pub enum MplCoreError {
     /// 34 (0x22) - Missing account needed for external plugin
     #[error("Missing account needed for external plugin")]
     MissingExternalAccount,
+    /// 35 (0x23) - Oracle external plugin can only be configured to deny
+    #[error("Oracle external plugin can only be configured to deny")]
+    OracleCanDenyOnly,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

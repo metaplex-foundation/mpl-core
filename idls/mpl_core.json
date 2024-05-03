@@ -4163,6 +4163,11 @@
       "code": 34,
       "name": "MissingExternalAccount",
       "msg": "Missing account needed for external plugin"
+    },
+    {
+      "code": 35,
+      "name": "OracleCanDenyOnly",
+      "msg": "Oracle external plugin can only be configured to deny"
     }
   ],
   "metadata": {
