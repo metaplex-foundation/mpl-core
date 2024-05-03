@@ -38,7 +38,11 @@ export type LifecycleHookPlugin = BaseExternalPlugin &
 
 export type LifecycleHookInitInfoArgs = Omit<
   BaseLifecycleHookInitInfoArgs,
-  'initPluginAuthority' | 'lifecycleChecks' | 'schema' | 'dataAuthority'
+  | 'initPluginAuthority'
+  | 'lifecycleChecks'
+  | 'schema'
+  | 'extraAccounts'
+  | 'dataAuthority'
 > & {
   type: 'LifecycleHook';
   initPluginAuthority?: PluginAuthority;

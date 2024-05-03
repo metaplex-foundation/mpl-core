@@ -40,6 +40,7 @@ import {
   transfer,
   update,
   addPlugin,
+  updatePlugin,
 } from '../../src';
 
 const createUmi = async () =>
@@ -303,6 +304,44 @@ test('it cannot add oracle with no lifecycle checks to asset', async (t) => {
   // Oracle with no lifecycle checks
   const result = addPlugin(umi, {
     asset: asset.publicKey,
+    plugin: {
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
+      },
+      lifecycleChecks: {},
+      baseAddress: account.publicKey,
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'RequiresLifecycleCheck' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+});
+
+test('it cannot update oracle to have no lifecycle checks', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner,
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+
+  // Oracle with no lifecycle checks
+  const result = updatePlugin(umi, {
+    asset: asset.publicKey,
+
     plugin: {
       type: 'Oracle',
       resultsOffset: {
