@@ -15,6 +15,12 @@ import {
   getExtraAccountRequiredInputs,
 } from '../plugins';
 
+export enum LifecycleValidationError {
+  OracleValidationFailed = 'Oracle validation failed.',
+  NoAuthority = 'No authority to perform this action.',
+  AssetFrozen = 'Asset is frozen.',
+}
+
 /**
  * Check if the given authority is eligible to transfer the asset.
  * This does NOT check the asset's royalty rule sets or external plugins. Use `validateTransfer` for more comprehensive checks.
@@ -70,12 +76,12 @@ export type ValidateTransferInput = {
  *
  * @param {Context} context Umi context
  * @param {ValidateTransferInput} inputs Inputs to validate transfer
- * @returns {null | string} null if value or error message
+ * @returns {null | LifecycleValidationError} null if success or error message
  */
 export async function validateTransfer(
   context: Pick<Context, 'eddsa' | 'rpc'>,
   { authority, asset, collection, recipient }: ValidateTransferInput
-): Promise<null | string> {
+): Promise<null | LifecycleValidationError> {
   const dAsset = deriveAssetPlugins(asset, collection);
 
   // Permanent plugins have force approve powers
@@ -90,7 +96,7 @@ export async function validateTransfer(
   }
 
   if (isFrozen(asset, collection)) {
-    return 'Unable to transfer: asset is frozen.';
+    return LifecycleValidationError.AssetFrozen
   }
 
   if (dAsset.oracles?.length) {
@@ -146,7 +152,7 @@ export async function validateTransfer(
         (v) => v?.transfer === ExternalValidationResult.Pass
       );
       if (!oraclePass) {
-        return 'Unable to transfer: oracle validation failed.';
+        return LifecycleValidationError.OracleValidationFailed;
       }
     }
   }
@@ -164,7 +170,7 @@ export async function validateTransfer(
     return null;
   }
 
-  return 'Unable to transfer: no authority to transfer.';
+  return LifecycleValidationError.NoAuthority;
 }
 
 /**
@@ -219,7 +225,7 @@ export type ValidateBurnInput = {
  *
  * @param {Context} context Umi context
  * @param {ValidateBurnInput} inputs Inputs to validate burn
- * @returns {null | string} null if value or error message
+ * @returns {null | LifecycleValidationError} null if success or error message
  */
 export async function validateBurn(
   context: Pick<Context, 'eddsa' | 'rpc'>,
@@ -232,7 +238,7 @@ export async function validateBurn(
     asset: AssetV1;
     collection?: CollectionV1;
   }
-): Promise<null | string> {
+): Promise<null | LifecycleValidationError> {
   const dAsset = deriveAssetPlugins(asset, collection);
   const permaBurnDelegate = checkPluginAuthorities({
     authority,
@@ -245,7 +251,7 @@ export async function validateBurn(
   }
 
   if (isFrozen(asset, collection)) {
-    return 'Unable to burn: asset is frozen.';
+    return LifecycleValidationError.AssetFrozen;
   }
 
   if (dAsset.oracles?.length) {
@@ -282,7 +288,7 @@ export async function validateBurn(
         (v) => v?.burn === ExternalValidationResult.Pass
       );
       if (!oraclePass) {
-        return 'Unable to burn: oracle validation failed.';
+        return LifecycleValidationError.OracleValidationFailed;
       }
     }
   }
@@ -300,7 +306,7 @@ export async function validateBurn(
     return null;
   }
 
-  return 'Unable to burn: no authority to burn.';
+  return LifecycleValidationError.NoAuthority;
 }
 
 /**
@@ -331,12 +337,12 @@ export type ValidateUpdateInput = {
  *
  * @param {Context} context Umi context
  * @param {ValidateUpdateInput} inputs Inputs to validate update
- * @returns {null | string} null if value or error message
+ * @returns {null | LifecycleValidationError} null if success or error message
  */
 export async function validateUpdate(
   context: Pick<Context, 'eddsa' | 'rpc'>,
   { authority, asset, collection }: ValidateUpdateInput
-): Promise<null | string> {
+): Promise<null | LifecycleValidationError> {
   if (asset.oracles?.length) {
     const eligibleOracles = asset.oracles.filter((o) =>
       o.lifecycleChecks?.update?.includes(CheckResult.CAN_REJECT)
@@ -371,13 +377,13 @@ export async function validateUpdate(
         (v) => v?.update === ExternalValidationResult.Pass
       );
       if (!oraclePass) {
-        return 'Unable to update: oracle validation failed.';
+        return LifecycleValidationError.OracleValidationFailed;
       }
     }
   }
 
   if (!hasAssetUpdateAuthority(authority, asset, collection)) {
-    return 'Unable to update: no authority to update.';
+    return LifecycleValidationError.NoAuthority;
   }
 
   return null;

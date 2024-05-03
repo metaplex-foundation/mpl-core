@@ -11,6 +11,7 @@ import {
   CheckResult,
   ExternalValidationResult,
   findOracleAccount,
+  LifecycleValidationError,
   OracleInitInfoArgs,
   validateBurn,
   validateTransfer,
@@ -51,7 +52,7 @@ test('it can detect non transferrable from frozen asset', async (t) => {
   t.assert(!canTransfer(owner.publicKey, asset));
   t.is(
     await validateTransfer(umi, { authority: owner.publicKey, asset }),
-    'Unable to transfer: asset is frozen.'
+    LifecycleValidationError.AssetFrozen
   );
 });
 
@@ -131,7 +132,7 @@ test('it can detect transferrable when frozen with permanent transfer', async (t
   t.assert(canTransfer(delegate.publicKey, asset));
   t.is(
     await validateTransfer(umi, { authority: owner.publicKey, asset }),
-    'Unable to transfer: asset is frozen.'
+    LifecycleValidationError.AssetFrozen
   );
   t.is(
     await validateTransfer(umi, { authority: delegate.publicKey, asset }),
@@ -176,7 +177,7 @@ test('it can detect transferrable when frozen with permanent collection transfer
       asset,
       collection,
     }),
-    'Unable to transfer: asset is frozen.'
+    LifecycleValidationError.AssetFrozen
   );
   t.is(
     await validateTransfer(umi, {
@@ -217,7 +218,7 @@ test('it can detect non burnable from frozen asset', async (t) => {
   t.assert(!canBurn(owner.publicKey, asset));
   t.is(
     await validateBurn(umi, { authority: owner.publicKey, asset }),
-    'Unable to burn: asset is frozen.'
+    LifecycleValidationError.AssetFrozen    
   );
 });
 
@@ -291,7 +292,7 @@ test('it can detect burnable when frozen with permanent burn', async (t) => {
   t.assert(canBurn(delegate.publicKey, asset));
   t.is(
     await validateBurn(umi, { authority: owner.publicKey, asset }),
-    'Unable to burn: asset is frozen.'
+    LifecycleValidationError.AssetFrozen
   );
   t.is(await validateBurn(umi, { authority: delegate.publicKey, asset }), null);
 });
@@ -329,7 +330,7 @@ test('it can detect burnable when frozen with permanent collection burn delegate
   t.assert(canBurn(delegate.publicKey, asset, collection));
   t.is(
     await validateBurn(umi, { authority: owner.publicKey, asset, collection }),
-    'Unable to burn: asset is frozen.'
+    LifecycleValidationError.AssetFrozen
   );
   t.is(
     await validateBurn(umi, {
@@ -383,7 +384,7 @@ test('it can validate non-transferrable asset with oracle', async (t) => {
       authority: owner.publicKey,
       asset,
     }),
-    'Unable to transfer: oracle validation failed.'
+    LifecycleValidationError.OracleValidationFailed
   );
 });
 
@@ -520,7 +521,7 @@ test('it can validate non-transferrable asset with oracle with recipient seed', 
       recipient: newOwner.publicKey,
       collection,
     }),
-    'Unable to transfer: oracle validation failed.'
+    LifecycleValidationError.OracleValidationFailed
   );
 });
 
@@ -608,7 +609,7 @@ test('it can validate non-burnable asset with oracle', async (t) => {
       authority: owner.publicKey,
       asset,
     }),
-    'Unable to burn: oracle validation failed.'
+    LifecycleValidationError.OracleValidationFailed
   );
 });
 
@@ -700,7 +701,7 @@ test('it can validate non-updatable asset with oracle', async (t) => {
       authority: owner.publicKey,
       asset,
     }),
-    'Unable to update: oracle validation failed.'
+    LifecycleValidationError.OracleValidationFailed
   );
 });
 
