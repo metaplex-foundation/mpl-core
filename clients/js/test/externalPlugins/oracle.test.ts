@@ -39,6 +39,7 @@ import {
   OracleInitInfoArgs,
   transfer,
   update,
+  addPlugin,
 } from '../../src';
 
 const createUmi = async () =>
@@ -261,28 +262,12 @@ test('it can use fixed address oracle to deny transfer', async (t) => {
   });
 });
 
-test('it cannot configure oracle with no lifecycle checks', async (t) => {
+test('it cannot create asset with oracle with no lifecycle checks', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
   const owner = generateSigner(umi);
 
-  // write to example program oracle account
-  await fixedAccountInit(umi, {
-    account,
-    signer: umi.identity,
-    payer: umi.identity,
-    args: {
-      oracleData: {
-        __kind: 'V1',
-        create: ExternalValidationResult.Pass,
-        update: ExternalValidationResult.Pass,
-        transfer: ExternalValidationResult.Approved,
-        burn: ExternalValidationResult.Pass,
-      },
-    },
-  }).sendAndConfirm(umi);
-
-  // Validate cannot have Oracle with no `lifecycleChecks`.
+  // Oracle with no lifecycle checks
   const result = createAsset(umi, {
     owner,
     plugins: [
@@ -300,28 +285,49 @@ test('it cannot configure oracle with no lifecycle checks', async (t) => {
   await t.throwsAsync(result, { name: 'OracleRequiresLifecycleCheck' });
 });
 
-test('it cannot configure oracle to approve', async (t) => {
+test('it cannot add oracle with no lifecycle checks to asset', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
   const owner = generateSigner(umi);
 
-  // write to example program oracle account
-  await fixedAccountInit(umi, {
-    account,
-    signer: umi.identity,
-    payer: umi.identity,
-    args: {
-      oracleData: {
-        __kind: 'V1',
-        create: ExternalValidationResult.Pass,
-        update: ExternalValidationResult.Pass,
-        transfer: ExternalValidationResult.Approved,
-        burn: ExternalValidationResult.Pass,
+  const asset = await createAsset(umi, {
+    owner,
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+
+  // Oracle with no lifecycle checks
+  const result = addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
       },
+      lifecycleChecks: {},
+      baseAddress: account.publicKey,
     },
   }).sendAndConfirm(umi);
 
-  // Validate cannot have Oracle with `CheckResult.CAN_APPROVE`
+  await t.throwsAsync(result, { name: 'OracleRequiresLifecycleCheck' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+});
+
+test('it cannot create asset with oracle that can approve', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  // Oracle with `CheckResult.CAN_APPROVE`
   const result = createAsset(umi, {
     owner,
     plugins: [
@@ -341,28 +347,51 @@ test('it cannot configure oracle to approve', async (t) => {
   await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
 });
 
-test('it cannot configure oracle to listen', async (t) => {
+test('it cannot add oracle that can approve to asset', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
   const owner = generateSigner(umi);
 
-  // write to example program oracle account
-  await fixedAccountInit(umi, {
-    account,
-    signer: umi.identity,
-    payer: umi.identity,
-    args: {
-      oracleData: {
-        __kind: 'V1',
-        create: ExternalValidationResult.Pass,
-        update: ExternalValidationResult.Pass,
-        transfer: ExternalValidationResult.Approved,
-        burn: ExternalValidationResult.Pass,
+  const asset = await createAsset(umi, {
+    owner,
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+
+  // Oracle with `CheckResult.CAN_APPROVE`
+  const result = addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
       },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_APPROVE],
+      },
+      baseAddress: account.publicKey,
     },
   }).sendAndConfirm(umi);
 
-  // Validate cannot have Oracle with `CheckResult.CAN_LISTEN`
+  await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+});
+
+test('it cannot create asset with oracle that can listen', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  // Oracle with `CheckResult.CAN_LISTEN`
   const result = createAsset(umi, {
     owner,
     plugins: [
@@ -380,6 +409,45 @@ test('it cannot configure oracle to listen', async (t) => {
   });
 
   await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
+});
+
+test('it cannot add oracle that can listen to asset', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner,
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+
+  // Oracle with `CheckResult.CAN_LISTEN`
+  const result = addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_LISTEN],
+      },
+      baseAddress: account.publicKey,
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
 });
 
 test('it cannot use fixed address oracle to deny transfer if not registered for lifecycle event', async (t) => {
