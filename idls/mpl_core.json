@@ -4169,8 +4169,13 @@
     },
     {
       "code": 36,
-      "name": "OracleRequiresLifecycleCheck",
-      "msg": "Oracle external plugin must have at least one lifecycle check"
+      "name": "RequiresLifecycleCheck",
+      "msg": "External plugin must have at least one lifecycle check"
+    },
+    {
+      "code": 37,
+      "name": "DuplicateLifecycleChecks",
+      "msg": "Duplicate lifecycle checks were provided for external plugin "
     }
   ],
   "metadata": {

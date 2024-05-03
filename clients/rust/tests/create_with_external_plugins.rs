@@ -1,9 +1,12 @@
 #![cfg(feature = "test-sbf")]
 pub mod setup;
-use mpl_core::types::{
-    DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo,
-    ExternalPluginSchema, HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle,
-    OracleInitInfo, PluginAuthority, UpdateAuthority, ValidationResultsOffset,
+use mpl_core::{
+    errors::MplCoreError,
+    types::{
+        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo,
+        ExternalPluginSchema, HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle,
+        OracleInitInfo, PluginAuthority, UpdateAuthority, ValidationResultsOffset,
+    },
 };
 pub use setup::*;
 
@@ -70,6 +73,51 @@ async fn test_create_lifecycle_hook() {
 }
 
 #[tokio::test]
+async fn test_cannot_create_lifecycle_hook_with_duplicate_lifecycle_checks() {
+    let mut context = program_test().start_with_context().await;
+
+    let asset = Keypair::new();
+    let error = create_asset(
+        &mut context,
+        CreateAssetHelperArgs {
+            owner: None,
+            payer: None,
+            asset: &asset,
+            data_state: None,
+            name: None,
+            uri: None,
+            authority: None,
+            update_authority: None,
+            collection: None,
+            plugins: vec![],
+            external_plugins: vec![ExternalPluginInitInfo::LifecycleHook(
+                LifecycleHookInitInfo {
+                    hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+                    init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                    lifecycle_checks: Some(vec![
+                        (
+                            HookableLifecycleEvent::Transfer,
+                            ExternalCheckResult { flags: 1 },
+                        ),
+                        (
+                            HookableLifecycleEvent::Transfer,
+                            ExternalCheckResult { flags: 1 },
+                        ),
+                    ]),
+                    extra_accounts: None,
+                    data_authority: Some(PluginAuthority::UpdateAuthority),
+                    schema: None,
+                },
+            )],
+        },
+    )
+    .await
+    .unwrap_err();
+
+    assert_custom_instruction_error!(0, error, MplCoreError::DuplicateLifecycleChecks);
+}
+
+#[tokio::test]
 async fn test_create_oracle() {
     let mut context = program_test().start_with_context().await;
 
@@ -121,6 +169,48 @@ async fn test_create_oracle() {
         },
     )
     .await;
+}
+
+#[tokio::test]
+async fn test_cannot_create_oracle_with_duplicate_lifecycle_checks() {
+    let mut context = program_test().start_with_context().await;
+
+    let asset = Keypair::new();
+    let error = create_asset(
+        &mut context,
+        CreateAssetHelperArgs {
+            owner: None,
+            payer: None,
+            asset: &asset,
+            data_state: None,
+            name: None,
+            uri: None,
+            authority: None,
+            update_authority: None,
+            collection: None,
+            plugins: vec![],
+            external_plugins: vec![ExternalPluginInitInfo::Oracle(OracleInitInfo {
+                base_address: Pubkey::default(),
+                init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                lifecycle_checks: vec![
+                    (
+                        HookableLifecycleEvent::Transfer,
+                        ExternalCheckResult { flags: 4 },
+                    ),
+                    (
+                        HookableLifecycleEvent::Transfer,
+                        ExternalCheckResult { flags: 4 },
+                    ),
+                ],
+                pda: None,
+                results_offset: None,
+            })],
+        },
+    )
+    .await
+    .unwrap_err();
+
+    assert_custom_instruction_error!(0, error, MplCoreError::DuplicateLifecycleChecks);
 }
 
 #[tokio::test]

@@ -153,9 +153,13 @@ pub enum MplCoreError {
     #[error("Oracle external plugin can only be configured to reject")]
     OracleCanRejectOnly,
 
-    /// 36 - Oracle external plugin must have at least one lifecycle check
-    #[error("Oracle external plugin must have at least one lifecycle check")]
-    OracleRequiresLifecycleCheck,
+    /// 36 - External plugin must have at least one lifecycle check
+    #[error("External plugin must have at least one lifecycle check")]
+    RequiresLifecycleCheck,
+
+    /// 37 - Duplicate lifecycle checks were provided for external plugin
+    #[error("Duplicate lifecycle checks were provided for external plugin ")]
+    DuplicateLifecycleChecks,
 }
 
 impl PrintProgramError for MplCoreError {

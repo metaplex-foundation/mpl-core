@@ -509,25 +509,39 @@ export class OracleCanRejectOnlyError extends ProgramError {
 codeToErrorMap.set(0x23, OracleCanRejectOnlyError);
 nameToErrorMap.set('OracleCanRejectOnly', OracleCanRejectOnlyError);
 
-/** OracleRequiresLifecycleCheck: Oracle external plugin must have at least one lifecycle check */
-export class OracleRequiresLifecycleCheckError extends ProgramError {
-  override readonly name: string = 'OracleRequiresLifecycleCheck';
+/** RequiresLifecycleCheck: External plugin must have at least one lifecycle check */
+export class RequiresLifecycleCheckError extends ProgramError {
+  override readonly name: string = 'RequiresLifecycleCheck';
 
   readonly code: number = 0x24; // 36
 
   constructor(program: Program, cause?: Error) {
     super(
-      'Oracle external plugin must have at least one lifecycle check',
+      'External plugin must have at least one lifecycle check',
       program,
       cause
     );
   }
 }
-codeToErrorMap.set(0x24, OracleRequiresLifecycleCheckError);
-nameToErrorMap.set(
-  'OracleRequiresLifecycleCheck',
-  OracleRequiresLifecycleCheckError
-);
+codeToErrorMap.set(0x24, RequiresLifecycleCheckError);
+nameToErrorMap.set('RequiresLifecycleCheck', RequiresLifecycleCheckError);
+
+/** DuplicateLifecycleChecks: Duplicate lifecycle checks were provided for external plugin  */
+export class DuplicateLifecycleChecksError extends ProgramError {
+  override readonly name: string = 'DuplicateLifecycleChecks';
+
+  readonly code: number = 0x25; // 37
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Duplicate lifecycle checks were provided for external plugin ',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x25, DuplicateLifecycleChecksError);
+nameToErrorMap.set('DuplicateLifecycleChecks', DuplicateLifecycleChecksError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.
