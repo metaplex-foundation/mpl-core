@@ -261,6 +261,45 @@ test('it can use fixed address oracle to deny transfer', async (t) => {
   });
 });
 
+test('it cannot configure oracle with no lifecycle checks', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  // write to example program oracle account
+  await fixedAccountInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Approved,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  // Validate cannot have Oracle with no `lifecycleChecks`.
+  const result = createAsset(umi, {
+    owner,
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {},
+        baseAddress: account.publicKey,
+      },
+    ],
+  });
+
+  await t.throwsAsync(result, { name: 'OracleRequiresLifecycleCheck' });
+});
+
 test('it cannot configure oracle to approve', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
