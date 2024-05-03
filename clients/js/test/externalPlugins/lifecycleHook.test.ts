@@ -8,7 +8,7 @@ import {
   DEFAULT_ASSET,
 } from '../_setupRaw';
 import { createAsset } from '../_setupSdk';
-import { addPlugin, updatePlugin } from '../../src';
+import { addPlugin, CheckResult, updatePlugin } from '../../src';
 
 const createUmi = async () =>
   (await baseCreateUmi()).use(mplCoreOracleExample());
@@ -74,6 +74,15 @@ test('it cannot update lifecycle hook to have no lifecycle checks', async (t) =>
 
   const asset = await createAsset(umi, {
     owner,
+    plugins: [
+      {
+        type: 'LifecycleHook',
+        hookedProgram: account.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_LISTEN],
+        },
+      },
+    ],
   });
 
   await assertAsset(t, umi, {
@@ -86,8 +95,11 @@ test('it cannot update lifecycle hook to have no lifecycle checks', async (t) =>
   const result = updatePlugin(umi, {
     asset: asset.publicKey,
     plugin: {
+      key: {
+        type: 'LifecycleHook',
+        hookedProgram: account.publicKey,
+      },
       type: 'LifecycleHook',
-      hookedProgram: account.publicKey,
       lifecycleChecks: {},
     },
   }).sendAndConfirm(umi);

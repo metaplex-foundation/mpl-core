@@ -330,6 +330,18 @@ test('it cannot update oracle to have no lifecycle checks', async (t) => {
 
   const asset = await createAsset(umi, {
     owner,
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: account.publicKey,
+      },
+    ],
   });
 
   await assertAsset(t, umi, {
@@ -343,12 +355,15 @@ test('it cannot update oracle to have no lifecycle checks', async (t) => {
     asset: asset.publicKey,
 
     plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: account.publicKey,
+      },
       type: 'Oracle',
       resultsOffset: {
         type: 'Anchor',
       },
       lifecycleChecks: {},
-      baseAddress: account.publicKey,
     },
   }).sendAndConfirm(umi);
 

@@ -1,9 +1,4 @@
-import {
-  AccountMeta,
-  Context,
-  PublicKey,
-  Option,
-} from '@metaplex-foundation/umi';
+import { AccountMeta, Context, PublicKey } from '@metaplex-foundation/umi';
 import {
   lifecycleHookFromBase,
   LifecycleHookInitInfoArgs,
@@ -16,7 +11,6 @@ import {
   BaseExternalPluginInitInfoArgs,
   BaseExternalPluginKey,
   BaseExternalPluginUpdateInfoArgs,
-  ExternalPluginSchema,
   ExternalRegistryRecord,
   getExternalPluginSerializer,
 } from '../generated';
@@ -231,33 +225,3 @@ export const findExtraAccounts = (
 
   return accounts;
 };
-
-export function parseExternalPluginData(
-  plugin: {
-    schema: ExternalPluginSchema;
-  },
-  record: {
-    dataLen: Option<bigint | number>;
-    dataOffset: Option<bigint | number>;
-  },
-  account: Uint8Array
-): any {
-  let data;
-  const dataSlice = account.slice(
-    Number(record.dataOffset),
-    Number(record.dataOffset) + Number(record.dataLen)
-  );
-
-  if (plugin.schema === ExternalPluginSchema.Binary) {
-    data = dataSlice;
-  } else if (plugin.schema === ExternalPluginSchema.Json) {
-    data = JSON.parse(new TextDecoder().decode(dataSlice));
-  } else if (plugin.schema === ExternalPluginSchema.MsgPack) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      'MsgPack schema currently not supported, falling back to binary'
-    );
-    data = dataSlice;
-  }
-  return data;
-}

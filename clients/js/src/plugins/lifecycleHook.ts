@@ -17,9 +17,10 @@ import {
   pluginAuthorityFromBase,
   pluginAuthorityToBase,
 } from './pluginAuthority';
-import { BaseExternalPlugin, parseExternalPluginData } from './externalPlugins';
+import { BaseExternalPlugin } from './externalPlugins';
 import { ExternalPluginManifest } from './externalPluginManifest';
 import { ExternalPluginKey } from './externalPluginKey';
+import { parseExternalPluginData } from './lib';
 
 export type LifecycleHook = Omit<
   BaseLifecycleHook,
