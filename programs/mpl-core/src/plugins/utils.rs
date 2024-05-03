@@ -3,10 +3,11 @@ use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
     program_memory::sol_memcpy, pubkey::Pubkey,
 };
+use std::collections::HashSet;
 
 use crate::{
     error::MplCoreError,
-    plugins::ExternalCheckResult,
+    plugins::{ExternalCheckResult, HookableLifecycleEvent},
     state::{AssetV1, Authority, CoreAsset, DataBlob, Key, SolanaAccount},
     utils::resize_or_reallocate_account,
 };
@@ -327,14 +328,17 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
     }
 
     let (authority, lifecycle_checks) = match init_info {
-        ExternalPluginInitInfo::LifecycleHook(init_info) => (
-            init_info.init_plugin_authority,
-            init_info.lifecycle_checks.clone(),
-        ),
-        ExternalPluginInitInfo::Oracle(init_info) => {
-            if init_info.lifecycle_checks.is_empty() {
-                return Err(MplCoreError::OracleRequiresLifecycleCheck.into());
+        ExternalPluginInitInfo::LifecycleHook(init_info) => {
+            if let Some(checks) = &init_info.lifecycle_checks {
+                validate_lifecycle_checks(checks)?;
             }
+            (
+                init_info.init_plugin_authority,
+                init_info.lifecycle_checks.clone(),
+            )
+        }
+        ExternalPluginInitInfo::Oracle(init_info) => {
+            validate_lifecycle_checks(&init_info.lifecycle_checks)?;
 
             // Oracle can only deny lifecycle events.
             for (_, result) in &init_info.lifecycle_checks {
@@ -398,6 +402,25 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
     plugin_header.save(account, header_offset)?;
     plugin.save(account, old_registry_offset)?;
     plugin_registry.save(account, new_registry_offset)?;
+
+    Ok(())
+}
+
+fn validate_lifecycle_checks(
+    lifecycle_checks: &Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
+) -> ProgramResult {
+    if lifecycle_checks.is_empty() {
+        return Err(MplCoreError::RequiresLifecycleCheck.into());
+    }
+
+    let mut seen_events = HashSet::new();
+    if !lifecycle_checks
+        .iter()
+        .all(|(event, _)| seen_events.insert(event))
+    {
+        // If `insert` returns false, it means the event was already in the set, indicating a duplicate
+        return Err(MplCoreError::DuplicateLifecycleChecks.into());
+    }
 
     Ok(())
 }
