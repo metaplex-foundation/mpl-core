@@ -4166,8 +4166,8 @@
     },
     {
       "code": 35,
-      "name": "InvalidExternalPluginSetting",
-      "msg": "Invalid setting for external plugin"
+      "name": "OracleCanDenyOnly",
+      "msg": "Oracle external plugin can only be configured to deny"
     }
   ],
   "metadata": {

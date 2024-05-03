@@ -11,9 +11,8 @@ use crate::{
 };
 
 use super::{
-    ExternalCheckResultBits, ExternalPlugin, ExternalPluginInitInfo, ExternalPluginKey,
-    ExternalPluginType, ExternalRegistryRecord, Plugin, PluginHeaderV1, PluginRegistryV1,
-    PluginType, RegistryRecord,
+    ExternalPlugin, ExternalPluginInitInfo, ExternalPluginKey, ExternalPluginType,
+    ExternalRegistryRecord, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord,
 };
 
 /// Create plugin header and registry if it doesn't exist
@@ -334,8 +333,8 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
             // You cannot configure an Oracle plugin to approve lifecycle events.
             if let Some(lifecycle_checks) = &init_info.lifecycle_checks {
                 for (_, result) in lifecycle_checks {
-                    let result_bits = ExternalCheckResultBits::from(*result);
-                    if result_bits.can_listen() || result_bits.can_approve() {
+                    // Deny is bit 2.
+                    if result.flags != 0x2 {
                         return Err(MplCoreError::OracleCanDenyOnly.into());
                     }
                 }
