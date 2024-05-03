@@ -190,17 +190,14 @@ export const findExtraAccounts = (
   }
 ): AccountMeta[] => {
   const accounts: AccountMeta[] = [];
-  const { asset, collection, owner, recipient } = inputs;
 
   externalPlugins.oracles?.forEach((oracle) => {
     if (oracle.lifecycleChecks?.[lifecycle]) {
       if (oracle.pda) {
         accounts.push(
           extraAccountToAccountMeta(context, oracle.pda, {
+            ...inputs,
             program: oracle.baseAddress,
-            asset,
-            collection,
-            recipient,
           })
         );
       } else {
@@ -224,11 +221,8 @@ export const findExtraAccounts = (
       hook.extraAccounts?.forEach((extra) => {
         accounts.push(
           extraAccountToAccountMeta(context, extra, {
+            ...inputs,
             program: hook.hookedProgram,
-            asset,
-            collection,
-            recipient,
-            owner,
           })
         );
       });
