@@ -38,10 +38,10 @@ async fn test_update_lifecycle_hook() {
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-                    lifecycle_checks: Some(vec![(
+                    lifecycle_checks: vec![(
                         HookableLifecycleEvent::Transfer,
                         ExternalCheckResult { flags: 1 },
-                    )]),
+                    )],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
                     schema: None,

@@ -42,7 +42,7 @@ export type LifecycleHookInitInfoArgs = Omit<
 > & {
   type: 'LifecycleHook';
   initPluginAuthority?: PluginAuthority;
-  lifecycleChecks?: LifecycleChecks;
+  lifecycleChecks: LifecycleChecks;
   schema?: ExternalPluginSchema;
   extraAccounts?: Array<ExtraAccount>;
   dataAuthority?: PluginAuthority;
@@ -69,9 +69,7 @@ export function lifecycleHookInitInfoArgsToBase(
     initPluginAuthority: l.initPluginAuthority
       ? pluginAuthorityToBase(l.initPluginAuthority)
       : null,
-    lifecycleChecks: l.lifecycleChecks
-      ? lifecycleChecksToBase(l.lifecycleChecks)
-      : null,
+    lifecycleChecks: lifecycleChecksToBase(l.lifecycleChecks),
     schema: l.schema ? l.schema : null,
     dataAuthority: l.dataAuthority
       ? pluginAuthorityToBase(l.dataAuthority)
