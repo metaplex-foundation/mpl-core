@@ -92,7 +92,7 @@ async fn test_create_oracle() {
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 lifecycle_checks: Some(vec![(
                     HookableLifecycleEvent::Transfer,
-                    ExternalCheckResult { flags: 2 },
+                    ExternalCheckResult { flags: 4 },
                 )]),
                 pda: None,
                 results_offset: None,

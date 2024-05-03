@@ -6,6 +6,7 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
+    plugins::ExternalCheckResult,
     state::{AssetV1, Authority, CoreAsset, DataBlob, Key, SolanaAccount},
     utils::resize_or_reallocate_account,
 };
@@ -333,8 +334,7 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
             // You cannot configure an Oracle plugin to approve lifecycle events.
             if let Some(lifecycle_checks) = &init_info.lifecycle_checks {
                 for (_, result) in lifecycle_checks {
-                    // Deny is bit 2.
-                    if result.flags != 0x2 {
+                    if *result != ExternalCheckResult::can_reject_only() {
                         return Err(MplCoreError::OracleCanDenyOnly.into());
                     }
                 }

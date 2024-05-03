@@ -40,6 +40,10 @@ impl ExternalCheckResult {
     pub(crate) fn none() -> Self {
         Self { flags: 0 }
     }
+
+    pub(crate) fn can_reject_only() -> Self {
+        Self { flags: 0x4 }
+    }
 }
 
 /// Bitfield representation of lifecycle permissions for external, third party plugins.
