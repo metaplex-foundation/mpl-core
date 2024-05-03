@@ -118,9 +118,12 @@ pub enum MplCoreError {
     /// 35 (0x23) - Oracle external plugin can only be configured to reject
     #[error("Oracle external plugin can only be configured to reject")]
     OracleCanRejectOnly,
-    /// 36 (0x24) - Oracle external plugin must have at least one lifecycle check
-    #[error("Oracle external plugin must have at least one lifecycle check")]
-    OracleRequiresLifecycleCheck,
+    /// 36 (0x24) - External plugin must have at least one lifecycle check
+    #[error("External plugin must have at least one lifecycle check")]
+    RequiresLifecycleCheck,
+    /// 37 (0x25) - Duplicate lifecycle checks were provided for external plugin
+    #[error("Duplicate lifecycle checks were provided for external plugin ")]
+    DuplicateLifecycleChecks,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {
