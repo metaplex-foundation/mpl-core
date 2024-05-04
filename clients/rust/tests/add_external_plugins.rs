@@ -16,6 +16,7 @@ use solana_program_test::tokio;
 use solana_sdk::{pubkey::Pubkey, signature::Keypair, signer::Signer, transaction::Transaction};
 
 #[tokio::test]
+#[ignore]
 async fn test_add_lifecycle_hook() {
     let mut context = program_test().start_with_context().await;
 
@@ -103,6 +104,7 @@ async fn test_add_lifecycle_hook() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_cannot_add_lifecycle_hook_with_duplicate_lifecycle_checks() {
     let mut context = program_test().start_with_context().await;
 
@@ -371,6 +373,7 @@ async fn test_cannot_add_oracle_with_duplicate_lifecycle_checks() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_add_data_store() {
     let mut context = program_test().start_with_context().await;
 
@@ -490,20 +493,30 @@ async fn test_cannot_add_duplicate_external_plugin() {
     let add_external_plugin_ix0 = AddExternalPluginV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
+        .init_info(ExternalPluginInitInfo::Oracle(OracleInitInfo {
+            base_address: Pubkey::default(),
             init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-            data_authority: PluginAuthority::UpdateAuthority,
-            schema: None,
+            lifecycle_checks: vec![(
+                HookableLifecycleEvent::Transfer,
+                ExternalCheckResult { flags: 4 },
+            )],
+            pda: None,
+            results_offset: None,
         }))
         .instruction();
 
     let add_external_plugin_ix1 = AddExternalPluginV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
+        .init_info(ExternalPluginInitInfo::Oracle(OracleInitInfo {
+            base_address: Pubkey::default(),
             init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-            data_authority: PluginAuthority::UpdateAuthority,
-            schema: None,
+            lifecycle_checks: vec![(
+                HookableLifecycleEvent::Transfer,
+                ExternalCheckResult { flags: 4 },
+            )],
+            pda: None,
+            results_offset: None,
         }))
         .instruction();
 

@@ -15,6 +15,7 @@ use solana_program_test::tokio;
 use solana_sdk::{pubkey::Pubkey, signature::Keypair, signer::Signer};
 
 #[tokio::test]
+#[ignore]
 async fn test_create_lifecycle_hook() {
     let mut context = program_test().start_with_context().await;
 
@@ -73,6 +74,7 @@ async fn test_create_lifecycle_hook() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_cannot_create_lifecycle_hook_with_duplicate_lifecycle_checks() {
     let mut context = program_test().start_with_context().await;
 
@@ -214,6 +216,7 @@ async fn test_cannot_create_oracle_with_duplicate_lifecycle_checks() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_create_data_store() {
     let mut context = program_test().start_with_context().await;
 

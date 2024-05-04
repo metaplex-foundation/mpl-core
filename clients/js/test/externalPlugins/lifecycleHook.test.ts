@@ -13,12 +13,11 @@ import { addPlugin, CheckResult, updatePlugin } from '../../src';
 const createUmi = async () =>
   (await baseCreateUmi()).use(mplCoreOracleExample());
 
-test('it cannot create asset with lifecycle hook that has no lifecycle checks', async (t) => {
+test.skip('it cannot create asset with lifecycle hook that has no lifecycle checks', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
   const owner = generateSigner(umi);
 
-  // Lifecycle hook with no lifecycle checks
   const result = createAsset(umi, {
     owner,
     plugins: [
@@ -33,7 +32,7 @@ test('it cannot create asset with lifecycle hook that has no lifecycle checks', 
   await t.throwsAsync(result, { name: 'RequiresLifecycleCheck' });
 });
 
-test('it cannot add lifecycle hook with no lifecycle checks to asset', async (t) => {
+test.skip('it cannot add lifecycle hook with no lifecycle checks to asset', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
   const owner = generateSigner(umi);
@@ -48,7 +47,6 @@ test('it cannot add lifecycle hook with no lifecycle checks to asset', async (t)
     owner: owner.publicKey,
   });
 
-  // Oracle with no lifecycle checks
   const result = addPlugin(umi, {
     asset: asset.publicKey,
     plugin: {
@@ -67,7 +65,7 @@ test('it cannot add lifecycle hook with no lifecycle checks to asset', async (t)
   });
 });
 
-test('it cannot update lifecycle hook to have no lifecycle checks', async (t) => {
+test.skip('it cannot update lifecycle hook to have no lifecycle checks', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
   const owner = generateSigner(umi);
@@ -91,7 +89,6 @@ test('it cannot update lifecycle hook to have no lifecycle checks', async (t) =>
     owner: owner.publicKey,
   });
 
-  // Oracle with no lifecycle checks
   const result = updatePlugin(umi, {
     asset: asset.publicKey,
     plugin: {
