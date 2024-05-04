@@ -27,3 +27,7 @@ This project contains the following clients:
 ## Contributing
 
 Check out the [Contributing Guide](./CONTRIBUTING.md) the learn more about how to contribute to this project.
+
+## Security
+
+Audit Completed 2024-05-03 by Mad Shield
