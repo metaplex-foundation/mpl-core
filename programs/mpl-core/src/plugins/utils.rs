@@ -320,6 +320,15 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
     let header_offset = core.get_size();
     let plugin_type = init_info.into();
 
+    // Note currently we are blocking adding LifecycleHook and DataStore external plugins as they
+    // are still in development.
+    match init_info {
+        ExternalPluginInitInfo::LifecycleHook(_) | ExternalPluginInitInfo::DataStore(_) => {
+            return Err(MplCoreError::NotAvailable.into());
+        }
+        ExternalPluginInitInfo::Oracle(_) => (),
+    }
+
     // You cannot add a duplicate plugin.
     for record in plugin_registry.external_registry.iter() {
         if ExternalPluginKey::from_record(account, record)? == ExternalPluginKey::from(init_info) {

@@ -16,6 +16,7 @@ use solana_program_test::tokio;
 use solana_sdk::{pubkey::Pubkey, signature::Keypair, signer::Signer, transaction::Transaction};
 
 #[tokio::test]
+#[ignore]
 async fn test_remove_lifecycle_hook() {
     let mut context = program_test().start_with_context().await;
 
@@ -188,6 +189,7 @@ async fn test_remove_oracle() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_remove_data_store() {
     let mut context = program_test().start_with_context().await;
 
