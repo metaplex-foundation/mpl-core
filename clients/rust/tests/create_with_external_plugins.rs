@@ -120,6 +120,45 @@ async fn test_cannot_create_lifecycle_hook_with_duplicate_lifecycle_checks() {
 }
 
 #[tokio::test]
+async fn test_temporarily_cannot_create_lifecycle_hook() {
+    let mut context = program_test().start_with_context().await;
+
+    let asset = Keypair::new();
+    let error = create_asset(
+        &mut context,
+        CreateAssetHelperArgs {
+            owner: None,
+            payer: None,
+            asset: &asset,
+            data_state: None,
+            name: None,
+            uri: None,
+            authority: None,
+            update_authority: None,
+            collection: None,
+            plugins: vec![],
+            external_plugins: vec![ExternalPluginInitInfo::LifecycleHook(
+                LifecycleHookInitInfo {
+                    hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+                    init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                    lifecycle_checks: vec![(
+                        HookableLifecycleEvent::Transfer,
+                        ExternalCheckResult { flags: 1 },
+                    )],
+                    extra_accounts: None,
+                    data_authority: Some(PluginAuthority::UpdateAuthority),
+                    schema: None,
+                },
+            )],
+        },
+    )
+    .await
+    .unwrap_err();
+
+    assert_custom_instruction_error!(0, error, MplCoreError::NotAvailable);
+}
+
+#[tokio::test]
 async fn test_create_oracle() {
     let mut context = program_test().start_with_context().await;
 
@@ -262,4 +301,35 @@ async fn test_create_data_store() {
         },
     )
     .await;
+}
+
+#[tokio::test]
+async fn test_temporarily_cannot_create_data_store() {
+    let mut context = program_test().start_with_context().await;
+
+    let asset = Keypair::new();
+    let error = create_asset(
+        &mut context,
+        CreateAssetHelperArgs {
+            owner: None,
+            payer: None,
+            asset: &asset,
+            data_state: None,
+            name: None,
+            uri: None,
+            authority: None,
+            update_authority: None,
+            collection: None,
+            plugins: vec![],
+            external_plugins: vec![ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
+                init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                data_authority: PluginAuthority::UpdateAuthority,
+                schema: None,
+            })],
+        },
+    )
+    .await
+    .unwrap_err();
+
+    assert_custom_instruction_error!(0, error, MplCoreError::NotAvailable);
 }
