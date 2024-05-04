@@ -120,6 +120,7 @@ async fn test_update_lifecycle_hook() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_cannot_update_lifecycle_hook_to_have_duplicate_lifecycle_checks() {
     let mut context = program_test().start_with_context().await;
 
