@@ -344,6 +344,7 @@ test('it cannot update oracle to have no lifecycle checks', async (t) => {
     ],
   });
 
+  // TODO: Add external plugin validation.
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
@@ -369,6 +370,7 @@ test('it cannot update oracle to have no lifecycle checks', async (t) => {
 
   await t.throwsAsync(result, { name: 'RequiresLifecycleCheck' });
 
+  // TODO: Add external plugin validation.
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
@@ -504,6 +506,118 @@ test('it cannot add oracle to asset that can approve in addition to reject', asy
   });
 });
 
+test('it cannot update oracle to approve', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner,
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: account.publicKey,
+      },
+    ],
+  });
+
+  // TODO: Add external plugin validation.
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+
+  const result = updatePlugin(umi, {
+    asset: asset.publicKey,
+
+    plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: account.publicKey,
+      },
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_APPROVE],
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
+
+  // TODO: Add external plugin validation.
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+});
+
+test('it cannot update oracle to approve in addition to reject', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner,
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: account.publicKey,
+      },
+    ],
+  });
+
+  // TODO: Add external plugin validation.
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+
+  const result = updatePlugin(umi, {
+    asset: asset.publicKey,
+
+    plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: account.publicKey,
+      },
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_APPROVE, CheckResult.CAN_REJECT],
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
+
+  // TODO: Add external plugin validation.
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+});
+
 test('it cannot create asset with oracle that can listen', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
@@ -561,6 +675,62 @@ test('it cannot add oracle to asset that can listen', async (t) => {
 
   await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
 
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+});
+
+test('it cannot update oracle to listen', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner,
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: account.publicKey,
+      },
+    ],
+  });
+
+  // TODO: Add external plugin validation.
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+
+  const result = updatePlugin(umi, {
+    asset: asset.publicKey,
+
+    plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: account.publicKey,
+      },
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_LISTEN],
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
+
+  // TODO: Add external plugin validation.
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
