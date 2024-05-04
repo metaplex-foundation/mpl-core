@@ -1,5 +1,5 @@
 use mpl_core::{
-    instructions::{CreateCollectionV1Builder, CreateV2Builder},
+    instructions::{CreateCollectionV2Builder, CreateV2Builder},
     types::{
         DataState, ExternalPlugin, ExternalPluginInitInfo, Key, Plugin, PluginAuthorityPair,
         UpdateAuthority,
@@ -162,6 +162,7 @@ pub struct CreateCollectionHelperArgs<'a> {
     pub uri: Option<String>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
+    pub external_plugins: Vec<ExternalPluginInitInfo>,
 }
 
 pub async fn create_collection<'a>(
@@ -169,7 +170,7 @@ pub async fn create_collection<'a>(
     input: CreateCollectionHelperArgs<'a>,
 ) -> Result<(), BanksClientError> {
     let payer = input.payer.unwrap_or(&context.payer);
-    let create_ix = CreateCollectionV1Builder::new()
+    let create_ix = CreateCollectionV2Builder::new()
         .collection(input.collection.pubkey())
         .update_authority(input.update_authority)
         .payer(payer.pubkey())
@@ -177,6 +178,7 @@ pub async fn create_collection<'a>(
         .name(input.name.unwrap_or(DEFAULT_COLLECTION_NAME.to_owned()))
         .uri(input.uri.unwrap_or(DEFAULT_COLLECTION_URI.to_owned()))
         .plugins(input.plugins)
+        .external_plugins(input.external_plugins)
         .instruction();
 
     let mut signers = vec![input.collection, &context.payer];
@@ -255,6 +257,8 @@ pub async fn assert_collection(
             _ => panic!("unsupported plugin type"),
         }
     }
+
+    // TODO validate external plugins here.
 }
 
 pub async fn airdrop(

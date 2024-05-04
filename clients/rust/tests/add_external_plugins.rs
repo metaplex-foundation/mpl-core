@@ -2,7 +2,7 @@
 pub mod setup;
 use mpl_core::{
     errors::MplCoreError,
-    instructions::AddExternalPluginV1Builder,
+    instructions::{AddCollectionExternalPluginV1Builder, AddExternalPluginV1Builder},
     types::{
         DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo,
         ExternalPluginSchema, HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle,
@@ -284,6 +284,77 @@ async fn test_temporarily_cannot_add_lifecycle_hook() {
         },
     )
     .await;
+}
+
+#[tokio::test]
+async fn test_temporarily_cannot_add_lifecycle_hook_on_collection() {
+    let mut context = program_test().start_with_context().await;
+
+    let collection = Keypair::new();
+    create_collection(
+        &mut context,
+        CreateCollectionHelperArgs {
+            collection: &collection,
+            update_authority: None,
+            payer: None,
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugins: vec![],
+        },
+    )
+    .await
+    .unwrap();
+
+    let update_authority = context.payer.pubkey();
+    assert_collection(
+        &mut context,
+        AssertCollectionHelperArgs {
+            collection: collection.pubkey(),
+            update_authority,
+            name: None,
+            uri: None,
+            num_minted: 0,
+            current_size: 0,
+            plugins: vec![],
+        },
+    )
+    .await;
+
+    let add_external_plugin_ix = AddCollectionExternalPluginV1Builder::new()
+        .collection(collection.pubkey())
+        .payer(context.payer.pubkey())
+        .init_info(ExternalPluginInitInfo::LifecycleHook(
+            LifecycleHookInitInfo {
+                hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+                init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                lifecycle_checks: vec![(
+                    HookableLifecycleEvent::Transfer,
+                    ExternalCheckResult { flags: 1 },
+                )],
+                extra_accounts: None,
+                data_authority: Some(PluginAuthority::UpdateAuthority),
+                schema: None,
+            },
+        ))
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[add_external_plugin_ix],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    let error = context
+        .banks_client
+        .process_transaction(tx)
+        .await
+        .unwrap_err();
+
+    assert_custom_instruction_error!(0, error, MplCoreError::NotAvailable);
+
+    // TODO add collection assert.
 }
 
 #[tokio::test]
@@ -616,6 +687,69 @@ async fn test_temporarily_cannot_add_data_store() {
         },
     )
     .await;
+}
+
+#[tokio::test]
+async fn test_temporarily_cannot_add_data_store_on_collection() {
+    let mut context = program_test().start_with_context().await;
+
+    let collection = Keypair::new();
+    create_collection(
+        &mut context,
+        CreateCollectionHelperArgs {
+            collection: &collection,
+            update_authority: None,
+            payer: None,
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugins: vec![],
+        },
+    )
+    .await
+    .unwrap();
+
+    let update_authority = context.payer.pubkey();
+    assert_collection(
+        &mut context,
+        AssertCollectionHelperArgs {
+            collection: collection.pubkey(),
+            update_authority,
+            name: None,
+            uri: None,
+            num_minted: 0,
+            current_size: 0,
+            plugins: vec![],
+        },
+    )
+    .await;
+
+    let add_external_plugin_ix = AddCollectionExternalPluginV1Builder::new()
+        .collection(collection.pubkey())
+        .payer(context.payer.pubkey())
+        .init_info(ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
+            init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+            data_authority: PluginAuthority::UpdateAuthority,
+            schema: None,
+        }))
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[add_external_plugin_ix],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    let error = context
+        .banks_client
+        .process_transaction(tx)
+        .await
+        .unwrap_err();
+
+    assert_custom_instruction_error!(0, error, MplCoreError::NotAvailable);
+
+    // TODO: add collection assert.
 }
 
 #[tokio::test]
