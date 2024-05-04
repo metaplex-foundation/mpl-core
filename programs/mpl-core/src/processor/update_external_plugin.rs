@@ -82,7 +82,7 @@ pub(crate) fn update_external_plugin<'a>(
     let plugin_registry_clone = plugin_registry.clone();
     let (_, record) = find_external_plugin(&plugin_registry_clone, &args.key, ctx.accounts.asset)?;
     let mut registry_record = record.ok_or(MplCoreError::PluginNotFound)?.clone();
-    registry_record.update(&args.update_info);
+    registry_record.update(&args.update_info)?;
 
     let mut new_plugin = plugin.clone();
     new_plugin.update(&args.update_info);
@@ -219,7 +219,7 @@ pub(crate) fn update_collection_external_plugin<'a>(
     let (_, record) =
         find_external_plugin(&plugin_registry_clone, &args.key, ctx.accounts.collection)?;
     let mut registry_record = record.ok_or(MplCoreError::PluginNotFound)?.clone();
-    registry_record.update(&args.update_info);
+    registry_record.update(&args.update_info)?;
 
     let mut new_plugin = plugin.clone();
     new_plugin.update(&args.update_info);

@@ -36,10 +36,10 @@ async fn test_create_lifecycle_hook() {
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-                    lifecycle_checks: Some(vec![(
+                    lifecycle_checks: vec![(
                         HookableLifecycleEvent::Transfer,
                         ExternalCheckResult { flags: 1 },
-                    )]),
+                    )],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
                     schema: None,
@@ -94,7 +94,7 @@ async fn test_cannot_create_lifecycle_hook_with_duplicate_lifecycle_checks() {
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-                    lifecycle_checks: Some(vec![
+                    lifecycle_checks: vec![
                         (
                             HookableLifecycleEvent::Transfer,
                             ExternalCheckResult { flags: 1 },
@@ -103,7 +103,7 @@ async fn test_cannot_create_lifecycle_hook_with_duplicate_lifecycle_checks() {
                             HookableLifecycleEvent::Transfer,
                             ExternalCheckResult { flags: 1 },
                         ),
-                    ]),
+                    ],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
                     schema: None,

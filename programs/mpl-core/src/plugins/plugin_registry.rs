@@ -3,7 +3,10 @@ use shank::ShankAccount;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use std::{cmp::Ordering, collections::BTreeMap};
 
-use crate::state::{Authority, DataBlob, Key, SolanaAccount};
+use crate::{
+    plugins::validate_lifecycle_checks,
+    state::{Authority, DataBlob, Key, SolanaAccount},
+};
 
 use super::{
     CheckResult, ExternalCheckResult, ExternalCheckResultBits, ExternalPluginKey,
@@ -126,15 +129,23 @@ pub struct ExternalRegistryRecord {
 
 impl ExternalRegistryRecord {
     /// Update the external registry record with the new info, if relevant.
-    pub fn update(&mut self, update_info: &ExternalPluginUpdateInfo) {
+    pub fn update(&mut self, update_info: &ExternalPluginUpdateInfo) -> ProgramResult {
         match update_info {
             ExternalPluginUpdateInfo::LifecycleHook(update_info) => {
-                self.lifecycle_checks = update_info.lifecycle_checks.clone()
+                if let Some(checks) = &update_info.lifecycle_checks {
+                    validate_lifecycle_checks(checks, false)?;
+                    self.lifecycle_checks = update_info.lifecycle_checks.clone()
+                }
             }
             ExternalPluginUpdateInfo::Oracle(update_info) => {
-                self.lifecycle_checks = update_info.lifecycle_checks.clone()
+                if let Some(checks) = &update_info.lifecycle_checks {
+                    validate_lifecycle_checks(checks, true)?;
+                    self.lifecycle_checks = update_info.lifecycle_checks.clone()
+                }
             }
-            _ => {}
+            _ => (),
         }
+
+        Ok(())
     }
 }

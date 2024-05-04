@@ -2278,17 +2278,15 @@
           {
             "name": "lifecycleChecks",
             "type": {
-              "option": {
-                "vec": {
-                  "tuple": [
-                    {
-                      "defined": "HookableLifecycleEvent"
-                    },
-                    {
-                      "defined": "ExternalCheckResult"
-                    }
-                  ]
-                }
+              "vec": {
+                "tuple": [
+                  {
+                    "defined": "HookableLifecycleEvent"
+                  },
+                  {
+                    "defined": "ExternalCheckResult"
+                  }
+                ]
               }
             }
           },

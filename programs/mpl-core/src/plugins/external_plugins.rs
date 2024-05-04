@@ -94,21 +94,18 @@ impl ExternalPlugin {
     pub fn check_create(plugin: &ExternalPluginInitInfo) -> ExternalCheckResult {
         match plugin {
             ExternalPluginInitInfo::LifecycleHook(init_info) => {
-                if let Some(lifecycle_checks) = &init_info.lifecycle_checks {
-                    if let Some(checks) = lifecycle_checks
-                        .iter()
-                        .find(|event| event.0 == HookableLifecycleEvent::Create)
-                    {
-                        checks.1
-                    } else {
-                        ExternalCheckResult::none()
-                    }
+                if let Some(checks) = init_info
+                    .lifecycle_checks
+                    .iter()
+                    .find(|event| event.0 == HookableLifecycleEvent::Create)
+                {
+                    checks.1
                 } else {
                     ExternalCheckResult::none()
                 }
             }
             ExternalPluginInitInfo::Oracle(init_info) => {
-                if let Some(checks) = &init_info
+                if let Some(checks) = init_info
                     .lifecycle_checks
                     .iter()
                     .find(|event| event.0 == HookableLifecycleEvent::Create)

@@ -23,7 +23,7 @@ pub struct LifecycleHookInitInfo {
     )]
     pub hooked_program: Pubkey,
     pub init_plugin_authority: Option<PluginAuthority>,
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
+    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     pub data_authority: Option<PluginAuthority>,
     pub schema: Option<ExternalPluginSchema>,

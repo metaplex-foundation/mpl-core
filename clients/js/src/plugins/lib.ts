@@ -1,4 +1,4 @@
-import { none, some } from '@metaplex-foundation/umi';
+import { none, Option, some } from '@metaplex-foundation/umi';
 
 import {
   Key,
@@ -8,6 +8,7 @@ import {
   RegistryRecord,
   PluginAuthorityPair,
   PluginType,
+  ExternalPluginSchema,
 } from '../generated';
 
 import { toWords } from '../utils';
@@ -185,4 +186,34 @@ export function registryRecordsToPluginsList(
 export function pluginKeyToPluginType(pluginKey: keyof PluginsList) {
   return (pluginKey.charAt(0).toUpperCase() +
     pluginKey.slice(1)) as keyof typeof PluginType;
+}
+
+export function parseExternalPluginData(
+  plugin: {
+    schema: ExternalPluginSchema;
+  },
+  record: {
+    dataLen: Option<bigint | number>;
+    dataOffset: Option<bigint | number>;
+  },
+  account: Uint8Array
+): any {
+  let data;
+  const dataSlice = account.slice(
+    Number(record.dataOffset),
+    Number(record.dataOffset) + Number(record.dataLen)
+  );
+
+  if (plugin.schema === ExternalPluginSchema.Binary) {
+    data = dataSlice;
+  } else if (plugin.schema === ExternalPluginSchema.Json) {
+    data = JSON.parse(new TextDecoder().decode(dataSlice));
+  } else if (plugin.schema === ExternalPluginSchema.MsgPack) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      'MsgPack schema currently not supported, falling back to binary'
+    );
+    data = dataSlice;
+  }
+  return data;
 }

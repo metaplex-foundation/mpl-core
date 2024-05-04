@@ -17,9 +17,10 @@ import {
   pluginAuthorityFromBase,
   pluginAuthorityToBase,
 } from './pluginAuthority';
-import { BaseExternalPlugin, parseExternalPluginData } from './externalPlugins';
+import { BaseExternalPlugin } from './externalPlugins';
 import { ExternalPluginManifest } from './externalPluginManifest';
 import { ExternalPluginKey } from './externalPluginKey';
+import { parseExternalPluginData } from './lib';
 
 export type LifecycleHook = Omit<
   BaseLifecycleHook,
@@ -38,11 +39,15 @@ export type LifecycleHookPlugin = BaseExternalPlugin &
 
 export type LifecycleHookInitInfoArgs = Omit<
   BaseLifecycleHookInitInfoArgs,
-  'initPluginAuthority' | 'lifecycleChecks' | 'schema' | 'dataAuthority'
+  | 'initPluginAuthority'
+  | 'lifecycleChecks'
+  | 'schema'
+  | 'extraAccounts'
+  | 'dataAuthority'
 > & {
   type: 'LifecycleHook';
   initPluginAuthority?: PluginAuthority;
-  lifecycleChecks?: LifecycleChecks;
+  lifecycleChecks: LifecycleChecks;
   schema?: ExternalPluginSchema;
   extraAccounts?: Array<ExtraAccount>;
   dataAuthority?: PluginAuthority;
@@ -69,9 +74,7 @@ export function lifecycleHookInitInfoArgsToBase(
     initPluginAuthority: l.initPluginAuthority
       ? pluginAuthorityToBase(l.initPluginAuthority)
       : null,
-    lifecycleChecks: l.lifecycleChecks
-      ? lifecycleChecksToBase(l.lifecycleChecks)
-      : null,
+    lifecycleChecks: lifecycleChecksToBase(l.lifecycleChecks),
     schema: l.schema ? l.schema : null,
     dataAuthority: l.dataAuthority
       ? pluginAuthorityToBase(l.dataAuthority)

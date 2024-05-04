@@ -7,7 +7,8 @@ import {
 } from '../generated';
 import { ExternalPluginKey } from './externalPluginKey';
 import { ExternalPluginManifest } from './externalPluginManifest';
-import { BaseExternalPlugin, parseExternalPluginData } from './externalPlugins';
+import { BaseExternalPlugin } from './externalPlugins';
+import { parseExternalPluginData } from './lib';
 import { LifecycleChecks } from './lifecycleChecks';
 import {
   PluginAuthority,
