@@ -10,11 +10,11 @@ use crate::{
         UpdateCollectionPluginV1Accounts, UpdateCollectionPluginV2Accounts, UpdatePluginV1Accounts,
         UpdatePluginV2Accounts,
     },
-    plugins::{Attribute, Attributes, Plugin, PluginType, RegistryRecord},
+    plugins::{Plugin, PluginType, RegistryRecord},
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
-        fetch_core_data, load_key, resize_or_reallocate_account, resolve_authority,
-        validate_asset_permissions, validate_collection_permissions,
+        load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
+        validate_collection_permissions,
     },
 };
 
@@ -326,6 +326,7 @@ pub(crate) fn update_collection_plugin_v2<'a>(
         args.plugin.unwrap()
     };
 
+    msg!("plugin {:?}", plugin);
     update_collection_plugin(accounts, UpdateCollectionPluginV1Args { plugin: plugin })?;
 
     Ok(())
