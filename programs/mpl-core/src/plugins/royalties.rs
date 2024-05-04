@@ -81,7 +81,7 @@ impl PluginValidation for Royalties {
             RuleSet::None => Ok(ValidationResult::Pass),
             RuleSet::ProgramAllowList(allow_list) => {
                 if allow_list.contains(ctx.authority_info.owner)
-                    || allow_list.contains(new_owner.owner)
+                    && allow_list.contains(new_owner.owner)
                 {
                     Ok(ValidationResult::Pass)
                 } else {
