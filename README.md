@@ -1,8 +1,5 @@
 # Mpl Core
 
-> [!WARNING]
-> Metaplex Core is currently undergoing audit. Use in production at your own risk.
-
 Digital Assets
 
 ## Documentation
@@ -27,3 +24,7 @@ This project contains the following clients:
 ## Contributing
 
 Check out the [Contributing Guide](./CONTRIBUTING.md) the learn more about how to contribute to this project.
+
+## Security
+
+Audit Completed 2024-05-03 by Mad Shield
