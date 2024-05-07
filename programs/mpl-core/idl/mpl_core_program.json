@@ -520,6 +520,65 @@
       }
     },
     {
+      "name": "ExtendCollectionAtrributesPluginV1",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "extendCollectionAttributesPluginV1Args",
+          "type": {
+            "defined": "ExtendCollectionAttributesPluginV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 8
+      }
+    },
+    {
       "name": "ApprovePluginAuthorityV1",
       "accounts": [
         {
@@ -584,7 +643,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 8
+        "value": 9
       }
     },
     {
@@ -643,7 +702,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 9
+        "value": 10
       }
     },
     {
@@ -711,7 +770,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 10
+        "value": 11
       }
     },
     {
@@ -770,7 +829,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 11
+        "value": 12
       }
     },
     {
@@ -839,7 +898,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 12
+        "value": 13
       }
     },
     {
@@ -890,7 +949,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 13
+        "value": 14
       }
     },
     {
@@ -967,7 +1026,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 14
+        "value": 15
       }
     },
     {
@@ -1035,7 +1094,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 15
+        "value": 16
       }
     },
     {
@@ -1103,7 +1162,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 16
+        "value": 17
       }
     },
     {
@@ -1171,7 +1230,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 17
+        "value": 18
       }
     },
     {
@@ -1239,7 +1298,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 18
+        "value": 19
       }
     },
     {
@@ -1265,152 +1324,7 @@
       "args": [],
       "discriminant": {
         "type": "u8",
-        "value": 19
-      }
-    },
-    {
-      "name": "UpdatePluginV2",
-      "accounts": [
-        {
-          "name": "asset",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The address of the asset"
-          ]
-        },
-        {
-          "name": "collection",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The collection to which the asset belongs"
-          ]
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The account paying for the storage fees"
-          ]
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "isOptional": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The system program"
-          ]
-        },
-        {
-          "name": "logWrapper",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The SPL Noop Program"
-          ]
-        },
-        {
-          "name": "bufferAccount",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Optional buffer account containing plugin data"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "updatePluginV2Args",
-          "type": {
-            "defined": "UpdatePluginV2Args"
-          }
-        }
-      ],
-      "discriminant": {
-        "type": "u8",
         "value": 20
-      }
-    },
-    {
-      "name": "UpdateCollectionPluginV2",
-      "accounts": [
-        {
-          "name": "collection",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The address of the asset"
-          ]
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The account paying for the storage fees"
-          ]
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "isOptional": true,
-          "docs": [
-            "The owner or delegate of the asset"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The system program"
-          ]
-        },
-        {
-          "name": "logWrapper",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The SPL Noop Program"
-          ]
-        },
-        {
-          "name": "bufferAccount",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Optional buffer account containing plugin data"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "updateCollectionPluginV2Args",
-          "type": {
-            "defined": "UpdateCollectionPluginV2Args"
-          }
-        }
-      ],
-      "discriminant": {
-        "type": "u8",
-        "value": 21
       }
     }
   ],
@@ -2132,22 +2046,6 @@
       }
     },
     {
-      "name": "UpdatePluginV2Args",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "plugin",
-            "type": {
-              "option": {
-                "defined": "Plugin"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "UpdateCollectionPluginV1Args",
       "type": {
         "kind": "struct",
@@ -2162,16 +2060,14 @@
       }
     },
     {
-      "name": "UpdateCollectionPluginV2Args",
+      "name": "ExtendCollectionAttributesPluginV1Args",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "plugin",
+            "name": "attribute",
             "type": {
-              "option": {
-                "defined": "Plugin"
-              }
+              "defined": "Attribute"
             }
           }
         ]
@@ -2723,8 +2619,6 @@
   ],
   "metadata": {
     "origin": "shank",
-    "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
-    "binaryVersion": "0.4.2",
-    "libVersion": "0.4.2"
+    "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
   }
 }

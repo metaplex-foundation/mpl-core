@@ -77,9 +77,17 @@ pub fn process_instruction<'a>(
             msg!("Instruction: UpdatePlugin");
             update_plugin(accounts, args)
         }
+        MplAssetInstruction::UpdatePluginV2(args) => {
+            msg!("Instruction: UpdatePluginV2");
+            update_plugin_v2(accounts, args)
+        }
         MplAssetInstruction::UpdateCollectionPluginV1(args) => {
             msg!("Instruction: UpdateCollectionPlugin");
             update_collection_plugin(accounts, args)
+        }
+        MplAssetInstruction::UpdateCollectionPluginV2(args) => {
+            msg!("Instruction: UpdateCollectionPluginV2");
+            update_collection_plugin_v2(accounts, args)
         }
         MplAssetInstruction::ApprovePluginAuthorityV1(args) => {
             msg!("Instruction: ApprovePluginAuthority");

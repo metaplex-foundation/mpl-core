@@ -23,6 +23,8 @@ export * from './revokeCollectionPluginAuthorityV1';
 export * from './revokePluginAuthorityV1';
 export * from './transferV1';
 export * from './updateCollectionPluginV1';
+export * from './updateCollectionPluginV2';
 export * from './updateCollectionV1';
 export * from './updatePluginV1';
+export * from './updatePluginV2';
 export * from './updateV1';
