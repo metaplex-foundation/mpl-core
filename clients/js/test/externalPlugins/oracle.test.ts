@@ -41,6 +41,7 @@ import {
   update,
   addPlugin,
   updatePlugin,
+  fetchAssetV1,
 } from '../../src';
 
 const createUmi = async () =>
@@ -1786,5 +1787,70 @@ test('it can use one fixed address oracle to deny transfer when a second oracle 
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: newOwner.publicKey,
+  });
+});
+
+test('it can update with oracle', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: oracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Rejected,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const asset = generateSigner(umi);
+  await create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          update: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await fixedAccountSet(umi, {
+    signer: umi.identity,
+    account: oracleSigner.publicKey,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const a = await fetchAssetV1(umi, asset.publicKey);
+
+  await update(umi, {
+    asset: a,
+    name: 'name 2',
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'name 2',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
   });
 });

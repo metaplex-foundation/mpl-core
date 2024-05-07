@@ -3,7 +3,7 @@ import { CollectionV1, createV2, ExternalPluginSchema } from '../generated';
 import {
   createExternalPluginInitInfo,
   findExtraAccounts,
-  PluginArgsV2,
+  PluginAuthorityPairArgsV2,
   pluginAuthorityPairV2,
 } from '../plugins';
 import { deriveExternalPlugins } from '../helpers';
@@ -13,12 +13,16 @@ import {
   isExternalPluginType,
 } from '../plugins/externalPlugins';
 
+export type CreateArgsPlugin =
+  | PluginAuthorityPairArgsV2
+  | ExternalPluginInitInfoArgs;
+
 export type CreateArgs = Omit<
   Parameters<typeof createV2>[1],
   'plugins' | 'externalPlugins' | 'collection'
 > & {
-  collection?: CollectionV1;
-  plugins?: (PluginArgsV2 | ExternalPluginInitInfoArgs)[];
+  collection?: Pick<CollectionV1, 'publicKey' | 'oracles' | 'lifecycleHooks'>;
+  plugins?: CreateArgsPlugin[];
 };
 
 export const create = (
@@ -33,7 +37,7 @@ export const create = (
   };
 
   const externalPlugins: ExternalPluginInitInfoArgs[] = [];
-  const firstPartyPlugins: PluginArgsV2[] = [];
+  const firstPartyPlugins: PluginAuthorityPairArgsV2[] = [];
 
   // Create dummy external plugins to resuse findExtraAccounts method
   plugins?.forEach((plugin) => {
@@ -69,7 +73,7 @@ export const create = (
         // Do nothing
       }
     } else {
-      firstPartyPlugins.push(plugin as PluginArgsV2);
+      firstPartyPlugins.push(plugin as PluginAuthorityPairArgsV2);
     }
   });
 

@@ -7,8 +7,8 @@ export type BurnArgs = Omit<
   Parameters<typeof burnV1>[1],
   'asset' | 'collection'
 > & {
-  asset: AssetV1;
-  collection?: CollectionV1;
+  asset: Pick<AssetV1, 'publicKey' | 'owner' | 'oracles' | 'lifecycleHooks'>;
+  collection?: Pick<CollectionV1, 'publicKey' | 'oracles' | 'lifecycleHooks'>;
 };
 
 export const burn = (
