@@ -87,12 +87,12 @@ impl CompressV1 {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct CompressV1InstructionData {
+pub struct CompressV1InstructionData {
     discriminator: u8,
 }
 
 impl CompressV1InstructionData {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self { discriminator: 17 }
     }
 }
