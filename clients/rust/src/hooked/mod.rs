@@ -35,6 +35,8 @@ impl From<&Plugin> for PluginType {
             Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
             Plugin::Edition(_) => PluginType::Edition,
             Plugin::MasterEdition(_) => PluginType::MasterEdition,
+            Plugin::AddBlocker(_) => PluginType::AddBlocker,
+            Plugin::ImmutableMetadata(_) => PluginType::ImmutableMetadata,
         }
     }
 }
