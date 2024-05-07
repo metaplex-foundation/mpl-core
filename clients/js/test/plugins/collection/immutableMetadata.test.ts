@@ -85,7 +85,7 @@ test('it states that UA is the only one who can add the ImmutableMetadata', asyn
     name: 'InvalidAuthority',
   });
 
-  // Owner can't add ImmutableMetadata
+  // Payer for the the collection can't add ImmutableMetadata
   result = addCollectionPluginV1(umi, {
     authority: umi.identity,
     collection: collection.publicKey,

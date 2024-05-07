@@ -24,8 +24,10 @@ test('it cannot add UA-managed plugin if addBlocker had been added on creation',
   const result = addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
-      type: 'PermanentFreezeDelegate',
-      data: { frozen: true },
+      type: 'Attributes',
+      data: {
+        attributeList: [],
+      },
     }),
   }).sendAndConfirm(umi);
 
@@ -75,9 +77,9 @@ test('it can add plugins unless AddBlocker is added', async (t) => {
   const result = addPluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
-      type: 'PermanentFreezeDelegate',
+      type: 'Attributes',
       data: {
-        frozen: false,
+        attributeList: [],
       },
     }),
   }).sendAndConfirm(umi);
@@ -90,7 +92,6 @@ test('it can add plugins unless AddBlocker is added', async (t) => {
 test('it can add owner-managed plugins even if AddBlocker had been added', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  //   const delegateAddress = generateSigner(umi);
 
   const asset = await createAsset(umi, {
     plugins: [
