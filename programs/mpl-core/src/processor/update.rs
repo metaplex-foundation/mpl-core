@@ -9,7 +9,7 @@ use crate::{
     instruction::accounts::{UpdateCollectionV1Accounts, UpdateV1Accounts},
     plugins::{
         ExternalPlugin, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
-        PluginType, RegistryRecord,
+        PluginType,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
@@ -236,20 +236,24 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
         );
 
         plugin_header.save(account, new_core_size as usize)?;
-        plugin_registry.registry = plugin_registry
-            .registry
-            .iter_mut()
-            .map(|record| {
-                let new_offset = (record.offset as isize)
-                    .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?;
-                Ok(RegistryRecord {
-                    plugin_type: record.plugin_type,
-                    offset: new_offset as usize,
-                    authority: record.authority,
-                })
-            })
-            .collect::<Result<Vec<_>, MplCoreError>>()?;
+
+        // Move offsets for existing registry records.
+        for record in &mut plugin_registry.external_registry {
+            let new_offset = (record.offset as isize)
+                .checked_add(size_diff)
+                .ok_or(MplCoreError::NumericalOverflow)?;
+
+            record.offset = new_offset as usize;
+        }
+
+        for record in &mut plugin_registry.registry {
+            let new_offset = (record.offset as isize)
+                .checked_add(size_diff)
+                .ok_or(MplCoreError::NumericalOverflow)?;
+
+            record.offset = new_offset as usize;
+        }
+
         plugin_registry.save(account, new_registry_offset as usize)?;
     } else {
         resize_or_reallocate_account(account, payer, system_program, core.get_size())?;
