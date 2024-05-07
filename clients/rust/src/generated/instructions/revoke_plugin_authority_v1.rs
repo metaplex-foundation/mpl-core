@@ -6,8 +6,12 @@
 //!
 
 use crate::generated::types::PluginType;
-use borsh::BorshDeserialize;
-use borsh::BorshSerialize;
+#[cfg(feature = "anchor")]
+use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
+#[cfg(not(feature = "anchor"))]
+use borsh::{BorshDeserialize, BorshSerialize};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 /// Accounts.
 pub struct RevokePluginAuthorityV1 {
@@ -95,7 +99,8 @@ impl RevokePluginAuthorityV1 {
     }
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
+#[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
+#[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 pub struct RevokePluginAuthorityV1InstructionData {
     discriminator: u8,
 }
@@ -107,11 +112,8 @@ impl RevokePluginAuthorityV1InstructionData {
 }
 
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
-#[cfg_attr(
-    feature = "anchor",
-    derive(anchor_lang::AnchorSerialize, anchor_lang::AnchorDeserialize)
-)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RevokePluginAuthorityV1InstructionArgs {
     pub plugin_type: PluginType,
