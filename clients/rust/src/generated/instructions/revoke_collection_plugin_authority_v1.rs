@@ -6,8 +6,10 @@
 //!
 
 use crate::generated::types::PluginType;
-use borsh::BorshDeserialize;
-use borsh::BorshSerialize;
+#[cfg(feature = "anchor")]
+use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
+#[cfg(not(feature = "anchor"))]
+use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Accounts.
 pub struct RevokeCollectionPluginAuthorityV1 {
@@ -84,7 +86,8 @@ impl RevokeCollectionPluginAuthorityV1 {
     }
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
+#[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
+#[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 pub struct RevokeCollectionPluginAuthorityV1InstructionData {
     discriminator: u8,
 }
@@ -95,8 +98,10 @@ impl RevokeCollectionPluginAuthorityV1InstructionData {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
+#[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RevokeCollectionPluginAuthorityV1InstructionArgs {
     pub plugin_type: PluginType,
 }

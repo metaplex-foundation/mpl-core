@@ -9,8 +9,8 @@ devDependencies:
     specifier: ^0.12.1
     version: 0.12.1(typescript@4.9.4)
   '@metaplex-foundation/kinobi':
-    specifier: ^0.18.5
-    version: 0.18.5(fastestsmallesttextencoderdecoder@1.0.22)
+    specifier: 0.18.8-alpha.0
+    version: 0.18.8-alpha.0(fastestsmallesttextencoderdecoder@1.0.22)
   '@metaplex-foundation/shank-js':
     specifier: ^0.1.7
     version: 0.1.7
@@ -89,11 +89,11 @@ packages:
     resolution: {integrity: sha512-S9RulC2fFCFOQraz61bij+5YCHhSO9llJegK8c8Y6731fSi6snUSQJdCUqYS8AIgR0TKbQvdvgSyIIdbDFZbBA==}
     dev: true
 
-  /@metaplex-foundation/kinobi@0.18.5(fastestsmallesttextencoderdecoder@1.0.22):
-    resolution: {integrity: sha512-qh4h4xGB+PHR5o4rcZki+wsIeZYi6R9SRV5UMqGi/rfDJXk0ckAZ+fxdam+mCc4N8HWLLWmEJbF5gx8E5K0fOA==}
+  /@metaplex-foundation/kinobi@0.18.8-alpha.0(fastestsmallesttextencoderdecoder@1.0.22):
+    resolution: {integrity: sha512-0ghdmyGnz1j6yDX52lWJOY63AvkSnxbNSYsHgn1sFnMrnnAK3O3EuaFpZdj5j0C2dRB1a+dGw2Kte7GkuPZL2A==}
     dependencies:
       '@noble/hashes': 1.4.0
-      '@prettier/sync': 0.5.1(prettier@3.2.5)
+      '@prettier/sync': 0.5.2(prettier@3.2.5)
       '@solana/codecs-strings': 2.0.0-preview.1(fastestsmallesttextencoderdecoder@1.0.22)
       chalk: 4.1.2
       json-stable-stringify: 1.1.1
@@ -136,12 +136,12 @@ packages:
     engines: {node: '>= 16'}
     dev: true
 
-  /@prettier/sync@0.5.1(prettier@3.2.5):
-    resolution: {integrity: sha512-tpF+A1e4ynO2U4fTH21Sjgm9EYENmqg4zmJCMLrmLVfzIzuDc1cKGXyxrxbFgcH8qQRfowyDCZFAUukwhiZlsw==}
+  /@prettier/sync@0.5.2(prettier@3.2.5):
+    resolution: {integrity: sha512-Yb569su456XNx5BsH/Vyem7xD6g/y9iLmLUzRKM1a/dhU/D7HqqvkAG72znulXlMXztbV0iiu9O5AL8K98TzZQ==}
     peerDependencies:
       prettier: '*'
     dependencies:
-      make-synchronized: 0.2.8
+      make-synchronized: 0.2.9
       prettier: 3.2.5
     dev: true
 
@@ -908,8 +908,8 @@ packages:
       yallist: 4.0.0
     dev: true
 
-  /make-synchronized@0.2.8:
-    resolution: {integrity: sha512-jtXnKYCxjmGaXiZhXbDbGPbh4YyTvIIbOgcQjtAboc4RSm9k3nyhTFvFQB0cfs7QFKuZXKe2D2RvOkv1c+vpxg==}
+  /make-synchronized@0.2.9:
+    resolution: {integrity: sha512-4wczOs8SLuEdpEvp3vGo83wh8rjJ78UsIk7DIX5fxdfmfMJGog4bQzxfvOwq7Q3yCHLC4jp1urPHIxRS/A93gA==}
     dev: true
 
   /map-stream@0.1.0:
