@@ -5,9 +5,9 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        Attributes, BurnDelegate, Edition, FreezeDelegate, Key, MasterEdition,
-        PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate, PluginAuthority,
-        Royalties, TransferDelegate, UpdateDelegate,
+        AddBlocker, Attributes, BurnDelegate, Edition, FreezeDelegate, ImmutableMetadata, Key,
+        MasterEdition, PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate,
+        PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
     },
 };
 
@@ -131,6 +131,18 @@ pub struct MasterEditionPlugin {
     pub master_edition: MasterEdition,
 }
 
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct AddBlockerPlugin {
+    pub base: BasePlugin,
+    pub add_blocker: AddBlocker,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct ImmutableMetadataPlugin {
+    pub base: BasePlugin,
+    pub immutable_metadata: ImmutableMetadata,
+}
+
 #[derive(Debug, Default)]
 pub struct PluginsList {
     pub royalties: Option<RoyaltiesPlugin>,
@@ -144,6 +156,8 @@ pub struct PluginsList {
     pub permanent_burn_delegate: Option<PermanentBurnDelegatePlugin>,
     pub edition: Option<EditionPlugin>,
     pub master_edition: Option<MasterEditionPlugin>,
+    pub add_blocker: Option<AddBlockerPlugin>,
+    pub immutable_metadata: Option<ImmutableMetadataPlugin>,
 }
 
 #[derive(Debug)]

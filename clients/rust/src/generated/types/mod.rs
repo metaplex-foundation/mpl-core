@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+pub(crate) mod r#add_blocker;
 pub(crate) mod r#attribute;
 pub(crate) mod r#attributes;
 pub(crate) mod r#burn_delegate;
@@ -17,6 +18,7 @@ pub(crate) mod r#extra_accounts;
 pub(crate) mod r#freeze_delegate;
 pub(crate) mod r#hashable_plugin_schema;
 pub(crate) mod r#hashed_asset_schema;
+pub(crate) mod r#immutable_metadata;
 pub(crate) mod r#key;
 pub(crate) mod r#master_edition;
 pub(crate) mod r#permanent_burn_delegate;
@@ -33,6 +35,7 @@ pub(crate) mod r#transfer_delegate;
 pub(crate) mod r#update_authority;
 pub(crate) mod r#update_delegate;
 
+pub use self::r#add_blocker::*;
 pub use self::r#attribute::*;
 pub use self::r#attributes::*;
 pub use self::r#burn_delegate::*;
@@ -45,6 +48,7 @@ pub use self::r#extra_accounts::*;
 pub use self::r#freeze_delegate::*;
 pub use self::r#hashable_plugin_schema::*;
 pub use self::r#hashed_asset_schema::*;
+pub use self::r#immutable_metadata::*;
 pub use self::r#key::*;
 pub use self::r#master_edition::*;
 pub use self::r#permanent_burn_delegate::*;

@@ -5,10 +5,12 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::AddBlocker;
 use crate::generated::types::Attributes;
 use crate::generated::types::BurnDelegate;
 use crate::generated::types::Edition;
 use crate::generated::types::FreezeDelegate;
+use crate::generated::types::ImmutableMetadata;
 use crate::generated::types::MasterEdition;
 use crate::generated::types::PermanentBurnDelegate;
 use crate::generated::types::PermanentFreezeDelegate;
@@ -33,4 +35,6 @@ pub enum Plugin {
     PermanentBurnDelegate(PermanentBurnDelegate),
     Edition(Edition),
     MasterEdition(MasterEdition),
+    AddBlocker(AddBlocker),
+    ImmutableMetadata(ImmutableMetadata),
 }

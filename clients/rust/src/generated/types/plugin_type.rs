@@ -25,4 +25,6 @@ pub enum PluginType {
     PermanentBurnDelegate,
     Edition,
     MasterEdition,
+    AddBlocker,
+    ImmutableMetadata,
 }

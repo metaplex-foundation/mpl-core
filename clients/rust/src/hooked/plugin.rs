@@ -6,11 +6,11 @@ use crate::{
     accounts::{BaseAssetV1, PluginHeaderV1},
     errors::MplCoreError,
     types::{Plugin, PluginAuthority, PluginType, RegistryRecord},
-    AttributesPlugin, BaseAuthority, BasePlugin, BurnDelegatePlugin, DataBlob, EditionPlugin,
-    FreezeDelegatePlugin, MasterEditionPlugin, PermanentBurnDelegatePlugin,
-    PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin, PluginRegistryV1Safe,
-    PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount, TransferDelegatePlugin,
-    UpdateDelegatePlugin,
+    AddBlockerPlugin, AttributesPlugin, BaseAuthority, BasePlugin, BurnDelegatePlugin, DataBlob,
+    EditionPlugin, FreezeDelegatePlugin, ImmutableMetadataPlugin, MasterEditionPlugin,
+    PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin,
+    PluginRegistryV1Safe, PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount,
+    TransferDelegatePlugin, UpdateDelegatePlugin,
 };
 
 /// Fetch the plugin from the registry.
@@ -190,6 +190,15 @@ pub(crate) fn registry_records_to_plugin_list(
                         acc.master_edition = Some(MasterEditionPlugin {
                             base,
                             master_edition,
+                        })
+                    }
+                    Plugin::AddBlocker(add_blocker) => {
+                        acc.add_blocker = Some(AddBlockerPlugin { base, add_blocker })
+                    }
+                    Plugin::ImmutableMetadata(immutable_metadata) => {
+                        acc.immutable_metadata = Some(ImmutableMetadataPlugin {
+                            base,
+                            immutable_metadata,
                         })
                     }
                 }

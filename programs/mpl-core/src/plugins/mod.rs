@@ -1,7 +1,9 @@
+mod add_blocker;
 mod attributes;
 mod burn_delegate;
 mod edition;
 mod freeze_delegate;
+mod immutable_metadata;
 mod lifecycle;
 mod master_edition;
 mod permanent_burn_delegate;
@@ -14,10 +16,12 @@ mod transfer;
 mod update_delegate;
 mod utils;
 
+pub use add_blocker::*;
 pub use attributes::*;
 pub use burn_delegate::*;
 pub use edition::*;
 pub use freeze_delegate::*;
+pub use immutable_metadata::*;
 pub use lifecycle::*;
 pub use master_edition::*;
 use num_derive::ToPrimitive;
@@ -69,6 +73,10 @@ pub enum Plugin {
     Edition(Edition),
     /// Master Edition plugin allows creators to specify the max supply and master edition details
     MasterEdition(MasterEdition),
+    /// AddBlocker plugin. Prevents plugins from being added.
+    AddBlocker(AddBlocker),
+    /// ImmutableMetadata plugin. Makes metadata of the asset immutable.
+    ImmutableMetadata(ImmutableMetadata),
 }
 
 impl Plugin {
@@ -135,6 +143,10 @@ pub enum PluginType {
     Edition,
     /// The Master Edition plugin.
     MasterEdition,
+    /// AddBlocker plugin.
+    AddBlocker,
+    /// ImmutableMetadata plugin.
+    ImmutableMetadata,
 }
 
 impl DataBlob for PluginType {
@@ -150,6 +162,8 @@ impl DataBlob for PluginType {
 impl From<&Plugin> for PluginType {
     fn from(plugin: &Plugin) -> Self {
         match plugin {
+            Plugin::AddBlocker(_) => PluginType::AddBlocker,
+            Plugin::ImmutableMetadata(_) => PluginType::ImmutableMetadata,
             Plugin::Royalties(_) => PluginType::Royalties,
             Plugin::FreezeDelegate(_) => PluginType::FreezeDelegate,
             Plugin::BurnDelegate(_) => PluginType::BurnDelegate,
@@ -169,6 +183,8 @@ impl PluginType {
     /// Get the default authority for a plugin which defines who must allow the plugin to be created.
     pub fn manager(&self) -> Authority {
         match self {
+            PluginType::AddBlocker => Authority::UpdateAuthority,
+            PluginType::ImmutableMetadata => Authority::UpdateAuthority,
             PluginType::Royalties => Authority::UpdateAuthority,
             PluginType::FreezeDelegate => Authority::Owner,
             PluginType::BurnDelegate => Authority::Owner,

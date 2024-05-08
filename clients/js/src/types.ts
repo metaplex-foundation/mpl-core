@@ -13,6 +13,8 @@ import {
   PermanentBurnDelegate,
   Edition,
   MasterEdition,
+  ImmutableMetadata,
+  AddBlocker,
 } from './generated';
 
 export type BasePluginAuthority = {
@@ -46,6 +48,8 @@ export type PermanentTransferDelegatePlugin = BasePlugin &
 export type PermanentBurnDelegatePlugin = BasePlugin & PermanentBurnDelegate;
 export type EditionPlugin = BasePlugin & Edition;
 export type MasterEditionPlugin = BasePlugin & MasterEdition;
+export type AddBlockerPlugin = BasePlugin & AddBlocker;
+export type ImmutableMetadataPlugin = BasePlugin & ImmutableMetadata;
 
 export type PluginsList = {
   royalties?: RoyaltiesPlugin;
@@ -59,4 +63,6 @@ export type PluginsList = {
   permanentBurnDelegate?: PermanentBurnDelegatePlugin;
   edition?: EditionPlugin;
   masterEdition?: MasterEditionPlugin;
+  addBlocker?: AddBlockerPlugin;
+  immutableMetadata?: ImmutableMetadataPlugin;
 };

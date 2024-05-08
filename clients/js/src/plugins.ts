@@ -74,6 +74,12 @@ export type CreatePluginArgs =
   | {
       type: 'MasterEdition';
       data: MasterEditionArgs;
+    }
+  | {
+      type: 'ImmutableMetadata';
+    }
+  | {
+      type: 'AddBlocker';
     };
 
 export function createPlugin(args: CreatePluginArgs): BasePlugin {
