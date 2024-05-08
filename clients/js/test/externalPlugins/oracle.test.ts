@@ -1854,3 +1854,69 @@ test('it can update with oracle', async (t) => {
     asset: asset.publicKey,
   });
 });
+
+test('it can update oracle to different size external plugin', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: oracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Rejected,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const asset = generateSigner(umi);
+  await create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+          update: [CheckResult.CAN_REJECT],
+          transfer: [CheckResult.CAN_REJECT],
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+
+    plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: oracleSigner.publicKey,
+      },
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_REJECT],
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  // TODO: Validate external plugins.
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+  });
+});
