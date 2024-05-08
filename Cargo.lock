@@ -2316,7 +2316,9 @@ dependencies = [
 
 [[package]]
 name = "mpl-utils"
-version = "0.3.4"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ee1b830bfd014504a11b2234e2e7d6af535adda601f224cd519b923f593c91b"
 dependencies = [
  "arrayref",
  "solana-program",
