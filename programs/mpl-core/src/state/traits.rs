@@ -44,6 +44,26 @@ pub trait SolanaAccount: BorshSerialize + BorshDeserialize {
     }
 }
 
+/// A trait for Solana accounts without a key.
+pub trait PluginSolanaAccount: BorshSerialize + BorshDeserialize {
+    /// Load and deserialize a plugin from an offset in the account.
+    fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
+        let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
+        Self::deserialize(&mut bytes).map_err(|error| {
+            msg!("Error: {}", error);
+            MplCoreError::DeserializationError.into()
+        })
+    }
+
+    /// Save and serialize a plugin to an offset in the account.
+    fn save(&self, account: &AccountInfo, offset: usize) -> ProgramResult {
+        borsh::to_writer(&mut account.data.borrow_mut()[offset..], self).map_err(|error| {
+            msg!("Error: {}", error);
+            MplCoreError::SerializationError.into()
+        })
+    }
+}
+
 /// A trait for data that can be compressed.
 pub trait Compressible: BorshSerialize + BorshDeserialize {
     /// Get the hash of the compressed data.

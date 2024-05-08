@@ -1,8 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_memory::sol_memcpy,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
@@ -13,8 +11,8 @@ use crate::{
     },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
-        load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
-        validate_collection_permissions,
+        load_key, move_plugins_and_registry, resize_or_reallocate_account, resolve_authority,
+        validate_asset_permissions, validate_collection_permissions,
     },
 };
 
@@ -70,7 +68,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
     // Increment sequence number and save only if it is `Some(_)`.
     asset.increment_seq_and_save(ctx.accounts.asset)?;
 
-    let asset_size = asset.get_size() as isize;
+    let asset_size = asset.get_size();
 
     let mut dirty = false;
     if let Some(new_update_authority) = args.new_update_authority {
@@ -153,7 +151,7 @@ pub(crate) fn update_collection<'a>(
         Some(HookableLifecycleEvent::Update),
     )?;
 
-    let collection_size = collection.get_size() as isize;
+    let collection_size = collection.get_size();
 
     let mut dirty = false;
     if let Some(new_update_authority) = ctx.accounts.new_update_authority {
@@ -187,7 +185,7 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
     core: T,
     plugin_header: &Option<PluginHeaderV1>,
     plugin_registry: &Option<PluginRegistryV1>,
-    core_size: isize,
+    core_size: usize,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
@@ -196,70 +194,32 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
         (plugin_header.clone(), plugin_registry.clone())
     {
         // The new size of the asset and new offset of the plugin header.
-        let new_core_size = core.get_size() as isize;
+        let new_core_size = core.get_size();
 
         // The difference in size between the new and old asset which is used to calculate the new size of the account.
-        let size_diff = new_core_size
-            .checked_sub(core_size)
+        let size_diff = (new_core_size as isize)
+            .checked_sub(core_size as isize)
             .ok_or(MplCoreError::NumericalOverflow)?;
-
-        // The new size of the account.
-        let new_size = (account.data_len() as isize)
-            .checked_add(size_diff)
-            .ok_or(MplCoreError::NumericalOverflow)?;
-
-        // The new offset of the plugin registry is the old offset plus the size difference.
-        let registry_offset = plugin_header.plugin_registry_offset;
-        let new_registry_offset = (registry_offset as isize)
-            .checked_add(size_diff)
-            .ok_or(MplCoreError::NumericalOverflow)?;
-        plugin_header.plugin_registry_offset = new_registry_offset as usize;
 
         // The offset of the first plugin is the core size plus the size of the plugin header.
         let plugin_offset = core_size
-            .checked_add(plugin_header.get_size() as isize)
+            .checked_add(plugin_header.get_size())
             .ok_or(MplCoreError::NumericalOverflow)?;
 
-        let new_plugin_offset = plugin_offset
-            .checked_add(size_diff)
-            .ok_or(MplCoreError::NumericalOverflow)?;
-
-        // //TODO: This is memory intensive, we should use memmove instead probably.
-        let src = account.data.borrow()[(plugin_offset as usize)..registry_offset].to_vec();
-
-        resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
-
-        sol_memcpy(
-            &mut account.data.borrow_mut()[(new_plugin_offset as usize)..],
-            &src,
-            src.len(),
-        );
-
-        plugin_header.save(account, new_core_size as usize)?;
-
-        // Move offsets for existing registry records.
-        for record in &mut plugin_registry.external_registry {
-            let new_offset = (record.offset as isize)
-                .checked_add(size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-
-            record.offset = new_offset as usize;
-        }
-
-        for record in &mut plugin_registry.registry {
-            let new_offset = (record.offset as isize)
-                .checked_add(size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-
-            record.offset = new_offset as usize;
-        }
-
-        plugin_registry.save(account, new_registry_offset as usize)?;
+        move_plugins_and_registry(
+            new_core_size,
+            size_diff,
+            plugin_offset,
+            plugin_offset,
+            &mut plugin_header,
+            &mut plugin_registry,
+            account,
+            payer,
+            system_program,
+        )?;
     } else {
         resize_or_reallocate_account(account, payer, system_program, core.get_size())?;
     }
 
-    core.save(account, 0)?;
-
-    Ok(())
+    core.save(account, 0)
 }

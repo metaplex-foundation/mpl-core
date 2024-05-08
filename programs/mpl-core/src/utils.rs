@@ -725,3 +725,68 @@ pub(crate) fn resolve_authority<'a>(
         None => Ok(payer),
     }
 }
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn move_plugins_and_registry<'a>(
+    header_location: usize,
+    size_diff: isize,
+    first_plugin_location: usize,
+    data_to_move_location: usize,
+    plugin_header: &mut PluginHeaderV1,
+    plugin_registry: &mut PluginRegistryV1,
+    account: &AccountInfo<'a>,
+    payer: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+) -> ProgramResult {
+    // The new size of the account.
+    let new_size = (account.data_len() as isize)
+        .checked_add(size_diff)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
+    // The new offset of the plugin registry is the old offset plus the size difference.
+    let registry_offset = plugin_header.plugin_registry_offset;
+    let new_registry_offset = (registry_offset as isize)
+        .checked_add(size_diff)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+    plugin_header.plugin_registry_offset = new_registry_offset as usize;
+
+    let new_data_location = (data_to_move_location as isize)
+        .checked_add(size_diff)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
+    // //TODO: This is memory intensive, we should use memmove instead probably.
+    let src = account.data.borrow()[(data_to_move_location)..registry_offset].to_vec();
+
+    resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
+
+    sol_memcpy(
+        &mut account.data.borrow_mut()[(new_data_location as usize)..],
+        &src,
+        src.len(),
+    );
+
+    plugin_header.save(account, header_location)?;
+
+    // Move offsets for existing registry records.
+    for record in &mut plugin_registry.external_registry {
+        if first_plugin_location == data_to_move_location || first_plugin_location < record.offset {
+            let new_offset = (record.offset as isize)
+                .checked_add(size_diff)
+                .ok_or(MplCoreError::NumericalOverflow)?;
+
+            record.offset = new_offset as usize;
+        }
+    }
+
+    for record in &mut plugin_registry.registry {
+        if first_plugin_location == data_to_move_location || first_plugin_location < record.offset {
+            let new_offset = (record.offset as isize)
+                .checked_add(size_diff)
+                .ok_or(MplCoreError::NumericalOverflow)?;
+
+            record.offset = new_offset as usize;
+        }
+    }
+
+    plugin_registry.save(account, new_registry_offset as usize)
+}

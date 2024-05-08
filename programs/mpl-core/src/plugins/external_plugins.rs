@@ -1,13 +1,10 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-    pubkey::Pubkey,
-};
+use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 use strum::EnumCount;
 
 use crate::{
     error::MplCoreError,
-    state::{AssetV1, SolanaAccount},
+    state::{AssetV1, PluginSolanaAccount, SolanaAccount},
 };
 
 use super::{
@@ -180,24 +177,9 @@ impl ExternalPlugin {
             ExternalPlugin::DataStore(data_store) => data_store.validate_add_external_plugin(ctx),
         }
     }
-
-    /// Load and deserialize a plugin from an offset in the account.
-    pub fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
-        let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
-        Self::deserialize(&mut bytes).map_err(|error| {
-            msg!("Error: {}", error);
-            MplCoreError::DeserializationError.into()
-        })
-    }
-
-    /// Save and serialize a plugin to an offset in the account.
-    pub fn save(&self, account: &AccountInfo, offset: usize) -> ProgramResult {
-        borsh::to_writer(&mut account.data.borrow_mut()[offset..], self).map_err(|error| {
-            msg!("Error: {}", error);
-            MplCoreError::SerializationError.into()
-        })
-    }
 }
+
+impl PluginSolanaAccount for ExternalPlugin {}
 
 impl From<&ExternalPluginInitInfo> for ExternalPlugin {
     fn from(init_info: &ExternalPluginInitInfo) -> Self {

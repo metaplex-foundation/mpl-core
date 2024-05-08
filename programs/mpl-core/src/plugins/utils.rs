@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use crate::{
     error::MplCoreError,
     plugins::{ExternalCheckResult, HookableLifecycleEvent},
-    state::{AssetV1, Authority, CoreAsset, DataBlob, Key, SolanaAccount},
+    state::{AssetV1, Authority, CoreAsset, DataBlob, Key, PluginSolanaAccount, SolanaAccount},
     utils::resize_or_reallocate_account,
 };
 

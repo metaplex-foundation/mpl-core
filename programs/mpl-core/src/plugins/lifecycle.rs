@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 
 use crate::{
     error::MplCoreError,
-    state::{Authority, Key},
+    state::{Authority, Key, PluginSolanaAccount},
 };
 
 use super::{
