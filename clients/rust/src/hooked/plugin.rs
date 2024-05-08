@@ -1,4 +1,7 @@
-use borsh::BorshDeserialize;
+#[cfg(feature = "anchor")]
+use anchor_lang::prelude::AnchorDeserialize as CrateDeserialize;
+#[cfg(not(feature = "anchor"))]
+use borsh::BorshDeserialize as CrateDeserialize;
 use num_traits::FromPrimitive;
 use solana_program::account_info::AccountInfo;
 
@@ -14,7 +17,7 @@ use crate::{
 };
 
 /// Fetch the plugin from the registry.
-pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
+pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: CrateDeserialize>(
     account: &AccountInfo,
     plugin_type: PluginType,
 ) -> Result<(PluginAuthority, U, usize), std::io::Error> {

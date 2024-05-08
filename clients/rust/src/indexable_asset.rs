@@ -1,4 +1,7 @@
+#[cfg(feature = "anchor")]
+use anchor_lang::prelude::AnchorDeserialize;
 use base64::prelude::*;
+#[cfg(not(feature = "anchor"))]
 use borsh::BorshDeserialize;
 use num_traits::FromPrimitive;
 use solana_program::pubkey::Pubkey;

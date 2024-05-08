@@ -1,3 +1,6 @@
+#[cfg(feature = "anchor")]
+use anchor_lang::prelude::AnchorSerialize;
+#[cfg(not(feature = "anchor"))]
 use borsh::BorshSerialize;
 
 use crate::{

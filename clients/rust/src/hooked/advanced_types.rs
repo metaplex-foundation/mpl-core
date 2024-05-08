@@ -1,3 +1,6 @@
+#[cfg(feature = "anchor")]
+use anchor_lang::prelude::AnchorDeserialize;
+#[cfg(not(feature = "anchor"))]
 use borsh::BorshDeserialize;
 use solana_program::pubkey::Pubkey;
 use std::{cmp::Ordering, io::ErrorKind};
