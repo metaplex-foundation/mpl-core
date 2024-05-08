@@ -90,7 +90,8 @@ impl Oracle {
 
         let offset = self.results_offset.to_offset_usize();
         let validation_result =
-            OracleValidation::deserialize(&mut &(*oracle_account.data).borrow()[offset..])?;
+            OracleValidation::deserialize(&mut &(*oracle_account.data).borrow()[offset..])
+                .map_err(|_| MplCoreError::InvalidOracleAccountData)?;
 
         match validation_result {
             OracleValidation::V1 {
