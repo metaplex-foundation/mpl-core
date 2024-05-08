@@ -42,9 +42,10 @@ export const createAsset = async (
     ? publicKey(input.updateAuthority)
     : undefined;
 
-  const col = typeof input.collection === 'string'
-    ? await fetchCollectionV1(umi, input.collection as PublicKey)
-    : (input.collection as CollectionV1 | undefined);
+  const col =
+    typeof input.collection === 'string'
+      ? await fetchCollectionV1(umi, input.collection as PublicKey)
+      : (input.collection as CollectionV1 | undefined);
 
   await create(umi, {
     owner,

@@ -99,7 +99,7 @@ const advancedExamples = async () => {
     plugin: {
       type: 'FreezeDelegate',
       frozen: true,
-      
+
       // Optionally set the authority to a delegate who can unfreeze. If unset, this will be the Owner
       // This is functionally the same as calling addPlugin and approvePluginAuthority separately.
       // Freezing with a delegate is commonly used for escrowless staking programs.
@@ -107,7 +107,7 @@ const advancedExamples = async () => {
         type: 'Address',
         address: freezeDelegate.publicKey,
       },
-    }
+    },
   }).sendAndConfirm(umi);
 
   // Unfreezing an asset with a delegate
@@ -132,19 +132,18 @@ const advancedExamples = async () => {
     plugins: [
       {
         type: 'Royalties',
-          basisPoints: 500,
-          creators: [
-            {
-              address: creator1.publicKey,
-              percentage: 20,
-            },
-            {
-              address: creator2.publicKey,
-              percentage: 80,
-            },
-          ],
-          ruleSet: ruleSet('None'), // Compatibility rule set
-
+        basisPoints: 500,
+        creators: [
+          {
+            address: creator1.publicKey,
+            percentage: 20,
+          },
+          {
+            address: creator2.publicKey,
+            percentage: 80,
+          },
+        ],
+        ruleSet: ruleSet('None'), // Compatibility rule set
       },
     ],
   }).sendAndConfirm(umi);

@@ -2,11 +2,7 @@ import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 
 import { addPlugin } from '../../../src';
-import {
-  DEFAULT_ASSET,
-  assertAsset,
-  createUmi,
-} from '../../_setupRaw';
+import { DEFAULT_ASSET, assertAsset, createUmi } from '../../_setupRaw';
 import { createAsset } from '../../_setupSdk';
 
 test('it cannot add UA-managed plugin if addBlocker had been added on creation', async (t) => {
@@ -25,8 +21,7 @@ test('it cannot add UA-managed plugin if addBlocker had been added on creation',
     asset: asset.publicKey,
     plugin: {
       type: 'Attributes',
-        attributeList: [],
-
+      attributeList: [],
     },
   }).sendAndConfirm(umi);
 
@@ -43,9 +38,8 @@ test('it can add plugins unless AddBlocker is added', async (t) => {
     asset: asset.publicKey,
     plugin: {
       type: 'Attributes',
-      
-        attributeList: [],
-      
+
+      attributeList: [],
     },
   }).sendAndConfirm(umi);
 
@@ -77,9 +71,8 @@ test('it can add plugins unless AddBlocker is added', async (t) => {
     asset: asset.publicKey,
     plugin: {
       type: 'Attributes',
-      
-        attributeList: [],
-      
+
+      attributeList: [],
     },
   }).sendAndConfirm(umi);
 
@@ -102,7 +95,7 @@ test('it can add owner-managed plugins even if AddBlocker had been added', async
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: { type: 'FreezeDelegate', frozen: false } ,
+    plugin: { type: 'FreezeDelegate', frozen: false },
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {

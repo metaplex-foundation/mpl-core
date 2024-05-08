@@ -1,15 +1,8 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 
-import {
-  addPlugin,
-  update,
-} from '../../../src';
-import {
-  DEFAULT_ASSET,
-  assertAsset,
-  createUmi,
-} from '../../_setupRaw';
+import { addPlugin, update } from '../../../src';
+import { DEFAULT_ASSET, assertAsset, createUmi } from '../../_setupRaw';
 import { createAsset } from '../../_setupSdk';
 
 test('it can prevent the asset from metadata updating', async (t) => {

@@ -88,7 +88,7 @@ test('it prevents plugins from being added to both collection and plugins when c
       {
         type: 'AddBlocker',
         authority: {
-          type: 'UpdateAuthority'
+          type: 'UpdateAuthority',
         },
       },
     ],

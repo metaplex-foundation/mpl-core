@@ -117,7 +117,7 @@ test('it prevents both collection and asset from their meta updating when Immuta
       {
         type: 'ImmutableMetadata',
         authority: {
-          type: 'UpdateAuthority'
+          type: 'UpdateAuthority',
         },
       },
     ],

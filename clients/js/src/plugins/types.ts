@@ -81,10 +81,10 @@ export type CreatePluginArgs =
     }
   | {
       type: 'ImmutableMetadata';
-  }
+    }
   | {
       type: 'AddBlocker';
-  };
+    };
 
 export type AuthorityArgsV2 = {
   authority?: PluginAuthority;
@@ -129,9 +129,9 @@ export type AddablePluginArgsV2 =
   | {
       type: 'ImmutableMetadata';
     }
-     | {
+  | {
       type: 'AddBlocker';
-     }
+    };
 
 export type PluginArgsV2 = AddablePluginArgsV2 | CreateOnlyPluginArgsV2;
 export type PluginAuthorityPairArgsV2 = PluginArgsV2 & AuthorityArgsV2;

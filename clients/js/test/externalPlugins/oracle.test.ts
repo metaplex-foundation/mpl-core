@@ -2321,6 +2321,32 @@ test('it can update oracle to different size external plugin', async (t) => {
     ],
   }).sendAndConfirm(umi);
 
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+          update: [CheckResult.CAN_REJECT],
+          transfer: [CheckResult.CAN_REJECT],
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        pda: undefined,
+      },
+    ],
+  });
+
   await updatePlugin(umi, {
     asset: asset.publicKey,
 
