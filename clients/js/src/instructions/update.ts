@@ -12,8 +12,8 @@ export type UpdateArgs = Omit<
   Parameters<typeof updateV1>[1],
   'asset' | 'collection' | 'newName' | 'newUri'
 > & {
-  asset: AssetV1;
-  collection?: CollectionV1;
+  asset: Pick<AssetV1, 'publicKey' | 'owner' | 'oracles' | 'lifecycleHooks'>;
+  collection?: Pick<CollectionV1, 'publicKey' | 'oracles' | 'lifecycleHooks'>;
   name?: UpdateV1InstructionDataArgs['newName'];
   uri?: UpdateV1InstructionDataArgs['newUri'];
 };

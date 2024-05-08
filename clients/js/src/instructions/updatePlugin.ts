@@ -9,11 +9,15 @@ import {
 } from '../plugins';
 import { ExternalPluginUpdateInfoArgs } from '../plugins/externalPlugins';
 
+export type UpdatePluginArgsPlugin =
+  | PluginArgsV2
+  | ExternalPluginUpdateInfoArgs;
+
 export type UpdatePluginArgs = Omit<
   Parameters<typeof updatePluginV1>[1],
   'plugin'
 > & {
-  plugin: PluginArgsV2 | ExternalPluginUpdateInfoArgs;
+  plugin: UpdatePluginArgsPlugin;
 };
 
 export const updatePlugin = (

@@ -13,7 +13,7 @@ import {
 
 export type AddCollectionPluginArgs = Omit<
   Parameters<typeof addCollectionPluginV1>[1],
-  'plugin'
+  'plugin' | 'initAuthority'
 > & {
   plugin:
     | Exclude<AddablePluginArgsV2, { type: 'Edition ' }>

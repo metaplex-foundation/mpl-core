@@ -8,11 +8,15 @@ import {
   pluginAuthorityPairV2,
 } from '../plugins';
 
+export type AddPluginArgsPlugin =
+  | AddablePluginAuthorityPairArgsV2
+  | ExternalPluginInitInfoArgs;
+
 export type AddPluginArgs = Omit<
   Parameters<typeof addPluginV1>[1],
-  'plugin'
+  'plugin' | 'initAuthority'
 > & {
-  plugin: AddablePluginAuthorityPairArgsV2 | ExternalPluginInitInfoArgs;
+  plugin: AddPluginArgsPlugin;
 };
 
 export const addPlugin = (

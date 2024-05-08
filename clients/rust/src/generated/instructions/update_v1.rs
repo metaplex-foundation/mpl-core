@@ -6,8 +6,10 @@
 //!
 
 use crate::generated::types::UpdateAuthority;
-use borsh::BorshDeserialize;
-use borsh::BorshSerialize;
+#[cfg(feature = "anchor")]
+use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
+#[cfg(not(feature = "anchor"))]
+use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Accounts.
 pub struct UpdateV1 {
@@ -93,7 +95,8 @@ impl UpdateV1 {
     }
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
+#[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
+#[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 pub struct UpdateV1InstructionData {
     discriminator: u8,
 }
@@ -104,8 +107,10 @@ impl UpdateV1InstructionData {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
+#[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct UpdateV1InstructionArgs {
     pub new_name: Option<String>,
     pub new_uri: Option<String>,

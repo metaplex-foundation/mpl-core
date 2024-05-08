@@ -7,7 +7,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionPluginV1Accounts, UpdatePluginV1Accounts},
-    plugins::{Plugin, PluginType, RegistryRecord},
+    plugins::{Plugin, PluginHeaderV1, PluginRegistryV1, PluginType},
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
         load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
@@ -65,93 +65,18 @@ pub(crate) fn update_plugin<'a>(
         None,
     )?;
 
-    let mut plugin_registry = plugin_registry.ok_or(MplCoreError::PluginsNotInitialized)?;
-    let mut plugin_header = plugin_header.ok_or(MplCoreError::PluginsNotInitialized)?;
-
-    let plugin_registry_clone = plugin_registry.clone();
-    let plugin_type: PluginType = (&args.plugin).into();
-    let registry_record = plugin_registry_clone
-        .registry
-        .iter()
-        .find(|record| record.plugin_type == plugin_type)
-        .ok_or(MplCoreError::PluginNotFound)?;
-
-    let plugin = Plugin::load(ctx.accounts.asset, registry_record.offset)?;
-    let plugin_data = plugin.try_to_vec()?;
-    let new_plugin_data = args.plugin.try_to_vec()?;
-
-    // The difference in size between the new and old account which is used to calculate the new size of the account.
-    let plugin_size = plugin_data.len() as isize;
-    let size_diff = (new_plugin_data.len() as isize)
-        .checked_sub(plugin_size)
-        .ok_or(MplCoreError::NumericalOverflow)?;
-
-    // The new size of the account.
-    let new_size = (ctx.accounts.asset.data_len() as isize)
-        .checked_add(size_diff)
-        .ok_or(MplCoreError::NumericalOverflow)?;
-
-    // The new offset of the plugin registry is the old offset plus the size difference.
-    let registry_offset = plugin_header.plugin_registry_offset;
-    let new_registry_offset = (registry_offset as isize)
-        .checked_add(size_diff)
-        .ok_or(MplCoreError::NumericalOverflow)?;
-    plugin_header.plugin_registry_offset = new_registry_offset as usize;
-
-    // The offset of the first plugin is the plugin offset plus the size of the plugin.
-    let next_plugin_offset = (registry_record.offset as isize)
-        .checked_add(plugin_size)
-        .ok_or(MplCoreError::NumericalOverflow)?;
-
-    let new_next_plugin_offset = next_plugin_offset
-        .checked_add(size_diff)
-        .ok_or(MplCoreError::NumericalOverflow)?;
-
-    // //TODO: This is memory intensive, we should use memmove instead probably.
-    let src =
-        ctx.accounts.asset.data.borrow()[(next_plugin_offset as usize)..registry_offset].to_vec();
-
-    resize_or_reallocate_account(
-        ctx.accounts.asset,
-        ctx.accounts.payer,
-        ctx.accounts.system_program,
-        new_size as usize,
-    )?;
-
-    sol_memcpy(
-        &mut ctx.accounts.asset.data.borrow_mut()[(new_next_plugin_offset as usize)..],
-        &src,
-        src.len(),
-    );
-
-    plugin_header.save(ctx.accounts.asset, asset.get_size())?;
-    plugin_registry.registry = plugin_registry
-        .registry
-        .clone()
-        .iter_mut()
-        .map(|record| {
-            let new_offset = if record.offset > registry_record.offset {
-                (record.offset as isize)
-                    .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?
-            } else {
-                record.offset as isize
-            };
-            Ok(RegistryRecord {
-                plugin_type: record.plugin_type,
-                offset: new_offset as usize,
-                authority: record.authority,
-            })
-        })
-        .collect::<Result<Vec<_>, MplCoreError>>()?;
-    plugin_registry.save(ctx.accounts.asset, new_registry_offset as usize)?;
-    args.plugin
-        .save(ctx.accounts.asset, registry_record.offset)?;
-
     // Increment sequence number and save only if it is `Some(_)`.
     asset.increment_seq_and_save(ctx.accounts.asset)?;
 
-    process_update_plugin()
+    process_update_plugin(
+        asset,
+        args.plugin,
+        plugin_header,
+        plugin_registry,
+        ctx.accounts.asset,
+        ctx.accounts.payer,
+        ctx.accounts.system_program,
+    )
 }
 
 #[repr(C)]
@@ -196,22 +121,40 @@ pub(crate) fn update_collection_plugin<'a>(
         None,
     )?;
 
-    // let (collection, plugin_header, plugin_registry) =
-    //     fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;
+    process_update_plugin(
+        collection,
+        args.plugin,
+        plugin_header,
+        plugin_registry,
+        ctx.accounts.collection,
+        ctx.accounts.payer,
+        ctx.accounts.system_program,
+    )
+}
+
+fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
+    core: T,
+    new_plugin: Plugin,
+    plugin_header: Option<PluginHeaderV1>,
+    plugin_registry: Option<PluginRegistryV1>,
+    account: &AccountInfo<'a>,
+    payer: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+) -> ProgramResult {
     let mut plugin_registry = plugin_registry.ok_or(MplCoreError::PluginsNotInitialized)?;
     let mut plugin_header = plugin_header.ok_or(MplCoreError::PluginsNotInitialized)?;
 
     let plugin_registry_clone = plugin_registry.clone();
-    let plugin_type: PluginType = (&args.plugin).into();
+    let plugin_type: PluginType = (&new_plugin).into();
     let registry_record = plugin_registry_clone
         .registry
         .iter()
         .find(|record| record.plugin_type == plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
 
-    let plugin = Plugin::load(ctx.accounts.collection, registry_record.offset)?;
+    let plugin = Plugin::load(account, registry_record.offset)?;
     let plugin_data = plugin.try_to_vec()?;
-    let new_plugin_data = args.plugin.try_to_vec()?;
+    let new_plugin_data = new_plugin.try_to_vec()?;
 
     // The difference in size between the new and old account which is used to calculate the new size of the account.
     let plugin_size = plugin_data.len() as isize;
@@ -220,7 +163,7 @@ pub(crate) fn update_collection_plugin<'a>(
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     // The new size of the account.
-    let new_size = (ctx.accounts.collection.data_len() as isize)
+    let new_size = (account.data_len() as isize)
         .checked_add(size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
@@ -241,50 +184,41 @@ pub(crate) fn update_collection_plugin<'a>(
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     // //TODO: This is memory intensive, we should use memmove instead probably.
-    let src = ctx.accounts.collection.data.borrow()[(next_plugin_offset as usize)..registry_offset]
-        .to_vec();
+    let src = account.data.borrow()[(next_plugin_offset as usize)..registry_offset].to_vec();
 
-    resize_or_reallocate_account(
-        ctx.accounts.collection,
-        ctx.accounts.payer,
-        ctx.accounts.system_program,
-        new_size as usize,
-    )?;
+    resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
 
     sol_memcpy(
-        &mut ctx.accounts.collection.data.borrow_mut()[(new_next_plugin_offset as usize)..],
+        &mut account.data.borrow_mut()[(new_next_plugin_offset as usize)..],
         &src,
         src.len(),
     );
 
-    plugin_header.save(ctx.accounts.collection, collection.get_size())?;
-    plugin_registry.registry = plugin_registry
-        .registry
-        .clone()
-        .iter_mut()
-        .map(|record| {
-            let new_offset = if record.offset > registry_record.offset {
-                (record.offset as isize)
-                    .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?
-            } else {
-                record.offset as isize
-            };
-            Ok(RegistryRecord {
-                plugin_type: record.plugin_type,
-                offset: new_offset as usize,
-                authority: record.authority,
-            })
-        })
-        .collect::<Result<Vec<_>, MplCoreError>>()?;
-    plugin_registry.save(ctx.accounts.collection, new_registry_offset as usize)?;
-    args.plugin
-        .save(ctx.accounts.collection, registry_record.offset)?;
+    plugin_header.save(account, core.get_size())?;
 
-    process_update_plugin()
-}
+    // Move offsets for existing registry records.
+    for record in &mut plugin_registry.external_registry {
+        if registry_record.offset < record.offset {
+            let new_offset = (record.offset as isize)
+                .checked_add(size_diff)
+                .ok_or(MplCoreError::NumericalOverflow)?;
 
-//TODO
-fn process_update_plugin() -> ProgramResult {
+            record.offset = new_offset as usize;
+        }
+    }
+
+    for record in &mut plugin_registry.registry {
+        if registry_record.offset < record.offset {
+            let new_offset = (record.offset as isize)
+                .checked_add(size_diff)
+                .ok_or(MplCoreError::NumericalOverflow)?;
+
+            record.offset = new_offset as usize;
+        }
+    }
+
+    plugin_registry.save(account, new_registry_offset as usize)?;
+    new_plugin.save(account, registry_record.offset)?;
+
     Ok(())
 }

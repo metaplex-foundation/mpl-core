@@ -27,8 +27,10 @@ import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import {
   assertAsset,
   assertBurned,
+  assertCollection,
   createUmi as baseCreateUmi,
   DEFAULT_ASSET,
+  DEFAULT_COLLECTION,
 } from '../_setupRaw';
 import { createAsset, createAssetWithCollection } from '../_setupSdk';
 import {
@@ -41,6 +43,7 @@ import {
   update,
   addPlugin,
   updatePlugin,
+  fetchAssetV1,
 } from '../../src';
 
 const createUmi = async () =>
@@ -113,6 +116,22 @@ test('it can use fixed address oracle to deny update', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     name: 'new name 2',
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          update: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
   });
 });
 
@@ -190,6 +209,27 @@ test('it can use fixed address oracle to deny update via collection', async (t) 
     owner: umi.identity.publicKey,
     name: 'new name 2',
   });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          update: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
+  });
 });
 
 test('it can use fixed address oracle to deny transfer', async (t) => {
@@ -260,6 +300,22 @@ test('it can use fixed address oracle to deny transfer', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: newOwner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
   });
 });
 
@@ -320,6 +376,7 @@ test('it cannot add oracle with no lifecycle checks to asset', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: undefined,
   });
 });
 
@@ -344,11 +401,26 @@ test('it cannot update oracle to have no lifecycle checks', async (t) => {
     ],
   });
 
-  // TODO: Add external plugin validation.
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
   });
 
   // Oracle with no lifecycle checks
@@ -370,11 +442,26 @@ test('it cannot update oracle to have no lifecycle checks', async (t) => {
 
   await t.throwsAsync(result, { name: 'RequiresLifecycleCheck' });
 
-  // TODO: Add external plugin validation.
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
   });
 });
 
@@ -441,6 +528,7 @@ test('it cannot add oracle to asset that can approve', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: undefined,
   });
 
   // Oracle with `CheckResult.CAN_APPROVE`
@@ -464,6 +552,7 @@ test('it cannot add oracle to asset that can approve', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: undefined,
   });
 });
 
@@ -480,6 +569,7 @@ test('it cannot add oracle to asset that can approve in addition to reject', asy
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: undefined,
   });
 
   // Oracle with `CheckResult.CAN_APPROVE`
@@ -503,6 +593,7 @@ test('it cannot add oracle to asset that can approve in addition to reject', asy
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: undefined,
   });
 });
 
@@ -527,11 +618,26 @@ test('it cannot update oracle to approve', async (t) => {
     ],
   });
 
-  // TODO: Add external plugin validation.
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
   });
 
   const result = updatePlugin(umi, {
@@ -554,11 +660,26 @@ test('it cannot update oracle to approve', async (t) => {
 
   await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
 
-  // TODO: Add external plugin validation.
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
   });
 });
 
@@ -583,11 +704,26 @@ test('it cannot update oracle to approve in addition to reject', async (t) => {
     ],
   });
 
-  // TODO: Add external plugin validation.
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
   });
 
   const result = updatePlugin(umi, {
@@ -610,11 +746,26 @@ test('it cannot update oracle to approve in addition to reject', async (t) => {
 
   await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
 
-  // TODO: Add external plugin validation.
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
   });
 });
 
@@ -656,6 +807,7 @@ test('it cannot add oracle to asset that can listen', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: undefined,
   });
 
   // Oracle with `CheckResult.CAN_LISTEN`
@@ -679,6 +831,7 @@ test('it cannot add oracle to asset that can listen', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: undefined,
   });
 });
 
@@ -703,11 +856,26 @@ test('it cannot update oracle to listen', async (t) => {
     ],
   });
 
-  // TODO: Add external plugin validation.
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
   });
 
   const result = updatePlugin(umi, {
@@ -730,11 +898,26 @@ test('it cannot update oracle to listen', async (t) => {
 
   await t.throwsAsync(result, { name: 'OracleCanRejectOnly' });
 
-  // TODO: Add external plugin validation.
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: owner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
   });
 });
 
@@ -788,6 +971,22 @@ test('it cannot use fixed address oracle to deny transfer if not registered for 
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: newOwner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
   });
 });
 
@@ -866,6 +1065,22 @@ test('it can use fixed address oracle to deny create', async (t) => {
     ...DEFAULT_ASSET,
     asset: assetSigner.publicKey,
     owner: umi.identity.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
   });
 });
 
@@ -1018,6 +1233,24 @@ test('it can use preconfigured program pda oracle to deny update', async (t) => 
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     name: 'new name 2',
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+        lifecycleChecks: {
+          update: [CheckResult.CAN_REJECT],
+        },
+        pda: {
+          type: 'PreconfiguredProgram',
+        },
+      },
+    ],
   });
 });
 
@@ -1103,6 +1336,24 @@ test('it can use preconfigured collection pda oracle to deny update', async (t) 
     updateAuthority: { type: 'Collection', address: collection.publicKey },
     owner: umi.identity.publicKey,
     name: 'new name 2',
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+        lifecycleChecks: {
+          update: [CheckResult.CAN_REJECT],
+        },
+        pda: {
+          type: 'PreconfiguredCollection',
+        },
+      },
+    ],
   });
 });
 
@@ -1161,6 +1412,24 @@ test('it can use preconfigured owner pda oracle to deny burn', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+        lifecycleChecks: {
+          burn: [CheckResult.CAN_REJECT],
+        },
+        pda: {
+          type: 'PreconfiguredOwner',
+        },
+      },
+    ],
   });
 
   await preconfiguredOwnerPdaSet(umi, {
@@ -1261,6 +1530,24 @@ test('it can use preconfigured recipient pda oracle to deny transfer', async (t)
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: newOwner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: {
+          type: 'PreconfiguredRecipient',
+        },
+      },
+    ],
   });
 });
 
@@ -1339,6 +1626,24 @@ test('it can use preconfigured asset pda oracle to deny update', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     name: 'new name 2',
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+        lifecycleChecks: {
+          update: [CheckResult.CAN_REJECT],
+        },
+        pda: {
+          type: 'PreconfiguredAsset',
+        },
+      },
+    ],
   });
 });
 
@@ -1452,6 +1757,35 @@ test('it can use custom pda (all seeds) oracle to deny transfer', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: newOwner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: {
+          type: 'CustomPda',
+          seeds: [
+            { type: 'Collection' },
+            { type: 'Owner' },
+            { type: 'Recipient' },
+            { type: 'Asset' },
+            { type: 'Address', pubkey: seedPubkey },
+            {
+              type: 'Bytes',
+              bytes: new Uint8Array(Buffer.from('example-seed-bytes', 'utf8')),
+            },
+          ],
+        },
+      },
+    ],
   });
 });
 
@@ -1555,6 +1889,37 @@ test('it can use custom pda (typical) oracle to deny transfer', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: newOwner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: {
+          type: 'CustomPda',
+          seeds: [
+            {
+              type: 'Bytes',
+              bytes: new Uint8Array(Buffer.from('prefix-seed-bytes', 'utf8')),
+            },
+            { type: 'Collection' },
+            {
+              type: 'Bytes',
+              bytes: new Uint8Array(
+                Buffer.from('additional-bytes-seed-bytes', 'utf8')
+              ),
+            },
+          ],
+        },
+      },
+    ],
   });
 });
 
@@ -1688,6 +2053,25 @@ test('it can use preconfigured asset pda custom offset oracle to deny update', a
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     name: 'new name 2',
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Custom',
+          offset: 48n,
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+        lifecycleChecks: {
+          update: [CheckResult.CAN_REJECT],
+        },
+        pda: {
+          type: 'PreconfiguredAsset',
+        },
+      },
+    ],
   });
 });
 
@@ -1786,5 +2170,221 @@ test('it can use one fixed address oracle to deny transfer when a second oracle 
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: newOwner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account1.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+      },
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account2.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+      },
+    ],
+  });
+});
+
+test('it can update asset to different size name with oracle', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: oracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Rejected,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const asset = generateSigner(umi);
+  await create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          update: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await fixedAccountSet(umi, {
+    signer: umi.identity,
+    account: oracleSigner.publicKey,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const a = await fetchAssetV1(umi, asset.publicKey);
+
+  await update(umi, {
+    asset: a,
+    name: 'name 2',
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'name 2',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          update: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        pda: undefined,
+      },
+    ],
+  });
+});
+
+test('it can update oracle to different size external plugin', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: oracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Rejected,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const asset = generateSigner(umi);
+  await create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+          update: [CheckResult.CAN_REJECT],
+          transfer: [CheckResult.CAN_REJECT],
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+          update: [CheckResult.CAN_REJECT],
+          transfer: [CheckResult.CAN_REJECT],
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        pda: undefined,
+      },
+    ],
+  });
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+
+    plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: oracleSigner.publicKey,
+      },
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_REJECT],
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        pda: undefined,
+      },
+    ],
   });
 });

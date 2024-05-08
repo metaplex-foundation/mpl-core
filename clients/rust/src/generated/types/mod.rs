@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+pub(crate) mod r#add_blocker;
 pub(crate) mod r#attribute;
 pub(crate) mod r#attributes;
 pub(crate) mod r#burn_delegate;
@@ -29,6 +30,7 @@ pub(crate) mod r#freeze_delegate;
 pub(crate) mod r#hashable_plugin_schema;
 pub(crate) mod r#hashed_asset_schema;
 pub(crate) mod r#hookable_lifecycle_event;
+pub(crate) mod r#immutable_metadata;
 pub(crate) mod r#key;
 pub(crate) mod r#lifecycle_hook;
 pub(crate) mod r#lifecycle_hook_init_info;
@@ -55,6 +57,7 @@ pub(crate) mod r#update_delegate;
 pub(crate) mod r#validation_result;
 pub(crate) mod r#validation_results_offset;
 
+pub use self::r#add_blocker::*;
 pub use self::r#attribute::*;
 pub use self::r#attributes::*;
 pub use self::r#burn_delegate::*;
@@ -79,6 +82,7 @@ pub use self::r#freeze_delegate::*;
 pub use self::r#hashable_plugin_schema::*;
 pub use self::r#hashed_asset_schema::*;
 pub use self::r#hookable_lifecycle_event::*;
+pub use self::r#immutable_metadata::*;
 pub use self::r#key::*;
 pub use self::r#lifecycle_hook::*;
 pub use self::r#lifecycle_hook_init_info::*;

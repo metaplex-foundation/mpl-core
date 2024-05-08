@@ -7,8 +7,10 @@
 
 use crate::generated::types::ExternalPluginKey;
 use crate::generated::types::ExternalPluginUpdateInfo;
-use borsh::BorshDeserialize;
-use borsh::BorshSerialize;
+#[cfg(feature = "anchor")]
+use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
+#[cfg(not(feature = "anchor"))]
+use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Accounts.
 pub struct UpdateCollectionExternalPluginV1 {
@@ -85,7 +87,8 @@ impl UpdateCollectionExternalPluginV1 {
     }
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
+#[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
+#[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 pub struct UpdateCollectionExternalPluginV1InstructionData {
     discriminator: u8,
 }
@@ -96,8 +99,10 @@ impl UpdateCollectionExternalPluginV1InstructionData {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
+#[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct UpdateCollectionExternalPluginV1InstructionArgs {
     pub key: ExternalPluginKey,
     pub update_info: ExternalPluginUpdateInfo,

@@ -6,6 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+export * from './addBlocker';
 export * from './attribute';
 export * from './attributes';
 export * from './baseDataStore';
@@ -43,6 +44,7 @@ export * from './freezeDelegate';
 export * from './hashablePluginSchema';
 export * from './hashedAssetSchema';
 export * from './hookableLifecycleEvent';
+export * from './immutableMetadata';
 export * from './key';
 export * from './oracleValidation';
 export * from './permanentBurnDelegate';

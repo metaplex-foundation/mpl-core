@@ -10,15 +10,17 @@ import {
   externalPluginKeyToBase,
 } from '../plugins/externalPluginKey';
 
+export type RemovePluginArgsPlugin =
+  | {
+      type: Exclude<keyof typeof PluginType, 'Edition'>;
+    }
+  | ExternalPluginKey;
+
 export type RemovePluginArgs = Omit<
   Parameters<typeof removePluginV1>[1],
   'pluginType'
 > & {
-  plugin:
-    | {
-        type: Exclude<keyof typeof PluginType, 'Edition'>;
-      }
-    | ExternalPluginKey;
+  plugin: RemovePluginArgsPlugin;
 };
 
 export const removePlugin = (
