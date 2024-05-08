@@ -10,7 +10,12 @@ pub use asset::*;
 pub mod collection;
 pub use collection::*;
 
-use borsh::{BorshDeserialize, BorshSerialize};
+#[cfg(feature = "anchor")]
+use anchor_lang::prelude::{
+    AnchorDeserialize as CrateDeserialize, AnchorSerialize as CrateSerialize,
+};
+#[cfg(not(feature = "anchor"))]
+use borsh::{BorshDeserialize as CrateDeserialize, BorshSerialize as CrateSerialize};
 use num_traits::FromPrimitive;
 use std::{cmp::Ordering, mem::size_of};
 
@@ -110,7 +115,7 @@ pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, std::io::Er
 }
 
 /// A trait for generic blobs of data that have size.
-pub trait DataBlob: BorshSerialize + BorshDeserialize {
+pub trait DataBlob: CrateSerialize + CrateDeserialize {
     /// Get the size of an empty instance of the data blob.
     fn get_initial_size() -> usize;
     /// Get the current size of the data blob.
@@ -118,7 +123,7 @@ pub trait DataBlob: BorshSerialize + BorshDeserialize {
 }
 
 /// A trait for Solana accounts.
-pub trait SolanaAccount: BorshSerialize + BorshDeserialize {
+pub trait SolanaAccount: CrateSerialize + CrateDeserialize {
     /// Get the discriminator key for the account.
     fn key() -> Key;
 
