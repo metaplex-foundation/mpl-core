@@ -89,9 +89,18 @@ impl Oracle {
             .ok_or(MplCoreError::MissingExternalAccount)?;
 
         let offset = self.results_offset.to_offset_usize();
-        let validation_result =
-            OracleValidation::deserialize(&mut &(*oracle_account.data).borrow()[offset..])
-                .map_err(|_| MplCoreError::InvalidOracleAccountData)?;
+
+        let oracle_data = (*oracle_account.data).borrow();
+        let mut oracle_data_slice = oracle_data
+            .get(offset..)
+            .ok_or(MplCoreError::InvalidOracleAccountData)?;
+
+        if oracle_data_slice.len() < OracleValidation::serialized_size() {
+            return Err(MplCoreError::InvalidOracleAccountData.into());
+        }
+
+        let validation_result = OracleValidation::deserialize(&mut oracle_data_slice)
+            .map_err(|_| MplCoreError::InvalidOracleAccountData)?;
 
         match validation_result {
             OracleValidation::V1 {
@@ -187,4 +196,11 @@ pub enum OracleValidation {
         /// Validation for the update lifecycle action.
         update: ExternalValidationResult,
     },
+}
+
+impl OracleValidation {
+    /// Borsh- and Anchor-serialized size of the `OracleValidation` struct.
+    pub fn serialized_size() -> usize {
+        5
+    }
 }
