@@ -222,19 +222,21 @@ fn process_update_external_plugin<'a, T: DataBlob + SolanaAccount>(
     // Move offsets for existing registry records.
     for record in &mut plugin_registry.external_registry {
         if registry_record.offset < record.offset {
-            record
-                .offset
-                .checked_add(size_diff as usize)
+            let new_offset = (record.offset as isize)
+                .checked_add(size_diff)
                 .ok_or(MplCoreError::NumericalOverflow)?;
+
+            record.offset = new_offset as usize;
         }
     }
 
     for record in &mut plugin_registry.registry {
         if registry_record.offset < record.offset {
-            record
-                .offset
-                .checked_add(size_diff as usize)
+            let new_offset = (record.offset as isize)
+                .checked_add(size_diff)
                 .ok_or(MplCoreError::NumericalOverflow)?;
+
+            record.offset = new_offset as usize;
         }
     }
 
