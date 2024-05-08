@@ -2082,6 +2082,13 @@
       }
     },
     {
+      "name": "AddBlocker",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
       "name": "Attribute",
       "type": {
         "kind": "struct",
@@ -2208,6 +2215,13 @@
             "type": "bool"
           }
         ]
+      }
+    },
+    {
+      "name": "ImmutableMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": []
       }
     },
     {
@@ -3407,6 +3421,22 @@
                 "defined": "MasterEdition"
               }
             ]
+          },
+          {
+            "name": "AddBlocker",
+            "fields": [
+              {
+                "defined": "AddBlocker"
+              }
+            ]
+          },
+          {
+            "name": "ImmutableMetadata",
+            "fields": [
+              {
+                "defined": "ImmutableMetadata"
+              }
+            ]
           }
         ]
       }
@@ -3448,6 +3478,12 @@
           },
           {
             "name": "MasterEdition"
+          },
+          {
+            "name": "AddBlocker"
+          },
+          {
+            "name": "ImmutableMetadata"
           }
         ]
       }

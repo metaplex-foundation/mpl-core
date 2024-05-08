@@ -3,6 +3,7 @@ import { addPluginV1, addExternalPluginV1 } from '../generated';
 import {
   AddablePluginAuthorityPairArgsV2,
   ExternalPluginInitInfoArgs,
+  PluginAuthority,
   createExternalPluginInitInfo,
   isExternalPluginType,
   pluginAuthorityPairV2,
@@ -14,9 +15,10 @@ export type AddPluginArgsPlugin =
 
 export type AddPluginArgs = Omit<
   Parameters<typeof addPluginV1>[1],
-  'plugin'
+  'plugin' | 'initAuthority'
 > & {
   plugin: AddPluginArgsPlugin;
+  initAuthority?: PluginAuthority
 };
 
 export const addPlugin = (

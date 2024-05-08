@@ -19,6 +19,8 @@ import {
   BasePluginAuthority,
   BaseRoyaltiesArgs,
   BaseMasterEditionArgs,
+  AddBlocker,
+  ImmutableMetadata,
 } from '../generated';
 import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
 import { PluginAuthority } from './pluginAuthority';
@@ -76,7 +78,13 @@ export type CreatePluginArgs =
   | {
       type: 'MasterEdition';
       data: BaseMasterEditionArgs;
-    };
+    }
+  | {
+      type: 'ImmutableMetadata';
+  }
+  | {
+      type: 'AddBlocker';
+  };
 
 export type AuthorityArgsV2 = {
   authority?: PluginAuthority;
@@ -117,7 +125,13 @@ export type AddablePluginArgsV2 =
     } & AttributesArgs)
   | ({
       type: 'MasterEdition';
-    } & MasterEditionArgs);
+    } & MasterEditionArgs)
+  | {
+      type: 'ImmutableMetadata';
+    }
+     | {
+      type: 'AddBlocker';
+     }
 
 export type PluginArgsV2 = AddablePluginArgsV2 | CreateOnlyPluginArgsV2;
 export type PluginAuthorityPairArgsV2 = PluginArgsV2 & AuthorityArgsV2;
@@ -136,6 +150,8 @@ export type PermanentTransferDelegatePlugin = BasePlugin &
 export type PermanentBurnDelegatePlugin = BasePlugin & PermanentBurnDelegate;
 export type EditionPlugin = BasePlugin & Edition;
 export type MasterEditionPlugin = BasePlugin & MasterEdition;
+export type AddBlockerPlugin = BasePlugin & AddBlocker;
+export type ImmutableMetadataPlugin = BasePlugin & ImmutableMetadata;
 
 export type PluginsList = {
   royalties?: RoyaltiesPlugin;
@@ -149,4 +165,6 @@ export type PluginsList = {
   permanentBurnDelegate?: PermanentBurnDelegatePlugin;
   edition?: EditionPlugin;
   masterEdition?: MasterEditionPlugin;
+  addBlocker?: AddBlockerPlugin;
+  immutableMetadata?: ImmutableMetadataPlugin;
 };

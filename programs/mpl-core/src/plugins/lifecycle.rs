@@ -74,6 +74,7 @@ impl PluginType {
     /// Check permissions for the add plugin lifecycle event.
     pub fn check_add_plugin(plugin_type: &PluginType) -> CheckResult {
         match plugin_type {
+            PluginType::AddBlocker => CheckResult::CanReject,
             PluginType::Royalties => CheckResult::CanReject,
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
@@ -137,6 +138,7 @@ impl PluginType {
     pub fn check_update(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
+            PluginType::ImmutableMetadata => CheckResult::CanReject,
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             _ => CheckResult::None,
         }
@@ -230,6 +232,10 @@ impl Plugin {
             }
             Plugin::Edition(edition) => edition.validate_add_plugin(ctx),
             Plugin::MasterEdition(master_edition) => master_edition.validate_add_plugin(ctx),
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_add_plugin(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_add_plugin(ctx)
+            }
         }
     }
 
@@ -264,6 +270,10 @@ impl Plugin {
             }
             Plugin::Edition(edition) => edition.validate_remove_plugin(ctx),
             Plugin::MasterEdition(master_edition) => master_edition.validate_remove_plugin(ctx),
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_remove_plugin(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_remove_plugin(ctx)
+            }
         }
     }
 
@@ -304,6 +314,10 @@ impl Plugin {
             Plugin::MasterEdition(master_edition) => {
                 master_edition.validate_approve_plugin_authority(ctx)
             }
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_approve_plugin_authority(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_approve_plugin_authority(ctx)
+            }
         }
     }
 
@@ -343,6 +357,10 @@ impl Plugin {
             Plugin::MasterEdition(master_edition) => {
                 master_edition.validate_revoke_plugin_authority(ctx)
             }
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_revoke_plugin_authority(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_revoke_plugin_authority(ctx)
+            }
         }
     }
 
@@ -367,6 +385,10 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_create(ctx),
             Plugin::Edition(edition) => edition.validate_create(ctx),
             Plugin::MasterEdition(master_edition) => master_edition.validate_create(ctx),
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_create(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_create(ctx)
+            }
         }
     }
 
@@ -391,6 +413,10 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_update(ctx),
             Plugin::Edition(edition) => edition.validate_update(ctx),
             Plugin::MasterEdition(master_edition) => master_edition.validate_update(ctx),
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_update(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_update(ctx)
+            }
         }
     }
 
@@ -428,6 +454,10 @@ impl Plugin {
             }
             Plugin::Edition(edition) => edition.validate_update_plugin(ctx),
             Plugin::MasterEdition(master_edition) => master_edition.validate_update_plugin(ctx),
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_update_plugin(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_update_plugin(ctx)
+            }
         }?;
 
         match (&base_result, &result) {
@@ -471,6 +501,8 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_burn(ctx),
             Plugin::Edition(edition) => edition.validate_burn(ctx),
             Plugin::MasterEdition(master_edition) => master_edition.validate_burn(ctx),
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_burn(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.validate_burn(ctx),
         }
     }
 
@@ -495,6 +527,10 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(burn_transfer) => burn_transfer.validate_transfer(ctx),
             Plugin::Edition(edition) => edition.validate_transfer(ctx),
             Plugin::MasterEdition(master_edition) => master_edition.validate_transfer(ctx),
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_transfer(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_transfer(ctx)
+            }
         }
     }
 
@@ -519,6 +555,10 @@ impl Plugin {
             Plugin::PermanentBurnDelegate(burn_transfer) => burn_transfer.validate_compress(ctx),
             Plugin::Edition(edition) => edition.validate_compress(ctx),
             Plugin::MasterEdition(master_edition) => master_edition.validate_compress(ctx),
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_compress(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_compress(ctx)
+            }
         }
     }
 
@@ -545,6 +585,10 @@ impl Plugin {
             }
             Plugin::Edition(edition) => edition.validate_decompress(ctx),
             Plugin::MasterEdition(master_edition) => master_edition.validate_decompress(ctx),
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_decompress(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_decompress(ctx)
+            }
         }
     }
 
@@ -575,6 +619,10 @@ impl Plugin {
             Plugin::MasterEdition(master_edition) => {
                 master_edition.validate_add_external_plugin(ctx)
             }
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_add_external_plugin(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_add_external_plugin(ctx)
+            }
         }
     }
 
@@ -604,6 +652,10 @@ impl Plugin {
             Plugin::Edition(edition) => edition.validate_remove_external_plugin(ctx),
             Plugin::MasterEdition(master_edition) => {
                 master_edition.validate_remove_external_plugin(ctx)
+            }
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_remove_external_plugin(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_remove_external_plugin(ctx)
             }
         }
     }
@@ -645,6 +697,10 @@ impl Plugin {
             Plugin::Edition(edition) => edition.validate_update_external_plugin(ctx),
             Plugin::MasterEdition(master_edition) => {
                 master_edition.validate_update_external_plugin(ctx)
+            }
+            Plugin::AddBlocker(add_blocker) => add_blocker.validate_update_external_plugin(ctx),
+            Plugin::ImmutableMetadata(immutable_metadata) => {
+                immutable_metadata.validate_update_external_plugin(ctx)
             }
         }?;
 

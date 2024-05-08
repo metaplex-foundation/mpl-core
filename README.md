@@ -1,8 +1,5 @@
 # Mpl Core
 
-> [!WARNING]
-> Metaplex Core is currently undergoing audit. Use in production at your own risk.
-
 Digital Assets
 
 ## Documentation
