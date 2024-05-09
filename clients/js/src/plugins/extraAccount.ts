@@ -163,7 +163,7 @@ export function extraAccountToBase(s: ExtraAccount): BaseExtraAccount {
       __kind: 'CustomPda',
       ...acccountMeta,
       seeds: s.seeds.map(seedToBase),
-      customProgramId: someOrNone(s.customProgramId)
+      customProgramId: someOrNone(s.customProgramId),
     };
   }
   if (s.type === 'Address') {
