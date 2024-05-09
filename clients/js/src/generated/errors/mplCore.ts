@@ -556,6 +556,22 @@ export class InvalidOracleAccountDataError extends ProgramError {
 codeToErrorMap.set(0x26, InvalidOracleAccountDataError);
 nameToErrorMap.set('InvalidOracleAccountData', InvalidOracleAccountDataError);
 
+/** UninitializedOracleAccount: Oracle account is uninitialized */
+export class UninitializedOracleAccountError extends ProgramError {
+  override readonly name: string = 'UninitializedOracleAccount';
+
+  readonly code: number = 0x27; // 39
+
+  constructor(program: Program, cause?: Error) {
+    super('Oracle account is uninitialized', program, cause);
+  }
+}
+codeToErrorMap.set(0x27, UninitializedOracleAccountError);
+nameToErrorMap.set(
+  'UninitializedOracleAccount',
+  UninitializedOracleAccountError
+);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
