@@ -21,7 +21,7 @@ import {
   preconfiguredAssetPdaCustomOffsetSet,
   close,
 } from '@metaplex-foundation/mpl-core-oracle-example';
-import { generateSigner } from '@metaplex-foundation/umi';
+import { generateSigner, sol } from '@metaplex-foundation/umi';
 import { ExternalValidationResult } from '@metaplex-foundation/mpl-core-oracle-example/dist/src/hooked';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import {
@@ -45,6 +45,7 @@ import {
   updatePlugin,
   fetchAssetV1,
 } from '../../src';
+import { createAccount } from '@metaplex-foundation/mpl-toolbox';
 
 const createUmi = async () =>
   (await baseCreateUmi()).use(mplCoreOracleExample());
@@ -2387,4 +2388,141 @@ test('it can update oracle to different size external plugin', async (t) => {
       },
     ],
   });
+});
+
+test('create fails but does not panic when oracle account does not exist', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+
+  const asset = generateSigner(umi);
+  const result = create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+          update: [CheckResult.CAN_REJECT],
+          transfer: [CheckResult.CAN_REJECT],
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidOracleAccountData' });
+});
+
+test('transfer fails but does not panic when oracle account does not exist', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+      },
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: oracleSigner.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
+  });
+
+  const newOwner = generateSigner(umi);
+  const result = transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidOracleAccountData' });
+});
+
+test('transfer fails but does not panic when oracle account is too small', async (t) => {
+  const umi = await createUmi();
+  const newAccount = generateSigner(umi);
+
+  // Create an invalid oracle account that is an account with 3 bytes.
+  await createAccount(umi, {
+    newAccount,
+    lamports: sol(0.1),
+    space: 3,
+    programId: umi.programs.get('mplCore').publicKey,
+  }).sendAndConfirm(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'NoOffset',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: newAccount.publicKey,
+      },
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'NoOffset',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: newAccount.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: undefined,
+      },
+    ],
+  });
+
+  const newOwner = generateSigner(umi);
+  const result = transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidOracleAccountData' });
 });

@@ -4209,7 +4209,12 @@
     {
       "code": 37,
       "name": "DuplicateLifecycleChecks",
-      "msg": "Duplicate lifecycle checks were provided for external plugin "
+      "msg": "Duplicate lifecycle checks were provided for external plugin"
+    },
+    {
+      "code": 38,
+      "name": "InvalidOracleAccountData",
+      "msg": "Could not read from oracle account"
     }
   ],
   "metadata": {

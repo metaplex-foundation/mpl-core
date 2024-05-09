@@ -158,8 +158,12 @@ pub enum MplCoreError {
     RequiresLifecycleCheck,
 
     /// 37 - Duplicate lifecycle checks were provided for external plugin
-    #[error("Duplicate lifecycle checks were provided for external plugin ")]
+    #[error("Duplicate lifecycle checks were provided for external plugin")]
     DuplicateLifecycleChecks,
+
+    /// 38 - Could not read from oracle account
+    #[error("Could not read from oracle account")]
+    InvalidOracleAccountData,
 }
 
 impl PrintProgramError for MplCoreError {
