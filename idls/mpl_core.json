@@ -3639,6 +3639,12 @@
                 }
               },
               {
+                "name": "custom_program_id",
+                "type": {
+                  "option": "publicKey"
+                }
+              },
+              {
                 "name": "is_signer",
                 "type": "bool"
               },
