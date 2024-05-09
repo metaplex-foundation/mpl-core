@@ -2469,7 +2469,7 @@ test('transfer fails but does not panic when oracle account does not exist', asy
   await t.throwsAsync(result, { name: 'InvalidOracleAccountData' });
 });
 
-test('transferring an asset fails but does not panic when oracle account is too small', async (t) => {
+test('transfer fails but does not panic when oracle account is too small', async (t) => {
   const umi = await createUmi();
   const newAccount = generateSigner(umi);
 
