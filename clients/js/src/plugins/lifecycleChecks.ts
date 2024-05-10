@@ -1,10 +1,10 @@
 /* eslint-disable no-bitwise */
-import { AdapterCheckResult, HookableLifecycleEvent } from '../generated';
+import { ExternalPluginAdapterCheckResult, HookableLifecycleEvent } from '../generated';
 import { capitalizeFirstLetter } from '../utils';
 
 export type LifecycleEvent = 'create' | 'update' | 'transfer' | 'burn';
 
-// AdapterCheckResult is a bit array
+//  ExternalPluginAdapterCheckResult is a bit array
 export enum CheckResult {
   CAN_LISTEN,
   CAN_APPROVE,
@@ -12,7 +12,7 @@ export enum CheckResult {
 }
 
 export const adapterCheckResultToCheckResults = (
-  check: AdapterCheckResult
+  check: ExternalPluginAdapterCheckResult
 ): CheckResult[] => {
   const results: CheckResult[] = [];
   if (check.flags & 1) {
@@ -29,7 +29,7 @@ export const adapterCheckResultToCheckResults = (
 
 export const checkResultsToAdapterCheckResult = (
   results: CheckResult[]
-): AdapterCheckResult => {
+): ExternalPluginAdapterCheckResult => {
   let flags = 0;
   results.forEach((result) => {
     switch (result) {
@@ -70,7 +70,7 @@ export function hookableLifecycleEventToLifecycleCheckKey(
 
 export function lifecycleChecksToBase(
   l: LifecycleChecks
-): [HookableLifecycleEvent, AdapterCheckResult][] {
+): [HookableLifecycleEvent, ExternalPluginAdapterCheckResult][] {
   return Object.keys(l)
     .map((key) => {
       const k = key as keyof LifecycleChecks;
@@ -85,12 +85,12 @@ export function lifecycleChecksToBase(
     })
     .filter((x) => x !== null) as [
     HookableLifecycleEvent,
-    AdapterCheckResult,
+    ExternalPluginAdapterCheckResult,
   ][];
 }
 
 export function lifecycleChecksFromBase(
-  l: [HookableLifecycleEvent, AdapterCheckResult][]
+  l: [HookableLifecycleEvent, ExternalPluginAdapterCheckResult][]
 ): LifecycleChecks {
   const checks: LifecycleChecks = {};
   l.forEach(([event, check]) => {

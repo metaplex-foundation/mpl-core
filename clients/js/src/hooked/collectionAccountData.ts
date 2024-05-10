@@ -12,8 +12,8 @@ import {
   getCollectionV1AccountDataSerializer as genGetCollectionV1AccountDataSerializer,
 } from '../generated/types/collectionV1AccountData';
 import {
-  PluginAdaptersList,
-  adapterRegistryRecordsToPluginAdapterList,
+  ExternalPluginAdaptersList,
+  externalPluginAdapterRegistryRecordsToExternalPluginAdapterList,
   PluginsList,
   registryRecordsToPluginsList,
 } from '../plugins';
@@ -24,7 +24,7 @@ import {
 
 export type CollectionV1AccountData = GenCollectionV1AccountData &
   PluginsList &
-  PluginAdaptersList & {
+  ExternalPluginAdaptersList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
   };
 
@@ -62,7 +62,7 @@ export const getCollectionV1AccountDataSerializer = (): Serializer<
     let pluginHeader: PluginHeaderV1AccountData | undefined;
     let pluginRegistry: PluginRegistryV1AccountData | undefined;
     let pluginsList: PluginsList | undefined;
-    let pluginAdaptersList: PluginAdaptersList | undefined;
+    let externalPluginAdaptersList: ExternalPluginAdaptersList | undefined;
     let finalOffset = collectionOffset;
 
     if (buffer.length !== collectionOffset) {
@@ -82,8 +82,8 @@ export const getCollectionV1AccountDataSerializer = (): Serializer<
         buffer
       );
 
-      pluginAdaptersList = adapterRegistryRecordsToPluginAdapterList(
-        pluginRegistry.adapterRegistry,
+      externalPluginAdaptersList = externalPluginAdapterRegistryRecordsToExternalPluginAdapterList(
+        pluginRegistry.externalPluginAdapterRegistry,
         buffer
       );
     }
@@ -92,7 +92,7 @@ export const getCollectionV1AccountDataSerializer = (): Serializer<
       {
         pluginHeader,
         ...pluginsList,
-        ...pluginAdaptersList,
+        ...externalPluginAdaptersList,
         ...collection,
       },
       finalOffset,

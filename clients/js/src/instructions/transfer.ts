@@ -1,7 +1,7 @@
 import { Context, publicKey } from '@metaplex-foundation/umi';
 import { CollectionV1, transferV1, AssetV1 } from '../generated';
 import { findExtraAccounts } from '../plugins';
-import { derivePluginAdapters } from '../helpers';
+import { deriveExternalPluginAdapters } from '../helpers';
 
 export type TransferArgs = Omit<
   Parameters<typeof transferV1>[1],
@@ -15,12 +15,12 @@ export const transfer = (
   context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
   { asset, collection, ...args }: TransferArgs
 ) => {
-  const derivedPluginAdapters = derivePluginAdapters(asset, collection);
+  const derivedExternalPluginAdapters = deriveExternalPluginAdapters(asset, collection);
 
   const extraAccounts = findExtraAccounts(
     context,
     'transfer',
-    derivedPluginAdapters,
+    derivedExternalPluginAdapters,
     {
       asset: asset.publicKey,
       collection: collection?.publicKey,

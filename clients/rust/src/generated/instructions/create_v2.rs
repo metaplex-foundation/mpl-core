@@ -6,7 +6,7 @@
 //!
 
 use crate::generated::types::DataState;
-use crate::generated::types::PluginAdapterInitInfo;
+use crate::generated::types::ExternalPluginAdapterInitInfo;
 use crate::generated::types::PluginAuthorityPair;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
@@ -143,7 +143,7 @@ pub struct CreateV2InstructionArgs {
     pub name: String,
     pub uri: String,
     pub plugins: Option<Vec<PluginAuthorityPair>>,
-    pub plugin_adapters: Option<Vec<PluginAdapterInitInfo>>,
+    pub external_plugin_adapters: Option<Vec<ExternalPluginAdapterInitInfo>>,
 }
 
 /// Instruction builder for `CreateV2`.
@@ -172,7 +172,7 @@ pub struct CreateV2Builder {
     name: Option<String>,
     uri: Option<String>,
     plugins: Option<Vec<PluginAuthorityPair>>,
-    plugin_adapters: Option<Vec<PluginAdapterInitInfo>>,
+    external_plugin_adapters: Option<Vec<ExternalPluginAdapterInitInfo>>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -264,8 +264,11 @@ impl CreateV2Builder {
     }
     /// `[optional argument]`
     #[inline(always)]
-    pub fn plugin_adapters(&mut self, plugin_adapters: Vec<PluginAdapterInitInfo>) -> &mut Self {
-        self.plugin_adapters = Some(plugin_adapters);
+    pub fn external_plugin_adapters(
+        &mut self,
+        external_plugin_adapters: Vec<ExternalPluginAdapterInitInfo>,
+    ) -> &mut Self {
+        self.external_plugin_adapters = Some(external_plugin_adapters);
         self
     }
     /// Add an aditional account to the instruction.
@@ -305,7 +308,7 @@ impl CreateV2Builder {
             name: self.name.clone().expect("name is not set"),
             uri: self.uri.clone().expect("uri is not set"),
             plugins: self.plugins.clone(),
-            plugin_adapters: self.plugin_adapters.clone(),
+            external_plugin_adapters: self.external_plugin_adapters.clone(),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -555,7 +558,7 @@ impl<'a, 'b> CreateV2CpiBuilder<'a, 'b> {
             name: None,
             uri: None,
             plugins: None,
-            plugin_adapters: None,
+            external_plugin_adapters: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -655,8 +658,11 @@ impl<'a, 'b> CreateV2CpiBuilder<'a, 'b> {
     }
     /// `[optional argument]`
     #[inline(always)]
-    pub fn plugin_adapters(&mut self, plugin_adapters: Vec<PluginAdapterInitInfo>) -> &mut Self {
-        self.instruction.plugin_adapters = Some(plugin_adapters);
+    pub fn external_plugin_adapters(
+        &mut self,
+        external_plugin_adapters: Vec<ExternalPluginAdapterInitInfo>,
+    ) -> &mut Self {
+        self.instruction.external_plugin_adapters = Some(external_plugin_adapters);
         self
     }
     /// Add an additional account to the instruction.
@@ -709,7 +715,7 @@ impl<'a, 'b> CreateV2CpiBuilder<'a, 'b> {
             name: self.instruction.name.clone().expect("name is not set"),
             uri: self.instruction.uri.clone().expect("uri is not set"),
             plugins: self.instruction.plugins.clone(),
-            plugin_adapters: self.instruction.plugin_adapters.clone(),
+            external_plugin_adapters: self.instruction.external_plugin_adapters.clone(),
         };
         let instruction = CreateV2Cpi {
             __program: self.instruction.__program,
@@ -755,7 +761,7 @@ struct CreateV2CpiBuilderInstruction<'a, 'b> {
     name: Option<String>,
     uri: Option<String>,
     plugins: Option<Vec<PluginAuthorityPair>>,
-    plugin_adapters: Option<Vec<PluginAdapterInitInfo>>,
+    external_plugin_adapters: Option<Vec<ExternalPluginAdapterInitInfo>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

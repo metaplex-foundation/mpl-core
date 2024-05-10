@@ -15,29 +15,31 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  AdapterCheckResult,
-  AdapterCheckResultArgs,
   BaseExtraAccount,
   BaseExtraAccountArgs,
   BaseValidationResultsOffset,
   BaseValidationResultsOffsetArgs,
+  ExternalPluginAdapterCheckResult,
+  ExternalPluginAdapterCheckResultArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
-  getAdapterCheckResultSerializer,
   getBaseExtraAccountSerializer,
   getBaseValidationResultsOffsetSerializer,
+  getExternalPluginAdapterCheckResultSerializer,
   getHookableLifecycleEventSerializer,
 } from '.';
 
 export type BaseOracleUpdateInfo = {
-  lifecycleChecks: Option<Array<[HookableLifecycleEvent, AdapterCheckResult]>>;
+  lifecycleChecks: Option<
+    Array<[HookableLifecycleEvent, ExternalPluginAdapterCheckResult]>
+  >;
   baseAddressConfig: Option<BaseExtraAccount>;
   resultsOffset: Option<BaseValidationResultsOffset>;
 };
 
 export type BaseOracleUpdateInfoArgs = {
   lifecycleChecks: OptionOrNullable<
-    Array<[HookableLifecycleEventArgs, AdapterCheckResultArgs]>
+    Array<[HookableLifecycleEventArgs, ExternalPluginAdapterCheckResultArgs]>
   >;
   baseAddressConfig: OptionOrNullable<BaseExtraAccountArgs>;
   resultsOffset: OptionOrNullable<BaseValidationResultsOffsetArgs>;
@@ -55,7 +57,7 @@ export function getBaseOracleUpdateInfoSerializer(): Serializer<
           array(
             tuple([
               getHookableLifecycleEventSerializer(),
-              getAdapterCheckResultSerializer(),
+              getExternalPluginAdapterCheckResultSerializer(),
             ])
           )
         ),

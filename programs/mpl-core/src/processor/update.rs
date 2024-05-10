@@ -8,7 +8,8 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionV1Accounts, UpdateV1Accounts},
     plugins::{
-        HookableLifecycleEvent, Plugin, PluginAdapter, PluginHeaderV1, PluginRegistryV1, PluginType,
+        ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
+        PluginType,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
@@ -62,7 +63,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
         AssetV1::validate_update,
         CollectionV1::validate_update,
         Plugin::validate_update,
-        Some(PluginAdapter::validate_update),
+        Some(ExternalPluginAdapter::validate_update),
         Some(HookableLifecycleEvent::Update),
     )?;
 
@@ -148,7 +149,7 @@ pub(crate) fn update_collection<'a>(
         PluginType::check_update,
         CollectionV1::validate_update,
         Plugin::validate_update,
-        Some(PluginAdapter::validate_update),
+        Some(ExternalPluginAdapter::validate_update),
         Some(HookableLifecycleEvent::Update),
     )?;
 
@@ -237,7 +238,7 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
         plugin_header.save(account, new_core_size as usize)?;
 
         // Move offsets for existing registry records.
-        for record in &mut plugin_registry.adapter_registry {
+        for record in &mut plugin_registry.external_plugin_adapter_registry {
             let new_offset = (record.offset as isize)
                 .checked_add(size_diff)
                 .ok_or(MplCoreError::NumericalOverflow)?;

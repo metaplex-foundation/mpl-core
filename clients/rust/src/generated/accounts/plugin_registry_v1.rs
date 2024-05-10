@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::AdapterRegistryRecord;
+use crate::generated::types::ExternalPluginAdapterRegistryRecord;
 use crate::generated::types::Key;
 use crate::generated::types::RegistryRecord;
 #[cfg(feature = "anchor")]
@@ -20,7 +20,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub struct PluginRegistryV1 {
     pub key: Key,
     pub registry: Vec<RegistryRecord>,
-    pub adapter_registry: Vec<AdapterRegistryRecord>,
+    pub external_plugin_adapter_registry: Vec<ExternalPluginAdapterRegistryRecord>,
 }
 
 impl PluginRegistryV1 {

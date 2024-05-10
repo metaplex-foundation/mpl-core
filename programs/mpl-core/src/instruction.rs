@@ -3,15 +3,16 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
 use crate::processor::{
-    AddCollectionPluginAdapterV1Args, AddCollectionPluginV1Args, AddPluginAdapterV1Args,
-    AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args, ApprovePluginAuthorityV1Args,
-    BurnCollectionV1Args, BurnV1Args, CompressV1Args, CreateCollectionV1Args,
-    CreateCollectionV2Args, CreateV1Args, CreateV2Args, DecompressV1Args,
-    RemoveCollectionPluginAdapterV1Args, RemoveCollectionPluginV1Args, RemovePluginAdapterV1Args,
-    RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args, RevokePluginAuthorityV1Args,
-    TransferV1Args, UpdateCollectionPluginAdapterV1Args, UpdateCollectionPluginV1Args,
-    UpdateCollectionV1Args, UpdatePluginAdapterV1Args, UpdatePluginV1Args, UpdateV1Args,
-    WriteCollectionPluginAdapterDataV1Args, WritePluginAdapterDataV1Args,
+    AddCollectionExternalPluginAdapterV1Args, AddCollectionPluginV1Args,
+    AddExternalPluginAdapterV1Args, AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args,
+    ApprovePluginAuthorityV1Args, BurnCollectionV1Args, BurnV1Args, CompressV1Args,
+    CreateCollectionV1Args, CreateCollectionV2Args, CreateV1Args, CreateV2Args, DecompressV1Args,
+    RemoveCollectionExternalPluginAdapterV1Args, RemoveCollectionPluginV1Args,
+    RemoveExternalPluginAdapterV1Args, RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args,
+    RevokePluginAuthorityV1Args, TransferV1Args, UpdateCollectionExternalPluginAdapterV1Args,
+    UpdateCollectionPluginV1Args, UpdateCollectionV1Args, UpdateExternalPluginAdapterV1Args,
+    UpdatePluginV1Args, UpdateV1Args, WriteCollectionExternalPluginAdapterDataV1Args,
+    WriteExternalPluginAdapterDataV1Args,
 };
 
 /// Instructions supported by the mpl-core program.
@@ -193,7 +194,7 @@ pub(crate) enum MplAssetInstruction {
     Collect,
 
     /// Create a new mpl-core Asset V2.
-    /// This function creates the initial Asset, with or without internal/plugin adapters.
+    /// This function creates the initial Asset, with or without internal/external plugin adapters.
     #[account(0, writable, signer, name="asset", desc = "The address of the new asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, optional, signer, name="authority", desc = "The authority signing for creation")]
@@ -205,78 +206,78 @@ pub(crate) enum MplAssetInstruction {
     CreateV2(CreateV2Args),
 
     /// Create a new mpl-core Collection V2.
-    /// This function creates the initial Collection, with or without internal/plugin adapters.
+    /// This function creates the initial Collection, with or without internal/external plugin adapters.
     #[account(0, writable, signer, name="collection", desc = "The address of the new asset")]
     #[account(1, optional, name="update_authority", desc = "The authority of the new asset")]
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, name="system_program", desc = "The system program")]
     CreateCollectionV2(CreateCollectionV2Args),
 
-    /// Add a plugin adapter to an mpl-core.
+    /// Add a external plugin adapter to an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    AddPluginAdapterV1(AddPluginAdapterV1Args),
+    AddExternalPluginAdapterV1(AddExternalPluginAdapterV1Args),
 
-    /// Add a plugin adapter to an mpl-core Collection.
+    /// Add a external plugin adapter to an mpl-core Collection.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
     #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(2, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    AddCollectionPluginAdapterV1(AddCollectionPluginAdapterV1Args),
+    AddCollectionExternalPluginAdapterV1(AddCollectionExternalPluginAdapterV1Args),
 
-    /// Remove a plugin adapter from an mpl-core.
+    /// Remove a external plugin adapter from an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    RemovePluginAdapterV1(RemovePluginAdapterV1Args),
+    RemoveExternalPluginAdapterV1(RemoveExternalPluginAdapterV1Args),
 
-    /// Remove a plugin adapter from an mpl-core Collection.
+    /// Remove a external plugin adapter from an mpl-core Collection.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
     #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(2, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    RemoveCollectionPluginAdapterV1(RemoveCollectionPluginAdapterV1Args),
+    RemoveCollectionExternalPluginAdapterV1(RemoveCollectionExternalPluginAdapterV1Args),
 
-    /// Update the data for a plugin adapter of an mpl-core.
+    /// Update the data for a external plugin adapter of an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    UpdatePluginAdapterV1(UpdatePluginAdapterV1Args),
+    UpdateExternalPluginAdapterV1(UpdateExternalPluginAdapterV1Args),
 
-    /// Update the data for a plugin adapter of an mpl-core Collection.
+    /// Update the data for a external plugin adapter of an mpl-core Collection.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
     #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(2, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    UpdateCollectionPluginAdapterV1(UpdateCollectionPluginAdapterV1Args),
+    UpdateCollectionExternalPluginAdapterV1(UpdateCollectionExternalPluginAdapterV1Args),
 
-    /// Add a plugin adapter to an mpl-core.
+    /// Add a external plugin adapter to an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
-    #[account(3, optional, signer, name="authority", desc = "The Data Authority of the Plugin Adapter")]
+    #[account(3, optional, signer, name="authority", desc = "The Data Authority of the External PluginExternalPluginAdapter")]
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    WritePluginAdapterDataV1(WritePluginAdapterDataV1Args),
+    WriteExternalPluginAdapterDataV1(WriteExternalPluginAdapterDataV1Args),
 
-    /// Add a plugin adapter to an mpl-core.
+    /// Add a external plugin adapter to an mpl-core.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
     #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
-    #[account(2, optional, signer, name="authority", desc = "The Data Authority of the Plugin Adapter")]
+    #[account(2, optional, signer, name="authority", desc = "The Data Authority of the External PluginExternalPluginAdapter")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
-    WriteCollectionPluginAdapterDataV1(WriteCollectionPluginAdapterDataV1Args),
+    WriteCollectionExternalPluginAdapterDataV1(WriteCollectionExternalPluginAdapterDataV1Args),
 }

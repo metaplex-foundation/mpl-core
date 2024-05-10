@@ -2,7 +2,7 @@ import { Context, PublicKey } from '@metaplex-foundation/umi';
 import {
   AssetV1,
   CollectionV1,
-  AdapterValidationResult,
+ ExternalPluginAdapterValidationResult,
   PluginType,
 } from '../generated';
 import { deriveAssetPlugins, isFrozen } from './state';
@@ -23,7 +23,7 @@ export enum LifecycleValidationError {
 
 /**
  * Check if the given authority is eligible to transfer the asset.
- * This does NOT check the asset's royalty rule sets or plugin adapters. Use `validateTransfer` for more comprehensive checks.
+ * This does NOT check the asset's royalty rule sets or external plugin adapters. Use `validateTransfer` for more comprehensive checks.
  * @deprecated since v1.0.0. Use `validateTransfer` instead.
  * @param {PublicKey | string} authority Pubkey
  * @param {AssetV1} asset Asset
@@ -156,7 +156,7 @@ export async function validateTransfer(
         if (v?.__kind === 'Uninitialized') {
           return false;
         }
-        return v?.transfer === AdapterValidationResult.Pass;
+        return v?.transfer ===ExternalPluginAdapterValidationResult.Pass;
       });
       if (!oraclePass) {
         return LifecycleValidationError.OracleValidationFailed;
@@ -182,7 +182,7 @@ export async function validateTransfer(
 
 /**
  * Check if the given pubkey is eligible to burn the asset.
- * This does NOT check plugin adapters, use `validateBurn` for more comprehensive checks.
+ * This does NOT check external plugin adapters, use `validateBurn` for more comprehensive checks.
  * @deprecated since v1.0.0. Use `validateBurn` instead.
  * @param {PublicKey | string} authority Pubkey
  * @param {AssetV1} asset Asset
@@ -295,7 +295,7 @@ export async function validateBurn(
         if (v?.__kind === 'Uninitialized') {
           return false;
         }
-        return v?.burn === AdapterValidationResult.Pass;
+        return v?.burn ===ExternalPluginAdapterValidationResult.Pass;
       });
       if (!oraclePass) {
         return LifecycleValidationError.OracleValidationFailed;
@@ -321,7 +321,7 @@ export async function validateBurn(
 
 /**
  * Check if the given pubkey is eligible to update the asset.
- * This does NOT check plugin adapters. Use `validateUpdate` for more comprehensive checks.
+ * This does NOT check external plugin adapters. Use `validateUpdate` for more comprehensive checks.
  * @deprecated since v1.0.0. Use `validateTransfer` instead.
  * @param {PublicKey | string} authority Pubkey
  * @param {AssetV1} asset Asset
@@ -387,7 +387,7 @@ export async function validateUpdate(
         if (v?.__kind === 'Uninitialized') {
           return false;
         }
-        return v?.update === AdapterValidationResult.Pass;
+        return v?.update ===ExternalPluginAdapterValidationResult.Pass;
       });
 
       if (!oraclePass) {

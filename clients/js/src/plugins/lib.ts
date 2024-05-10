@@ -8,7 +8,7 @@ import {
   RegistryRecord,
   PluginAuthorityPair,
   PluginType,
-  PluginAdapterSchema,
+  ExternalPluginAdapterSchema,
 } from '../generated';
 
 import { toWords } from '../utils';
@@ -188,9 +188,9 @@ export function pluginKeyToPluginType(pluginKey: keyof PluginsList) {
     pluginKey.slice(1)) as keyof typeof PluginType;
 }
 
-export function parsePluginAdapterData(
+export function parseExternalPluginAdapterData(
   plugin: {
-    schema: PluginAdapterSchema;
+    schema: ExternalPluginAdapterSchema;
   },
   record: {
     dataLen: Option<bigint | number>;
@@ -204,11 +204,11 @@ export function parsePluginAdapterData(
     Number(record.dataOffset) + Number(record.dataLen)
   );
 
-  if (plugin.schema === PluginAdapterSchema.Binary) {
+  if (plugin.schema === ExternalPluginAdapterSchema.Binary) {
     data = dataSlice;
-  } else if (plugin.schema === PluginAdapterSchema.Json) {
+  } else if (plugin.schema === ExternalPluginAdapterSchema.Json) {
     data = JSON.parse(new TextDecoder().decode(dataSlice));
-  } else if (plugin.schema === PluginAdapterSchema.MsgPack) {
+  } else if (plugin.schema === ExternalPluginAdapterSchema.MsgPack) {
     // eslint-disable-next-line no-console
     console.warn(
       'MsgPack schema currently not supported, falling back to binary'

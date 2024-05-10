@@ -9,15 +9,15 @@ import {
   BaseOracle,
   BaseOracleInitInfoArgs,
   BaseOracleUpdateInfoArgs,
-  AdapterRegistryRecord,
+  ExternalPluginAdapterRegistryRecord,
   getOracleValidationSerializer,
   OracleValidation,
 } from '../generated';
 import { LifecycleChecks, lifecycleChecksToBase } from './lifecycleChecks';
 import { PluginAuthority, pluginAuthorityToBase } from './pluginAuthority';
-import { PluginAdapterManifest } from './pluginAdapterManifest';
-import { BasePluginAdapter } from './pluginAdapters';
-import { PluginAdapterKey } from './pluginAdapterKey';
+import { ExternalPluginAdapterManifest } from './externalPluginAdapterManifest';
+import { BaseExternalPluginAdapter } from './externalPluginAdapters';
+import { ExternalPluginAdapterKey } from './externalPluginAdapterKey';
 import {
   ValidationResultsOffset,
   validationResultsOffsetFromBase,
@@ -29,7 +29,7 @@ export type Oracle = Omit<BaseOracle, 'baseAddressConfig' | 'resultsOffset'> & {
   resultsOffset: ValidationResultsOffset;
 };
 
-export type OraclePlugin = BasePluginAdapter &
+export type OraclePlugin = BaseExternalPluginAdapter &
   Oracle & {
     type: 'Oracle';
   };
@@ -52,7 +52,7 @@ export type OracleUpdateInfoArgs = Omit<
   BaseOracleUpdateInfoArgs,
   'lifecycleChecks' | 'baseAddressConfig' | 'resultsOffset'
 > & {
-  key: PluginAdapterKey;
+  key: ExternalPluginAdapterKey;
   lifecycleChecks?: LifecycleChecks;
   baseAddressConfig?: ExtraAccount;
   resultsOffset?: ValidationResultsOffset;
@@ -94,7 +94,7 @@ export function oracleUpdateInfoArgsToBase(
 
 export function oracleFromBase(
   s: BaseOracle,
-  r: AdapterRegistryRecord,
+  r: ExternalPluginAdapterRegistryRecord,
   account: Uint8Array
 ): Oracle {
   return {
@@ -141,7 +141,7 @@ export function deserializeOracleValidation(
   return getOracleValidationSerializer().deserialize(data, offs)[0];
 }
 
-export const oracleManifest: PluginAdapterManifest<
+export const oracleManifest: ExternalPluginAdapterManifest<
   Oracle,
   BaseOracle,
   OracleInitInfoArgs,

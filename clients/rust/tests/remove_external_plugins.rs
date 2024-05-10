@@ -1,12 +1,12 @@
 #![cfg(feature = "test-sbf")]
 pub mod setup;
 use mpl_core::{
-    instructions::RemovePluginAdapterV1Builder,
+    instructions::RemoveExternalPluginAdapterV1Builder,
     types::{
-        AdapterCheckResult, DataStore, DataStoreInitInfo, HookableLifecycleEvent, LifecycleHook,
-        LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAdapter, PluginAdapterInitInfo,
-        PluginAdapterKey, PluginAdapterSchema, PluginAuthority, UpdateAuthority,
-        ValidationResultsOffset,
+        DataStore, DataStoreInitInfo, ExternalPluginAdapter, ExternalPluginAdapterCheckResult,
+        ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
+        HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle, OracleInitInfo,
+        PluginAuthority, UpdateAuthority, ValidationResultsOffset,
     },
 };
 pub use setup::*;
@@ -34,13 +34,13 @@ async fn test_remove_lifecycle_hook() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            plugin_adapters: vec![PluginAdapterInitInfo::LifecycleHook(
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::LifecycleHook(
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     lifecycle_checks: vec![(
                         HookableLifecycleEvent::Transfer,
-                        AdapterCheckResult { flags: 1 },
+                        ExternalPluginAdapterCheckResult { flags: 1 },
                     )],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
@@ -63,20 +63,20 @@ async fn test_remove_lifecycle_hook() {
             name: None,
             uri: None,
             plugins: vec![],
-            plugin_adapters: vec![PluginAdapter::LifecycleHook(LifecycleHook {
+            external_plugin_adapters: vec![ExternalPluginAdapter::LifecycleHook(LifecycleHook {
                 hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                 extra_accounts: None,
                 data_authority: Some(PluginAuthority::UpdateAuthority),
-                schema: PluginAdapterSchema::Binary,
+                schema: ExternalPluginAdapterSchema::Binary,
             })],
         },
     )
     .await;
 
-    let ix = RemovePluginAdapterV1Builder::new()
+    let ix = RemoveExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .key(PluginAdapterKey::LifecycleHook(pubkey!(
+        .key(ExternalPluginAdapterKey::LifecycleHook(pubkey!(
             "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
         )))
         .instruction();
@@ -99,7 +99,7 @@ async fn test_remove_lifecycle_hook() {
             name: None,
             uri: None,
             plugins: vec![],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
@@ -123,12 +123,12 @@ async fn test_remove_oracle() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            plugin_adapters: vec![PluginAdapterInitInfo::Oracle(OracleInitInfo {
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::Oracle(OracleInitInfo {
                 base_address: Pubkey::default(),
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 lifecycle_checks: vec![(
                     HookableLifecycleEvent::Transfer,
-                    AdapterCheckResult { flags: 4 },
+                    ExternalPluginAdapterCheckResult { flags: 4 },
                 )],
                 base_address_config: None,
                 results_offset: None,
@@ -149,7 +149,7 @@ async fn test_remove_oracle() {
             name: None,
             uri: None,
             plugins: vec![],
-            plugin_adapters: vec![PluginAdapter::Oracle(Oracle {
+            external_plugin_adapters: vec![ExternalPluginAdapter::Oracle(Oracle {
                 base_address: Pubkey::default(),
                 base_address_config: None,
                 results_offset: ValidationResultsOffset::NoOffset,
@@ -158,10 +158,10 @@ async fn test_remove_oracle() {
     )
     .await;
 
-    let ix = RemovePluginAdapterV1Builder::new()
+    let ix = RemoveExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .key(PluginAdapterKey::Oracle(Pubkey::default()))
+        .key(ExternalPluginAdapterKey::Oracle(Pubkey::default()))
         .instruction();
 
     let tx = Transaction::new_signed_with_payer(
@@ -182,7 +182,7 @@ async fn test_remove_oracle() {
             name: None,
             uri: None,
             plugins: vec![],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
@@ -207,11 +207,13 @@ async fn test_remove_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            plugin_adapters: vec![PluginAdapterInitInfo::DataStore(DataStoreInitInfo {
-                init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-                data_authority: PluginAuthority::UpdateAuthority,
-                schema: None,
-            })],
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::DataStore(
+                DataStoreInitInfo {
+                    init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                    data_authority: PluginAuthority::UpdateAuthority,
+                    schema: None,
+                },
+            )],
         },
     )
     .await
@@ -228,18 +230,18 @@ async fn test_remove_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            plugin_adapters: vec![PluginAdapter::DataStore(DataStore {
+            external_plugin_adapters: vec![ExternalPluginAdapter::DataStore(DataStore {
                 data_authority: PluginAuthority::UpdateAuthority,
-                schema: PluginAdapterSchema::Binary,
+                schema: ExternalPluginAdapterSchema::Binary,
             })],
         },
     )
     .await;
 
-    let ix = RemovePluginAdapterV1Builder::new()
+    let ix = RemoveExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .key(PluginAdapterKey::DataStore(
+        .key(ExternalPluginAdapterKey::DataStore(
             PluginAuthority::UpdateAuthority,
         ))
         .instruction();
@@ -262,7 +264,7 @@ async fn test_remove_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;

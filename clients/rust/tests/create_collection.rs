@@ -20,7 +20,7 @@ async fn test_create_collection() {
             name: None,
             uri: None,
             plugins: vec![],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -60,7 +60,7 @@ async fn create_collection_with_different_payer() {
             name: None,
             uri: None,
             plugins: vec![],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -106,7 +106,7 @@ async fn create_collection_with_plugins() {
                     rule_set: RuleSet::ProgramDenyList(vec![]),
                 }),
             }],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -156,7 +156,7 @@ async fn create_collection_with_different_update_authority() {
             name: None,
             uri: None,
             plugins: vec![],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -205,7 +205,7 @@ async fn create_collection_with_plugins_with_different_plugin_authority() {
                     rule_set: RuleSet::ProgramDenyList(vec![]),
                 }),
             }],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await

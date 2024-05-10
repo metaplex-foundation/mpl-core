@@ -2,12 +2,12 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use super::{
-    AdapterCheckResult, Authority, ExtraAccount, HookableLifecycleEvent, PluginAdapterSchema,
-    PluginValidation, PluginValidationContext, ValidationResult,
+    Authority, ExternalPluginAdapterCheckResult, ExternalPluginAdapterSchema, ExtraAccount,
+    HookableLifecycleEvent, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// Lifecycle hook that CPIs into the `hooked_program`.  This hook is used for any lifecycle events
-/// that were selected in the `PluginAdapterRecord` for the plugin.  If any extra accounts are
+/// that were selected in the `ExternalPluginAdapterRecord` for the plugin.  If any extra accounts are
 /// present in the `extra_accounts` optional `Vec`, then these accounts are added to the CPI call
 /// in the order in which they are in the Vec.  Any PDAs in the `Vec` are derived using the hooked
 /// program.  The hooked program will return a validation result and new data to store at the
@@ -23,7 +23,7 @@ pub struct LifecycleHook {
     /// the plugin is added.
     pub data_authority: Option<Authority>,
     /// Schema for the data used by the plugin.
-    pub schema: PluginAdapterSchema, // 1
+    pub schema: ExternalPluginAdapterSchema, // 1
 }
 
 impl LifecycleHook {
@@ -39,7 +39,7 @@ impl LifecycleHook {
 }
 
 impl PluginValidation for LifecycleHook {
-    fn validate_add_plugin_adapter(
+    fn validate_add_external_plugin_adapter(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
@@ -72,8 +72,8 @@ pub struct LifecycleHookInitInfo {
     pub hooked_program: Pubkey,
     /// Initial plugin authority.
     pub init_plugin_authority: Option<Authority>,
-    /// The lifecyle events for which the the plugin adapter is active.
-    pub lifecycle_checks: Vec<(HookableLifecycleEvent, AdapterCheckResult)>,
+    /// The lifecyle events for which the the external plugin adapter is active.
+    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>,
     /// The extra accounts to use for the lifecycle hook.
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     /// The authority of who can update the Lifecycle Hook data. This can be for the purposes
@@ -81,16 +81,16 @@ pub struct LifecycleHookInitInfo {
     /// the plugin is added.
     pub data_authority: Option<Authority>,
     /// Schema for the data used by the plugin.
-    pub schema: Option<PluginAdapterSchema>,
+    pub schema: Option<ExternalPluginAdapterSchema>,
 }
 
 /// Lifecycle hook update info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct LifecycleHookUpdateInfo {
-    /// The lifecyle events for which the the plugin adapter is active.
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, AdapterCheckResult)>>,
+    /// The lifecyle events for which the the external plugin adapter is active.
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>>,
     /// The extra accounts to use for the lifecycle hook.
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     /// Schema for the data used by the plugin.
-    pub schema: Option<PluginAdapterSchema>,
+    pub schema: Option<ExternalPluginAdapterSchema>,
 }

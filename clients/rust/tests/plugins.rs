@@ -51,7 +51,7 @@ async fn test_fetch_plugin() {
                     }),
                 },
             ],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -84,7 +84,7 @@ async fn test_fetch_plugin() {
                     }),
                 },
             ],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
@@ -161,7 +161,7 @@ async fn test_fetch_plugins() {
                     }),
                 },
             ],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -194,7 +194,7 @@ async fn test_fetch_plugins() {
                     }),
                 },
             ],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
@@ -272,7 +272,7 @@ async fn test_list_plugins() {
                     }),
                 },
             ],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -305,7 +305,7 @@ async fn test_list_plugins() {
                     }),
                 },
             ],
-            plugin_adapters: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;

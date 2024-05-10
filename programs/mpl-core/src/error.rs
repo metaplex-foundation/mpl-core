@@ -133,32 +133,32 @@ pub enum MplCoreError {
     #[error("Invalid Log Wrapper Program")]
     InvalidLogWrapperProgram,
 
-    /// 31 - Plugin Adapter not found
-    #[error("Plugin Adapter not found")]
-    PluginAdapterNotFound,
+    /// 31 - External PluginExternalPluginAdapter not found
+    #[error("External PluginExternalPluginAdapter not found")]
+    ExternalPluginAdapterNotFound,
 
-    /// 32 - Plugin Adapter already exists
-    #[error("Plugin Adapter already exists")]
-    PluginAdapterAlreadyExists,
+    /// 32 - External PluginExternalPluginAdapter already exists
+    #[error("External PluginExternalPluginAdapter already exists")]
+    ExternalPluginAdapterAlreadyExists,
 
     /// 33 - Missing asset needed for extra account PDA derivation
     #[error("Missing asset needed for extra account PDA derivation")]
     MissingAsset,
 
-    /// 34 - Missing account needed for plugin adapter
-    #[error("Missing account needed for plugin adapter")]
+    /// 34 - Missing account needed for external plugin adapter
+    #[error("Missing account needed for external plugin adapter")]
     MissingAdapterAccount,
 
-    /// 35 - Oracle plugin adapter can only be configured to reject
-    #[error("Oracle plugin adapter can only be configured to reject")]
+    /// 35 - Oracle external plugin adapter can only be configured to reject
+    #[error("Oracle external plugin adapter can only be configured to reject")]
     OracleCanRejectOnly,
 
-    /// 36 - Plugin adapter must have at least one lifecycle check
-    #[error("Plugin adapter must have at least one lifecycle check")]
+    /// 36 - External external plugin adapter must have at least one lifecycle check
+    #[error("External external plugin adapter must have at least one lifecycle check")]
     RequiresLifecycleCheck,
 
-    /// 37 - Duplicate lifecycle checks were provided for plugin adapter
-    #[error("Duplicate lifecycle checks were provided for plugin adapter ")]
+    /// 37 - Duplicate lifecycle checks were provided for external plugin adapter
+    #[error("Duplicate lifecycle checks were provided for external plugin adapter ")]
     DuplicateLifecycleChecks,
 
     /// 38 - Could not read from oracle account

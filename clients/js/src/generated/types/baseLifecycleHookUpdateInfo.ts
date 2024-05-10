@@ -15,32 +15,34 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  AdapterCheckResult,
-  AdapterCheckResultArgs,
   BaseExtraAccount,
   BaseExtraAccountArgs,
+  ExternalPluginAdapterCheckResult,
+  ExternalPluginAdapterCheckResultArgs,
+  ExternalPluginAdapterSchema,
+  ExternalPluginAdapterSchemaArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
-  PluginAdapterSchema,
-  PluginAdapterSchemaArgs,
-  getAdapterCheckResultSerializer,
   getBaseExtraAccountSerializer,
+  getExternalPluginAdapterCheckResultSerializer,
+  getExternalPluginAdapterSchemaSerializer,
   getHookableLifecycleEventSerializer,
-  getPluginAdapterSchemaSerializer,
 } from '.';
 
 export type BaseLifecycleHookUpdateInfo = {
-  lifecycleChecks: Option<Array<[HookableLifecycleEvent, AdapterCheckResult]>>;
+  lifecycleChecks: Option<
+    Array<[HookableLifecycleEvent, ExternalPluginAdapterCheckResult]>
+  >;
   extraAccounts: Option<Array<BaseExtraAccount>>;
-  schema: Option<PluginAdapterSchema>;
+  schema: Option<ExternalPluginAdapterSchema>;
 };
 
 export type BaseLifecycleHookUpdateInfoArgs = {
   lifecycleChecks: OptionOrNullable<
-    Array<[HookableLifecycleEventArgs, AdapterCheckResultArgs]>
+    Array<[HookableLifecycleEventArgs, ExternalPluginAdapterCheckResultArgs]>
   >;
   extraAccounts: OptionOrNullable<Array<BaseExtraAccountArgs>>;
-  schema: OptionOrNullable<PluginAdapterSchemaArgs>;
+  schema: OptionOrNullable<ExternalPluginAdapterSchemaArgs>;
 };
 
 export function getBaseLifecycleHookUpdateInfoSerializer(): Serializer<
@@ -55,13 +57,13 @@ export function getBaseLifecycleHookUpdateInfoSerializer(): Serializer<
           array(
             tuple([
               getHookableLifecycleEventSerializer(),
-              getAdapterCheckResultSerializer(),
+              getExternalPluginAdapterCheckResultSerializer(),
             ])
           )
         ),
       ],
       ['extraAccounts', option(array(getBaseExtraAccountSerializer()))],
-      ['schema', option(getPluginAdapterSchemaSerializer())],
+      ['schema', option(getExternalPluginAdapterSchemaSerializer())],
     ],
     { description: 'BaseLifecycleHookUpdateInfo' }
   ) as Serializer<BaseLifecycleHookUpdateInfoArgs, BaseLifecycleHookUpdateInfo>;

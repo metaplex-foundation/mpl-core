@@ -19,25 +19,25 @@ import {
   BaseExtraAccountArgs,
   BasePluginAuthority,
   BasePluginAuthorityArgs,
-  PluginAdapterSchema,
-  PluginAdapterSchemaArgs,
+  ExternalPluginAdapterSchema,
+  ExternalPluginAdapterSchemaArgs,
   getBaseExtraAccountSerializer,
   getBasePluginAuthoritySerializer,
-  getPluginAdapterSchemaSerializer,
+  getExternalPluginAdapterSchemaSerializer,
 } from '.';
 
 export type BaseLifecycleHook = {
   hookedProgram: PublicKey;
   extraAccounts: Option<Array<BaseExtraAccount>>;
   dataAuthority: Option<BasePluginAuthority>;
-  schema: PluginAdapterSchema;
+  schema: ExternalPluginAdapterSchema;
 };
 
 export type BaseLifecycleHookArgs = {
   hookedProgram: PublicKey;
   extraAccounts: OptionOrNullable<Array<BaseExtraAccountArgs>>;
   dataAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
-  schema: PluginAdapterSchemaArgs;
+  schema: ExternalPluginAdapterSchemaArgs;
 };
 
 export function getBaseLifecycleHookSerializer(): Serializer<
@@ -49,7 +49,7 @@ export function getBaseLifecycleHookSerializer(): Serializer<
       ['hookedProgram', publicKeySerializer()],
       ['extraAccounts', option(array(getBaseExtraAccountSerializer()))],
       ['dataAuthority', option(getBasePluginAuthoritySerializer())],
-      ['schema', getPluginAdapterSchemaSerializer()],
+      ['schema', getExternalPluginAdapterSchemaSerializer()],
     ],
     { description: 'BaseLifecycleHook' }
   ) as Serializer<BaseLifecycleHookArgs, BaseLifecycleHook>;

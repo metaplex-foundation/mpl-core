@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::PluginAdapterSchema;
+use crate::generated::types::ExternalPluginAdapterSchema;
 use crate::generated::types::PluginAuthority;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
@@ -19,5 +19,5 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub struct DataStoreInitInfo {
     pub data_authority: PluginAuthority,
     pub init_plugin_authority: Option<PluginAuthority>,
-    pub schema: Option<PluginAdapterSchema>,
+    pub schema: Option<ExternalPluginAdapterSchema>,
 }

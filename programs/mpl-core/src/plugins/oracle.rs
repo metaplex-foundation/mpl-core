@@ -4,13 +4,14 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use crate::error::MplCoreError;
 
 use super::{
-    AdapterCheckResult, AdapterValidationResult, Authority, ExtraAccount, HookableLifecycleEvent,
-    PluginValidation, PluginValidationContext, ValidationResult,
+    Authority, ExternalPluginAdapterCheckResult, ExternalPluginAdapterValidationResult,
+    ExtraAccount, HookableLifecycleEvent, PluginValidation, PluginValidationContext,
+    ValidationResult,
 };
 
 /// Oracle plugin that allows getting a `ValidationResult` for a lifecycle event from an arbitrary
 /// account either specified by or derived from the `base_address`.  This hook is used for any
-/// lifecycle events that were selected in the `PluginAdapterRecord` for the plugin.
+/// lifecycle events that were selected in the `ExternalPluginAdapterRecord` for the plugin.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct Oracle {
     /// The address of the oracle, or if using the `pda` option, a program ID from which
@@ -37,7 +38,7 @@ impl Oracle {
 }
 
 impl PluginValidation for Oracle {
-    fn validate_add_plugin_adapter(
+    fn validate_add_external_plugin_adapter(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
@@ -141,8 +142,8 @@ pub struct OracleInitInfo {
     pub base_address: Pubkey,
     /// Initial plugin authority.
     pub init_plugin_authority: Option<Authority>,
-    /// The lifecyle events for which the the plugin adapter is active.
-    pub lifecycle_checks: Vec<(HookableLifecycleEvent, AdapterCheckResult)>,
+    /// The lifecyle events for which the the external plugin adapter is active.
+    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>,
     /// Optional account specification (PDA derived from `base_address` or other available account
     /// specifications).  Note that even when this configuration is used there is still only one
     /// Oracle account specified by the adapter.
@@ -155,8 +156,8 @@ pub struct OracleInitInfo {
 /// Oracle update info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct OracleUpdateInfo {
-    /// The lifecyle events for which the the plugin adapter is active.
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, AdapterCheckResult)>>,
+    /// The lifecyle events for which the the external plugin adapter is active.
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>>,
     /// Optional account specification (PDA derived from `base_address` or other available account
     /// specifications).  Note that even when this configuration is used there is still only one
     /// Oracle account specified by the adapter.
@@ -197,13 +198,13 @@ pub enum OracleValidation {
     /// Version 1 of the format.
     V1 {
         /// Validation for the the create lifecycle action.
-        create: AdapterValidationResult,
+        create: ExternalPluginAdapterValidationResult,
         /// Validation for the transfer lifecycle action.
-        transfer: AdapterValidationResult,
+        transfer: ExternalPluginAdapterValidationResult,
         /// Validation for the burn lifecycle action.
-        burn: AdapterValidationResult,
+        burn: ExternalPluginAdapterValidationResult,
         /// Validation for the update lifecycle action.
-        update: AdapterValidationResult,
+        update: ExternalPluginAdapterValidationResult,
     },
 }
 

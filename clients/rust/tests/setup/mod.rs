@@ -1,8 +1,8 @@
 use mpl_core::{
     instructions::{CreateCollectionV2Builder, CreateV2Builder},
     types::{
-        DataState, Key, Plugin, PluginAdapter, PluginAdapterInitInfo, PluginAuthorityPair,
-        UpdateAuthority,
+        DataState, ExternalPluginAdapter, ExternalPluginAdapterInitInfo, Key, Plugin,
+        PluginAuthorityPair, UpdateAuthority,
     },
     Asset, Collection,
 };
@@ -34,7 +34,7 @@ pub struct CreateAssetHelperArgs<'a> {
     pub collection: Option<Pubkey>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
-    pub plugin_adapters: Vec<PluginAdapterInitInfo>,
+    pub external_plugin_adapters: Vec<ExternalPluginAdapterInitInfo>,
 }
 
 pub async fn create_asset<'a>(
@@ -54,7 +54,7 @@ pub async fn create_asset<'a>(
         .name(input.name.unwrap_or(DEFAULT_ASSET_NAME.to_owned()))
         .uri(input.uri.unwrap_or(DEFAULT_ASSET_URI.to_owned()))
         .plugins(input.plugins)
-        .plugin_adapters(input.plugin_adapters)
+        .external_plugin_adapters(input.external_plugin_adapters)
         .instruction();
 
     let mut signers = vec![input.asset, &context.payer];
@@ -80,7 +80,7 @@ pub struct AssertAssetHelperArgs {
     pub uri: Option<String>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
-    pub plugin_adapters: Vec<PluginAdapter>,
+    pub external_plugin_adapters: Vec<ExternalPluginAdapter>,
 }
 
 pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHelperArgs) {
@@ -133,21 +133,27 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
     }
 
     assert_eq!(
-        input.plugin_adapters.len(),
-        asset.plugin_adapter_list.lifecycle_hooks.len()
-            + asset.plugin_adapter_list.oracles.len()
-            + asset.plugin_adapter_list.data_stores.len()
+        input.external_plugin_adapters.len(),
+        asset.external_plugin_adapter_list.lifecycle_hooks.len()
+            + asset.external_plugin_adapter_list.oracles.len()
+            + asset.external_plugin_adapter_list.data_stores.len()
     );
-    for plugin in input.plugin_adapters {
+    for plugin in input.external_plugin_adapters {
         match plugin {
-            PluginAdapter::LifecycleHook(hook) => {
-                assert!(asset.plugin_adapter_list.lifecycle_hooks.contains(&hook))
+            ExternalPluginAdapter::LifecycleHook(hook) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .lifecycle_hooks
+                    .contains(&hook))
             }
-            PluginAdapter::Oracle(oracle) => {
-                assert!(asset.plugin_adapter_list.oracles.contains(&oracle))
+            ExternalPluginAdapter::Oracle(oracle) => {
+                assert!(asset.external_plugin_adapter_list.oracles.contains(&oracle))
             }
-            PluginAdapter::DataStore(data_store) => {
-                assert!(asset.plugin_adapter_list.data_stores.contains(&data_store))
+            ExternalPluginAdapter::DataStore(data_store) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .data_stores
+                    .contains(&data_store))
             }
         }
     }
@@ -162,7 +168,7 @@ pub struct CreateCollectionHelperArgs<'a> {
     pub uri: Option<String>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
-    pub plugin_adapters: Vec<PluginAdapterInitInfo>,
+    pub external_plugin_adapters: Vec<ExternalPluginAdapterInitInfo>,
 }
 
 pub async fn create_collection<'a>(
@@ -178,7 +184,7 @@ pub async fn create_collection<'a>(
         .name(input.name.unwrap_or(DEFAULT_COLLECTION_NAME.to_owned()))
         .uri(input.uri.unwrap_or(DEFAULT_COLLECTION_URI.to_owned()))
         .plugins(input.plugins)
-        .plugin_adapters(input.plugin_adapters)
+        .external_plugin_adapters(input.external_plugin_adapters)
         .instruction();
 
     let mut signers = vec![input.collection, &context.payer];
@@ -258,7 +264,7 @@ pub async fn assert_collection(
         }
     }
 
-    // TODO validate plugin adapters here.
+    // TODO validate external plugin adapters here.
 }
 
 pub async fn airdrop(

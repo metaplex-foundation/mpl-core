@@ -15,22 +15,22 @@ import {
 import {
   BasePluginAuthority,
   BasePluginAuthorityArgs,
-  PluginAdapterSchema,
-  PluginAdapterSchemaArgs,
+  ExternalPluginAdapterSchema,
+  ExternalPluginAdapterSchemaArgs,
   getBasePluginAuthoritySerializer,
-  getPluginAdapterSchemaSerializer,
+  getExternalPluginAdapterSchemaSerializer,
 } from '.';
 
 export type BaseDataStoreInitInfo = {
   dataAuthority: BasePluginAuthority;
   initPluginAuthority: Option<BasePluginAuthority>;
-  schema: Option<PluginAdapterSchema>;
+  schema: Option<ExternalPluginAdapterSchema>;
 };
 
 export type BaseDataStoreInitInfoArgs = {
   dataAuthority: BasePluginAuthorityArgs;
   initPluginAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
-  schema: OptionOrNullable<PluginAdapterSchemaArgs>;
+  schema: OptionOrNullable<ExternalPluginAdapterSchemaArgs>;
 };
 
 export function getBaseDataStoreInitInfoSerializer(): Serializer<
@@ -41,7 +41,7 @@ export function getBaseDataStoreInitInfoSerializer(): Serializer<
     [
       ['dataAuthority', getBasePluginAuthoritySerializer()],
       ['initPluginAuthority', option(getBasePluginAuthoritySerializer())],
-      ['schema', option(getPluginAdapterSchemaSerializer())],
+      ['schema', option(getExternalPluginAdapterSchemaSerializer())],
     ],
     { description: 'BaseDataStoreInitInfo' }
   ) as Serializer<BaseDataStoreInitInfoArgs, BaseDataStoreInitInfo>;

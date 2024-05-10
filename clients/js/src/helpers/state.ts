@@ -1,6 +1,6 @@
 import { PublicKey, publicKey } from '@metaplex-foundation/umi';
 import { AssetV1, CollectionV1 } from '../generated';
-import { PluginAdaptersList } from '../plugins';
+import { ExternalPluginAdaptersList } from '../plugins';
 import { OracleInitInfoArgs, OraclePlugin } from '../plugins/oracle';
 import { DataStoreInitInfoArgs, DataStorePlugin } from '../plugins/dataStore';
 import {
@@ -21,12 +21,12 @@ export function collectionAddress(asset: AssetV1): PublicKey | undefined {
   return undefined;
 }
 
-const pluginAdapterKeys: (keyof PluginAdaptersList)[] = [
+const externalPluginAdapterKeys: (keyof ExternalPluginAdaptersList)[] = [
   'oracles',
   'dataStores',
   'lifecycleHooks',
 ];
-export const getPluginAdapterKeyAsString = (
+export const getExternalPluginAdapterKeyAsString = (
   plugin:
     | OraclePlugin
     | DataStorePlugin
@@ -48,36 +48,36 @@ export const getPluginAdapterKeyAsString = (
   }
 };
 
-export const derivePluginAdapters = (
-  asset: PluginAdaptersList,
-  collection?: PluginAdaptersList
+export const deriveExternalPluginAdapters = (
+  asset: ExternalPluginAdaptersList,
+  collection?: ExternalPluginAdaptersList
 ) => {
   if (!collection) {
     return asset;
   }
-  const pluginAdapters: PluginAdaptersList = {};
-  pluginAdapterKeys.forEach((key) => {
+  const externalPluginAdapters: ExternalPluginAdaptersList = {};
+  externalPluginAdapterKeys.forEach((key) => {
     const set = new Set();
     if (asset[key] || collection[key]) {
-      pluginAdapters[key] = [];
+      externalPluginAdapters[key] = [];
     }
     asset[key]?.forEach(
       (plugin: OraclePlugin | DataStorePlugin | LifecycleHookPlugin) => {
-        set.add(getPluginAdapterKeyAsString(plugin));
-        pluginAdapters[key]?.push(plugin as any);
+        set.add(getExternalPluginAdapterKeyAsString(plugin));
+        externalPluginAdapters[key]?.push(plugin as any);
       }
     );
 
     collection[key]?.forEach(
       (plugin: OraclePlugin | DataStorePlugin | LifecycleHookPlugin) => {
-        if (!set.has(getPluginAdapterKeyAsString(plugin))) {
-          pluginAdapters[key]?.push(plugin as any);
+        if (!set.has(getExternalPluginAdapterKeyAsString(plugin))) {
+          externalPluginAdapters[key]?.push(plugin as any);
         }
       }
     );
   });
 
-  return pluginAdapters;
+  return externalPluginAdapters;
 };
 /**
  * Derive the asset plugins from the asset and collection. Plugins on the asset take precedence over plugins on the collection.
@@ -92,12 +92,12 @@ export function deriveAssetPlugins(
   if (!collection) {
     return asset;
   }
-  const pluginAdapters = derivePluginAdapters(asset, collection);
+  const externalPluginAdapters = deriveExternalPluginAdapters(asset, collection);
 
   return {
     ...collection,
     ...asset,
-    ...pluginAdapters,
+    ...externalPluginAdapters,
   };
 }
 

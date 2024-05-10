@@ -9,14 +9,15 @@ use crate::{
     accounts::{BaseAssetV1, PluginHeaderV1},
     errors::MplCoreError,
     types::{
-        Plugin, PluginAdapter, PluginAdapterType, PluginAuthority, PluginType, RegistryRecord,
+        ExternalPluginAdapter, ExternalPluginAdapterType, Plugin, PluginAuthority, PluginType,
+        RegistryRecord,
     },
-    AdapterRegistryRecordSafe, AddBlockerPlugin, AttributesPlugin, BaseAuthority, BasePlugin,
-    BurnDelegatePlugin, DataBlob, EditionPlugin, FreezeDelegatePlugin, ImmutableMetadataPlugin,
-    MasterEditionPlugin, PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin,
-    PermanentTransferDelegatePlugin, PluginAdaptersList, PluginRegistryV1Safe, PluginsList,
-    RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount, TransferDelegatePlugin,
-    UpdateDelegatePlugin,
+    AddBlockerPlugin, AttributesPlugin, BaseAuthority, BasePlugin, BurnDelegatePlugin, DataBlob,
+    EditionPlugin, ExternalPluginAdapterRegistryRecordSafe, ExternalPluginAdaptersList,
+    FreezeDelegatePlugin, ImmutableMetadataPlugin, MasterEditionPlugin,
+    PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin,
+    PluginRegistryV1Safe, PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount,
+    TransferDelegatePlugin, UpdateDelegatePlugin,
 };
 
 /// Fetch the plugin from the registry.
@@ -108,7 +109,7 @@ pub fn fetch_plugins(account_data: &[u8]) -> Result<Vec<RegistryRecord>, std::io
 }
 
 /// List all plugins in an account, dropping any unknown plugins (i.e. `PluginType`s that are too
-/// new for this client to know about). Note this also does not support plugin adapters for now,
+/// new for this client to know about). Note this also does not support external plugin adapters for now,
 /// and will be updated when those are defined.
 pub fn list_plugins(account_data: &[u8]) -> Result<Vec<PluginType>, std::io::Error> {
     let asset = BaseAssetV1::from_bytes(account_data)?;
@@ -214,30 +215,33 @@ pub(crate) fn registry_records_to_plugin_list(
     result
 }
 
-// Convert a slice of `AdapterRegistryRecordSafe` into the `PluginAdaptersList` type, dropping any unknown
-// plugins (i.e. `PluginAdapterType`s that are too new for this client to know about).
-pub(crate) fn registry_records_to_plugin_adapter_list(
-    registry_records: &[AdapterRegistryRecordSafe],
+// Convert a slice of `AdapterRegistryRecordSafe` into the `ExternalPluginAdaptersList` type, dropping any unknown
+// plugins (i.e. `ExternalPluginAdapterType`s that are too new for this client to know about).
+pub(crate) fn registry_records_to_external_plugin_adapter_list(
+    registry_records: &[ExternalPluginAdapterRegistryRecordSafe],
     account_data: &[u8],
-) -> Result<PluginAdaptersList, std::io::Error> {
-    let result =
-        registry_records
-            .iter()
-            .try_fold(PluginAdaptersList::default(), |mut acc, record| {
-                if PluginAdapterType::from_u8(record.plugin_type).is_some() {
-                    let plugin =
-                        PluginAdapter::deserialize(&mut &account_data[record.offset as usize..])?;
+) -> Result<ExternalPluginAdaptersList, std::io::Error> {
+    let result = registry_records.iter().try_fold(
+        ExternalPluginAdaptersList::default(),
+        |mut acc, record| {
+            if ExternalPluginAdapterType::from_u8(record.plugin_type).is_some() {
+                let plugin = ExternalPluginAdapter::deserialize(
+                    &mut &account_data[record.offset as usize..],
+                )?;
 
-                    match plugin {
-                        PluginAdapter::LifecycleHook(lifecycle_hook) => {
-                            acc.lifecycle_hooks.push(lifecycle_hook)
-                        }
-                        PluginAdapter::Oracle(oracle) => acc.oracles.push(oracle),
-                        PluginAdapter::DataStore(data_store) => acc.data_stores.push(data_store),
+                match plugin {
+                    ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
+                        acc.lifecycle_hooks.push(lifecycle_hook)
+                    }
+                    ExternalPluginAdapter::Oracle(oracle) => acc.oracles.push(oracle),
+                    ExternalPluginAdapter::DataStore(data_store) => {
+                        acc.data_stores.push(data_store)
                     }
                 }
-                Ok(acc)
-            });
+            }
+            Ok(acc)
+        },
+    );
 
     result
 }

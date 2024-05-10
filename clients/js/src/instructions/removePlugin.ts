@@ -1,20 +1,20 @@
 import { Context } from '@metaplex-foundation/umi';
 import {
   removePluginV1,
-  removePluginAdapterV1,
+  removeExternalPluginAdapterV1,
   PluginType,
 } from '../generated';
-import { isPluginAdapterType } from '../plugins';
+import { isExternalPluginAdapterType } from '../plugins';
 import {
-  PluginAdapterKey,
-  pluginAdapterKeyToBase,
-} from '../plugins/pluginAdapterKey';
+  ExternalPluginAdapterKey,
+  externalPluginAdapterKeyToBase,
+} from '../plugins/externalPluginAdapterKey';
 
 export type RemovePluginArgsPlugin =
   | {
       type: Exclude<keyof typeof PluginType, 'Edition'>;
     }
-  | PluginAdapterKey;
+  | ExternalPluginAdapterKey;
 
 export type RemovePluginArgs = Omit<
   Parameters<typeof removePluginV1>[1],
@@ -27,10 +27,10 @@ export const removePlugin = (
   context: Pick<Context, 'payer' | 'programs' | 'identity'>,
   { plugin, ...args }: RemovePluginArgs
 ) => {
-  if (isPluginAdapterType(plugin)) {
-    return removePluginAdapterV1(context, {
+  if (isExternalPluginAdapterType(plugin)) {
+    return removeExternalPluginAdapterV1(context, {
       ...args,
-      key: pluginAdapterKeyToBase(plugin as PluginAdapterKey),
+      key: externalPluginAdapterKeyToBase(plugin as ExternalPluginAdapterKey),
     });
   }
 

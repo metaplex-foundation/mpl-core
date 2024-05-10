@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::AdapterValidationResult;
+use crate::generated::types::ExternalPluginAdapterValidationResult;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
@@ -18,9 +18,9 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub enum OracleValidation {
     Uninitialized,
     V1 {
-        create: AdapterValidationResult,
-        transfer: AdapterValidationResult,
-        burn: AdapterValidationResult,
-        update: AdapterValidationResult,
+        create: ExternalPluginAdapterValidationResult,
+        transfer: ExternalPluginAdapterValidationResult,
+        burn: ExternalPluginAdapterValidationResult,
+        update: ExternalPluginAdapterValidationResult,
     },
 }

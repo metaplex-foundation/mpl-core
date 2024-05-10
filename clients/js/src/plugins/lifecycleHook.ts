@@ -8,8 +8,8 @@ import {
   BaseLifecycleHook,
   BaseLifecycleHookInitInfoArgs,
   BaseLifecycleHookUpdateInfoArgs,
-  PluginAdapterSchema,
-  AdapterRegistryRecord,
+  ExternalPluginAdapterSchema,
+  ExternalPluginAdapterRegistryRecord,
 } from '../generated';
 import { LifecycleChecks, lifecycleChecksToBase } from './lifecycleChecks';
 import {
@@ -17,10 +17,10 @@ import {
   pluginAuthorityFromBase,
   pluginAuthorityToBase,
 } from './pluginAuthority';
-import { BasePluginAdapter } from './pluginAdapters';
-import { PluginAdapterManifest } from './pluginAdapterManifest';
-import { PluginAdapterKey } from './pluginAdapterKey';
-import { parsePluginAdapterData } from './lib';
+import { BaseExternalPluginAdapter } from './externalPluginAdapters';
+import { ExternalPluginAdapterManifest } from './externalPluginAdapterManifest';
+import { ExternalPluginAdapterKey } from './externalPluginAdapterKey';
+import { parseExternalPluginAdapterData } from './lib';
 
 export type LifecycleHook = Omit<
   BaseLifecycleHook,
@@ -31,7 +31,7 @@ export type LifecycleHook = Omit<
   data?: any;
 };
 
-export type LifecycleHookPlugin = BasePluginAdapter &
+export type LifecycleHookPlugin = BaseExternalPluginAdapter &
   LifecycleHook & {
     type: 'LifecycleHook';
     hookedProgram: PublicKey;
@@ -48,7 +48,7 @@ export type LifecycleHookInitInfoArgs = Omit<
   type: 'LifecycleHook';
   initPluginAuthority?: PluginAuthority;
   lifecycleChecks: LifecycleChecks;
-  schema?: PluginAdapterSchema;
+  schema?: ExternalPluginAdapterSchema;
   extraAccounts?: Array<ExtraAccount>;
   dataAuthority?: PluginAuthority;
 };
@@ -57,10 +57,10 @@ export type LifecycleHookUpdateInfoArgs = Omit<
   BaseLifecycleHookUpdateInfoArgs,
   'lifecycleChecks' | 'extraAccounts' | 'schema'
 > & {
-  key: PluginAdapterKey;
+  key: ExternalPluginAdapterKey;
   lifecycleChecks?: LifecycleChecks;
   extraAccounts?: Array<ExtraAccount>;
-  schema?: PluginAdapterSchema;
+  schema?: ExternalPluginAdapterSchema;
 };
 
 export function lifecycleHookInitInfoArgsToBase(
@@ -99,7 +99,7 @@ export function lifecycleHookUpdateInfoArgsToBase(
 
 export function lifecycleHookFromBase(
   s: BaseLifecycleHook,
-  r: AdapterRegistryRecord,
+  r: ExternalPluginAdapterRegistryRecord,
   account: Uint8Array
 ): LifecycleHook {
   return {
@@ -108,7 +108,7 @@ export function lifecycleHookFromBase(
       s.extraAccounts.__option === 'Some'
         ? s.extraAccounts.value.map(extraAccountFromBase)
         : undefined,
-    data: parsePluginAdapterData(s, r, account),
+    data: parseExternalPluginAdapterData(s, r, account),
     dataAuthority:
       s.dataAuthority.__option === 'Some'
         ? pluginAuthorityFromBase(s.dataAuthority.value)
@@ -116,7 +116,7 @@ export function lifecycleHookFromBase(
   };
 }
 
-export const lifecycleHookManifest: PluginAdapterManifest<
+export const lifecycleHookManifest: ExternalPluginAdapterManifest<
   LifecycleHook,
   BaseLifecycleHook,
   LifecycleHookInitInfoArgs,

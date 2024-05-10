@@ -4,7 +4,7 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError, pub
 
 use crate::{
     error::MplCoreError,
-    plugins::{CheckResult, Plugin, PluginAdapter, ValidationResult},
+    plugins::{CheckResult, ExternalPluginAdapter, Plugin, ValidationResult},
 };
 
 use super::{Authority, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
@@ -98,18 +98,18 @@ impl CollectionV1 {
         CheckResult::None
     }
 
-    /// Check permissions for the add plugin adapter lifecycle event.
-    pub fn check_add_plugin_adapter() -> CheckResult {
+    /// Check permissions for the add external plugin adapter lifecycle event.
+    pub fn check_add_external_plugin_adapter() -> CheckResult {
         CheckResult::CanApprove
     }
 
-    /// Check permissions for the remove plugin adapter lifecycle event.
-    pub fn check_remove_plugin_adapter() -> CheckResult {
+    /// Check permissions for the remove external plugin adapter lifecycle event.
+    pub fn check_remove_external_plugin_adapter() -> CheckResult {
         CheckResult::CanApprove
     }
 
-    /// Check permissions for the update plugin adapter lifecycle event.
-    pub fn check_update_plugin_adapter() -> CheckResult {
+    /// Check permissions for the update external plugin adapter lifecycle event.
+    pub fn check_update_external_plugin_adapter() -> CheckResult {
         CheckResult::CanApprove
     }
 
@@ -118,7 +118,7 @@ impl CollectionV1 {
         &self,
         authority_info: &AccountInfo,
         new_plugin: Option<&Plugin>,
-        _: Option<&PluginAdapter>,
+        _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         let new_plugin = match new_plugin {
             Some(plugin) => plugin,
@@ -140,7 +140,7 @@ impl CollectionV1 {
         &self,
         authority_info: &AccountInfo,
         plugin_to_remove: Option<&Plugin>,
-        _: Option<&PluginAdapter>,
+        _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         let plugin_to_remove = match plugin_to_remove {
             Some(plugin) => plugin,
@@ -162,7 +162,7 @@ impl CollectionV1 {
         &self,
         _authority_info: &AccountInfo,
         _plugin: Option<&Plugin>,
-        _: Option<&PluginAdapter>,
+        _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -172,7 +172,7 @@ impl CollectionV1 {
         &self,
         authority_info: &AccountInfo,
         plugin: Option<&Plugin>,
-        _: Option<&PluginAdapter>,
+        _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         let plugin = match plugin {
             Some(plugin) => plugin,
@@ -194,7 +194,7 @@ impl CollectionV1 {
         &self,
         authority_info: &AccountInfo,
         plugin: Option<&Plugin>,
-        _: Option<&PluginAdapter>,
+        _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         let plugin = match plugin {
             Some(plugin) => plugin,
@@ -216,7 +216,7 @@ impl CollectionV1 {
         &self,
         _authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _: Option<&PluginAdapter>,
+        _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -226,7 +226,7 @@ impl CollectionV1 {
         &self,
         _authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _: Option<&PluginAdapter>,
+        _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -236,7 +236,7 @@ impl CollectionV1 {
         &self,
         authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _: Option<&PluginAdapter>,
+        _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.update_authority {
             solana_program::msg!("Collection: Approved");
@@ -251,7 +251,7 @@ impl CollectionV1 {
         &self,
         _authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _: Option<&PluginAdapter>,
+        _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
@@ -261,17 +261,17 @@ impl CollectionV1 {
         &self,
         _authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _: Option<&PluginAdapter>,
+        _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         Ok(ValidationResult::Pass)
     }
 
-    /// Validate the add plugin adapter lifecycle event.
-    pub fn validate_add_plugin_adapter(
+    /// Validate the add external plugin adapter lifecycle event.
+    pub fn validate_add_external_plugin_adapter(
         &self,
         authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _new_plugin: Option<&PluginAdapter>,
+        _new_plugin: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         // Approve if the update authority matches the authority.
         if *authority_info.key == self.update_authority {
@@ -282,12 +282,12 @@ impl CollectionV1 {
         }
     }
 
-    /// Validate the remove plugin adapter lifecycle event.
-    pub fn validate_remove_plugin_adapter(
+    /// Validate the remove external plugin adapter lifecycle event.
+    pub fn validate_remove_external_plugin_adapter(
         &self,
         authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _plugin_to_remove: Option<&PluginAdapter>,
+        _plugin_to_remove: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if self.update_authority == *authority_info.key {
             solana_program::msg!("Asset: Approved");
@@ -297,12 +297,12 @@ impl CollectionV1 {
         }
     }
 
-    /// Validate the update plugin adapter lifecycle event.
-    pub fn validate_update_plugin_adapter(
+    /// Validate the update external plugin adapter lifecycle event.
+    pub fn validate_update_external_plugin_adapter(
         &self,
         authority_info: &AccountInfo,
         _: Option<&Plugin>,
-        _plugin: Option<&PluginAdapter>,
+        _plugin: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if self.update_authority == *authority_info.key {
             solana_program::msg!("Asset: Approved");

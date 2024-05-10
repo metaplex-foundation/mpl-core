@@ -1,7 +1,7 @@
 import { Context } from '@metaplex-foundation/umi';
 import { CollectionV1, burnV1, AssetV1 } from '../generated';
 import { findExtraAccounts } from '../plugins';
-import { derivePluginAdapters } from '../helpers';
+import { deriveExternalPluginAdapters } from '../helpers';
 
 export type BurnArgs = Omit<
   Parameters<typeof burnV1>[1],
@@ -15,12 +15,12 @@ export const burn = (
   context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
   { asset, collection, ...args }: BurnArgs
 ) => {
-  const derivedPluginAdapters = derivePluginAdapters(asset, collection);
+  const derivedExternalPluginAdapters = deriveExternalPluginAdapters(asset, collection);
 
   const extraAccounts = findExtraAccounts(
     context,
     'burn',
-    derivedPluginAdapters,
+    derivedExternalPluginAdapters,
     {
       asset: asset.publicKey,
       collection: collection?.publicKey,

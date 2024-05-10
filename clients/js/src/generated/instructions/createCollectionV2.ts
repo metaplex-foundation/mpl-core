@@ -32,11 +32,11 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  BasePluginAdapterInitInfo,
-  BasePluginAdapterInitInfoArgs,
+  BaseExternalPluginAdapterInitInfo,
+  BaseExternalPluginAdapterInitInfoArgs,
   PluginAuthorityPair,
   PluginAuthorityPairArgs,
-  getBasePluginAdapterInitInfoSerializer,
+  getBaseExternalPluginAdapterInitInfoSerializer,
   getPluginAuthorityPairSerializer,
 } from '../types';
 
@@ -58,14 +58,16 @@ export type CreateCollectionV2InstructionData = {
   name: string;
   uri: string;
   plugins: Option<Array<PluginAuthorityPair>>;
-  pluginAdapters: Option<Array<BasePluginAdapterInitInfo>>;
+  externalPluginAdapters: Option<Array<BaseExternalPluginAdapterInitInfo>>;
 };
 
 export type CreateCollectionV2InstructionDataArgs = {
   name: string;
   uri: string;
   plugins?: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
-  pluginAdapters?: OptionOrNullable<Array<BasePluginAdapterInitInfoArgs>>;
+  externalPluginAdapters?: OptionOrNullable<
+    Array<BaseExternalPluginAdapterInitInfoArgs>
+  >;
 };
 
 export function getCreateCollectionV2InstructionDataSerializer(): Serializer<
@@ -84,8 +86,8 @@ export function getCreateCollectionV2InstructionDataSerializer(): Serializer<
         ['uri', string()],
         ['plugins', option(array(getPluginAuthorityPairSerializer()))],
         [
-          'pluginAdapters',
-          option(array(getBasePluginAdapterInitInfoSerializer())),
+          'externalPluginAdapters',
+          option(array(getBaseExternalPluginAdapterInitInfoSerializer())),
         ],
       ],
       { description: 'CreateCollectionV2InstructionData' }
@@ -94,7 +96,7 @@ export function getCreateCollectionV2InstructionDataSerializer(): Serializer<
       ...value,
       discriminator: 21,
       plugins: value.plugins ?? none(),
-      pluginAdapters: value.pluginAdapters ?? [],
+      externalPluginAdapters: value.externalPluginAdapters ?? [],
     })
   ) as Serializer<
     CreateCollectionV2InstructionDataArgs,

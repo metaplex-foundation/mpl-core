@@ -16,27 +16,29 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  AdapterCheckResult,
-  AdapterCheckResultArgs,
   BaseExtraAccount,
   BaseExtraAccountArgs,
   BasePluginAuthority,
   BasePluginAuthorityArgs,
   BaseValidationResultsOffset,
   BaseValidationResultsOffsetArgs,
+  ExternalPluginAdapterCheckResult,
+  ExternalPluginAdapterCheckResultArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
-  getAdapterCheckResultSerializer,
   getBaseExtraAccountSerializer,
   getBasePluginAuthoritySerializer,
   getBaseValidationResultsOffsetSerializer,
+  getExternalPluginAdapterCheckResultSerializer,
   getHookableLifecycleEventSerializer,
 } from '.';
 
 export type BaseOracleInitInfo = {
   baseAddress: PublicKey;
   initPluginAuthority: Option<BasePluginAuthority>;
-  lifecycleChecks: Array<[HookableLifecycleEvent, AdapterCheckResult]>;
+  lifecycleChecks: Array<
+    [HookableLifecycleEvent, ExternalPluginAdapterCheckResult]
+  >;
   baseAddressConfig: Option<BaseExtraAccount>;
   resultsOffset: Option<BaseValidationResultsOffset>;
 };
@@ -44,7 +46,9 @@ export type BaseOracleInitInfo = {
 export type BaseOracleInitInfoArgs = {
   baseAddress: PublicKey;
   initPluginAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
-  lifecycleChecks: Array<[HookableLifecycleEventArgs, AdapterCheckResultArgs]>;
+  lifecycleChecks: Array<
+    [HookableLifecycleEventArgs, ExternalPluginAdapterCheckResultArgs]
+  >;
   baseAddressConfig: OptionOrNullable<BaseExtraAccountArgs>;
   resultsOffset: OptionOrNullable<BaseValidationResultsOffsetArgs>;
 };
@@ -62,7 +66,7 @@ export function getBaseOracleInitInfoSerializer(): Serializer<
         array(
           tuple([
             getHookableLifecycleEventSerializer(),
-            getAdapterCheckResultSerializer(),
+            getExternalPluginAdapterCheckResultSerializer(),
           ])
         ),
       ],

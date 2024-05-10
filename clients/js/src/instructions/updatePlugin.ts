@@ -1,17 +1,17 @@
 import { Context } from '@metaplex-foundation/umi';
-import { updatePluginV1, updatePluginAdapterV1 } from '../generated';
+import { updatePluginV1, updateExternalPluginAdapterV1 } from '../generated';
 import {
-  createPluginAdapterUpdateInfo,
+  createExternalPluginAdapterUpdateInfo,
   createPluginV2,
-  pluginAdapterKeyToBase,
-  isPluginAdapterType,
+  externalPluginAdapterKeyToBase,
+  isExternalPluginAdapterType,
   PluginArgsV2,
 } from '../plugins';
-import { PluginAdapterUpdateInfoArgs } from '../plugins/pluginAdapters';
+import { ExternalPluginAdapterUpdateInfoArgs } from '../plugins/externalPluginAdapters';
 
 export type UpdatePluginArgsPlugin =
   | PluginArgsV2
-  | PluginAdapterUpdateInfoArgs;
+  | ExternalPluginAdapterUpdateInfoArgs;
 
 export type UpdatePluginArgs = Omit<
   Parameters<typeof updatePluginV1>[1],
@@ -24,12 +24,12 @@ export const updatePlugin = (
   context: Pick<Context, 'payer' | 'programs' | 'identity'>,
   { plugin, ...args }: UpdatePluginArgs
 ) => {
-  if (isPluginAdapterType(plugin)) {
-    const plug = plugin as PluginAdapterUpdateInfoArgs;
-    return updatePluginAdapterV1(context, {
+  if (isExternalPluginAdapterType(plugin)) {
+    const plug = plugin as ExternalPluginAdapterUpdateInfoArgs;
+    return updateExternalPluginAdapterV1(context, {
       ...args,
-      updateInfo: createPluginAdapterUpdateInfo(plug),
-      key: pluginAdapterKeyToBase(plug.key),
+      updateInfo: createExternalPluginAdapterUpdateInfo(plug),
+      key: externalPluginAdapterKeyToBase(plug.key),
     });
   }
 

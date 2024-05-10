@@ -15,29 +15,29 @@ import {
   unit,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  AdapterValidationResult,
-  AdapterValidationResultArgs,
-  getAdapterValidationResultSerializer,
+  ExternalPluginAdapterValidationResult,
+  ExternalPluginAdapterValidationResultArgs,
+  getExternalPluginAdapterValidationResultSerializer,
 } from '.';
 
 export type OracleValidation =
   | { __kind: 'Uninitialized' }
   | {
       __kind: 'V1';
-      create: AdapterValidationResult;
-      transfer: AdapterValidationResult;
-      burn: AdapterValidationResult;
-      update: AdapterValidationResult;
+      create: ExternalPluginAdapterValidationResult;
+      transfer: ExternalPluginAdapterValidationResult;
+      burn: ExternalPluginAdapterValidationResult;
+      update: ExternalPluginAdapterValidationResult;
     };
 
 export type OracleValidationArgs =
   | { __kind: 'Uninitialized' }
   | {
       __kind: 'V1';
-      create: AdapterValidationResultArgs;
-      transfer: AdapterValidationResultArgs;
-      burn: AdapterValidationResultArgs;
-      update: AdapterValidationResultArgs;
+      create: ExternalPluginAdapterValidationResultArgs;
+      transfer: ExternalPluginAdapterValidationResultArgs;
+      burn: ExternalPluginAdapterValidationResultArgs;
+      update: ExternalPluginAdapterValidationResultArgs;
     };
 
 export function getOracleValidationSerializer(): Serializer<
@@ -50,10 +50,10 @@ export function getOracleValidationSerializer(): Serializer<
       [
         'V1',
         struct<GetDataEnumKindContent<OracleValidation, 'V1'>>([
-          ['create', getAdapterValidationResultSerializer()],
-          ['transfer', getAdapterValidationResultSerializer()],
-          ['burn', getAdapterValidationResultSerializer()],
-          ['update', getAdapterValidationResultSerializer()],
+          ['create', getExternalPluginAdapterValidationResultSerializer()],
+          ['transfer', getExternalPluginAdapterValidationResultSerializer()],
+          ['burn', getExternalPluginAdapterValidationResultSerializer()],
+          ['update', getExternalPluginAdapterValidationResultSerializer()],
         ]),
       ],
     ],
