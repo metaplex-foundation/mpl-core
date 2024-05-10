@@ -278,6 +278,8 @@ pub enum ExtraAccount {
     CustomPda {
         /// Seeds used to derive the PDA.
         seeds: Vec<Seed>,
+        /// Program ID if not the base address/program ID for the external plugin.
+        custom_program_id: Option<Pubkey>,
         /// Account is a signer
         is_signer: bool,
         /// Account is writable.
@@ -334,13 +336,20 @@ impl ExtraAccount {
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)
             }
-            ExtraAccount::CustomPda { seeds, .. } => {
+            ExtraAccount::CustomPda {
+                seeds,
+                custom_program_id,
+                ..
+            } => {
                 let seeds = transform_seeds(seeds, ctx)?;
 
                 // Convert the Vec of Vec into Vec of u8 slices.
                 let vec_of_slices: Vec<&[u8]> = seeds.iter().map(Vec::as_slice).collect();
 
-                let (pubkey, _bump) = Pubkey::find_program_address(&vec_of_slices, program_id);
+                let (pubkey, _bump) = Pubkey::find_program_address(
+                    &vec_of_slices,
+                    custom_program_id.as_ref().unwrap_or(program_id),
+                );
                 Ok(pubkey)
             }
             ExtraAccount::Address { address, .. } => Ok(*address),

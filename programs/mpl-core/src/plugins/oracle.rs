@@ -89,10 +89,21 @@ impl Oracle {
             .ok_or(MplCoreError::MissingExternalAccount)?;
 
         let offset = self.results_offset.to_offset_usize();
-        let validation_result =
-            OracleValidation::deserialize(&mut &(*oracle_account.data).borrow()[offset..])?;
+
+        let oracle_data = (*oracle_account.data).borrow();
+        let mut oracle_data_slice = oracle_data
+            .get(offset..)
+            .ok_or(MplCoreError::InvalidOracleAccountData)?;
+
+        if oracle_data_slice.len() < OracleValidation::serialized_size() {
+            return Err(MplCoreError::InvalidOracleAccountData.into());
+        }
+
+        let validation_result = OracleValidation::deserialize(&mut oracle_data_slice)
+            .map_err(|_| MplCoreError::InvalidOracleAccountData)?;
 
         match validation_result {
+            OracleValidation::Uninitialized => Err(MplCoreError::UninitializedOracleAccount.into()),
             OracleValidation::V1 {
                 create,
                 transfer,
@@ -175,6 +186,8 @@ impl ValidationResultsOffset {
 /// Validation results struct for an Oracle account.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum OracleValidation {
+    /// Uninitialized data.  This is intended to prevent leaving an account zeroed out by mistake.
+    Uninitialized,
     /// Version 1 of the format.
     V1 {
         /// Validation for the the create lifecycle action.
@@ -186,4 +199,11 @@ pub enum OracleValidation {
         /// Validation for the update lifecycle action.
         update: ExternalValidationResult,
     },
+}
+
+impl OracleValidation {
+    /// Borsh- and Anchor-serialized size of the `OracleValidation` struct.
+    pub fn serialized_size() -> usize {
+        5
+    }
 }

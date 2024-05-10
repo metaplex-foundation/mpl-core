@@ -39,6 +39,7 @@ pub enum ExtraAccount {
     },
     CustomPda {
         seeds: Vec<Seed>,
+        custom_program_id: Option<Pubkey>,
         is_signer: bool,
         is_writable: bool,
     },

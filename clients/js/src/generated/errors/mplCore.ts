@@ -526,7 +526,7 @@ export class RequiresLifecycleCheckError extends ProgramError {
 codeToErrorMap.set(0x24, RequiresLifecycleCheckError);
 nameToErrorMap.set('RequiresLifecycleCheck', RequiresLifecycleCheckError);
 
-/** DuplicateLifecycleChecks: Duplicate lifecycle checks were provided for external plugin  */
+/** DuplicateLifecycleChecks: Duplicate lifecycle checks were provided for external plugin */
 export class DuplicateLifecycleChecksError extends ProgramError {
   override readonly name: string = 'DuplicateLifecycleChecks';
 
@@ -534,7 +534,7 @@ export class DuplicateLifecycleChecksError extends ProgramError {
 
   constructor(program: Program, cause?: Error) {
     super(
-      'Duplicate lifecycle checks were provided for external plugin ',
+      'Duplicate lifecycle checks were provided for external plugin',
       program,
       cause
     );
@@ -542,6 +542,35 @@ export class DuplicateLifecycleChecksError extends ProgramError {
 }
 codeToErrorMap.set(0x25, DuplicateLifecycleChecksError);
 nameToErrorMap.set('DuplicateLifecycleChecks', DuplicateLifecycleChecksError);
+
+/** InvalidOracleAccountData: Could not read from oracle account */
+export class InvalidOracleAccountDataError extends ProgramError {
+  override readonly name: string = 'InvalidOracleAccountData';
+
+  readonly code: number = 0x26; // 38
+
+  constructor(program: Program, cause?: Error) {
+    super('Could not read from oracle account', program, cause);
+  }
+}
+codeToErrorMap.set(0x26, InvalidOracleAccountDataError);
+nameToErrorMap.set('InvalidOracleAccountData', InvalidOracleAccountDataError);
+
+/** UninitializedOracleAccount: Oracle account is uninitialized */
+export class UninitializedOracleAccountError extends ProgramError {
+  override readonly name: string = 'UninitializedOracleAccount';
+
+  readonly code: number = 0x27; // 39
+
+  constructor(program: Program, cause?: Error) {
+    super('Oracle account is uninitialized', program, cause);
+  }
+}
+codeToErrorMap.set(0x27, UninitializedOracleAccountError);
+nameToErrorMap.set(
+  'UninitializedOracleAccount',
+  UninitializedOracleAccountError
+);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

@@ -12,6 +12,7 @@ import {
   Serializer,
   dataEnum,
   struct,
+  unit,
 } from '@metaplex-foundation/umi/serializers';
 import {
   ExternalValidationResult,
@@ -19,21 +20,25 @@ import {
   getExternalValidationResultSerializer,
 } from '.';
 
-export type OracleValidation = {
-  __kind: 'V1';
-  create: ExternalValidationResult;
-  transfer: ExternalValidationResult;
-  burn: ExternalValidationResult;
-  update: ExternalValidationResult;
-};
+export type OracleValidation =
+  | { __kind: 'Uninitialized' }
+  | {
+      __kind: 'V1';
+      create: ExternalValidationResult;
+      transfer: ExternalValidationResult;
+      burn: ExternalValidationResult;
+      update: ExternalValidationResult;
+    };
 
-export type OracleValidationArgs = {
-  __kind: 'V1';
-  create: ExternalValidationResultArgs;
-  transfer: ExternalValidationResultArgs;
-  burn: ExternalValidationResultArgs;
-  update: ExternalValidationResultArgs;
-};
+export type OracleValidationArgs =
+  | { __kind: 'Uninitialized' }
+  | {
+      __kind: 'V1';
+      create: ExternalValidationResultArgs;
+      transfer: ExternalValidationResultArgs;
+      burn: ExternalValidationResultArgs;
+      update: ExternalValidationResultArgs;
+    };
 
 export function getOracleValidationSerializer(): Serializer<
   OracleValidationArgs,
@@ -41,6 +46,7 @@ export function getOracleValidationSerializer(): Serializer<
 > {
   return dataEnum<OracleValidation>(
     [
+      ['Uninitialized', unit()],
       [
         'V1',
         struct<GetDataEnumKindContent<OracleValidation, 'V1'>>([
@@ -56,6 +62,9 @@ export function getOracleValidationSerializer(): Serializer<
 }
 
 // Data Enum Helpers.
+export function oracleValidation(
+  kind: 'Uninitialized'
+): GetDataEnumKind<OracleValidationArgs, 'Uninitialized'>;
 export function oracleValidation(
   kind: 'V1',
   data: GetDataEnumKindContent<OracleValidationArgs, 'V1'>

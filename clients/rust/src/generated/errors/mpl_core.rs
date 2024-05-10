@@ -122,8 +122,14 @@ pub enum MplCoreError {
     #[error("External plugin must have at least one lifecycle check")]
     RequiresLifecycleCheck,
     /// 37 (0x25) - Duplicate lifecycle checks were provided for external plugin
-    #[error("Duplicate lifecycle checks were provided for external plugin ")]
+    #[error("Duplicate lifecycle checks were provided for external plugin")]
     DuplicateLifecycleChecks,
+    /// 38 (0x26) - Could not read from oracle account
+    #[error("Could not read from oracle account")]
+    InvalidOracleAccountData,
+    /// 39 (0x27) - Oracle account is uninitialized
+    #[error("Oracle account is uninitialized")]
+    UninitializedOracleAccount,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

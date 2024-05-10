@@ -148,9 +148,12 @@ export async function validateTransfer(
         return null;
       });
 
-      const oraclePass = oracleValidations.every(
-        (v) => v?.transfer === ExternalValidationResult.Pass
-      );
+      const oraclePass = oracleValidations.every((v) => {
+        if (v?.__kind === 'Uninitialized') {
+          return false;
+        }
+        return v?.transfer === ExternalValidationResult.Pass;
+      });
       if (!oraclePass) {
         return LifecycleValidationError.OracleValidationFailed;
       }
@@ -284,9 +287,12 @@ export async function validateBurn(
         return null;
       });
 
-      const oraclePass = oracleValidations.every(
-        (v) => v?.burn === ExternalValidationResult.Pass
-      );
+      const oraclePass = oracleValidations.every((v) => {
+        if (v?.__kind === 'Uninitialized') {
+          return false;
+        }
+        return v?.burn === ExternalValidationResult.Pass;
+      });
       if (!oraclePass) {
         return LifecycleValidationError.OracleValidationFailed;
       }
@@ -373,9 +379,12 @@ export async function validateUpdate(
         return null;
       });
 
-      const oraclePass = oracleValidations.every(
-        (v) => v?.update === ExternalValidationResult.Pass
-      );
+      const oraclePass = oracleValidations.every((v) => {
+        if (v?.__kind === 'Uninitialized') {
+          return false;
+        }
+        return v?.update === ExternalValidationResult.Pass;
+      });
       if (!oraclePass) {
         return LifecycleValidationError.OracleValidationFailed;
       }
