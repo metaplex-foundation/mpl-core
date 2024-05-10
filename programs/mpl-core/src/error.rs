@@ -160,6 +160,14 @@ pub enum MplCoreError {
     /// 37 - Duplicate lifecycle checks were provided for external plugin
     #[error("Duplicate lifecycle checks were provided for external plugin ")]
     DuplicateLifecycleChecks,
+
+    /// 38 - Two data sources provided, only one is allowed
+    #[error("Two data sources provided, only one is allowed")]
+    TwoDataSources,
+
+    /// 39 - External Plugin does not support this operation
+    #[error("External Plugin does not support this operation")]
+    UnsupportedOperation,
 }
 
 impl PrintProgramError for MplCoreError {

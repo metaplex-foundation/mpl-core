@@ -184,7 +184,7 @@ pub fn fetch_wrapped_external_plugin<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
     core: Option<&T>,
     plugin_key: &ExternalPluginKey,
-) -> Result<(Authority, ExternalPlugin), ProgramError> {
+) -> Result<(ExternalRegistryRecord, ExternalPlugin), ProgramError> {
     let size = match core {
         Some(core) => core.get_size(),
         None => {
@@ -209,7 +209,7 @@ pub fn fetch_wrapped_external_plugin<T: DataBlob + SolanaAccount>(
         let plugin = ExternalPlugin::deserialize(&mut &(*account.data).borrow()[record.offset..])?;
 
         // Return the plugin and its authority.
-        Ok((record.authority, plugin))
+        Ok((record.clone(), plugin))
     } else {
         Err(MplCoreError::ExternalPluginNotFound.into())
     }

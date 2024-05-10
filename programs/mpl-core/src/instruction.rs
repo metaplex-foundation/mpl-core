@@ -268,15 +268,17 @@ pub(crate) enum MplAssetInstruction {
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, optional, signer, name="authority", desc = "The Data Authority of the External Plugin")]
-    #[account(4, name="system_program", desc = "The system program")]
-    #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    #[account(4, optional, name="buffer", desc = "The buffer to write to the external plugin")]
+    #[account(5, name="system_program", desc = "The system program")]
+    #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     WriteExternalPluginDataV1(WriteExternalPluginDataV1Args),
 
     /// Add an external plugin to an mpl-core.
     #[account(0, writable, name="collection", desc = "The address of the asset")]
     #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(2, optional, signer, name="authority", desc = "The Data Authority of the External Plugin")]
-    #[account(3, name="system_program", desc = "The system program")]
-    #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    #[account(3, optional, name="buffer", desc = "The buffer to write to the external plugin")]
+    #[account(4, name="system_program", desc = "The system program")]
+    #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     WriteCollectionExternalPluginDataV1(WriteCollectionExternalPluginDataV1Args),
 }
