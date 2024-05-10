@@ -130,7 +130,7 @@ async fn test_remove_oracle() {
                     HookableLifecycleEvent::Transfer,
                     ExternalCheckResult { flags: 4 },
                 )],
-                pda: None,
+                base_address_config: None,
                 results_offset: None,
             })],
         },
@@ -151,7 +151,7 @@ async fn test_remove_oracle() {
             plugins: vec![],
             external_plugins: vec![ExternalPlugin::Oracle(Oracle {
                 base_address: Pubkey::default(),
-                pda: None,
+                base_address_config: None,
                 results_offset: ValidationResultsOffset::NoOffset,
             })],
         },

@@ -187,9 +187,9 @@ export const findExtraAccounts = (
 
   externalPlugins.oracles?.forEach((oracle) => {
     if (oracle.lifecycleChecks?.[lifecycle]) {
-      if (oracle.pda) {
+      if (oracle.baseAddressConfig) {
         accounts.push(
-          extraAccountToAccountMeta(context, oracle.pda, {
+          extraAccountToAccountMeta(context, oracle.baseAddressConfig, {
             ...inputs,
             program: oracle.baseAddress,
           })
