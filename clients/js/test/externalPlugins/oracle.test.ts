@@ -1924,6 +1924,146 @@ test('it can use custom pda (typical) oracle to deny transfer', async (t) => {
   });
 });
 
+test('it can use custom pda (with custom program ID) oracle to deny transfer', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const newOwner = generateSigner(umi);
+
+  // Configure an Oracle plugin to have a custom program ID.  In order to reuse the oracle
+  // example program we will set the base address to a random Pubkey, and set the custom program
+  // ID to the oracle example program ID.
+  const randomProgramId = generateSigner(umi).publicKey;
+  const oraclePlugin: OracleInitInfoArgs = {
+    type: 'Oracle',
+    resultsOffset: {
+      type: 'Anchor',
+    },
+    lifecycleChecks: {
+      transfer: [CheckResult.CAN_REJECT],
+    },
+    baseAddress: randomProgramId,
+    pda: {
+      type: 'CustomPda',
+      seeds: [
+        {
+          type: 'Bytes',
+          bytes: Buffer.from('prefix-seed-bytes', 'utf8'),
+        },
+        { type: 'Collection' },
+        {
+          type: 'Bytes',
+          bytes: Buffer.from('additional-bytes-seed-bytes', 'utf8'),
+        },
+      ],
+      customProgramId: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID
+    },
+  };
+
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {
+      owner,
+      plugins: [oraclePlugin],
+    },
+    {}
+  );
+
+  // Find the oracle PDA based on the asset we just created
+  const account = findOracleAccount(umi, oraclePlugin, {
+    collection: collection.publicKey,
+  });
+
+  // write to the PDA
+  await customPdaTypicalInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      prefixBytes: Buffer.from('prefix-seed-bytes', 'utf8'),
+      collection: collection.publicKey,
+      additionalBytes: Buffer.from('additional-bytes-seed-bytes', 'utf8'),
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Rejected,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const result = transfer(umi, {
+    asset,
+    collection,
+    newOwner: newOwner.publicKey,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await customPdaTypicalSet(umi, {
+    account,
+    signer: umi.identity,
+    args: {
+      prefixBytes: Buffer.from('prefix-seed-bytes', 'utf8'),
+      collection: collection.publicKey,
+      additionalBytes: Buffer.from('additional-bytes-seed-bytes', 'utf8'),
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await transfer(umi, {
+    asset,
+    collection,
+    newOwner: newOwner.publicKey,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: randomProgramId,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        pda: {
+          type: 'CustomPda',
+          seeds: [
+            {
+              type: 'Bytes',
+              bytes: new Uint8Array(Buffer.from('prefix-seed-bytes', 'utf8')),
+            },
+            { type: 'Collection' },
+            {
+              type: 'Bytes',
+              bytes: new Uint8Array(
+                Buffer.from('additional-bytes-seed-bytes', 'utf8')
+              ),
+            },
+          ],
+          customProgramId: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID
+        },
+      },
+    ],
+  });
+});
+
 test('it can use preconfigured asset pda custom offset oracle to deny update', async (t) => {
   const umi = await createUmi();
 
