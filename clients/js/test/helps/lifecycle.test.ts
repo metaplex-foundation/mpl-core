@@ -5,7 +5,6 @@ import {
   fixedAccountInit,
   MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
 } from '@metaplex-foundation/mpl-core-oracle-example';
-import { ExternalValidationResult } from '@metaplex-foundation/mpl-core-oracle-example/dist/src/hooked';
 import {
   canBurn,
   canTransfer,
@@ -16,6 +15,7 @@ import {
   validateBurn,
   validateTransfer,
   validateUpdate,
+  ExternalValidationResult,
 } from '../../src';
 import { createUmi } from '../_setupRaw';
 import { createAsset, createAssetWithCollection } from '../_setupSdk';

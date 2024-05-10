@@ -22,7 +22,6 @@ import {
   close,
 } from '@metaplex-foundation/mpl-core-oracle-example';
 import { generateSigner, sol } from '@metaplex-foundation/umi';
-import { ExternalValidationResult } from '@metaplex-foundation/mpl-core-oracle-example/dist/src/hooked';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import { createAccount } from '@metaplex-foundation/mpl-toolbox';
 import {
@@ -45,6 +44,7 @@ import {
   addPlugin,
   updatePlugin,
   fetchAssetV1,
+  ExternalValidationResult,
 } from '../../src';
 
 const createUmi = async () =>
