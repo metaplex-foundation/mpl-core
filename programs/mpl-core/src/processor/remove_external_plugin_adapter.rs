@@ -21,7 +21,7 @@ use crate::{
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct RemoveExternalPluginAdapterV1Args {
-    /// External external plugin adapter key.
+    /// External plugin adapter key.
     pub key: ExternalPluginAdapterKey,
 }
 
@@ -94,7 +94,7 @@ pub(crate) fn remove_external_plugin_adapter<'a>(
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct RemoveCollectionExternalPluginAdapterV1Args {
-    /// External external plugin adapter key.
+    /// External plugin adapter key.
     pub key: ExternalPluginAdapterKey,
 }
 

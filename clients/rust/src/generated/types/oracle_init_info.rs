@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::ExternalPluginAdapterCheckResult;
+use crate::generated::types::ExternalCheckResult;
 use crate::generated::types::ExtraAccount;
 use crate::generated::types::HookableLifecycleEvent;
 use crate::generated::types::PluginAuthority;
@@ -27,7 +27,7 @@ pub struct OracleInitInfo {
     )]
     pub base_address: Pubkey,
     pub init_plugin_authority: Option<PluginAuthority>,
-    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>,
+    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
     pub base_address_config: Option<ExtraAccount>,
     pub results_offset: Option<ValidationResultsOffset>,
 }

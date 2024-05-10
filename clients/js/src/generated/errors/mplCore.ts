@@ -516,7 +516,7 @@ export class OracleCanRejectOnlyError extends ProgramError {
 codeToErrorMap.set(0x23, OracleCanRejectOnlyError);
 nameToErrorMap.set('OracleCanRejectOnly', OracleCanRejectOnlyError);
 
-/** RequiresLifecycleCheck: External external plugin adapter must have at least one lifecycle check */
+/** RequiresLifecycleCheck: External plugin adapter must have at least one lifecycle check */
 export class RequiresLifecycleCheckError extends ProgramError {
   override readonly name: string = 'RequiresLifecycleCheck';
 
@@ -524,7 +524,7 @@ export class RequiresLifecycleCheckError extends ProgramError {
 
   constructor(program: Program, cause?: Error) {
     super(
-      'External external plugin adapter must have at least one lifecycle check',
+      'External plugin adapter must have at least one lifecycle check',
       program,
       cause
     );

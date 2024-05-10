@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::ExternalPluginAdapterCheckResult;
+use crate::generated::types::ExternalCheckResult;
 use crate::generated::types::ExternalPluginAdapterType;
 use crate::generated::types::HookableLifecycleEvent;
 use crate::generated::types::PluginAuthority;
@@ -18,10 +18,10 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ExternalPluginAdapterRegistryRecord {
+pub struct ExternalRegistryRecord {
     pub plugin_type: ExternalPluginAdapterType,
     pub authority: PluginAuthority,
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>>,
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     pub offset: u64,
     pub data_offset: Option<u64>,
     pub data_len: Option<u64>,

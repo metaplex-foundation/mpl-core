@@ -9,8 +9,8 @@ use crate::{
 };
 
 use super::{
-    ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalPluginAdapterRegistryRecord, Plugin,
-    PluginType, RegistryRecord,
+    ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalRegistryRecord, Plugin, PluginType,
+    RegistryRecord,
 };
 
 /// Lifecycle permissions
@@ -32,12 +32,12 @@ pub enum CheckResult {
 /// Third party plugins use this field to indicate their permission to listen, approve, and/or
 /// deny a lifecycle event.
 #[derive(BorshDeserialize, BorshSerialize, Eq, PartialEq, Copy, Clone, Debug)]
-pub struct ExternalPluginAdapterCheckResult {
+pub struct ExternalCheckResult {
     /// Bitfield for adapter check results.
     pub flags: u32,
 }
 
-impl ExternalPluginAdapterCheckResult {
+impl ExternalCheckResult {
     pub(crate) fn none() -> Self {
         Self { flags: 0 }
     }
@@ -50,22 +50,22 @@ impl ExternalPluginAdapterCheckResult {
 /// Bitfield representation of lifecycle permissions for adapter, third party plugins.
 #[bitfield(bits = 32)]
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
-pub struct ExternalPluginAdapterCheckResultBits {
+pub struct ExternalCheckResultBits {
     pub can_listen: bool,
     pub can_approve: bool,
     pub can_reject: bool,
     pub empty_bits: B29,
 }
 
-impl From<ExternalPluginAdapterCheckResult> for ExternalPluginAdapterCheckResultBits {
-    fn from(check_result: ExternalPluginAdapterCheckResult) -> Self {
-        ExternalPluginAdapterCheckResultBits::from_bytes(check_result.flags.to_le_bytes())
+impl From<ExternalCheckResult> for ExternalCheckResultBits {
+    fn from(check_result: ExternalCheckResult) -> Self {
+        ExternalCheckResultBits::from_bytes(check_result.flags.to_le_bytes())
     }
 }
 
-impl From<ExternalPluginAdapterCheckResultBits> for ExternalPluginAdapterCheckResult {
-    fn from(bits: ExternalPluginAdapterCheckResultBits) -> Self {
-        ExternalPluginAdapterCheckResult {
+impl From<ExternalCheckResultBits> for ExternalCheckResult {
+    fn from(bits: ExternalCheckResultBits) -> Self {
+        ExternalCheckResult {
             flags: u32::from_le_bytes(bits.into_bytes()),
         }
     }
@@ -756,8 +756,8 @@ pub enum ValidationResult {
     ForceApproved,
 }
 
-/// External external plugin adapters lifecycle validations
-/// External external plugin adapters utilize this to indicate whether they approve or reject a lifecycle action.
+/// External plugin adapters lifecycle validations
+/// External plugin adapters utilize this to indicate whether they approve or reject a lifecycle action.
 #[derive(Eq, PartialEq, Debug, Clone, BorshDeserialize, BorshSerialize)]
 pub enum ExternalValidationResult {
     /// The plugin approves the lifecycle action.
@@ -1004,13 +1004,9 @@ pub(crate) fn validate_plugin_checks<'a>(
 pub(crate) fn validate_external_plugin_adapter_checks<'a>(
     key: Key,
     accounts: &'a [AccountInfo<'a>],
-    external_plugin_adapter_checks: &BTreeMap<
+    external_checks: &BTreeMap<
         ExternalPluginAdapterKey,
-        (
-            Key,
-            ExternalPluginAdapterCheckResultBits,
-            ExternalPluginAdapterRegistryRecord,
-        ),
+        (Key, ExternalCheckResultBits, ExternalRegistryRecord),
     >,
     authority: &'a AccountInfo<'a>,
     new_owner: Option<&'a AccountInfo<'a>>,
@@ -1024,9 +1020,7 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
-    for (check_key, check_result, external_plugin_adapter_registry_record) in
-        external_plugin_adapter_checks.values()
-    {
+    for (check_key, check_result, external_registry_record) in external_checks.values() {
         if *check_key == key
             && (check_result.can_listen()
                 || check_result.can_approve()
@@ -1042,7 +1036,7 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
                 accounts,
                 asset_info: asset,
                 collection_info: collection,
-                self_authority: &external_plugin_adapter_registry_record.authority,
+                self_authority: &external_registry_record.authority,
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),
                 new_owner,
@@ -1050,10 +1044,7 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
             };
 
             let result = external_plugin_adapter_validate_fp(
-                &ExternalPluginAdapter::load(
-                    account,
-                    external_plugin_adapter_registry_record.offset,
-                )?,
+                &ExternalPluginAdapter::load(account, external_registry_record.offset)?,
                 &validation_ctx,
             )?;
             match result {

@@ -13,10 +13,10 @@ use crate::{
     error::MplCoreError,
     plugins::{
         create_meta_idempotent, initialize_plugin, validate_external_plugin_adapter_checks,
-        validate_plugin_checks, CheckResult, ExternalPluginAdapter,
-        ExternalPluginAdapterCheckResultBits, ExternalPluginAdapterKey,
-        ExternalPluginAdapterRegistryRecord, HookableLifecycleEvent, Plugin, PluginHeaderV1,
-        PluginRegistryV1, PluginType, PluginValidationContext, RegistryRecord, ValidationResult,
+        validate_plugin_checks, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
+        ExternalPluginAdapterKey, ExternalRegistryRecord, HookableLifecycleEvent, Plugin,
+        PluginHeaderV1, PluginRegistryV1, PluginType, PluginValidationContext, RegistryRecord,
+        ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, Compressible, CompressionProof, CoreAsset, DataBlob,
@@ -258,13 +258,9 @@ pub(crate) fn validate_asset_permissions<'a>(
     }
 
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
-    let mut external_plugin_adapter_checks: BTreeMap<
+    let mut external_checks: BTreeMap<
         ExternalPluginAdapterKey,
-        (
-            Key,
-            ExternalPluginAdapterCheckResultBits,
-            ExternalPluginAdapterRegistryRecord,
-        ),
+        (Key, ExternalCheckResultBits, ExternalRegistryRecord),
     > = BTreeMap::new();
 
     // The asset approval overrides the collection approval.
@@ -287,7 +283,7 @@ pub(crate) fn validate_asset_permissions<'a>(
                     collection_info,
                     Key::CollectionV1,
                     lifecycle_event,
-                    &mut external_plugin_adapter_checks,
+                    &mut external_checks,
                 )?;
             }
         }
@@ -302,7 +298,7 @@ pub(crate) fn validate_asset_permissions<'a>(
                 asset,
                 Key::AssetV1,
                 lifecycle_event,
-                &mut external_plugin_adapter_checks,
+                &mut external_checks,
             )?;
         }
     }
@@ -386,7 +382,7 @@ pub(crate) fn validate_asset_permissions<'a>(
         match validate_external_plugin_adapter_checks(
             Key::CollectionV1,
             accounts,
-            &external_plugin_adapter_checks,
+            &external_checks,
             authority_info,
             new_owner,
             new_plugin,
@@ -405,7 +401,7 @@ pub(crate) fn validate_asset_permissions<'a>(
         match validate_external_plugin_adapter_checks(
             Key::AssetV1,
             accounts,
-            &external_plugin_adapter_checks,
+            &external_checks,
             authority_info,
             new_owner,
             new_plugin,
@@ -477,13 +473,9 @@ pub(crate) fn validate_collection_permissions<'a>(
     let resolved_authorities =
         resolve_pubkey_to_authorities_collection(authority_info, collection)?;
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
-    let mut external_plugin_adapter_checks: BTreeMap<
+    let mut external_checks: BTreeMap<
         ExternalPluginAdapterKey,
-        (
-            Key,
-            ExternalPluginAdapterCheckResultBits,
-            ExternalPluginAdapterRegistryRecord,
-        ),
+        (Key, ExternalCheckResultBits, ExternalRegistryRecord),
     > = BTreeMap::new();
 
     let core_check = (Key::CollectionV1, collection_check_fp());
@@ -496,7 +488,7 @@ pub(crate) fn validate_collection_permissions<'a>(
                 collection,
                 Key::CollectionV1,
                 &lifecycle_event,
-                &mut external_plugin_adapter_checks,
+                &mut external_checks,
             )?;
         }
     }
@@ -554,7 +546,7 @@ pub(crate) fn validate_collection_permissions<'a>(
         match validate_external_plugin_adapter_checks(
             Key::CollectionV1,
             accounts,
-            &external_plugin_adapter_checks,
+            &external_checks,
             authority_info,
             None,
             new_plugin,

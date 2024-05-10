@@ -118,8 +118,8 @@ pub enum MplCoreError {
     /// 35 (0x23) - Oracle external plugin adapter can only be configured to reject
     #[error("Oracle external plugin adapter can only be configured to reject")]
     OracleCanRejectOnly,
-    /// 36 (0x24) - External external plugin adapter must have at least one lifecycle check
-    #[error("External external plugin adapter must have at least one lifecycle check")]
+    /// 36 (0x24) - External plugin adapter must have at least one lifecycle check
+    #[error("External plugin adapter must have at least one lifecycle check")]
     RequiresLifecycleCheck,
     /// 37 (0x25) - Duplicate lifecycle checks were provided for external plugin adapter
     #[error("Duplicate lifecycle checks were provided for external plugin adapter ")]

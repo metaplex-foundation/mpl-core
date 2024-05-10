@@ -197,7 +197,7 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
     plugin_header.save(account, core.get_size())?;
 
     // Move offsets for existing registry records.
-    for record in &mut plugin_registry.external_plugin_adapter_registry {
+    for record in &mut plugin_registry.external_registry {
         if registry_record.offset < record.offset {
             let new_offset = (record.offset as isize)
                 .checked_add(size_diff)

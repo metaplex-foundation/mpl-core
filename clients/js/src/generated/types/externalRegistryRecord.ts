@@ -18,45 +18,43 @@ import {
 import {
   BasePluginAuthority,
   BasePluginAuthorityArgs,
-  ExternalPluginAdapterCheckResult,
-  ExternalPluginAdapterCheckResultArgs,
+  ExternalCheckResult,
+  ExternalCheckResultArgs,
   ExternalPluginAdapterType,
   ExternalPluginAdapterTypeArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
   getBasePluginAuthoritySerializer,
-  getExternalPluginAdapterCheckResultSerializer,
+  getExternalCheckResultSerializer,
   getExternalPluginAdapterTypeSerializer,
   getHookableLifecycleEventSerializer,
 } from '.';
 
-export type ExternalPluginAdapterRegistryRecord = {
+export type ExternalRegistryRecord = {
   pluginType: ExternalPluginAdapterType;
   authority: BasePluginAuthority;
-  lifecycleChecks: Option<
-    Array<[HookableLifecycleEvent, ExternalPluginAdapterCheckResult]>
-  >;
+  lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   offset: bigint;
   dataOffset: Option<bigint>;
   dataLen: Option<bigint>;
 };
 
-export type ExternalPluginAdapterRegistryRecordArgs = {
+export type ExternalRegistryRecordArgs = {
   pluginType: ExternalPluginAdapterTypeArgs;
   authority: BasePluginAuthorityArgs;
   lifecycleChecks: OptionOrNullable<
-    Array<[HookableLifecycleEventArgs, ExternalPluginAdapterCheckResultArgs]>
+    Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
   offset: number | bigint;
   dataOffset: OptionOrNullable<number | bigint>;
   dataLen: OptionOrNullable<number | bigint>;
 };
 
-export function getExternalPluginAdapterRegistryRecordSerializer(): Serializer<
-  ExternalPluginAdapterRegistryRecordArgs,
-  ExternalPluginAdapterRegistryRecord
+export function getExternalRegistryRecordSerializer(): Serializer<
+  ExternalRegistryRecordArgs,
+  ExternalRegistryRecord
 > {
-  return struct<ExternalPluginAdapterRegistryRecord>(
+  return struct<ExternalRegistryRecord>(
     [
       ['pluginType', getExternalPluginAdapterTypeSerializer()],
       ['authority', getBasePluginAuthoritySerializer()],
@@ -66,7 +64,7 @@ export function getExternalPluginAdapterRegistryRecordSerializer(): Serializer<
           array(
             tuple([
               getHookableLifecycleEventSerializer(),
-              getExternalPluginAdapterCheckResultSerializer(),
+              getExternalCheckResultSerializer(),
             ])
           )
         ),
@@ -75,9 +73,6 @@ export function getExternalPluginAdapterRegistryRecordSerializer(): Serializer<
       ['dataOffset', option(u64())],
       ['dataLen', option(u64())],
     ],
-    { description: 'ExternalPluginAdapterRegistryRecord' }
-  ) as Serializer<
-    ExternalPluginAdapterRegistryRecordArgs,
-    ExternalPluginAdapterRegistryRecord
-  >;
+    { description: 'ExternalRegistryRecord' }
+  ) as Serializer<ExternalRegistryRecordArgs, ExternalRegistryRecord>;
 }

@@ -6,7 +6,7 @@ use crate::{error::MplCoreError, plugins::ExternalPluginAdapterKey};
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct WriteExternalPluginAdapterDataV1Args {
-    /// External external plugin adapter key.
+    /// External plugin adapter key.
     pub key: ExternalPluginAdapterKey,
     /// The data to write.
     pub data: Vec<u8>,
@@ -22,7 +22,7 @@ pub(crate) fn write_external_plugin_adapter_data<'a>(
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct WriteCollectionExternalPluginAdapterDataV1Args {
-    /// External external plugin adapter key.
+    /// External plugin adapter key.
     pub key: ExternalPluginAdapterKey,
     /// The data to write.
     pub data: Vec<u8>,

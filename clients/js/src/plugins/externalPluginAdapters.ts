@@ -11,7 +11,7 @@ import {
   BaseExternalPluginAdapterInitInfoArgs,
   BaseExternalPluginAdapterKey,
   BaseExternalPluginAdapterUpdateInfoArgs,
-  ExternalPluginAdapterRegistryRecord,
+  ExternalRegistryRecord,
   getExternalPluginAdapterSerializer,
 } from '../generated';
 
@@ -81,8 +81,8 @@ export type ExternalPluginAdapterData = {
   dataOffset: bigint;
 };
 
-export function externalPluginAdapterRegistryRecordsToExternalPluginAdapterList(
-  records: ExternalPluginAdapterRegistryRecord[],
+export function externalRegistryRecordsToExternalPluginAdapterList(
+  records: ExternalRegistryRecord[],
   accountData: Uint8Array
 ): ExternalPluginAdaptersList {
   const result: ExternalPluginAdaptersList = {};

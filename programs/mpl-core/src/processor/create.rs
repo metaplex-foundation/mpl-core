@@ -10,9 +10,9 @@ use crate::{
     instruction::accounts::CreateV2Accounts,
     plugins::{
         create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
-        initialize_plugin, CheckResult, ExternalPluginAdapter,
-        ExternalPluginAdapterCheckResultBits, ExternalPluginAdapterInitInfo, Plugin,
-        PluginAuthorityPair, PluginType, PluginValidationContext, ValidationResult,
+        initialize_plugin, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
+        ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair, PluginType,
+        PluginValidationContext, ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT,
@@ -208,17 +208,16 @@ pub(crate) fn process_create<'a>(
                     ctx.accounts.system_program,
                 )?;
                 for plugin_init_info in &plugins {
-                    let external_plugin_adapter_check_result_bits =
-                        ExternalPluginAdapterCheckResultBits::from(
-                            ExternalPluginAdapter::check_create(plugin_init_info),
-                        );
+                    let external_check_result_bits = ExternalCheckResultBits::from(
+                        ExternalPluginAdapter::check_create(plugin_init_info),
+                    );
 
-                    if external_plugin_adapter_check_result_bits.can_reject() {
+                    if external_check_result_bits.can_reject() {
                         let validation_ctx = PluginValidationContext {
                             accounts,
                             asset_info: Some(ctx.accounts.asset),
                             collection_info: ctx.accounts.collection,
-                            // External external plugin adapters are always managed by the update authority.
+                            // External plugin adapters are always managed by the update authority.
                             self_authority: &Authority::UpdateAuthority,
                             authority_info: authority,
                             resolved_authorities: None,

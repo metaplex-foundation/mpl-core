@@ -23,7 +23,7 @@ import {
 } from './pluginRegistryV1Data';
 import {
   ExternalPluginAdaptersList,
-  externalPluginAdapterRegistryRecordsToExternalPluginAdapterList,
+  externalRegistryRecordsToExternalPluginAdapterList,
 } from '../plugins/externalPluginAdapters';
 
 export type AssetV1AccountData = Omit<
@@ -90,8 +90,8 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
       );
 
       externalPluginAdaptersList =
-        externalPluginAdapterRegistryRecordsToExternalPluginAdapterList(
-          pluginRegistry.externalPluginAdapterRegistry,
+        externalRegistryRecordsToExternalPluginAdapterList(
+          pluginRegistry.externalRegistry,
           buffer
         );
     }

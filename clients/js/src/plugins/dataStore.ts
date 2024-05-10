@@ -3,7 +3,7 @@ import {
   BaseDataStoreInitInfoArgs,
   BaseDataStoreUpdateInfoArgs,
   ExternalPluginAdapterSchema,
-  ExternalPluginAdapterRegistryRecord,
+  ExternalRegistryRecord,
 } from '../generated';
 import { ExternalPluginAdapterKey } from './externalPluginAdapterKey';
 import { ExternalPluginAdapterManifest } from './externalPluginAdapterManifest';
@@ -68,7 +68,7 @@ export function dataStoreUpdateInfoArgsToBase(
 
 export function dataStoreFromBase(
   s: BaseDataStore,
-  r: ExternalPluginAdapterRegistryRecord,
+  r: ExternalRegistryRecord,
   account: Uint8Array
 ): DataStore {
   return {

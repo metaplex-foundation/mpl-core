@@ -23,7 +23,7 @@ impl Asset {
 
             let plugin_list = registry_records_to_plugin_list(&plugin_registry.registry, data)?;
             let external_plugin_adapter_list = registry_records_to_external_plugin_adapter_list(
-                &plugin_registry.external_plugin_adapter_registry,
+                &plugin_registry.external_registry,
                 data,
             )?;
 

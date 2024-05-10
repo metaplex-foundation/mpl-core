@@ -9,7 +9,7 @@ import {
   BaseOracle,
   BaseOracleInitInfoArgs,
   BaseOracleUpdateInfoArgs,
-  ExternalPluginAdapterRegistryRecord,
+  ExternalRegistryRecord,
   getOracleValidationSerializer,
   OracleValidation,
 } from '../generated';
@@ -94,7 +94,7 @@ export function oracleUpdateInfoArgsToBase(
 
 export function oracleFromBase(
   s: BaseOracle,
-  r: ExternalPluginAdapterRegistryRecord,
+  r: ExternalRegistryRecord,
   account: Uint8Array
 ): Oracle {
   return {

@@ -9,9 +9,8 @@ use crate::{
 };
 
 use super::{
-    CheckResult, ExternalPluginAdapterCheckResult, ExternalPluginAdapterCheckResultBits,
-    ExternalPluginAdapterKey, ExternalPluginAdapterType, ExternalPluginAdapterUpdateInfo,
-    HookableLifecycleEvent, PluginType,
+    CheckResult, ExternalCheckResult, ExternalCheckResultBits, ExternalPluginAdapterKey,
+    ExternalPluginAdapterType, ExternalPluginAdapterUpdateInfo, HookableLifecycleEvent, PluginType,
 };
 
 /// The Plugin Registry stores a record of all plugins, their location, and their authorities.
@@ -23,7 +22,7 @@ pub struct PluginRegistryV1 {
     /// The registry of all plugins.
     pub registry: Vec<RegistryRecord>, // 4
     /// The registry of all adapter, third party, plugins.
-    pub external_plugin_adapter_registry: Vec<ExternalPluginAdapterRegistryRecord>, // 4
+    pub external_registry: Vec<ExternalRegistryRecord>, // 4
 }
 
 impl PluginRegistryV1 {
@@ -49,14 +48,10 @@ impl PluginRegistryV1 {
         lifecycle_event: &HookableLifecycleEvent,
         result: &mut BTreeMap<
             ExternalPluginAdapterKey,
-            (
-                Key,
-                ExternalPluginAdapterCheckResultBits,
-                ExternalPluginAdapterRegistryRecord,
-            ),
+            (Key, ExternalCheckResultBits, ExternalRegistryRecord),
         >,
     ) -> ProgramResult {
-        for record in &self.external_plugin_adapter_registry {
+        for record in &self.external_registry {
             if let Some(lifecycle_checks) = &record.lifecycle_checks {
                 for (event, check_result) in lifecycle_checks {
                     if event == lifecycle_event {
@@ -66,7 +61,7 @@ impl PluginRegistryV1 {
                             plugin_key,
                             (
                                 key,
-                                ExternalPluginAdapterCheckResultBits::from(*check_result),
+                                ExternalCheckResultBits::from(*check_result),
                                 record.clone(),
                             ),
                         );
@@ -117,13 +112,13 @@ impl RegistryRecord {
 /// A type to store the mapping of third party plugin type to third party plugin header and data.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
-pub struct ExternalPluginAdapterRegistryRecord {
+pub struct ExternalRegistryRecord {
     /// The adapter, third party plugin type.
     pub plugin_type: ExternalPluginAdapterType,
     /// The authority of the external plugin adapter.
     pub authority: Authority,
     /// The lifecyle events for which the the external plugin adapter is active.
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>>,
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// The offset to the plugin in the account.
     pub offset: usize, // 8
     /// For plugins with data, the offset to the data in the account.
@@ -132,7 +127,7 @@ pub struct ExternalPluginAdapterRegistryRecord {
     pub data_len: Option<usize>,
 }
 
-impl ExternalPluginAdapterRegistryRecord {
+impl ExternalRegistryRecord {
     /// Update the adapter registry record with the new info, if relevant.
     pub fn update(&mut self, update_info: &ExternalPluginAdapterUpdateInfo) -> ProgramResult {
         match update_info {

@@ -13,7 +13,7 @@ import {
 } from '../generated/types/collectionV1AccountData';
 import {
   ExternalPluginAdaptersList,
-  externalPluginAdapterRegistryRecordsToExternalPluginAdapterList,
+  externalRegistryRecordsToExternalPluginAdapterList,
   PluginsList,
   registryRecordsToPluginsList,
 } from '../plugins';
@@ -83,8 +83,8 @@ export const getCollectionV1AccountDataSerializer = (): Serializer<
       );
 
       externalPluginAdaptersList =
-        externalPluginAdapterRegistryRecordsToExternalPluginAdapterList(
-          pluginRegistry.externalPluginAdapterRegistry,
+        externalRegistryRecordsToExternalPluginAdapterList(
+          pluginRegistry.externalRegistry,
           buffer
         );
     }

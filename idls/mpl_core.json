@@ -1952,10 +1952,10 @@
             }
           },
           {
-            "name": "externalPluginAdapterRegistry",
+            "name": "externalRegistry",
             "type": {
               "vec": {
-                "defined": "ExternalPluginAdapterRegistryRecord"
+                "defined": "ExternalRegistryRecord"
               }
             }
           }
@@ -2225,7 +2225,7 @@
       }
     },
     {
-      "name": "ExternalPluginAdapterCheckResult",
+      "name": "ExternalCheckResult",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2298,7 +2298,7 @@
                     "defined": "HookableLifecycleEvent"
                   },
                   {
-                    "defined": "ExternalPluginAdapterCheckResult"
+                    "defined": "ExternalCheckResult"
                   }
                 ]
               }
@@ -2348,7 +2348,7 @@
                       "defined": "HookableLifecycleEvent"
                     },
                     {
-                      "defined": "ExternalPluginAdapterCheckResult"
+                      "defined": "ExternalCheckResult"
                     }
                   ]
                 }
@@ -2454,7 +2454,7 @@
                     "defined": "HookableLifecycleEvent"
                   },
                   {
-                    "defined": "ExternalPluginAdapterCheckResult"
+                    "defined": "ExternalCheckResult"
                   }
                 ]
               }
@@ -2494,7 +2494,7 @@
                       "defined": "HookableLifecycleEvent"
                     },
                     {
-                      "defined": "ExternalPluginAdapterCheckResult"
+                      "defined": "ExternalCheckResult"
                     }
                   ]
                 }
@@ -2571,7 +2571,7 @@
       }
     },
     {
-      "name": "ExternalPluginAdapterRegistryRecord",
+      "name": "ExternalRegistryRecord",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2597,7 +2597,7 @@
                       "defined": "HookableLifecycleEvent"
                     },
                     {
-                      "defined": "ExternalPluginAdapterCheckResult"
+                      "defined": "ExternalCheckResult"
                     }
                   ]
                 }
@@ -4213,7 +4213,7 @@
     {
       "code": 36,
       "name": "RequiresLifecycleCheck",
-      "msg": "External external plugin adapter must have at least one lifecycle check"
+      "msg": "External plugin adapter must have at least one lifecycle check"
     },
     {
       "code": 37,

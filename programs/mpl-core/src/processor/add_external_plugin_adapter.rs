@@ -21,7 +21,7 @@ use crate::{
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct AddExternalPluginAdapterV1Args {
-    /// External external plugin adapter initialization info.
+    /// External plugin adapter initialization info.
     pub init_info: ExternalPluginAdapterInitInfo,
 }
 
@@ -104,7 +104,7 @@ pub(crate) fn add_external_plugin_adapter<'a>(
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct AddCollectionExternalPluginAdapterV1Args {
-    /// External external plugin adapter initialization info.
+    /// External plugin adapter initialization info.
     pub init_info: ExternalPluginAdapterInitInfo,
 }
 

@@ -13,11 +13,11 @@ use crate::{
         RegistryRecord,
     },
     AddBlockerPlugin, AttributesPlugin, BaseAuthority, BasePlugin, BurnDelegatePlugin, DataBlob,
-    EditionPlugin, ExternalPluginAdapterRegistryRecordSafe, ExternalPluginAdaptersList,
-    FreezeDelegatePlugin, ImmutableMetadataPlugin, MasterEditionPlugin,
-    PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin,
-    PluginRegistryV1Safe, PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount,
-    TransferDelegatePlugin, UpdateDelegatePlugin,
+    EditionPlugin, ExternalPluginAdaptersList, ExternalRegistryRecordSafe, FreezeDelegatePlugin,
+    ImmutableMetadataPlugin, MasterEditionPlugin, PermanentBurnDelegatePlugin,
+    PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin, PluginRegistryV1Safe,
+    PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount, TransferDelegatePlugin,
+    UpdateDelegatePlugin,
 };
 
 /// Fetch the plugin from the registry.
@@ -218,7 +218,7 @@ pub(crate) fn registry_records_to_plugin_list(
 // Convert a slice of `AdapterRegistryRecordSafe` into the `ExternalPluginAdaptersList` type, dropping any unknown
 // plugins (i.e. `ExternalPluginAdapterType`s that are too new for this client to know about).
 pub(crate) fn registry_records_to_external_plugin_adapter_list(
-    registry_records: &[ExternalPluginAdapterRegistryRecordSafe],
+    registry_records: &[ExternalRegistryRecordSafe],
     account_data: &[u8],
 ) -> Result<ExternalPluginAdaptersList, std::io::Error> {
     let result = registry_records.iter().try_fold(

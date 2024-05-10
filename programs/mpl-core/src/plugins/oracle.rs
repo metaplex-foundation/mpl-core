@@ -4,8 +4,8 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use crate::error::MplCoreError;
 
 use super::{
-    Authority, ExternalPluginAdapterCheckResult, ExternalValidationResult, ExtraAccount,
-    HookableLifecycleEvent, PluginValidation, PluginValidationContext, ValidationResult,
+    Authority, ExternalCheckResult, ExternalValidationResult, ExtraAccount, HookableLifecycleEvent,
+    PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// Oracle plugin that allows getting a `ValidationResult` for a lifecycle event from an arbitrary
@@ -142,7 +142,7 @@ pub struct OracleInitInfo {
     /// Initial plugin authority.
     pub init_plugin_authority: Option<Authority>,
     /// The lifecyle events for which the the external plugin adapter is active.
-    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>,
+    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
     /// Optional account specification (PDA derived from `base_address` or other available account
     /// specifications).  Note that even when this configuration is used there is still only one
     /// Oracle account specified by the adapter.
@@ -156,7 +156,7 @@ pub struct OracleInitInfo {
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct OracleUpdateInfo {
     /// The lifecyle events for which the the external plugin adapter is active.
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>>,
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// Optional account specification (PDA derived from `base_address` or other available account
     /// specifications).  Note that even when this configuration is used there is still only one
     /// Oracle account specified by the adapter.

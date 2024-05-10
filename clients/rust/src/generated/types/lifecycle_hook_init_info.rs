@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::ExternalPluginAdapterCheckResult;
+use crate::generated::types::ExternalCheckResult;
 use crate::generated::types::ExternalPluginAdapterSchema;
 use crate::generated::types::ExtraAccount;
 use crate::generated::types::HookableLifecycleEvent;
@@ -27,7 +27,7 @@ pub struct LifecycleHookInitInfo {
     )]
     pub hooked_program: Pubkey,
     pub init_plugin_authority: Option<PluginAuthority>,
-    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>,
+    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     pub data_authority: Option<PluginAuthority>,
     pub schema: Option<ExternalPluginAdapterSchema>,

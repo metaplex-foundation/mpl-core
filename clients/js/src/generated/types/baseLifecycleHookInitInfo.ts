@@ -20,15 +20,15 @@ import {
   BaseExtraAccountArgs,
   BasePluginAuthority,
   BasePluginAuthorityArgs,
-  ExternalPluginAdapterCheckResult,
-  ExternalPluginAdapterCheckResultArgs,
+  ExternalCheckResult,
+  ExternalCheckResultArgs,
   ExternalPluginAdapterSchema,
   ExternalPluginAdapterSchemaArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
   getBaseExtraAccountSerializer,
   getBasePluginAuthoritySerializer,
-  getExternalPluginAdapterCheckResultSerializer,
+  getExternalCheckResultSerializer,
   getExternalPluginAdapterSchemaSerializer,
   getHookableLifecycleEventSerializer,
 } from '.';
@@ -36,9 +36,7 @@ import {
 export type BaseLifecycleHookInitInfo = {
   hookedProgram: PublicKey;
   initPluginAuthority: Option<BasePluginAuthority>;
-  lifecycleChecks: Array<
-    [HookableLifecycleEvent, ExternalPluginAdapterCheckResult]
-  >;
+  lifecycleChecks: Array<[HookableLifecycleEvent, ExternalCheckResult]>;
   extraAccounts: Option<Array<BaseExtraAccount>>;
   dataAuthority: Option<BasePluginAuthority>;
   schema: Option<ExternalPluginAdapterSchema>;
@@ -47,9 +45,7 @@ export type BaseLifecycleHookInitInfo = {
 export type BaseLifecycleHookInitInfoArgs = {
   hookedProgram: PublicKey;
   initPluginAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
-  lifecycleChecks: Array<
-    [HookableLifecycleEventArgs, ExternalPluginAdapterCheckResultArgs]
-  >;
+  lifecycleChecks: Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>;
   extraAccounts: OptionOrNullable<Array<BaseExtraAccountArgs>>;
   dataAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
   schema: OptionOrNullable<ExternalPluginAdapterSchemaArgs>;
@@ -68,7 +64,7 @@ export function getBaseLifecycleHookInitInfoSerializer(): Serializer<
         array(
           tuple([
             getHookableLifecycleEventSerializer(),
-            getExternalPluginAdapterCheckResultSerializer(),
+            getExternalCheckResultSerializer(),
           ])
         ),
       ],

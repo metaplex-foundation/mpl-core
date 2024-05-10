@@ -22,23 +22,21 @@ import {
   BasePluginAuthorityArgs,
   BaseValidationResultsOffset,
   BaseValidationResultsOffsetArgs,
-  ExternalPluginAdapterCheckResult,
-  ExternalPluginAdapterCheckResultArgs,
+  ExternalCheckResult,
+  ExternalCheckResultArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
   getBaseExtraAccountSerializer,
   getBasePluginAuthoritySerializer,
   getBaseValidationResultsOffsetSerializer,
-  getExternalPluginAdapterCheckResultSerializer,
+  getExternalCheckResultSerializer,
   getHookableLifecycleEventSerializer,
 } from '.';
 
 export type BaseOracleInitInfo = {
   baseAddress: PublicKey;
   initPluginAuthority: Option<BasePluginAuthority>;
-  lifecycleChecks: Array<
-    [HookableLifecycleEvent, ExternalPluginAdapterCheckResult]
-  >;
+  lifecycleChecks: Array<[HookableLifecycleEvent, ExternalCheckResult]>;
   baseAddressConfig: Option<BaseExtraAccount>;
   resultsOffset: Option<BaseValidationResultsOffset>;
 };
@@ -46,9 +44,7 @@ export type BaseOracleInitInfo = {
 export type BaseOracleInitInfoArgs = {
   baseAddress: PublicKey;
   initPluginAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
-  lifecycleChecks: Array<
-    [HookableLifecycleEventArgs, ExternalPluginAdapterCheckResultArgs]
-  >;
+  lifecycleChecks: Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>;
   baseAddressConfig: OptionOrNullable<BaseExtraAccountArgs>;
   resultsOffset: OptionOrNullable<BaseValidationResultsOffsetArgs>;
 };
@@ -66,7 +62,7 @@ export function getBaseOracleInitInfoSerializer(): Serializer<
         array(
           tuple([
             getHookableLifecycleEventSerializer(),
-            getExternalPluginAdapterCheckResultSerializer(),
+            getExternalCheckResultSerializer(),
           ])
         ),
       ],

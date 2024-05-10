@@ -9,7 +9,7 @@ import {
   BaseLifecycleHookInitInfoArgs,
   BaseLifecycleHookUpdateInfoArgs,
   ExternalPluginAdapterSchema,
-  ExternalPluginAdapterRegistryRecord,
+  ExternalRegistryRecord,
 } from '../generated';
 import { LifecycleChecks, lifecycleChecksToBase } from './lifecycleChecks';
 import {
@@ -99,7 +99,7 @@ export function lifecycleHookUpdateInfoArgsToBase(
 
 export function lifecycleHookFromBase(
   s: BaseLifecycleHook,
-  r: ExternalPluginAdapterRegistryRecord,
+  r: ExternalRegistryRecord,
   account: Uint8Array
 ): LifecycleHook {
   return {

@@ -3,7 +3,7 @@ pub mod setup;
 use mpl_core::{
     errors::MplCoreError,
     types::{
-        DataStore, DataStoreInitInfo, ExternalPluginAdapter, ExternalPluginAdapterCheckResult,
+        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPluginAdapter,
         ExternalPluginAdapterInitInfo, ExternalPluginAdapterSchema, HookableLifecycleEvent,
         LifecycleHook, LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority,
         UpdateAuthority, ValidationResultsOffset,
@@ -40,7 +40,7 @@ async fn test_create_lifecycle_hook() {
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     lifecycle_checks: vec![(
                         HookableLifecycleEvent::Transfer,
-                        ExternalPluginAdapterCheckResult { flags: 1 },
+                        ExternalCheckResult { flags: 1 },
                     )],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
@@ -100,11 +100,11 @@ async fn test_cannot_create_lifecycle_hook_with_duplicate_lifecycle_checks() {
                     lifecycle_checks: vec![
                         (
                             HookableLifecycleEvent::Transfer,
-                            ExternalPluginAdapterCheckResult { flags: 1 },
+                            ExternalCheckResult { flags: 1 },
                         ),
                         (
                             HookableLifecycleEvent::Transfer,
-                            ExternalPluginAdapterCheckResult { flags: 1 },
+                            ExternalCheckResult { flags: 1 },
                         ),
                     ],
                     extra_accounts: None,
@@ -144,7 +144,7 @@ async fn test_temporarily_cannot_create_lifecycle_hook() {
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     lifecycle_checks: vec![(
                         HookableLifecycleEvent::Transfer,
-                        ExternalPluginAdapterCheckResult { flags: 1 },
+                        ExternalCheckResult { flags: 1 },
                     )],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
@@ -179,7 +179,7 @@ async fn test_temporarily_cannot_create_lifecycle_hook_on_collection() {
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     lifecycle_checks: vec![(
                         HookableLifecycleEvent::Transfer,
-                        ExternalPluginAdapterCheckResult { flags: 1 },
+                        ExternalCheckResult { flags: 1 },
                     )],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
@@ -217,7 +217,7 @@ async fn test_create_oracle() {
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 lifecycle_checks: vec![(
                     HookableLifecycleEvent::Transfer,
-                    ExternalPluginAdapterCheckResult { flags: 4 },
+                    ExternalCheckResult { flags: 4 },
                 )],
                 base_address_config: None,
                 results_offset: None,
@@ -272,11 +272,11 @@ async fn test_cannot_create_oracle_with_duplicate_lifecycle_checks() {
                 lifecycle_checks: vec![
                     (
                         HookableLifecycleEvent::Transfer,
-                        ExternalPluginAdapterCheckResult { flags: 4 },
+                        ExternalCheckResult { flags: 4 },
                     ),
                     (
                         HookableLifecycleEvent::Transfer,
-                        ExternalPluginAdapterCheckResult { flags: 4 },
+                        ExternalCheckResult { flags: 4 },
                     ),
                 ],
                 base_address_config: None,

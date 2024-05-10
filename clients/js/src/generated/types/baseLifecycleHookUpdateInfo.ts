@@ -17,29 +17,27 @@ import {
 import {
   BaseExtraAccount,
   BaseExtraAccountArgs,
-  ExternalPluginAdapterCheckResult,
-  ExternalPluginAdapterCheckResultArgs,
+  ExternalCheckResult,
+  ExternalCheckResultArgs,
   ExternalPluginAdapterSchema,
   ExternalPluginAdapterSchemaArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
   getBaseExtraAccountSerializer,
-  getExternalPluginAdapterCheckResultSerializer,
+  getExternalCheckResultSerializer,
   getExternalPluginAdapterSchemaSerializer,
   getHookableLifecycleEventSerializer,
 } from '.';
 
 export type BaseLifecycleHookUpdateInfo = {
-  lifecycleChecks: Option<
-    Array<[HookableLifecycleEvent, ExternalPluginAdapterCheckResult]>
-  >;
+  lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   extraAccounts: Option<Array<BaseExtraAccount>>;
   schema: Option<ExternalPluginAdapterSchema>;
 };
 
 export type BaseLifecycleHookUpdateInfoArgs = {
   lifecycleChecks: OptionOrNullable<
-    Array<[HookableLifecycleEventArgs, ExternalPluginAdapterCheckResultArgs]>
+    Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
   extraAccounts: OptionOrNullable<Array<BaseExtraAccountArgs>>;
   schema: OptionOrNullable<ExternalPluginAdapterSchemaArgs>;
@@ -57,7 +55,7 @@ export function getBaseLifecycleHookUpdateInfoSerializer(): Serializer<
           array(
             tuple([
               getHookableLifecycleEventSerializer(),
-              getExternalPluginAdapterCheckResultSerializer(),
+              getExternalCheckResultSerializer(),
             ])
           )
         ),

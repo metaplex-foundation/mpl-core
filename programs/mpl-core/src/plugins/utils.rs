@@ -7,15 +7,15 @@ use std::collections::HashSet;
 
 use crate::{
     error::MplCoreError,
-    plugins::{ExternalPluginAdapterCheckResult, HookableLifecycleEvent},
+    plugins::{ExternalCheckResult, HookableLifecycleEvent},
     state::{AssetV1, Authority, CoreAsset, DataBlob, Key, SolanaAccount},
     utils::resize_or_reallocate_account,
 };
 
 use super::{
     ExternalPluginAdapter, ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey,
-    ExternalPluginAdapterRegistryRecord, ExternalPluginAdapterType, Plugin, PluginHeaderV1,
-    PluginRegistryV1, PluginType, RegistryRecord,
+    ExternalPluginAdapterType, ExternalRegistryRecord, Plugin, PluginHeaderV1, PluginRegistryV1,
+    PluginType, RegistryRecord,
 };
 
 /// Create plugin header and registry if it doesn't exist
@@ -37,7 +37,7 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
         let registry = PluginRegistryV1 {
             key: Key::PluginRegistryV1,
             registry: vec![],
-            external_plugin_adapter_registry: vec![],
+            external_registry: vec![],
         };
 
         resize_or_reallocate_account(
@@ -77,7 +77,7 @@ pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
     let registry = PluginRegistryV1 {
         key: Key::PluginRegistryV1,
         registry: vec![],
-        external_plugin_adapter_registry: vec![],
+        external_registry: vec![],
     };
 
     resize_or_reallocate_account(
@@ -333,7 +333,7 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     }
 
     // You cannot add a duplicate plugin.
-    for record in plugin_registry.external_plugin_adapter_registry.iter() {
+    for record in plugin_registry.external_registry.iter() {
         if ExternalPluginAdapterKey::from_record(account, record)?
             == ExternalPluginAdapterKey::from(init_info)
         {
@@ -363,7 +363,7 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
 
     let old_registry_offset = plugin_header.plugin_registry_offset;
 
-    let mut new_registry_record = ExternalPluginAdapterRegistryRecord {
+    let mut new_registry_record = ExternalRegistryRecord {
         plugin_type,
         authority: authority.unwrap_or(Authority::UpdateAuthority),
         lifecycle_checks: lifecycle_checks.clone(),
@@ -397,9 +397,7 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
 
     plugin_header.plugin_registry_offset = new_registry_offset;
 
-    plugin_registry
-        .external_plugin_adapter_registry
-        .push(new_registry_record);
+    plugin_registry.external_registry.push(new_registry_record);
 
     let new_size = account
         .data_len()
@@ -415,7 +413,7 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
 }
 
 pub(crate) fn validate_lifecycle_checks(
-    lifecycle_checks: &Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>,
+    lifecycle_checks: &Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
     can_reject_only: bool,
 ) -> ProgramResult {
     if lifecycle_checks.is_empty() {
@@ -432,7 +430,7 @@ pub(crate) fn validate_lifecycle_checks(
     }
 
     if can_reject_only {
-        let reject_only = ExternalPluginAdapterCheckResult::can_reject_only();
+        let reject_only = ExternalCheckResult::can_reject_only();
         if lifecycle_checks
             .iter()
             .any(|(_, result)| *result != reject_only)
@@ -514,7 +512,7 @@ pub fn delete_plugin<'a, T: DataBlob>(
             }
         }
 
-        for record in &mut plugin_registry.external_plugin_adapter_registry {
+        for record in &mut plugin_registry.external_registry {
             if plugin_offset < record.offset {
                 record.offset -= serialized_plugin.len()
             }
@@ -549,9 +547,7 @@ pub fn delete_external_plugin_adapter<'a, T: DataBlob>(
     let result = find_external_plugin_adapter(&plugin_registry, plugin_key, account)?;
 
     if let (Some(index), _) = result {
-        let registry_record = plugin_registry
-            .external_plugin_adapter_registry
-            .remove(index);
+        let registry_record = plugin_registry.external_registry.remove(index);
         let serialized_registry_record = registry_record.try_to_vec()?;
 
         // Fetch the offset of the plugin to be removed.
@@ -594,7 +590,7 @@ pub fn delete_external_plugin_adapter<'a, T: DataBlob>(
         header.save(account, asset.get_size())?;
 
         // Move offsets for existing registry records.
-        for record in &mut plugin_registry.external_plugin_adapter_registry {
+        for record in &mut plugin_registry.external_registry {
             if plugin_offset < record.offset {
                 record.offset -= serialized_plugin.len()
             }
@@ -686,19 +682,9 @@ pub(crate) fn find_external_plugin_adapter<'b>(
     plugin_registry: &'b PluginRegistryV1,
     plugin_key: &ExternalPluginAdapterKey,
     account: &AccountInfo<'_>,
-) -> Result<
-    (
-        Option<usize>,
-        Option<&'b ExternalPluginAdapterRegistryRecord>,
-    ),
-    ProgramError,
-> {
+) -> Result<(Option<usize>, Option<&'b ExternalRegistryRecord>), ProgramError> {
     let mut result = (None, None);
-    for (i, record) in plugin_registry
-        .external_plugin_adapter_registry
-        .iter()
-        .enumerate()
-    {
+    for (i, record) in plugin_registry.external_registry.iter().enumerate() {
         if record.plugin_type == ExternalPluginAdapterType::from(plugin_key)
             && (match plugin_key {
                 ExternalPluginAdapterKey::LifecycleHook(address)

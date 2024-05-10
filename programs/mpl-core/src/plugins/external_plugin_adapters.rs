@@ -11,10 +11,9 @@ use crate::{
 };
 
 use super::{
-    Authority, DataStore, DataStoreInitInfo, DataStoreUpdateInfo, ExternalPluginAdapterCheckResult,
-    ExternalPluginAdapterRegistryRecord, LifecycleHook, LifecycleHookInitInfo,
-    LifecycleHookUpdateInfo, Oracle, OracleInitInfo, OracleUpdateInfo, PluginValidation,
-    PluginValidationContext, ValidationResult,
+    Authority, DataStore, DataStoreInitInfo, DataStoreUpdateInfo, ExternalCheckResult,
+    ExternalRegistryRecord, LifecycleHook, LifecycleHookInitInfo, LifecycleHookUpdateInfo, Oracle,
+    OracleInitInfo, OracleUpdateInfo, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// List of third party plugin types.
@@ -97,9 +96,7 @@ impl ExternalPluginAdapter {
     }
 
     /// Check if a plugin is permitted to approve or deny a create action.
-    pub fn check_create(
-        plugin: &ExternalPluginAdapterInitInfo,
-    ) -> ExternalPluginAdapterCheckResult {
+    pub fn check_create(plugin: &ExternalPluginAdapterInitInfo) -> ExternalCheckResult {
         match plugin {
             ExternalPluginAdapterInitInfo::LifecycleHook(init_info) => {
                 if let Some(checks) = init_info
@@ -109,7 +106,7 @@ impl ExternalPluginAdapter {
                 {
                     checks.1
                 } else {
-                    ExternalPluginAdapterCheckResult::none()
+                    ExternalCheckResult::none()
                 }
             }
             ExternalPluginAdapterInitInfo::Oracle(init_info) => {
@@ -120,10 +117,10 @@ impl ExternalPluginAdapter {
                 {
                     checks.1
                 } else {
-                    ExternalPluginAdapterCheckResult::none()
+                    ExternalCheckResult::none()
                 }
             }
-            ExternalPluginAdapterInitInfo::DataStore(_) => ExternalPluginAdapterCheckResult::none(),
+            ExternalPluginAdapterInitInfo::DataStore(_) => ExternalCheckResult::none(),
         }
     }
 
@@ -503,14 +500,14 @@ pub enum ExternalPluginAdapterKey {
 impl ExternalPluginAdapterKey {
     pub(crate) fn from_record(
         account: &AccountInfo,
-        external_plugin_adapter_registry_record: &ExternalPluginAdapterRegistryRecord,
+        external_registry_record: &ExternalRegistryRecord,
     ) -> Result<Self, ProgramError> {
-        let pubkey_or_authority_offset = external_plugin_adapter_registry_record
+        let pubkey_or_authority_offset = external_registry_record
             .offset
             .checked_add(1)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
-        match external_plugin_adapter_registry_record.plugin_type {
+        match external_registry_record.plugin_type {
             ExternalPluginAdapterType::LifecycleHook => {
                 let pubkey =
                     Pubkey::deserialize(&mut &account.data.borrow()[pubkey_or_authority_offset..])?;

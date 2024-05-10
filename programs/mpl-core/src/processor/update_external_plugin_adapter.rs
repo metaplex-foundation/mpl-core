@@ -24,7 +24,7 @@ use crate::{
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct UpdateExternalPluginAdapterV1Args {
-    /// External external plugin adapter key.
+    /// External plugin adapter key.
     pub key: ExternalPluginAdapterKey,
     /// Plugin info to update.
     pub update_info: ExternalPluginAdapterUpdateInfo,
@@ -96,7 +96,7 @@ pub(crate) fn update_external_plugin_adapter<'a>(
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct UpdateCollectionExternalPluginAdapterV1Args {
-    /// External external plugin adapter key.
+    /// External plugin adapter key.
     pub key: ExternalPluginAdapterKey,
     /// Plugin info to update.
     pub update_info: ExternalPluginAdapterUpdateInfo,
@@ -224,7 +224,7 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     plugin_header.save(account, core.get_size())?;
 
     // Move offsets for existing registry records.
-    for record in &mut plugin_registry.external_plugin_adapter_registry {
+    for record in &mut plugin_registry.external_registry {
         if registry_record.offset < record.offset {
             let new_offset = (record.offset as isize)
                 .checked_add(size_diff)

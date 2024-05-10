@@ -1,4 +1,4 @@
-import { ExternalPluginAdapterRegistryRecord } from 'src/generated';
+import { ExternalRegistryRecord } from 'src/generated';
 import { ExternalPluginAdapterTypeString } from './externalPluginAdapters';
 
 export type ExternalPluginAdapterManifest<
@@ -12,7 +12,7 @@ export type ExternalPluginAdapterManifest<
   type: ExternalPluginAdapterTypeString;
   fromBase: (
     input: Base,
-    record: ExternalPluginAdapterRegistryRecord,
+    record: ExternalRegistryRecord,
     account: Uint8Array
   ) => T;
   initToBase: (input: Init) => InitBase;

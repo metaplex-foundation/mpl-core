@@ -2,7 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use super::{
-    Authority, ExternalPluginAdapterCheckResult, ExternalPluginAdapterSchema, ExtraAccount,
+    Authority, ExternalCheckResult, ExternalPluginAdapterSchema, ExtraAccount,
     HookableLifecycleEvent, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
@@ -73,7 +73,7 @@ pub struct LifecycleHookInitInfo {
     /// Initial plugin authority.
     pub init_plugin_authority: Option<Authority>,
     /// The lifecyle events for which the the external plugin adapter is active.
-    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>,
+    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
     /// The extra accounts to use for the lifecycle hook.
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     /// The authority of who can update the Lifecycle Hook data. This can be for the purposes
@@ -88,7 +88,7 @@ pub struct LifecycleHookInitInfo {
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct LifecycleHookUpdateInfo {
     /// The lifecyle events for which the the external plugin adapter is active.
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalPluginAdapterCheckResult)>>,
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// The extra accounts to use for the lifecycle hook.
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     /// Schema for the data used by the plugin.

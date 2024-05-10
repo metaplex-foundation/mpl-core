@@ -3,7 +3,7 @@ pub mod setup;
 use mpl_core::{
     instructions::RemoveExternalPluginAdapterV1Builder,
     types::{
-        DataStore, DataStoreInitInfo, ExternalPluginAdapter, ExternalPluginAdapterCheckResult,
+        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPluginAdapter,
         ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
         HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle, OracleInitInfo,
         PluginAuthority, UpdateAuthority, ValidationResultsOffset,
@@ -40,7 +40,7 @@ async fn test_remove_lifecycle_hook() {
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     lifecycle_checks: vec![(
                         HookableLifecycleEvent::Transfer,
-                        ExternalPluginAdapterCheckResult { flags: 1 },
+                        ExternalCheckResult { flags: 1 },
                     )],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
@@ -128,7 +128,7 @@ async fn test_remove_oracle() {
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 lifecycle_checks: vec![(
                     HookableLifecycleEvent::Transfer,
-                    ExternalPluginAdapterCheckResult { flags: 4 },
+                    ExternalCheckResult { flags: 4 },
                 )],
                 base_address_config: None,
                 results_offset: None,

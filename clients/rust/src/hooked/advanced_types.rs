@@ -8,11 +8,10 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, Attributes, BurnDelegate, DataStore, Edition, ExternalPluginAdapter,
-        ExternalPluginAdapterCheckResult, ExternalPluginAdapterKey, FreezeDelegate,
-        ImmutableMetadata, Key, LifecycleHook, MasterEdition, Oracle, PermanentBurnDelegate,
-        PermanentFreezeDelegate, PermanentTransferDelegate, PluginAuthority, Royalties,
-        TransferDelegate, UpdateDelegate,
+        AddBlocker, Attributes, BurnDelegate, DataStore, Edition, ExternalCheckResult,
+        ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate, ImmutableMetadata, Key,
+        LifecycleHook, MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
+        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
     },
 };
 
@@ -204,16 +203,16 @@ impl RegistryRecordSafe {
 
 ///ExternalPluginAdapter Registry record that can be used when the plugin type is not known (i.e. a `ExternalPluginAdapterType` that
 /// is too new for this client to know about).
-pub struct ExternalPluginAdapterRegistryRecordSafe {
+pub struct ExternalRegistryRecordSafe {
     pub plugin_type: u8,
     pub authority: PluginAuthority,
-    pub lifecycle_checks: Option<Vec<(u8, ExternalPluginAdapterCheckResult)>>,
+    pub lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
     pub offset: u64,
     pub data_offset: Option<u64>,
     pub data_len: Option<u64>,
 }
 
-impl ExternalPluginAdapterRegistryRecordSafe {
+impl ExternalRegistryRecordSafe {
     /// Associated function for sorting `RegistryRecordIndexable` by offset.
     pub fn compare_offsets(a: &RegistryRecordSafe, b: &RegistryRecordSafe) -> Ordering {
         a.offset.cmp(&b.offset)
@@ -226,7 +225,7 @@ impl ExternalPluginAdapterRegistryRecordSafe {
 pub struct PluginRegistryV1Safe {
     pub _key: Key,
     pub registry: Vec<RegistryRecordSafe>,
-    pub external_plugin_adapter_registry: Vec<ExternalPluginAdapterRegistryRecordSafe>,
+    pub external_registry: Vec<ExternalRegistryRecordSafe>,
 }
 
 impl PluginRegistryV1Safe {
@@ -253,19 +252,19 @@ impl PluginRegistryV1Safe {
             });
         }
 
-        let external_plugin_adapter_registry_size = u32::deserialize(&mut data)?;
+        let external_registry_size = u32::deserialize(&mut data)?;
 
-        let mut external_plugin_adapter_registry = vec![];
-        for _ in 0..external_plugin_adapter_registry_size {
+        let mut external_registry = vec![];
+        for _ in 0..external_registry_size {
             let plugin_type = u8::deserialize(&mut data)?;
             let authority = PluginAuthority::deserialize(&mut data)?;
             let lifecycle_checks =
-                Option::<Vec<(u8, ExternalPluginAdapterCheckResult)>>::deserialize(&mut data)?;
+                Option::<Vec<(u8, ExternalCheckResult)>>::deserialize(&mut data)?;
             let offset = u64::deserialize(&mut data)?;
             let data_offset = Option::<u64>::deserialize(&mut data)?;
             let data_len = Option::<u64>::deserialize(&mut data)?;
 
-            external_plugin_adapter_registry.push(ExternalPluginAdapterRegistryRecordSafe {
+            external_registry.push(ExternalRegistryRecordSafe {
                 plugin_type,
                 authority,
                 lifecycle_checks,
@@ -278,7 +277,7 @@ impl PluginRegistryV1Safe {
         Ok(Self {
             _key: key,
             registry,
-            external_plugin_adapter_registry,
+            external_registry,
         })
     }
 }
