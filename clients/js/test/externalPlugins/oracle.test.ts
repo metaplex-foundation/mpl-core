@@ -1955,7 +1955,7 @@ test('it can use custom pda (with custom program ID) oracle to deny transfer', a
           bytes: Buffer.from('additional-bytes-seed-bytes', 'utf8'),
         },
       ],
-      customProgramId: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID
+      customProgramId: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
     },
   };
 
@@ -2057,7 +2057,7 @@ test('it can use custom pda (with custom program ID) oracle to deny transfer', a
               ),
             },
           ],
-          customProgramId: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID
+          customProgramId: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
         },
       },
     ],
