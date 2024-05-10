@@ -2412,7 +2412,7 @@
             "type": "publicKey"
           },
           {
-            "name": "pda",
+            "name": "baseAddressConfig",
             "type": {
               "option": {
                 "defined": "ExtraAccount"
@@ -2461,7 +2461,7 @@
             }
           },
           {
-            "name": "pda",
+            "name": "baseAddressConfig",
             "type": {
               "option": {
                 "defined": "ExtraAccount"
@@ -2502,7 +2502,7 @@
             }
           },
           {
-            "name": "pda",
+            "name": "baseAddressConfig",
             "type": {
               "option": {
                 "defined": "ExtraAccount"

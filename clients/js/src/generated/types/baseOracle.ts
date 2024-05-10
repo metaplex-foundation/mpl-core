@@ -24,13 +24,13 @@ import {
 
 export type BaseOracle = {
   baseAddress: PublicKey;
-  pda: Option<BaseExtraAccount>;
+  baseAddressConfig: Option<BaseExtraAccount>;
   resultsOffset: BaseValidationResultsOffset;
 };
 
 export type BaseOracleArgs = {
   baseAddress: PublicKey;
-  pda: OptionOrNullable<BaseExtraAccountArgs>;
+  baseAddressConfig: OptionOrNullable<BaseExtraAccountArgs>;
   resultsOffset: BaseValidationResultsOffsetArgs;
 };
 
@@ -41,7 +41,7 @@ export function getBaseOracleSerializer(): Serializer<
   return struct<BaseOracle>(
     [
       ['baseAddress', publicKeySerializer()],
-      ['pda', option(getBaseExtraAccountSerializer())],
+      ['baseAddressConfig', option(getBaseExtraAccountSerializer())],
       ['resultsOffset', getBaseValidationResultsOffsetSerializer()],
     ],
     { description: 'BaseOracle' }
