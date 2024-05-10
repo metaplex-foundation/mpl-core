@@ -4,7 +4,10 @@ import {
   removeCollectionExternalPluginAdapterV1,
   removeCollectionPluginV1,
 } from '../../generated';
-import { ExternalPluginAdapterKey, externalPluginAdapterKeyToBase } from '../../plugins';
+import {
+  ExternalPluginAdapterKey,
+  externalPluginAdapterKeyToBase,
+} from '../../plugins';
 
 import { isExternalPluginAdapterType } from '../../plugins/externalPluginAdapters';
 

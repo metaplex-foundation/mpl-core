@@ -1,5 +1,9 @@
 import { Context, publicKey } from '@metaplex-foundation/umi';
-import { CollectionV1, createV2, ExternalPluginAdapterSchema } from '../generated';
+import {
+  CollectionV1,
+  createV2,
+  ExternalPluginAdapterSchema,
+} from '../generated';
 import {
   createExternalPluginAdapterInitInfo,
   findExtraAccounts,
@@ -96,7 +100,9 @@ export const create = (
   return createV2(context, {
     ...args,
     plugins: firstPartyPlugins.map(pluginAuthorityPairV2),
-    externalPluginAdapters: externalPluginAdapters.map(createExternalPluginAdapterInitInfo),
+    externalPluginAdapters: externalPluginAdapters.map(
+      createExternalPluginAdapterInitInfo
+    ),
     asset,
     collection: collection ? collection.publicKey : undefined,
   }).addRemainingAccounts(extraAccounts);

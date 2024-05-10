@@ -15,7 +15,10 @@ export const transfer = (
   context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
   { asset, collection, ...args }: TransferArgs
 ) => {
-  const derivedExternalPluginAdapters = deriveExternalPluginAdapters(asset, collection);
+  const derivedExternalPluginAdapters = deriveExternalPluginAdapters(
+    asset,
+    collection
+  );
 
   const extraAccounts = findExtraAccounts(
     context,

@@ -22,7 +22,10 @@ export const update = (
   context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
   { asset, collection, name, uri, ...args }: UpdateArgs
 ) => {
-  const derivedExternalPluginAdapters = deriveExternalPluginAdapters(asset, collection);
+  const derivedExternalPluginAdapters = deriveExternalPluginAdapters(
+    asset,
+    collection
+  );
 
   const extraAccounts = findExtraAccounts(
     context,

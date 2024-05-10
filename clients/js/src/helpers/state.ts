@@ -92,7 +92,10 @@ export function deriveAssetPlugins(
   if (!collection) {
     return asset;
   }
-  const externalPluginAdapters = deriveExternalPluginAdapters(asset, collection);
+  const externalPluginAdapters = deriveExternalPluginAdapters(
+    asset,
+    collection
+  );
 
   return {
     ...collection,

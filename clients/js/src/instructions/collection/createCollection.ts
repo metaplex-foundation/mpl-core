@@ -36,6 +36,8 @@ export const createCollection = (
   return createCollectionV2(context, {
     ...args,
     plugins: firstPartyPlugins.map(pluginAuthorityPairV2),
-    externalPluginAdapters: externalPluginAdapters.map(createExternalPluginAdapterInitInfo),
+    externalPluginAdapters: externalPluginAdapters.map(
+      createExternalPluginAdapterInitInfo
+    ),
   });
 };

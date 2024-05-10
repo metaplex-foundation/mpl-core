@@ -10,7 +10,6 @@ import {
   canBurn,
   canTransfer,
   CheckResult,
-  
   findOracleAccount,
   LifecycleValidationError,
   OracleInitInfoArgs,

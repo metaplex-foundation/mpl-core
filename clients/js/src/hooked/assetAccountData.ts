@@ -89,10 +89,11 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
         buffer
       );
 
-      externalPluginAdaptersList = externalPluginAdapterRegistryRecordsToExternalPluginAdapterList(
-        pluginRegistry.externalPluginAdapterRegistry,
-        buffer
-      );
+      externalPluginAdaptersList =
+        externalPluginAdapterRegistryRecordsToExternalPluginAdapterList(
+          pluginRegistry.externalPluginAdapterRegistry,
+          buffer
+        );
     }
     const updateAuth = {
       type: asset.updateAuthority.__kind,

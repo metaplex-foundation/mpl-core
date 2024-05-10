@@ -1,5 +1,8 @@
 /* eslint-disable no-bitwise */
-import { ExternalPluginAdapterCheckResult, HookableLifecycleEvent } from '../generated';
+import {
+  ExternalPluginAdapterCheckResult,
+  HookableLifecycleEvent,
+} from '../generated';
 import { capitalizeFirstLetter } from '../utils';
 
 export type LifecycleEvent = 'create' | 'update' | 'transfer' | 'burn';

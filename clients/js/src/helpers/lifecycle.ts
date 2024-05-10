@@ -2,7 +2,7 @@ import { Context, PublicKey } from '@metaplex-foundation/umi';
 import {
   AssetV1,
   CollectionV1,
- ExternalPluginAdapterValidationResult,
+  ExternalPluginAdapterValidationResult,
   PluginType,
 } from '../generated';
 import { deriveAssetPlugins, isFrozen } from './state';
@@ -156,7 +156,7 @@ export async function validateTransfer(
         if (v?.__kind === 'Uninitialized') {
           return false;
         }
-        return v?.transfer ===ExternalPluginAdapterValidationResult.Pass;
+        return v?.transfer === ExternalPluginAdapterValidationResult.Pass;
       });
       if (!oraclePass) {
         return LifecycleValidationError.OracleValidationFailed;
@@ -295,7 +295,7 @@ export async function validateBurn(
         if (v?.__kind === 'Uninitialized') {
           return false;
         }
-        return v?.burn ===ExternalPluginAdapterValidationResult.Pass;
+        return v?.burn === ExternalPluginAdapterValidationResult.Pass;
       });
       if (!oraclePass) {
         return LifecycleValidationError.OracleValidationFailed;
@@ -387,7 +387,7 @@ export async function validateUpdate(
         if (v?.__kind === 'Uninitialized') {
           return false;
         }
-        return v?.update ===ExternalPluginAdapterValidationResult.Pass;
+        return v?.update === ExternalPluginAdapterValidationResult.Pass;
       });
 
       if (!oraclePass) {

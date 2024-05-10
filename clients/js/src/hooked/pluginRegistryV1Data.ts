@@ -31,9 +31,10 @@ export type RegistryRecordWithUnknown = RegistryRecord & {
   isUnknown?: boolean;
 };
 
-export type ExternalPluginAdapterRegistryRecordWithUnknown = ExternalPluginAdapterRegistryRecord & {
-  isUnknown?: boolean;
-};
+export type ExternalPluginAdapterRegistryRecordWithUnknown =
+  ExternalPluginAdapterRegistryRecord & {
+    isUnknown?: boolean;
+  };
 
 export function getRegistryRecordSerializer(): Serializer<
   RegistryRecordArgs,
@@ -182,9 +183,13 @@ export function getPluginRegistryV1AccountDataSerializer(): Serializer<
         getRegistryRecordSerializer()
       ).deserialize(buffer, keyOffset);
 
-      const [externalPluginAdapterRegistry, externalPluginAdapterRegistryOffset] = array(
-        getAdapterRegistryRecordSerializer()
-      ).deserialize(buffer, registryOffset);
+      const [
+        externalPluginAdapterRegistry,
+        externalPluginAdapterRegistryOffset,
+      ] = array(getAdapterRegistryRecordSerializer()).deserialize(
+        buffer,
+        registryOffset
+      );
 
       return [
         {
@@ -193,7 +198,8 @@ export function getPluginRegistryV1AccountDataSerializer(): Serializer<
             (record: RegistryRecordWithUnknown) => !record.isUnknown
           ),
           externalPluginAdapterRegistry: externalPluginAdapterRegistry.filter(
-            (record: ExternalPluginAdapterRegistryRecordWithUnknown) => !record.isUnknown
+            (record: ExternalPluginAdapterRegistryRecordWithUnknown) =>
+              !record.isUnknown
           ),
         },
         externalPluginAdapterRegistryOffset,

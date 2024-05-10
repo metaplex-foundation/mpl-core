@@ -82,10 +82,11 @@ export const getCollectionV1AccountDataSerializer = (): Serializer<
         buffer
       );
 
-      externalPluginAdaptersList = externalPluginAdapterRegistryRecordsToExternalPluginAdapterList(
-        pluginRegistry.externalPluginAdapterRegistry,
-        buffer
-      );
+      externalPluginAdaptersList =
+        externalPluginAdapterRegistryRecordsToExternalPluginAdapterList(
+          pluginRegistry.externalPluginAdapterRegistry,
+          buffer
+        );
     }
 
     return [

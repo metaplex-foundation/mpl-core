@@ -5,17 +5,16 @@ export type RevokeCollectionPluginAuthorityArgs = Omit<
   Parameters<typeof revokeCollectionPluginAuthorityV1>[1],
   'pluginType'
 > & {
-  plugin:
-    | {
-        type: keyof typeof PluginType;
-      }
-    
+  plugin: {
+    type: keyof typeof PluginType;
+  };
 };
 
 export const revokeCollectionPluginAuthority = (
   context: Pick<Context, 'payer' | 'programs' | 'identity'>,
   { plugin, ...args }: RevokeCollectionPluginAuthorityArgs
-) => revokeCollectionPluginAuthorityV1(context, {
+) =>
+  revokeCollectionPluginAuthorityV1(context, {
     ...args,
     pluginType: PluginType[plugin.type as keyof typeof PluginType],
   });

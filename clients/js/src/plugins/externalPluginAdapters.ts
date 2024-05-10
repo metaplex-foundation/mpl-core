@@ -37,7 +37,8 @@ import {
 import { BasePlugin } from './types';
 import { extraAccountToAccountMeta } from './extraAccount';
 
-export type ExternalPluginAdapterTypeString = BaseExternalPluginAdapterKey['__kind'];
+export type ExternalPluginAdapterTypeString =
+  BaseExternalPluginAdapterKey['__kind'];
 
 export type BaseExternalPluginAdapter = BasePlugin & LifecycleChecksContainer;
 
