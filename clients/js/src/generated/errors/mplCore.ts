@@ -486,9 +486,9 @@ export class MissingAssetError extends ProgramError {
 codeToErrorMap.set(0x21, MissingAssetError);
 nameToErrorMap.set('MissingAsset', MissingAssetError);
 
-/** MissingAdapterAccount: Missing account needed for external plugin adapter */
-export class MissingAdapterAccountError extends ProgramError {
-  override readonly name: string = 'MissingAdapterAccount';
+/** MissingExternalPluginAdapterAccount: Missing account needed for external plugin adapter */
+export class MissingExternalPluginAdapterAccountError extends ProgramError {
+  override readonly name: string = 'MissingExternalPluginAdapterAccount';
 
   readonly code: number = 0x22; // 34
 
@@ -496,8 +496,11 @@ export class MissingAdapterAccountError extends ProgramError {
     super('Missing account needed for external plugin adapter', program, cause);
   }
 }
-codeToErrorMap.set(0x22, MissingAdapterAccountError);
-nameToErrorMap.set('MissingAdapterAccount', MissingAdapterAccountError);
+codeToErrorMap.set(0x22, MissingExternalPluginAdapterAccountError);
+nameToErrorMap.set(
+  'MissingExternalPluginAdapterAccount',
+  MissingExternalPluginAdapterAccountError
+);
 
 /** OracleCanRejectOnly: Oracle external plugin adapter can only be configured to reject */
 export class OracleCanRejectOnlyError extends ProgramError {

@@ -7,7 +7,7 @@ use super::{
 };
 
 /// Lifecycle hook that CPIs into the `hooked_program`.  This hook is used for any lifecycle events
-/// that were selected in the `ExternalPluginAdapterRecord` for the plugin.  If any extra accounts are
+/// that were selected in the `ExternalRegistryRecord` for the plugin.  If any extra accounts are
 /// present in the `extra_accounts` optional `Vec`, then these accounts are added to the CPI call
 /// in the order in which they are in the Vec.  Any PDAs in the `Vec` are derived using the hooked
 /// program.  The hooked program will return a validation result and new data to store at the

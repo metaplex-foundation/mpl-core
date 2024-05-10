@@ -10,7 +10,7 @@ use super::{
 
 /// Oracle plugin that allows getting a `ValidationResult` for a lifecycle event from an arbitrary
 /// account either specified by or derived from the `base_address`.  This hook is used for any
-/// lifecycle events that were selected in the `ExternalPluginAdapterRecord` for the plugin.
+/// lifecycle events that were selected in the `ExternalRegistryRecord` for the plugin.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct Oracle {
     /// The address of the oracle, or if using the `pda` option, a program ID from which
@@ -88,7 +88,7 @@ impl Oracle {
             .accounts
             .iter()
             .find(|account| *account.key == oracle_account)
-            .ok_or(MplCoreError::MissingAdapterAccount)?;
+            .ok_or(MplCoreError::MissingExternalPluginAdapterAccount)?;
 
         let offset = self.results_offset.to_offset_usize();
 

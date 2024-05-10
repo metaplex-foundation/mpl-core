@@ -459,7 +459,7 @@ pub enum ExternalPluginAdapterSchema {
     MsgPack,
 }
 
-/// Information needed to initialize a external plugin adapter.
+/// Information needed to initialize an external plugin adapter.
 #[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum ExternalPluginAdapterInitInfo {
@@ -471,7 +471,7 @@ pub enum ExternalPluginAdapterInitInfo {
     DataStore(DataStoreInitInfo),
 }
 
-/// Information needed to update a external plugin adapter.
+/// Information needed to update an external plugin adapter.
 #[repr(C)]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum ExternalPluginAdapterUpdateInfo {
@@ -483,7 +483,7 @@ pub enum ExternalPluginAdapterUpdateInfo {
     DataStore(DataStoreUpdateInfo),
 }
 
-/// Key used to uniquely specify a external plugin adapter after it is created.
+/// Key used to uniquely specify an external plugin adapter after it is created.
 #[repr(C)]
 #[derive(
     Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq, EnumCount, PartialOrd, Ord,

@@ -8,7 +8,7 @@ use super::{
 
 /// The data store third party plugin contains arbitrary data that can be written to by the
 /// `data_authority`.  Note this is different then the overall plugin authority stored in the
-/// `ExternalPluginAdapterRecord` as it cannot update/revoke authority or change other metadata for the
+/// `ExternalRegistryRecord` as it cannot update/revoke authority or change other metadata for the
 /// plugin.  The data is stored at the plugin's data offset (which in the account is immediately
 /// after this header).
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]

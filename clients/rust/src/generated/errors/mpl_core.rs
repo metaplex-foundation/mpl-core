@@ -114,7 +114,7 @@ pub enum MplCoreError {
     MissingAsset,
     /// 34 (0x22) - Missing account needed for external plugin adapter
     #[error("Missing account needed for external plugin adapter")]
-    MissingAdapterAccount,
+    MissingExternalPluginAdapterAccount,
     /// 35 (0x23) - Oracle external plugin adapter can only be configured to reject
     #[error("Oracle external plugin adapter can only be configured to reject")]
     OracleCanRejectOnly,

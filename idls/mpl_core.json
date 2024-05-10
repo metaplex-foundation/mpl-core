@@ -4202,7 +4202,7 @@
     },
     {
       "code": 34,
-      "name": "MissingAdapterAccount",
+      "name": "MissingExternalPluginAdapterAccount",
       "msg": "Missing account needed for external plugin adapter"
     },
     {

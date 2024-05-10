@@ -309,7 +309,7 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     Ok(())
 }
 
-/// Add a external plugin adapter to the registry and initialize it.
+/// Add an external plugin adapter to the registry and initialize it.
 pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     init_info: &ExternalPluginAdapterInitInfo,
     plugin_header: &mut PluginHeaderV1,

@@ -33,7 +33,7 @@ pub enum CheckResult {
 /// deny a lifecycle event.
 #[derive(BorshDeserialize, BorshSerialize, Eq, PartialEq, Copy, Clone, Debug)]
 pub struct ExternalCheckResult {
-    /// Bitfield for adapter check results.
+    /// Bitfield for external plugin adapter check results.
     pub flags: u32,
 }
 
@@ -47,7 +47,7 @@ impl ExternalCheckResult {
     }
 }
 
-/// Bitfield representation of lifecycle permissions for adapter, third party plugins.
+/// Bitfield representation of lifecycle permissions for external plugin adapter, third party plugins.
 #[bitfield(bits = 32)]
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct ExternalCheckResultBits {
