@@ -16,8 +16,10 @@ pub struct Oracle {
     /// The address of the oracle, or if using the `pda` option, a program ID from which
     /// to derive a PDA.
     pub base_address: Pubkey,
-    /// Optional PDA (derived from Pubkey attached to `ExternalPluginKey`).
-    pub pda: Option<ExtraAccount>,
+    /// Optional account specification (PDA derived from `base_address` or other available account
+    /// specifications).  Note that even when this configuration is used there is still only one
+    /// Oracle account specified by the plugin.
+    pub base_address_config: Option<ExtraAccount>,
     /// Validation results offset in the Oracle account.  Default is `ValidationResultsOffset::NoOffset`.
     pub results_offset: ValidationResultsOffset,
 }
@@ -25,8 +27,8 @@ pub struct Oracle {
 impl Oracle {
     /// Updates the oracle with the new info.
     pub fn update(&mut self, info: &OracleUpdateInfo) {
-        if let Some(pda) = &info.pda {
-            self.pda = Some(pda.clone());
+        if let Some(base_address_config) = &info.base_address_config {
+            self.base_address_config = Some(base_address_config.clone());
         }
         if let Some(results_offset) = &info.results_offset {
             self.results_offset = *results_offset;
@@ -77,7 +79,7 @@ impl Oracle {
         ctx: &PluginValidationContext,
         event: HookableLifecycleEvent,
     ) -> Result<ValidationResult, ProgramError> {
-        let oracle_account = match &self.pda {
+        let oracle_account = match &self.base_address_config {
             None => self.base_address,
             Some(extra_account) => extra_account.derive(&self.base_address, ctx)?,
         };
@@ -123,7 +125,7 @@ impl From<&OracleInitInfo> for Oracle {
     fn from(init_info: &OracleInitInfo) -> Self {
         Self {
             base_address: init_info.base_address,
-            pda: init_info.pda.clone(),
+            base_address_config: init_info.base_address_config.clone(),
             results_offset: init_info
                 .results_offset
                 .unwrap_or(ValidationResultsOffset::NoOffset),
@@ -141,8 +143,10 @@ pub struct OracleInitInfo {
     pub init_plugin_authority: Option<Authority>,
     /// The lifecyle events for which the the external plugin is active.
     pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
-    /// Optional PDA (derived from Pubkey attached to `ExternalPluginKey`).
-    pub pda: Option<ExtraAccount>,
+    /// Optional account specification (PDA derived from `base_address` or other available account
+    /// specifications).  Note that even when this configuration is used there is still only one
+    /// Oracle account specified by the plugin.
+    pub base_address_config: Option<ExtraAccount>,
     /// Optional offset for validation results struct used in Oracle account.  Default
     /// is `ValidationResultsOffset::NoOffset`.
     pub results_offset: Option<ValidationResultsOffset>,
@@ -153,8 +157,10 @@ pub struct OracleInitInfo {
 pub struct OracleUpdateInfo {
     /// The lifecyle events for which the the external plugin is active.
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
-    /// Optional PDA (derived from Pubkey attached to `ExternalPluginKey`).
-    pub pda: Option<ExtraAccount>,
+    /// Optional account specification (PDA derived from `base_address` or other available account
+    /// specifications).  Note that even when this configuration is used there is still only one
+    /// Oracle account specified by the plugin.
+    pub base_address_config: Option<ExtraAccount>,
     /// Optional offset for validation results struct used in Oracle account.  Default
     /// is `ValidationResultsOffset::NoOffset`.
     pub results_offset: Option<ValidationResultsOffset>,
