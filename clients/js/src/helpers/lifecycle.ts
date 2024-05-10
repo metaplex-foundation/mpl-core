@@ -106,7 +106,7 @@ export async function validateTransfer(
       )
       .filter((o) => {
         // there's no PDA to derive, we can check the oracle account
-        if (!o.pda) {
+        if (!o.baseAddressConfig) {
           return true;
         }
         // If there's a recipient in the inputs, we can try to check the oracle account
@@ -114,7 +114,11 @@ export async function validateTransfer(
           return true;
         }
 
-        if (!getExtraAccountRequiredInputs(o.pda).includes('recipient')) {
+        if (
+          !getExtraAccountRequiredInputs(o.baseAddressConfig).includes(
+            'recipient'
+          )
+        ) {
           return true;
         }
         // we skip the check if there's a recipient required but no recipient provided

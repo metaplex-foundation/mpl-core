@@ -36,7 +36,10 @@ export type OraclePlugin = BasePluginAdapter &
 
 export type OracleInitInfoArgs = Omit<
   BaseOracleInitInfoArgs,
-  'initPluginAuthority' | 'lifecycleChecks' | 'baseAddressConfig' | 'resultsOffset'
+  | 'initPluginAuthority'
+  | 'lifecycleChecks'
+  | 'baseAddressConfig'
+  | 'resultsOffset'
 > & {
   type: 'Oracle';
   initPluginAuthority?: PluginAuthority;
@@ -60,7 +63,9 @@ export function oracleInitInfoArgsToBase(
 ): BaseOracleInitInfoArgs {
   return {
     baseAddress: o.baseAddress,
-    baseAddressConfig: o.baseAddressConfig ? extraAccountToBase(o.baseAddressConfig) : null,
+    baseAddressConfig: o.baseAddressConfig
+      ? extraAccountToBase(o.baseAddressConfig)
+      : null,
     lifecycleChecks: lifecycleChecksToBase(o.lifecycleChecks),
     initPluginAuthority: o.initPluginAuthority
       ? pluginAuthorityToBase(o.initPluginAuthority)
@@ -75,7 +80,9 @@ export function oracleUpdateInfoArgsToBase(
   o: OracleUpdateInfoArgs
 ): BaseOracleUpdateInfoArgs {
   return {
-    baseAddressConfig: o.baseAddressConfig ? extraAccountToBase(o.baseAddressConfig) : null,
+    baseAddressConfig: o.baseAddressConfig
+      ? extraAccountToBase(o.baseAddressConfig)
+      : null,
     lifecycleChecks: o.lifecycleChecks
       ? lifecycleChecksToBase(o.lifecycleChecks)
       : null,
@@ -93,7 +100,9 @@ export function oracleFromBase(
   return {
     ...s,
     baseAddressConfig:
-      s.baseAddressConfig.__option === 'Some' ? extraAccountFromBase(s.baseAddressConfig.value) : undefined,
+      s.baseAddressConfig.__option === 'Some'
+        ? extraAccountFromBase(s.baseAddressConfig.value)
+        : undefined,
     resultsOffset: validationResultsOffsetFromBase(s.resultsOffset),
   };
 }
