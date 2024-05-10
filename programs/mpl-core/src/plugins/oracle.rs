@@ -4,9 +4,8 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use crate::error::MplCoreError;
 
 use super::{
-    Authority, ExternalPluginAdapterCheckResult, ExternalPluginAdapterValidationResult,
-    ExtraAccount, HookableLifecycleEvent, PluginValidation, PluginValidationContext,
-    ValidationResult,
+    Authority, ExternalPluginAdapterCheckResult, ExternalValidationResult, ExtraAccount,
+    HookableLifecycleEvent, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// Oracle plugin that allows getting a `ValidationResult` for a lifecycle event from an arbitrary
@@ -198,13 +197,13 @@ pub enum OracleValidation {
     /// Version 1 of the format.
     V1 {
         /// Validation for the the create lifecycle action.
-        create: ExternalPluginAdapterValidationResult,
+        create: ExternalValidationResult,
         /// Validation for the transfer lifecycle action.
-        transfer: ExternalPluginAdapterValidationResult,
+        transfer: ExternalValidationResult,
         /// Validation for the burn lifecycle action.
-        burn: ExternalPluginAdapterValidationResult,
+        burn: ExternalValidationResult,
         /// Validation for the update lifecycle action.
-        update: ExternalPluginAdapterValidationResult,
+        update: ExternalValidationResult,
     },
 }
 

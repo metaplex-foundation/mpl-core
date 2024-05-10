@@ -3836,7 +3836,7 @@
       }
     },
     {
-      "name": "ExternalPluginAdapterValidationResult",
+      "name": "ExternalValidationResult",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3886,25 +3886,25 @@
               {
                 "name": "create",
                 "type": {
-                  "defined": "ExternalPluginAdapterValidationResult"
+                  "defined": "ExternalValidationResult"
                 }
               },
               {
                 "name": "transfer",
                 "type": {
-                  "defined": "ExternalPluginAdapterValidationResult"
+                  "defined": "ExternalValidationResult"
                 }
               },
               {
                 "name": "burn",
                 "type": {
-                  "defined": "ExternalPluginAdapterValidationResult"
+                  "defined": "ExternalValidationResult"
                 }
               },
               {
                 "name": "update",
                 "type": {
-                  "defined": "ExternalPluginAdapterValidationResult"
+                  "defined": "ExternalValidationResult"
                 }
               }
             ]

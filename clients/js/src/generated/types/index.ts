@@ -39,7 +39,7 @@ export * from './externalPluginAdapterCheckResult';
 export * from './externalPluginAdapterRegistryRecord';
 export * from './externalPluginAdapterSchema';
 export * from './externalPluginAdapterType';
-export * from './externalPluginAdapterValidationResult';
+export * from './externalValidationResult';
 export * from './freezeDelegate';
 export * from './hashablePluginSchema';
 export * from './hashedAssetSchema';

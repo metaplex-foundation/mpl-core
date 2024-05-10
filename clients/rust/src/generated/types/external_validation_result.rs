@@ -15,7 +15,7 @@ use num_derive::FromPrimitive;
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Hash, FromPrimitive)]
-pub enum ExternalPluginAdapterValidationResult {
+pub enum ExternalValidationResult {
     Approved,
     Rejected,
     Pass,

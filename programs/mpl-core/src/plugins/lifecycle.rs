@@ -759,7 +759,7 @@ pub enum ValidationResult {
 /// External external plugin adapters lifecycle validations
 /// External external plugin adapters utilize this to indicate whether they approve or reject a lifecycle action.
 #[derive(Eq, PartialEq, Debug, Clone, BorshDeserialize, BorshSerialize)]
-pub enum ExternalPluginAdapterValidationResult {
+pub enum ExternalValidationResult {
     /// The plugin approves the lifecycle action.
     Approved,
     /// The plugin rejects the lifecycle action.
@@ -768,12 +768,12 @@ pub enum ExternalPluginAdapterValidationResult {
     Pass,
 }
 
-impl From<ExternalPluginAdapterValidationResult> for ValidationResult {
-    fn from(result: ExternalPluginAdapterValidationResult) -> Self {
+impl From<ExternalValidationResult> for ValidationResult {
+    fn from(result: ExternalValidationResult) -> Self {
         match result {
-            ExternalPluginAdapterValidationResult::Approved => Self::Approved,
-            ExternalPluginAdapterValidationResult::Rejected => Self::Rejected,
-            ExternalPluginAdapterValidationResult::Pass => Self::Pass,
+            ExternalValidationResult::Approved => Self::Approved,
+            ExternalValidationResult::Rejected => Self::Rejected,
+            ExternalValidationResult::Pass => Self::Pass,
         }
     }
 }
