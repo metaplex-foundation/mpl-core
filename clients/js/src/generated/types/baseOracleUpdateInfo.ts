@@ -31,7 +31,7 @@ import {
 
 export type BaseOracleUpdateInfo = {
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, AdapterCheckResult]>>;
-  pda: Option<BaseExtraAccount>;
+  baseAddressConfig: Option<BaseExtraAccount>;
   resultsOffset: Option<BaseValidationResultsOffset>;
 };
 
@@ -39,7 +39,7 @@ export type BaseOracleUpdateInfoArgs = {
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, AdapterCheckResultArgs]>
   >;
-  pda: OptionOrNullable<BaseExtraAccountArgs>;
+  baseAddressConfig: OptionOrNullable<BaseExtraAccountArgs>;
   resultsOffset: OptionOrNullable<BaseValidationResultsOffsetArgs>;
 };
 
@@ -60,7 +60,7 @@ export function getBaseOracleUpdateInfoSerializer(): Serializer<
           )
         ),
       ],
-      ['pda', option(getBaseExtraAccountSerializer())],
+      ['baseAddressConfig', option(getBaseExtraAccountSerializer())],
       ['resultsOffset', option(getBaseValidationResultsOffsetSerializer())],
     ],
     { description: 'BaseOracleUpdateInfo' }
