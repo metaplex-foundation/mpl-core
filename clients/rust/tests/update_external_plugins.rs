@@ -244,7 +244,7 @@ async fn test_update_oracle() {
                     HookableLifecycleEvent::Transfer,
                     AdapterCheckResult { flags: 4 },
                 )],
-                pda: None,
+                base_address_config: None,
                 results_offset: None,
             })],
         },
@@ -265,7 +265,7 @@ async fn test_update_oracle() {
             plugins: vec![],
             plugin_adapters: vec![PluginAdapter::Oracle(Oracle {
                 base_address: Pubkey::default(),
-                pda: None,
+                base_address_config: None,
                 results_offset: ValidationResultsOffset::NoOffset,
             })],
         },
@@ -278,7 +278,7 @@ async fn test_update_oracle() {
         .key(PluginAdapterKey::Oracle(Pubkey::default()))
         .update_info(PluginAdapterUpdateInfo::Oracle(OracleUpdateInfo {
             lifecycle_checks: None,
-            pda: None,
+            base_address_config: None,
             results_offset: Some(ValidationResultsOffset::Custom(10)),
         }))
         .instruction();
@@ -303,7 +303,7 @@ async fn test_update_oracle() {
             plugins: vec![],
             plugin_adapters: vec![PluginAdapter::Oracle(Oracle {
                 base_address: Pubkey::default(),
-                pda: None,
+                base_address_config: None,
                 results_offset: ValidationResultsOffset::Custom(10),
             })],
         },
@@ -336,7 +336,7 @@ async fn test_cannot_update_oracle_to_have_duplicate_lifecycle_checks() {
                     HookableLifecycleEvent::Transfer,
                     AdapterCheckResult { flags: 4 },
                 )],
-                pda: None,
+                base_address_config: None,
                 results_offset: None,
             })],
         },
@@ -357,7 +357,7 @@ async fn test_cannot_update_oracle_to_have_duplicate_lifecycle_checks() {
             plugins: vec![],
             plugin_adapters: vec![PluginAdapter::Oracle(Oracle {
                 base_address: Pubkey::default(),
-                pda: None,
+                base_address_config: None,
                 results_offset: ValidationResultsOffset::NoOffset,
             })],
         },
@@ -379,7 +379,7 @@ async fn test_cannot_update_oracle_to_have_duplicate_lifecycle_checks() {
                     AdapterCheckResult { flags: 4 },
                 ),
             ]),
-            pda: None,
+            base_address_config: None,
             results_offset: Some(ValidationResultsOffset::Custom(10)),
         }))
         .instruction();

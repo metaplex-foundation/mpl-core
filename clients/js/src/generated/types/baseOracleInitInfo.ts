@@ -37,7 +37,7 @@ export type BaseOracleInitInfo = {
   baseAddress: PublicKey;
   initPluginAuthority: Option<BasePluginAuthority>;
   lifecycleChecks: Array<[HookableLifecycleEvent, AdapterCheckResult]>;
-  pda: Option<BaseExtraAccount>;
+  baseAddressConfig: Option<BaseExtraAccount>;
   resultsOffset: Option<BaseValidationResultsOffset>;
 };
 
@@ -45,7 +45,7 @@ export type BaseOracleInitInfoArgs = {
   baseAddress: PublicKey;
   initPluginAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
   lifecycleChecks: Array<[HookableLifecycleEventArgs, AdapterCheckResultArgs]>;
-  pda: OptionOrNullable<BaseExtraAccountArgs>;
+  baseAddressConfig: OptionOrNullable<BaseExtraAccountArgs>;
   resultsOffset: OptionOrNullable<BaseValidationResultsOffsetArgs>;
 };
 
@@ -66,7 +66,7 @@ export function getBaseOracleInitInfoSerializer(): Serializer<
           ])
         ),
       ],
-      ['pda', option(getBaseExtraAccountSerializer())],
+      ['baseAddressConfig', option(getBaseExtraAccountSerializer())],
       ['resultsOffset', option(getBaseValidationResultsOffsetSerializer())],
     ],
     { description: 'BaseOracleInitInfo' }

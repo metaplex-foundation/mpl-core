@@ -24,8 +24,8 @@ import {
   validationResultsOffsetToBase,
 } from './validationResultsOffset';
 
-export type Oracle = Omit<BaseOracle, 'pda' | 'resultsOffset'> & {
-  pda?: ExtraAccount;
+export type Oracle = Omit<BaseOracle, 'baseAddressConfig' | 'resultsOffset'> & {
+  baseAddressConfig?: ExtraAccount;
   resultsOffset: ValidationResultsOffset;
 };
 
@@ -36,22 +36,25 @@ export type OraclePlugin = BasePluginAdapter &
 
 export type OracleInitInfoArgs = Omit<
   BaseOracleInitInfoArgs,
-  'initPluginAuthority' | 'lifecycleChecks' | 'pda' | 'resultsOffset'
+  | 'initPluginAuthority'
+  | 'lifecycleChecks'
+  | 'baseAddressConfig'
+  | 'resultsOffset'
 > & {
   type: 'Oracle';
   initPluginAuthority?: PluginAuthority;
   lifecycleChecks: LifecycleChecks;
-  pda?: ExtraAccount;
+  baseAddressConfig?: ExtraAccount;
   resultsOffset?: ValidationResultsOffset;
 };
 
 export type OracleUpdateInfoArgs = Omit<
   BaseOracleUpdateInfoArgs,
-  'lifecycleChecks' | 'pda' | 'resultsOffset'
+  'lifecycleChecks' | 'baseAddressConfig' | 'resultsOffset'
 > & {
   key: PluginAdapterKey;
   lifecycleChecks?: LifecycleChecks;
-  pda?: ExtraAccount;
+  baseAddressConfig?: ExtraAccount;
   resultsOffset?: ValidationResultsOffset;
 };
 
@@ -60,7 +63,9 @@ export function oracleInitInfoArgsToBase(
 ): BaseOracleInitInfoArgs {
   return {
     baseAddress: o.baseAddress,
-    pda: o.pda ? extraAccountToBase(o.pda) : null,
+    baseAddressConfig: o.baseAddressConfig
+      ? extraAccountToBase(o.baseAddressConfig)
+      : null,
     lifecycleChecks: lifecycleChecksToBase(o.lifecycleChecks),
     initPluginAuthority: o.initPluginAuthority
       ? pluginAuthorityToBase(o.initPluginAuthority)
@@ -75,7 +80,9 @@ export function oracleUpdateInfoArgsToBase(
   o: OracleUpdateInfoArgs
 ): BaseOracleUpdateInfoArgs {
   return {
-    pda: o.pda ? extraAccountToBase(o.pda) : null,
+    baseAddressConfig: o.baseAddressConfig
+      ? extraAccountToBase(o.baseAddressConfig)
+      : null,
     lifecycleChecks: o.lifecycleChecks
       ? lifecycleChecksToBase(o.lifecycleChecks)
       : null,
@@ -92,15 +99,17 @@ export function oracleFromBase(
 ): Oracle {
   return {
     ...s,
-    pda:
-      s.pda.__option === 'Some' ? extraAccountFromBase(s.pda.value) : undefined,
+    baseAddressConfig:
+      s.baseAddressConfig.__option === 'Some'
+        ? extraAccountFromBase(s.baseAddressConfig.value)
+        : undefined,
     resultsOffset: validationResultsOffsetFromBase(s.resultsOffset),
   };
 }
 
 export function findOracleAccount(
   context: Pick<Context, 'eddsa'>,
-  oracle: Pick<Oracle, 'baseAddress' | 'pda'>,
+  oracle: Pick<Oracle, 'baseAddress' | 'baseAddressConfig'>,
   inputs: {
     asset?: PublicKey;
     collection?: PublicKey;
@@ -108,11 +117,11 @@ export function findOracleAccount(
     owner?: PublicKey;
   }
 ): PublicKey {
-  if (!oracle.pda) {
+  if (!oracle.baseAddressConfig) {
     return oracle.baseAddress;
   }
 
-  return extraAccountToAccountMeta(context, oracle.pda, {
+  return extraAccountToAccountMeta(context, oracle.baseAddressConfig, {
     ...inputs,
     program: oracle.baseAddress,
   }).pubkey;

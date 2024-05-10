@@ -130,7 +130,7 @@ test('it can use fixed address oracle to deny update', async (t) => {
         lifecycleChecks: {
           update: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -227,7 +227,7 @@ test('it can use fixed address oracle to deny update via collection', async (t) 
         lifecycleChecks: {
           update: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -314,7 +314,7 @@ test('it can use fixed address oracle to deny transfer', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -419,7 +419,7 @@ test('it cannot update oracle to have no lifecycle checks', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -460,7 +460,7 @@ test('it cannot update oracle to have no lifecycle checks', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -636,7 +636,7 @@ test('it cannot update oracle to approve', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -678,7 +678,7 @@ test('it cannot update oracle to approve', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -722,7 +722,7 @@ test('it cannot update oracle to approve in addition to reject', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -764,7 +764,7 @@ test('it cannot update oracle to approve in addition to reject', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -874,7 +874,7 @@ test('it cannot update oracle to listen', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -916,7 +916,7 @@ test('it cannot update oracle to listen', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -985,7 +985,7 @@ test('it cannot use fixed address oracle to deny transfer if not registered for 
         lifecycleChecks: {
           create: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -1079,7 +1079,7 @@ test('it can use fixed address oracle to deny create', async (t) => {
         lifecycleChecks: {
           create: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -1160,7 +1160,7 @@ test('it can use preconfigured program pda oracle to deny update', async (t) => 
       update: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'PreconfiguredProgram',
     },
   };
@@ -1247,7 +1247,7 @@ test('it can use preconfigured program pda oracle to deny update', async (t) => 
         lifecycleChecks: {
           update: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'PreconfiguredProgram',
         },
       },
@@ -1267,7 +1267,7 @@ test('it can use preconfigured collection pda oracle to deny update', async (t) 
       update: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'PreconfiguredCollection',
     },
   };
@@ -1350,7 +1350,7 @@ test('it can use preconfigured collection pda oracle to deny update', async (t) 
         lifecycleChecks: {
           update: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'PreconfiguredCollection',
         },
       },
@@ -1370,7 +1370,7 @@ test('it can use preconfigured owner pda oracle to deny burn', async (t) => {
       burn: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'PreconfiguredOwner',
     },
   };
@@ -1426,7 +1426,7 @@ test('it can use preconfigured owner pda oracle to deny burn', async (t) => {
         lifecycleChecks: {
           burn: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'PreconfiguredOwner',
         },
       },
@@ -1469,7 +1469,7 @@ test('it can use preconfigured recipient pda oracle to deny transfer', async (t)
       transfer: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'PreconfiguredRecipient',
     },
   };
@@ -1544,7 +1544,7 @@ test('it can use preconfigured recipient pda oracle to deny transfer', async (t)
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'PreconfiguredRecipient',
         },
       },
@@ -1564,7 +1564,7 @@ test('it can use preconfigured asset pda oracle to deny update', async (t) => {
       update: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'PreconfiguredAsset',
     },
   };
@@ -1640,7 +1640,7 @@ test('it can use preconfigured asset pda oracle to deny update', async (t) => {
         lifecycleChecks: {
           update: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'PreconfiguredAsset',
         },
       },
@@ -1663,7 +1663,7 @@ test('it can use custom pda (all seeds) oracle to deny transfer', async (t) => {
       transfer: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'CustomPda',
       seeds: [
         { type: 'Collection' },
@@ -1771,7 +1771,7 @@ test('it can use custom pda (all seeds) oracle to deny transfer', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'CustomPda',
           seeds: [
             { type: 'Collection' },
@@ -1804,7 +1804,7 @@ test('it can use custom pda (typical) oracle to deny transfer', async (t) => {
       transfer: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'CustomPda',
       seeds: [
         {
@@ -1903,7 +1903,7 @@ test('it can use custom pda (typical) oracle to deny transfer', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'CustomPda',
           seeds: [
             {
@@ -1942,7 +1942,7 @@ test('it can use custom pda (with custom program ID) oracle to deny transfer', a
       transfer: [CheckResult.CAN_REJECT],
     },
     baseAddress: randomProgramId,
-    pda: {
+    baseAddressConfig: {
       type: 'CustomPda',
       seeds: [
         {
@@ -1955,7 +1955,7 @@ test('it can use custom pda (with custom program ID) oracle to deny transfer', a
           bytes: Buffer.from('additional-bytes-seed-bytes', 'utf8'),
         },
       ],
-      customProgramId: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID
+      customProgramId: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
     },
   };
 
@@ -2042,7 +2042,7 @@ test('it can use custom pda (with custom program ID) oracle to deny transfer', a
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'CustomPda',
           seeds: [
             {
@@ -2057,7 +2057,7 @@ test('it can use custom pda (with custom program ID) oracle to deny transfer', a
               ),
             },
           ],
-          customProgramId: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID
+          customProgramId: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
         },
       },
     ],
@@ -2089,7 +2089,7 @@ test('it can use preconfigured asset pda custom offset oracle to deny update', a
       update: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'PreconfiguredAsset',
     },
   };
@@ -2208,7 +2208,7 @@ test('it can use preconfigured asset pda custom offset oracle to deny update', a
         lifecycleChecks: {
           update: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'PreconfiguredAsset',
         },
       },
@@ -2417,7 +2417,7 @@ test('it can update asset to different size name with oracle', async (t) => {
           update: [CheckResult.CAN_REJECT],
         },
         baseAddress: oracleSigner.publicKey,
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -2483,7 +2483,7 @@ test('it can update oracle to different size plugin adapter', async (t) => {
           burn: [CheckResult.CAN_REJECT],
         },
         baseAddress: oracleSigner.publicKey,
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -2524,7 +2524,7 @@ test('it can update oracle to different size plugin adapter', async (t) => {
           transfer: [CheckResult.CAN_REJECT],
         },
         baseAddress: oracleSigner.publicKey,
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -2595,7 +2595,7 @@ test('it transfer fails but does not panic when oracle account does not exist', 
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -2653,7 +2653,7 @@ test('it transfer fails but does not panic when oracle account is too small', as
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -2711,7 +2711,7 @@ test('it empty account does not default to valid oracle', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });

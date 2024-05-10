@@ -407,7 +407,7 @@ async fn test_add_oracle() {
                 HookableLifecycleEvent::Transfer,
                 AdapterCheckResult { flags: 4 },
             )],
-            pda: None,
+            base_address_config: None,
             results_offset: None,
         }))
         .instruction();
@@ -432,7 +432,7 @@ async fn test_add_oracle() {
             plugins: vec![],
             plugin_adapters: vec![PluginAdapter::Oracle(Oracle {
                 base_address: Pubkey::default(),
-                pda: None,
+                base_address_config: None,
                 results_offset: ValidationResultsOffset::NoOffset,
             })],
         },
@@ -496,7 +496,7 @@ async fn test_cannot_add_oracle_with_duplicate_lifecycle_checks() {
                     AdapterCheckResult { flags: 4 },
                 ),
             ],
-            pda: None,
+            base_address_config: None,
             results_offset: None,
         }))
         .instruction();
@@ -802,7 +802,7 @@ async fn test_cannot_add_duplicate_plugin_adapter() {
                 HookableLifecycleEvent::Transfer,
                 AdapterCheckResult { flags: 4 },
             )],
-            pda: None,
+            base_address_config: None,
             results_offset: None,
         }))
         .instruction();
@@ -817,7 +817,7 @@ async fn test_cannot_add_duplicate_plugin_adapter() {
                 HookableLifecycleEvent::Transfer,
                 AdapterCheckResult { flags: 4 },
             )],
-            pda: None,
+            base_address_config: None,
             results_offset: None,
         }))
         .instruction();

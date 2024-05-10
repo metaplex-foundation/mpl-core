@@ -461,7 +461,7 @@ test('it can validate non-transferrable asset with oracle with recipient seed', 
       transfer: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'CustomPda',
       seeds: [
         { type: 'Collection' },
@@ -544,7 +544,7 @@ test('it can validate and skip transferrable asset with oracle with recipient se
             transfer: [CheckResult.CAN_REJECT],
           },
           baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-          pda: {
+          baseAddressConfig: {
             type: 'CustomPda',
             seeds: [
               {
