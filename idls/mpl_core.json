@@ -1405,7 +1405,7 @@
       }
     },
     {
-      "name": "AddExternalPluginV1",
+      "name": "AddPluginAdapterV1",
       "accounts": [
         {
           "name": "asset",
@@ -1461,9 +1461,9 @@
       ],
       "args": [
         {
-          "name": "addExternalPluginV1Args",
+          "name": "addPluginAdapterV1Args",
           "type": {
-            "defined": "AddExternalPluginV1Args"
+            "defined": "AddPluginAdapterV1Args"
           }
         }
       ],
@@ -1473,7 +1473,7 @@
       }
     },
     {
-      "name": "AddCollectionExternalPluginV1",
+      "name": "AddCollectionPluginAdapterV1",
       "accounts": [
         {
           "name": "collection",
@@ -1520,9 +1520,9 @@
       ],
       "args": [
         {
-          "name": "addCollectionExternalPluginV1Args",
+          "name": "addCollectionPluginAdapterV1Args",
           "type": {
-            "defined": "AddCollectionExternalPluginV1Args"
+            "defined": "AddCollectionPluginAdapterV1Args"
           }
         }
       ],
@@ -1532,7 +1532,7 @@
       }
     },
     {
-      "name": "RemoveExternalPluginV1",
+      "name": "RemovePluginAdapterV1",
       "accounts": [
         {
           "name": "asset",
@@ -1588,9 +1588,9 @@
       ],
       "args": [
         {
-          "name": "removeExternalPluginV1Args",
+          "name": "removePluginAdapterV1Args",
           "type": {
-            "defined": "RemoveExternalPluginV1Args"
+            "defined": "RemovePluginAdapterV1Args"
           }
         }
       ],
@@ -1600,7 +1600,7 @@
       }
     },
     {
-      "name": "RemoveCollectionExternalPluginV1",
+      "name": "RemoveCollectionPluginAdapterV1",
       "accounts": [
         {
           "name": "collection",
@@ -1647,9 +1647,9 @@
       ],
       "args": [
         {
-          "name": "removeCollectionExternalPluginV1Args",
+          "name": "removeCollectionPluginAdapterV1Args",
           "type": {
-            "defined": "RemoveCollectionExternalPluginV1Args"
+            "defined": "RemoveCollectionPluginAdapterV1Args"
           }
         }
       ],
@@ -1659,7 +1659,7 @@
       }
     },
     {
-      "name": "UpdateExternalPluginV1",
+      "name": "UpdatePluginAdapterV1",
       "accounts": [
         {
           "name": "asset",
@@ -1715,9 +1715,9 @@
       ],
       "args": [
         {
-          "name": "updateExternalPluginV1Args",
+          "name": "updatePluginAdapterV1Args",
           "type": {
-            "defined": "UpdateExternalPluginV1Args"
+            "defined": "UpdatePluginAdapterV1Args"
           }
         }
       ],
@@ -1727,7 +1727,7 @@
       }
     },
     {
-      "name": "UpdateCollectionExternalPluginV1",
+      "name": "UpdateCollectionPluginAdapterV1",
       "accounts": [
         {
           "name": "collection",
@@ -1774,9 +1774,9 @@
       ],
       "args": [
         {
-          "name": "updateCollectionExternalPluginV1Args",
+          "name": "updateCollectionPluginAdapterV1Args",
           "type": {
-            "defined": "UpdateCollectionExternalPluginV1Args"
+            "defined": "UpdateCollectionPluginAdapterV1Args"
           }
         }
       ],
@@ -1786,7 +1786,7 @@
       }
     },
     {
-      "name": "WriteExternalPluginDataV1",
+      "name": "WritePluginAdapterDataV1",
       "accounts": [
         {
           "name": "asset",
@@ -1819,7 +1819,7 @@
           "isSigner": true,
           "isOptional": true,
           "docs": [
-            "The Data Authority of the External Plugin"
+            "The Data Authority of the Plugin Adapter"
           ]
         },
         {
@@ -1842,9 +1842,9 @@
       ],
       "args": [
         {
-          "name": "writeExternalPluginDataV1Args",
+          "name": "writePluginAdapterDataV1Args",
           "type": {
-            "defined": "WriteExternalPluginDataV1Args"
+            "defined": "WritePluginAdapterDataV1Args"
           }
         }
       ],
@@ -1854,7 +1854,7 @@
       }
     },
     {
-      "name": "WriteCollectionExternalPluginDataV1",
+      "name": "WriteCollectionPluginAdapterDataV1",
       "accounts": [
         {
           "name": "collection",
@@ -1878,7 +1878,7 @@
           "isSigner": true,
           "isOptional": true,
           "docs": [
-            "The Data Authority of the External Plugin"
+            "The Data Authority of the Plugin Adapter"
           ]
         },
         {
@@ -1901,9 +1901,9 @@
       ],
       "args": [
         {
-          "name": "writeCollectionExternalPluginDataV1Args",
+          "name": "writeCollectionPluginAdapterDataV1Args",
           "type": {
-            "defined": "WriteCollectionExternalPluginDataV1Args"
+            "defined": "WriteCollectionPluginAdapterDataV1Args"
           }
         }
       ],
@@ -1952,10 +1952,10 @@
             }
           },
           {
-            "name": "externalRegistry",
+            "name": "adapterRegistry",
             "type": {
               "vec": {
-                "defined": "ExternalRegistryRecord"
+                "defined": "AdapterRegistryRecord"
               }
             }
           }
@@ -2141,7 +2141,7 @@
           {
             "name": "schema",
             "type": {
-              "defined": "ExternalPluginSchema"
+              "defined": "PluginAdapterSchema"
             }
           }
         ]
@@ -2170,7 +2170,7 @@
             "name": "schema",
             "type": {
               "option": {
-                "defined": "ExternalPluginSchema"
+                "defined": "PluginAdapterSchema"
               }
             }
           }
@@ -2186,7 +2186,7 @@
             "name": "schema",
             "type": {
               "option": {
-                "defined": "ExternalPluginSchema"
+                "defined": "PluginAdapterSchema"
               }
             }
           }
@@ -2225,7 +2225,7 @@
       }
     },
     {
-      "name": "ExternalCheckResult",
+      "name": "AdapterCheckResult",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2266,7 +2266,7 @@
           {
             "name": "schema",
             "type": {
-              "defined": "ExternalPluginSchema"
+              "defined": "PluginAdapterSchema"
             }
           }
         ]
@@ -2298,7 +2298,7 @@
                     "defined": "HookableLifecycleEvent"
                   },
                   {
-                    "defined": "ExternalCheckResult"
+                    "defined": "AdapterCheckResult"
                   }
                 ]
               }
@@ -2326,7 +2326,7 @@
             "name": "schema",
             "type": {
               "option": {
-                "defined": "ExternalPluginSchema"
+                "defined": "PluginAdapterSchema"
               }
             }
           }
@@ -2348,7 +2348,7 @@
                       "defined": "HookableLifecycleEvent"
                     },
                     {
-                      "defined": "ExternalCheckResult"
+                      "defined": "AdapterCheckResult"
                     }
                   ]
                 }
@@ -2369,7 +2369,7 @@
             "name": "schema",
             "type": {
               "option": {
-                "defined": "ExternalPluginSchema"
+                "defined": "PluginAdapterSchema"
               }
             }
           }
@@ -2454,7 +2454,7 @@
                     "defined": "HookableLifecycleEvent"
                   },
                   {
-                    "defined": "ExternalCheckResult"
+                    "defined": "AdapterCheckResult"
                   }
                 ]
               }
@@ -2494,7 +2494,7 @@
                       "defined": "HookableLifecycleEvent"
                     },
                     {
-                      "defined": "ExternalCheckResult"
+                      "defined": "AdapterCheckResult"
                     }
                   ]
                 }
@@ -2571,14 +2571,14 @@
       }
     },
     {
-      "name": "ExternalRegistryRecord",
+      "name": "AdapterRegistryRecord",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "pluginType",
             "type": {
-              "defined": "ExternalPluginType"
+              "defined": "PluginAdapterType"
             }
           },
           {
@@ -2597,7 +2597,7 @@
                       "defined": "HookableLifecycleEvent"
                     },
                     {
-                      "defined": "ExternalCheckResult"
+                      "defined": "AdapterCheckResult"
                     }
                   ]
                 }
@@ -2687,34 +2687,6 @@
       }
     },
     {
-      "name": "AddExternalPluginV1Args",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "initInfo",
-            "type": {
-              "defined": "ExternalPluginInitInfo"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "AddCollectionExternalPluginV1Args",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "initInfo",
-            "type": {
-              "defined": "ExternalPluginInitInfo"
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "AddPluginV1Args",
       "type": {
         "kind": "struct",
@@ -2753,6 +2725,34 @@
               "option": {
                 "defined": "Authority"
               }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddPluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initInfo",
+            "type": {
+              "defined": "PluginAdapterInitInfo"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddCollectionPluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initInfo",
+            "type": {
+              "defined": "PluginAdapterInitInfo"
             }
           }
         ]
@@ -2899,11 +2899,11 @@
             }
           },
           {
-            "name": "externalPlugins",
+            "name": "pluginAdapters",
             "type": {
               "option": {
                 "vec": {
-                  "defined": "ExternalPluginInitInfo"
+                  "defined": "PluginAdapterInitInfo"
                 }
               }
             }
@@ -2961,11 +2961,11 @@
             }
           },
           {
-            "name": "externalPlugins",
+            "name": "pluginAdapters",
             "type": {
               "option": {
                 "vec": {
-                  "defined": "ExternalPluginInitInfo"
+                  "defined": "PluginAdapterInitInfo"
                 }
               }
             }
@@ -2982,34 +2982,6 @@
             "name": "compressionProof",
             "type": {
               "defined": "CompressionProof"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "RemoveExternalPluginV1Args",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "ExternalPluginKey"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "RemoveCollectionExternalPluginV1Args",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "ExternalPluginKey"
             }
           }
         ]
@@ -3038,6 +3010,34 @@
             "name": "pluginType",
             "type": {
               "defined": "PluginType"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemovePluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "PluginAdapterKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveCollectionPluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "PluginAdapterKey"
             }
           }
         ]
@@ -3136,46 +3136,6 @@
       }
     },
     {
-      "name": "UpdateExternalPluginV1Args",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "ExternalPluginKey"
-            }
-          },
-          {
-            "name": "updateInfo",
-            "type": {
-              "defined": "ExternalPluginUpdateInfo"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "UpdateCollectionExternalPluginV1Args",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "ExternalPluginKey"
-            }
-          },
-          {
-            "name": "updateInfo",
-            "type": {
-              "defined": "ExternalPluginUpdateInfo"
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "UpdatePluginV1Args",
       "type": {
         "kind": "struct",
@@ -3204,14 +3164,54 @@
       }
     },
     {
-      "name": "WriteExternalPluginDataV1Args",
+      "name": "UpdatePluginAdapterV1Args",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "key",
             "type": {
-              "defined": "ExternalPluginKey"
+              "defined": "PluginAdapterKey"
+            }
+          },
+          {
+            "name": "updateInfo",
+            "type": {
+              "defined": "PluginAdapterUpdateInfo"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateCollectionPluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "PluginAdapterKey"
+            }
+          },
+          {
+            "name": "updateInfo",
+            "type": {
+              "defined": "PluginAdapterUpdateInfo"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "WritePluginAdapterDataV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "PluginAdapterKey"
             }
           },
           {
@@ -3222,14 +3222,14 @@
       }
     },
     {
-      "name": "WriteCollectionExternalPluginDataV1Args",
+      "name": "WriteCollectionPluginAdapterDataV1Args",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "key",
             "type": {
-              "defined": "ExternalPluginKey"
+              "defined": "PluginAdapterKey"
             }
           },
           {
@@ -3489,7 +3489,104 @@
       }
     },
     {
-      "name": "ExternalPluginType",
+      "name": "ValidationResult",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Approved"
+          },
+          {
+            "name": "Rejected"
+          },
+          {
+            "name": "Pass"
+          },
+          {
+            "name": "ForceApproved"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdapterValidationResult",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Approved"
+          },
+          {
+            "name": "Rejected"
+          },
+          {
+            "name": "Pass"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ValidationResultsOffset",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoOffset"
+          },
+          {
+            "name": "Anchor"
+          },
+          {
+            "name": "Custom",
+            "fields": [
+              "u64"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleValidation",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Uninitialized"
+          },
+          {
+            "name": "V1",
+            "fields": [
+              {
+                "name": "create",
+                "type": {
+                  "defined": "AdapterValidationResult"
+                }
+              },
+              {
+                "name": "transfer",
+                "type": {
+                  "defined": "AdapterValidationResult"
+                }
+              },
+              {
+                "name": "burn",
+                "type": {
+                  "defined": "AdapterValidationResult"
+                }
+              },
+              {
+                "name": "update",
+                "type": {
+                  "defined": "AdapterValidationResult"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "PluginAdapterType",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3506,7 +3603,7 @@
       }
     },
     {
-      "name": "ExternalPlugin",
+      "name": "PluginAdapter",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3707,7 +3804,7 @@
       }
     },
     {
-      "name": "ExternalPluginSchema",
+      "name": "PluginAdapterSchema",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3724,7 +3821,7 @@
       }
     },
     {
-      "name": "ExternalPluginInitInfo",
+      "name": "PluginAdapterInitInfo",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3756,7 +3853,7 @@
       }
     },
     {
-      "name": "ExternalPluginUpdateInfo",
+      "name": "PluginAdapterUpdateInfo",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3788,7 +3885,7 @@
       }
     },
     {
-      "name": "ExternalPluginKey",
+      "name": "PluginAdapterKey",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3809,103 +3906,6 @@
             "fields": [
               {
                 "defined": "Authority"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "ValidationResult",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Approved"
-          },
-          {
-            "name": "Rejected"
-          },
-          {
-            "name": "Pass"
-          },
-          {
-            "name": "ForceApproved"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ExternalValidationResult",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Approved"
-          },
-          {
-            "name": "Rejected"
-          },
-          {
-            "name": "Pass"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ValidationResultsOffset",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "NoOffset"
-          },
-          {
-            "name": "Anchor"
-          },
-          {
-            "name": "Custom",
-            "fields": [
-              "u64"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "OracleValidation",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Uninitialized"
-          },
-          {
-            "name": "V1",
-            "fields": [
-              {
-                "name": "create",
-                "type": {
-                  "defined": "ExternalValidationResult"
-                }
-              },
-              {
-                "name": "transfer",
-                "type": {
-                  "defined": "ExternalValidationResult"
-                }
-              },
-              {
-                "name": "burn",
-                "type": {
-                  "defined": "ExternalValidationResult"
-                }
-              },
-              {
-                "name": "update",
-                "type": {
-                  "defined": "ExternalValidationResult"
-                }
               }
             ]
           }
@@ -4187,13 +4187,13 @@
     },
     {
       "code": 31,
-      "name": "ExternalPluginNotFound",
-      "msg": "External Plugin not found"
+      "name": "PluginAdapterNotFound",
+      "msg": "Plugin Adapter not found"
     },
     {
       "code": 32,
-      "name": "ExternalPluginAlreadyExists",
-      "msg": "External Plugin already exists"
+      "name": "PluginAdapterAlreadyExists",
+      "msg": "Plugin Adapter already exists"
     },
     {
       "code": 33,
@@ -4202,23 +4202,23 @@
     },
     {
       "code": 34,
-      "name": "MissingExternalAccount",
-      "msg": "Missing account needed for external plugin"
+      "name": "MissingAdapterAccount",
+      "msg": "Missing account needed for plugin adapter"
     },
     {
       "code": 35,
       "name": "OracleCanRejectOnly",
-      "msg": "Oracle external plugin can only be configured to reject"
+      "msg": "Oracle plugin adapter can only be configured to reject"
     },
     {
       "code": 36,
       "name": "RequiresLifecycleCheck",
-      "msg": "External plugin must have at least one lifecycle check"
+      "msg": "Plugin adapter must have at least one lifecycle check"
     },
     {
       "code": 37,
       "name": "DuplicateLifecycleChecks",
-      "msg": "Duplicate lifecycle checks were provided for external plugin"
+      "msg": "Duplicate lifecycle checks were provided for plugin adapter "
     },
     {
       "code": 38,

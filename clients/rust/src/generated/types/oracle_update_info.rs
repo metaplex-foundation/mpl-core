@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::ExternalCheckResult;
+use crate::generated::types::AdapterCheckResult;
 use crate::generated::types::ExtraAccount;
 use crate::generated::types::HookableLifecycleEvent;
 use crate::generated::types::ValidationResultsOffset;
@@ -19,7 +19,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct OracleUpdateInfo {
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, AdapterCheckResult)>>,
     pub pda: Option<ExtraAccount>,
     pub results_offset: Option<ValidationResultsOffset>,
 }

@@ -2,13 +2,13 @@
 pub mod setup;
 use mpl_core::{
     errors::MplCoreError,
-    instructions::UpdateExternalPluginV1Builder,
+    instructions::UpdatePluginAdapterV1Builder,
     types::{
-        DataStore, DataStoreInitInfo, DataStoreUpdateInfo, ExternalCheckResult, ExternalPlugin,
-        ExternalPluginInitInfo, ExternalPluginKey, ExternalPluginSchema, ExternalPluginUpdateInfo,
+        AdapterCheckResult, DataStore, DataStoreInitInfo, DataStoreUpdateInfo,
         HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, LifecycleHookUpdateInfo,
-        Oracle, OracleInitInfo, OracleUpdateInfo, PluginAuthority, UpdateAuthority,
-        ValidationResultsOffset,
+        Oracle, OracleInitInfo, OracleUpdateInfo, PluginAdapter, PluginAdapterInitInfo,
+        PluginAdapterKey, PluginAdapterSchema, PluginAdapterUpdateInfo, PluginAuthority,
+        UpdateAuthority, ValidationResultsOffset,
     },
 };
 pub use setup::*;
@@ -36,13 +36,13 @@ async fn test_update_lifecycle_hook() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::LifecycleHook(
+            plugin_adapters: vec![PluginAdapterInitInfo::LifecycleHook(
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     lifecycle_checks: vec![(
                         HookableLifecycleEvent::Transfer,
-                        ExternalCheckResult { flags: 1 },
+                        AdapterCheckResult { flags: 1 },
                     )],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
@@ -65,27 +65,27 @@ async fn test_update_lifecycle_hook() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::LifecycleHook(LifecycleHook {
+            plugin_adapters: vec![PluginAdapter::LifecycleHook(LifecycleHook {
                 hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                 extra_accounts: None,
                 data_authority: Some(PluginAuthority::UpdateAuthority),
-                schema: ExternalPluginSchema::Binary,
+                schema: PluginAdapterSchema::Binary,
             })],
         },
     )
     .await;
 
-    let ix = UpdateExternalPluginV1Builder::new()
+    let ix = UpdatePluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .key(ExternalPluginKey::LifecycleHook(pubkey!(
+        .key(PluginAdapterKey::LifecycleHook(pubkey!(
             "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
         )))
-        .update_info(ExternalPluginUpdateInfo::LifecycleHook(
+        .update_info(PluginAdapterUpdateInfo::LifecycleHook(
             LifecycleHookUpdateInfo {
                 lifecycle_checks: None,
                 extra_accounts: None,
-                schema: Some(ExternalPluginSchema::Json),
+                schema: Some(PluginAdapterSchema::Json),
             },
         ))
         .instruction();
@@ -108,11 +108,11 @@ async fn test_update_lifecycle_hook() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::LifecycleHook(LifecycleHook {
+            plugin_adapters: vec![PluginAdapter::LifecycleHook(LifecycleHook {
                 hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                 extra_accounts: None,
                 data_authority: Some(PluginAuthority::UpdateAuthority),
-                schema: ExternalPluginSchema::Json,
+                schema: PluginAdapterSchema::Json,
             })],
         },
     )
@@ -138,13 +138,13 @@ async fn test_cannot_update_lifecycle_hook_to_have_duplicate_lifecycle_checks() 
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::LifecycleHook(
+            plugin_adapters: vec![PluginAdapterInitInfo::LifecycleHook(
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     lifecycle_checks: vec![(
                         HookableLifecycleEvent::Transfer,
-                        ExternalCheckResult { flags: 1 },
+                        AdapterCheckResult { flags: 1 },
                     )],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
@@ -167,36 +167,36 @@ async fn test_cannot_update_lifecycle_hook_to_have_duplicate_lifecycle_checks() 
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::LifecycleHook(LifecycleHook {
+            plugin_adapters: vec![PluginAdapter::LifecycleHook(LifecycleHook {
                 hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                 extra_accounts: None,
                 data_authority: Some(PluginAuthority::UpdateAuthority),
-                schema: ExternalPluginSchema::Binary,
+                schema: PluginAdapterSchema::Binary,
             })],
         },
     )
     .await;
 
-    let ix = UpdateExternalPluginV1Builder::new()
+    let ix = UpdatePluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .key(ExternalPluginKey::LifecycleHook(pubkey!(
+        .key(PluginAdapterKey::LifecycleHook(pubkey!(
             "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
         )))
-        .update_info(ExternalPluginUpdateInfo::LifecycleHook(
+        .update_info(PluginAdapterUpdateInfo::LifecycleHook(
             LifecycleHookUpdateInfo {
                 lifecycle_checks: Some(vec![
                     (
                         HookableLifecycleEvent::Transfer,
-                        ExternalCheckResult { flags: 1 },
+                        AdapterCheckResult { flags: 1 },
                     ),
                     (
                         HookableLifecycleEvent::Transfer,
-                        ExternalCheckResult { flags: 1 },
+                        AdapterCheckResult { flags: 1 },
                     ),
                 ]),
                 extra_accounts: None,
-                schema: Some(ExternalPluginSchema::Json),
+                schema: Some(PluginAdapterSchema::Json),
             },
         ))
         .instruction();
@@ -237,12 +237,12 @@ async fn test_update_oracle() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::Oracle(OracleInitInfo {
+            plugin_adapters: vec![PluginAdapterInitInfo::Oracle(OracleInitInfo {
                 base_address: Pubkey::default(),
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 lifecycle_checks: vec![(
                     HookableLifecycleEvent::Transfer,
-                    ExternalCheckResult { flags: 4 },
+                    AdapterCheckResult { flags: 4 },
                 )],
                 pda: None,
                 results_offset: None,
@@ -263,7 +263,7 @@ async fn test_update_oracle() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::Oracle(Oracle {
+            plugin_adapters: vec![PluginAdapter::Oracle(Oracle {
                 base_address: Pubkey::default(),
                 pda: None,
                 results_offset: ValidationResultsOffset::NoOffset,
@@ -272,11 +272,11 @@ async fn test_update_oracle() {
     )
     .await;
 
-    let ix = UpdateExternalPluginV1Builder::new()
+    let ix = UpdatePluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .key(ExternalPluginKey::Oracle(Pubkey::default()))
-        .update_info(ExternalPluginUpdateInfo::Oracle(OracleUpdateInfo {
+        .key(PluginAdapterKey::Oracle(Pubkey::default()))
+        .update_info(PluginAdapterUpdateInfo::Oracle(OracleUpdateInfo {
             lifecycle_checks: None,
             pda: None,
             results_offset: Some(ValidationResultsOffset::Custom(10)),
@@ -301,7 +301,7 @@ async fn test_update_oracle() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::Oracle(Oracle {
+            plugin_adapters: vec![PluginAdapter::Oracle(Oracle {
                 base_address: Pubkey::default(),
                 pda: None,
                 results_offset: ValidationResultsOffset::Custom(10),
@@ -329,12 +329,12 @@ async fn test_cannot_update_oracle_to_have_duplicate_lifecycle_checks() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::Oracle(OracleInitInfo {
+            plugin_adapters: vec![PluginAdapterInitInfo::Oracle(OracleInitInfo {
                 base_address: Pubkey::default(),
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 lifecycle_checks: vec![(
                     HookableLifecycleEvent::Transfer,
-                    ExternalCheckResult { flags: 4 },
+                    AdapterCheckResult { flags: 4 },
                 )],
                 pda: None,
                 results_offset: None,
@@ -355,7 +355,7 @@ async fn test_cannot_update_oracle_to_have_duplicate_lifecycle_checks() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::Oracle(Oracle {
+            plugin_adapters: vec![PluginAdapter::Oracle(Oracle {
                 base_address: Pubkey::default(),
                 pda: None,
                 results_offset: ValidationResultsOffset::NoOffset,
@@ -364,19 +364,19 @@ async fn test_cannot_update_oracle_to_have_duplicate_lifecycle_checks() {
     )
     .await;
 
-    let ix = UpdateExternalPluginV1Builder::new()
+    let ix = UpdatePluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .key(ExternalPluginKey::Oracle(Pubkey::default()))
-        .update_info(ExternalPluginUpdateInfo::Oracle(OracleUpdateInfo {
+        .key(PluginAdapterKey::Oracle(Pubkey::default()))
+        .update_info(PluginAdapterUpdateInfo::Oracle(OracleUpdateInfo {
             lifecycle_checks: Some(vec![
                 (
                     HookableLifecycleEvent::Transfer,
-                    ExternalCheckResult { flags: 4 },
+                    AdapterCheckResult { flags: 4 },
                 ),
                 (
                     HookableLifecycleEvent::Transfer,
-                    ExternalCheckResult { flags: 4 },
+                    AdapterCheckResult { flags: 4 },
                 ),
             ]),
             pda: None,
@@ -421,7 +421,7 @@ async fn test_update_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
+            plugin_adapters: vec![PluginAdapterInitInfo::DataStore(DataStoreInitInfo {
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 data_authority: PluginAuthority::UpdateAuthority,
                 schema: None,
@@ -442,22 +442,22 @@ async fn test_update_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::DataStore(DataStore {
+            plugin_adapters: vec![PluginAdapter::DataStore(DataStore {
                 data_authority: PluginAuthority::UpdateAuthority,
-                schema: ExternalPluginSchema::Binary,
+                schema: PluginAdapterSchema::Binary,
             })],
         },
     )
     .await;
 
-    let ix = UpdateExternalPluginV1Builder::new()
+    let ix = UpdatePluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .key(ExternalPluginKey::DataStore(
+        .key(PluginAdapterKey::DataStore(
             PluginAuthority::UpdateAuthority,
         ))
-        .update_info(ExternalPluginUpdateInfo::DataStore(DataStoreUpdateInfo {
-            schema: Some(ExternalPluginSchema::Json),
+        .update_info(PluginAdapterUpdateInfo::DataStore(DataStoreUpdateInfo {
+            schema: Some(PluginAdapterSchema::Json),
         }))
         .instruction();
 
@@ -479,9 +479,9 @@ async fn test_update_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::DataStore(DataStore {
+            plugin_adapters: vec![PluginAdapter::DataStore(DataStore {
                 data_authority: PluginAuthority::UpdateAuthority,
-                schema: ExternalPluginSchema::Json,
+                schema: PluginAdapterSchema::Json,
             })],
         },
     )

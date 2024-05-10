@@ -1,18 +1,18 @@
 /* eslint-disable no-bitwise */
-import { ExternalCheckResult, HookableLifecycleEvent } from '../generated';
+import { AdapterCheckResult, HookableLifecycleEvent } from '../generated';
 import { capitalizeFirstLetter } from '../utils';
 
 export type LifecycleEvent = 'create' | 'update' | 'transfer' | 'burn';
 
-// ExternalCheckResult is a bit array
+// AdapterCheckResult is a bit array
 export enum CheckResult {
   CAN_LISTEN,
   CAN_APPROVE,
   CAN_REJECT,
 }
 
-export const externalCheckResultToCheckResults = (
-  check: ExternalCheckResult
+export const adapterCheckResultToCheckResults = (
+  check: AdapterCheckResult
 ): CheckResult[] => {
   const results: CheckResult[] = [];
   if (check.flags & 1) {
@@ -27,9 +27,9 @@ export const externalCheckResultToCheckResults = (
   return results;
 };
 
-export const checkResultsToExternalCheckResult = (
+export const checkResultsToAdapterCheckResult = (
   results: CheckResult[]
-): ExternalCheckResult => {
+): AdapterCheckResult => {
   let flags = 0;
   results.forEach((result) => {
     switch (result) {
@@ -70,7 +70,7 @@ export function hookableLifecycleEventToLifecycleCheckKey(
 
 export function lifecycleChecksToBase(
   l: LifecycleChecks
-): [HookableLifecycleEvent, ExternalCheckResult][] {
+): [HookableLifecycleEvent, AdapterCheckResult][] {
   return Object.keys(l)
     .map((key) => {
       const k = key as keyof LifecycleChecks;
@@ -78,24 +78,24 @@ export function lifecycleChecksToBase(
       if (value) {
         return [
           lifecycleCheckKeyToEnum(k),
-          checkResultsToExternalCheckResult(value),
+          checkResultsToAdapterCheckResult(value),
         ];
       }
       return null;
     })
     .filter((x) => x !== null) as [
     HookableLifecycleEvent,
-    ExternalCheckResult,
+    AdapterCheckResult,
   ][];
 }
 
 export function lifecycleChecksFromBase(
-  l: [HookableLifecycleEvent, ExternalCheckResult][]
+  l: [HookableLifecycleEvent, AdapterCheckResult][]
 ): LifecycleChecks {
   const checks: LifecycleChecks = {};
   l.forEach(([event, check]) => {
     checks[hookableLifecycleEventToLifecycleCheckKey(event)] =
-      externalCheckResultToCheckResults(check);
+      adapterCheckResultToCheckResults(check);
   });
   return checks;
 }

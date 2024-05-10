@@ -16,39 +16,39 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  AdapterCheckResult,
+  AdapterCheckResultArgs,
   BaseExtraAccount,
   BaseExtraAccountArgs,
   BasePluginAuthority,
   BasePluginAuthorityArgs,
-  ExternalCheckResult,
-  ExternalCheckResultArgs,
-  ExternalPluginSchema,
-  ExternalPluginSchemaArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
+  PluginAdapterSchema,
+  PluginAdapterSchemaArgs,
+  getAdapterCheckResultSerializer,
   getBaseExtraAccountSerializer,
   getBasePluginAuthoritySerializer,
-  getExternalCheckResultSerializer,
-  getExternalPluginSchemaSerializer,
   getHookableLifecycleEventSerializer,
+  getPluginAdapterSchemaSerializer,
 } from '.';
 
 export type BaseLifecycleHookInitInfo = {
   hookedProgram: PublicKey;
   initPluginAuthority: Option<BasePluginAuthority>;
-  lifecycleChecks: Array<[HookableLifecycleEvent, ExternalCheckResult]>;
+  lifecycleChecks: Array<[HookableLifecycleEvent, AdapterCheckResult]>;
   extraAccounts: Option<Array<BaseExtraAccount>>;
   dataAuthority: Option<BasePluginAuthority>;
-  schema: Option<ExternalPluginSchema>;
+  schema: Option<PluginAdapterSchema>;
 };
 
 export type BaseLifecycleHookInitInfoArgs = {
   hookedProgram: PublicKey;
   initPluginAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
-  lifecycleChecks: Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>;
+  lifecycleChecks: Array<[HookableLifecycleEventArgs, AdapterCheckResultArgs]>;
   extraAccounts: OptionOrNullable<Array<BaseExtraAccountArgs>>;
   dataAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
-  schema: OptionOrNullable<ExternalPluginSchemaArgs>;
+  schema: OptionOrNullable<PluginAdapterSchemaArgs>;
 };
 
 export function getBaseLifecycleHookInitInfoSerializer(): Serializer<
@@ -64,13 +64,13 @@ export function getBaseLifecycleHookInitInfoSerializer(): Serializer<
         array(
           tuple([
             getHookableLifecycleEventSerializer(),
-            getExternalCheckResultSerializer(),
+            getAdapterCheckResultSerializer(),
           ])
         ),
       ],
       ['extraAccounts', option(array(getBaseExtraAccountSerializer()))],
       ['dataAuthority', option(getBasePluginAuthoritySerializer())],
-      ['schema', option(getExternalPluginSchemaSerializer())],
+      ['schema', option(getPluginAdapterSchemaSerializer())],
     ],
     { description: 'BaseLifecycleHookInitInfo' }
   ) as Serializer<BaseLifecycleHookInitInfoArgs, BaseLifecycleHookInitInfo>;

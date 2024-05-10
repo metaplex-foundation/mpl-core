@@ -15,32 +15,32 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  AdapterCheckResult,
+  AdapterCheckResultArgs,
   BaseExtraAccount,
   BaseExtraAccountArgs,
-  ExternalCheckResult,
-  ExternalCheckResultArgs,
-  ExternalPluginSchema,
-  ExternalPluginSchemaArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
+  PluginAdapterSchema,
+  PluginAdapterSchemaArgs,
+  getAdapterCheckResultSerializer,
   getBaseExtraAccountSerializer,
-  getExternalCheckResultSerializer,
-  getExternalPluginSchemaSerializer,
   getHookableLifecycleEventSerializer,
+  getPluginAdapterSchemaSerializer,
 } from '.';
 
 export type BaseLifecycleHookUpdateInfo = {
-  lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
+  lifecycleChecks: Option<Array<[HookableLifecycleEvent, AdapterCheckResult]>>;
   extraAccounts: Option<Array<BaseExtraAccount>>;
-  schema: Option<ExternalPluginSchema>;
+  schema: Option<PluginAdapterSchema>;
 };
 
 export type BaseLifecycleHookUpdateInfoArgs = {
   lifecycleChecks: OptionOrNullable<
-    Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
+    Array<[HookableLifecycleEventArgs, AdapterCheckResultArgs]>
   >;
   extraAccounts: OptionOrNullable<Array<BaseExtraAccountArgs>>;
-  schema: OptionOrNullable<ExternalPluginSchemaArgs>;
+  schema: OptionOrNullable<PluginAdapterSchemaArgs>;
 };
 
 export function getBaseLifecycleHookUpdateInfoSerializer(): Serializer<
@@ -55,13 +55,13 @@ export function getBaseLifecycleHookUpdateInfoSerializer(): Serializer<
           array(
             tuple([
               getHookableLifecycleEventSerializer(),
-              getExternalCheckResultSerializer(),
+              getAdapterCheckResultSerializer(),
             ])
           )
         ),
       ],
       ['extraAccounts', option(array(getBaseExtraAccountSerializer()))],
-      ['schema', option(getExternalPluginSchemaSerializer())],
+      ['schema', option(getPluginAdapterSchemaSerializer())],
     ],
     { description: 'BaseLifecycleHookUpdateInfo' }
   ) as Serializer<BaseLifecycleHookUpdateInfoArgs, BaseLifecycleHookUpdateInfo>;

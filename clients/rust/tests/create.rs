@@ -26,7 +26,7 @@ async fn create_asset_in_account_state() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![],
+            plugin_adapters: vec![],
         },
     )
     .await
@@ -43,7 +43,7 @@ async fn create_asset_in_account_state() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            plugin_adapters: vec![],
         },
     )
     .await;
@@ -71,7 +71,7 @@ async fn create_asset_with_different_payer() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![],
+            plugin_adapters: vec![],
         },
     )
     .await
@@ -86,7 +86,7 @@ async fn create_asset_with_different_payer() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            plugin_adapters: vec![],
         },
     )
     .await;
@@ -113,7 +113,7 @@ async fn create_asset_with_plugins() {
                 plugin: Plugin::FreezeDelegate(FreezeDelegate { frozen: false }),
                 authority: None,
             }],
-            external_plugins: vec![],
+            plugin_adapters: vec![],
         },
     )
     .await
@@ -133,7 +133,7 @@ async fn create_asset_with_plugins() {
                 plugin: Plugin::FreezeDelegate(FreezeDelegate { frozen: false }),
                 authority: Some(PluginAuthority::Owner),
             }],
-            external_plugins: vec![],
+            plugin_adapters: vec![],
         },
     )
     .await;
@@ -161,7 +161,7 @@ async fn create_asset_with_different_update_authority() {
             update_authority: Some(update_authority.pubkey()),
             collection: None,
             plugins: vec![],
-            external_plugins: vec![],
+            plugin_adapters: vec![],
         },
     )
     .await
@@ -177,7 +177,7 @@ async fn create_asset_with_different_update_authority() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            plugin_adapters: vec![],
         },
     )
     .await;
@@ -208,7 +208,7 @@ async fn create_asset_with_plugins_with_different_update_authority() {
                 plugin: Plugin::FreezeDelegate(FreezeDelegate { frozen: false }),
                 authority: None,
             }],
-            external_plugins: vec![],
+            plugin_adapters: vec![],
         },
     )
     .await
@@ -227,7 +227,7 @@ async fn create_asset_with_plugins_with_different_update_authority() {
                 plugin: Plugin::FreezeDelegate(FreezeDelegate { frozen: false }),
                 authority: Some(PluginAuthority::Owner),
             }],
-            external_plugins: vec![],
+            plugin_adapters: vec![],
         },
     )
     .await;

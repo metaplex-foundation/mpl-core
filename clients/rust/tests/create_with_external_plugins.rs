@@ -3,9 +3,9 @@ pub mod setup;
 use mpl_core::{
     errors::MplCoreError,
     types::{
-        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo,
-        ExternalPluginSchema, HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle,
-        OracleInitInfo, PluginAuthority, UpdateAuthority, ValidationResultsOffset,
+        AdapterCheckResult, DataStore, DataStoreInitInfo, HookableLifecycleEvent, LifecycleHook,
+        LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAdapter, PluginAdapterInitInfo,
+        PluginAdapterSchema, PluginAuthority, UpdateAuthority, ValidationResultsOffset,
     },
 };
 pub use setup::*;
@@ -33,13 +33,13 @@ async fn test_create_lifecycle_hook() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::LifecycleHook(
+            plugin_adapters: vec![PluginAdapterInitInfo::LifecycleHook(
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     lifecycle_checks: vec![(
                         HookableLifecycleEvent::Transfer,
-                        ExternalCheckResult { flags: 1 },
+                        AdapterCheckResult { flags: 1 },
                     )],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
@@ -62,11 +62,11 @@ async fn test_create_lifecycle_hook() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::LifecycleHook(LifecycleHook {
+            plugin_adapters: vec![PluginAdapter::LifecycleHook(LifecycleHook {
                 hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                 extra_accounts: None,
                 data_authority: Some(PluginAuthority::UpdateAuthority),
-                schema: ExternalPluginSchema::Binary,
+                schema: PluginAdapterSchema::Binary,
             })],
         },
     )
@@ -92,18 +92,18 @@ async fn test_cannot_create_lifecycle_hook_with_duplicate_lifecycle_checks() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::LifecycleHook(
+            plugin_adapters: vec![PluginAdapterInitInfo::LifecycleHook(
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     lifecycle_checks: vec![
                         (
                             HookableLifecycleEvent::Transfer,
-                            ExternalCheckResult { flags: 1 },
+                            AdapterCheckResult { flags: 1 },
                         ),
                         (
                             HookableLifecycleEvent::Transfer,
-                            ExternalCheckResult { flags: 1 },
+                            AdapterCheckResult { flags: 1 },
                         ),
                     ],
                     extra_accounts: None,
@@ -137,13 +137,13 @@ async fn test_temporarily_cannot_create_lifecycle_hook() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::LifecycleHook(
+            plugin_adapters: vec![PluginAdapterInitInfo::LifecycleHook(
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     lifecycle_checks: vec![(
                         HookableLifecycleEvent::Transfer,
-                        ExternalCheckResult { flags: 1 },
+                        AdapterCheckResult { flags: 1 },
                     )],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
@@ -172,13 +172,13 @@ async fn test_temporarily_cannot_create_lifecycle_hook_on_collection() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::LifecycleHook(
+            plugin_adapters: vec![PluginAdapterInitInfo::LifecycleHook(
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     lifecycle_checks: vec![(
                         HookableLifecycleEvent::Transfer,
-                        ExternalCheckResult { flags: 1 },
+                        AdapterCheckResult { flags: 1 },
                     )],
                     extra_accounts: None,
                     data_authority: Some(PluginAuthority::UpdateAuthority),
@@ -211,12 +211,12 @@ async fn test_create_oracle() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::Oracle(OracleInitInfo {
+            plugin_adapters: vec![PluginAdapterInitInfo::Oracle(OracleInitInfo {
                 base_address: Pubkey::default(),
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 lifecycle_checks: vec![(
                     HookableLifecycleEvent::Transfer,
-                    ExternalCheckResult { flags: 4 },
+                    AdapterCheckResult { flags: 4 },
                 )],
                 pda: None,
                 results_offset: None,
@@ -237,7 +237,7 @@ async fn test_create_oracle() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::Oracle(Oracle {
+            plugin_adapters: vec![PluginAdapter::Oracle(Oracle {
                 base_address: Pubkey::default(),
                 pda: None,
                 results_offset: ValidationResultsOffset::NoOffset,
@@ -265,17 +265,17 @@ async fn test_cannot_create_oracle_with_duplicate_lifecycle_checks() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::Oracle(OracleInitInfo {
+            plugin_adapters: vec![PluginAdapterInitInfo::Oracle(OracleInitInfo {
                 base_address: Pubkey::default(),
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 lifecycle_checks: vec![
                     (
                         HookableLifecycleEvent::Transfer,
-                        ExternalCheckResult { flags: 4 },
+                        AdapterCheckResult { flags: 4 },
                     ),
                     (
                         HookableLifecycleEvent::Transfer,
-                        ExternalCheckResult { flags: 4 },
+                        AdapterCheckResult { flags: 4 },
                     ),
                 ],
                 pda: None,
@@ -308,7 +308,7 @@ async fn test_create_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
+            plugin_adapters: vec![PluginAdapterInitInfo::DataStore(DataStoreInitInfo {
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 data_authority: PluginAuthority::UpdateAuthority,
                 schema: None,
@@ -329,9 +329,9 @@ async fn test_create_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::DataStore(DataStore {
+            plugin_adapters: vec![PluginAdapter::DataStore(DataStore {
                 data_authority: PluginAuthority::UpdateAuthority,
-                schema: ExternalPluginSchema::Binary,
+                schema: PluginAdapterSchema::Binary,
             })],
         },
     )
@@ -356,7 +356,7 @@ async fn test_temporarily_cannot_create_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
+            plugin_adapters: vec![PluginAdapterInitInfo::DataStore(DataStoreInitInfo {
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 data_authority: PluginAuthority::UpdateAuthority,
                 schema: None,
@@ -383,7 +383,7 @@ async fn test_temporarily_cannot_create_data_store_on_collection() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
+            plugin_adapters: vec![PluginAdapterInitInfo::DataStore(DataStoreInitInfo {
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 data_authority: PluginAuthority::UpdateAuthority,
                 schema: None,

@@ -2,20 +2,20 @@ import { Context } from '@metaplex-foundation/umi';
 import { createCollectionV2 } from '../../generated';
 import {
   PluginAuthorityPairArgsV2,
-  createExternalPluginInitInfo,
+  createPluginAdapterInitInfo,
   pluginAuthorityPairV2,
 } from '../../plugins';
 
 import {
-  ExternalPluginInitInfoArgs,
-  isExternalPluginType,
-} from '../../plugins/externalPlugins';
+  PluginAdapterInitInfoArgs,
+  isPluginAdapterType,
+} from '../../plugins/pluginAdapters';
 
 export type CreateCollectionArgs = Omit<
   Parameters<typeof createCollectionV2>[1],
-  'plugins' | 'externalPlugins'
+  'plugins' | 'pluginAdapters'
 > & {
-  plugins?: (PluginAuthorityPairArgsV2 | ExternalPluginInitInfoArgs)[];
+  plugins?: (PluginAuthorityPairArgsV2 | PluginAdapterInitInfoArgs)[];
 };
 
 export const createCollection = (
@@ -23,11 +23,11 @@ export const createCollection = (
   { plugins, ...args }: CreateCollectionArgs
 ) => {
   const firstPartyPlugins: PluginAuthorityPairArgsV2[] = [];
-  const externalPlugins: ExternalPluginInitInfoArgs[] = [];
+  const pluginAdapters: PluginAdapterInitInfoArgs[] = [];
 
   plugins?.forEach((plugin) => {
-    if (isExternalPluginType(plugin)) {
-      externalPlugins.push(plugin as ExternalPluginInitInfoArgs);
+    if (isPluginAdapterType(plugin)) {
+      pluginAdapters.push(plugin as PluginAdapterInitInfoArgs);
     } else {
       firstPartyPlugins.push(plugin as PluginAuthorityPairArgsV2);
     }
@@ -36,6 +36,6 @@ export const createCollection = (
   return createCollectionV2(context, {
     ...args,
     plugins: firstPartyPlugins.map(pluginAuthorityPairV2),
-    externalPlugins: externalPlugins.map(createExternalPluginInitInfo),
+    pluginAdapters: pluginAdapters.map(createPluginAdapterInitInfo),
   });
 };

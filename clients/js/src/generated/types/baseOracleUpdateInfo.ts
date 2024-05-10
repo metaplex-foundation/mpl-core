@@ -15,29 +15,29 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  AdapterCheckResult,
+  AdapterCheckResultArgs,
   BaseExtraAccount,
   BaseExtraAccountArgs,
   BaseValidationResultsOffset,
   BaseValidationResultsOffsetArgs,
-  ExternalCheckResult,
-  ExternalCheckResultArgs,
   HookableLifecycleEvent,
   HookableLifecycleEventArgs,
+  getAdapterCheckResultSerializer,
   getBaseExtraAccountSerializer,
   getBaseValidationResultsOffsetSerializer,
-  getExternalCheckResultSerializer,
   getHookableLifecycleEventSerializer,
 } from '.';
 
 export type BaseOracleUpdateInfo = {
-  lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
+  lifecycleChecks: Option<Array<[HookableLifecycleEvent, AdapterCheckResult]>>;
   pda: Option<BaseExtraAccount>;
   resultsOffset: Option<BaseValidationResultsOffset>;
 };
 
 export type BaseOracleUpdateInfoArgs = {
   lifecycleChecks: OptionOrNullable<
-    Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
+    Array<[HookableLifecycleEventArgs, AdapterCheckResultArgs]>
   >;
   pda: OptionOrNullable<BaseExtraAccountArgs>;
   resultsOffset: OptionOrNullable<BaseValidationResultsOffsetArgs>;
@@ -55,7 +55,7 @@ export function getBaseOracleUpdateInfoSerializer(): Serializer<
           array(
             tuple([
               getHookableLifecycleEventSerializer(),
-              getExternalCheckResultSerializer(),
+              getAdapterCheckResultSerializer(),
             ])
           )
         ),

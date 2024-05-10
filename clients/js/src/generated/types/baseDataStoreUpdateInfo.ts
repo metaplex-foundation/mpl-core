@@ -13,15 +13,15 @@ import {
   struct,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  ExternalPluginSchema,
-  ExternalPluginSchemaArgs,
-  getExternalPluginSchemaSerializer,
+  PluginAdapterSchema,
+  PluginAdapterSchemaArgs,
+  getPluginAdapterSchemaSerializer,
 } from '.';
 
-export type BaseDataStoreUpdateInfo = { schema: Option<ExternalPluginSchema> };
+export type BaseDataStoreUpdateInfo = { schema: Option<PluginAdapterSchema> };
 
 export type BaseDataStoreUpdateInfoArgs = {
-  schema: OptionOrNullable<ExternalPluginSchemaArgs>;
+  schema: OptionOrNullable<PluginAdapterSchemaArgs>;
 };
 
 export function getBaseDataStoreUpdateInfoSerializer(): Serializer<
@@ -29,7 +29,7 @@ export function getBaseDataStoreUpdateInfoSerializer(): Serializer<
   BaseDataStoreUpdateInfo
 > {
   return struct<BaseDataStoreUpdateInfo>(
-    [['schema', option(getExternalPluginSchemaSerializer())]],
+    [['schema', option(getPluginAdapterSchemaSerializer())]],
     { description: 'BaseDataStoreUpdateInfo' }
   ) as Serializer<BaseDataStoreUpdateInfoArgs, BaseDataStoreUpdateInfo>;
 }

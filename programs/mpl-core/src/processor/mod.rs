@@ -1,5 +1,5 @@
-mod add_external_plugin;
 mod add_plugin;
+mod add_plugin_adapter;
 mod approve_plugin_authority;
 mod burn;
 mod collect;
@@ -7,17 +7,17 @@ mod compress;
 mod create;
 mod create_collection;
 mod decompress;
-mod remove_external_plugin;
 mod remove_plugin;
+mod remove_plugin_adapter;
 mod revoke_plugin_authority;
 mod transfer;
 mod update;
-mod update_external_plugin;
 mod update_plugin;
-mod write_external_plugin_data;
+mod update_plugin_adapter;
+mod write_plugin_adapter_data;
 
-pub(crate) use add_external_plugin::*;
 pub(crate) use add_plugin::*;
+pub(crate) use add_plugin_adapter::*;
 pub(crate) use approve_plugin_authority::*;
 pub(crate) use burn::*;
 pub(crate) use collect::*;
@@ -25,14 +25,14 @@ pub(crate) use compress::*;
 pub(crate) use create::*;
 pub(crate) use create_collection::*;
 pub(crate) use decompress::*;
-pub(crate) use remove_external_plugin::*;
 pub(crate) use remove_plugin::*;
+pub(crate) use remove_plugin_adapter::*;
 pub(crate) use revoke_plugin_authority::*;
 pub(crate) use transfer::*;
 pub(crate) use update::*;
-pub(crate) use update_external_plugin::*;
 pub(crate) use update_plugin::*;
-pub(crate) use write_external_plugin_data::*;
+pub(crate) use update_plugin_adapter::*;
+pub(crate) use write_plugin_adapter_data::*;
 
 use borsh::BorshDeserialize;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, pubkey::Pubkey};
@@ -132,37 +132,37 @@ pub fn process_instruction<'a>(
             msg!("Instruction: CreateCollectionV2");
             create_collection_v2(accounts, args)
         }
-        MplAssetInstruction::AddExternalPluginV1(args) => {
-            msg!("Instruction: AddExternalPlugin");
-            add_external_plugin(accounts, args)
+        MplAssetInstruction::AddPluginAdapterV1(args) => {
+            msg!("Instruction: AddPluginAdapter");
+            add_plugin_adapter(accounts, args)
         }
-        MplAssetInstruction::AddCollectionExternalPluginV1(args) => {
-            msg!("Instruction: AddCollectionExternalPlugin");
-            add_collection_external_plugin(accounts, args)
+        MplAssetInstruction::AddCollectionPluginAdapterV1(args) => {
+            msg!("Instruction: AddCollectionPluginAdapter");
+            add_collection_plugin_adapter(accounts, args)
         }
-        MplAssetInstruction::RemoveExternalPluginV1(args) => {
-            msg!("Instruction: RemoveExternalPlugin");
-            remove_external_plugin(accounts, args)
+        MplAssetInstruction::RemovePluginAdapterV1(args) => {
+            msg!("Instruction: RemovePluginAdapter");
+            remove_plugin_adapter(accounts, args)
         }
-        MplAssetInstruction::RemoveCollectionExternalPluginV1(args) => {
-            msg!("Instruction: RemoveCollectionExternalPlugin");
-            remove_collection_external_plugin(accounts, args)
+        MplAssetInstruction::RemoveCollectionPluginAdapterV1(args) => {
+            msg!("Instruction: RemoveCollectionPluginAdapter");
+            remove_collection_plugin_adapter(accounts, args)
         }
-        MplAssetInstruction::UpdateExternalPluginV1(args) => {
-            msg!("Instruction: UpdateExternalPlugin");
-            update_external_plugin(accounts, args)
+        MplAssetInstruction::UpdatePluginAdapterV1(args) => {
+            msg!("Instruction: UpdatePluginAdapter");
+            update_plugin_adapter(accounts, args)
         }
-        MplAssetInstruction::UpdateCollectionExternalPluginV1(args) => {
-            msg!("Instruction: UpdateCollectionExternalPlugin");
-            update_collection_external_plugin(accounts, args)
+        MplAssetInstruction::UpdateCollectionPluginAdapterV1(args) => {
+            msg!("Instruction: UpdateCollectionPluginAdapter");
+            update_collection_plugin_adapter(accounts, args)
         }
-        MplAssetInstruction::WriteExternalPluginDataV1(args) => {
-            msg!("Instruction: WriteExternalPluginDataV1");
-            write_external_plugin_data(accounts, args)
+        MplAssetInstruction::WritePluginAdapterDataV1(args) => {
+            msg!("Instruction: WritePluginAdapterDataV1");
+            write_plugin_adapter_data(accounts, args)
         }
-        MplAssetInstruction::WriteCollectionExternalPluginDataV1(args) => {
-            msg!("Instruction: WriteCollectionExternalPluginDataV1");
-            write_collection_external_plugin_data(accounts, args)
+        MplAssetInstruction::WriteCollectionPluginAdapterDataV1(args) => {
+            msg!("Instruction: WriteCollectionPluginAdapterDataV1");
+            write_collection_plugin_adapter_data(accounts, args)
         }
     }
 }

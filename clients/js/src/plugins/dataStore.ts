@@ -2,13 +2,13 @@ import {
   BaseDataStore,
   BaseDataStoreInitInfoArgs,
   BaseDataStoreUpdateInfoArgs,
-  ExternalPluginSchema,
-  ExternalRegistryRecord,
+  PluginAdapterSchema,
+  AdapterRegistryRecord,
 } from '../generated';
-import { ExternalPluginKey } from './externalPluginKey';
-import { ExternalPluginManifest } from './externalPluginManifest';
-import { BaseExternalPlugin } from './externalPlugins';
-import { parseExternalPluginData } from './lib';
+import { PluginAdapterKey } from './pluginAdapterKey';
+import { PluginAdapterManifest } from './pluginAdapterManifest';
+import { BasePluginAdapter } from './pluginAdapters';
+import { parsePluginAdapterData } from './lib';
 import { LifecycleChecks } from './lifecycleChecks';
 import {
   PluginAuthority,
@@ -21,7 +21,7 @@ export type DataStore = Omit<BaseDataStore, 'dataAuthority'> & {
   data?: any;
 };
 
-export type DataStorePlugin = BaseExternalPlugin &
+export type DataStorePlugin = BasePluginAdapter &
   DataStore & {
     type: 'DataStore';
     dataAuthority: PluginAuthority;
@@ -34,7 +34,7 @@ export type DataStoreInitInfoArgs = Omit<
   type: 'DataStore';
   initPluginAuthority?: PluginAuthority;
   lifecycleChecks?: LifecycleChecks;
-  schema?: ExternalPluginSchema;
+  schema?: PluginAdapterSchema;
   dataAuthority: PluginAuthority;
 };
 
@@ -42,8 +42,8 @@ export type DataStoreUpdateInfoArgs = Omit<
   BaseDataStoreUpdateInfoArgs,
   'schema'
 > & {
-  key: ExternalPluginKey;
-  schema?: ExternalPluginSchema;
+  key: PluginAdapterKey;
+  schema?: PluginAdapterSchema;
 };
 
 export function dataStoreInitInfoArgsToBase(
@@ -68,17 +68,17 @@ export function dataStoreUpdateInfoArgsToBase(
 
 export function dataStoreFromBase(
   s: BaseDataStore,
-  r: ExternalRegistryRecord,
+  r: AdapterRegistryRecord,
   account: Uint8Array
 ): DataStore {
   return {
     ...s,
     dataAuthority: pluginAuthorityFromBase(s.dataAuthority),
-    data: parseExternalPluginData(s, r, account),
+    data: parsePluginAdapterData(s, r, account),
   };
 }
 
-export const dataStoreManifest: ExternalPluginManifest<
+export const dataStoreManifest: PluginAdapterManifest<
   DataStore,
   BaseDataStore,
   DataStoreInitInfoArgs,

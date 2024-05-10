@@ -1,7 +1,7 @@
 use mpl_core::{
     instructions::{CreateCollectionV2Builder, CreateV2Builder},
     types::{
-        DataState, ExternalPlugin, ExternalPluginInitInfo, Key, Plugin, PluginAuthorityPair,
+        DataState, Key, Plugin, PluginAdapter, PluginAdapterInitInfo, PluginAuthorityPair,
         UpdateAuthority,
     },
     Asset, Collection,
@@ -34,7 +34,7 @@ pub struct CreateAssetHelperArgs<'a> {
     pub collection: Option<Pubkey>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
-    pub external_plugins: Vec<ExternalPluginInitInfo>,
+    pub plugin_adapters: Vec<PluginAdapterInitInfo>,
 }
 
 pub async fn create_asset<'a>(
@@ -54,7 +54,7 @@ pub async fn create_asset<'a>(
         .name(input.name.unwrap_or(DEFAULT_ASSET_NAME.to_owned()))
         .uri(input.uri.unwrap_or(DEFAULT_ASSET_URI.to_owned()))
         .plugins(input.plugins)
-        .external_plugins(input.external_plugins)
+        .plugin_adapters(input.plugin_adapters)
         .instruction();
 
     let mut signers = vec![input.asset, &context.payer];
@@ -80,7 +80,7 @@ pub struct AssertAssetHelperArgs {
     pub uri: Option<String>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
-    pub external_plugins: Vec<ExternalPlugin>,
+    pub plugin_adapters: Vec<PluginAdapter>,
 }
 
 pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHelperArgs) {
@@ -133,21 +133,21 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
     }
 
     assert_eq!(
-        input.external_plugins.len(),
-        asset.external_plugin_list.lifecycle_hooks.len()
-            + asset.external_plugin_list.oracles.len()
-            + asset.external_plugin_list.data_stores.len()
+        input.plugin_adapters.len(),
+        asset.plugin_adapter_list.lifecycle_hooks.len()
+            + asset.plugin_adapter_list.oracles.len()
+            + asset.plugin_adapter_list.data_stores.len()
     );
-    for plugin in input.external_plugins {
+    for plugin in input.plugin_adapters {
         match plugin {
-            ExternalPlugin::LifecycleHook(hook) => {
-                assert!(asset.external_plugin_list.lifecycle_hooks.contains(&hook))
+            PluginAdapter::LifecycleHook(hook) => {
+                assert!(asset.plugin_adapter_list.lifecycle_hooks.contains(&hook))
             }
-            ExternalPlugin::Oracle(oracle) => {
-                assert!(asset.external_plugin_list.oracles.contains(&oracle))
+            PluginAdapter::Oracle(oracle) => {
+                assert!(asset.plugin_adapter_list.oracles.contains(&oracle))
             }
-            ExternalPlugin::DataStore(data_store) => {
-                assert!(asset.external_plugin_list.data_stores.contains(&data_store))
+            PluginAdapter::DataStore(data_store) => {
+                assert!(asset.plugin_adapter_list.data_stores.contains(&data_store))
             }
         }
     }
@@ -162,7 +162,7 @@ pub struct CreateCollectionHelperArgs<'a> {
     pub uri: Option<String>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
-    pub external_plugins: Vec<ExternalPluginInitInfo>,
+    pub plugin_adapters: Vec<PluginAdapterInitInfo>,
 }
 
 pub async fn create_collection<'a>(
@@ -178,7 +178,7 @@ pub async fn create_collection<'a>(
         .name(input.name.unwrap_or(DEFAULT_COLLECTION_NAME.to_owned()))
         .uri(input.uri.unwrap_or(DEFAULT_COLLECTION_URI.to_owned()))
         .plugins(input.plugins)
-        .external_plugins(input.external_plugins)
+        .plugin_adapters(input.plugin_adapters)
         .instruction();
 
     let mut signers = vec![input.collection, &context.payer];
@@ -258,7 +258,7 @@ pub async fn assert_collection(
         }
     }
 
-    // TODO validate external plugins here.
+    // TODO validate plugin adapters here.
 }
 
 pub async fn airdrop(

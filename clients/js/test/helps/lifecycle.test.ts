@@ -5,11 +5,12 @@ import {
   fixedAccountInit,
   MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
 } from '@metaplex-foundation/mpl-core-oracle-example';
+import { ExternalValidationResult } from '@metaplex-foundation/mpl-core-oracle-example/dist/src/hooked';
 import {
   canBurn,
   canTransfer,
   CheckResult,
-  ExternalValidationResult,
+  
   findOracleAccount,
   LifecycleValidationError,
   OracleInitInfoArgs,

@@ -8,10 +8,10 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, Attributes, BurnDelegate, DataStore, Edition, ExternalCheckResult,
-        ExternalPlugin, ExternalPluginKey, FreezeDelegate, ImmutableMetadata, Key, LifecycleHook,
-        MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
-        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
+        AdapterCheckResult, AddBlocker, Attributes, BurnDelegate, DataStore, Edition,
+        FreezeDelegate, ImmutableMetadata, Key, LifecycleHook, MasterEdition, Oracle,
+        PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate, PluginAdapter,
+        PluginAdapterKey, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
     },
 };
 
@@ -165,7 +165,7 @@ pub struct PluginsList {
 }
 
 #[derive(Debug, Default)]
-pub struct ExternalPluginsList {
+pub struct PluginAdaptersList {
     pub lifecycle_hooks: Vec<LifecycleHook>,
     pub oracles: Vec<Oracle>,
     pub data_stores: Vec<DataStore>,
@@ -175,7 +175,7 @@ pub struct ExternalPluginsList {
 pub struct Asset {
     pub base: BaseAssetV1,
     pub plugin_list: PluginsList,
-    pub external_plugin_list: ExternalPluginsList,
+    pub plugin_adapter_list: PluginAdaptersList,
     pub plugin_header: Option<PluginHeaderV1>,
 }
 
@@ -201,18 +201,18 @@ impl RegistryRecordSafe {
     }
 }
 
-/// External Registry record that can be used when the plugin type is not known (i.e. a `ExternalPluginType` that
+/// Adapter Registry record that can be used when the plugin type is not known (i.e. a `PluginAdapterType` that
 /// is too new for this client to know about).
-pub struct ExternalRegistryRecordSafe {
+pub struct AdapterRegistryRecordSafe {
     pub plugin_type: u8,
     pub authority: PluginAuthority,
-    pub lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
+    pub lifecycle_checks: Option<Vec<(u8, AdapterCheckResult)>>,
     pub offset: u64,
     pub data_offset: Option<u64>,
     pub data_len: Option<u64>,
 }
 
-impl ExternalRegistryRecordSafe {
+impl AdapterRegistryRecordSafe {
     /// Associated function for sorting `RegistryRecordIndexable` by offset.
     pub fn compare_offsets(a: &RegistryRecordSafe, b: &RegistryRecordSafe) -> Ordering {
         a.offset.cmp(&b.offset)
@@ -220,12 +220,12 @@ impl ExternalRegistryRecordSafe {
 }
 
 /// Plugin registry that an account can safely be deserialized into even if some plugins are
-/// not known.  Note this skips over external plugins for now, and will be updated when those
+/// not known.  Note this skips over plugin adapters for now, and will be updated when those
 /// are defined.
 pub struct PluginRegistryV1Safe {
     pub _key: Key,
     pub registry: Vec<RegistryRecordSafe>,
-    pub external_registry: Vec<ExternalRegistryRecordSafe>,
+    pub adapter_registry: Vec<AdapterRegistryRecordSafe>,
 }
 
 impl PluginRegistryV1Safe {
@@ -252,19 +252,18 @@ impl PluginRegistryV1Safe {
             });
         }
 
-        let external_registry_size = u32::deserialize(&mut data)?;
+        let adapter_registry_size = u32::deserialize(&mut data)?;
 
-        let mut external_registry = vec![];
-        for _ in 0..external_registry_size {
+        let mut adapter_registry = vec![];
+        for _ in 0..adapter_registry_size {
             let plugin_type = u8::deserialize(&mut data)?;
             let authority = PluginAuthority::deserialize(&mut data)?;
-            let lifecycle_checks =
-                Option::<Vec<(u8, ExternalCheckResult)>>::deserialize(&mut data)?;
+            let lifecycle_checks = Option::<Vec<(u8, AdapterCheckResult)>>::deserialize(&mut data)?;
             let offset = u64::deserialize(&mut data)?;
             let data_offset = Option::<u64>::deserialize(&mut data)?;
             let data_len = Option::<u64>::deserialize(&mut data)?;
 
-            external_registry.push(ExternalRegistryRecordSafe {
+            adapter_registry.push(AdapterRegistryRecordSafe {
                 plugin_type,
                 authority,
                 lifecycle_checks,
@@ -277,20 +276,20 @@ impl PluginRegistryV1Safe {
         Ok(Self {
             _key: key,
             registry,
-            external_registry,
+            adapter_registry,
         })
     }
 }
 
-impl From<&ExternalPlugin> for ExternalPluginKey {
-    fn from(plugin: &ExternalPlugin) -> Self {
+impl From<&PluginAdapter> for PluginAdapterKey {
+    fn from(plugin: &PluginAdapter) -> Self {
         match plugin {
-            ExternalPlugin::DataStore(data_store) => {
-                ExternalPluginKey::DataStore(data_store.data_authority.clone())
+            PluginAdapter::DataStore(data_store) => {
+                PluginAdapterKey::DataStore(data_store.data_authority.clone())
             }
-            ExternalPlugin::Oracle(oracle) => ExternalPluginKey::Oracle(oracle.base_address),
-            ExternalPlugin::LifecycleHook(lifecycle_hook) => {
-                ExternalPluginKey::LifecycleHook(lifecycle_hook.hooked_program)
+            PluginAdapter::Oracle(oracle) => PluginAdapterKey::Oracle(oracle.base_address),
+            PluginAdapter::LifecycleHook(lifecycle_hook) => {
+                PluginAdapterKey::LifecycleHook(lifecycle_hook.hooked_program)
             }
         }
     }

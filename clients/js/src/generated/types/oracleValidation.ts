@@ -15,29 +15,29 @@ import {
   unit,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  ExternalValidationResult,
-  ExternalValidationResultArgs,
-  getExternalValidationResultSerializer,
+  AdapterValidationResult,
+  AdapterValidationResultArgs,
+  getAdapterValidationResultSerializer,
 } from '.';
 
 export type OracleValidation =
   | { __kind: 'Uninitialized' }
   | {
       __kind: 'V1';
-      create: ExternalValidationResult;
-      transfer: ExternalValidationResult;
-      burn: ExternalValidationResult;
-      update: ExternalValidationResult;
+      create: AdapterValidationResult;
+      transfer: AdapterValidationResult;
+      burn: AdapterValidationResult;
+      update: AdapterValidationResult;
     };
 
 export type OracleValidationArgs =
   | { __kind: 'Uninitialized' }
   | {
       __kind: 'V1';
-      create: ExternalValidationResultArgs;
-      transfer: ExternalValidationResultArgs;
-      burn: ExternalValidationResultArgs;
-      update: ExternalValidationResultArgs;
+      create: AdapterValidationResultArgs;
+      transfer: AdapterValidationResultArgs;
+      burn: AdapterValidationResultArgs;
+      update: AdapterValidationResultArgs;
     };
 
 export function getOracleValidationSerializer(): Serializer<
@@ -50,10 +50,10 @@ export function getOracleValidationSerializer(): Serializer<
       [
         'V1',
         struct<GetDataEnumKindContent<OracleValidation, 'V1'>>([
-          ['create', getExternalValidationResultSerializer()],
-          ['transfer', getExternalValidationResultSerializer()],
-          ['burn', getExternalValidationResultSerializer()],
-          ['update', getExternalValidationResultSerializer()],
+          ['create', getAdapterValidationResultSerializer()],
+          ['transfer', getAdapterValidationResultSerializer()],
+          ['burn', getAdapterValidationResultSerializer()],
+          ['update', getAdapterValidationResultSerializer()],
         ]),
       ],
     ],

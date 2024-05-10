@@ -133,32 +133,32 @@ pub enum MplCoreError {
     #[error("Invalid Log Wrapper Program")]
     InvalidLogWrapperProgram,
 
-    /// 31 - External Plugin not found
-    #[error("External Plugin not found")]
-    ExternalPluginNotFound,
+    /// 31 - Plugin Adapter not found
+    #[error("Plugin Adapter not found")]
+    PluginAdapterNotFound,
 
-    /// 32 - External Plugin already exists
-    #[error("External Plugin already exists")]
-    ExternalPluginAlreadyExists,
+    /// 32 - Plugin Adapter already exists
+    #[error("Plugin Adapter already exists")]
+    PluginAdapterAlreadyExists,
 
     /// 33 - Missing asset needed for extra account PDA derivation
     #[error("Missing asset needed for extra account PDA derivation")]
     MissingAsset,
 
-    /// 34 - Missing account needed for external plugin
-    #[error("Missing account needed for external plugin")]
-    MissingExternalAccount,
+    /// 34 - Missing account needed for plugin adapter
+    #[error("Missing account needed for plugin adapter")]
+    MissingAdapterAccount,
 
-    /// 35 - Oracle external plugin can only be configured to reject
-    #[error("Oracle external plugin can only be configured to reject")]
+    /// 35 - Oracle plugin adapter can only be configured to reject
+    #[error("Oracle plugin adapter can only be configured to reject")]
     OracleCanRejectOnly,
 
-    /// 36 - External plugin must have at least one lifecycle check
-    #[error("External plugin must have at least one lifecycle check")]
+    /// 36 - Plugin adapter must have at least one lifecycle check
+    #[error("Plugin adapter must have at least one lifecycle check")]
     RequiresLifecycleCheck,
 
-    /// 37 - Duplicate lifecycle checks were provided for external plugin
-    #[error("Duplicate lifecycle checks were provided for external plugin")]
+    /// 37 - Duplicate lifecycle checks were provided for plugin adapter
+    #[error("Duplicate lifecycle checks were provided for plugin adapter ")]
     DuplicateLifecycleChecks,
 
     /// 38 - Could not read from oracle account

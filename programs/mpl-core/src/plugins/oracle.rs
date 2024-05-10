@@ -4,19 +4,19 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use crate::error::MplCoreError;
 
 use super::{
-    Authority, ExternalCheckResult, ExternalValidationResult, ExtraAccount, HookableLifecycleEvent,
+    AdapterCheckResult, AdapterValidationResult, Authority, ExtraAccount, HookableLifecycleEvent,
     PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// Oracle plugin that allows getting a `ValidationResult` for a lifecycle event from an arbitrary
 /// account either specified by or derived from the `base_address`.  This hook is used for any
-/// lifecycle events that were selected in the `ExternalPluginRecord` for the plugin.
+/// lifecycle events that were selected in the `PluginAdapterRecord` for the plugin.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct Oracle {
     /// The address of the oracle, or if using the `pda` option, a program ID from which
     /// to derive a PDA.
     pub base_address: Pubkey,
-    /// Optional PDA (derived from Pubkey attached to `ExternalPluginKey`).
+    /// Optional PDA (derived from Pubkey attached to `PluginAdapterKey`).
     pub pda: Option<ExtraAccount>,
     /// Validation results offset in the Oracle account.  Default is `ValidationResultsOffset::NoOffset`.
     pub results_offset: ValidationResultsOffset,
@@ -35,7 +35,7 @@ impl Oracle {
 }
 
 impl PluginValidation for Oracle {
-    fn validate_add_external_plugin(
+    fn validate_add_plugin_adapter(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
@@ -86,7 +86,7 @@ impl Oracle {
             .accounts
             .iter()
             .find(|account| *account.key == oracle_account)
-            .ok_or(MplCoreError::MissingExternalAccount)?;
+            .ok_or(MplCoreError::MissingAdapterAccount)?;
 
         let offset = self.results_offset.to_offset_usize();
 
@@ -139,9 +139,9 @@ pub struct OracleInitInfo {
     pub base_address: Pubkey,
     /// Initial plugin authority.
     pub init_plugin_authority: Option<Authority>,
-    /// The lifecyle events for which the the external plugin is active.
-    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
-    /// Optional PDA (derived from Pubkey attached to `ExternalPluginKey`).
+    /// The lifecyle events for which the the plugin adapter is active.
+    pub lifecycle_checks: Vec<(HookableLifecycleEvent, AdapterCheckResult)>,
+    /// Optional PDA (derived from Pubkey attached to `PluginAdapterKey`).
     pub pda: Option<ExtraAccount>,
     /// Optional offset for validation results struct used in Oracle account.  Default
     /// is `ValidationResultsOffset::NoOffset`.
@@ -151,9 +151,9 @@ pub struct OracleInitInfo {
 /// Oracle update info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct OracleUpdateInfo {
-    /// The lifecyle events for which the the external plugin is active.
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
-    /// Optional PDA (derived from Pubkey attached to `ExternalPluginKey`).
+    /// The lifecyle events for which the the plugin adapter is active.
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, AdapterCheckResult)>>,
+    /// Optional PDA (derived from Pubkey attached to `PluginAdapterKey`).
     pub pda: Option<ExtraAccount>,
     /// Optional offset for validation results struct used in Oracle account.  Default
     /// is `ValidationResultsOffset::NoOffset`.
@@ -191,13 +191,13 @@ pub enum OracleValidation {
     /// Version 1 of the format.
     V1 {
         /// Validation for the the create lifecycle action.
-        create: ExternalValidationResult,
+        create: AdapterValidationResult,
         /// Validation for the transfer lifecycle action.
-        transfer: ExternalValidationResult,
+        transfer: AdapterValidationResult,
         /// Validation for the burn lifecycle action.
-        burn: ExternalValidationResult,
+        burn: AdapterValidationResult,
         /// Validation for the update lifecycle action.
-        update: ExternalValidationResult,
+        update: AdapterValidationResult,
     },
 }
 

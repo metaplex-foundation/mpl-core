@@ -2423,7 +2423,7 @@ test('it can update asset to different size name with oracle', async (t) => {
   });
 });
 
-test('it can update oracle to different size external plugin', async (t) => {
+test('it can update oracle to different size plugin adapter', async (t) => {
   const umi = await createUmi();
   const oracleSigner = generateSigner(umi);
   await fixedAccountInit(umi, {

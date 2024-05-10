@@ -9,8 +9,8 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::CreateCollectionV2Accounts,
     plugins::{
-        create_meta_idempotent, create_plugin_meta, initialize_external_plugin, initialize_plugin,
-        CheckResult, ExternalCheckResultBits, ExternalPlugin, ExternalPluginInitInfo, Plugin,
+        create_meta_idempotent, create_plugin_meta, initialize_plugin, initialize_plugin_adapter,
+        AdapterCheckResultBits, CheckResult, Plugin, PluginAdapter, PluginAdapterInitInfo,
         PluginAuthorityPair, PluginType, PluginValidationContext, ValidationResult,
     },
     state::{Authority, CollectionV1, Key},
@@ -30,7 +30,7 @@ pub(crate) struct CreateCollectionV2Args {
     pub(crate) name: String,
     pub(crate) uri: String,
     pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
-    pub(crate) external_plugins: Option<Vec<ExternalPluginInitInfo>>,
+    pub(crate) plugin_adapters: Option<Vec<PluginAdapterInitInfo>>,
 }
 
 impl From<CreateCollectionV1Args> for CreateCollectionV2Args {
@@ -39,7 +39,7 @@ impl From<CreateCollectionV1Args> for CreateCollectionV2Args {
             name: item.name,
             uri: item.uri,
             plugins: item.plugins,
-            external_plugins: None,
+            plugin_adapters: None,
         }
     }
 }
@@ -161,7 +161,7 @@ pub(crate) fn process_create_collection<'a>(
         }
     }
 
-    if let Some(plugins) = args.external_plugins {
+    if let Some(plugins) = args.plugin_adapters {
         if !plugins.is_empty() {
             let (_, mut plugin_header, mut plugin_registry) = create_meta_idempotent::<CollectionV1>(
                 ctx.accounts.collection,
@@ -169,30 +169,30 @@ pub(crate) fn process_create_collection<'a>(
                 ctx.accounts.system_program,
             )?;
             for plugin_init_info in &plugins {
-                let external_check_result_bits =
-                    ExternalCheckResultBits::from(ExternalPlugin::check_create(plugin_init_info));
+                let adapter_check_result_bits =
+                    AdapterCheckResultBits::from(PluginAdapter::check_create(plugin_init_info));
 
-                if external_check_result_bits.can_reject() {
+                if adapter_check_result_bits.can_reject() {
                     let validation_ctx = PluginValidationContext {
                         accounts,
                         asset_info: None,
                         collection_info: Some(ctx.accounts.collection),
-                        // External plugins are always managed by the update authority.
+                        // Plugin adapters are always managed by the update authority.
                         self_authority: &Authority::UpdateAuthority,
                         authority_info: authority,
                         resolved_authorities: None,
                         new_owner: None,
                         target_plugin: None,
                     };
-                    if ExternalPlugin::validate_create(
-                        &ExternalPlugin::from(plugin_init_info),
+                    if PluginAdapter::validate_create(
+                        &PluginAdapter::from(plugin_init_info),
                         &validation_ctx,
                     )? == ValidationResult::Rejected
                     {
                         approved = false;
                     };
                 }
-                initialize_external_plugin::<CollectionV1>(
+                initialize_plugin_adapter::<CollectionV1>(
                     plugin_init_info,
                     &mut plugin_header,
                     &mut plugin_registry,
