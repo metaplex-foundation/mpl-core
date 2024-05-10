@@ -164,6 +164,10 @@ pub enum MplCoreError {
     /// 38 - Could not read from oracle account
     #[error("Could not read from oracle account")]
     InvalidOracleAccountData,
+
+    /// 39 - Oracle account is uninitialized
+    #[error("Oracle account is uninitialized")]
+    UninitializedOracleAccount,
 }
 
 impl PrintProgramError for MplCoreError {

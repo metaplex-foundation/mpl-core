@@ -103,6 +103,7 @@ impl Oracle {
             .map_err(|_| MplCoreError::InvalidOracleAccountData)?;
 
         match validation_result {
+            OracleValidation::Uninitialized => Err(MplCoreError::UninitializedOracleAccount.into()),
             OracleValidation::V1 {
                 create,
                 transfer,
@@ -185,6 +186,8 @@ impl ValidationResultsOffset {
 /// Validation results struct for an Oracle account.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub enum OracleValidation {
+    /// Uninitialized data.  This is intended to prevent leaving an account zeroed out by mistake.
+    Uninitialized,
     /// Version 1 of the format.
     V1 {
         /// Validation for the the create lifecycle action.

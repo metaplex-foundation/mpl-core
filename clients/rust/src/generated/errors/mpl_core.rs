@@ -127,6 +127,9 @@ pub enum MplCoreError {
     /// 38 (0x26) - Could not read from oracle account
     #[error("Could not read from oracle account")]
     InvalidOracleAccountData,
+    /// 39 (0x27) - Oracle account is uninitialized
+    #[error("Oracle account is uninitialized")]
+    UninitializedOracleAccount,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

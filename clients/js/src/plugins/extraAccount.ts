@@ -5,7 +5,7 @@ import {
 } from '@metaplex-foundation/umi/serializers';
 import { BaseExtraAccount } from '../generated';
 import { Seed, seedFromBase, seedToBase } from './seed';
-import { RenameToType } from '../utils';
+import { RenameToType, someOrNone, unwrapOption } from '../utils';
 
 export const PRECONFIGURED_SEED = 'mpl-core';
 
@@ -33,6 +33,7 @@ export type ExtraAccount =
   | {
       type: 'CustomPda';
       seeds: Array<Seed>;
+      customProgramId?: PublicKey;
       isSigner?: boolean;
       isWritable?: boolean;
     }
@@ -120,7 +121,7 @@ export function extraAccountToAccountMeta(
     case 'CustomPda':
       return {
         pubkey: context.eddsa.findPda(
-          inputs.program!,
+          e.customProgramId ? e.customProgramId : inputs.program!,
           e.seeds.map((seed) => {
             switch (seed.type) {
               case 'Collection':
@@ -162,6 +163,7 @@ export function extraAccountToBase(s: ExtraAccount): BaseExtraAccount {
       __kind: 'CustomPda',
       ...acccountMeta,
       seeds: s.seeds.map(seedToBase),
+      customProgramId: someOrNone(s.customProgramId),
     };
   }
   if (s.type === 'Address') {
@@ -185,6 +187,7 @@ export function extraAccountFromBase(s: BaseExtraAccount): ExtraAccount {
       isSigner: s.isSigner,
       isWritable: s.isWritable,
       seeds: s.seeds.map(seedFromBase),
+      customProgramId: unwrapOption(s.customProgramId),
     };
   }
   if (s.__kind === 'Address') {

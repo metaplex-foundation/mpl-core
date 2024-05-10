@@ -6,7 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { PublicKey } from '@metaplex-foundation/umi';
+import { Option, OptionOrNullable, PublicKey } from '@metaplex-foundation/umi';
 import {
   GetDataEnumKind,
   GetDataEnumKindContent,
@@ -14,6 +14,7 @@ import {
   array,
   bool,
   dataEnum,
+  option,
   publicKey as publicKeySerializer,
   struct,
 } from '@metaplex-foundation/umi/serializers';
@@ -32,6 +33,7 @@ export type BaseExtraAccount =
   | {
       __kind: 'CustomPda';
       seeds: Array<BaseSeed>;
+      customProgramId: Option<PublicKey>;
       isSigner: boolean;
       isWritable: boolean;
     }
@@ -55,6 +57,7 @@ export type BaseExtraAccountArgs =
   | {
       __kind: 'CustomPda';
       seeds: Array<BaseSeedArgs>;
+      customProgramId: OptionOrNullable<PublicKey>;
       isSigner: boolean;
       isWritable: boolean;
     }
@@ -116,6 +119,7 @@ export function getBaseExtraAccountSerializer(): Serializer<
         'CustomPda',
         struct<GetDataEnumKindContent<BaseExtraAccount, 'CustomPda'>>([
           ['seeds', array(getBaseSeedSerializer())],
+          ['customProgramId', option(publicKeySerializer())],
           ['isSigner', bool()],
           ['isWritable', bool()],
         ]),

@@ -16,6 +16,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum OracleValidation {
+    Uninitialized,
     V1 {
         create: ExternalValidationResult,
         transfer: ExternalValidationResult,

@@ -3639,6 +3639,12 @@
                 }
               },
               {
+                "name": "custom_program_id",
+                "type": {
+                  "option": "publicKey"
+                }
+              },
+              {
                 "name": "is_signer",
                 "type": "bool"
               },
@@ -3871,6 +3877,9 @@
       "type": {
         "kind": "enum",
         "variants": [
+          {
+            "name": "Uninitialized"
+          },
           {
             "name": "V1",
             "fields": [
@@ -4215,6 +4224,11 @@
       "code": 38,
       "name": "InvalidOracleAccountData",
       "msg": "Could not read from oracle account"
+    },
+    {
+      "code": 39,
+      "name": "UninitializedOracleAccount",
+      "msg": "Oracle account is uninitialized"
     }
   ],
   "metadata": {
