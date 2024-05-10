@@ -10,20 +10,20 @@ import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
 import {
   BasePluginAuthority,
   BasePluginAuthorityArgs,
-  ExternalPluginSchema,
-  ExternalPluginSchemaArgs,
+  ExternalPluginAdapterSchema,
+  ExternalPluginAdapterSchemaArgs,
   getBasePluginAuthoritySerializer,
-  getExternalPluginSchemaSerializer,
+  getExternalPluginAdapterSchemaSerializer,
 } from '.';
 
 export type BaseDataStore = {
   dataAuthority: BasePluginAuthority;
-  schema: ExternalPluginSchema;
+  schema: ExternalPluginAdapterSchema;
 };
 
 export type BaseDataStoreArgs = {
   dataAuthority: BasePluginAuthorityArgs;
-  schema: ExternalPluginSchemaArgs;
+  schema: ExternalPluginAdapterSchemaArgs;
 };
 
 export function getBaseDataStoreSerializer(): Serializer<
@@ -33,7 +33,7 @@ export function getBaseDataStoreSerializer(): Serializer<
   return struct<BaseDataStore>(
     [
       ['dataAuthority', getBasePluginAuthoritySerializer()],
-      ['schema', getExternalPluginSchemaSerializer()],
+      ['schema', getExternalPluginAdapterSchemaSerializer()],
     ],
     { description: 'BaseDataStore' }
   ) as Serializer<BaseDataStoreArgs, BaseDataStore>;

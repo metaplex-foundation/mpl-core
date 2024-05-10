@@ -9,9 +9,10 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::CreateV2Accounts,
     plugins::{
-        create_meta_idempotent, create_plugin_meta, initialize_external_plugin, initialize_plugin,
-        CheckResult, ExternalCheckResultBits, ExternalPlugin, ExternalPluginInitInfo, Plugin,
-        PluginAuthorityPair, PluginType, PluginValidationContext, ValidationResult,
+        create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
+        initialize_plugin, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
+        ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair, PluginType,
+        PluginValidationContext, ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT,
@@ -35,7 +36,7 @@ pub(crate) struct CreateV2Args {
     pub(crate) name: String,
     pub(crate) uri: String,
     pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
-    pub(crate) external_plugins: Option<Vec<ExternalPluginInitInfo>>,
+    pub(crate) external_plugin_adapters: Option<Vec<ExternalPluginAdapterInitInfo>>,
 }
 
 impl From<CreateV1Args> for CreateV2Args {
@@ -45,7 +46,7 @@ impl From<CreateV1Args> for CreateV2Args {
             name: item.name,
             uri: item.uri,
             plugins: item.plugins,
-            external_plugins: None,
+            external_plugin_adapters: None,
         }
     }
 }
@@ -199,7 +200,7 @@ pub(crate) fn process_create<'a>(
             }
         }
 
-        if let Some(plugins) = args.external_plugins {
+        if let Some(plugins) = args.external_plugin_adapters {
             if !plugins.is_empty() {
                 let (_, mut plugin_header, mut plugin_registry) = create_meta_idempotent::<AssetV1>(
                     ctx.accounts.asset,
@@ -208,7 +209,7 @@ pub(crate) fn process_create<'a>(
                 )?;
                 for plugin_init_info in &plugins {
                     let external_check_result_bits = ExternalCheckResultBits::from(
-                        ExternalPlugin::check_create(plugin_init_info),
+                        ExternalPluginAdapter::check_create(plugin_init_info),
                     );
 
                     if external_check_result_bits.can_reject() {
@@ -216,22 +217,22 @@ pub(crate) fn process_create<'a>(
                             accounts,
                             asset_info: Some(ctx.accounts.asset),
                             collection_info: ctx.accounts.collection,
-                            // External plugins are always managed by the update authority.
+                            // External plugin adapters are always managed by the update authority.
                             self_authority: &Authority::UpdateAuthority,
                             authority_info: authority,
                             resolved_authorities: None,
                             new_owner: None,
                             target_plugin: None,
                         };
-                        if ExternalPlugin::validate_create(
-                            &ExternalPlugin::from(plugin_init_info),
+                        if ExternalPluginAdapter::validate_create(
+                            &ExternalPluginAdapter::from(plugin_init_info),
                             &validation_ctx,
                         )? == ValidationResult::Rejected
                         {
                             approved = false;
                         }
                     }
-                    initialize_external_plugin::<AssetV1>(
+                    initialize_external_plugin_adapter::<AssetV1>(
                         plugin_init_info,
                         &mut plugin_header,
                         &mut plugin_registry,

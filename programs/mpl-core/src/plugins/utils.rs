@@ -13,8 +13,9 @@ use crate::{
 };
 
 use super::{
-    ExternalPlugin, ExternalPluginInitInfo, ExternalPluginKey, ExternalPluginType,
-    ExternalRegistryRecord, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord,
+    ExternalPluginAdapter, ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey,
+    ExternalPluginAdapterType, ExternalRegistryRecord, Plugin, PluginHeaderV1, PluginRegistryV1,
+    PluginType, RegistryRecord,
 };
 
 /// Create plugin header and registry if it doesn't exist
@@ -179,19 +180,19 @@ pub fn fetch_wrapped_plugin<T: DataBlob + SolanaAccount>(
     Ok((registry_record.authority, plugin))
 }
 
-/// Fetch the external plugin from the registry.
-pub fn fetch_wrapped_external_plugin<T: DataBlob + SolanaAccount>(
+/// Fetch the external plugin adapter from the registry.
+pub fn fetch_wrapped_external_plugin_adapter<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
     core: Option<&T>,
-    plugin_key: &ExternalPluginKey,
-) -> Result<(Authority, ExternalPlugin), ProgramError> {
+    plugin_key: &ExternalPluginAdapterKey,
+) -> Result<(Authority, ExternalPluginAdapter), ProgramError> {
     let size = match core {
         Some(core) => core.get_size(),
         None => {
             let asset = T::load(account, 0)?;
 
             if asset.get_size() == account.data_len() {
-                return Err(MplCoreError::ExternalPluginNotFound.into());
+                return Err(MplCoreError::ExternalPluginAdapterNotFound.into());
             }
 
             asset.get_size()
@@ -202,16 +203,17 @@ pub fn fetch_wrapped_external_plugin<T: DataBlob + SolanaAccount>(
     let plugin_registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
     // Find the plugin in the registry.
-    let result = find_external_plugin(&plugin_registry, plugin_key, account)?;
+    let result = find_external_plugin_adapter(&plugin_registry, plugin_key, account)?;
 
     if let (_, Some(record)) = result {
         // Deserialize the plugin.
-        let plugin = ExternalPlugin::deserialize(&mut &(*account.data).borrow()[record.offset..])?;
+        let plugin =
+            ExternalPluginAdapter::deserialize(&mut &(*account.data).borrow()[record.offset..])?;
 
         // Return the plugin and its authority.
         Ok((record.authority, plugin))
     } else {
-        Err(MplCoreError::ExternalPluginNotFound.into())
+        Err(MplCoreError::ExternalPluginAdapterNotFound.into())
     }
 }
 
@@ -307,9 +309,9 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     Ok(())
 }
 
-/// Add an external plugin to the registry and initialize it.
-pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
-    init_info: &ExternalPluginInitInfo,
+/// Add an external plugin adapter to the registry and initialize it.
+pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
+    init_info: &ExternalPluginAdapterInitInfo,
     plugin_header: &mut PluginHeaderV1,
     plugin_registry: &mut PluginRegistryV1,
     account: &AccountInfo<'a>,
@@ -320,38 +322,43 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
     let header_offset = core.get_size();
     let plugin_type = init_info.into();
 
-    // Note currently we are blocking adding LifecycleHook and DataStore external plugins as they
+    // Note currently we are blocking adding LifecycleHook and DataStore external plugin adapters as they
     // are still in development.
     match init_info {
-        ExternalPluginInitInfo::LifecycleHook(_) | ExternalPluginInitInfo::DataStore(_) => {
+        ExternalPluginAdapterInitInfo::LifecycleHook(_)
+        | ExternalPluginAdapterInitInfo::DataStore(_) => {
             return Err(MplCoreError::NotAvailable.into());
         }
-        ExternalPluginInitInfo::Oracle(_) => (),
+        ExternalPluginAdapterInitInfo::Oracle(_) => (),
     }
 
     // You cannot add a duplicate plugin.
     for record in plugin_registry.external_registry.iter() {
-        if ExternalPluginKey::from_record(account, record)? == ExternalPluginKey::from(init_info) {
-            return Err(MplCoreError::ExternalPluginAlreadyExists.into());
+        if ExternalPluginAdapterKey::from_record(account, record)?
+            == ExternalPluginAdapterKey::from(init_info)
+        {
+            return Err(MplCoreError::ExternalPluginAdapterAlreadyExists.into());
         }
     }
 
     let (authority, lifecycle_checks) = match init_info {
-        ExternalPluginInitInfo::LifecycleHook(init_info) => {
+        ExternalPluginAdapterInitInfo::LifecycleHook(init_info) => {
             validate_lifecycle_checks(&init_info.lifecycle_checks, false)?;
             (
                 init_info.init_plugin_authority,
                 Some(init_info.lifecycle_checks.clone()),
             )
         }
-        ExternalPluginInitInfo::Oracle(init_info) => {
+        ExternalPluginAdapterInitInfo::Oracle(init_info) => {
             validate_lifecycle_checks(&init_info.lifecycle_checks, true)?;
             (
                 init_info.init_plugin_authority,
                 Some(init_info.lifecycle_checks.clone()),
             )
         }
-        ExternalPluginInitInfo::DataStore(init_info) => (init_info.init_plugin_authority, None),
+        ExternalPluginAdapterInitInfo::DataStore(init_info) => {
+            (init_info.init_plugin_authority, None)
+        }
     };
 
     let old_registry_offset = plugin_header.plugin_registry_offset;
@@ -365,11 +372,11 @@ pub fn initialize_external_plugin<'a, T: DataBlob + SolanaAccount>(
         data_len: None,
     };
 
-    let mut plugin = ExternalPlugin::from(init_info);
+    let mut plugin = ExternalPluginAdapter::from(init_info);
 
     // If the plugin is a LifecycleHook or DataStore, then we need to set the data offset and length.
     match &mut plugin {
-        ExternalPlugin::LifecycleHook(_) | ExternalPlugin::DataStore(_) => {
+        ExternalPluginAdapter::LifecycleHook(_) | ExternalPluginAdapter::DataStore(_) => {
             new_registry_record.data_offset = Some(old_registry_offset);
             new_registry_record.data_len = Some(0);
         }
@@ -522,22 +529,22 @@ pub fn delete_plugin<'a, T: DataBlob>(
 }
 
 /// Remove a plugin from the registry and delete it.
-pub fn delete_external_plugin<'a, T: DataBlob>(
-    plugin_key: &ExternalPluginKey,
+pub fn delete_external_plugin_adapter<'a, T: DataBlob>(
+    plugin_key: &ExternalPluginAdapterKey,
     asset: &T,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
     if asset.get_size() == account.data_len() {
-        return Err(MplCoreError::ExternalPluginNotFound.into());
+        return Err(MplCoreError::ExternalPluginAdapterNotFound.into());
     }
 
     //TODO: Bytemuck this.
     let mut header = PluginHeaderV1::load(account, asset.get_size())?;
     let mut plugin_registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
-    let result = find_external_plugin(&plugin_registry, plugin_key, account)?;
+    let result = find_external_plugin_adapter(&plugin_registry, plugin_key, account)?;
 
     if let (Some(index), _) = result {
         let registry_record = plugin_registry.external_registry.remove(index);
@@ -545,7 +552,7 @@ pub fn delete_external_plugin<'a, T: DataBlob>(
 
         // Fetch the offset of the plugin to be removed.
         let plugin_offset = registry_record.offset;
-        let plugin = ExternalPlugin::load(account, plugin_offset)?;
+        let plugin = ExternalPluginAdapter::load(account, plugin_offset)?;
         let serialized_plugin = plugin.try_to_vec()?;
 
         // Get the offset of the plugin after the one being removed.
@@ -599,7 +606,7 @@ pub fn delete_external_plugin<'a, T: DataBlob>(
 
         resize_or_reallocate_account(account, payer, system_program, new_size)?;
     } else {
-        return Err(MplCoreError::ExternalPluginNotFound.into());
+        return Err(MplCoreError::ExternalPluginAdapterNotFound.into());
     }
 
     Ok(())
@@ -671,16 +678,17 @@ pub fn revoke_authority_on_plugin<'a>(
     Ok(())
 }
 
-pub(crate) fn find_external_plugin<'b>(
+pub(crate) fn find_external_plugin_adapter<'b>(
     plugin_registry: &'b PluginRegistryV1,
-    plugin_key: &ExternalPluginKey,
+    plugin_key: &ExternalPluginAdapterKey,
     account: &AccountInfo<'_>,
 ) -> Result<(Option<usize>, Option<&'b ExternalRegistryRecord>), ProgramError> {
     let mut result = (None, None);
     for (i, record) in plugin_registry.external_registry.iter().enumerate() {
-        if record.plugin_type == ExternalPluginType::from(plugin_key)
+        if record.plugin_type == ExternalPluginAdapterType::from(plugin_key)
             && (match plugin_key {
-                ExternalPluginKey::LifecycleHook(address) | ExternalPluginKey::Oracle(address) => {
+                ExternalPluginAdapterKey::LifecycleHook(address)
+                | ExternalPluginAdapterKey::Oracle(address) => {
                     let pubkey_offset = record
                         .offset
                         .checked_add(1)
@@ -692,7 +700,7 @@ pub(crate) fn find_external_plugin<'b>(
                             Err(_) => return Err(MplCoreError::DeserializationError.into()),
                         }
                 }
-                ExternalPluginKey::DataStore(authority) => {
+                ExternalPluginAdapterKey::DataStore(authority) => {
                     let authority_offset = record
                         .offset
                         .checked_add(1)

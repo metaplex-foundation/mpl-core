@@ -20,6 +20,6 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct OracleUpdateInfo {
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
-    pub pda: Option<ExtraAccount>,
+    pub base_address_config: Option<ExtraAccount>,
     pub results_offset: Option<ValidationResultsOffset>,
 }

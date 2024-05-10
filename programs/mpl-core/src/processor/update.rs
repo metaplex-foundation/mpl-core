@@ -8,7 +8,7 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionV1Accounts, UpdateV1Accounts},
     plugins::{
-        ExternalPlugin, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
+        ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
         PluginType,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
@@ -63,7 +63,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
         AssetV1::validate_update,
         CollectionV1::validate_update,
         Plugin::validate_update,
-        Some(ExternalPlugin::validate_update),
+        Some(ExternalPluginAdapter::validate_update),
         Some(HookableLifecycleEvent::Update),
     )?;
 
@@ -149,7 +149,7 @@ pub(crate) fn update_collection<'a>(
         PluginType::check_update,
         CollectionV1::validate_update,
         Plugin::validate_update,
-        Some(ExternalPlugin::validate_update),
+        Some(ExternalPluginAdapter::validate_update),
         Some(HookableLifecycleEvent::Update),
     )?;
 

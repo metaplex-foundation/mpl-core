@@ -6,7 +6,7 @@
 //!
 
 use crate::generated::types::ExternalCheckResult;
-use crate::generated::types::ExternalPluginSchema;
+use crate::generated::types::ExternalPluginAdapterSchema;
 use crate::generated::types::ExtraAccount;
 use crate::generated::types::HookableLifecycleEvent;
 use crate::generated::types::PluginAuthority;
@@ -30,5 +30,5 @@ pub struct LifecycleHookInitInfo {
     pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     pub data_authority: Option<PluginAuthority>,
-    pub schema: Option<ExternalPluginSchema>,
+    pub schema: Option<ExternalPluginAdapterSchema>,
 }

@@ -1,12 +1,15 @@
 import { Context } from '@metaplex-foundation/umi';
 import {
   PluginType,
-  removeCollectionExternalPluginV1,
+  removeCollectionExternalPluginAdapterV1,
   removeCollectionPluginV1,
 } from '../../generated';
-import { ExternalPluginKey, externalPluginKeyToBase } from '../../plugins';
+import {
+  ExternalPluginAdapterKey,
+  externalPluginAdapterKeyToBase,
+} from '../../plugins';
 
-import { isExternalPluginType } from '../../plugins/externalPlugins';
+import { isExternalPluginAdapterType } from '../../plugins/externalPluginAdapters';
 
 export type RemoveCollectionPluginArgs = Omit<
   Parameters<typeof removeCollectionPluginV1>[1],
@@ -16,17 +19,17 @@ export type RemoveCollectionPluginArgs = Omit<
     | {
         type: Exclude<keyof typeof PluginType, 'Edition'>;
       }
-    | ExternalPluginKey;
+    | ExternalPluginAdapterKey;
 };
 
 export const removeCollectionPlugin = (
   context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
   { plugin, ...args }: RemoveCollectionPluginArgs
 ) => {
-  if (isExternalPluginType(plugin)) {
-    return removeCollectionExternalPluginV1(context, {
+  if (isExternalPluginAdapterType(plugin)) {
+    return removeCollectionExternalPluginAdapterV1(context, {
       ...args,
-      key: externalPluginKeyToBase(plugin as ExternalPluginKey),
+      key: externalPluginAdapterKeyToBase(plugin as ExternalPluginAdapterKey),
     });
   }
 

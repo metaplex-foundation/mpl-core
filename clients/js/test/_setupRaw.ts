@@ -22,7 +22,7 @@ import {
   PluginsList,
   PluginAuthorityPairArgs,
   UpdateAuthority,
-  ExternalPluginsList,
+  ExternalPluginAdaptersList,
 } from '../src';
 
 export const createUmi = async () => (await basecreateUmi()).use(mplCore());
@@ -146,7 +146,7 @@ export const assertAsset = async (
     name?: string | RegExp;
     uri?: string | RegExp;
   } & PluginsList &
-    ExternalPluginsList
+    ExternalPluginAdaptersList
 ) => {
   const { asset, owner, name, uri, ...rest } = input;
   const assetAddress = publicKey(input.asset);
@@ -181,7 +181,7 @@ export const assertCollection = async (
     numMinted?: number;
     currentSize?: number;
   } & PluginsList &
-    ExternalPluginsList
+    ExternalPluginAdaptersList
 ) => {
   const { collection, name, uri, updateAuthority, ...rest } = input;
 

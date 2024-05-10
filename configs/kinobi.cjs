@@ -82,7 +82,7 @@ kinobi.update(
         plugins: {
           defaultValue: k.arrayValueNode([])
         },
-        externalPlugins: {
+        externalPluginAdapters: {
           defaultValue: k.arrayValueNode([])
         },
         dataState: {
@@ -102,7 +102,7 @@ kinobi.update(
         plugins: {
           defaultValue: k.noneValueNode()
         },
-        externalPlugins: {
+        externalPluginAdapters: {
           defaultValue: k.arrayValueNode([])
         },
       }
@@ -195,14 +195,14 @@ kinobi.update(
     extraAccount: {
       name: "baseExtraAccount"
     },
-    externalPluginKey: {
-      name: "baseExternalPluginKey"
+    externalPluginAdapterKey: {
+      name: "baseExternalPluginAdapterKey"
     },
-    externalPluginInitInfo: {
-      name: "baseExternalPluginInitInfo"
+    externalPluginAdapterInitInfo: {
+      name: "baseExternalPluginAdapterInitInfo"
     },
-    externalPluginUpdateInfo: {
-      name: "baseExternalPluginUpdateInfo"
+    externalPluginAdapterUpdateInfo: {
+      name: "baseExternalPluginAdapterUpdateInfo"
     },
     oracle: {
       name: "baseOracle"

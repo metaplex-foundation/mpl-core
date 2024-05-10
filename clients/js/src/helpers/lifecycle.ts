@@ -23,7 +23,7 @@ export enum LifecycleValidationError {
 
 /**
  * Check if the given authority is eligible to transfer the asset.
- * This does NOT check the asset's royalty rule sets or external plugins. Use `validateTransfer` for more comprehensive checks.
+ * This does NOT check the asset's royalty rule sets or external plugin adapters. Use `validateTransfer` for more comprehensive checks.
  * @deprecated since v1.0.0. Use `validateTransfer` instead.
  * @param {PublicKey | string} authority Pubkey
  * @param {AssetV1} asset Asset
@@ -106,7 +106,7 @@ export async function validateTransfer(
       )
       .filter((o) => {
         // there's no PDA to derive, we can check the oracle account
-        if (!o.pda) {
+        if (!o.baseAddressConfig) {
           return true;
         }
         // If there's a recipient in the inputs, we can try to check the oracle account
@@ -114,7 +114,11 @@ export async function validateTransfer(
           return true;
         }
 
-        if (!getExtraAccountRequiredInputs(o.pda).includes('recipient')) {
+        if (
+          !getExtraAccountRequiredInputs(o.baseAddressConfig).includes(
+            'recipient'
+          )
+        ) {
           return true;
         }
         // we skip the check if there's a recipient required but no recipient provided
@@ -178,7 +182,7 @@ export async function validateTransfer(
 
 /**
  * Check if the given pubkey is eligible to burn the asset.
- * This does NOT check external plugins, use `validateBurn` for more comprehensive checks.
+ * This does NOT check external plugin adapters, use `validateBurn` for more comprehensive checks.
  * @deprecated since v1.0.0. Use `validateBurn` instead.
  * @param {PublicKey | string} authority Pubkey
  * @param {AssetV1} asset Asset
@@ -317,7 +321,7 @@ export async function validateBurn(
 
 /**
  * Check if the given pubkey is eligible to update the asset.
- * This does NOT check external plugins. Use `validateUpdate` for more comprehensive checks.
+ * This does NOT check external plugin adapters. Use `validateUpdate` for more comprehensive checks.
  * @deprecated since v1.0.0. Use `validateTransfer` instead.
  * @param {PublicKey | string} authority Pubkey
  * @param {AssetV1} asset Asset
@@ -385,6 +389,7 @@ export async function validateUpdate(
         }
         return v?.update === ExternalValidationResult.Pass;
       });
+
       if (!oraclePass) {
         return LifecycleValidationError.OracleValidationFailed;
       }

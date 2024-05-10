@@ -28,6 +28,6 @@ pub struct OracleInitInfo {
     pub base_address: Pubkey,
     pub init_plugin_authority: Option<PluginAuthority>,
     pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
-    pub pda: Option<ExtraAccount>,
+    pub base_address_config: Option<ExtraAccount>,
     pub results_offset: Option<ValidationResultsOffset>,
 }

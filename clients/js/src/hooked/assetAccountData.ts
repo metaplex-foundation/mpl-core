@@ -22,16 +22,16 @@ import {
   getPluginRegistryV1AccountDataSerializer,
 } from './pluginRegistryV1Data';
 import {
-  ExternalPluginsList,
-  externalRegistryRecordsToExternalPluginList,
-} from '../plugins/externalPlugins';
+  ExternalPluginAdaptersList,
+  externalRegistryRecordsToExternalPluginAdapterList,
+} from '../plugins/externalPluginAdapters';
 
 export type AssetV1AccountData = Omit<
   GenAssetV1AccountData,
   'updateAuthority'
 > &
   PluginsList &
-  ExternalPluginsList & {
+  ExternalPluginAdaptersList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
     updateAuthority: UpdateAuthority;
   };
@@ -69,7 +69,7 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
     let pluginHeader: PluginHeaderV1AccountData | undefined;
     let pluginRegistry: PluginRegistryV1AccountData | undefined;
     let pluginsList: PluginsList | undefined;
-    let externalPluginsList: ExternalPluginsList | undefined;
+    let externalPluginAdaptersList: ExternalPluginAdaptersList | undefined;
     let finalOffset = assetOffset;
 
     if (buffer.length !== assetOffset) {
@@ -89,10 +89,11 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
         buffer
       );
 
-      externalPluginsList = externalRegistryRecordsToExternalPluginList(
-        pluginRegistry.externalRegistry,
-        buffer
-      );
+      externalPluginAdaptersList =
+        externalRegistryRecordsToExternalPluginAdapterList(
+          pluginRegistry.externalRegistry,
+          buffer
+        );
     }
     const updateAuth = {
       type: asset.updateAuthority.__kind,
@@ -106,7 +107,7 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
       {
         pluginHeader,
         ...pluginsList,
-        ...externalPluginsList,
+        ...externalPluginAdaptersList,
         ...asset,
         updateAuthority: updateAuth,
       },

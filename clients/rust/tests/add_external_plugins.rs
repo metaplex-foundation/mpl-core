@@ -2,11 +2,14 @@
 pub mod setup;
 use mpl_core::{
     errors::MplCoreError,
-    instructions::{AddCollectionExternalPluginV1Builder, AddExternalPluginV1Builder},
+    instructions::{
+        AddCollectionExternalPluginAdapterV1Builder, AddExternalPluginAdapterV1Builder,
+    },
     types::{
-        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo,
-        ExternalPluginSchema, HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle,
-        OracleInitInfo, PluginAuthority, UpdateAuthority, ValidationResultsOffset,
+        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPluginAdapter,
+        ExternalPluginAdapterInitInfo, ExternalPluginAdapterSchema, HookableLifecycleEvent,
+        LifecycleHook, LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority,
+        UpdateAuthority, ValidationResultsOffset,
     },
 };
 pub use setup::*;
@@ -34,7 +37,7 @@ async fn test_add_lifecycle_hook() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -51,15 +54,15 @@ async fn test_add_lifecycle_hook() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
 
-    let add_external_plugin_ix = AddExternalPluginV1Builder::new()
+    let add_external_plugin_adapter_ix = AddExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::LifecycleHook(
+        .init_info(ExternalPluginAdapterInitInfo::LifecycleHook(
             LifecycleHookInitInfo {
                 hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
@@ -75,7 +78,7 @@ async fn test_add_lifecycle_hook() {
         .instruction();
 
     let tx = Transaction::new_signed_with_payer(
-        &[add_external_plugin_ix],
+        &[add_external_plugin_adapter_ix],
         Some(&context.payer.pubkey()),
         &[&context.payer],
         context.last_blockhash,
@@ -92,11 +95,11 @@ async fn test_add_lifecycle_hook() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::LifecycleHook(LifecycleHook {
+            external_plugin_adapters: vec![ExternalPluginAdapter::LifecycleHook(LifecycleHook {
                 hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                 extra_accounts: None,
                 data_authority: Some(PluginAuthority::UpdateAuthority),
-                schema: ExternalPluginSchema::Binary,
+                schema: ExternalPluginAdapterSchema::Binary,
             })],
         },
     )
@@ -122,7 +125,7 @@ async fn test_cannot_add_lifecycle_hook_with_duplicate_lifecycle_checks() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -139,15 +142,15 @@ async fn test_cannot_add_lifecycle_hook_with_duplicate_lifecycle_checks() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
 
-    let add_external_plugin_ix = AddExternalPluginV1Builder::new()
+    let add_external_plugin_adapter_ix = AddExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::LifecycleHook(
+        .init_info(ExternalPluginAdapterInitInfo::LifecycleHook(
             LifecycleHookInitInfo {
                 hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
@@ -169,7 +172,7 @@ async fn test_cannot_add_lifecycle_hook_with_duplicate_lifecycle_checks() {
         .instruction();
 
     let tx = Transaction::new_signed_with_payer(
-        &[add_external_plugin_ix],
+        &[add_external_plugin_adapter_ix],
         Some(&context.payer.pubkey()),
         &[&context.payer],
         context.last_blockhash,
@@ -192,7 +195,7 @@ async fn test_cannot_add_lifecycle_hook_with_duplicate_lifecycle_checks() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
@@ -216,7 +219,7 @@ async fn test_temporarily_cannot_add_lifecycle_hook() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -233,15 +236,15 @@ async fn test_temporarily_cannot_add_lifecycle_hook() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
 
-    let add_external_plugin_ix = AddExternalPluginV1Builder::new()
+    let add_external_plugin_adapter_ix = AddExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::LifecycleHook(
+        .init_info(ExternalPluginAdapterInitInfo::LifecycleHook(
             LifecycleHookInitInfo {
                 hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
@@ -257,7 +260,7 @@ async fn test_temporarily_cannot_add_lifecycle_hook() {
         .instruction();
 
     let tx = Transaction::new_signed_with_payer(
-        &[add_external_plugin_ix],
+        &[add_external_plugin_adapter_ix],
         Some(&context.payer.pubkey()),
         &[&context.payer],
         context.last_blockhash,
@@ -280,7 +283,7 @@ async fn test_temporarily_cannot_add_lifecycle_hook() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
@@ -300,7 +303,7 @@ async fn test_temporarily_cannot_add_lifecycle_hook_on_collection() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -321,10 +324,10 @@ async fn test_temporarily_cannot_add_lifecycle_hook_on_collection() {
     )
     .await;
 
-    let add_external_plugin_ix = AddCollectionExternalPluginV1Builder::new()
+    let add_external_plugin_adapter_ix = AddCollectionExternalPluginAdapterV1Builder::new()
         .collection(collection.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::LifecycleHook(
+        .init_info(ExternalPluginAdapterInitInfo::LifecycleHook(
             LifecycleHookInitInfo {
                 hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
@@ -340,7 +343,7 @@ async fn test_temporarily_cannot_add_lifecycle_hook_on_collection() {
         .instruction();
 
     let tx = Transaction::new_signed_with_payer(
-        &[add_external_plugin_ix],
+        &[add_external_plugin_adapter_ix],
         Some(&context.payer.pubkey()),
         &[&context.payer],
         context.last_blockhash,
@@ -375,7 +378,7 @@ async fn test_add_oracle() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -392,28 +395,28 @@ async fn test_add_oracle() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
 
-    let add_external_plugin_ix = AddExternalPluginV1Builder::new()
+    let add_external_plugin_adapter_ix = AddExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::Oracle(OracleInitInfo {
+        .init_info(ExternalPluginAdapterInitInfo::Oracle(OracleInitInfo {
             base_address: Pubkey::default(),
             init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
             lifecycle_checks: vec![(
                 HookableLifecycleEvent::Transfer,
                 ExternalCheckResult { flags: 4 },
             )],
-            pda: None,
+            base_address_config: None,
             results_offset: None,
         }))
         .instruction();
 
     let tx = Transaction::new_signed_with_payer(
-        &[add_external_plugin_ix],
+        &[add_external_plugin_adapter_ix],
         Some(&context.payer.pubkey()),
         &[&context.payer],
         context.last_blockhash,
@@ -430,9 +433,9 @@ async fn test_add_oracle() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::Oracle(Oracle {
+            external_plugin_adapters: vec![ExternalPluginAdapter::Oracle(Oracle {
                 base_address: Pubkey::default(),
-                pda: None,
+                base_address_config: None,
                 results_offset: ValidationResultsOffset::NoOffset,
             })],
         },
@@ -458,7 +461,7 @@ async fn test_cannot_add_oracle_with_duplicate_lifecycle_checks() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -475,15 +478,15 @@ async fn test_cannot_add_oracle_with_duplicate_lifecycle_checks() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
 
-    let add_external_plugin_ix = AddExternalPluginV1Builder::new()
+    let add_external_plugin_adapter_ix = AddExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::Oracle(OracleInitInfo {
+        .init_info(ExternalPluginAdapterInitInfo::Oracle(OracleInitInfo {
             base_address: Pubkey::default(),
             init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
             lifecycle_checks: vec![
@@ -496,13 +499,13 @@ async fn test_cannot_add_oracle_with_duplicate_lifecycle_checks() {
                     ExternalCheckResult { flags: 4 },
                 ),
             ],
-            pda: None,
+            base_address_config: None,
             results_offset: None,
         }))
         .instruction();
 
     let tx = Transaction::new_signed_with_payer(
-        &[add_external_plugin_ix],
+        &[add_external_plugin_adapter_ix],
         Some(&context.payer.pubkey()),
         &[&context.payer],
         context.last_blockhash,
@@ -525,7 +528,7 @@ async fn test_cannot_add_oracle_with_duplicate_lifecycle_checks() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
@@ -550,7 +553,7 @@ async fn test_add_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -567,23 +570,25 @@ async fn test_add_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
 
-    let add_external_plugin_ix = AddExternalPluginV1Builder::new()
+    let add_external_plugin_adapter_ix = AddExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
-            init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-            data_authority: PluginAuthority::UpdateAuthority,
-            schema: None,
-        }))
+        .init_info(ExternalPluginAdapterInitInfo::DataStore(
+            DataStoreInitInfo {
+                init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                data_authority: PluginAuthority::UpdateAuthority,
+                schema: None,
+            },
+        ))
         .instruction();
 
     let tx = Transaction::new_signed_with_payer(
-        &[add_external_plugin_ix],
+        &[add_external_plugin_adapter_ix],
         Some(&context.payer.pubkey()),
         &[&context.payer],
         context.last_blockhash,
@@ -600,9 +605,9 @@ async fn test_add_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::DataStore(DataStore {
+            external_plugin_adapters: vec![ExternalPluginAdapter::DataStore(DataStore {
                 data_authority: PluginAuthority::UpdateAuthority,
-                schema: ExternalPluginSchema::Binary,
+                schema: ExternalPluginAdapterSchema::Binary,
             })],
         },
     )
@@ -627,7 +632,7 @@ async fn test_temporarily_cannot_add_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -644,23 +649,25 @@ async fn test_temporarily_cannot_add_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
 
-    let add_external_plugin_ix = AddExternalPluginV1Builder::new()
+    let add_external_plugin_adapter_ix = AddExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
-            init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-            data_authority: PluginAuthority::UpdateAuthority,
-            schema: None,
-        }))
+        .init_info(ExternalPluginAdapterInitInfo::DataStore(
+            DataStoreInitInfo {
+                init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                data_authority: PluginAuthority::UpdateAuthority,
+                schema: None,
+            },
+        ))
         .instruction();
 
     let tx = Transaction::new_signed_with_payer(
-        &[add_external_plugin_ix],
+        &[add_external_plugin_adapter_ix],
         Some(&context.payer.pubkey()),
         &[&context.payer],
         context.last_blockhash,
@@ -683,7 +690,7 @@ async fn test_temporarily_cannot_add_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
@@ -703,7 +710,7 @@ async fn test_temporarily_cannot_add_data_store_on_collection() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -724,18 +731,20 @@ async fn test_temporarily_cannot_add_data_store_on_collection() {
     )
     .await;
 
-    let add_external_plugin_ix = AddCollectionExternalPluginV1Builder::new()
+    let add_external_plugin_adapter_ix = AddCollectionExternalPluginAdapterV1Builder::new()
         .collection(collection.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
-            init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-            data_authority: PluginAuthority::UpdateAuthority,
-            schema: None,
-        }))
+        .init_info(ExternalPluginAdapterInitInfo::DataStore(
+            DataStoreInitInfo {
+                init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                data_authority: PluginAuthority::UpdateAuthority,
+                schema: None,
+            },
+        ))
         .instruction();
 
     let tx = Transaction::new_signed_with_payer(
-        &[add_external_plugin_ix],
+        &[add_external_plugin_adapter_ix],
         Some(&context.payer.pubkey()),
         &[&context.payer],
         context.last_blockhash,
@@ -753,7 +762,7 @@ async fn test_temporarily_cannot_add_data_store_on_collection() {
 }
 
 #[tokio::test]
-async fn test_cannot_add_duplicate_external_plugin() {
+async fn test_cannot_add_duplicate_external_plugin_adapter() {
     let mut context = program_test().start_with_context().await;
 
     let asset = Keypair::new();
@@ -770,7 +779,7 @@ async fn test_cannot_add_duplicate_external_plugin() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await
@@ -787,43 +796,46 @@ async fn test_cannot_add_duplicate_external_plugin() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
 
-    let add_external_plugin_ix0 = AddExternalPluginV1Builder::new()
+    let add_external_plugin_adapter_ix0 = AddExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::Oracle(OracleInitInfo {
+        .init_info(ExternalPluginAdapterInitInfo::Oracle(OracleInitInfo {
             base_address: Pubkey::default(),
             init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
             lifecycle_checks: vec![(
                 HookableLifecycleEvent::Transfer,
                 ExternalCheckResult { flags: 4 },
             )],
-            pda: None,
+            base_address_config: None,
             results_offset: None,
         }))
         .instruction();
 
-    let add_external_plugin_ix1 = AddExternalPluginV1Builder::new()
+    let add_external_plugin_adapter_ix1 = AddExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginInitInfo::Oracle(OracleInitInfo {
+        .init_info(ExternalPluginAdapterInitInfo::Oracle(OracleInitInfo {
             base_address: Pubkey::default(),
             init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
             lifecycle_checks: vec![(
                 HookableLifecycleEvent::Transfer,
                 ExternalCheckResult { flags: 4 },
             )],
-            pda: None,
+            base_address_config: None,
             results_offset: None,
         }))
         .instruction();
 
     let tx = Transaction::new_signed_with_payer(
-        &[add_external_plugin_ix0, add_external_plugin_ix1],
+        &[
+            add_external_plugin_adapter_ix0,
+            add_external_plugin_adapter_ix1,
+        ],
         Some(&context.payer.pubkey()),
         &[&context.payer],
         context.last_blockhash,
@@ -835,5 +847,5 @@ async fn test_cannot_add_duplicate_external_plugin() {
         .await
         .unwrap_err();
 
-    assert_custom_instruction_error!(1, error, MplCoreError::ExternalPluginAlreadyExists);
+    assert_custom_instruction_error!(1, error, MplCoreError::ExternalPluginAdapterAlreadyExists);
 }

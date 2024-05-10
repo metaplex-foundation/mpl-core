@@ -9,7 +9,8 @@ use crate::{
 };
 
 use super::{
-    ExternalPlugin, ExternalPluginKey, ExternalRegistryRecord, Plugin, PluginType, RegistryRecord,
+    ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalRegistryRecord, Plugin, PluginType,
+    RegistryRecord,
 };
 
 /// Lifecycle permissions
@@ -27,12 +28,12 @@ pub enum CheckResult {
     CanForceApprove,
 }
 
-/// Lifecycle permissions for external, third party plugins.
+/// Lifecycle permissions for adapter, third party plugins.
 /// Third party plugins use this field to indicate their permission to listen, approve, and/or
 /// deny a lifecycle event.
 #[derive(BorshDeserialize, BorshSerialize, Eq, PartialEq, Copy, Clone, Debug)]
 pub struct ExternalCheckResult {
-    /// Bitfield for external check results.
+    /// Bitfield for external plugin adapter check results.
     pub flags: u32,
 }
 
@@ -46,7 +47,7 @@ impl ExternalCheckResult {
     }
 }
 
-/// Bitfield representation of lifecycle permissions for external, third party plugins.
+/// Bitfield representation of lifecycle permissions for external plugin adapter, third party plugins.
 #[bitfield(bits = 32)]
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct ExternalCheckResultBits {
@@ -183,24 +184,24 @@ impl PluginType {
         }
     }
 
-    /// Check permissions for the add external plugin lifecycle event.
-    pub fn check_add_external_plugin(plugin_type: &PluginType) -> CheckResult {
+    /// Check permissions for the add external plugin adapter lifecycle event.
+    pub fn check_add_external_plugin_adapter(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
             _ => CheckResult::None,
         }
     }
 
-    /// Check permissions for the remove external plugin lifecycle event.
-    pub fn check_remove_external_plugin(plugin_type: &PluginType) -> CheckResult {
+    /// Check permissions for the remove external plugin adapter lifecycle event.
+    pub fn check_remove_external_plugin_adapter(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
             _ => CheckResult::None,
         }
     }
 
-    /// Check permissions for the update external plugin lifecycle event.
-    pub fn check_update_external_plugin(plugin_type: &PluginType) -> CheckResult {
+    /// Check permissions for the update external plugin adapter lifecycle event.
+    pub fn check_update_external_plugin_adapter(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
             _ => CheckResult::None,
@@ -592,77 +593,87 @@ impl Plugin {
         }
     }
 
-    /// Validate the add external plugin lifecycle event.
-    pub(crate) fn validate_add_external_plugin(
+    /// Validate the add external plugin adapter lifecycle event.
+    pub(crate) fn validate_add_external_plugin_adapter(
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_add_external_plugin(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_add_external_plugin(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_add_external_plugin(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_add_external_plugin(ctx),
+            Plugin::Royalties(royalties) => royalties.validate_add_external_plugin_adapter(ctx),
+            Plugin::FreezeDelegate(freeze) => freeze.validate_add_external_plugin_adapter(ctx),
+            Plugin::BurnDelegate(burn) => burn.validate_add_external_plugin_adapter(ctx),
+            Plugin::TransferDelegate(transfer) => {
+                transfer.validate_add_external_plugin_adapter(ctx)
+            }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_add_external_plugin(ctx)
+                update_delegate.validate_add_external_plugin_adapter(ctx)
             }
             Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_add_external_plugin(ctx)
+                permanent_freeze.validate_add_external_plugin_adapter(ctx)
             }
-            Plugin::Attributes(attributes) => attributes.validate_add_external_plugin(ctx),
+            Plugin::Attributes(attributes) => attributes.validate_add_external_plugin_adapter(ctx),
             Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_add_external_plugin(ctx)
+                permanent_transfer.validate_add_external_plugin_adapter(ctx)
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_add_external_plugin(ctx)
+                permanent_burn.validate_add_external_plugin_adapter(ctx)
             }
-            Plugin::Edition(edition) => edition.validate_add_external_plugin(ctx),
+            Plugin::Edition(edition) => edition.validate_add_external_plugin_adapter(ctx),
             Plugin::MasterEdition(master_edition) => {
-                master_edition.validate_add_external_plugin(ctx)
+                master_edition.validate_add_external_plugin_adapter(ctx)
             }
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_add_external_plugin(ctx),
+            Plugin::AddBlocker(add_blocker) => {
+                add_blocker.validate_add_external_plugin_adapter(ctx)
+            }
             Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_add_external_plugin(ctx)
+                immutable_metadata.validate_add_external_plugin_adapter(ctx)
             }
         }
     }
 
     /// Validate the remove plugin lifecycle event.
-    pub(crate) fn validate_remove_external_plugin(
+    pub(crate) fn validate_remove_external_plugin_adapter(
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_remove_external_plugin(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_remove_external_plugin(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_remove_external_plugin(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_remove_external_plugin(ctx),
+            Plugin::Royalties(royalties) => royalties.validate_remove_external_plugin_adapter(ctx),
+            Plugin::FreezeDelegate(freeze) => freeze.validate_remove_external_plugin_adapter(ctx),
+            Plugin::BurnDelegate(burn) => burn.validate_remove_external_plugin_adapter(ctx),
+            Plugin::TransferDelegate(transfer) => {
+                transfer.validate_remove_external_plugin_adapter(ctx)
+            }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_remove_external_plugin(ctx)
+                update_delegate.validate_remove_external_plugin_adapter(ctx)
             }
             Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_remove_external_plugin(ctx)
+                permanent_freeze.validate_remove_external_plugin_adapter(ctx)
             }
-            Plugin::Attributes(attributes) => attributes.validate_remove_external_plugin(ctx),
+            Plugin::Attributes(attributes) => {
+                attributes.validate_remove_external_plugin_adapter(ctx)
+            }
             Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_remove_external_plugin(ctx)
+                permanent_transfer.validate_remove_external_plugin_adapter(ctx)
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_remove_external_plugin(ctx)
+                permanent_burn.validate_remove_external_plugin_adapter(ctx)
             }
-            Plugin::Edition(edition) => edition.validate_remove_external_plugin(ctx),
+            Plugin::Edition(edition) => edition.validate_remove_external_plugin_adapter(ctx),
             Plugin::MasterEdition(master_edition) => {
-                master_edition.validate_remove_external_plugin(ctx)
+                master_edition.validate_remove_external_plugin_adapter(ctx)
             }
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_remove_external_plugin(ctx),
+            Plugin::AddBlocker(add_blocker) => {
+                add_blocker.validate_remove_external_plugin_adapter(ctx)
+            }
             Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_remove_external_plugin(ctx)
+                immutable_metadata.validate_remove_external_plugin_adapter(ctx)
             }
         }
     }
 
     /// Route the validation of the update_plugin action to the appropriate plugin.
     /// There is no check for updating a plugin because the plugin itself MUST validate the change.
-    pub(crate) fn validate_update_external_plugin(
+    pub(crate) fn validate_update_external_plugin_adapter(
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
@@ -677,30 +688,36 @@ impl Plugin {
         };
 
         let result = match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_update_external_plugin(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_update_external_plugin(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_update_external_plugin(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_update_external_plugin(ctx),
+            Plugin::Royalties(royalties) => royalties.validate_update_external_plugin_adapter(ctx),
+            Plugin::FreezeDelegate(freeze) => freeze.validate_update_external_plugin_adapter(ctx),
+            Plugin::BurnDelegate(burn) => burn.validate_update_external_plugin_adapter(ctx),
+            Plugin::TransferDelegate(transfer) => {
+                transfer.validate_update_external_plugin_adapter(ctx)
+            }
             Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_update_external_plugin(ctx)
+                update_delegate.validate_update_external_plugin_adapter(ctx)
             }
             Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_update_external_plugin(ctx)
+                permanent_freeze.validate_update_external_plugin_adapter(ctx)
             }
-            Plugin::Attributes(attributes) => attributes.validate_update_external_plugin(ctx),
+            Plugin::Attributes(attributes) => {
+                attributes.validate_update_external_plugin_adapter(ctx)
+            }
             Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_update_external_plugin(ctx)
+                permanent_transfer.validate_update_external_plugin_adapter(ctx)
             }
             Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_update_external_plugin(ctx)
+                permanent_burn.validate_update_external_plugin_adapter(ctx)
             }
-            Plugin::Edition(edition) => edition.validate_update_external_plugin(ctx),
+            Plugin::Edition(edition) => edition.validate_update_external_plugin_adapter(ctx),
             Plugin::MasterEdition(master_edition) => {
-                master_edition.validate_update_external_plugin(ctx)
+                master_edition.validate_update_external_plugin_adapter(ctx)
             }
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_update_external_plugin(ctx),
+            Plugin::AddBlocker(add_blocker) => {
+                add_blocker.validate_update_external_plugin_adapter(ctx)
+            }
             Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_update_external_plugin(ctx)
+                immutable_metadata.validate_update_external_plugin_adapter(ctx)
             }
         }?;
 
@@ -739,8 +756,8 @@ pub enum ValidationResult {
     ForceApproved,
 }
 
-/// External plugins lifecycle validations
-/// External plugins utilize this to indicate whether they approve or reject a lifecycle action.
+/// External plugin adapters lifecycle validations
+/// External plugin adapters utilize this to indicate whether they approve or reject a lifecycle action.
 #[derive(Eq, PartialEq, Debug, Clone, BorshDeserialize, BorshSerialize)]
 pub enum ExternalValidationResult {
     /// The plugin approves the lifecycle action.
@@ -801,7 +818,7 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the add plugin lifecycle action.
-    fn validate_add_external_plugin(
+    fn validate_add_external_plugin_adapter(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
@@ -809,7 +826,7 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the remove plugin lifecycle action.
-    fn validate_remove_external_plugin(
+    fn validate_remove_external_plugin_adapter(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
@@ -905,7 +922,7 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the update_plugin lifecycle action.
-    fn validate_update_external_plugin(
+    fn validate_update_external_plugin_adapter(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
@@ -980,15 +997,15 @@ pub(crate) fn validate_plugin_checks<'a>(
     }
 }
 
-/// This function iterates through all external plugin checks passed in and performs the validation
+/// This function iterates through all external plugin adapter checks passed in and performs the validation
 /// by deserializing and calling validate on the plugin.
 /// The STRONGEST result is returned.
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
-pub(crate) fn validate_external_plugin_checks<'a>(
+pub(crate) fn validate_external_plugin_adapter_checks<'a>(
     key: Key,
     accounts: &'a [AccountInfo<'a>],
     external_checks: &BTreeMap<
-        ExternalPluginKey,
+        ExternalPluginAdapterKey,
         (Key, ExternalCheckResultBits, ExternalRegistryRecord),
     >,
     authority: &'a AccountInfo<'a>,
@@ -997,8 +1014,8 @@ pub(crate) fn validate_external_plugin_checks<'a>(
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
-    external_plugin_validate_fp: fn(
-        &ExternalPlugin,
+    external_plugin_adapter_validate_fp: fn(
+        &ExternalPluginAdapter,
         &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
 ) -> Result<ValidationResult, ProgramError> {
@@ -1026,8 +1043,8 @@ pub(crate) fn validate_external_plugin_checks<'a>(
                 target_plugin: new_plugin,
             };
 
-            let result = external_plugin_validate_fp(
-                &ExternalPlugin::load(account, external_registry_record.offset)?,
+            let result = external_plugin_adapter_validate_fp(
+                &ExternalPluginAdapter::load(account, external_registry_record.offset)?,
                 &validation_ctx,
             )?;
             match result {
@@ -1042,7 +1059,7 @@ pub(crate) fn validate_external_plugin_checks<'a>(
                     }
                 }
                 ValidationResult::Pass => continue,
-                // Force approved will not be possible from external plugins.
+                // Force approved will not be possible from external plugin adapters.
                 ValidationResult::ForceApproved => unreachable!(),
             }
         }

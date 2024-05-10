@@ -1,15 +1,15 @@
 import { Context } from '@metaplex-foundation/umi';
 import {
-  addCollectionExternalPluginV1,
+  addCollectionExternalPluginAdapterV1,
   addCollectionPluginV1,
 } from '../../generated';
 import { AddablePluginArgsV2, pluginAuthorityPairV2 } from '../../plugins';
 
 import {
-  createExternalPluginInitInfo,
-  ExternalPluginInitInfoArgs,
-  isExternalPluginType,
-} from '../../plugins/externalPlugins';
+  createExternalPluginAdapterInitInfo,
+  ExternalPluginAdapterInitInfoArgs,
+  isExternalPluginAdapterType,
+} from '../../plugins/externalPluginAdapters';
 
 export type AddCollectionPluginArgs = Omit<
   Parameters<typeof addCollectionPluginV1>[1],
@@ -17,18 +17,18 @@ export type AddCollectionPluginArgs = Omit<
 > & {
   plugin:
     | Exclude<AddablePluginArgsV2, { type: 'Edition ' }>
-    | ExternalPluginInitInfoArgs;
+    | ExternalPluginAdapterInitInfoArgs;
 };
 
 export const addCollectionPlugin = (
   context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
   { plugin, ...args }: AddCollectionPluginArgs
 ) => {
-  if (isExternalPluginType(plugin)) {
-    return addCollectionExternalPluginV1(context, {
+  if (isExternalPluginAdapterType(plugin)) {
+    return addCollectionExternalPluginAdapterV1(context, {
       ...args,
-      initInfo: createExternalPluginInitInfo(
-        plugin as ExternalPluginInitInfoArgs
+      initInfo: createExternalPluginAdapterInitInfo(
+        plugin as ExternalPluginAdapterInitInfoArgs
       ),
     });
   }

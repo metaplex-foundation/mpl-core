@@ -3,9 +3,10 @@ pub mod setup;
 use mpl_core::{
     errors::MplCoreError,
     types::{
-        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPlugin, ExternalPluginInitInfo,
-        ExternalPluginSchema, HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle,
-        OracleInitInfo, PluginAuthority, UpdateAuthority, ValidationResultsOffset,
+        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPluginAdapter,
+        ExternalPluginAdapterInitInfo, ExternalPluginAdapterSchema, HookableLifecycleEvent,
+        LifecycleHook, LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority,
+        UpdateAuthority, ValidationResultsOffset,
     },
 };
 pub use setup::*;
@@ -33,7 +34,7 @@ async fn test_create_lifecycle_hook() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::LifecycleHook(
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::LifecycleHook(
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
@@ -62,11 +63,11 @@ async fn test_create_lifecycle_hook() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::LifecycleHook(LifecycleHook {
+            external_plugin_adapters: vec![ExternalPluginAdapter::LifecycleHook(LifecycleHook {
                 hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                 extra_accounts: None,
                 data_authority: Some(PluginAuthority::UpdateAuthority),
-                schema: ExternalPluginSchema::Binary,
+                schema: ExternalPluginAdapterSchema::Binary,
             })],
         },
     )
@@ -92,7 +93,7 @@ async fn test_cannot_create_lifecycle_hook_with_duplicate_lifecycle_checks() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::LifecycleHook(
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::LifecycleHook(
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
@@ -137,7 +138,7 @@ async fn test_temporarily_cannot_create_lifecycle_hook() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::LifecycleHook(
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::LifecycleHook(
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
@@ -172,7 +173,7 @@ async fn test_temporarily_cannot_create_lifecycle_hook_on_collection() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::LifecycleHook(
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::LifecycleHook(
                 LifecycleHookInitInfo {
                     hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
@@ -211,14 +212,14 @@ async fn test_create_oracle() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::Oracle(OracleInitInfo {
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::Oracle(OracleInitInfo {
                 base_address: Pubkey::default(),
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 lifecycle_checks: vec![(
                     HookableLifecycleEvent::Transfer,
                     ExternalCheckResult { flags: 4 },
                 )],
-                pda: None,
+                base_address_config: None,
                 results_offset: None,
             })],
         },
@@ -237,9 +238,9 @@ async fn test_create_oracle() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::Oracle(Oracle {
+            external_plugin_adapters: vec![ExternalPluginAdapter::Oracle(Oracle {
                 base_address: Pubkey::default(),
-                pda: None,
+                base_address_config: None,
                 results_offset: ValidationResultsOffset::NoOffset,
             })],
         },
@@ -265,7 +266,7 @@ async fn test_cannot_create_oracle_with_duplicate_lifecycle_checks() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::Oracle(OracleInitInfo {
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::Oracle(OracleInitInfo {
                 base_address: Pubkey::default(),
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 lifecycle_checks: vec![
@@ -278,7 +279,7 @@ async fn test_cannot_create_oracle_with_duplicate_lifecycle_checks() {
                         ExternalCheckResult { flags: 4 },
                     ),
                 ],
-                pda: None,
+                base_address_config: None,
                 results_offset: None,
             })],
         },
@@ -308,11 +309,13 @@ async fn test_create_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
-                init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-                data_authority: PluginAuthority::UpdateAuthority,
-                schema: None,
-            })],
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::DataStore(
+                DataStoreInitInfo {
+                    init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                    data_authority: PluginAuthority::UpdateAuthority,
+                    schema: None,
+                },
+            )],
         },
     )
     .await
@@ -329,9 +332,9 @@ async fn test_create_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPlugin::DataStore(DataStore {
+            external_plugin_adapters: vec![ExternalPluginAdapter::DataStore(DataStore {
                 data_authority: PluginAuthority::UpdateAuthority,
-                schema: ExternalPluginSchema::Binary,
+                schema: ExternalPluginAdapterSchema::Binary,
             })],
         },
     )
@@ -356,11 +359,13 @@ async fn test_temporarily_cannot_create_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
-                init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-                data_authority: PluginAuthority::UpdateAuthority,
-                schema: None,
-            })],
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::DataStore(
+                DataStoreInitInfo {
+                    init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                    data_authority: PluginAuthority::UpdateAuthority,
+                    schema: None,
+                },
+            )],
         },
     )
     .await
@@ -383,11 +388,13 @@ async fn test_temporarily_cannot_create_data_store_on_collection() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugins: vec![ExternalPluginInitInfo::DataStore(DataStoreInitInfo {
-                init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-                data_authority: PluginAuthority::UpdateAuthority,
-                schema: None,
-            })],
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::DataStore(
+                DataStoreInitInfo {
+                    init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                    data_authority: PluginAuthority::UpdateAuthority,
+                    schema: None,
+                },
+            )],
         },
     )
     .await
