@@ -1,17 +1,21 @@
 import { assertAccountExists, generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
-  AddablePluginAuthorityPairArgsV2,
+  AssetAddablePluginAuthorityPairArgsV2,
   addPlugin,
   burn,
   Key,
-  PluginArgsV2,
+  AssetAllPluginArgsV2,
   removePlugin,
   transfer,
   update,
   updateCollection,
   updateCollectionPlugin,
   updatePlugin,
+  CollectionAllPluginArgsV2,
+  CollectionAddablePluginAuthorityPairArgsV2,
+  addCollectionPlugin,
+  removeCollectionPlugin,
 } from '../src';
 import {
   createAsset,
@@ -408,7 +412,7 @@ test('it can add and remove all owner and update auth managed party plugins to a
   const umi = await createUmi();
   const asset = await createAsset(umi);
 
-  const plugins: AddablePluginAuthorityPairArgsV2[] = [
+  const plugins: AssetAddablePluginAuthorityPairArgsV2[] = [
     {
       type: 'Royalties',
       basisPoints: 500,
@@ -572,7 +576,7 @@ test('it can update all updatable plugins on asset', async (t) => {
     ],
   });
 
-  const updates: PluginArgsV2[] = [
+  const updates: AssetAllPluginArgsV2[] = [
     {
       type: 'Royalties',
       basisPoints: 1000,
@@ -710,7 +714,7 @@ test('it can update all updatable plugins on collection', async (t) => {
     ],
   });
 
-  const updates: PluginArgsV2[] = [
+  const updates: CollectionAllPluginArgsV2[] = [
     {
       type: 'Royalties',
       basisPoints: 1000,
@@ -798,6 +802,100 @@ test('it can update all updatable plugins on collection', async (t) => {
       name: 'master2',
       uri: 'uri master2',
     },
+  });
+});
+
+test('it can add and remove all update auth managed party plugins to collection', async (t) => {
+  const umi = await createUmi();
+  const collection = await createCollection(umi);
+
+  const plugins: CollectionAddablePluginAuthorityPairArgsV2[] = [
+    {
+      type: 'Royalties',
+      basisPoints: 500,
+      creators: [
+        {
+          address: umi.identity.publicKey,
+          percentage: 100,
+        },
+      ],
+      ruleSet: {
+        type: 'ProgramDenyList',
+        addresses: [umi.identity.publicKey],
+      },
+      authority: {
+        type: 'Address',
+        address: umi.identity.publicKey,
+      },
+    },
+    {
+      type: 'Attributes',
+      attributeList: [
+        {
+          key: '123',
+          value: '456',
+        },
+      ],
+    },
+  ];
+
+  await Promise.all(
+    plugins.map(async (plugin) =>
+      addCollectionPlugin(umi, {
+        collection: collection.publicKey,
+        plugin,
+      }).sendAndConfirm(umi)
+    )
+  );
+
+  await assertCollection(t, umi, {
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    royalties: {
+      basisPoints: 500,
+      creators: [
+        {
+          address: umi.identity.publicKey,
+          percentage: 100,
+        },
+      ],
+      ruleSet: {
+        type: 'ProgramDenyList',
+        addresses: [umi.identity.publicKey],
+      },
+      authority: {
+        type: 'Address',
+        address: umi.identity.publicKey,
+      },
+    },
+    attributes: {
+      attributeList: [
+        {
+          key: '123',
+          value: '456',
+        },
+      ],
+      authority: {
+        type: 'UpdateAuthority',
+      },
+    },
+  });
+
+  await Promise.all(
+    plugins.map(async (plugin) =>
+      removeCollectionPlugin(umi, {
+        collection: collection.publicKey,
+        plugin,
+      }).sendAndConfirm(umi)
+    )
+  );
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    attributes: undefined,
+    royalties: undefined,
   });
 });
 

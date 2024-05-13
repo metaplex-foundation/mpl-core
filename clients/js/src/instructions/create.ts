@@ -7,7 +7,7 @@ import {
 import {
   createExternalPluginAdapterInitInfo,
   findExtraAccounts,
-  PluginAuthorityPairArgsV2,
+  AssetPluginAuthorityPairArgsV2,
   pluginAuthorityPairV2,
 } from '../plugins';
 import { deriveExternalPluginAdapters } from '../helpers';
@@ -18,7 +18,7 @@ import {
 } from '../plugins/externalPluginAdapters';
 
 export type CreateArgsPlugin =
-  | PluginAuthorityPairArgsV2
+  | AssetPluginAuthorityPairArgsV2
   | ExternalPluginAdapterInitInfoArgs;
 
 export type CreateArgs = Omit<
@@ -41,7 +41,7 @@ export const create = (
   };
 
   const externalPluginAdapters: ExternalPluginAdapterInitInfoArgs[] = [];
-  const firstPartyPlugins: PluginAuthorityPairArgsV2[] = [];
+  const firstPartyPlugins: AssetPluginAuthorityPairArgsV2[] = [];
 
   // Create dummy external plugin adapters to resuse findExtraAccounts method
   plugins?.forEach((plugin) => {
@@ -77,7 +77,7 @@ export const create = (
         // Do nothing
       }
     } else {
-      firstPartyPlugins.push(plugin as PluginAuthorityPairArgsV2);
+      firstPartyPlugins.push(plugin as AssetPluginAuthorityPairArgsV2);
     }
   });
 

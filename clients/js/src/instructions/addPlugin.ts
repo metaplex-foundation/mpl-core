@@ -1,7 +1,7 @@
 import { Context } from '@metaplex-foundation/umi';
 import { addPluginV1, addExternalPluginAdapterV1 } from '../generated';
 import {
-  AddablePluginAuthorityPairArgsV2,
+  AssetAddablePluginAuthorityPairArgsV2,
   ExternalPluginAdapterInitInfoArgs,
   createExternalPluginAdapterInitInfo,
   isExternalPluginAdapterType,
@@ -9,7 +9,7 @@ import {
 } from '../plugins';
 
 export type AddPluginArgsPlugin =
-  | AddablePluginAuthorityPairArgsV2
+  | AssetAddablePluginAuthorityPairArgsV2
   | ExternalPluginAdapterInitInfoArgs;
 
 export type AddPluginArgs = Omit<
@@ -33,7 +33,7 @@ export const addPlugin = (
   }
 
   const pair = pluginAuthorityPairV2(
-    plugin as AddablePluginAuthorityPairArgsV2
+    plugin as AssetAddablePluginAuthorityPairArgsV2
   );
   return addPluginV1(context, {
     ...args,
