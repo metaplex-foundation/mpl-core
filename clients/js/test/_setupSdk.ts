@@ -12,10 +12,11 @@ import {
   fetchCollectionV1,
   CollectionV1,
   AssetV1,
-  PluginAuthorityPairArgsV2,
+  AssetPluginAuthorityPairArgsV2,
   ExternalPluginAdapterInitInfoArgs,
   create,
   createCollection as baseCreateCollection,
+  CollectionPluginAuthorityPairArgsV2,
 } from '../src';
 import { DEFAULT_ASSET, DEFAULT_COLLECTION } from './_setupRaw';
 
@@ -29,7 +30,10 @@ export type CreateAssetHelperArgs = {
   authority?: Signer;
   updateAuthority?: PublicKey | Signer;
   collection?: PublicKey | CollectionV1;
-  plugins?: (ExternalPluginAdapterInitInfoArgs | PluginAuthorityPairArgsV2)[];
+  plugins?: (
+    | ExternalPluginAdapterInitInfoArgs
+    | AssetPluginAuthorityPairArgsV2
+  )[];
 };
 export const createAsset = async (
   umi: Umi,
@@ -69,7 +73,10 @@ export type CreateCollectionHelperArgs = {
   name?: string;
   uri?: string;
   updateAuthority?: PublicKey | Signer;
-  plugins?: (ExternalPluginAdapterInitInfoArgs | PluginAuthorityPairArgsV2)[];
+  plugins?: (
+    | ExternalPluginAdapterInitInfoArgs
+    | CollectionPluginAuthorityPairArgsV2
+  )[];
 };
 
 export const createCollection = async (

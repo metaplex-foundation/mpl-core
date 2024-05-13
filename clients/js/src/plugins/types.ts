@@ -104,10 +104,7 @@ export type CreateOnlyPluginArgsV2 =
       type: 'Edition';
     } & EditionArgs);
 
-export type AddablePluginArgsV2 =
-  | ({
-      type: 'Royalties';
-    } & RoyaltiesArgs)
+export type OwnerManagedPluginArgsV2 =
   | ({
       type: 'FreezeDelegate';
     } & FreezeDelegateArgs)
@@ -116,7 +113,12 @@ export type AddablePluginArgsV2 =
     }
   | {
       type: 'TransferDelegate';
-    }
+    };
+
+export type AuthorityManagedPluginArgsV2 =
+  | ({
+      type: 'Royalties';
+    } & RoyaltiesArgs)
   | ({
       type: 'UpdateDelegate';
     } & UpdateDelegateArgs)
@@ -133,10 +135,25 @@ export type AddablePluginArgsV2 =
       type: 'AddBlocker';
     };
 
-export type PluginArgsV2 = AddablePluginArgsV2 | CreateOnlyPluginArgsV2;
-export type PluginAuthorityPairArgsV2 = PluginArgsV2 & AuthorityArgsV2;
-export type AddablePluginAuthorityPairArgsV2 = AddablePluginArgsV2 &
+export type AssetAddablePluginArgsV2 =
+  | OwnerManagedPluginArgsV2
+  | AuthorityManagedPluginArgsV2;
+export type AssetAllPluginArgsV2 =
+  | AssetAddablePluginArgsV2
+  | CreateOnlyPluginArgsV2;
+export type AssetPluginAuthorityPairArgsV2 = AssetAllPluginArgsV2 &
   AuthorityArgsV2;
+export type AssetAddablePluginAuthorityPairArgsV2 = AssetAddablePluginArgsV2 &
+  AuthorityArgsV2;
+
+export type CollectionAddablePluginArgsV2 = AuthorityManagedPluginArgsV2;
+export type CollectionAllPluginArgsV2 =
+  | CreateOnlyPluginArgsV2
+  | CollectionAddablePluginArgsV2;
+export type CollectionPluginAuthorityPairArgsV2 = CollectionAllPluginArgsV2 &
+  AuthorityArgsV2;
+export type CollectionAddablePluginAuthorityPairArgsV2 =
+  CollectionAddablePluginArgsV2 & AuthorityArgsV2;
 
 export type FreezeDelegatePlugin = BasePlugin & FreezeDelegate;
 export type BurnDelegatePlugin = BasePlugin & BurnDelegate;

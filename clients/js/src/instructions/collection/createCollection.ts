@@ -1,7 +1,7 @@
 import { Context } from '@metaplex-foundation/umi';
 import { createCollectionV2 } from '../../generated';
 import {
-  PluginAuthorityPairArgsV2,
+  CollectionPluginAuthorityPairArgsV2,
   createExternalPluginAdapterInitInfo,
   pluginAuthorityPairV2,
 } from '../../plugins';
@@ -15,21 +15,24 @@ export type CreateCollectionArgs = Omit<
   Parameters<typeof createCollectionV2>[1],
   'plugins' | 'externalPluginAdapters'
 > & {
-  plugins?: (PluginAuthorityPairArgsV2 | ExternalPluginAdapterInitInfoArgs)[];
+  plugins?: (
+    | CollectionPluginAuthorityPairArgsV2
+    | ExternalPluginAdapterInitInfoArgs
+  )[];
 };
 
 export const createCollection = (
   context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
   { plugins, ...args }: CreateCollectionArgs
 ) => {
-  const firstPartyPlugins: PluginAuthorityPairArgsV2[] = [];
+  const firstPartyPlugins: CollectionPluginAuthorityPairArgsV2[] = [];
   const externalPluginAdapters: ExternalPluginAdapterInitInfoArgs[] = [];
 
   plugins?.forEach((plugin) => {
     if (isExternalPluginAdapterType(plugin)) {
       externalPluginAdapters.push(plugin as ExternalPluginAdapterInitInfoArgs);
     } else {
-      firstPartyPlugins.push(plugin as PluginAuthorityPairArgsV2);
+      firstPartyPlugins.push(plugin as CollectionPluginAuthorityPairArgsV2);
     }
   });
 
