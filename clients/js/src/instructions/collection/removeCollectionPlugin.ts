@@ -13,7 +13,7 @@ import { isExternalPluginAdapterType } from '../../plugins/externalPluginAdapter
 
 export type RemoveCollectionPluginArgs = Omit<
   Parameters<typeof removeCollectionPluginV1>[1],
-  'plugin'
+  'plugin' | 'pluginType'
 > & {
   plugin:
     | {
