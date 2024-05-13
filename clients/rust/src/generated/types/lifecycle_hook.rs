@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::ExternalPluginSchema;
+use crate::generated::types::ExternalPluginAdapterSchema;
 use crate::generated::types::ExtraAccount;
 use crate::generated::types::PluginAuthority;
 #[cfg(feature = "anchor")]
@@ -26,5 +26,5 @@ pub struct LifecycleHook {
     pub hooked_program: Pubkey,
     pub extra_accounts: Option<Vec<ExtraAccount>>,
     pub data_authority: Option<PluginAuthority>,
-    pub schema: ExternalPluginSchema,
+    pub schema: ExternalPluginAdapterSchema,
 }

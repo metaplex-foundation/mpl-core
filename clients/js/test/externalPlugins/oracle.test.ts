@@ -21,9 +21,9 @@ import {
   preconfiguredAssetPdaCustomOffsetSet,
   close,
 } from '@metaplex-foundation/mpl-core-oracle-example';
-import { generateSigner } from '@metaplex-foundation/umi';
-import { ExternalValidationResult } from '@metaplex-foundation/mpl-core-oracle-example/dist/src/hooked';
+import { generateSigner, sol } from '@metaplex-foundation/umi';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
+import { createAccount } from '@metaplex-foundation/mpl-toolbox';
 import {
   assertAsset,
   assertBurned,
@@ -44,6 +44,7 @@ import {
   addPlugin,
   updatePlugin,
   fetchAssetV1,
+  ExternalValidationResult,
 } from '../../src';
 
 const createUmi = async () =>
@@ -129,7 +130,7 @@ test('it can use fixed address oracle to deny update', async (t) => {
         lifecycleChecks: {
           update: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -226,7 +227,7 @@ test('it can use fixed address oracle to deny update via collection', async (t) 
         lifecycleChecks: {
           update: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -313,7 +314,7 @@ test('it can use fixed address oracle to deny transfer', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -418,7 +419,7 @@ test('it cannot update oracle to have no lifecycle checks', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -459,7 +460,7 @@ test('it cannot update oracle to have no lifecycle checks', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -635,7 +636,7 @@ test('it cannot update oracle to approve', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -677,7 +678,7 @@ test('it cannot update oracle to approve', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -721,7 +722,7 @@ test('it cannot update oracle to approve in addition to reject', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -763,7 +764,7 @@ test('it cannot update oracle to approve in addition to reject', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -873,7 +874,7 @@ test('it cannot update oracle to listen', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -915,7 +916,7 @@ test('it cannot update oracle to listen', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -984,7 +985,7 @@ test('it cannot use fixed address oracle to deny transfer if not registered for 
         lifecycleChecks: {
           create: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -1078,7 +1079,7 @@ test('it can use fixed address oracle to deny create', async (t) => {
         lifecycleChecks: {
           create: [CheckResult.CAN_REJECT],
         },
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -1159,7 +1160,7 @@ test('it can use preconfigured program pda oracle to deny update', async (t) => 
       update: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'PreconfiguredProgram',
     },
   };
@@ -1246,7 +1247,7 @@ test('it can use preconfigured program pda oracle to deny update', async (t) => 
         lifecycleChecks: {
           update: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'PreconfiguredProgram',
         },
       },
@@ -1266,7 +1267,7 @@ test('it can use preconfigured collection pda oracle to deny update', async (t) 
       update: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'PreconfiguredCollection',
     },
   };
@@ -1349,7 +1350,7 @@ test('it can use preconfigured collection pda oracle to deny update', async (t) 
         lifecycleChecks: {
           update: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'PreconfiguredCollection',
         },
       },
@@ -1369,7 +1370,7 @@ test('it can use preconfigured owner pda oracle to deny burn', async (t) => {
       burn: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'PreconfiguredOwner',
     },
   };
@@ -1425,7 +1426,7 @@ test('it can use preconfigured owner pda oracle to deny burn', async (t) => {
         lifecycleChecks: {
           burn: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'PreconfiguredOwner',
         },
       },
@@ -1468,7 +1469,7 @@ test('it can use preconfigured recipient pda oracle to deny transfer', async (t)
       transfer: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'PreconfiguredRecipient',
     },
   };
@@ -1543,7 +1544,7 @@ test('it can use preconfigured recipient pda oracle to deny transfer', async (t)
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'PreconfiguredRecipient',
         },
       },
@@ -1563,7 +1564,7 @@ test('it can use preconfigured asset pda oracle to deny update', async (t) => {
       update: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'PreconfiguredAsset',
     },
   };
@@ -1639,7 +1640,7 @@ test('it can use preconfigured asset pda oracle to deny update', async (t) => {
         lifecycleChecks: {
           update: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'PreconfiguredAsset',
         },
       },
@@ -1662,7 +1663,7 @@ test('it can use custom pda (all seeds) oracle to deny transfer', async (t) => {
       transfer: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'CustomPda',
       seeds: [
         { type: 'Collection' },
@@ -1770,7 +1771,7 @@ test('it can use custom pda (all seeds) oracle to deny transfer', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'CustomPda',
           seeds: [
             { type: 'Collection' },
@@ -1803,7 +1804,7 @@ test('it can use custom pda (typical) oracle to deny transfer', async (t) => {
       transfer: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'CustomPda',
       seeds: [
         {
@@ -1902,7 +1903,7 @@ test('it can use custom pda (typical) oracle to deny transfer', async (t) => {
         lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'CustomPda',
           seeds: [
             {
@@ -1917,6 +1918,146 @@ test('it can use custom pda (typical) oracle to deny transfer', async (t) => {
               ),
             },
           ],
+        },
+      },
+    ],
+  });
+});
+
+test('it can use custom pda (with custom program ID) oracle to deny transfer', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const newOwner = generateSigner(umi);
+
+  // Configure an Oracle plugin to have a custom program ID.  In order to reuse the oracle
+  // example program we will set the base address to a random Pubkey, and set the custom program
+  // ID to the oracle example program ID.
+  const randomProgramId = generateSigner(umi).publicKey;
+  const oraclePlugin: OracleInitInfoArgs = {
+    type: 'Oracle',
+    resultsOffset: {
+      type: 'Anchor',
+    },
+    lifecycleChecks: {
+      transfer: [CheckResult.CAN_REJECT],
+    },
+    baseAddress: randomProgramId,
+    baseAddressConfig: {
+      type: 'CustomPda',
+      seeds: [
+        {
+          type: 'Bytes',
+          bytes: Buffer.from('prefix-seed-bytes', 'utf8'),
+        },
+        { type: 'Collection' },
+        {
+          type: 'Bytes',
+          bytes: Buffer.from('additional-bytes-seed-bytes', 'utf8'),
+        },
+      ],
+      customProgramId: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
+    },
+  };
+
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {
+      owner,
+      plugins: [oraclePlugin],
+    },
+    {}
+  );
+
+  // Find the oracle PDA based on the asset we just created
+  const account = findOracleAccount(umi, oraclePlugin, {
+    collection: collection.publicKey,
+  });
+
+  // write to the PDA
+  await customPdaTypicalInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      prefixBytes: Buffer.from('prefix-seed-bytes', 'utf8'),
+      collection: collection.publicKey,
+      additionalBytes: Buffer.from('additional-bytes-seed-bytes', 'utf8'),
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Rejected,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const result = transfer(umi, {
+    asset,
+    collection,
+    newOwner: newOwner.publicKey,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await customPdaTypicalSet(umi, {
+    account,
+    signer: umi.identity,
+    args: {
+      prefixBytes: Buffer.from('prefix-seed-bytes', 'utf8'),
+      collection: collection.publicKey,
+      additionalBytes: Buffer.from('additional-bytes-seed-bytes', 'utf8'),
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await transfer(umi, {
+    asset,
+    collection,
+    newOwner: newOwner.publicKey,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: randomProgramId,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddressConfig: {
+          type: 'CustomPda',
+          seeds: [
+            {
+              type: 'Bytes',
+              bytes: new Uint8Array(Buffer.from('prefix-seed-bytes', 'utf8')),
+            },
+            { type: 'Collection' },
+            {
+              type: 'Bytes',
+              bytes: new Uint8Array(
+                Buffer.from('additional-bytes-seed-bytes', 'utf8')
+              ),
+            },
+          ],
+          customProgramId: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
         },
       },
     ],
@@ -1948,7 +2089,7 @@ test('it can use preconfigured asset pda custom offset oracle to deny update', a
       update: [CheckResult.CAN_REJECT],
     },
     baseAddress: MPL_CORE_ORACLE_EXAMPLE_PROGRAM_ID,
-    pda: {
+    baseAddressConfig: {
       type: 'PreconfiguredAsset',
     },
   };
@@ -2067,7 +2208,7 @@ test('it can use preconfigured asset pda custom offset oracle to deny update', a
         lifecycleChecks: {
           update: [CheckResult.CAN_REJECT],
         },
-        pda: {
+        baseAddressConfig: {
           type: 'PreconfiguredAsset',
         },
       },
@@ -2276,13 +2417,13 @@ test('it can update asset to different size name with oracle', async (t) => {
           update: [CheckResult.CAN_REJECT],
         },
         baseAddress: oracleSigner.publicKey,
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
 });
 
-test('it can update oracle to different size external plugin', async (t) => {
+test('it can update oracle to different size external plugin adapter', async (t) => {
   const umi = await createUmi();
   const oracleSigner = generateSigner(umi);
   await fixedAccountInit(umi, {
@@ -2342,7 +2483,7 @@ test('it can update oracle to different size external plugin', async (t) => {
           burn: [CheckResult.CAN_REJECT],
         },
         baseAddress: oracleSigner.publicKey,
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
@@ -2383,8 +2524,203 @@ test('it can update oracle to different size external plugin', async (t) => {
           transfer: [CheckResult.CAN_REJECT],
         },
         baseAddress: oracleSigner.publicKey,
-        pda: undefined,
+        baseAddressConfig: undefined,
       },
     ],
   });
+});
+
+test('it create fails but does not panic when oracle account does not exist', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+
+  const asset = generateSigner(umi);
+  const result = create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+          update: [CheckResult.CAN_REJECT],
+          transfer: [CheckResult.CAN_REJECT],
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidOracleAccountData' });
+});
+
+test('it transfer fails but does not panic when oracle account does not exist', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+      },
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: oracleSigner.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+
+  const newOwner = generateSigner(umi);
+  const result = transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidOracleAccountData' });
+});
+
+test('it transfer fails but does not panic when oracle account is too small', async (t) => {
+  const umi = await createUmi();
+  const newAccount = generateSigner(umi);
+
+  // Create an invalid oracle account that is an account with 3 bytes.
+  await createAccount(umi, {
+    newAccount,
+    lamports: sol(0.1),
+    space: 3,
+    programId: umi.programs.get('mplCore').publicKey,
+  }).sendAndConfirm(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'NoOffset',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: newAccount.publicKey,
+      },
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'NoOffset',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: newAccount.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+
+  const newOwner = generateSigner(umi);
+  const result = transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidOracleAccountData' });
+});
+
+test('it empty account does not default to valid oracle', async (t) => {
+  const umi = await createUmi();
+  const newAccount = generateSigner(umi);
+
+  // Create an invalid oracle account that is an account with 42 bytes.
+  await createAccount(umi, {
+    newAccount,
+    lamports: sol(0.1),
+    space: 42,
+    programId: umi.programs.get('mplCore').publicKey,
+  }).sendAndConfirm(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'NoOffset',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: newAccount.publicKey,
+      },
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'NoOffset',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: newAccount.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+
+  const newOwner = generateSigner(umi);
+  const result = transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'UninitializedOracleAccount' });
 });

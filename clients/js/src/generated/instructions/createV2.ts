@@ -31,13 +31,13 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  BaseExternalPluginInitInfo,
-  BaseExternalPluginInitInfoArgs,
+  BaseExternalPluginAdapterInitInfo,
+  BaseExternalPluginAdapterInitInfoArgs,
   DataState,
   DataStateArgs,
   PluginAuthorityPair,
   PluginAuthorityPairArgs,
-  getBaseExternalPluginInitInfoSerializer,
+  getBaseExternalPluginAdapterInitInfoSerializer,
   getDataStateSerializer,
   getPluginAuthorityPairSerializer,
 } from '../types';
@@ -69,7 +69,7 @@ export type CreateV2InstructionData = {
   name: string;
   uri: string;
   plugins: Option<Array<PluginAuthorityPair>>;
-  externalPlugins: Option<Array<BaseExternalPluginInitInfo>>;
+  externalPluginAdapters: Option<Array<BaseExternalPluginAdapterInitInfo>>;
 };
 
 export type CreateV2InstructionDataArgs = {
@@ -77,7 +77,9 @@ export type CreateV2InstructionDataArgs = {
   name: string;
   uri: string;
   plugins?: OptionOrNullable<Array<PluginAuthorityPairArgs>>;
-  externalPlugins?: OptionOrNullable<Array<BaseExternalPluginInitInfoArgs>>;
+  externalPluginAdapters?: OptionOrNullable<
+    Array<BaseExternalPluginAdapterInitInfoArgs>
+  >;
 };
 
 export function getCreateV2InstructionDataSerializer(): Serializer<
@@ -97,8 +99,8 @@ export function getCreateV2InstructionDataSerializer(): Serializer<
         ['uri', string()],
         ['plugins', option(array(getPluginAuthorityPairSerializer()))],
         [
-          'externalPlugins',
-          option(array(getBaseExternalPluginInitInfoSerializer())),
+          'externalPluginAdapters',
+          option(array(getBaseExternalPluginAdapterInitInfoSerializer())),
         ],
       ],
       { description: 'CreateV2InstructionData' }
@@ -108,7 +110,7 @@ export function getCreateV2InstructionDataSerializer(): Serializer<
       discriminator: 20,
       dataState: value.dataState ?? DataState.AccountState,
       plugins: value.plugins ?? [],
-      externalPlugins: value.externalPlugins ?? [],
+      externalPluginAdapters: value.externalPluginAdapters ?? [],
     })
   ) as Serializer<CreateV2InstructionDataArgs, CreateV2InstructionData>;
 }

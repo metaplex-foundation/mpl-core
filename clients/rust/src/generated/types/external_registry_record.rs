@@ -6,7 +6,7 @@
 //!
 
 use crate::generated::types::ExternalCheckResult;
-use crate::generated::types::ExternalPluginType;
+use crate::generated::types::ExternalPluginAdapterType;
 use crate::generated::types::HookableLifecycleEvent;
 use crate::generated::types::PluginAuthority;
 #[cfg(feature = "anchor")]
@@ -19,7 +19,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ExternalRegistryRecord {
-    pub plugin_type: ExternalPluginType,
+    pub plugin_type: ExternalPluginAdapterType,
     pub authority: PluginAuthority,
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     pub offset: u64,

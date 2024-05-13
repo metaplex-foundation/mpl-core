@@ -1,16 +1,16 @@
 import { Context } from '@metaplex-foundation/umi';
-import { addPluginV1, addExternalPluginV1 } from '../generated';
+import { addPluginV1, addExternalPluginAdapterV1 } from '../generated';
 import {
   AddablePluginAuthorityPairArgsV2,
-  ExternalPluginInitInfoArgs,
-  createExternalPluginInitInfo,
-  isExternalPluginType,
+  ExternalPluginAdapterInitInfoArgs,
+  createExternalPluginAdapterInitInfo,
+  isExternalPluginAdapterType,
   pluginAuthorityPairV2,
 } from '../plugins';
 
 export type AddPluginArgsPlugin =
   | AddablePluginAuthorityPairArgsV2
-  | ExternalPluginInitInfoArgs;
+  | ExternalPluginAdapterInitInfoArgs;
 
 export type AddPluginArgs = Omit<
   Parameters<typeof addPluginV1>[1],
@@ -23,11 +23,11 @@ export const addPlugin = (
   context: Pick<Context, 'payer' | 'programs' | 'identity'>,
   { plugin, ...args }: AddPluginArgs
 ) => {
-  if (isExternalPluginType(plugin)) {
-    return addExternalPluginV1(context, {
+  if (isExternalPluginAdapterType(plugin)) {
+    return addExternalPluginAdapterV1(context, {
       ...args,
-      initInfo: createExternalPluginInitInfo(
-        plugin as ExternalPluginInitInfoArgs
+      initInfo: createExternalPluginAdapterInitInfo(
+        plugin as ExternalPluginAdapterInitInfoArgs
       ),
     });
   }

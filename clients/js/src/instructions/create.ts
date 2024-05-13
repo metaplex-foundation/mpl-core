@@ -1,25 +1,29 @@
 import { Context, publicKey } from '@metaplex-foundation/umi';
-import { CollectionV1, createV2, ExternalPluginSchema } from '../generated';
 import {
-  createExternalPluginInitInfo,
+  CollectionV1,
+  createV2,
+  ExternalPluginAdapterSchema,
+} from '../generated';
+import {
+  createExternalPluginAdapterInitInfo,
   findExtraAccounts,
   PluginAuthorityPairArgsV2,
   pluginAuthorityPairV2,
 } from '../plugins';
-import { deriveExternalPlugins } from '../helpers';
+import { deriveExternalPluginAdapters } from '../helpers';
 import {
-  ExternalPluginInitInfoArgs,
-  ExternalPluginsList,
-  isExternalPluginType,
-} from '../plugins/externalPlugins';
+  ExternalPluginAdapterInitInfoArgs,
+  ExternalPluginAdaptersList,
+  isExternalPluginAdapterType,
+} from '../plugins/externalPluginAdapters';
 
 export type CreateArgsPlugin =
   | PluginAuthorityPairArgsV2
-  | ExternalPluginInitInfoArgs;
+  | ExternalPluginAdapterInitInfoArgs;
 
 export type CreateArgs = Omit<
   Parameters<typeof createV2>[1],
-  'plugins' | 'externalPlugins' | 'collection'
+  'plugins' | 'externalPluginAdapters' | 'collection'
 > & {
   collection?: Pick<CollectionV1, 'publicKey' | 'oracles' | 'lifecycleHooks'>;
   plugins?: CreateArgsPlugin[];
@@ -31,21 +35,21 @@ export const create = (
 ) => {
   const owner = args.owner || args.updateAuthority || args.payer;
 
-  const assetExternalPlugins: ExternalPluginsList = {
+  const assetExternalPluginAdapters: ExternalPluginAdaptersList = {
     oracles: [],
     lifecycleHooks: [],
   };
 
-  const externalPlugins: ExternalPluginInitInfoArgs[] = [];
+  const externalPluginAdapters: ExternalPluginAdapterInitInfoArgs[] = [];
   const firstPartyPlugins: PluginAuthorityPairArgsV2[] = [];
 
-  // Create dummy external plugins to resuse findExtraAccounts method
+  // Create dummy external plugin adapters to resuse findExtraAccounts method
   plugins?.forEach((plugin) => {
-    if (isExternalPluginType(plugin)) {
-      externalPlugins.push(plugin as ExternalPluginInitInfoArgs);
+    if (isExternalPluginAdapterType(plugin)) {
+      externalPluginAdapters.push(plugin as ExternalPluginAdapterInitInfoArgs);
       switch (plugin.type) {
         case 'Oracle':
-          assetExternalPlugins.oracles?.push({
+          assetExternalPluginAdapters.oracles?.push({
             ...plugin,
             resultsOffset: plugin.resultsOffset || { type: 'NoOffset' },
             baseAddress: plugin.baseAddress,
@@ -59,14 +63,14 @@ export const create = (
           // Do nothing, datastore has no extra accounts
           break;
         case 'LifecycleHook':
-          assetExternalPlugins.lifecycleHooks?.push({
+          assetExternalPluginAdapters.lifecycleHooks?.push({
             ...plugin,
             hookedProgram: plugin.hookedProgram,
             authority: plugin.initPluginAuthority || {
               type: 'UpdateAuthority',
             },
             type: 'LifecycleHook',
-            schema: plugin.schema || ExternalPluginSchema.Binary,
+            schema: plugin.schema || ExternalPluginAdapterSchema.Binary,
           });
           break;
         default:
@@ -77,14 +81,14 @@ export const create = (
     }
   });
 
-  const derivedExternalPlugins = deriveExternalPlugins(
-    assetExternalPlugins,
+  const derivedExternalPluginAdapters = deriveExternalPluginAdapters(
+    assetExternalPluginAdapters,
     collection
   );
   const extraAccounts = findExtraAccounts(
     context,
     'create',
-    derivedExternalPlugins,
+    derivedExternalPluginAdapters,
     {
       asset: asset.publicKey,
       collection: collection ? collection.publicKey : undefined,
@@ -96,7 +100,9 @@ export const create = (
   return createV2(context, {
     ...args,
     plugins: firstPartyPlugins.map(pluginAuthorityPairV2),
-    externalPlugins: externalPlugins.map(createExternalPluginInitInfo),
+    externalPluginAdapters: externalPluginAdapters.map(
+      createExternalPluginAdapterInitInfo
+    ),
     asset,
     collection: collection ? collection.publicKey : undefined,
   }).addRemainingAccounts(extraAccounts);

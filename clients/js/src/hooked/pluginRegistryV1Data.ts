@@ -15,8 +15,8 @@ import {
   getPluginTypeSerializer,
   ExternalRegistryRecordArgs,
   ExternalRegistryRecord,
-  getExternalPluginTypeSerializer,
-  ExternalPluginType,
+  getExternalPluginAdapterTypeSerializer,
+  ExternalPluginAdapterType,
   getHookableLifecycleEventSerializer,
   getExternalCheckResultSerializer,
 } from '../generated';
@@ -87,12 +87,12 @@ export function getRegistryRecordSerializer(): Serializer<
   };
 }
 
-export function getExternalRegistryRecordSerializer(): Serializer<
+export function getAdapterRegistryRecordSerializer(): Serializer<
   ExternalRegistryRecordArgs,
   ExternalRegistryRecordWithUnknown
 > {
   return {
-    description: 'ExternalRegistryRecordWithUnknown',
+    description: 'AdapterRegistryRecordWithUnknown',
     fixedSize: null,
     maxSize: null,
     serialize: () => {
@@ -103,13 +103,13 @@ export function getExternalRegistryRecordSerializer(): Serializer<
       offset = 0
     ): [ExternalRegistryRecordWithUnknown, number] => {
       let [pluginType, pluginTypeOffset, isUnknown] = [
-        ExternalPluginType.DataStore,
+        ExternalPluginAdapterType.DataStore,
         offset + 1,
         true,
       ];
       try {
         [pluginType, pluginTypeOffset] =
-          getExternalPluginTypeSerializer().deserialize(buffer, offset);
+          getExternalPluginAdapterTypeSerializer().deserialize(buffer, offset);
         isUnknown = false;
       } catch (e) {
         // do nothing
@@ -183,7 +183,7 @@ export function getPluginRegistryV1AccountDataSerializer(): Serializer<
       ).deserialize(buffer, keyOffset);
 
       const [externalRegistry, externalRegistryOffset] = array(
-        getExternalRegistryRecordSerializer()
+        getAdapterRegistryRecordSerializer()
       ).deserialize(buffer, registryOffset);
 
       return [

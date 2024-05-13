@@ -6,7 +6,7 @@
 //!
 
 use crate::generated::types::ExternalCheckResult;
-use crate::generated::types::ExternalPluginSchema;
+use crate::generated::types::ExternalPluginAdapterSchema;
 use crate::generated::types::ExtraAccount;
 use crate::generated::types::HookableLifecycleEvent;
 #[cfg(feature = "anchor")]
@@ -21,5 +21,5 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub struct LifecycleHookUpdateInfo {
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     pub extra_accounts: Option<Vec<ExtraAccount>>,
-    pub schema: Option<ExternalPluginSchema>,
+    pub schema: Option<ExternalPluginAdapterSchema>,
 }

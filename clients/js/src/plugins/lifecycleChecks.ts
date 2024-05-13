@@ -4,14 +4,14 @@ import { capitalizeFirstLetter } from '../utils';
 
 export type LifecycleEvent = 'create' | 'update' | 'transfer' | 'burn';
 
-// ExternalCheckResult is a bit array
+//  ExternalCheckResult is a bit array
 export enum CheckResult {
   CAN_LISTEN,
   CAN_APPROVE,
   CAN_REJECT,
 }
 
-export const externalCheckResultToCheckResults = (
+export const adapterCheckResultToCheckResults = (
   check: ExternalCheckResult
 ): CheckResult[] => {
   const results: CheckResult[] = [];
@@ -27,7 +27,7 @@ export const externalCheckResultToCheckResults = (
   return results;
 };
 
-export const checkResultsToExternalCheckResult = (
+export const checkResultsToAdapterCheckResult = (
   results: CheckResult[]
 ): ExternalCheckResult => {
   let flags = 0;
@@ -78,7 +78,7 @@ export function lifecycleChecksToBase(
       if (value) {
         return [
           lifecycleCheckKeyToEnum(k),
-          checkResultsToExternalCheckResult(value),
+          checkResultsToAdapterCheckResult(value),
         ];
       }
       return null;
@@ -95,7 +95,7 @@ export function lifecycleChecksFromBase(
   const checks: LifecycleChecks = {};
   l.forEach(([event, check]) => {
     checks[hookableLifecycleEventToLifecycleCheckKey(event)] =
-      externalCheckResultToCheckResults(check);
+      adapterCheckResultToCheckResults(check);
   });
   return checks;
 }

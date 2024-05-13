@@ -23,6 +23,6 @@ pub struct Oracle {
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     pub base_address: Pubkey,
-    pub pda: Option<ExtraAccount>,
+    pub base_address_config: Option<ExtraAccount>,
     pub results_offset: ValidationResultsOffset,
 }

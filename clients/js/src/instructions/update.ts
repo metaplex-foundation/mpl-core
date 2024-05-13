@@ -6,7 +6,7 @@ import {
   UpdateV1InstructionDataArgs,
 } from '../generated';
 import { findExtraAccounts } from '../plugins';
-import { deriveExternalPlugins } from '../helpers';
+import { deriveExternalPluginAdapters } from '../helpers';
 
 export type UpdateArgs = Omit<
   Parameters<typeof updateV1>[1],
@@ -22,12 +22,15 @@ export const update = (
   context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
   { asset, collection, name, uri, ...args }: UpdateArgs
 ) => {
-  const derivedExternalPlugins = deriveExternalPlugins(asset, collection);
+  const derivedExternalPluginAdapters = deriveExternalPluginAdapters(
+    asset,
+    collection
+  );
 
   const extraAccounts = findExtraAccounts(
     context,
     'update',
-    derivedExternalPlugins,
+    derivedExternalPluginAdapters,
     {
       asset: asset.publicKey,
       collection: collection?.publicKey,

@@ -1405,7 +1405,7 @@
       }
     },
     {
-      "name": "AddExternalPluginV1",
+      "name": "AddExternalPluginAdapterV1",
       "accounts": [
         {
           "name": "asset",
@@ -1461,9 +1461,9 @@
       ],
       "args": [
         {
-          "name": "addExternalPluginV1Args",
+          "name": "addExternalPluginAdapterV1Args",
           "type": {
-            "defined": "AddExternalPluginV1Args"
+            "defined": "AddExternalPluginAdapterV1Args"
           }
         }
       ],
@@ -1473,7 +1473,7 @@
       }
     },
     {
-      "name": "AddCollectionExternalPluginV1",
+      "name": "AddCollectionExternalPluginAdapterV1",
       "accounts": [
         {
           "name": "collection",
@@ -1520,9 +1520,9 @@
       ],
       "args": [
         {
-          "name": "addCollectionExternalPluginV1Args",
+          "name": "addCollectionExternalPluginAdapterV1Args",
           "type": {
-            "defined": "AddCollectionExternalPluginV1Args"
+            "defined": "AddCollectionExternalPluginAdapterV1Args"
           }
         }
       ],
@@ -1532,7 +1532,7 @@
       }
     },
     {
-      "name": "RemoveExternalPluginV1",
+      "name": "RemoveExternalPluginAdapterV1",
       "accounts": [
         {
           "name": "asset",
@@ -1588,9 +1588,9 @@
       ],
       "args": [
         {
-          "name": "removeExternalPluginV1Args",
+          "name": "removeExternalPluginAdapterV1Args",
           "type": {
-            "defined": "RemoveExternalPluginV1Args"
+            "defined": "RemoveExternalPluginAdapterV1Args"
           }
         }
       ],
@@ -1600,7 +1600,7 @@
       }
     },
     {
-      "name": "RemoveCollectionExternalPluginV1",
+      "name": "RemoveCollectionExternalPluginAdapterV1",
       "accounts": [
         {
           "name": "collection",
@@ -1647,9 +1647,9 @@
       ],
       "args": [
         {
-          "name": "removeCollectionExternalPluginV1Args",
+          "name": "removeCollectionExternalPluginAdapterV1Args",
           "type": {
-            "defined": "RemoveCollectionExternalPluginV1Args"
+            "defined": "RemoveCollectionExternalPluginAdapterV1Args"
           }
         }
       ],
@@ -1659,7 +1659,7 @@
       }
     },
     {
-      "name": "UpdateExternalPluginV1",
+      "name": "UpdateExternalPluginAdapterV1",
       "accounts": [
         {
           "name": "asset",
@@ -1715,9 +1715,9 @@
       ],
       "args": [
         {
-          "name": "updateExternalPluginV1Args",
+          "name": "updateExternalPluginAdapterV1Args",
           "type": {
-            "defined": "UpdateExternalPluginV1Args"
+            "defined": "UpdateExternalPluginAdapterV1Args"
           }
         }
       ],
@@ -1727,7 +1727,7 @@
       }
     },
     {
-      "name": "UpdateCollectionExternalPluginV1",
+      "name": "UpdateCollectionExternalPluginAdapterV1",
       "accounts": [
         {
           "name": "collection",
@@ -1774,9 +1774,9 @@
       ],
       "args": [
         {
-          "name": "updateCollectionExternalPluginV1Args",
+          "name": "updateCollectionExternalPluginAdapterV1Args",
           "type": {
-            "defined": "UpdateCollectionExternalPluginV1Args"
+            "defined": "UpdateCollectionExternalPluginAdapterV1Args"
           }
         }
       ],
@@ -1786,7 +1786,7 @@
       }
     },
     {
-      "name": "WriteExternalPluginDataV1",
+      "name": "WriteExternalPluginAdapterDataV1",
       "accounts": [
         {
           "name": "asset",
@@ -1823,6 +1823,15 @@
           ]
         },
         {
+          "name": "buffer",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The buffer to write to the external plugin"
+          ]
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
@@ -1842,9 +1851,9 @@
       ],
       "args": [
         {
-          "name": "writeExternalPluginDataV1Args",
+          "name": "writeExternalPluginAdapterDataV1Args",
           "type": {
-            "defined": "WriteExternalPluginDataV1Args"
+            "defined": "WriteExternalPluginAdapterDataV1Args"
           }
         }
       ],
@@ -1854,7 +1863,7 @@
       }
     },
     {
-      "name": "WriteCollectionExternalPluginDataV1",
+      "name": "WriteCollectionExternalPluginAdapterDataV1",
       "accounts": [
         {
           "name": "collection",
@@ -1882,6 +1891,15 @@
           ]
         },
         {
+          "name": "buffer",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The buffer to write to the external plugin"
+          ]
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
@@ -1901,9 +1919,9 @@
       ],
       "args": [
         {
-          "name": "writeCollectionExternalPluginDataV1Args",
+          "name": "writeCollectionExternalPluginAdapterDataV1Args",
           "type": {
-            "defined": "WriteCollectionExternalPluginDataV1Args"
+            "defined": "WriteCollectionExternalPluginAdapterDataV1Args"
           }
         }
       ],
@@ -2141,7 +2159,7 @@
           {
             "name": "schema",
             "type": {
-              "defined": "ExternalPluginSchema"
+              "defined": "ExternalPluginAdapterSchema"
             }
           }
         ]
@@ -2170,7 +2188,7 @@
             "name": "schema",
             "type": {
               "option": {
-                "defined": "ExternalPluginSchema"
+                "defined": "ExternalPluginAdapterSchema"
               }
             }
           }
@@ -2186,7 +2204,7 @@
             "name": "schema",
             "type": {
               "option": {
-                "defined": "ExternalPluginSchema"
+                "defined": "ExternalPluginAdapterSchema"
               }
             }
           }
@@ -2266,7 +2284,7 @@
           {
             "name": "schema",
             "type": {
-              "defined": "ExternalPluginSchema"
+              "defined": "ExternalPluginAdapterSchema"
             }
           }
         ]
@@ -2326,7 +2344,7 @@
             "name": "schema",
             "type": {
               "option": {
-                "defined": "ExternalPluginSchema"
+                "defined": "ExternalPluginAdapterSchema"
               }
             }
           }
@@ -2369,7 +2387,7 @@
             "name": "schema",
             "type": {
               "option": {
-                "defined": "ExternalPluginSchema"
+                "defined": "ExternalPluginAdapterSchema"
               }
             }
           }
@@ -2412,7 +2430,7 @@
             "type": "publicKey"
           },
           {
-            "name": "pda",
+            "name": "baseAddressConfig",
             "type": {
               "option": {
                 "defined": "ExtraAccount"
@@ -2461,7 +2479,7 @@
             }
           },
           {
-            "name": "pda",
+            "name": "baseAddressConfig",
             "type": {
               "option": {
                 "defined": "ExtraAccount"
@@ -2502,7 +2520,7 @@
             }
           },
           {
-            "name": "pda",
+            "name": "baseAddressConfig",
             "type": {
               "option": {
                 "defined": "ExtraAccount"
@@ -2578,7 +2596,7 @@
           {
             "name": "pluginType",
             "type": {
-              "defined": "ExternalPluginType"
+              "defined": "ExternalPluginAdapterType"
             }
           },
           {
@@ -2687,28 +2705,28 @@
       }
     },
     {
-      "name": "AddExternalPluginV1Args",
+      "name": "AddExternalPluginAdapterV1Args",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "initInfo",
             "type": {
-              "defined": "ExternalPluginInitInfo"
+              "defined": "ExternalPluginAdapterInitInfo"
             }
           }
         ]
       }
     },
     {
-      "name": "AddCollectionExternalPluginV1Args",
+      "name": "AddCollectionExternalPluginAdapterV1Args",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "initInfo",
             "type": {
-              "defined": "ExternalPluginInitInfo"
+              "defined": "ExternalPluginAdapterInitInfo"
             }
           }
         ]
@@ -2899,11 +2917,11 @@
             }
           },
           {
-            "name": "externalPlugins",
+            "name": "externalPluginAdapters",
             "type": {
               "option": {
                 "vec": {
-                  "defined": "ExternalPluginInitInfo"
+                  "defined": "ExternalPluginAdapterInitInfo"
                 }
               }
             }
@@ -2961,11 +2979,11 @@
             }
           },
           {
-            "name": "externalPlugins",
+            "name": "externalPluginAdapters",
             "type": {
               "option": {
                 "vec": {
-                  "defined": "ExternalPluginInitInfo"
+                  "defined": "ExternalPluginAdapterInitInfo"
                 }
               }
             }
@@ -2988,28 +3006,28 @@
       }
     },
     {
-      "name": "RemoveExternalPluginV1Args",
+      "name": "RemoveExternalPluginAdapterV1Args",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "key",
             "type": {
-              "defined": "ExternalPluginKey"
+              "defined": "ExternalPluginAdapterKey"
             }
           }
         ]
       }
     },
     {
-      "name": "RemoveCollectionExternalPluginV1Args",
+      "name": "RemoveCollectionExternalPluginAdapterV1Args",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "key",
             "type": {
-              "defined": "ExternalPluginKey"
+              "defined": "ExternalPluginAdapterKey"
             }
           }
         ]
@@ -3136,40 +3154,40 @@
       }
     },
     {
-      "name": "UpdateExternalPluginV1Args",
+      "name": "UpdateExternalPluginAdapterV1Args",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "key",
             "type": {
-              "defined": "ExternalPluginKey"
+              "defined": "ExternalPluginAdapterKey"
             }
           },
           {
             "name": "updateInfo",
             "type": {
-              "defined": "ExternalPluginUpdateInfo"
+              "defined": "ExternalPluginAdapterUpdateInfo"
             }
           }
         ]
       }
     },
     {
-      "name": "UpdateCollectionExternalPluginV1Args",
+      "name": "UpdateCollectionExternalPluginAdapterV1Args",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "key",
             "type": {
-              "defined": "ExternalPluginKey"
+              "defined": "ExternalPluginAdapterKey"
             }
           },
           {
             "name": "updateInfo",
             "type": {
-              "defined": "ExternalPluginUpdateInfo"
+              "defined": "ExternalPluginAdapterUpdateInfo"
             }
           }
         ]
@@ -3204,37 +3222,41 @@
       }
     },
     {
-      "name": "WriteExternalPluginDataV1Args",
+      "name": "WriteExternalPluginAdapterDataV1Args",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "key",
             "type": {
-              "defined": "ExternalPluginKey"
+              "defined": "ExternalPluginAdapterKey"
             }
           },
           {
             "name": "data",
-            "type": "bytes"
+            "type": {
+              "option": "bytes"
+            }
           }
         ]
       }
     },
     {
-      "name": "WriteCollectionExternalPluginDataV1Args",
+      "name": "WriteCollectionExternalPluginAdapterDataV1Args",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "key",
             "type": {
-              "defined": "ExternalPluginKey"
+              "defined": "ExternalPluginAdapterKey"
             }
           },
           {
             "name": "data",
-            "type": "bytes"
+            "type": {
+              "option": "bytes"
+            }
           }
         ]
       }
@@ -3489,7 +3511,7 @@
       }
     },
     {
-      "name": "ExternalPluginType",
+      "name": "ExternalPluginAdapterType",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3506,7 +3528,7 @@
       }
     },
     {
-      "name": "ExternalPlugin",
+      "name": "ExternalPluginAdapter",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3639,6 +3661,12 @@
                 }
               },
               {
+                "name": "custom_program_id",
+                "type": {
+                  "option": "publicKey"
+                }
+              },
+              {
                 "name": "is_signer",
                 "type": "bool"
               },
@@ -3701,7 +3729,7 @@
       }
     },
     {
-      "name": "ExternalPluginSchema",
+      "name": "ExternalPluginAdapterSchema",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3718,7 +3746,7 @@
       }
     },
     {
-      "name": "ExternalPluginInitInfo",
+      "name": "ExternalPluginAdapterInitInfo",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3750,7 +3778,7 @@
       }
     },
     {
-      "name": "ExternalPluginUpdateInfo",
+      "name": "ExternalPluginAdapterUpdateInfo",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3782,7 +3810,7 @@
       }
     },
     {
-      "name": "ExternalPluginKey",
+      "name": "ExternalPluginAdapterKey",
       "type": {
         "kind": "enum",
         "variants": [
@@ -3871,6 +3899,9 @@
       "type": {
         "kind": "enum",
         "variants": [
+          {
+            "name": "Uninitialized"
+          },
           {
             "name": "V1",
             "fields": [
@@ -4178,13 +4209,13 @@
     },
     {
       "code": 31,
-      "name": "ExternalPluginNotFound",
-      "msg": "External Plugin not found"
+      "name": "ExternalPluginAdapterNotFound",
+      "msg": "External PluginExternalPluginAdapter not found"
     },
     {
       "code": 32,
-      "name": "ExternalPluginAlreadyExists",
-      "msg": "External Plugin already exists"
+      "name": "ExternalPluginAdapterAlreadyExists",
+      "msg": "External PluginExternalPluginAdapter already exists"
     },
     {
       "code": 33,
@@ -4193,23 +4224,43 @@
     },
     {
       "code": 34,
-      "name": "MissingExternalAccount",
-      "msg": "Missing account needed for external plugin"
+      "name": "MissingExternalPluginAdapterAccount",
+      "msg": "Missing account needed for external plugin adapter"
     },
     {
       "code": 35,
       "name": "OracleCanRejectOnly",
-      "msg": "Oracle external plugin can only be configured to reject"
+      "msg": "Oracle external plugin adapter can only be configured to reject"
     },
     {
       "code": 36,
       "name": "RequiresLifecycleCheck",
-      "msg": "External plugin must have at least one lifecycle check"
+      "msg": "External plugin adapter must have at least one lifecycle check"
     },
     {
       "code": 37,
       "name": "DuplicateLifecycleChecks",
-      "msg": "Duplicate lifecycle checks were provided for external plugin "
+      "msg": "Duplicate lifecycle checks were provided for external plugin adapter "
+    },
+    {
+      "code": 38,
+      "name": "InvalidOracleAccountData",
+      "msg": "Could not read from oracle account"
+    },
+    {
+      "code": 39,
+      "name": "UninitializedOracleAccount",
+      "msg": "Oracle account is uninitialized"
+    },
+    {
+      "code": 40,
+      "name": "TwoDataSources",
+      "msg": "Two data sources provided, only one is allowed"
+    },
+    {
+      "code": 41,
+      "name": "UnsupportedOperation",
+      "msg": "External Plugin does not support this operation"
     }
   ],
   "metadata": {

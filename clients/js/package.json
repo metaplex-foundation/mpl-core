@@ -1,6 +1,6 @@
 {
   "name": "@metaplex-foundation/mpl-core",
-  "version": "0.4.7",
+  "version": "1.0.0-alpha.1",
   "description": "Digital Assets",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@ava/typescript": "^5.0.0",
-    "@metaplex-foundation/mpl-core-oracle-example": "^0.0.1",
+    "@metaplex-foundation/mpl-core-oracle-example": "^0.0.2",
     "@metaplex-foundation/mpl-toolbox": "^0.8.0",
     "@metaplex-foundation/umi": "^0.8.10",
     "@metaplex-foundation/umi-bundle-tests": "^0.8.10",

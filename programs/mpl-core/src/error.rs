@@ -133,39 +133,47 @@ pub enum MplCoreError {
     #[error("Invalid Log Wrapper Program")]
     InvalidLogWrapperProgram,
 
-    /// 31 - External Plugin not found
-    #[error("External Plugin not found")]
-    ExternalPluginNotFound,
+    /// 31 - External PluginExternalPluginAdapter not found
+    #[error("External PluginExternalPluginAdapter not found")]
+    ExternalPluginAdapterNotFound,
 
-    /// 32 - External Plugin already exists
-    #[error("External Plugin already exists")]
-    ExternalPluginAlreadyExists,
+    /// 32 - External PluginExternalPluginAdapter already exists
+    #[error("External PluginExternalPluginAdapter already exists")]
+    ExternalPluginAdapterAlreadyExists,
 
     /// 33 - Missing asset needed for extra account PDA derivation
     #[error("Missing asset needed for extra account PDA derivation")]
     MissingAsset,
 
-    /// 34 - Missing account needed for external plugin
-    #[error("Missing account needed for external plugin")]
-    MissingExternalAccount,
+    /// 34 - Missing account needed for external plugin adapter
+    #[error("Missing account needed for external plugin adapter")]
+    MissingExternalPluginAdapterAccount,
 
-    /// 35 - Oracle external plugin can only be configured to reject
-    #[error("Oracle external plugin can only be configured to reject")]
+    /// 35 - Oracle external plugin adapter can only be configured to reject
+    #[error("Oracle external plugin adapter can only be configured to reject")]
     OracleCanRejectOnly,
 
-    /// 36 - External plugin must have at least one lifecycle check
-    #[error("External plugin must have at least one lifecycle check")]
+    /// 36 - External plugin adapter must have at least one lifecycle check
+    #[error("External plugin adapter must have at least one lifecycle check")]
     RequiresLifecycleCheck,
 
-    /// 37 - Duplicate lifecycle checks were provided for external plugin
-    #[error("Duplicate lifecycle checks were provided for external plugin ")]
+    /// 37 - Duplicate lifecycle checks were provided for external plugin adapter
+    #[error("Duplicate lifecycle checks were provided for external plugin adapter ")]
     DuplicateLifecycleChecks,
 
-    /// 38 - Two data sources provided, only one is allowed
+    /// 38 - Could not read from oracle account
+    #[error("Could not read from oracle account")]
+    InvalidOracleAccountData,
+
+    /// 39 - Oracle account is uninitialized
+    #[error("Oracle account is uninitialized")]
+    UninitializedOracleAccount,
+
+    /// 40 - Two data sources provided, only one is allowed
     #[error("Two data sources provided, only one is allowed")]
     TwoDataSources,
 
-    /// 39 - External Plugin does not support this operation
+    /// 41 - External Plugin does not support this operation
     #[error("External Plugin does not support this operation")]
     UnsupportedOperation,
 }

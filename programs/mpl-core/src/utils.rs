@@ -12,10 +12,11 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     plugins::{
-        create_meta_idempotent, initialize_plugin, validate_external_plugin_checks,
-        validate_plugin_checks, CheckResult, ExternalCheckResultBits, ExternalPlugin,
-        ExternalPluginKey, ExternalRegistryRecord, HookableLifecycleEvent, Plugin, PluginHeaderV1,
-        PluginRegistryV1, PluginType, PluginValidationContext, RegistryRecord, ValidationResult,
+        create_meta_idempotent, initialize_plugin, validate_external_plugin_adapter_checks,
+        validate_plugin_checks, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
+        ExternalPluginAdapterKey, ExternalRegistryRecord, HookableLifecycleEvent, Plugin,
+        PluginHeaderV1, PluginRegistryV1, PluginType, PluginValidationContext, RegistryRecord,
+        ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, Compressible, CompressionProof, CoreAsset, DataBlob,
@@ -207,7 +208,7 @@ pub(crate) fn validate_asset_permissions<'a>(
     collection: Option<&'a AccountInfo<'a>>,
     new_owner: Option<&'a AccountInfo<'a>>,
     new_plugin: Option<&Plugin>,
-    new_external_plugin: Option<&ExternalPlugin>,
+    new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
     asset_check_fp: fn() -> CheckResult,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
@@ -215,25 +216,28 @@ pub(crate) fn validate_asset_permissions<'a>(
         &AssetV1,
         &AccountInfo,
         Option<&Plugin>,
-        Option<&ExternalPlugin>,
+        Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError>,
     collection_validate_fp: fn(
         &CollectionV1,
         &AccountInfo,
         Option<&Plugin>,
-        Option<&ExternalPlugin>,
+        Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
         &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
-    external_plugin_validate_fp: Option<
-        fn(&ExternalPlugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
+    external_plugin_adapter_validate_fp: Option<
+        fn(
+            &ExternalPluginAdapter,
+            &PluginValidationContext,
+        ) -> Result<ValidationResult, ProgramError>,
     >,
     hookable_lifecycle_event: Option<HookableLifecycleEvent>,
 ) -> Result<(AssetV1, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
-    if external_plugin_validate_fp.is_some() && hookable_lifecycle_event.is_none()
-        || external_plugin_validate_fp.is_none() && hookable_lifecycle_event.is_some()
+    if external_plugin_adapter_validate_fp.is_some() && hookable_lifecycle_event.is_none()
+        || external_plugin_adapter_validate_fp.is_none() && hookable_lifecycle_event.is_some()
     {
         panic!("Missing function parameters to validate_asset_permissions");
     }
@@ -255,7 +259,7 @@ pub(crate) fn validate_asset_permissions<'a>(
 
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
     let mut external_checks: BTreeMap<
-        ExternalPluginKey,
+        ExternalPluginAdapterKey,
         (Key, ExternalCheckResultBits, ExternalRegistryRecord),
     > = BTreeMap::new();
 
@@ -275,7 +279,7 @@ pub(crate) fn validate_asset_permissions<'a>(
             r.check_registry(Key::CollectionV1, plugin_check_fp, &mut checks);
 
             if let Some(lifecycle_event) = &hookable_lifecycle_event {
-                r.check_external_registry(
+                r.check_adapter_registry(
                     collection_info,
                     Key::CollectionV1,
                     lifecycle_event,
@@ -290,7 +294,7 @@ pub(crate) fn validate_asset_permissions<'a>(
     if let Some(registry) = plugin_registry.as_ref() {
         registry.check_registry(Key::AssetV1, plugin_check_fp, &mut checks);
         if let Some(lifecycle_event) = &hookable_lifecycle_event {
-            registry.check_external_registry(
+            registry.check_adapter_registry(
                 asset,
                 Key::AssetV1,
                 lifecycle_event,
@@ -307,7 +311,7 @@ pub(crate) fn validate_asset_permissions<'a>(
             &deserialized_asset,
             authority_info,
             new_plugin,
-            new_external_plugin,
+            new_external_plugin_adapter,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
@@ -323,7 +327,7 @@ pub(crate) fn validate_asset_permissions<'a>(
             &CollectionV1::load(collection.ok_or(MplCoreError::MissingCollection)?, 0)?,
             authority_info,
             new_plugin,
-            new_external_plugin,
+            new_external_plugin_adapter,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
@@ -374,8 +378,8 @@ pub(crate) fn validate_asset_permissions<'a>(
         }
     };
 
-    if let Some(external_plugin_validate_fp) = external_plugin_validate_fp {
-        match validate_external_plugin_checks(
+    if let Some(external_plugin_adapter_validate_fp) = external_plugin_adapter_validate_fp {
+        match validate_external_plugin_adapter_checks(
             Key::CollectionV1,
             accounts,
             &external_checks,
@@ -385,16 +389,16 @@ pub(crate) fn validate_asset_permissions<'a>(
             Some(asset),
             collection,
             &resolved_authorities,
-            external_plugin_validate_fp,
+            external_plugin_adapter_validate_fp,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
             ValidationResult::Pass => (),
-            // Force approved will not be possible from external plugins.
+            // Force approved will not be possible from external plugin adapters.
             ValidationResult::ForceApproved => unreachable!(),
         };
 
-        match validate_external_plugin_checks(
+        match validate_external_plugin_adapter_checks(
             Key::AssetV1,
             accounts,
             &external_checks,
@@ -404,12 +408,12 @@ pub(crate) fn validate_asset_permissions<'a>(
             Some(asset),
             collection,
             &resolved_authorities,
-            external_plugin_validate_fp,
+            external_plugin_adapter_validate_fp,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
             ValidationResult::Pass => (),
-            // Force approved will not be possible from external plugins.
+            // Force approved will not be possible from external plugin adapters.
             ValidationResult::ForceApproved => unreachable!(),
         };
     }
@@ -430,21 +434,24 @@ pub(crate) fn validate_collection_permissions<'a>(
     authority_info: &'a AccountInfo<'a>,
     collection: &'a AccountInfo<'a>,
     new_plugin: Option<&Plugin>,
-    new_external_plugin: Option<&ExternalPlugin>,
+    new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
     collection_validate_fp: fn(
         &CollectionV1,
         &AccountInfo,
         Option<&Plugin>,
-        Option<&ExternalPlugin>,
+        Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
         &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
-    external_plugin_validate_fp: Option<
-        fn(&ExternalPlugin, &PluginValidationContext) -> Result<ValidationResult, ProgramError>,
+    external_plugin_adapter_validate_fp: Option<
+        fn(
+            &ExternalPluginAdapter,
+            &PluginValidationContext,
+        ) -> Result<ValidationResult, ProgramError>,
     >,
     hookable_lifecycle_event: Option<HookableLifecycleEvent>,
 ) -> Result<
@@ -455,8 +462,8 @@ pub(crate) fn validate_collection_permissions<'a>(
     ),
     ProgramError,
 > {
-    if external_plugin_validate_fp.is_some() && hookable_lifecycle_event.is_none()
-        || external_plugin_validate_fp.is_none() && hookable_lifecycle_event.is_some()
+    if external_plugin_adapter_validate_fp.is_some() && hookable_lifecycle_event.is_none()
+        || external_plugin_adapter_validate_fp.is_none() && hookable_lifecycle_event.is_some()
     {
         panic!("Missing function parameters to validate_asset_permissions");
     }
@@ -467,7 +474,7 @@ pub(crate) fn validate_collection_permissions<'a>(
         resolve_pubkey_to_authorities_collection(authority_info, collection)?;
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
     let mut external_checks: BTreeMap<
-        ExternalPluginKey,
+        ExternalPluginAdapterKey,
         (Key, ExternalCheckResultBits, ExternalRegistryRecord),
     > = BTreeMap::new();
 
@@ -477,7 +484,7 @@ pub(crate) fn validate_collection_permissions<'a>(
     if let Some(registry) = plugin_registry.as_ref() {
         registry.check_registry(Key::CollectionV1, plugin_check_fp, &mut checks);
         if let Some(lifecycle_event) = hookable_lifecycle_event {
-            registry.check_external_registry(
+            registry.check_adapter_registry(
                 collection,
                 Key::CollectionV1,
                 &lifecycle_event,
@@ -501,7 +508,7 @@ pub(crate) fn validate_collection_permissions<'a>(
                 &deserialized_collection,
                 authority_info,
                 new_plugin,
-                new_external_plugin,
+                new_external_plugin_adapter,
             )?,
             _ => return Err(MplCoreError::IncorrectAccount.into()),
         };
@@ -535,8 +542,8 @@ pub(crate) fn validate_collection_permissions<'a>(
         }
     };
 
-    if let Some(external_plugin_validate_fp) = external_plugin_validate_fp {
-        match validate_external_plugin_checks(
+    if let Some(external_plugin_adapter_validate_fp) = external_plugin_adapter_validate_fp {
+        match validate_external_plugin_adapter_checks(
             Key::CollectionV1,
             accounts,
             &external_checks,
@@ -546,12 +553,12 @@ pub(crate) fn validate_collection_permissions<'a>(
             None,
             Some(collection),
             &resolved_authorities,
-            external_plugin_validate_fp,
+            external_plugin_adapter_validate_fp,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
             ValidationResult::Pass => (),
-            // Force approved will not be possible from external plugins.
+            // Force approved will not be possible from external plugin adapters.
             ValidationResult::ForceApproved => unreachable!(),
         };
     }

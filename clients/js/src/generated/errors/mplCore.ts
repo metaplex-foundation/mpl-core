@@ -433,33 +433,40 @@ export class InvalidLogWrapperProgramError extends ProgramError {
 codeToErrorMap.set(0x1e, InvalidLogWrapperProgramError);
 nameToErrorMap.set('InvalidLogWrapperProgram', InvalidLogWrapperProgramError);
 
-/** ExternalPluginNotFound: External Plugin not found */
-export class ExternalPluginNotFoundError extends ProgramError {
-  override readonly name: string = 'ExternalPluginNotFound';
+/** ExternalPluginAdapterNotFound: External PluginExternalPluginAdapter not found */
+export class ExternalPluginAdapterNotFoundError extends ProgramError {
+  override readonly name: string = 'ExternalPluginAdapterNotFound';
 
   readonly code: number = 0x1f; // 31
 
   constructor(program: Program, cause?: Error) {
-    super('External Plugin not found', program, cause);
+    super('External PluginExternalPluginAdapter not found', program, cause);
   }
 }
-codeToErrorMap.set(0x1f, ExternalPluginNotFoundError);
-nameToErrorMap.set('ExternalPluginNotFound', ExternalPluginNotFoundError);
+codeToErrorMap.set(0x1f, ExternalPluginAdapterNotFoundError);
+nameToErrorMap.set(
+  'ExternalPluginAdapterNotFound',
+  ExternalPluginAdapterNotFoundError
+);
 
-/** ExternalPluginAlreadyExists: External Plugin already exists */
-export class ExternalPluginAlreadyExistsError extends ProgramError {
-  override readonly name: string = 'ExternalPluginAlreadyExists';
+/** ExternalPluginAdapterAlreadyExists: External PluginExternalPluginAdapter already exists */
+export class ExternalPluginAdapterAlreadyExistsError extends ProgramError {
+  override readonly name: string = 'ExternalPluginAdapterAlreadyExists';
 
   readonly code: number = 0x20; // 32
 
   constructor(program: Program, cause?: Error) {
-    super('External Plugin already exists', program, cause);
+    super(
+      'External PluginExternalPluginAdapter already exists',
+      program,
+      cause
+    );
   }
 }
-codeToErrorMap.set(0x20, ExternalPluginAlreadyExistsError);
+codeToErrorMap.set(0x20, ExternalPluginAdapterAlreadyExistsError);
 nameToErrorMap.set(
-  'ExternalPluginAlreadyExists',
-  ExternalPluginAlreadyExistsError
+  'ExternalPluginAdapterAlreadyExists',
+  ExternalPluginAdapterAlreadyExistsError
 );
 
 /** MissingAsset: Missing asset needed for extra account PDA derivation */
@@ -479,20 +486,23 @@ export class MissingAssetError extends ProgramError {
 codeToErrorMap.set(0x21, MissingAssetError);
 nameToErrorMap.set('MissingAsset', MissingAssetError);
 
-/** MissingExternalAccount: Missing account needed for external plugin */
-export class MissingExternalAccountError extends ProgramError {
-  override readonly name: string = 'MissingExternalAccount';
+/** MissingExternalPluginAdapterAccount: Missing account needed for external plugin adapter */
+export class MissingExternalPluginAdapterAccountError extends ProgramError {
+  override readonly name: string = 'MissingExternalPluginAdapterAccount';
 
   readonly code: number = 0x22; // 34
 
   constructor(program: Program, cause?: Error) {
-    super('Missing account needed for external plugin', program, cause);
+    super('Missing account needed for external plugin adapter', program, cause);
   }
 }
-codeToErrorMap.set(0x22, MissingExternalAccountError);
-nameToErrorMap.set('MissingExternalAccount', MissingExternalAccountError);
+codeToErrorMap.set(0x22, MissingExternalPluginAdapterAccountError);
+nameToErrorMap.set(
+  'MissingExternalPluginAdapterAccount',
+  MissingExternalPluginAdapterAccountError
+);
 
-/** OracleCanRejectOnly: Oracle external plugin can only be configured to reject */
+/** OracleCanRejectOnly: Oracle external plugin adapter can only be configured to reject */
 export class OracleCanRejectOnlyError extends ProgramError {
   override readonly name: string = 'OracleCanRejectOnly';
 
@@ -500,7 +510,7 @@ export class OracleCanRejectOnlyError extends ProgramError {
 
   constructor(program: Program, cause?: Error) {
     super(
-      'Oracle external plugin can only be configured to reject',
+      'Oracle external plugin adapter can only be configured to reject',
       program,
       cause
     );
@@ -509,7 +519,7 @@ export class OracleCanRejectOnlyError extends ProgramError {
 codeToErrorMap.set(0x23, OracleCanRejectOnlyError);
 nameToErrorMap.set('OracleCanRejectOnly', OracleCanRejectOnlyError);
 
-/** RequiresLifecycleCheck: External plugin must have at least one lifecycle check */
+/** RequiresLifecycleCheck: External plugin adapter must have at least one lifecycle check */
 export class RequiresLifecycleCheckError extends ProgramError {
   override readonly name: string = 'RequiresLifecycleCheck';
 
@@ -517,7 +527,7 @@ export class RequiresLifecycleCheckError extends ProgramError {
 
   constructor(program: Program, cause?: Error) {
     super(
-      'External plugin must have at least one lifecycle check',
+      'External plugin adapter must have at least one lifecycle check',
       program,
       cause
     );
@@ -526,7 +536,7 @@ export class RequiresLifecycleCheckError extends ProgramError {
 codeToErrorMap.set(0x24, RequiresLifecycleCheckError);
 nameToErrorMap.set('RequiresLifecycleCheck', RequiresLifecycleCheckError);
 
-/** DuplicateLifecycleChecks: Duplicate lifecycle checks were provided for external plugin  */
+/** DuplicateLifecycleChecks: Duplicate lifecycle checks were provided for external plugin adapter  */
 export class DuplicateLifecycleChecksError extends ProgramError {
   override readonly name: string = 'DuplicateLifecycleChecks';
 
@@ -534,7 +544,7 @@ export class DuplicateLifecycleChecksError extends ProgramError {
 
   constructor(program: Program, cause?: Error) {
     super(
-      'Duplicate lifecycle checks were provided for external plugin ',
+      'Duplicate lifecycle checks were provided for external plugin adapter ',
       program,
       cause
     );
@@ -542,6 +552,61 @@ export class DuplicateLifecycleChecksError extends ProgramError {
 }
 codeToErrorMap.set(0x25, DuplicateLifecycleChecksError);
 nameToErrorMap.set('DuplicateLifecycleChecks', DuplicateLifecycleChecksError);
+
+/** InvalidOracleAccountData: Could not read from oracle account */
+export class InvalidOracleAccountDataError extends ProgramError {
+  override readonly name: string = 'InvalidOracleAccountData';
+
+  readonly code: number = 0x26; // 38
+
+  constructor(program: Program, cause?: Error) {
+    super('Could not read from oracle account', program, cause);
+  }
+}
+codeToErrorMap.set(0x26, InvalidOracleAccountDataError);
+nameToErrorMap.set('InvalidOracleAccountData', InvalidOracleAccountDataError);
+
+/** UninitializedOracleAccount: Oracle account is uninitialized */
+export class UninitializedOracleAccountError extends ProgramError {
+  override readonly name: string = 'UninitializedOracleAccount';
+
+  readonly code: number = 0x27; // 39
+
+  constructor(program: Program, cause?: Error) {
+    super('Oracle account is uninitialized', program, cause);
+  }
+}
+codeToErrorMap.set(0x27, UninitializedOracleAccountError);
+nameToErrorMap.set(
+  'UninitializedOracleAccount',
+  UninitializedOracleAccountError
+);
+
+/** TwoDataSources: Two data sources provided, only one is allowed */
+export class TwoDataSourcesError extends ProgramError {
+  override readonly name: string = 'TwoDataSources';
+
+  readonly code: number = 0x28; // 40
+
+  constructor(program: Program, cause?: Error) {
+    super('Two data sources provided, only one is allowed', program, cause);
+  }
+}
+codeToErrorMap.set(0x28, TwoDataSourcesError);
+nameToErrorMap.set('TwoDataSources', TwoDataSourcesError);
+
+/** UnsupportedOperation: External Plugin does not support this operation */
+export class UnsupportedOperationError extends ProgramError {
+  override readonly name: string = 'UnsupportedOperation';
+
+  readonly code: number = 0x29; // 41
+
+  constructor(program: Program, cause?: Error) {
+    super('External Plugin does not support this operation', program, cause);
+  }
+}
+codeToErrorMap.set(0x29, UnsupportedOperationError);
+nameToErrorMap.set('UnsupportedOperation', UnsupportedOperationError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

@@ -9,8 +9,8 @@ use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
         AddBlocker, Attributes, BurnDelegate, DataStore, Edition, ExternalCheckResult,
-        ExternalPlugin, ExternalPluginKey, FreezeDelegate, ImmutableMetadata, Key, LifecycleHook,
-        MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
+        ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate, ImmutableMetadata, Key,
+        LifecycleHook, MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
         PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
     },
 };
@@ -165,7 +165,7 @@ pub struct PluginsList {
 }
 
 #[derive(Debug, Default)]
-pub struct ExternalPluginsList {
+pub struct ExternalPluginAdaptersList {
     pub lifecycle_hooks: Vec<LifecycleHook>,
     pub oracles: Vec<Oracle>,
     pub data_stores: Vec<DataStore>,
@@ -175,7 +175,7 @@ pub struct ExternalPluginsList {
 pub struct Asset {
     pub base: BaseAssetV1,
     pub plugin_list: PluginsList,
-    pub external_plugin_list: ExternalPluginsList,
+    pub external_plugin_adapter_list: ExternalPluginAdaptersList,
     pub plugin_header: Option<PluginHeaderV1>,
 }
 
@@ -201,7 +201,7 @@ impl RegistryRecordSafe {
     }
 }
 
-/// External Registry record that can be used when the plugin type is not known (i.e. a `ExternalPluginType` that
+///ExternalPluginAdapter Registry record that can be used when the plugin type is not known (i.e. a `ExternalPluginAdapterType` that
 /// is too new for this client to know about).
 pub struct ExternalRegistryRecordSafe {
     pub plugin_type: u8,
@@ -220,7 +220,7 @@ impl ExternalRegistryRecordSafe {
 }
 
 /// Plugin registry that an account can safely be deserialized into even if some plugins are
-/// not known.  Note this skips over external plugins for now, and will be updated when those
+/// not known.  Note this skips over external plugin adapters for now, and will be updated when those
 /// are defined.
 pub struct PluginRegistryV1Safe {
     pub _key: Key,
@@ -282,15 +282,17 @@ impl PluginRegistryV1Safe {
     }
 }
 
-impl From<&ExternalPlugin> for ExternalPluginKey {
-    fn from(plugin: &ExternalPlugin) -> Self {
+impl From<&ExternalPluginAdapter> for ExternalPluginAdapterKey {
+    fn from(plugin: &ExternalPluginAdapter) -> Self {
         match plugin {
-            ExternalPlugin::DataStore(data_store) => {
-                ExternalPluginKey::DataStore(data_store.data_authority.clone())
+            ExternalPluginAdapter::DataStore(data_store) => {
+                ExternalPluginAdapterKey::DataStore(data_store.data_authority.clone())
             }
-            ExternalPlugin::Oracle(oracle) => ExternalPluginKey::Oracle(oracle.base_address),
-            ExternalPlugin::LifecycleHook(lifecycle_hook) => {
-                ExternalPluginKey::LifecycleHook(lifecycle_hook.hooked_program)
+            ExternalPluginAdapter::Oracle(oracle) => {
+                ExternalPluginAdapterKey::Oracle(oracle.base_address)
+            }
+            ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
+                ExternalPluginAdapterKey::LifecycleHook(lifecycle_hook.hooked_program)
             }
         }
     }

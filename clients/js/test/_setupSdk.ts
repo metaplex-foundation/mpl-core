@@ -13,7 +13,7 @@ import {
   CollectionV1,
   AssetV1,
   PluginAuthorityPairArgsV2,
-  ExternalPluginInitInfoArgs,
+  ExternalPluginAdapterInitInfoArgs,
   create,
   createCollection as baseCreateCollection,
 } from '../src';
@@ -29,7 +29,7 @@ export type CreateAssetHelperArgs = {
   authority?: Signer;
   updateAuthority?: PublicKey | Signer;
   collection?: PublicKey | CollectionV1;
-  plugins?: (ExternalPluginInitInfoArgs | PluginAuthorityPairArgsV2)[];
+  plugins?: (ExternalPluginAdapterInitInfoArgs | PluginAuthorityPairArgsV2)[];
 };
 export const createAsset = async (
   umi: Umi,
@@ -69,7 +69,7 @@ export type CreateCollectionHelperArgs = {
   name?: string;
   uri?: string;
   updateAuthority?: PublicKey | Signer;
-  plugins?: (ExternalPluginInitInfoArgs | PluginAuthorityPairArgsV2)[];
+  plugins?: (ExternalPluginAdapterInitInfoArgs | PluginAuthorityPairArgsV2)[];
 };
 
 export const createCollection = async (

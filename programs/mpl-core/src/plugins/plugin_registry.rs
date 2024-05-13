@@ -9,8 +9,8 @@ use crate::{
 };
 
 use super::{
-    CheckResult, ExternalCheckResult, ExternalCheckResultBits, ExternalPluginKey,
-    ExternalPluginType, ExternalPluginUpdateInfo, HookableLifecycleEvent, PluginType,
+    CheckResult, ExternalCheckResult, ExternalCheckResultBits, ExternalPluginAdapterKey,
+    ExternalPluginAdapterType, ExternalPluginAdapterUpdateInfo, HookableLifecycleEvent, PluginType,
 };
 
 /// The Plugin Registry stores a record of all plugins, their location, and their authorities.
@@ -21,7 +21,7 @@ pub struct PluginRegistryV1 {
     pub key: Key, // 1
     /// The registry of all plugins.
     pub registry: Vec<RegistryRecord>, // 4
-    /// The registry of all external, third party, plugins.
+    /// The registry of all adapter, third party, plugins.
     pub external_registry: Vec<ExternalRegistryRecord>, // 4
 }
 
@@ -41,13 +41,13 @@ impl PluginRegistryV1 {
         }
     }
 
-    pub(crate) fn check_external_registry(
+    pub(crate) fn check_adapter_registry(
         &self,
         account: &AccountInfo,
         key: Key,
         lifecycle_event: &HookableLifecycleEvent,
         result: &mut BTreeMap<
-            ExternalPluginKey,
+            ExternalPluginAdapterKey,
             (Key, ExternalCheckResultBits, ExternalRegistryRecord),
         >,
     ) -> ProgramResult {
@@ -55,7 +55,7 @@ impl PluginRegistryV1 {
             if let Some(lifecycle_checks) = &record.lifecycle_checks {
                 for (event, check_result) in lifecycle_checks {
                     if event == lifecycle_event {
-                        let plugin_key = ExternalPluginKey::from_record(account, record)?;
+                        let plugin_key = ExternalPluginAdapterKey::from_record(account, record)?;
 
                         result.insert(
                             plugin_key,
@@ -113,11 +113,11 @@ impl RegistryRecord {
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct ExternalRegistryRecord {
-    /// The external, third party plugin type.
-    pub plugin_type: ExternalPluginType,
-    /// The authority of the external plugin.
+    /// The adapter, third party plugin type.
+    pub plugin_type: ExternalPluginAdapterType,
+    /// The authority of the external plugin adapter.
     pub authority: Authority,
-    /// The lifecyle events for which the the external plugin is active.
+    /// The lifecyle events for which the the external plugin adapter is active.
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// The offset to the plugin in the account.
     pub offset: usize, // 8
@@ -128,16 +128,16 @@ pub struct ExternalRegistryRecord {
 }
 
 impl ExternalRegistryRecord {
-    /// Update the external registry record with the new info, if relevant.
-    pub fn update(&mut self, update_info: &ExternalPluginUpdateInfo) -> ProgramResult {
+    /// Update the adapter registry record with the new info, if relevant.
+    pub fn update(&mut self, update_info: &ExternalPluginAdapterUpdateInfo) -> ProgramResult {
         match update_info {
-            ExternalPluginUpdateInfo::LifecycleHook(update_info) => {
+            ExternalPluginAdapterUpdateInfo::LifecycleHook(update_info) => {
                 if let Some(checks) = &update_info.lifecycle_checks {
                     validate_lifecycle_checks(checks, false)?;
                     self.lifecycle_checks = update_info.lifecycle_checks.clone()
                 }
             }
-            ExternalPluginUpdateInfo::Oracle(update_info) => {
+            ExternalPluginAdapterUpdateInfo::Oracle(update_info) => {
                 if let Some(checks) = &update_info.lifecycle_checks {
                     validate_lifecycle_checks(checks, true)?;
                     self.lifecycle_checks = update_info.lifecycle_checks.clone()
