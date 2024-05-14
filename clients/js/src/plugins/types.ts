@@ -170,18 +170,26 @@ export type MasterEditionPlugin = BasePlugin & MasterEdition;
 export type AddBlockerPlugin = BasePlugin & AddBlocker;
 export type ImmutableMetadataPlugin = BasePlugin & ImmutableMetadata;
 
-export type PluginsList = {
-  royalties?: RoyaltiesPlugin;
-  freezeDelegate?: FreezeDelegatePlugin;
-  burnDelegate?: BurnDelegatePlugin;
-  transferDelegate?: TransferDelegatePlugin;
-  updateDelegate?: UpdateDelegatePlugin;
+export type CommonPluginsList = {
   attributes?: AttributesPlugin;
+  royalties?: RoyaltiesPlugin;
+  updateDelegate?: UpdateDelegatePlugin;
   permanentFreezeDelegate?: PermanentFreezeDelegatePlugin;
   permanentTransferDelegate?: PermanentTransferDelegatePlugin;
   permanentBurnDelegate?: PermanentBurnDelegatePlugin;
-  edition?: EditionPlugin;
-  masterEdition?: MasterEditionPlugin;
   addBlocker?: AddBlockerPlugin;
   immutableMetadata?: ImmutableMetadataPlugin;
 };
+
+export type AssetPluginsList = {
+  freezeDelegate?: FreezeDelegatePlugin;
+  burnDelegate?: BurnDelegatePlugin;
+  transferDelegate?: TransferDelegatePlugin;
+  edition?: EditionPlugin;
+} & CommonPluginsList;
+
+export type CollectionPluginsList = {
+  masterEdition?: MasterEditionPlugin;
+} & CommonPluginsList;
+
+export type PluginsList = AssetPluginsList & CollectionPluginsList;

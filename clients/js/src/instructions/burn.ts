@@ -12,7 +12,7 @@ export type BurnArgs = Omit<
 };
 
 export const burn = (
-  context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs' | 'eddsa'>,
   { asset, collection, ...args }: BurnArgs
 ) => {
   const derivedExternalPluginAdapters = deriveExternalPluginAdapters(

@@ -6,9 +6,9 @@ import {
   hasAssetUpdateAuthority,
   hasPluginAddressAuthority,
 } from './authority';
-import { PluginsList } from '../plugins';
+import { AssetPluginsList } from '../plugins';
 
-export type AssetPluginKey = keyof PluginsList;
+export type AssetPluginKey = keyof AssetPluginsList;
 
 /**
  * Convert a plugin type to a key for the asset plugins.

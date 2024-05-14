@@ -98,7 +98,10 @@ export function deriveAssetPlugins(
   );
 
   return {
-    ...collection,
+    ...{
+      ...collection,
+      masterEdition: undefined, // master edition can only be on the collection
+    },
     ...asset,
     ...externalPluginAdapters,
   };
