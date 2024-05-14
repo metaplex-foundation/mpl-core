@@ -11,3 +11,4 @@ export * from './updatePlugin';
 export * from './approvePluginAuthority';
 export * from './revokePluginAuthority';
 export * from './collection';
+export * from './writeData';

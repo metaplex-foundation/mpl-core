@@ -111,7 +111,7 @@ impl RegistryRecord {
 
 /// A type to store the mapping of third party plugin type to third party plugin header and data.
 #[repr(C)]
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct ExternalRegistryRecord {
     /// The adapter, third party plugin type.
     pub plugin_type: ExternalPluginAdapterType,

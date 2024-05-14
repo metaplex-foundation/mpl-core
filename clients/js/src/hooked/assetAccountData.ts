@@ -83,6 +83,11 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
           buffer,
           Number(pluginHeader.pluginRegistryOffset)
         );
+      console.log("pluginRegistry", JSON.stringify(pluginRegistry, (key, value) =>
+        typeof value === 'bigint'
+          ? value.toString()
+          : value // return everything else unchanged
+        , 2))
 
       pluginsList = registryRecordsToPluginsList(
         pluginRegistry.registry,
@@ -94,6 +99,7 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
           pluginRegistry.externalRegistry,
           buffer
         );
+      console.log("externalPluginAdaptersList", externalPluginAdaptersList)
     }
     const updateAuth = {
       type: asset.updateAuthority.__kind,

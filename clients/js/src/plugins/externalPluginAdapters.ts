@@ -50,25 +50,25 @@ export type ExternalPluginAdaptersList = {
 
 export type ExternalPluginAdapterInitInfoArgs =
   | ({
-      type: 'Oracle';
-    } & OracleInitInfoArgs)
+    type: 'Oracle';
+  } & OracleInitInfoArgs)
   | ({
-      type: 'LifecycleHook';
-    } & LifecycleHookInitInfoArgs)
+    type: 'LifecycleHook';
+  } & LifecycleHookInitInfoArgs)
   | ({
-      type: 'DataStore';
-    } & DataStoreInitInfoArgs);
+    type: 'DataStore';
+  } & DataStoreInitInfoArgs);
 
 export type ExternalPluginAdapterUpdateInfoArgs =
   | ({
-      type: 'Oracle';
-    } & OracleUpdateInfoArgs)
+    type: 'Oracle';
+  } & OracleUpdateInfoArgs)
   | ({
-      type: 'LifecycleHook';
-    } & LifecycleHookUpdateInfoArgs)
+    type: 'LifecycleHook';
+  } & LifecycleHookUpdateInfoArgs)
   | ({
-      type: 'DataStore';
-    } & DataStoreUpdateInfoArgs);
+    type: 'DataStore';
+  } & DataStoreUpdateInfoArgs);
 
 export const externalPluginAdapterManifests = {
   Oracle: oracleManifest,
@@ -116,6 +116,8 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
       if (!result.dataStores) {
         result.dataStores = [];
       }
+      console.log("deserializedPlugin", deserializedPlugin)
+      console.log("record", record)
       result.dataStores.push({
         type: 'DataStore',
         ...mappedPlugin,

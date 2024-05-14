@@ -72,7 +72,14 @@ pub(crate) fn write_external_plugin_adapter_data<'a>(
         &mut registry,
         &authorities,
         &args.key,
-    )
+    )?;
+
+    let (_asset, _header, registry) = fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
+
+    if let Some(registry) = registry {
+        msg!("Registry: {:?}", registry);
+    }
+    Ok(())
 }
 
 #[repr(C)]
@@ -160,11 +167,19 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
         .checked_add(data_len)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
+    let record_mut = registry
+        .external_registry
+        .iter_mut()
+        .find(|r| **r == record)
+        .ok_or(MplCoreError::PluginNotFound)?;
+
     match (buffer, data) {
         (Some(buffer), None) => {
-            let size_diff = data_len
-                .checked_sub(buffer.data_len() as isize)
+            let size_diff = (buffer.data_len() as isize)
+                .checked_sub(data_len as isize)
                 .ok_or(MplCoreError::NumericalOverflow)?;
+
+            record_mut.data_len = Some(buffer.data_len());
 
             move_plugins_and_registry(
                 core.get_size(),
@@ -187,9 +202,13 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
             Ok(())
         }
         (None, Some(data)) => {
-            let size_diff = data_len
-                .checked_sub(data.len() as isize)
+            let size_diff = (data.len() as isize)
+                .checked_sub(data_len as isize)
                 .ok_or(MplCoreError::NumericalOverflow)?;
+
+            // solana_program::msg!("Registry: {:?}", registry.external_registry);
+
+            record_mut.data_len = Some(data.len());
 
             move_plugins_and_registry(
                 core.get_size(),
@@ -203,6 +222,9 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                 system_program,
             )?;
 
+            solana_program::msg!("Registry: {:?}", registry);
+
+            msg!("Copying {:?} to {:?}", data, data_offset);
             sol_memcpy(
                 &mut account.data.borrow_mut()[(data_offset as usize)..],
                 data,

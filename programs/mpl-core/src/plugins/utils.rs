@@ -324,12 +324,8 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
 
     // Note currently we are blocking adding LifecycleHook and DataStore external plugin adapters as they
     // are still in development.
-    match init_info {
-        ExternalPluginAdapterInitInfo::LifecycleHook(_)
-        | ExternalPluginAdapterInitInfo::DataStore(_) => {
-            return Err(MplCoreError::NotAvailable.into());
-        }
-        ExternalPluginAdapterInitInfo::Oracle(_) => (),
+    if let ExternalPluginAdapterInitInfo::LifecycleHook(_) = init_info {
+        return Err(MplCoreError::NotAvailable.into());
     }
 
     // You cannot add a duplicate plugin.
