@@ -11,15 +11,17 @@ import {
 
 import { isExternalPluginAdapterType } from '../../plugins/externalPluginAdapters';
 
+export type RemoveCollectionPluginArgsPlugin =
+  | {
+      type: Exclude<keyof typeof PluginType, 'Edition'>;
+    }
+  | ExternalPluginAdapterKey;
+
 export type RemoveCollectionPluginArgs = Omit<
   Parameters<typeof removeCollectionPluginV1>[1],
   'plugin' | 'pluginType'
 > & {
-  plugin:
-    | {
-        type: Exclude<keyof typeof PluginType, 'Edition'>;
-      }
-    | ExternalPluginAdapterKey;
+  plugin: RemoveCollectionPluginArgsPlugin;
 };
 
 export const removeCollectionPlugin = (

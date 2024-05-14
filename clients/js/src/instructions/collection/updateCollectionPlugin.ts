@@ -12,11 +12,15 @@ import {
 } from '../../plugins';
 import { ExternalPluginAdapterUpdateInfoArgs } from '../../plugins/externalPluginAdapters';
 
+export type UpdateCollectionPluginArgsPlugin =
+  | CollectionAllPluginArgsV2
+  | ExternalPluginAdapterUpdateInfoArgs;
+
 export type UpdateCollectionPluginArgs = Omit<
   Parameters<typeof updateCollectionPluginV1>[1],
   'plugin'
 > & {
-  plugin: CollectionAllPluginArgsV2 | ExternalPluginAdapterUpdateInfoArgs;
+  plugin: UpdateCollectionPluginArgsPlugin;
 };
 
 export const updateCollectionPlugin = (

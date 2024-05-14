@@ -11,14 +11,15 @@ import {
   isExternalPluginAdapterType,
 } from '../../plugins/externalPluginAdapters';
 
+export type CreateCollectionArgsPlugin =
+  | CollectionPluginAuthorityPairArgsV2
+  | ExternalPluginAdapterInitInfoArgs;
+
 export type CreateCollectionArgs = Omit<
   Parameters<typeof createCollectionV2>[1],
   'plugins' | 'externalPluginAdapters'
 > & {
-  plugins?: (
-    | CollectionPluginAuthorityPairArgsV2
-    | ExternalPluginAdapterInitInfoArgs
-  )[];
+  plugins?: CreateCollectionArgsPlugin[];
 };
 
 export const createCollection = (

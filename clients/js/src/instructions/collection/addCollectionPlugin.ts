@@ -14,13 +14,15 @@ import {
   isExternalPluginAdapterType,
 } from '../../plugins/externalPluginAdapters';
 
+export type AddCollectionPluginArgsPlugin =
+  | Exclude<CollectionAddablePluginAuthorityPairArgsV2, { type: 'Edition ' }>
+  | ExternalPluginAdapterInitInfoArgs;
+
 export type AddCollectionPluginArgs = Omit<
   Parameters<typeof addCollectionPluginV1>[1],
   'plugin' | 'initAuthority'
 > & {
-  plugin:
-    | Exclude<CollectionAddablePluginAuthorityPairArgsV2, { type: 'Edition ' }>
-    | ExternalPluginAdapterInitInfoArgs;
+  plugin: AddCollectionPluginArgsPlugin;
 };
 
 export const addCollectionPlugin = (
