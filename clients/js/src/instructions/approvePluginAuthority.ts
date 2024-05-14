@@ -15,7 +15,7 @@ export type ApprovePluginAuthorityArgs = Omit<
 };
 
 export const approvePluginAuthority = (
-  context: Pick<Context, 'payer' | 'programs' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   { plugin, newAuthority, ...args }: ApprovePluginAuthorityArgs
 ) =>
   approvePluginAuthorityV1(context, {

@@ -26,7 +26,7 @@ export type AddCollectionPluginArgs = Omit<
 };
 
 export const addCollectionPlugin = (
-  context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   { plugin, ...args }: AddCollectionPluginArgs
 ) => {
   if (isExternalPluginAdapterType(plugin)) {

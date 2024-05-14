@@ -13,7 +13,7 @@ export type RevokePluginAuthorityArgs = Omit<
 };
 
 export const revokePluginAuthority = (
-  context: Pick<Context, 'payer' | 'programs' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   { plugin, ...args }: RevokePluginAuthorityArgs
 ) =>
   revokePluginAuthorityV1(context, {

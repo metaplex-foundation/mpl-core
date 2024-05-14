@@ -19,10 +19,11 @@ import {
   createCollectionV1 as baseCreateCollection,
   CollectionV1,
   AssetV1,
-  PluginsList,
   PluginAuthorityPairArgs,
   UpdateAuthority,
   ExternalPluginAdaptersList,
+  AssetPluginsList,
+  CollectionPluginsList,
 } from '../src';
 
 export const createUmi = async () => (await basecreateUmi()).use(mplCore());
@@ -145,7 +146,7 @@ export const assertAsset = async (
     updateAuthority?: UpdateAuthority;
     name?: string | RegExp;
     uri?: string | RegExp;
-  } & PluginsList &
+  } & AssetPluginsList &
     ExternalPluginAdaptersList
 ) => {
   const { asset, owner, name, uri, ...rest } = input;
@@ -180,7 +181,7 @@ export const assertCollection = async (
     uri?: string | RegExp;
     numMinted?: number;
     currentSize?: number;
-  } & PluginsList &
+  } & CollectionPluginsList &
     ExternalPluginAdaptersList
 ) => {
   const { collection, name, uri, updateAuthority, ...rest } = input;

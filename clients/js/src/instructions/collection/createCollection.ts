@@ -23,7 +23,7 @@ export type CreateCollectionArgs = Omit<
 };
 
 export const createCollection = (
-  context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   { plugins, ...args }: CreateCollectionArgs
 ) => {
   const firstPartyPlugins: CollectionPluginAuthorityPairArgsV2[] = [];

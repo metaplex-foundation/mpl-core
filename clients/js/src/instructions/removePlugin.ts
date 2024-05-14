@@ -24,7 +24,7 @@ export type RemovePluginArgs = Omit<
 };
 
 export const removePlugin = (
-  context: Pick<Context, 'payer' | 'programs' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   { plugin, ...args }: RemovePluginArgs
 ) => {
   if (isExternalPluginAdapterType(plugin)) {

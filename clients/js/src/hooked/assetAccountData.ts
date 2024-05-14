@@ -13,7 +13,7 @@ import {
 } from '../generated/types/assetV1AccountData';
 
 import {
-  PluginsList,
+  AssetPluginsList,
   registryRecordsToPluginsList,
   UpdateAuthority,
 } from '../plugins';
@@ -30,7 +30,7 @@ export type AssetV1AccountData = Omit<
   GenAssetV1AccountData,
   'updateAuthority'
 > &
-  PluginsList &
+  AssetPluginsList &
   ExternalPluginAdaptersList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
     updateAuthority: UpdateAuthority;
@@ -40,7 +40,7 @@ export type AssetV1AccountDataArgs = Omit<
   GenAssetV1AccountDataArgs,
   'updateAuthority'
 > &
-  PluginsList & {
+  AssetPluginsList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
     updateAuthority: UpdateAuthority;
   };
@@ -68,7 +68,7 @@ export const getAssetV1AccountDataSerializer = (): Serializer<
 
     let pluginHeader: PluginHeaderV1AccountData | undefined;
     let pluginRegistry: PluginRegistryV1AccountData | undefined;
-    let pluginsList: PluginsList | undefined;
+    let pluginsList: AssetPluginsList | undefined;
     let externalPluginAdaptersList: ExternalPluginAdaptersList | undefined;
     let finalOffset = assetOffset;
 

@@ -20,7 +20,7 @@ export type AddPluginArgs = Omit<
 };
 
 export const addPlugin = (
-  context: Pick<Context, 'payer' | 'programs' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   { plugin, ...args }: AddPluginArgs
 ) => {
   if (isExternalPluginAdapterType(plugin)) {

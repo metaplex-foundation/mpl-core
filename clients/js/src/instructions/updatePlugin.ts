@@ -21,7 +21,7 @@ export type UpdatePluginArgs = Omit<
 };
 
 export const updatePlugin = (
-  context: Pick<Context, 'payer' | 'programs' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   { plugin, ...args }: UpdatePluginArgs
 ) => {
   if (isExternalPluginAdapterType(plugin)) {
