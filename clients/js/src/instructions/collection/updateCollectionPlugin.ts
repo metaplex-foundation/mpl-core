@@ -5,22 +5,26 @@ import {
 } from '../../generated';
 import {
   createExternalPluginAdapterUpdateInfo,
-  PluginArgsV2,
   createPluginV2,
   externalPluginAdapterKeyToBase,
   isExternalPluginAdapterType,
+  CollectionAllPluginArgsV2,
 } from '../../plugins';
 import { ExternalPluginAdapterUpdateInfoArgs } from '../../plugins/externalPluginAdapters';
+
+export type UpdateCollectionPluginArgsPlugin =
+  | CollectionAllPluginArgsV2
+  | ExternalPluginAdapterUpdateInfoArgs;
 
 export type UpdateCollectionPluginArgs = Omit<
   Parameters<typeof updateCollectionPluginV1>[1],
   'plugin'
 > & {
-  plugin: PluginArgsV2 | ExternalPluginAdapterUpdateInfoArgs;
+  plugin: UpdateCollectionPluginArgsPlugin;
 };
 
 export const updateCollectionPlugin = (
-  context: Pick<Context, 'payer' | 'programs' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   { plugin, ...args }: UpdateCollectionPluginArgs
 ) => {
   if (isExternalPluginAdapterType(plugin)) {
@@ -34,6 +38,6 @@ export const updateCollectionPlugin = (
 
   return updateCollectionPluginV1(context, {
     ...args,
-    plugin: createPluginV2(plugin as PluginArgsV2),
+    plugin: createPluginV2(plugin as CollectionAllPluginArgsV2),
   });
 };

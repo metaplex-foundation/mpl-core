@@ -12,7 +12,7 @@ export type TransferArgs = Omit<
 };
 
 export const transfer = (
-  context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs' | 'eddsa'>,
   { asset, collection, ...args }: TransferArgs
 ) => {
   const derivedExternalPluginAdapters = deriveExternalPluginAdapters(

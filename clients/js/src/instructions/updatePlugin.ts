@@ -5,12 +5,12 @@ import {
   createPluginV2,
   externalPluginAdapterKeyToBase,
   isExternalPluginAdapterType,
-  PluginArgsV2,
+  AssetAllPluginArgsV2,
 } from '../plugins';
 import { ExternalPluginAdapterUpdateInfoArgs } from '../plugins/externalPluginAdapters';
 
 export type UpdatePluginArgsPlugin =
-  | PluginArgsV2
+  | AssetAllPluginArgsV2
   | ExternalPluginAdapterUpdateInfoArgs;
 
 export type UpdatePluginArgs = Omit<
@@ -21,7 +21,7 @@ export type UpdatePluginArgs = Omit<
 };
 
 export const updatePlugin = (
-  context: Pick<Context, 'payer' | 'programs' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   { plugin, ...args }: UpdatePluginArgs
 ) => {
   if (isExternalPluginAdapterType(plugin)) {
@@ -35,6 +35,6 @@ export const updatePlugin = (
 
   return updatePluginV1(context, {
     ...args,
-    plugin: createPluginV2(plugin as PluginArgsV2),
+    plugin: createPluginV2(plugin as AssetAllPluginArgsV2),
   });
 };

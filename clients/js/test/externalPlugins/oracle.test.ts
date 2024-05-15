@@ -343,6 +343,58 @@ test('it cannot create asset with oracle that has no lifecycle checks', async (t
   await t.throwsAsync(result, { name: 'RequiresLifecycleCheck' });
 });
 
+test('it can add oracle that can reject to asset', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner,
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+  });
+
+  await addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_REJECT],
+      },
+      baseAddress: account.publicKey,
+    },
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+});
+
 test('it cannot add oracle with no lifecycle checks to asset', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);

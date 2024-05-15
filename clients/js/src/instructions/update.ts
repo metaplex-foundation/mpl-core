@@ -19,7 +19,7 @@ export type UpdateArgs = Omit<
 };
 
 export const update = (
-  context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs' | 'eddsa'>,
   { asset, collection, name, uri, ...args }: UpdateArgs
 ) => {
   const derivedExternalPluginAdapters = deriveExternalPluginAdapters(

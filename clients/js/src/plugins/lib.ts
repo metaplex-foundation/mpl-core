@@ -14,9 +14,9 @@ import {
 import { toWords } from '../utils';
 import {
   CreatePluginArgs,
-  PluginArgsV2,
+  AssetAllPluginArgsV2,
   PluginAuthorityPairHelperArgs,
-  PluginAuthorityPairArgsV2,
+  AssetPluginAuthorityPairArgsV2,
   PluginsList,
 } from './types';
 import {
@@ -66,7 +66,7 @@ export function pluginAuthorityPair(
   };
 }
 
-export function createPluginV2(args: PluginArgsV2): BasePlugin {
+export function createPluginV2(args: AssetAllPluginArgsV2): BasePlugin {
   // TODO refactor when there are more required empty fields in plugins
   const { type } = args;
   if (type === 'UpdateDelegate') {
@@ -102,7 +102,7 @@ export function pluginAuthorityPairV2({
   type,
   authority,
   ...args
-}: PluginAuthorityPairArgsV2): PluginAuthorityPair {
+}: AssetPluginAuthorityPairArgsV2): PluginAuthorityPair {
   return {
     plugin: createPluginV2({
       type,

@@ -11,19 +11,21 @@ import {
 
 import { isExternalPluginAdapterType } from '../../plugins/externalPluginAdapters';
 
+export type RemoveCollectionPluginArgsPlugin =
+  | {
+      type: Exclude<keyof typeof PluginType, 'Edition'>;
+    }
+  | ExternalPluginAdapterKey;
+
 export type RemoveCollectionPluginArgs = Omit<
   Parameters<typeof removeCollectionPluginV1>[1],
-  'plugin'
+  'plugin' | 'pluginType'
 > & {
-  plugin:
-    | {
-        type: Exclude<keyof typeof PluginType, 'Edition'>;
-      }
-    | ExternalPluginAdapterKey;
+  plugin: RemoveCollectionPluginArgsPlugin;
 };
 
 export const removeCollectionPlugin = (
-  context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   { plugin, ...args }: RemoveCollectionPluginArgs
 ) => {
   if (isExternalPluginAdapterType(plugin)) {

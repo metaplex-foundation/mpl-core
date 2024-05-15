@@ -12,9 +12,9 @@ import {
   getCollectionV1AccountDataSerializer as genGetCollectionV1AccountDataSerializer,
 } from '../generated/types/collectionV1AccountData';
 import {
+  CollectionPluginsList,
   ExternalPluginAdaptersList,
   externalRegistryRecordsToExternalPluginAdapterList,
-  PluginsList,
   registryRecordsToPluginsList,
 } from '../plugins';
 import {
@@ -23,7 +23,7 @@ import {
 } from './pluginRegistryV1Data';
 
 export type CollectionV1AccountData = GenCollectionV1AccountData &
-  PluginsList &
+  CollectionPluginsList &
   ExternalPluginAdaptersList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
   };
@@ -32,7 +32,7 @@ export type CollectionV1AccountDataArgs = Omit<
   GenCollectionV1AccountDataArgs,
   'updateAuthority'
 > &
-  PluginsList & {
+  CollectionPluginsList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
   };
 
@@ -61,7 +61,7 @@ export const getCollectionV1AccountDataSerializer = (): Serializer<
 
     let pluginHeader: PluginHeaderV1AccountData | undefined;
     let pluginRegistry: PluginRegistryV1AccountData | undefined;
-    let pluginsList: PluginsList | undefined;
+    let pluginsList: CollectionPluginsList | undefined;
     let externalPluginAdaptersList: ExternalPluginAdaptersList | undefined;
     let finalOffset = collectionOffset;
 

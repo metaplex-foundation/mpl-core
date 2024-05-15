@@ -13,7 +13,7 @@ export type UpdateCollectionArgs = Omit<
 };
 
 export const updateCollection = (
-  context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   { name, uri, ...args }: UpdateCollectionArgs
 ) =>
   updateCollectionV1(context, {
