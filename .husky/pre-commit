@@ -1,0 +1,24 @@
+#!/bin/sh
+
+set +e
+
+# Stash un-staged changes - optional, see note below
+git stash -q --keep-index
+
+# Run pnpm commands
+echo "Linting..."
+pnpm lint
+LINT_EXIT_CODE=$?
+
+# Restore un-staged changes - optional, see note below
+git stash pop -q
+
+# Check if tests or lint failed
+if [ $LINT_EXIT_CODE -ne 0 ]; then
+    echo "Linting failed run 'pnpm lint:fix' to fix linting issues"
+    exit 1
+fi
+
+set -e
+
+exit 0
