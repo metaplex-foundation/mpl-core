@@ -9,8 +9,12 @@ use std::{collections::HashMap, io::ErrorKind};
 
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
-    types::{Key, Plugin, PluginAuthority, PluginType, UpdateAuthority},
-    DataBlob, PluginRegistryV1Safe, RegistryRecordSafe,
+    types::{
+        ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterSchema,
+        ExternalPluginAdapterType, HookableLifecycleEvent, Key, Plugin, PluginAuthority,
+        PluginType, UpdateAuthority,
+    },
+    DataBlob, ExternalRegistryRecordSafe, PluginRegistryV1Safe, RegistryRecordSafe,
 };
 
 /// Schema used for indexing known plugin types.
@@ -34,6 +38,37 @@ pub struct IndexableUnknownPluginSchemaV1 {
     pub data: String,
 }
 
+/// Schema used for indexing known external plugin types.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct IndexableExternalPluginSchemaV1 {
+    pub index: u64,
+    pub offset: u64,
+    pub authority: PluginAuthority,
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
+    pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
+    pub external_plugin_adapter: ExternalPluginAdapter,
+    pub data_offset: Option<u64>,
+    pub data_len: Option<u64>,
+    pub data: Option<String>,
+}
+
+/// Schema used for indexing unknown external plugin types, storing the plugin as raw data.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct IndexableUnknownExternalPluginSchemaV1 {
+    pub index: u64,
+    pub offset: u64,
+    pub authority: PluginAuthority,
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
+    pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
+    pub external_plugin_adapter_type: u8,
+    pub external_plugin_adapter_data: String,
+    pub data_offset: Option<u64>,
+    pub data_len: Option<u64>,
+    pub data: Option<String>,
+}
+
 // Type used to store a plugin that was processed and is either a known or unknown plugin type.
 // Used when building an `IndexableAsset`.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -46,17 +81,17 @@ impl ProcessedPlugin {
     fn from_data(
         index: u64,
         offset: u64,
+        authority: PluginAuthority,
         plugin_type: u8,
         plugin_slice: &mut &[u8],
-        authority: PluginAuthority,
     ) -> Result<Self, std::io::Error> {
         let processed_plugin = if let Some(plugin_type) = PluginType::from_u8(plugin_type) {
-            let plugin = Plugin::deserialize(plugin_slice)?;
+            let data = Plugin::deserialize(plugin_slice)?;
             let indexable_plugin_schema = IndexablePluginSchemaV1 {
                 index,
                 offset,
                 authority,
-                data: plugin,
+                data,
             };
             ProcessedPlugin::Known((plugin_type, indexable_plugin_schema))
         } else {
@@ -74,6 +109,140 @@ impl ProcessedPlugin {
     }
 }
 
+// Type used to store an external plugin that was processed and is either a known or unknown plugin
+// type.  Used when building an `IndexableAsset`.
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum ProcessedExternalPlugin {
+    Known((ExternalPluginAdapterType, IndexableExternalPluginSchemaV1)),
+    Unknown(IndexableUnknownExternalPluginSchemaV1),
+}
+
+struct ExternalPluginDataInfo<'a> {
+    data_offset: u64,
+    data_len: u64,
+    data_slice: &'a [u8],
+}
+
+impl ProcessedExternalPlugin {
+    fn from_data(
+        index: u64,
+        offset: u64,
+        authority: PluginAuthority,
+        lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
+        external_plugin_adapter_type: u8,
+        plugin_slice: &mut &[u8],
+        external_plugin_data_info: Option<ExternalPluginDataInfo>,
+    ) -> Result<Self, std::io::Error> {
+        // First process the lifecycle checks.
+        let mut known_lifecycle_checks = vec![];
+        let mut unknown_lifecycle_checks = vec![];
+
+        if let Some(checks) = lifecycle_checks {
+            for (event, check) in checks {
+                match HookableLifecycleEvent::from_u8(event) {
+                    Some(val) => known_lifecycle_checks.push((val, check)),
+                    None => unknown_lifecycle_checks.push((event, check)),
+                }
+            }
+        }
+
+        // Save them as known and unknown.
+        let known_lifecycle_checks =
+            (!known_lifecycle_checks.is_empty()).then_some(known_lifecycle_checks);
+        let unknown_lifecycle_checks =
+            (!unknown_lifecycle_checks.is_empty()).then_some(unknown_lifecycle_checks);
+
+        // Next, process the external plugin adapter and save them as known and unknown variants.
+        let processed_plugin = if let Some(external_plugin_adapter_type) =
+            ExternalPluginAdapterType::from_u8(external_plugin_adapter_type)
+        {
+            let external_plugin_adapter = ExternalPluginAdapter::deserialize(plugin_slice)?;
+            let (data_offset, data_len, data) = match external_plugin_data_info {
+                Some(data_info) => {
+                    let schema = match &external_plugin_adapter {
+                        ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
+                            &lifecycle_hook.schema
+                        }
+                        ExternalPluginAdapter::DataStore(data_store) => &data_store.schema,
+                        _ => &ExternalPluginAdapterSchema::Binary, // is this possible
+                    };
+
+                    (
+                        Some(data_info.data_offset),
+                        Some(data_info.data_len),
+                        Some(Self::convert_data_to_string(schema, data_info.data_slice)),
+                    )
+                }
+                None => (None, None, None),
+            };
+
+            let indexable_plugin_schema = IndexableExternalPluginSchemaV1 {
+                index,
+                offset,
+                authority,
+                lifecycle_checks: known_lifecycle_checks,
+                unknown_lifecycle_checks,
+                external_plugin_adapter,
+                data_offset,
+                data_len,
+                data,
+            };
+            ProcessedExternalPlugin::Known((external_plugin_adapter_type, indexable_plugin_schema))
+        } else {
+            let encoded: String = BASE64_STANDARD.encode(plugin_slice);
+
+            let (data_offset, data_len, data) = match external_plugin_data_info {
+                Some(data_info) => (
+                    Some(data_info.data_offset),
+                    Some(data_info.data_len),
+                    // We don't know the schema so use base64.
+                    Some(BASE64_STANDARD.encode(data_info.data_slice)),
+                ),
+                None => (None, None, None),
+            };
+
+            ProcessedExternalPlugin::Unknown(IndexableUnknownExternalPluginSchemaV1 {
+                index,
+                offset,
+                authority,
+                lifecycle_checks: known_lifecycle_checks,
+                unknown_lifecycle_checks,
+                external_plugin_adapter_type,
+                external_plugin_adapter_data: encoded,
+                data_offset,
+                data_len,
+                data,
+            })
+        };
+
+        Ok(processed_plugin)
+    }
+
+    fn convert_data_to_string(schema: &ExternalPluginAdapterSchema, data_slice: &[u8]) -> String {
+        match schema {
+            ExternalPluginAdapterSchema::Binary => {
+                // Encode the binary data as a base64 string.
+                BASE64_STANDARD.encode(data_slice)
+            }
+            ExternalPluginAdapterSchema::Json => {
+                // Convert the byte slice to a UTF-8 string, replacing invalid characterse.
+                String::from_utf8_lossy(data_slice).to_string()
+            }
+            ExternalPluginAdapterSchema::MsgPack => {
+                // Attempt to decode `MsgPack` to serde_json::Value and serialize to JSON string.
+                match rmp_serde::decode::from_slice::<serde_json::Value>(data_slice) {
+                    Ok(json_val) => serde_json::to_string(&json_val)
+                        .unwrap_or_else(|_| BASE64_STANDARD.encode(data_slice)),
+                    Err(_) => {
+                        // Failed to decode `MsgPack`, fallback to base64.
+                        BASE64_STANDARD.encode(data_slice)
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// A type used to store both Core Assets and Core Collections for indexing.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -87,6 +256,8 @@ pub struct IndexableAsset {
     pub current_size: Option<u32>,
     pub plugins: HashMap<PluginType, IndexablePluginSchemaV1>,
     pub unknown_plugins: Vec<IndexableUnknownPluginSchemaV1>,
+    pub external_plugins: HashMap<ExternalPluginAdapterType, IndexableExternalPluginSchemaV1>,
+    pub unknown_external_plugins: Vec<IndexableUnknownExternalPluginSchemaV1>,
 }
 
 impl IndexableAsset {
@@ -103,6 +274,8 @@ impl IndexableAsset {
             current_size: None,
             plugins: HashMap::new(),
             unknown_plugins: Vec::new(),
+            external_plugins: HashMap::new(),
+            unknown_external_plugins: Vec::new(),
         }
     }
 
@@ -118,6 +291,8 @@ impl IndexableAsset {
             current_size: Some(collection.current_size),
             plugins: HashMap::new(),
             unknown_plugins: Vec::new(),
+            external_plugins: HashMap::new(),
+            unknown_external_plugins: Vec::new(),
         }
     }
 
@@ -130,6 +305,19 @@ impl IndexableAsset {
             ProcessedPlugin::Unknown(indexable_unknown_plugin_schema) => {
                 self.unknown_plugins.push(indexable_unknown_plugin_schema)
             }
+        }
+    }
+
+    // Add a processed external plugin to the correct `IndexableAsset` struct member.
+    fn add_processed_external_plugin(&mut self, plugin: ProcessedExternalPlugin) {
+        match plugin {
+            ProcessedExternalPlugin::Known((plugin_type, indexable_plugin_schema)) => {
+                self.external_plugins
+                    .insert(plugin_type, indexable_plugin_schema);
+            }
+            ProcessedExternalPlugin::Unknown(indexable_unknown_plugin_schema) => self
+                .unknown_external_plugins
+                .push(indexable_unknown_plugin_schema),
         }
     }
 
@@ -166,9 +354,9 @@ impl IndexableAsset {
                 let processed_plugin = ProcessedPlugin::from_data(
                     i as u64,
                     records[0].offset,
+                    records[0].authority.clone(),
                     records[0].plugin_type,
                     &mut plugin_slice,
-                    records[0].authority.clone(),
                 )?;
 
                 indexable_asset.add_processed_plugin(processed_plugin);
@@ -181,14 +369,84 @@ impl IndexableAsset {
                 let processed_plugin = ProcessedPlugin::from_data(
                     registry_records.len() as u64 - 1,
                     record.offset,
+                    record.authority.clone(),
                     record.plugin_type,
                     &mut plugin_slice,
-                    record.authority.clone(),
                 )?;
 
                 indexable_asset.add_processed_plugin(processed_plugin);
             }
+
+            let mut external_registry_records = plugin_registry.external_registry;
+            external_registry_records.sort_by(ExternalRegistryRecordSafe::compare_offsets);
+
+            for (i, records) in external_registry_records.windows(2).enumerate() {
+                let mut plugin_slice =
+                    &account[records[0].offset as usize..records[1].offset as usize];
+
+                let external_plugin_data_info = Self::slice_external_plugin_data(
+                    records[0].data_offset,
+                    records[0].data_len,
+                    account,
+                )?;
+
+                let processed_plugin = ProcessedExternalPlugin::from_data(
+                    i as u64,
+                    records[0].offset,
+                    records[0].authority.clone(),
+                    records[0].lifecycle_checks.clone(),
+                    records[0].plugin_type,
+                    &mut plugin_slice,
+                    external_plugin_data_info,
+                )?;
+
+                indexable_asset.add_processed_external_plugin(processed_plugin);
+            }
+
+            if let Some(record) = external_registry_records.last() {
+                let mut plugin_slice =
+                    &account[record.offset as usize..header.plugin_registry_offset as usize];
+
+                let external_plugin_data_info =
+                    Self::slice_external_plugin_data(record.data_offset, record.data_len, account)?;
+
+                let processed_plugin = ProcessedExternalPlugin::from_data(
+                    external_registry_records.len() as u64 - 1,
+                    record.offset,
+                    record.authority.clone(),
+                    record.lifecycle_checks.clone(),
+                    record.plugin_type,
+                    &mut plugin_slice,
+                    external_plugin_data_info,
+                )?;
+
+                indexable_asset.add_processed_external_plugin(processed_plugin);
+            }
         }
         Ok(indexable_asset)
+    }
+
+    fn slice_external_plugin_data(
+        data_offset: Option<u64>,
+        data_len: Option<u64>,
+        account: &[u8],
+    ) -> Result<Option<ExternalPluginDataInfo>, std::io::Error> {
+        if data_offset.is_some() && data_len.is_some() {
+            let data_offset = data_offset.unwrap() as usize;
+            let data_len = data_len.unwrap() as usize;
+
+            let end = data_offset
+                .checked_add(data_len)
+                .ok_or(ErrorKind::InvalidData)?;
+            let data_slice = &account[data_offset..end];
+
+            Ok(Some(ExternalPluginDataInfo {
+                data_offset: data_offset as u64,
+                data_len: data_len as u64,
+                data_slice,
+            }))
+        } else {
+            Ok(None)
+        }
     }
 }
