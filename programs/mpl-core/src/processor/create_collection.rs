@@ -7,10 +7,12 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::CreateCollectionV1Accounts,
+    instruction::accounts::CreateCollectionV2Accounts,
     plugins::{
-        create_plugin_meta, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
-        PluginType, PluginValidationContext, ValidationResult,
+        create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
+        initialize_plugin, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
+        ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair, PluginType,
+        PluginValidationContext, ValidationResult,
     },
     state::{Authority, CollectionV1, Key},
 };
@@ -23,17 +25,51 @@ pub(crate) struct CreateCollectionV1Args {
     pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
 }
 
-pub(crate) fn create_collection<'a>(
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct CreateCollectionV2Args {
+    pub(crate) name: String,
+    pub(crate) uri: String,
+    pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
+    pub(crate) external_plugin_adapters: Option<Vec<ExternalPluginAdapterInitInfo>>,
+}
+
+impl From<CreateCollectionV1Args> for CreateCollectionV2Args {
+    fn from(item: CreateCollectionV1Args) -> Self {
+        CreateCollectionV2Args {
+            name: item.name,
+            uri: item.uri,
+            plugins: item.plugins,
+            external_plugin_adapters: None,
+        }
+    }
+}
+
+pub(crate) fn create_collection_v1<'a>(
     accounts: &'a [AccountInfo<'a>],
     args: CreateCollectionV1Args,
 ) -> ProgramResult {
+    process_create_collection(accounts, CreateCollectionV2Args::from(args))
+}
+pub(crate) fn create_collection_v2<'a>(
+    accounts: &'a [AccountInfo<'a>],
+    args: CreateCollectionV2Args,
+) -> ProgramResult {
+    process_create_collection(accounts, args)
+}
+
+pub(crate) fn process_create_collection<'a>(
+    accounts: &'a [AccountInfo<'a>],
+    args: CreateCollectionV2Args,
+) -> ProgramResult {
     // Accounts.
-    let ctx = CreateCollectionV1Accounts::context(accounts)?;
+    let ctx = CreateCollectionV2Accounts::context(accounts)?;
     let rent = Rent::get()?;
 
     // Guards.
     assert_signer(ctx.accounts.collection)?;
     assert_signer(ctx.accounts.payer)?;
+    let authority = ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer);
 
     if *ctx.accounts.system_program.key != system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
@@ -41,11 +77,7 @@ pub(crate) fn create_collection<'a>(
 
     let new_collection = CollectionV1 {
         key: Key::CollectionV1,
-        update_authority: *ctx
-            .accounts
-            .update_authority
-            .unwrap_or(ctx.accounts.payer)
-            .key,
+        update_authority: *authority.key,
         name: args.name,
         uri: args.uri,
         num_minted: 0,
@@ -78,17 +110,16 @@ pub(crate) fn create_collection<'a>(
         serialized_data.len(),
     );
 
+    let mut approved = true;
+    let mut force_approved = false;
     if let Some(plugins) = args.plugins {
         if !plugins.is_empty() {
             let (mut plugin_header, mut plugin_registry) = create_plugin_meta::<CollectionV1>(
-                new_collection,
+                &new_collection,
                 ctx.accounts.collection,
                 ctx.accounts.payer,
                 ctx.accounts.system_program,
             )?;
-
-            let mut approved = true;
-            let mut force_approved = false;
             for plugin in &plugins {
                 // Cannot have owner-managed plugins on collection.
                 if plugin.plugin.manager() == Authority::Owner {
@@ -103,6 +134,9 @@ pub(crate) fn create_collection<'a>(
 
                 if PluginType::check_create(&plugin_type) != CheckResult::None {
                     let validation_ctx = PluginValidationContext {
+                        accounts,
+                        asset_info: None,
+                        collection_info: Some(ctx.accounts.collection),
                         self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
                         authority_info: ctx.accounts.payer,
                         resolved_authorities: None,
@@ -125,11 +159,55 @@ pub(crate) fn create_collection<'a>(
                     ctx.accounts.system_program,
                 )?;
             }
+        }
+    }
 
-            if !(approved || force_approved) {
-                return Err(MplCoreError::InvalidAuthority.into());
+    if let Some(plugins) = args.external_plugin_adapters {
+        if !plugins.is_empty() {
+            let (_, mut plugin_header, mut plugin_registry) = create_meta_idempotent::<CollectionV1>(
+                ctx.accounts.collection,
+                ctx.accounts.payer,
+                ctx.accounts.system_program,
+            )?;
+            for plugin_init_info in &plugins {
+                let external_check_result_bits = ExternalCheckResultBits::from(
+                    ExternalPluginAdapter::check_create(plugin_init_info),
+                );
+
+                if external_check_result_bits.can_reject() {
+                    let validation_ctx = PluginValidationContext {
+                        accounts,
+                        asset_info: None,
+                        collection_info: Some(ctx.accounts.collection),
+                        // External plugin adapters are always managed by the update authority.
+                        self_authority: &Authority::UpdateAuthority,
+                        authority_info: authority,
+                        resolved_authorities: None,
+                        new_owner: None,
+                        target_plugin: None,
+                    };
+                    if ExternalPluginAdapter::validate_create(
+                        &ExternalPluginAdapter::from(plugin_init_info),
+                        &validation_ctx,
+                    )? == ValidationResult::Rejected
+                    {
+                        approved = false;
+                    };
+                }
+                initialize_external_plugin_adapter::<CollectionV1>(
+                    plugin_init_info,
+                    &mut plugin_header,
+                    &mut plugin_registry,
+                    ctx.accounts.collection,
+                    ctx.accounts.payer,
+                    ctx.accounts.system_program,
+                )?;
             }
         }
+    }
+
+    if !(approved || force_approved) {
+        return Err(MplCoreError::InvalidAuthority.into());
     }
 
     Ok(())

@@ -2,29 +2,22 @@ import test from 'ava';
 
 import { generateSigner } from '@metaplex-foundation/umi';
 import {
-  createPlugin,
-  addCollectionPluginV1,
-  pluginAuthorityPair,
-  addPluginV1,
-  updatePluginAuthority,
-} from '../../../src';
-import {
   DEFAULT_COLLECTION,
   assertCollection,
-  createAsset,
-  createCollection,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
+import { createAsset, createCollection } from '../../_setupSdk';
+import { addCollectionPlugin, addPlugin } from '../../../src';
 
 test('it can add addBlocker to collection', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi);
 
-  await addCollectionPluginV1(umi, {
+  await addCollectionPlugin(umi, {
     collection: collection.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'AddBlocker',
-    }),
+    },
   }).sendAndConfirm(umi);
 
   await assertCollection(t, umi, {
@@ -43,17 +36,17 @@ test('it cannot add UA-managed plugin to a collection if addBlocker had been add
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
-      pluginAuthorityPair({
+      {
         type: 'AddBlocker',
-      }),
+      },
     ],
   });
 
-  const result = addCollectionPluginV1(umi, {
+  const result = addCollectionPlugin(umi, {
     collection: collection.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'ImmutableMetadata',
-    }),
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -65,21 +58,21 @@ test('it cannot add UA-managed plugin to an asset in a collection if addBlocker 
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
-      pluginAuthorityPair({
+      {
         type: 'AddBlocker',
-      }),
+      },
     ],
   });
   const asset = await createAsset(umi, {
     collection: collection.publicKey,
   });
 
-  const result = addPluginV1(umi, {
+  const result = addPlugin(umi, {
     collection: collection.publicKey,
     asset: asset.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'ImmutableMetadata',
-    }),
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -92,10 +85,12 @@ test('it prevents plugins from being added to both collection and plugins when c
   const updateAuthority = generateSigner(umi);
   const collection = await createCollection(umi, {
     plugins: [
-      pluginAuthorityPair({
+      {
         type: 'AddBlocker',
-        authority: updatePluginAuthority(),
-      }),
+        authority: {
+          type: 'UpdateAuthority',
+        },
+      },
     ],
     updateAuthority,
   });
@@ -104,23 +99,23 @@ test('it prevents plugins from being added to both collection and plugins when c
     authority: updateAuthority,
   });
 
-  let result = addCollectionPluginV1(umi, {
+  let result = addCollectionPlugin(umi, {
     collection: collection.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'ImmutableMetadata',
-    }),
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
     name: 'InvalidAuthority',
   });
 
-  result = addPluginV1(umi, {
+  result = addPlugin(umi, {
     collection: collection.publicKey,
     asset: asset.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'ImmutableMetadata',
-    }),
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -133,30 +128,30 @@ test('it prevents plugins from being added to both collection and plugins when A
   const collection = await createCollection(umi);
   const asset = await createAsset(umi, { collection: collection.publicKey });
 
-  await addCollectionPluginV1(umi, {
+  await addCollectionPlugin(umi, {
     collection: collection.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'AddBlocker',
-    }),
+    },
   }).sendAndConfirm(umi);
 
-  let result = addCollectionPluginV1(umi, {
+  let result = addCollectionPlugin(umi, {
     collection: collection.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'ImmutableMetadata',
-    }),
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
     name: 'InvalidAuthority',
   });
 
-  result = addPluginV1(umi, {
+  result = addPlugin(umi, {
     collection: collection.publicKey,
     asset: asset.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'ImmutableMetadata',
-    }),
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {

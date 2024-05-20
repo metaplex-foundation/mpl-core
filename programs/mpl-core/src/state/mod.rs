@@ -41,7 +41,7 @@ pub enum DataState {
 
 /// Variants representing the different types of authority that can have permissions over plugins.
 #[repr(u8)]
-#[derive(Copy, Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Authority {
     /// No authority, used for immutability.
     None,
@@ -53,28 +53,6 @@ pub enum Authority {
     Address {
         /// The address of the authority.
         address: Pubkey,
-    },
-}
-
-/// Different types of extra accounts that can be passed in for lifecycle hooks.
-#[repr(C)]
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
-pub enum ExtraAccounts {
-    /// No extra accounts.
-    None,
-    /// Compatible with spl-token-2022 transfer hooks.
-    SplHook {
-        /// An account meta accounts derived from the account pubkey.
-        extra_account_metas: Pubkey,
-    },
-    /// A simpler method of passing in extra accounts using deterministic PDAs.
-    MplHook {
-        /// The PDA derived from the account pubkey.
-        mint_pda: Option<Pubkey>,
-        /// The PDA derived from the collection pubkey.
-        collection_pda: Option<Pubkey>,
-        /// The PDA derived from the asset owner pubkey.
-        owner_pda: Option<Pubkey>,
     },
 }
 

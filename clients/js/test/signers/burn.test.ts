@@ -6,7 +6,7 @@ import {
 } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-tests';
 import test from 'ava';
-import { assertAsset, createAsset } from '../_setup';
+import { assertAsset, createAsset } from '../_setupRaw';
 import { Key, burnV1 } from '../../src';
 
 test('it can burn an asset as the owner', async (t) => {

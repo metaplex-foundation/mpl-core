@@ -16,7 +16,7 @@ import {
   createAssetWithCollection,
   createCollection,
   createUmi,
-} from './_setup';
+} from './_setupRaw';
 
 test('it can create a new collection', async (t) => {
   // Given a Umi instance and a new signer.

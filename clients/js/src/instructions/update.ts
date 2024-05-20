@@ -1,0 +1,48 @@
+import { Context } from '@metaplex-foundation/umi';
+import {
+  CollectionV1,
+  updateV1,
+  AssetV1,
+  UpdateV1InstructionDataArgs,
+} from '../generated';
+import { findExtraAccounts } from '../plugins';
+import { deriveExternalPluginAdapters } from '../helpers';
+
+export type UpdateArgs = Omit<
+  Parameters<typeof updateV1>[1],
+  'asset' | 'collection' | 'newName' | 'newUri'
+> & {
+  asset: Pick<AssetV1, 'publicKey' | 'owner' | 'oracles' | 'lifecycleHooks'>;
+  collection?: Pick<CollectionV1, 'publicKey' | 'oracles' | 'lifecycleHooks'>;
+  name?: UpdateV1InstructionDataArgs['newName'];
+  uri?: UpdateV1InstructionDataArgs['newUri'];
+};
+
+export const update = (
+  context: Pick<Context, 'payer' | 'programs' | 'eddsa'>,
+  { asset, collection, name, uri, ...args }: UpdateArgs
+) => {
+  const derivedExternalPluginAdapters = deriveExternalPluginAdapters(
+    asset,
+    collection
+  );
+
+  const extraAccounts = findExtraAccounts(
+    context,
+    'update',
+    derivedExternalPluginAdapters,
+    {
+      asset: asset.publicKey,
+      collection: collection?.publicKey,
+      owner: asset.owner,
+    }
+  );
+
+  return updateV1(context, {
+    ...args,
+    asset: asset.publicKey,
+    collection: collection?.publicKey,
+    newName: name,
+    newUri: uri,
+  }).addRemainingAccounts(extraAccounts);
+};

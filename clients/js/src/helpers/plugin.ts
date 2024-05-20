@@ -1,5 +1,4 @@
 import { PublicKey, publicKey } from '@metaplex-foundation/umi';
-import { PluginsList } from '../types';
 import { capitalizeFirstLetter, lowercaseFirstLetter } from '../utils';
 import { AssetV1, CollectionV1, PluginType } from '../generated';
 import { collectionAddress, deriveAssetPlugins, isAssetOwner } from './state';
@@ -7,8 +6,9 @@ import {
   hasAssetUpdateAuthority,
   hasPluginAddressAuthority,
 } from './authority';
+import { AssetPluginsList } from '../plugins';
 
-export type AssetPluginKey = keyof PluginsList;
+export type AssetPluginKey = keyof AssetPluginsList;
 
 /**
  * Convert a plugin type to a key for the asset plugins.

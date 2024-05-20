@@ -1,21 +1,28 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use std::{cmp::Ordering, collections::BTreeMap};
 
-use crate::state::{Authority, DataBlob, Key, SolanaAccount};
+use crate::{
+    plugins::validate_lifecycle_checks,
+    state::{Authority, DataBlob, Key, SolanaAccount},
+};
 
-use super::{CheckResult, PluginType};
+use super::{
+    CheckResult, ExternalCheckResult, ExternalCheckResultBits, ExternalPluginAdapterKey,
+    ExternalPluginAdapterType, ExternalPluginAdapterUpdateInfo, HookableLifecycleEvent, PluginType,
+};
 
 /// The Plugin Registry stores a record of all plugins, their location, and their authorities.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
 pub struct PluginRegistryV1 {
-    /// The Discriminator of the header which doubles as a Plugin metadata version.
+    /// The Discriminator of the header which doubles as a plugin metadata version.
     pub key: Key, // 1
     /// The registry of all plugins.
     pub registry: Vec<RegistryRecord>, // 4
-    /// The registry of all external, third party, plugins.
-    pub external_plugins: Vec<ExternalPluginRecord>, // 4
+    /// The registry of all adapter, third party, plugins.
+    pub external_registry: Vec<ExternalRegistryRecord>, // 4
 }
 
 impl PluginRegistryV1 {
@@ -32,6 +39,38 @@ impl PluginRegistryV1 {
                 (key, check_fp(&record.plugin_type), record.clone()),
             );
         }
+    }
+
+    pub(crate) fn check_adapter_registry(
+        &self,
+        account: &AccountInfo,
+        key: Key,
+        lifecycle_event: &HookableLifecycleEvent,
+        result: &mut BTreeMap<
+            ExternalPluginAdapterKey,
+            (Key, ExternalCheckResultBits, ExternalRegistryRecord),
+        >,
+    ) -> ProgramResult {
+        for record in &self.external_registry {
+            if let Some(lifecycle_checks) = &record.lifecycle_checks {
+                for (event, check_result) in lifecycle_checks {
+                    if event == lifecycle_event {
+                        let plugin_key = ExternalPluginAdapterKey::from_record(account, record)?;
+
+                        result.insert(
+                            plugin_key,
+                            (
+                                key,
+                                ExternalCheckResultBits::from(*check_result),
+                                record.clone(),
+                            ),
+                        );
+                    }
+                }
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -51,7 +90,7 @@ impl SolanaAccount for PluginRegistryV1 {
     }
 }
 
-/// A simple type to store the mapping of Plugin type to Plugin data.
+/// A simple type to store the mapping of plugin type to plugin data.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct RegistryRecord {
@@ -70,12 +109,43 @@ impl RegistryRecord {
     }
 }
 
-/// A simple type to store the mapping of external Plugin authority to Plugin data.
+/// A type to store the mapping of third party plugin type to third party plugin header and data.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
-pub struct ExternalPluginRecord {
-    /// The authority of the external plugin.
+pub struct ExternalRegistryRecord {
+    /// The adapter, third party plugin type.
+    pub plugin_type: ExternalPluginAdapterType,
+    /// The authority of the external plugin adapter.
     pub authority: Authority,
+    /// The lifecyle events for which the the external plugin adapter is active.
+    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// The offset to the plugin in the account.
-    pub offset: usize,
+    pub offset: usize, // 8
+    /// For plugins with data, the offset to the data in the account.
+    pub data_offset: Option<usize>,
+    /// For plugins with data, the length of the data in the account.
+    pub data_len: Option<usize>,
+}
+
+impl ExternalRegistryRecord {
+    /// Update the adapter registry record with the new info, if relevant.
+    pub fn update(&mut self, update_info: &ExternalPluginAdapterUpdateInfo) -> ProgramResult {
+        match update_info {
+            ExternalPluginAdapterUpdateInfo::LifecycleHook(update_info) => {
+                if let Some(checks) = &update_info.lifecycle_checks {
+                    validate_lifecycle_checks(checks, false)?;
+                    self.lifecycle_checks = update_info.lifecycle_checks.clone()
+                }
+            }
+            ExternalPluginAdapterUpdateInfo::Oracle(update_info) => {
+                if let Some(checks) = &update_info.lifecycle_checks {
+                    validate_lifecycle_checks(checks, true)?;
+                    self.lifecycle_checks = update_info.lifecycle_checks.clone()
+                }
+            }
+            _ => (),
+        }
+
+        Ok(())
+    }
 }

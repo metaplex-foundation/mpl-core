@@ -7,7 +7,10 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionV1Accounts, UpdateV1Accounts},
-    plugins::{Plugin, PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord},
+    plugins::{
+        ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
+        PluginType,
+    },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
         load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
@@ -47,9 +50,11 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
     }
 
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
+        accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
+        None,
         None,
         None,
         AssetV1::check_update,
@@ -58,6 +63,8 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
         AssetV1::validate_update,
         CollectionV1::validate_update,
         Plugin::validate_update,
+        Some(ExternalPluginAdapter::validate_update),
+        Some(HookableLifecycleEvent::Update),
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -133,13 +140,17 @@ pub(crate) fn update_collection<'a>(
     }
 
     let (mut collection, plugin_header, plugin_registry) = validate_collection_permissions(
+        accounts,
         authority,
         ctx.accounts.collection,
+        None,
         None,
         CollectionV1::check_update,
         PluginType::check_update,
         CollectionV1::validate_update,
         Plugin::validate_update,
+        Some(ExternalPluginAdapter::validate_update),
+        Some(HookableLifecycleEvent::Update),
     )?;
 
     let collection_size = collection.get_size() as isize;
@@ -225,20 +236,24 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
         );
 
         plugin_header.save(account, new_core_size as usize)?;
-        plugin_registry.registry = plugin_registry
-            .registry
-            .iter_mut()
-            .map(|record| {
-                let new_offset = (record.offset as isize)
-                    .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?;
-                Ok(RegistryRecord {
-                    plugin_type: record.plugin_type,
-                    offset: new_offset as usize,
-                    authority: record.authority,
-                })
-            })
-            .collect::<Result<Vec<_>, MplCoreError>>()?;
+
+        // Move offsets for existing registry records.
+        for record in &mut plugin_registry.external_registry {
+            let new_offset = (record.offset as isize)
+                .checked_add(size_diff)
+                .ok_or(MplCoreError::NumericalOverflow)?;
+
+            record.offset = new_offset as usize;
+        }
+
+        for record in &mut plugin_registry.registry {
+            let new_offset = (record.offset as isize)
+                .checked_add(size_diff)
+                .ok_or(MplCoreError::NumericalOverflow)?;
+
+            record.offset = new_offset as usize;
+        }
+
         plugin_registry.save(account, new_registry_offset as usize)?;
     } else {
         resize_or_reallocate_account(account, payer, system_program, core.get_size())?;

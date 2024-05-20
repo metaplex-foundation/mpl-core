@@ -44,9 +44,11 @@ pub(crate) fn compress<'a>(
 
             // Validate asset permissions.
             let _ = validate_asset_permissions(
+                accounts,
                 authority,
                 ctx.accounts.asset,
                 ctx.accounts.collection,
+                None,
                 None,
                 None,
                 AssetV1::check_compress,
@@ -55,6 +57,8 @@ pub(crate) fn compress<'a>(
                 AssetV1::validate_compress,
                 CollectionV1::validate_compress,
                 Plugin::validate_compress,
+                None,
+                None,
             )?;
 
             // Compress the asset and plugin registry into account space.

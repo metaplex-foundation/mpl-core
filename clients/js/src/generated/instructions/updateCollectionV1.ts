@@ -14,6 +14,7 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
+  none,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -54,8 +55,8 @@ export type UpdateCollectionV1InstructionData = {
 };
 
 export type UpdateCollectionV1InstructionDataArgs = {
-  newName: OptionOrNullable<string>;
-  newUri: OptionOrNullable<string>;
+  newName?: OptionOrNullable<string>;
+  newUri?: OptionOrNullable<string>;
 };
 
 export function getUpdateCollectionV1InstructionDataSerializer(): Serializer<
@@ -75,7 +76,12 @@ export function getUpdateCollectionV1InstructionDataSerializer(): Serializer<
       ],
       { description: 'UpdateCollectionV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 16 })
+    (value) => ({
+      ...value,
+      discriminator: 16,
+      newName: value.newName ?? none(),
+      newUri: value.newUri ?? none(),
+    })
   ) as Serializer<
     UpdateCollectionV1InstructionDataArgs,
     UpdateCollectionV1InstructionData

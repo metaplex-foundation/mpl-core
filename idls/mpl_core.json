@@ -803,7 +803,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "isOptional": true,
           "docs": [
@@ -863,7 +863,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "isOptional": true,
           "docs": [
@@ -1267,6 +1267,650 @@
         "type": "u8",
         "value": 19
       }
+    },
+    {
+      "name": "CreateV2",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The address of the new asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The authority signing for creation"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The owner of the new asset. Defaults to the authority if not present."
+          ]
+        },
+        {
+          "name": "updateAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The authority on the new asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "createV2Args",
+          "type": {
+            "defined": "CreateV2Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 20
+      }
+    },
+    {
+      "name": "CreateCollectionV2",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The address of the new asset"
+          ]
+        },
+        {
+          "name": "updateAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The authority of the new asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "createCollectionV2Args",
+          "type": {
+            "defined": "CreateCollectionV2Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 21
+      }
+    },
+    {
+      "name": "AddExternalPluginAdapterV1",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addExternalPluginAdapterV1Args",
+          "type": {
+            "defined": "AddExternalPluginAdapterV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 22
+      }
+    },
+    {
+      "name": "AddCollectionExternalPluginAdapterV1",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addCollectionExternalPluginAdapterV1Args",
+          "type": {
+            "defined": "AddCollectionExternalPluginAdapterV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 23
+      }
+    },
+    {
+      "name": "RemoveExternalPluginAdapterV1",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removeExternalPluginAdapterV1Args",
+          "type": {
+            "defined": "RemoveExternalPluginAdapterV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 24
+      }
+    },
+    {
+      "name": "RemoveCollectionExternalPluginAdapterV1",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removeCollectionExternalPluginAdapterV1Args",
+          "type": {
+            "defined": "RemoveCollectionExternalPluginAdapterV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 25
+      }
+    },
+    {
+      "name": "UpdateExternalPluginAdapterV1",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updateExternalPluginAdapterV1Args",
+          "type": {
+            "defined": "UpdateExternalPluginAdapterV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 26
+      }
+    },
+    {
+      "name": "UpdateCollectionExternalPluginAdapterV1",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updateCollectionExternalPluginAdapterV1Args",
+          "type": {
+            "defined": "UpdateCollectionExternalPluginAdapterV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 27
+      }
+    },
+    {
+      "name": "WriteExternalPluginAdapterDataV1",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The Data Authority of the External PluginExternalPluginAdapter"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "writeExternalPluginAdapterDataV1Args",
+          "type": {
+            "defined": "WriteExternalPluginAdapterDataV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 28
+      }
+    },
+    {
+      "name": "WriteCollectionExternalPluginAdapterDataV1",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The Data Authority of the External PluginExternalPluginAdapter"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "writeCollectionExternalPluginAdapterDataV1Args",
+          "type": {
+            "defined": "WriteCollectionExternalPluginAdapterDataV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 29
+      }
     }
   ],
   "accounts": [
@@ -1308,10 +1952,10 @@
             }
           },
           {
-            "name": "externalPlugins",
+            "name": "externalRegistry",
             "type": {
               "vec": {
-                "defined": "ExternalPluginRecord"
+                "defined": "ExternalRegistryRecord"
               }
             }
           }
@@ -1484,6 +2128,72 @@
       }
     },
     {
+      "name": "DataStore",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "DataStoreInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "DataStoreUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Edition",
       "type": {
         "kind": "struct",
@@ -1515,6 +2225,158 @@
       }
     },
     {
+      "name": "ExternalCheckResult",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "flags",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LifecycleHook",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hookedProgram",
+            "type": "publicKey"
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "dataAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LifecycleHookInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hookedProgram",
+            "type": "publicKey"
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "vec": {
+                "tuple": [
+                  {
+                    "defined": "HookableLifecycleEvent"
+                  },
+                  {
+                    "defined": "ExternalCheckResult"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "dataAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LifecycleHookUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "MasterEdition",
       "type": {
         "kind": "struct",
@@ -1535,6 +2397,124 @@
             "name": "uri",
             "type": {
               "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Oracle",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "baseAddress",
+            "type": "publicKey"
+          },
+          {
+            "name": "baseAddressConfig",
+            "type": {
+              "option": {
+                "defined": "ExtraAccount"
+              }
+            }
+          },
+          {
+            "name": "resultsOffset",
+            "type": {
+              "defined": "ValidationResultsOffset"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "baseAddress",
+            "type": "publicKey"
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "vec": {
+                "tuple": [
+                  {
+                    "defined": "HookableLifecycleEvent"
+                  },
+                  {
+                    "defined": "ExternalCheckResult"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "baseAddressConfig",
+            "type": {
+              "option": {
+                "defined": "ExtraAccount"
+              }
+            }
+          },
+          {
+            "name": "resultsOffset",
+            "type": {
+              "option": {
+                "defined": "ValidationResultsOffset"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "baseAddressConfig",
+            "type": {
+              "option": {
+                "defined": "ExtraAccount"
+              }
+            }
+          },
+          {
+            "name": "resultsOffset",
+            "type": {
+              "option": {
+                "defined": "ValidationResultsOffset"
+              }
             }
           }
         ]
@@ -1591,10 +2571,16 @@
       }
     },
     {
-      "name": "ExternalPluginRecord",
+      "name": "ExternalRegistryRecord",
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "pluginType",
+            "type": {
+              "defined": "ExternalPluginAdapterType"
+            }
+          },
           {
             "name": "authority",
             "type": {
@@ -1602,8 +2588,37 @@
             }
           },
           {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
             "name": "offset",
             "type": "u64"
+          },
+          {
+            "name": "dataOffset",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "dataLen",
+            "type": {
+              "option": "u64"
+            }
           }
         ]
       }
@@ -1666,6 +2681,34 @@
             "name": "additionalDelegates",
             "type": {
               "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddExternalPluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initInfo",
+            "type": {
+              "defined": "ExternalPluginAdapterInitInfo"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddCollectionExternalPluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initInfo",
+            "type": {
+              "defined": "ExternalPluginAdapterInitInfo"
             }
           }
         ]
@@ -1827,6 +2870,48 @@
       }
     },
     {
+      "name": "CreateV2Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataState",
+            "type": {
+              "defined": "DataState"
+            }
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "plugins",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "PluginAuthorityPair"
+                }
+              }
+            }
+          },
+          {
+            "name": "externalPluginAdapters",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExternalPluginAdapterInitInfo"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "CreateCollectionV1Args",
       "type": {
         "kind": "struct",
@@ -1853,6 +2938,42 @@
       }
     },
     {
+      "name": "CreateCollectionV2Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "plugins",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "PluginAuthorityPair"
+                }
+              }
+            }
+          },
+          {
+            "name": "externalPluginAdapters",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExternalPluginAdapterInitInfo"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "DecompressV1Args",
       "type": {
         "kind": "struct",
@@ -1861,6 +2982,34 @@
             "name": "compressionProof",
             "type": {
               "defined": "CompressionProof"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveExternalPluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "ExternalPluginAdapterKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveCollectionExternalPluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "ExternalPluginAdapterKey"
             }
           }
         ]
@@ -1987,6 +3136,46 @@
       }
     },
     {
+      "name": "UpdateExternalPluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "ExternalPluginAdapterKey"
+            }
+          },
+          {
+            "name": "updateInfo",
+            "type": {
+              "defined": "ExternalPluginAdapterUpdateInfo"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateCollectionExternalPluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "ExternalPluginAdapterKey"
+            }
+          },
+          {
+            "name": "updateInfo",
+            "type": {
+              "defined": "ExternalPluginAdapterUpdateInfo"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "UpdatePluginV1Args",
       "type": {
         "kind": "struct",
@@ -2010,6 +3199,42 @@
             "type": {
               "defined": "Plugin"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "WriteExternalPluginAdapterDataV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "ExternalPluginAdapterKey"
+            }
+          },
+          {
+            "name": "data",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WriteCollectionExternalPluginAdapterDataV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "ExternalPluginAdapterKey"
+            }
+          },
+          {
+            "name": "data",
+            "type": "bytes"
           }
         ]
       }
@@ -2264,6 +3489,430 @@
       }
     },
     {
+      "name": "ExternalPluginAdapterType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "LifecycleHook"
+          },
+          {
+            "name": "Oracle"
+          },
+          {
+            "name": "DataStore"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExternalPluginAdapter",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "LifecycleHook",
+            "fields": [
+              {
+                "defined": "LifecycleHook"
+              }
+            ]
+          },
+          {
+            "name": "Oracle",
+            "fields": [
+              {
+                "defined": "Oracle"
+              }
+            ]
+          },
+          {
+            "name": "DataStore",
+            "fields": [
+              {
+                "defined": "DataStore"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "HookableLifecycleEvent",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Create"
+          },
+          {
+            "name": "Transfer"
+          },
+          {
+            "name": "Burn"
+          },
+          {
+            "name": "Update"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExtraAccount",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "PreconfiguredProgram",
+            "fields": [
+              {
+                "name": "is_signer",
+                "type": "bool"
+              },
+              {
+                "name": "is_writable",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "PreconfiguredCollection",
+            "fields": [
+              {
+                "name": "is_signer",
+                "type": "bool"
+              },
+              {
+                "name": "is_writable",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "PreconfiguredOwner",
+            "fields": [
+              {
+                "name": "is_signer",
+                "type": "bool"
+              },
+              {
+                "name": "is_writable",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "PreconfiguredRecipient",
+            "fields": [
+              {
+                "name": "is_signer",
+                "type": "bool"
+              },
+              {
+                "name": "is_writable",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "PreconfiguredAsset",
+            "fields": [
+              {
+                "name": "is_signer",
+                "type": "bool"
+              },
+              {
+                "name": "is_writable",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "CustomPda",
+            "fields": [
+              {
+                "name": "seeds",
+                "type": {
+                  "vec": {
+                    "defined": "Seed"
+                  }
+                }
+              },
+              {
+                "name": "custom_program_id",
+                "type": {
+                  "option": "publicKey"
+                }
+              },
+              {
+                "name": "is_signer",
+                "type": "bool"
+              },
+              {
+                "name": "is_writable",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "Address",
+            "fields": [
+              {
+                "name": "address",
+                "type": "publicKey"
+              },
+              {
+                "name": "is_signer",
+                "type": "bool"
+              },
+              {
+                "name": "is_writable",
+                "type": "bool"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Seed",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Collection"
+          },
+          {
+            "name": "Owner"
+          },
+          {
+            "name": "Recipient"
+          },
+          {
+            "name": "Asset"
+          },
+          {
+            "name": "Address",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "Bytes",
+            "fields": [
+              "bytes"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExternalPluginAdapterSchema",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Binary"
+          },
+          {
+            "name": "Json"
+          },
+          {
+            "name": "MsgPack"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExternalPluginAdapterInitInfo",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "LifecycleHook",
+            "fields": [
+              {
+                "defined": "LifecycleHookInitInfo"
+              }
+            ]
+          },
+          {
+            "name": "Oracle",
+            "fields": [
+              {
+                "defined": "OracleInitInfo"
+              }
+            ]
+          },
+          {
+            "name": "DataStore",
+            "fields": [
+              {
+                "defined": "DataStoreInitInfo"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExternalPluginAdapterUpdateInfo",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "LifecycleHook",
+            "fields": [
+              {
+                "defined": "LifecycleHookUpdateInfo"
+              }
+            ]
+          },
+          {
+            "name": "Oracle",
+            "fields": [
+              {
+                "defined": "OracleUpdateInfo"
+              }
+            ]
+          },
+          {
+            "name": "DataStore",
+            "fields": [
+              {
+                "defined": "DataStoreUpdateInfo"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExternalPluginAdapterKey",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "LifecycleHook",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "Oracle",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "DataStore",
+            "fields": [
+              {
+                "defined": "Authority"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ValidationResult",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Approved"
+          },
+          {
+            "name": "Rejected"
+          },
+          {
+            "name": "Pass"
+          },
+          {
+            "name": "ForceApproved"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExternalValidationResult",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Approved"
+          },
+          {
+            "name": "Rejected"
+          },
+          {
+            "name": "Pass"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ValidationResultsOffset",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoOffset"
+          },
+          {
+            "name": "Anchor"
+          },
+          {
+            "name": "Custom",
+            "fields": [
+              "u64"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleValidation",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Uninitialized"
+          },
+          {
+            "name": "V1",
+            "fields": [
+              {
+                "name": "create",
+                "type": {
+                  "defined": "ExternalValidationResult"
+                }
+              },
+              {
+                "name": "transfer",
+                "type": {
+                  "defined": "ExternalValidationResult"
+                }
+              },
+              {
+                "name": "burn",
+                "type": {
+                  "defined": "ExternalValidationResult"
+                }
+              },
+              {
+                "name": "update",
+                "type": {
+                  "defined": "ExternalValidationResult"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "name": "RuleSet",
       "type": {
         "kind": "enum",
@@ -2324,49 +3973,6 @@
               {
                 "name": "address",
                 "type": "publicKey"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "ExtraAccounts",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "None"
-          },
-          {
-            "name": "SplHook",
-            "fields": [
-              {
-                "name": "extra_account_metas",
-                "type": "publicKey"
-              }
-            ]
-          },
-          {
-            "name": "MplHook",
-            "fields": [
-              {
-                "name": "mint_pda",
-                "type": {
-                  "option": "publicKey"
-                }
-              },
-              {
-                "name": "collection_pda",
-                "type": {
-                  "option": "publicKey"
-                }
-              },
-              {
-                "name": "owner_pda",
-                "type": {
-                  "option": "publicKey"
-                }
               }
             ]
           }
@@ -2578,6 +4184,51 @@
       "code": 30,
       "name": "InvalidLogWrapperProgram",
       "msg": "Invalid Log Wrapper Program"
+    },
+    {
+      "code": 31,
+      "name": "ExternalPluginAdapterNotFound",
+      "msg": "External PluginExternalPluginAdapter not found"
+    },
+    {
+      "code": 32,
+      "name": "ExternalPluginAdapterAlreadyExists",
+      "msg": "External PluginExternalPluginAdapter already exists"
+    },
+    {
+      "code": 33,
+      "name": "MissingAsset",
+      "msg": "Missing asset needed for extra account PDA derivation"
+    },
+    {
+      "code": 34,
+      "name": "MissingExternalPluginAdapterAccount",
+      "msg": "Missing account needed for external plugin adapter"
+    },
+    {
+      "code": 35,
+      "name": "OracleCanRejectOnly",
+      "msg": "Oracle external plugin adapter can only be configured to reject"
+    },
+    {
+      "code": 36,
+      "name": "RequiresLifecycleCheck",
+      "msg": "External plugin adapter must have at least one lifecycle check"
+    },
+    {
+      "code": 37,
+      "name": "DuplicateLifecycleChecks",
+      "msg": "Duplicate lifecycle checks were provided for external plugin adapter "
+    },
+    {
+      "code": 38,
+      "name": "InvalidOracleAccountData",
+      "msg": "Could not read from oracle account"
+    },
+    {
+      "code": 39,
+      "name": "UninitializedOracleAccount",
+      "msg": "Oracle account is uninitialized"
     }
   ],
   "metadata": {

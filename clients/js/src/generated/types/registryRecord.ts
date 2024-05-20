@@ -8,23 +8,23 @@
 
 import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
 import {
-  PluginAuthority,
-  PluginAuthorityArgs,
+  BasePluginAuthority,
+  BasePluginAuthorityArgs,
   PluginType,
   PluginTypeArgs,
-  getPluginAuthoritySerializer,
+  getBasePluginAuthoritySerializer,
   getPluginTypeSerializer,
 } from '.';
 
 export type RegistryRecord = {
   pluginType: PluginType;
-  authority: PluginAuthority;
+  authority: BasePluginAuthority;
   offset: bigint;
 };
 
 export type RegistryRecordArgs = {
   pluginType: PluginTypeArgs;
-  authority: PluginAuthorityArgs;
+  authority: BasePluginAuthorityArgs;
   offset: number | bigint;
 };
 
@@ -35,7 +35,7 @@ export function getRegistryRecordSerializer(): Serializer<
   return struct<RegistryRecord>(
     [
       ['pluginType', getPluginTypeSerializer()],
-      ['authority', getPluginAuthoritySerializer()],
+      ['authority', getBasePluginAuthoritySerializer()],
       ['offset', u64()],
     ],
     { description: 'RegistryRecord' }

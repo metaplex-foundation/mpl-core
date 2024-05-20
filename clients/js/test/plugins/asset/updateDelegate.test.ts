@@ -15,7 +15,7 @@ import {
   assertAsset,
   createAsset,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('it can create an asset with updateDelegate', async (t) => {
   const umi = await createUmi();

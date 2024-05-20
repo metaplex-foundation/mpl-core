@@ -58,17 +58,21 @@ pub(crate) fn revoke_plugin_authority<'a>(
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
+        accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
         Some(&plugin),
+        None,
         AssetV1::check_revoke_plugin_authority,
         CollectionV1::check_revoke_plugin_authority,
         PluginType::check_revoke_plugin_authority,
         AssetV1::validate_revoke_plugin_authority,
         CollectionV1::validate_revoke_plugin_authority,
         Plugin::validate_revoke_plugin_authority,
+        None,
+        None,
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -129,13 +133,17 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
+        accounts,
         authority,
         ctx.accounts.collection,
         Some(&plugin),
+        None,
         CollectionV1::check_revoke_plugin_authority,
         PluginType::check_revoke_plugin_authority,
         CollectionV1::validate_revoke_plugin_authority,
         Plugin::validate_revoke_plugin_authority,
+        None,
+        None,
     )?;
 
     let resolved_authorities =

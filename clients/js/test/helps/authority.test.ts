@@ -10,7 +10,7 @@ import {
   createAssetWithCollection,
   createCollection,
   createUmi,
-} from '../_setup';
+} from '../_setupRaw';
 
 test('it throws when not matching asset and collection', async (t) => {
   const umi = await createUmi();

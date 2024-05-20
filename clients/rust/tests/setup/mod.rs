@@ -1,6 +1,9 @@
 use mpl_core::{
-    instructions::{CreateCollectionV1Builder, CreateV1Builder},
-    types::{DataState, Key, Plugin, PluginAuthorityPair, UpdateAuthority},
+    instructions::{CreateCollectionV2Builder, CreateV2Builder},
+    types::{
+        DataState, ExternalPluginAdapter, ExternalPluginAdapterInitInfo, Key, Plugin,
+        PluginAuthorityPair, UpdateAuthority,
+    },
     Asset, Collection,
 };
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
@@ -31,6 +34,7 @@ pub struct CreateAssetHelperArgs<'a> {
     pub collection: Option<Pubkey>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
+    pub external_plugin_adapters: Vec<ExternalPluginAdapterInitInfo>,
 }
 
 pub async fn create_asset<'a>(
@@ -38,7 +42,7 @@ pub async fn create_asset<'a>(
     input: CreateAssetHelperArgs<'a>,
 ) -> Result<(), BanksClientError> {
     let payer = input.payer.unwrap_or(&context.payer);
-    let create_ix = CreateV1Builder::new()
+    let create_ix = CreateV2Builder::new()
         .asset(input.asset.pubkey())
         .collection(input.collection)
         .authority(input.authority)
@@ -50,6 +54,7 @@ pub async fn create_asset<'a>(
         .name(input.name.unwrap_or(DEFAULT_ASSET_NAME.to_owned()))
         .uri(input.uri.unwrap_or(DEFAULT_ASSET_URI.to_owned()))
         .plugins(input.plugins)
+        .external_plugin_adapters(input.external_plugin_adapters)
         .instruction();
 
     let mut signers = vec![input.asset, &context.payer];
@@ -75,6 +80,7 @@ pub struct AssertAssetHelperArgs {
     pub uri: Option<String>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
+    pub external_plugin_adapters: Vec<ExternalPluginAdapter>,
 }
 
 pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHelperArgs) {
@@ -125,6 +131,32 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
             _ => panic!("unsupported plugin type"),
         }
     }
+
+    assert_eq!(
+        input.external_plugin_adapters.len(),
+        asset.external_plugin_adapter_list.lifecycle_hooks.len()
+            + asset.external_plugin_adapter_list.oracles.len()
+            + asset.external_plugin_adapter_list.data_stores.len()
+    );
+    for plugin in input.external_plugin_adapters {
+        match plugin {
+            ExternalPluginAdapter::LifecycleHook(hook) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .lifecycle_hooks
+                    .contains(&hook))
+            }
+            ExternalPluginAdapter::Oracle(oracle) => {
+                assert!(asset.external_plugin_adapter_list.oracles.contains(&oracle))
+            }
+            ExternalPluginAdapter::DataStore(data_store) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .data_stores
+                    .contains(&data_store))
+            }
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -136,6 +168,7 @@ pub struct CreateCollectionHelperArgs<'a> {
     pub uri: Option<String>,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
+    pub external_plugin_adapters: Vec<ExternalPluginAdapterInitInfo>,
 }
 
 pub async fn create_collection<'a>(
@@ -143,7 +176,7 @@ pub async fn create_collection<'a>(
     input: CreateCollectionHelperArgs<'a>,
 ) -> Result<(), BanksClientError> {
     let payer = input.payer.unwrap_or(&context.payer);
-    let create_ix = CreateCollectionV1Builder::new()
+    let create_ix = CreateCollectionV2Builder::new()
         .collection(input.collection.pubkey())
         .update_authority(input.update_authority)
         .payer(payer.pubkey())
@@ -151,6 +184,7 @@ pub async fn create_collection<'a>(
         .name(input.name.unwrap_or(DEFAULT_COLLECTION_NAME.to_owned()))
         .uri(input.uri.unwrap_or(DEFAULT_COLLECTION_URI.to_owned()))
         .plugins(input.plugins)
+        .external_plugin_adapters(input.external_plugin_adapters)
         .instruction();
 
     let mut signers = vec![input.collection, &context.payer];
@@ -229,6 +263,8 @@ pub async fn assert_collection(
             _ => panic!("unsupported plugin type"),
         }
     }
+
+    // TODO validate external plugin adapters here.
 }
 
 pub async fn airdrop(
@@ -249,4 +285,33 @@ pub async fn airdrop(
 
     context.banks_client.process_transaction(tx).await.unwrap();
     Ok(())
+}
+
+#[macro_export]
+macro_rules! assert_custom_instruction_error {
+    ($ix:expr, $error:expr, $matcher:pat) => {
+        match $error {
+            solana_program_test::BanksClientError::TransactionError(
+                solana_sdk::transaction::TransactionError::InstructionError(
+                    $ix,
+                    solana_sdk::instruction::InstructionError::Custom(x),
+                ),
+            ) => match num_traits::FromPrimitive::from_i32(x as i32) {
+                Some($matcher) => assert!(true),
+                Some(other) => {
+                    assert!(
+                        false,
+                        "Expected another custom instruction error than '{:#?}'",
+                        other
+                    )
+                }
+                None => assert!(false, "Expected custom instruction error"),
+            },
+            err => assert!(
+                false,
+                "Expected custom instruction error but got '{:#?}'",
+                err
+            ),
+        };
+    };
 }

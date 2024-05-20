@@ -8,9 +8,10 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, Attributes, BurnDelegate, Edition, FreezeDelegate, ImmutableMetadata, Key,
-        MasterEdition, PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate,
-        PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
+        AddBlocker, Attributes, BurnDelegate, DataStore, Edition, ExternalCheckResult,
+        ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate, ImmutableMetadata, Key,
+        LifecycleHook, MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
+        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
     },
 };
 
@@ -163,10 +164,18 @@ pub struct PluginsList {
     pub immutable_metadata: Option<ImmutableMetadataPlugin>,
 }
 
+#[derive(Debug, Default)]
+pub struct ExternalPluginAdaptersList {
+    pub lifecycle_hooks: Vec<LifecycleHook>,
+    pub oracles: Vec<Oracle>,
+    pub data_stores: Vec<DataStore>,
+}
+
 #[derive(Debug)]
 pub struct Asset {
     pub base: BaseAssetV1,
     pub plugin_list: PluginsList,
+    pub external_plugin_adapter_list: ExternalPluginAdaptersList,
     pub plugin_header: Option<PluginHeaderV1>,
 }
 
@@ -192,12 +201,31 @@ impl RegistryRecordSafe {
     }
 }
 
+///ExternalPluginAdapter Registry record that can be used when the plugin type is not known (i.e. a `ExternalPluginAdapterType` that
+/// is too new for this client to know about).
+pub struct ExternalRegistryRecordSafe {
+    pub plugin_type: u8,
+    pub authority: PluginAuthority,
+    pub lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
+    pub offset: u64,
+    pub data_offset: Option<u64>,
+    pub data_len: Option<u64>,
+}
+
+impl ExternalRegistryRecordSafe {
+    /// Associated function for sorting `RegistryRecordIndexable` by offset.
+    pub fn compare_offsets(a: &RegistryRecordSafe, b: &RegistryRecordSafe) -> Ordering {
+        a.offset.cmp(&b.offset)
+    }
+}
+
 /// Plugin registry that an account can safely be deserialized into even if some plugins are
-/// not known.  Note this skips over external plugins for now, and will be updated when those
+/// not known.  Note this skips over external plugin adapters for now, and will be updated when those
 /// are defined.
 pub struct PluginRegistryV1Safe {
     pub _key: Key,
     pub registry: Vec<RegistryRecordSafe>,
+    pub external_registry: Vec<ExternalRegistryRecordSafe>,
 }
 
 impl PluginRegistryV1Safe {
@@ -224,9 +252,48 @@ impl PluginRegistryV1Safe {
             });
         }
 
+        let external_registry_size = u32::deserialize(&mut data)?;
+
+        let mut external_registry = vec![];
+        for _ in 0..external_registry_size {
+            let plugin_type = u8::deserialize(&mut data)?;
+            let authority = PluginAuthority::deserialize(&mut data)?;
+            let lifecycle_checks =
+                Option::<Vec<(u8, ExternalCheckResult)>>::deserialize(&mut data)?;
+            let offset = u64::deserialize(&mut data)?;
+            let data_offset = Option::<u64>::deserialize(&mut data)?;
+            let data_len = Option::<u64>::deserialize(&mut data)?;
+
+            external_registry.push(ExternalRegistryRecordSafe {
+                plugin_type,
+                authority,
+                lifecycle_checks,
+                offset,
+                data_offset,
+                data_len,
+            });
+        }
+
         Ok(Self {
             _key: key,
             registry,
+            external_registry,
         })
+    }
+}
+
+impl From<&ExternalPluginAdapter> for ExternalPluginAdapterKey {
+    fn from(plugin: &ExternalPluginAdapter) -> Self {
+        match plugin {
+            ExternalPluginAdapter::DataStore(data_store) => {
+                ExternalPluginAdapterKey::DataStore(data_store.data_authority.clone())
+            }
+            ExternalPluginAdapter::Oracle(oracle) => {
+                ExternalPluginAdapterKey::Oracle(oracle.base_address)
+            }
+            ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
+                ExternalPluginAdapterKey::LifecycleHook(lifecycle_hook.hooked_program)
+            }
+        }
     }
 }

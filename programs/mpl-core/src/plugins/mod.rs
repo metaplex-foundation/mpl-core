@@ -1,11 +1,18 @@
 mod add_blocker;
 mod attributes;
 mod burn_delegate;
+mod data_store;
 mod edition;
+mod external_plugin_adapters;
 mod freeze_delegate;
 mod immutable_metadata;
 mod lifecycle;
+
+mod lifecycle_hook;
+mod oracle;
+
 mod master_edition;
+
 mod permanent_burn_delegate;
 mod permanent_freeze_delegate;
 mod permanent_transfer_delegate;
@@ -19,12 +26,15 @@ mod utils;
 pub use add_blocker::*;
 pub use attributes::*;
 pub use burn_delegate::*;
+pub use data_store::*;
 pub use edition::*;
+pub use external_plugin_adapters::*;
 pub use freeze_delegate::*;
 pub use immutable_metadata::*;
 pub use lifecycle::*;
+pub use lifecycle_hook::*;
 pub use master_edition::*;
-use num_derive::ToPrimitive;
+pub use oracle::*;
 pub use permanent_burn_delegate::*;
 pub use permanent_freeze_delegate::*;
 pub use permanent_transfer_delegate::*;
@@ -35,11 +45,11 @@ pub use transfer::*;
 pub use update_delegate::*;
 pub use utils::*;
 
+use borsh::{BorshDeserialize, BorshSerialize};
+use num_derive::ToPrimitive;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
 };
-
-use borsh::{BorshDeserialize, BorshSerialize};
 use strum::EnumCount;
 
 use crate::{
@@ -105,7 +115,7 @@ impl Plugin {
 
 impl Compressible for Plugin {}
 
-/// List of First Party Plugin types.
+/// List of first party plugin types.
 #[repr(C)]
 #[derive(
     Clone,

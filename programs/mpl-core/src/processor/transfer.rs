@@ -5,7 +5,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::TransferV1Accounts,
-    plugins::{Plugin, PluginType},
+    plugins::{ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginType},
     state::{AssetV1, Authority, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         compress_into_account_space, load_key, rebuild_account_state_from_proof_data,
@@ -77,10 +77,12 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
 
     // Validate asset permissions.
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
+        accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
         Some(ctx.accounts.new_owner),
+        None,
         None,
         AssetV1::check_transfer,
         CollectionV1::check_transfer,
@@ -88,6 +90,8 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
         AssetV1::validate_transfer,
         CollectionV1::validate_transfer,
         Plugin::validate_transfer,
+        Some(ExternalPluginAdapter::validate_transfer),
+        Some(HookableLifecycleEvent::Transfer),
     )?;
 
     // Reset every owner-managed plugin in the registry.
