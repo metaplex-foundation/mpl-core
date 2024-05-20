@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715197138131,
+  "lastUpdate": 1716243046101,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -1589,6 +1589,120 @@ window.BENCHMARK_DATA = {
           {
             "name": "CU: transfer an asset with plugins and empty collection",
             "value": 13894,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "56533526+danenbm@users.noreply.github.com",
+            "name": "Michael Danenberg",
+            "username": "danenbm"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9053d3bdd4755e4ef3aa99db5ee36be4e4433bf7",
+          "message": "Third party plugins staging to main (#107)\n\n* Add structs and instructions for third party plugins (#58)\r\n\r\n* Add structs and ixs for third party plugins\r\n\r\n* lifecyle_checks into a HashMap and add check_external_registry\r\n\r\n* Use Vec for third party lifecycle checks\r\n\r\n* Combine lifecycle hooks and allow custom seeds\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Rename external plugin header to external plugin\r\n\r\n* Also move external plugin data offset inside of\r\nexternal plugin.\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Add create_v2 and create_colleciton_v2 basic structure\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Add external plugin init info container\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Add init and update structs for external plugins\r\n\r\n* Also limit hookable lifecycle events.\r\n\r\n* Resolve other PR comments.\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Move key information into init structs (#65)\r\n\r\n* Move key info into external plugin init info\r\n\r\n* Regenerate clients and IDL\r\n\r\n* Danenbm/no init data (#66)\r\n\r\n* Do not allow data init on 3P plugins\r\n\r\n* Also no lifecycle checks for data store.\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Change external plugin registry name (#67)\r\n\r\n* change external plugins to external registry\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Update custom JS deserializer\r\n\r\n* Remove extra accounts type (#68)\r\n\r\n* External plugin key change (#73)\r\n\r\n* Adding WIP for adding external plugins.\r\n\r\n* Updating some permissions and adding more tests.\r\n\r\n* Adding new IXes and data auth.\r\n\r\n* Adding max size parameter.\r\n\r\n* Removing allocate.\r\n\r\n* Forgot to save.\r\n\r\n* Removing size and clear IX.\r\n\r\n* Updating based on feedback.\r\n\r\n* Updating based on feedback and adding to create.'\r\n\r\n* Adding tests and removing force approve.\r\n\r\n* Danenbm/update from main (#80)\r\n\r\n* Serde Pubkey DisplayFromStr (#78)\r\n\r\n* Update kinobi version\r\n\r\n* Regenerate clients\r\n\r\n* chore: Release mpl-core version 0.5.0\r\n\r\n---------\r\n\r\nCo-authored-by: danenbm <danenbm@users.noreply.github.com>\r\n\r\n* Adding remove plugin.\r\n\r\n* Removing prints.\r\n\r\n* Adding for collection.\r\n\r\n* Nhan/js sdk v1 (#75)\r\n\r\n- sdk v1\r\n- retain mostly backwards compatibility some types have changed name: BasePluginAuthority -> PluginAuthority\r\n- many generated types have changed from Type -> BaseType\r\n- support external plugins\r\n\r\n* Oracle account type (#82)\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Add Oracle validation type\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Update JS SDK for ValidationResultsOffset\r\n\r\n* fix minor type issues\r\n\r\n---------\r\n\r\nCo-authored-by: Nhan Phan <nhan.phan@gmail.com>\r\n\r\n* formatting\r\n\r\n* Fixing deser.\r\n\r\n* Testing fo realz.\r\n\r\n* Adding ExternalPluginNotFound Error.\r\n\r\n* Moving duped code to helper function.\r\n\r\n* Add external plugin validation functions  (#85)\r\n\r\n* Add validations for external plugins on lifecycle events\r\n\r\n* Remove external_plugin_validate from plugin_checks\r\n\r\n* WIP.\r\n\r\n* Moving data offset and length to the record level.\r\n\r\n* Updating JS hooks.\r\n\r\n* Call external plugin validations (#86)\r\n\r\n* Add validations for external plugins on lifecycle events\r\n\r\n* Remove external_plugin_validate from plugin_checks\r\n\r\n* Call external plugin validations\r\n\r\n* Discard ForceApproved in external plugin validation\r\n\r\n* Fast exit if external validation rejects\r\n\r\n* Also mark ForceApproved as unreachable for external plugins\r\n\r\n* Adding missing params to function after rebase\r\n\r\n* Add missing ForceApproved check\r\n\r\n* Update ExternalRegistryRecordSafe and fix tests (#88)\r\n\r\n* Finishing up update external plugin.\r\n\r\n* Removing prints.\r\n\r\n* Adding check to prevent duplicate external plugins.\r\n\r\n* Whoops missed collections.\r\n\r\n* Adding resize optimization.\r\n\r\n* Oracle lifecycle validations (#89)\r\n\r\n* Update ExternalRegistryRecordSafe and fix tests\r\n\r\n* Add accounts, asset, and collection to PluginValidationContext\r\n\r\n* Implement Oracle lifecycle validations\r\n\r\n* Add new error codes\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Derive custom PDA using Seeds Vec\r\n\r\n* Make sure third party plugins can approve or reject before using output\r\n\r\n* Use user program for Program Seed\r\n\r\n* Change ExternalCheckResult to u32\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Fixup add accounts (#94)\r\n\r\n* Add missing accounts\r\n\r\n* Format fix\r\n\r\n* Add Address seed and remove Program seed (#95)\r\n\r\n* Add missing accounts\r\n\r\n* Format fix\r\n\r\n* Remove program seed and add address seed\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Update JS SDK Seed type\r\n\r\n* Format fix\r\n\r\n* Format fix\r\n\r\n* Prevent Oracle from approving lifecycle events (#98)\r\n\r\n* Prevent Oracle from approving lifecycle events\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Change error to be Oracle specific and prevent Oracle from listening\r\n\r\n* Lint fix (#97)\r\n\r\n* Add default case for extraAccount seed handler\r\n\r\n* Regenerate JS client\r\n\r\n* Format fix\r\n\r\n* Danenbm/oracle error code (#100)\r\n\r\n* Regenerate IDL with changed error code\r\n\r\n* Make check tighter to not allow zero checks\r\n\r\nAlso fix Rust client tests\r\n\r\n* oracle test wip (#90)\r\n\r\n* Require passing in oracle lifecycle checks Vec (#101)\r\n\r\n* Regenerate IDL with changed error code\r\n\r\n* Make check tighter to not allow zero checks\r\n\r\nAlso fix Rust client tests\r\n\r\n* Require Oracle to provide lifecycle checks at init\r\n\r\n* Regenerate IDL and clients\r\n\r\n* update oracle init helper\r\n\r\n* Fix Rust tests\r\n\r\n* Require non-empty Vec\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Change CanDeny to CanReject\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Format fix\r\n\r\n* Add test\r\n\r\n* Add more tests\r\n\r\n* More tests for invalid checks and multiple oracle test\r\n\r\n* Prevent duplicate lifecycle checks in external plugins (#104)\r\n\r\n* Prevent duplicate lifecycle check on external plugins\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Add Rust tests\r\n\r\n* Danenbm/lifecycle check requirements (#105)\r\n\r\n* Require LifecycleHook to have lifecycle checks\r\n\r\nAlso do not update lifecycle checks when update value is None\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Fix JS client and fix Rust tests\r\n\r\n* Add tests\r\n\r\n* Add Rust tests for updating with duplicate lifecycle events\r\n\r\n* fix cyclic dep, create with plugin, update with key\r\n\r\n---------\r\n\r\nCo-authored-by: Nhan Phan <nhan.phan@gmail.com>\r\n\r\n* Block `LifecycleHook` and `DataStore` from being created or added later (#106)\r\n\r\n* Block LifecycleHook and DataStore for now\r\n\r\n* Skip tests for deactivated external plugins\r\n\r\n* Add more Oracle update tests\r\n\r\n* Add tests to verify LifecycleHook and DataStore cannot be added\r\n\r\n* Ignore Rust update test\r\n\r\n* Add collection tests\r\n\r\n* fix external plugin offsets, better types, new tests (#109)\r\n\r\n* Adding anchor types.\r\n\r\n* Update.\r\n\r\n* removed audit warning (#108)\r\n\r\n* better types, new test\r\n\r\n* Updating Kinobi dependency.\r\n\r\n* Fixing kinobi reference.\r\n\r\n* Bumping Kinobi version and fixing clients.\r\n\r\n* Fixing mpl-utils version.\r\n\r\n* Immutability plugins (#96)\r\n\r\n* Add ImmutableMetadata && AddBlocker plugins\r\n\r\n* Update autogenerated parts\r\n\r\n* add tests\r\n\r\n* change the order of enums\r\n\r\n* update generated part\r\n\r\n* added tests for ensuring that UA is the only one who can add the plugin\r\n\r\n* added tests for ensuring that UA is the only one who can add the plugin for collection and nested plugins\r\n\r\n* update tests\r\n\r\n* add audit details to readme (#103)\r\n\r\n* removed audit warning (#108)\r\n\r\n* regenerated clients\r\n\r\n* updated tests\r\n\r\n* updated rust clients\r\n\r\n* chore: Release mpl-core version 0.6.0\r\n\r\n* Modify `update` and `update_plugin` to move external plugin offsets (#112)\r\n\r\nNotes\r\nAlso combine asset and collection update functions to use the same processors.\r\nAlso fix offset calculations when updating external plugins (added test for this case).\r\nMore advanced refactor: Combine plugin updating into single utility function #113\r\nNote this PR is built upon #109 so that it can be tested with the new tests from that branch.\r\n\r\n* Deploy JS client v0.4.7\r\n\r\n* update ava version, allow assertions on external plugins, check oracles in oracle tests\r\n\r\n* minor add plugin interface change\r\n\r\n* add additional test assert, formatting\r\n\r\n---------\r\n\r\nCo-authored-by: blockiosaurus <blockiosaurus@gmail.com>\r\nCo-authored-by: Tony Boyle <81017245+tonyboylehub@users.noreply.github.com>\r\nCo-authored-by: Kyrylo Stepanov <k.stepanov@tutanota.com>\r\nCo-authored-by: blockiosaurus <90809591+blockiosaurus@users.noreply.github.com>\r\nCo-authored-by: blockiosaurus <blockiosaurus@users.noreply.github.com>\r\nCo-authored-by: Michael Danenberg <56533526+danenbm@users.noreply.github.com>\r\n\r\n* Improve Oracle account deserialization error handling (#115)\r\n\r\n* Remap oracle account deserialization errors\r\n\r\nAlso fix extra space on last error message\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Add tests and more error handling to Oracle borrowing and slicing\r\n\r\n* Change test name\r\n\r\n* Oracle uninitialized variant (#116)\r\n\r\n* Add uninitialized variant to OracleValidation\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Handle uninitialized kind in JS\r\n\r\n* Add test for empty account\r\n\r\n* Add ability to specify custom program for custom PDA (#117)\r\n\r\n* Add ability to specify custom program for custom PDA\r\n\r\n* Regenerate IDL and JS SDK\r\n\r\n* Add customProgramId JS handling\r\n\r\n* Add test\r\n\r\n* Update oracle example js package\r\n\r\n* bump version v1-alpha\r\n\r\n* bump version v1-alpha\r\n\r\n* Run CI on third-party-plugins-staging (#122)\r\n\r\n* Run on third-party-plugins-staging for now\r\n\r\n* Format fix\r\n\r\n* Nhan/rename external plugin (#119)\r\n\r\n* bump version v1-alpha\r\n\r\n* bump version v1-alpha\r\n\r\n* initial rename\r\n\r\n* Rename Oracle pda - stacked onto rename external plugin (#121)\r\n\r\n* Format fix\r\n\r\n* Rename oracle pda to base_address_config in program\r\n\r\n* Regenerate IDL and clients\r\n\r\n* Update oracle SDK functions\r\n\r\n* Format JS and fix all tests\r\n\r\n* rename to external plugin adapater\r\n\r\n* formatting\r\n\r\n* rename back to external validation result\r\n\r\n* use internal validationresult type\r\n\r\n* rename a few more things\r\n\r\n* minor nits, comments\r\n\r\n---------\r\n\r\nCo-authored-by: Michael Danenberg <56533526+danenbm@users.noreply.github.com>\r\n\r\n* remove unused remove collection plugin type field (#123)\r\n\r\n* bump version v1-alpha\r\n\r\n* remove unused type\r\n\r\n* Add simple test to use new SDK to add Oracle plugin (#125)\r\n\r\n* slightly refactor collection plugin types, add test (#124)\r\n\r\n* bump alpha version\r\n\r\n* bump version v1-alpha\r\n\r\n* add types, bump version\r\n\r\n* add fetch helpers, reduce strictness for umi context ix types, fix derive bug, better asset vs. collection plugin types (#126)\r\n\r\n* bump version v1-alpha\r\n\r\n* better deprecation message\r\n\r\n* lint, more flexible arg\r\n\r\n---------\r\n\r\nCo-authored-by: blockiosaurus <blockiosaurus@gmail.com>\r\nCo-authored-by: blockiosaurus <90809591+blockiosaurus@users.noreply.github.com>\r\nCo-authored-by: danenbm <danenbm@users.noreply.github.com>\r\nCo-authored-by: Nhan Phan <nhan@metaplex.com>\r\nCo-authored-by: Nhan Phan <nhan.phan@gmail.com>\r\nCo-authored-by: Tony Boyle <81017245+tonyboylehub@users.noreply.github.com>\r\nCo-authored-by: Kyrylo Stepanov <k.stepanov@tutanota.com>\r\nCo-authored-by: blockiosaurus <blockiosaurus@users.noreply.github.com>",
+          "timestamp": "2024-05-20T15:03:44-07:00",
+          "tree_id": "ae168b9bb11fd6340c8bed9ea24059b223d7c435",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/9053d3bdd4755e4ef3aa99db5ee36be4e4433bf7"
+        },
+        "date": 1716243045181,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 7609,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 17797,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 36491,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 42522,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 28405,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 34935,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 35909,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 47256,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 38671,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 52120,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 5629,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 8227,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 11979,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 14577,
             "unit": "Compute Units"
           }
         ]
