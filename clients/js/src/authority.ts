@@ -3,7 +3,7 @@ import { pluginAuthority } from './plugins';
 
 /**
  * @deprecated use SDK v1 methods like `create` or `update` instead of `createV1` or `updateV1`. The new methods no longer require this helper
- * 
+ *
  * @returns umi plugin authority with type 'None'
  */
 export function nonePluginAuthority() {
