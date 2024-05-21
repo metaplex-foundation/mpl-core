@@ -15,26 +15,37 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  BaseDataStoreUpdateInfo,
-  BaseDataStoreUpdateInfoArgs,
+  BaseAssetLinkedSecureDataStoreUpdateInfo,
+  BaseAssetLinkedSecureDataStoreUpdateInfoArgs,
   BaseLifecycleHookUpdateInfo,
   BaseLifecycleHookUpdateInfoArgs,
   BaseOracleUpdateInfo,
   BaseOracleUpdateInfoArgs,
-  getBaseDataStoreUpdateInfoSerializer,
+  BaseSecureDataStoreUpdateInfo,
+  BaseSecureDataStoreUpdateInfoArgs,
+  getBaseAssetLinkedSecureDataStoreUpdateInfoSerializer,
   getBaseLifecycleHookUpdateInfoSerializer,
   getBaseOracleUpdateInfoSerializer,
+  getBaseSecureDataStoreUpdateInfoSerializer,
 } from '.';
 
 export type BaseExternalPluginAdapterUpdateInfo =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookUpdateInfo] }
   | { __kind: 'Oracle'; fields: [BaseOracleUpdateInfo] }
-  | { __kind: 'DataStore'; fields: [BaseDataStoreUpdateInfo] };
+  | { __kind: 'SecureDataStore'; fields: [BaseSecureDataStoreUpdateInfo] }
+  | {
+      __kind: 'AssetLinkedSecureDataStore';
+      fields: [BaseAssetLinkedSecureDataStoreUpdateInfo];
+    };
 
 export type BaseExternalPluginAdapterUpdateInfoArgs =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookUpdateInfoArgs] }
   | { __kind: 'Oracle'; fields: [BaseOracleUpdateInfoArgs] }
-  | { __kind: 'DataStore'; fields: [BaseDataStoreUpdateInfoArgs] };
+  | { __kind: 'SecureDataStore'; fields: [BaseSecureDataStoreUpdateInfoArgs] }
+  | {
+      __kind: 'AssetLinkedSecureDataStore';
+      fields: [BaseAssetLinkedSecureDataStoreUpdateInfoArgs];
+    };
 
 export function getBaseExternalPluginAdapterUpdateInfoSerializer(): Serializer<
   BaseExternalPluginAdapterUpdateInfoArgs,
@@ -58,13 +69,27 @@ export function getBaseExternalPluginAdapterUpdateInfoSerializer(): Serializer<
         >([['fields', tuple([getBaseOracleUpdateInfoSerializer()])]]),
       ],
       [
-        'DataStore',
+        'SecureDataStore',
         struct<
           GetDataEnumKindContent<
             BaseExternalPluginAdapterUpdateInfo,
-            'DataStore'
+            'SecureDataStore'
           >
-        >([['fields', tuple([getBaseDataStoreUpdateInfoSerializer()])]]),
+        >([['fields', tuple([getBaseSecureDataStoreUpdateInfoSerializer()])]]),
+      ],
+      [
+        'AssetLinkedSecureDataStore',
+        struct<
+          GetDataEnumKindContent<
+            BaseExternalPluginAdapterUpdateInfo,
+            'AssetLinkedSecureDataStore'
+          >
+        >([
+          [
+            'fields',
+            tuple([getBaseAssetLinkedSecureDataStoreUpdateInfoSerializer()]),
+          ],
+        ]),
       ],
     ],
     { description: 'BaseExternalPluginAdapterUpdateInfo' }
@@ -90,12 +115,22 @@ export function baseExternalPluginAdapterUpdateInfo(
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'Oracle'>;
 export function baseExternalPluginAdapterUpdateInfo(
-  kind: 'DataStore',
+  kind: 'SecureDataStore',
   data: GetDataEnumKindContent<
     BaseExternalPluginAdapterUpdateInfoArgs,
-    'DataStore'
+    'SecureDataStore'
   >['fields']
-): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'DataStore'>;
+): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'SecureDataStore'>;
+export function baseExternalPluginAdapterUpdateInfo(
+  kind: 'AssetLinkedSecureDataStore',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterUpdateInfoArgs,
+    'AssetLinkedSecureDataStore'
+  >['fields']
+): GetDataEnumKind<
+  BaseExternalPluginAdapterUpdateInfoArgs,
+  'AssetLinkedSecureDataStore'
+>;
 export function baseExternalPluginAdapterUpdateInfo<
   K extends BaseExternalPluginAdapterUpdateInfoArgs['__kind'],
 >(

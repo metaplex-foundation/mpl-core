@@ -222,14 +222,32 @@ kinobi.update(
     lifecycleHookUpdateInfo: {
       name: "baseLifecycleHookUpdateInfo"
     },
-    dataStore: {
-      name: "baseDataStore"
+    secureDataStore: {
+      name: "baseSecureDataStore"
     },
-    dataStoreInitInfo: {
-      name: "baseDataStoreInitInfo"
+    secureDataStoreInitInfo: {
+      name: "baseSecureDataStoreInitInfo"
     },
-    dataStoreUpdateInfo: {
-      name: "baseDataStoreUpdateInfo"
+    secureDataStoreUpdateInfo: {
+      name: "baseSecureDataStoreUpdateInfo"
+    },
+    assetLinkedSecureDataStore: {
+      name: "baseAssetLinkedSecureDataStore"
+    },
+    assetLinkedSecureDataStoreInitInfo: {
+      name: "baseAssetLinkedSecureDataStoreInitInfo"
+    },
+    assetLinkedSecureDataStoreUpdateInfo: {
+      name: "baseAssetLinkedSecureDataStoreUpdateInfo"
+    },
+    dataSection: {
+      name: "baseDataSection"
+    },
+    dataSectionInitInfo: {
+      name: "baseDataSectionInitInfo"
+    },
+    dataSectionUpdateInfo: {
+      name: "baseDataSectionUpdateInfo"
     },
     validationResultsOffset: {
       name: "baseValidationResultsOffset"

@@ -176,6 +176,10 @@ pub enum MplCoreError {
     /// 41 - External Plugin does not support this operation
     #[error("External Plugin does not support this operation")]
     UnsupportedOperation,
+
+    /// 42 - No data sources provided, one is required
+    #[error("No data sources provided, one is required")]
+    NoDataSources,
 }
 
 impl PrintProgramError for MplCoreError {

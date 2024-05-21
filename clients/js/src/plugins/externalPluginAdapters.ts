@@ -16,12 +16,12 @@ import {
 } from '../generated';
 
 import {
-  dataStoreFromBase,
-  DataStoreInitInfoArgs,
-  dataStoreManifest,
-  DataStorePlugin,
-  DataStoreUpdateInfoArgs,
-} from './dataStore';
+  secureDataStoreFromBase,
+  SecureDataStoreInitInfoArgs,
+  secureDataStoreManifest,
+  SecureDataStorePlugin,
+  SecureDataStoreUpdateInfoArgs,
+} from './secureDataStore';
 import {
   LifecycleChecksContainer,
   lifecycleChecksFromBase,
@@ -36,6 +36,7 @@ import {
 } from './oracle';
 import { BasePlugin } from './types';
 import { extraAccountToAccountMeta } from './extraAccount';
+import { AssetLinkedSecureDataStorePlugin } from './assetLinkedSecureDataStore';
 
 export type ExternalPluginAdapterTypeString =
   BaseExternalPluginAdapterKey['__kind'];
@@ -44,8 +45,10 @@ export type BaseExternalPluginAdapter = BasePlugin & LifecycleChecksContainer;
 
 export type ExternalPluginAdaptersList = {
   oracles?: OraclePlugin[];
-  dataStores?: DataStorePlugin[];
+  secureDataStores?: SecureDataStorePlugin[];
+  assetLinkedSecureDataStores?: AssetLinkedSecureDataStorePlugin[];
   lifecycleHooks?: LifecycleHookPlugin[];
+  dataSections?: DataSectionPlugin[];
 };
 
 export type ExternalPluginAdapterInitInfoArgs =
@@ -56,8 +59,8 @@ export type ExternalPluginAdapterInitInfoArgs =
     type: 'LifecycleHook';
   } & LifecycleHookInitInfoArgs)
   | ({
-    type: 'DataStore';
-  } & DataStoreInitInfoArgs);
+    type: 'SecureDataStore';
+  } & SecureDataStoreInitInfoArgs);
 
 export type ExternalPluginAdapterUpdateInfoArgs =
   | ({
@@ -67,12 +70,12 @@ export type ExternalPluginAdapterUpdateInfoArgs =
     type: 'LifecycleHook';
   } & LifecycleHookUpdateInfoArgs)
   | ({
-    type: 'DataStore';
-  } & DataStoreUpdateInfoArgs);
+    type: 'SecureDataStore';
+  } & SecureDataStoreUpdateInfoArgs);
 
 export const externalPluginAdapterManifests = {
   Oracle: oracleManifest,
-  DataStore: dataStoreManifest,
+  SecureDataStore: secureDataStoreManifest,
   LifecycleHook: lifecycleHookManifest,
 };
 
@@ -112,16 +115,16 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
         ...mappedPlugin,
         ...oracleFromBase(deserializedPlugin.fields[0], record, accountData),
       });
-    } else if (deserializedPlugin.__kind === 'DataStore') {
-      if (!result.dataStores) {
-        result.dataStores = [];
+    } else if (deserializedPlugin.__kind === 'SecureDataStore') {
+      if (!result.secureDataStores) {
+        result.secureDataStores = [];
       }
       console.log("deserializedPlugin", deserializedPlugin)
       console.log("record", record)
-      result.dataStores.push({
-        type: 'DataStore',
+      result.secureDataStores.push({
+        type: 'SecureDataStore',
         ...mappedPlugin,
-        ...dataStoreFromBase(deserializedPlugin.fields[0], record, accountData),
+        ...secureDataStoreFromBase(deserializedPlugin.fields[0], record, accountData),
       });
     } else if (deserializedPlugin.__kind === 'LifecycleHook') {
       if (!result.lifecycleHooks) {
@@ -146,7 +149,7 @@ export const isExternalPluginAdapterType = (plugin: { type: string }) => {
   if (
     plugin.type === 'Oracle' ||
     plugin.type === 'LifecycleHook' ||
-    plugin.type === 'DataStore'
+    plugin.type === 'SecureDataStore'
   ) {
     return true;
   }

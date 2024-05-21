@@ -3,14 +3,14 @@ import { assertAsset, createUmi, DEFAULT_ASSET } from "../_setupRaw";
 import { createAsset } from "../_setupSdk";
 import { basePluginAuthority, ExternalPluginAdapterSchema, writeData } from "../../src";
 
-test('it can use fixed address oracle to deny update', async (t) => {
+test('it can create a secure store', async (t) => {
     const umi = await createUmi();
 
     // create asset referencing the oracle account
     const asset = await createAsset(umi, {
         plugins: [
             {
-                type: 'DataStore',
+                type: 'SecureDataStore',
                 dataAuthority: {
                     type: 'UpdateAuthority',
                 },
@@ -23,9 +23,42 @@ test('it can use fixed address oracle to deny update', async (t) => {
         ...DEFAULT_ASSET,
         asset: asset.publicKey,
         owner: umi.identity.publicKey,
-        dataStores: [
+        secureDataStores: [
             {
-                type: 'DataStore',
+                type: 'SecureDataStore',
+                authority: { type: 'UpdateAuthority' },
+                dataAuthority: {
+                    type: 'UpdateAuthority',
+                },
+                schema: ExternalPluginAdapterSchema.Binary,
+            },
+        ],
+    });
+});
+
+test('it can write data to a secure store', async (t) => {
+    const umi = await createUmi();
+
+    // create asset referencing the oracle account
+    const asset = await createAsset(umi, {
+        plugins: [
+            {
+                type: 'SecureDataStore',
+                dataAuthority: {
+                    type: 'UpdateAuthority',
+                },
+                schema: ExternalPluginAdapterSchema.Binary,
+            },
+        ],
+    });
+
+    await assertAsset(t, umi, {
+        ...DEFAULT_ASSET,
+        asset: asset.publicKey,
+        owner: umi.identity.publicKey,
+        secureDataStores: [
+            {
+                type: 'SecureDataStore',
                 authority: { type: 'UpdateAuthority' },
                 dataAuthority: {
                     type: 'UpdateAuthority',
@@ -37,7 +70,7 @@ test('it can use fixed address oracle to deny update', async (t) => {
 
     const result = await writeData(umi, {
         key: {
-            __kind: "DataStore",
+            __kind: "SecureDataStore",
             fields: [basePluginAuthority("UpdateAuthority")],
         },
         data: Buffer.from("Hello"),
@@ -50,9 +83,9 @@ test('it can use fixed address oracle to deny update', async (t) => {
         ...DEFAULT_ASSET,
         asset: asset.publicKey,
         owner: umi.identity.publicKey,
-        dataStores: [
+        secureDataStores: [
             {
-                type: 'DataStore',
+                type: 'SecureDataStore',
                 authority: { type: 'UpdateAuthority' },
                 dataAuthority: {
                     type: 'UpdateAuthority',

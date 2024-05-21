@@ -608,6 +608,19 @@ export class UnsupportedOperationError extends ProgramError {
 codeToErrorMap.set(0x29, UnsupportedOperationError);
 nameToErrorMap.set('UnsupportedOperation', UnsupportedOperationError);
 
+/** NoDataSources: No data sources provided, one is required */
+export class NoDataSourcesError extends ProgramError {
+  override readonly name: string = 'NoDataSources';
+
+  readonly code: number = 0x2a; // 42
+
+  constructor(program: Program, cause?: Error) {
+    super('No data sources provided, one is required', program, cause);
+  }
+}
+codeToErrorMap.set(0x2a, NoDataSourcesError);
+nameToErrorMap.set('NoDataSources', NoDataSourcesError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

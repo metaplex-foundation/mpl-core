@@ -234,11 +234,13 @@ pub(crate) fn process_create<'a>(
                     }
                     initialize_external_plugin_adapter::<AssetV1>(
                         plugin_init_info,
+                        Some(&new_asset),
                         &mut plugin_header,
                         &mut plugin_registry,
                         ctx.accounts.asset,
                         ctx.accounts.payer,
                         ctx.accounts.system_program,
+                        None,
                     )?;
                 }
             }

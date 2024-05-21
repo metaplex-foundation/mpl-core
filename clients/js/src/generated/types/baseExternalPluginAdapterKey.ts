@@ -19,18 +19,25 @@ import {
 import {
   BasePluginAuthority,
   BasePluginAuthorityArgs,
+  LinkedDataKey,
+  LinkedDataKeyArgs,
   getBasePluginAuthoritySerializer,
+  getLinkedDataKeySerializer,
 } from '.';
 
 export type BaseExternalPluginAdapterKey =
   | { __kind: 'LifecycleHook'; fields: [PublicKey] }
   | { __kind: 'Oracle'; fields: [PublicKey] }
-  | { __kind: 'DataStore'; fields: [BasePluginAuthority] };
+  | { __kind: 'SecureDataStore'; fields: [BasePluginAuthority] }
+  | { __kind: 'AssetLinkedSecureDataStore'; fields: [BasePluginAuthority] }
+  | { __kind: 'DataSection'; fields: [LinkedDataKey] };
 
 export type BaseExternalPluginAdapterKeyArgs =
   | { __kind: 'LifecycleHook'; fields: [PublicKey] }
   | { __kind: 'Oracle'; fields: [PublicKey] }
-  | { __kind: 'DataStore'; fields: [BasePluginAuthorityArgs] };
+  | { __kind: 'SecureDataStore'; fields: [BasePluginAuthorityArgs] }
+  | { __kind: 'AssetLinkedSecureDataStore'; fields: [BasePluginAuthorityArgs] }
+  | { __kind: 'DataSection'; fields: [LinkedDataKeyArgs] };
 
 export function getBaseExternalPluginAdapterKeySerializer(): Serializer<
   BaseExternalPluginAdapterKeyArgs,
@@ -51,10 +58,28 @@ export function getBaseExternalPluginAdapterKeySerializer(): Serializer<
         ]),
       ],
       [
-        'DataStore',
+        'SecureDataStore',
         struct<
-          GetDataEnumKindContent<BaseExternalPluginAdapterKey, 'DataStore'>
+          GetDataEnumKindContent<
+            BaseExternalPluginAdapterKey,
+            'SecureDataStore'
+          >
         >([['fields', tuple([getBasePluginAuthoritySerializer()])]]),
+      ],
+      [
+        'AssetLinkedSecureDataStore',
+        struct<
+          GetDataEnumKindContent<
+            BaseExternalPluginAdapterKey,
+            'AssetLinkedSecureDataStore'
+          >
+        >([['fields', tuple([getBasePluginAuthoritySerializer()])]]),
+      ],
+      [
+        'DataSection',
+        struct<
+          GetDataEnumKindContent<BaseExternalPluginAdapterKey, 'DataSection'>
+        >([['fields', tuple([getLinkedDataKeySerializer()])]]),
       ],
     ],
     { description: 'BaseExternalPluginAdapterKey' }
@@ -80,12 +105,29 @@ export function baseExternalPluginAdapterKey(
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'Oracle'>;
 export function baseExternalPluginAdapterKey(
-  kind: 'DataStore',
+  kind: 'SecureDataStore',
   data: GetDataEnumKindContent<
     BaseExternalPluginAdapterKeyArgs,
-    'DataStore'
+    'SecureDataStore'
   >['fields']
-): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'DataStore'>;
+): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'SecureDataStore'>;
+export function baseExternalPluginAdapterKey(
+  kind: 'AssetLinkedSecureDataStore',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterKeyArgs,
+    'AssetLinkedSecureDataStore'
+  >['fields']
+): GetDataEnumKind<
+  BaseExternalPluginAdapterKeyArgs,
+  'AssetLinkedSecureDataStore'
+>;
+export function baseExternalPluginAdapterKey(
+  kind: 'DataSection',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterKeyArgs,
+    'DataSection'
+  >['fields']
+): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'DataSection'>;
 export function baseExternalPluginAdapterKey<
   K extends BaseExternalPluginAdapterKeyArgs['__kind'],
 >(

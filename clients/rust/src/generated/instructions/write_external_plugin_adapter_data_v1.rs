@@ -19,7 +19,7 @@ pub struct WriteExternalPluginAdapterDataV1 {
     pub collection: Option<solana_program::pubkey::Pubkey>,
     /// The account paying for the storage fees
     pub payer: solana_program::pubkey::Pubkey,
-    /// The Data Authority of the External Plugin
+    /// The Data Authority of the External Plugin Adapter
     pub authority: Option<solana_program::pubkey::Pubkey>,
     /// The buffer to write to the external plugin
     pub buffer: Option<solana_program::pubkey::Pubkey>,
@@ -179,7 +179,7 @@ impl WriteExternalPluginAdapterDataV1Builder {
         self
     }
     /// `[optional account]`
-    /// The Data Authority of the External Plugin
+    /// The Data Authority of the External Plugin Adapter
     #[inline(always)]
     pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.authority = authority;
@@ -268,7 +268,7 @@ pub struct WriteExternalPluginAdapterDataV1CpiAccounts<'a, 'b> {
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The Data Authority of the External Plugin
+    /// The Data Authority of the External Plugin Adapter
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The buffer to write to the external plugin
     pub buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -288,7 +288,7 @@ pub struct WriteExternalPluginAdapterDataV1Cpi<'a, 'b> {
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The Data Authority of the External Plugin
+    /// The Data Authority of the External Plugin Adapter
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The buffer to write to the external plugin
     pub buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -510,7 +510,7 @@ impl<'a, 'b> WriteExternalPluginAdapterDataV1CpiBuilder<'a, 'b> {
         self
     }
     /// `[optional account]`
-    /// The Data Authority of the External Plugin
+    /// The Data Authority of the External Plugin Adapter
     #[inline(always)]
     pub fn authority(
         &mut self,

@@ -1,32 +1,32 @@
 mod add_blocker;
+mod asset_linked_secure_data_store;
 mod attributes;
 mod burn_delegate;
-mod data_store;
+mod data_section;
 mod edition;
 mod external_plugin_adapters;
 mod freeze_delegate;
 mod immutable_metadata;
 mod lifecycle;
-
 mod lifecycle_hook;
-mod oracle;
-
 mod master_edition;
-
+mod oracle;
 mod permanent_burn_delegate;
 mod permanent_freeze_delegate;
 mod permanent_transfer_delegate;
 mod plugin_header;
 mod plugin_registry;
 mod royalties;
+mod secure_data_store;
 mod transfer;
 mod update_delegate;
 mod utils;
 
 pub use add_blocker::*;
+pub use asset_linked_secure_data_store::*;
 pub use attributes::*;
 pub use burn_delegate::*;
-pub use data_store::*;
+pub use data_section::*;
 pub use edition::*;
 pub use external_plugin_adapters::*;
 pub use freeze_delegate::*;
@@ -41,6 +41,7 @@ pub use permanent_transfer_delegate::*;
 pub use plugin_header::*;
 pub use plugin_registry::*;
 pub use royalties::*;
+pub use secure_data_store::*;
 pub use transfer::*;
 pub use update_delegate::*;
 pub use utils::*;

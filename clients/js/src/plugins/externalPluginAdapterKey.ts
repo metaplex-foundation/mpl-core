@@ -4,17 +4,17 @@ import { PluginAuthority, pluginAuthorityToBase } from './pluginAuthority';
 
 export type ExternalPluginAdapterKey =
   | {
-      type: 'Oracle';
-      baseAddress: PublicKey;
-    }
+    type: 'Oracle';
+    baseAddress: PublicKey;
+  }
   | {
-      type: 'DataStore';
-      dataAuthority: PluginAuthority;
-    }
+    type: 'SecureDataStore';
+    dataAuthority: PluginAuthority;
+  }
   | {
-      type: 'LifecycleHook';
-      hookedProgram: PublicKey;
-    };
+    type: 'LifecycleHook';
+    hookedProgram: PublicKey;
+  };
 
 export function externalPluginAdapterKeyToBase(
   e: ExternalPluginAdapterKey
@@ -25,9 +25,9 @@ export function externalPluginAdapterKeyToBase(
       fields: [e.baseAddress],
     };
   }
-  if (e.type === 'DataStore') {
+  if (e.type === 'SecureDataStore') {
     return {
-      __kind: 'DataStore',
+      __kind: 'SecureDataStore',
       fields: [pluginAuthorityToBase(e.dataAuthority)],
     };
   }

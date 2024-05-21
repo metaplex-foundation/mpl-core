@@ -2,7 +2,7 @@ import { PublicKey, publicKey } from '@metaplex-foundation/umi';
 import { AssetV1, CollectionV1 } from '../generated';
 import { ExternalPluginAdaptersList } from '../plugins';
 import { OracleInitInfoArgs, OraclePlugin } from '../plugins/oracle';
-import { DataStoreInitInfoArgs, DataStorePlugin } from '../plugins/dataStore';
+import { SecureDataStoreInitInfoArgs, SecureDataStorePlugin } from '../plugins/secureDataStore';
 import {
   LifecycleHookInitInfoArgs,
   LifecycleHookPlugin,
@@ -23,25 +23,24 @@ export function collectionAddress(asset: AssetV1): PublicKey | undefined {
 
 const externalPluginAdapterKeys: (keyof ExternalPluginAdaptersList)[] = [
   'oracles',
-  'dataStores',
+  'secureDataStores',
   'lifecycleHooks',
 ];
 export const getExternalPluginAdapterKeyAsString = (
   plugin:
     | OraclePlugin
-    | DataStorePlugin
+    | SecureDataStorePlugin
     | LifecycleHookPlugin
     | OracleInitInfoArgs
     | LifecycleHookInitInfoArgs
-    | DataStoreInitInfoArgs
+    | SecureDataStoreInitInfoArgs
 ) => {
   switch (plugin.type) {
     case 'Oracle':
       return `${plugin.type}-${plugin.baseAddress}`;
-    case 'DataStore':
-      return `${plugin.type}-${plugin.dataAuthority.type}${
-        plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
-      }`;
+    case 'SecureDataStore':
+      return `${plugin.type}-${plugin.dataAuthority.type}${plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
+        }`;
     case 'LifecycleHook':
     default:
       return `${plugin.type}-${plugin.hookedProgram}`;
@@ -62,14 +61,14 @@ export const deriveExternalPluginAdapters = (
       externalPluginAdapters[key] = [];
     }
     asset[key]?.forEach(
-      (plugin: OraclePlugin | DataStorePlugin | LifecycleHookPlugin) => {
+      (plugin: OraclePlugin | SecureDataStorePlugin | LifecycleHookPlugin) => {
         set.add(getExternalPluginAdapterKeyAsString(plugin));
         externalPluginAdapters[key]?.push(plugin as any);
       }
     );
 
     collection[key]?.forEach(
-      (plugin: OraclePlugin | DataStorePlugin | LifecycleHookPlugin) => {
+      (plugin: OraclePlugin | SecureDataStorePlugin | LifecycleHookPlugin) => {
         if (!set.has(getExternalPluginAdapterKeyAsString(plugin))) {
           externalPluginAdapters[key]?.push(plugin as any);
         }

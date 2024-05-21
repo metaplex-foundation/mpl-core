@@ -13,9 +13,9 @@ use crate::{
 };
 
 use super::{
-    ExternalPluginAdapter, ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey,
-    ExternalPluginAdapterType, ExternalRegistryRecord, Plugin, PluginHeaderV1, PluginRegistryV1,
-    PluginType, RegistryRecord,
+    AssetLinkedSecureDataStoreInitInfo, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
+    ExternalPluginAdapterKey, ExternalPluginAdapterType, ExternalRegistryRecord, LinkedDataKey,
+    Plugin, PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord, SecureDataStoreInitInfo,
 };
 
 /// Create plugin header and registry if it doesn't exist
@@ -310,16 +310,29 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
 }
 
 /// Add an external plugin adapter to the registry and initialize it.
+#[allow(clippy::too_many_arguments)]
 pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     init_info: &ExternalPluginAdapterInitInfo,
+    core: Option<&T>,
     plugin_header: &mut PluginHeaderV1,
     plugin_registry: &mut PluginRegistryV1,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
+    appended_data: Option<&[u8]>,
 ) -> ProgramResult {
-    let core = T::load(account, 0)?;
-    let header_offset = core.get_size();
+    let header_offset = match core {
+        Some(core) => core.get_size(),
+        None => {
+            let asset = T::load(account, 0)?;
+
+            if asset.get_size() == account.data_len() {
+                return Err(MplCoreError::ExternalPluginAdapterNotFound.into());
+            }
+
+            asset.get_size()
+        }
+    };
     let plugin_type = init_info.into();
 
     // Note currently we are blocking adding LifecycleHook and DataStore external plugin adapters as they
@@ -352,9 +365,18 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
                 Some(init_info.lifecycle_checks.clone()),
             )
         }
-        ExternalPluginAdapterInitInfo::DataStore(init_info) => {
-            (init_info.init_plugin_authority, None)
-        }
+        ExternalPluginAdapterInitInfo::SecureDataStore(SecureDataStoreInitInfo {
+            init_plugin_authority,
+            ..
+        })
+        | ExternalPluginAdapterInitInfo::AssetLinkedSecureDataStore(
+            AssetLinkedSecureDataStoreInitInfo {
+                init_plugin_authority,
+                ..
+            },
+        ) => (*init_plugin_authority, None),
+        // The DataSection is only updated via its managing plugin so it has no authority.
+        ExternalPluginAdapterInitInfo::DataSection(_) => (Some(Authority::None), None),
     };
 
     let old_registry_offset = plugin_header.plugin_registry_offset;
@@ -368,13 +390,17 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         data_len: None,
     };
 
-    let mut plugin = ExternalPluginAdapter::from(init_info);
+    let plugin = ExternalPluginAdapter::from(init_info);
 
-    // If the plugin is a LifecycleHook or DataStore, then we need to set the data offset and length.
-    match &mut plugin {
-        ExternalPluginAdapter::LifecycleHook(_) | ExternalPluginAdapter::DataStore(_) => {
-            new_registry_record.data_offset = Some(old_registry_offset);
-            new_registry_record.data_len = Some(0);
+    // If the plugin is a LifecycleHook or SecureDataStore, then we need to set the data offset and length.
+    match plugin {
+        ExternalPluginAdapter::LifecycleHook(_) | ExternalPluginAdapter::SecureDataStore(_) => {
+            if appended_data.is_none() {
+                return Err(MplCoreError::NoDataSources.into());
+            }
+            // Here we use a 0 value for the data offset as it will be updated after the data is appended.
+            new_registry_record.data_offset = Some(0);
+            new_registry_record.data_len = Some(appended_data.unwrap().len());
         }
         _ => {}
     };
@@ -384,11 +410,19 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
 
     let size_increase = plugin_size
         .checked_add(new_registry_record.try_to_vec()?.len())
+        .ok_or(MplCoreError::NumericalOverflow)?
+        .checked_add(new_registry_record.data_len.unwrap_or(0))
         .ok_or(MplCoreError::NumericalOverflow)?;
 
-    let new_registry_offset = plugin_header
+    let data_offset = plugin_header
         .plugin_registry_offset
         .checked_add(plugin_size)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
+    new_registry_record.data_offset = Some(data_offset);
+
+    let new_registry_offset = data_offset
+        .checked_add(new_registry_record.data_len.unwrap_or(0))
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     plugin_header.plugin_registry_offset = new_registry_offset;
@@ -403,13 +437,22 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     resize_or_reallocate_account(account, payer, system_program, new_size)?;
     plugin_header.save(account, header_offset)?;
     plugin.save(account, old_registry_offset)?;
+
+    if let Some(data) = appended_data {
+        sol_memcpy(
+            &mut account.data.borrow_mut()[data_offset..],
+            data,
+            data.len(),
+        );
+    };
+
     plugin_registry.save(account, new_registry_offset)?;
 
     Ok(())
 }
 
 pub(crate) fn validate_lifecycle_checks(
-    lifecycle_checks: &Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
+    lifecycle_checks: &[(HookableLifecycleEvent, ExternalCheckResult)],
     can_reject_only: bool,
 ) -> ProgramResult {
     if lifecycle_checks.is_empty() {
@@ -696,7 +739,7 @@ pub(crate) fn find_external_plugin_adapter<'b>(
                             Err(_) => return Err(MplCoreError::DeserializationError.into()),
                         }
                 }
-                ExternalPluginAdapterKey::DataStore(authority) => {
+                ExternalPluginAdapterKey::SecureDataStore(authority) => {
                     let authority_offset = record
                         .offset
                         .checked_add(1)
@@ -706,6 +749,32 @@ pub(crate) fn find_external_plugin_adapter<'b>(
                             &mut &account.data.borrow()[authority_offset..],
                         ) {
                             Ok(authority) => authority,
+                            Err(_) => return Err(MplCoreError::DeserializationError.into()),
+                        }
+                }
+                ExternalPluginAdapterKey::AssetLinkedSecureDataStore(authority) => {
+                    let authority_offset = record
+                        .offset
+                        .checked_add(1)
+                        .ok_or(MplCoreError::NumericalOverflow)?;
+                    authority
+                        == &match Authority::deserialize(
+                            &mut &account.data.borrow()[authority_offset..],
+                        ) {
+                            Ok(authority) => authority,
+                            Err(_) => return Err(MplCoreError::DeserializationError.into()),
+                        }
+                }
+                ExternalPluginAdapterKey::DataSection(linked_data_key) => {
+                    let linked_data_key_offset = record
+                        .offset
+                        .checked_add(1)
+                        .ok_or(MplCoreError::NumericalOverflow)?;
+                    linked_data_key
+                        == &match LinkedDataKey::deserialize(
+                            &mut &account.data.borrow()[linked_data_key_offset..],
+                        ) {
+                            Ok(linked_data_key) => linked_data_key,
                             Err(_) => return Err(MplCoreError::DeserializationError.into()),
                         }
                 }

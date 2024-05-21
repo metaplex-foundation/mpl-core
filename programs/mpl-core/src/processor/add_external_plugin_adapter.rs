@@ -98,6 +98,7 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         ctx.accounts.payer,
         ctx.accounts.system_program,
         &args.init_info,
+        &asset,
     )
 }
 
@@ -150,7 +151,7 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
     let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
 
     // Validate collection permissions.
-    let _ = validate_collection_permissions(
+    let (core, _, _) = validate_collection_permissions(
         accounts,
         authority,
         ctx.accounts.collection,
@@ -169,6 +170,7 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         ctx.accounts.payer,
         ctx.accounts.system_program,
         &args.init_info,
+        &core,
     )
 }
 
@@ -177,16 +179,19 @@ fn process_add_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
     init_info: &ExternalPluginAdapterInitInfo,
+    core: &T,
 ) -> ProgramResult {
     let (_, mut plugin_header, mut plugin_registry) =
         create_meta_idempotent::<T>(account, payer, system_program)?;
     initialize_external_plugin_adapter::<T>(
         init_info,
+        Some(core),
         &mut plugin_header,
         &mut plugin_registry,
         account,
         payer,
         system_program,
+        None,
     )?;
     Ok(())
 }
