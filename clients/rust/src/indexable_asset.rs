@@ -50,7 +50,7 @@ pub struct IndexableExternalPluginSchemaV1 {
     pub lifecycle_checks: Option<LifecycleChecks>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
-    pub external_plugin_adapter: ExternalPluginAdapter,
+    pub adapter_config: ExternalPluginAdapter,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub data_offset: Option<u64>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
@@ -70,8 +70,8 @@ pub struct IndexableUnknownExternalPluginSchemaV1 {
     pub lifecycle_checks: Option<LifecycleChecks>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
-    pub unknown_external_plugin_adapter_type: u8,
-    pub unknown_external_plugin_adapter: String,
+    pub unknown_adapter_type: u8,
+    pub unknown_adapter_config: String,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub data_offset: Option<u64>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
@@ -227,10 +227,10 @@ impl ProcessedExternalPlugin {
         let processed_plugin = if let Some(external_plugin_adapter_type) =
             ExternalPluginAdapterType::from_u8(external_plugin_adapter_type)
         {
-            let external_plugin_adapter = ExternalPluginAdapter::deserialize(plugin_slice)?;
+            let adapter_config = ExternalPluginAdapter::deserialize(plugin_slice)?;
             let (data_offset, data_len, data) = match external_plugin_data_info {
                 Some(data_info) => {
-                    let schema = match &external_plugin_adapter {
+                    let schema = match &adapter_config {
                         ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
                             &lifecycle_hook.schema
                         }
@@ -253,7 +253,7 @@ impl ProcessedExternalPlugin {
                 authority,
                 lifecycle_checks: known_lifecycle_checks,
                 unknown_lifecycle_checks,
-                external_plugin_adapter,
+                adapter_config,
                 data_offset,
                 data_len,
                 data,
@@ -278,8 +278,8 @@ impl ProcessedExternalPlugin {
                 authority,
                 lifecycle_checks: known_lifecycle_checks,
                 unknown_lifecycle_checks,
-                unknown_external_plugin_adapter_type: external_plugin_adapter_type,
-                unknown_external_plugin_adapter: encoded,
+                unknown_adapter_type: external_plugin_adapter_type,
+                unknown_adapter_config: encoded,
                 data_offset,
                 data_len,
                 data,
