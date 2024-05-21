@@ -46,6 +46,7 @@ pub struct IndexableExternalPluginSchemaV1 {
     pub index: u64,
     pub offset: u64,
     pub authority: PluginAuthority,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub lifecycle_checks: Option<LifecycleChecks>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
@@ -65,6 +66,7 @@ pub struct IndexableUnknownExternalPluginSchemaV1 {
     pub index: u64,
     pub offset: u64,
     pub authority: PluginAuthority,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub lifecycle_checks: Option<LifecycleChecks>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
