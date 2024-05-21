@@ -27,6 +27,8 @@ use super::{
 pub enum ExternalPluginAdapterType {
     /// Lifecycle Hook.
     LifecycleHook,
+    /// Asset Linked Lifecycle Hook.
+    AssetLinkedLifecycleHook,
     /// Oracle.
     Oracle,
     /// Secure Store.
@@ -41,6 +43,9 @@ impl From<&ExternalPluginAdapterKey> for ExternalPluginAdapterType {
     fn from(key: &ExternalPluginAdapterKey) -> Self {
         match key {
             ExternalPluginAdapterKey::LifecycleHook(_) => ExternalPluginAdapterType::LifecycleHook,
+            ExternalPluginAdapterKey::AssetLinkedLifecycleHook(_) => {
+                ExternalPluginAdapterType::AssetLinkedLifecycleHook
+            }
             ExternalPluginAdapterKey::Oracle(_) => ExternalPluginAdapterType::Oracle,
             ExternalPluginAdapterKey::SecureDataStore(_) => {
                 ExternalPluginAdapterType::SecureDataStore
@@ -555,6 +560,8 @@ pub enum ExternalPluginAdapterUpdateInfo {
 pub enum ExternalPluginAdapterKey {
     /// Lifecycle Hook.
     LifecycleHook(Pubkey),
+    /// Lifecycle Hook.
+    AssetLinkedLifecycleHook(Pubkey),
     /// Oracle.
     Oracle(Pubkey),
     /// Secure Store.
@@ -572,9 +579,7 @@ pub enum ExternalPluginAdapterKey {
 )]
 pub enum LinkedDataKey {
     /// Lifecycle Hook.
-    LifecycleHook(Pubkey, Authority),
-    /// Secure Store.
-    SecureDataStore(Authority),
+    AssetLinkedLifecycleHook(Pubkey),
     /// Asset-Linked Secure Store.
     AssetLinkedSecureDataStore(Authority),
 }
@@ -594,6 +599,11 @@ impl ExternalPluginAdapterKey {
                 let pubkey =
                     Pubkey::deserialize(&mut &account.data.borrow()[pubkey_or_authority_offset..])?;
                 Ok(Self::LifecycleHook(pubkey))
+            }
+            ExternalPluginAdapterType::AssetLinkedLifecycleHook => {
+                let pubkey =
+                    Pubkey::deserialize(&mut &account.data.borrow()[pubkey_or_authority_offset..])?;
+                Ok(Self::AssetLinkedLifecycleHook(pubkey))
             }
             ExternalPluginAdapterType::Oracle => {
                 let pubkey =

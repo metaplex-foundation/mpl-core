@@ -27,6 +27,7 @@ import {
 
 export type BaseExternalPluginAdapterKey =
   | { __kind: 'LifecycleHook'; fields: [PublicKey] }
+  | { __kind: 'AssetLinkedLifecycleHook'; fields: [PublicKey] }
   | { __kind: 'Oracle'; fields: [PublicKey] }
   | { __kind: 'SecureDataStore'; fields: [BasePluginAuthority] }
   | { __kind: 'AssetLinkedSecureDataStore'; fields: [BasePluginAuthority] }
@@ -34,6 +35,7 @@ export type BaseExternalPluginAdapterKey =
 
 export type BaseExternalPluginAdapterKeyArgs =
   | { __kind: 'LifecycleHook'; fields: [PublicKey] }
+  | { __kind: 'AssetLinkedLifecycleHook'; fields: [PublicKey] }
   | { __kind: 'Oracle'; fields: [PublicKey] }
   | { __kind: 'SecureDataStore'; fields: [BasePluginAuthorityArgs] }
   | { __kind: 'AssetLinkedSecureDataStore'; fields: [BasePluginAuthorityArgs] }
@@ -49,6 +51,15 @@ export function getBaseExternalPluginAdapterKeySerializer(): Serializer<
         'LifecycleHook',
         struct<
           GetDataEnumKindContent<BaseExternalPluginAdapterKey, 'LifecycleHook'>
+        >([['fields', tuple([publicKeySerializer()])]]),
+      ],
+      [
+        'AssetLinkedLifecycleHook',
+        struct<
+          GetDataEnumKindContent<
+            BaseExternalPluginAdapterKey,
+            'AssetLinkedLifecycleHook'
+          >
         >([['fields', tuple([publicKeySerializer()])]]),
       ],
       [
@@ -97,6 +108,16 @@ export function baseExternalPluginAdapterKey(
     'LifecycleHook'
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'LifecycleHook'>;
+export function baseExternalPluginAdapterKey(
+  kind: 'AssetLinkedLifecycleHook',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterKeyArgs,
+    'AssetLinkedLifecycleHook'
+  >['fields']
+): GetDataEnumKind<
+  BaseExternalPluginAdapterKeyArgs,
+  'AssetLinkedLifecycleHook'
+>;
 export function baseExternalPluginAdapterKey(
   kind: 'Oracle',
   data: GetDataEnumKindContent<

@@ -3632,6 +3632,9 @@
             "name": "LifecycleHook"
           },
           {
+            "name": "AssetLinkedLifecycleHook"
+          },
+          {
             "name": "Oracle"
           },
           {
@@ -3980,6 +3983,12 @@
             ]
           },
           {
+            "name": "AssetLinkedLifecycleHook",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
             "name": "Oracle",
             "fields": [
               "publicKey"
@@ -4018,20 +4027,9 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "LifecycleHook",
+            "name": "AssetLinkedLifecycleHook",
             "fields": [
-              "publicKey",
-              {
-                "defined": "Authority"
-              }
-            ]
-          },
-          {
-            "name": "SecureDataStore",
-            "fields": [
-              {
-                "defined": "Authority"
-              }
+              "publicKey"
             ]
           },
           {

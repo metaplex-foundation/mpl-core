@@ -17,7 +17,10 @@ use solana_program::pubkey::Pubkey;
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum LinkedDataKey {
-    LifecycleHook(Pubkey, PluginAuthority),
-    SecureDataStore(PluginAuthority),
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
+    )]
+    AssetLinkedLifecycleHook(Pubkey),
     AssetLinkedSecureDataStore(PluginAuthority),
 }

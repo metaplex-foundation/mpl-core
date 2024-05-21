@@ -10,10 +10,10 @@ use crate::{
     },
     plugins::{
         create_meta_idempotent, fetch_wrapped_external_plugin_adapter,
-        initialize_external_plugin_adapter, AssetLinkedSecureDataStore, DataSectionInitInfo,
-        ExternalPluginAdapter, ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey,
-        ExternalRegistryRecord, LifecycleHook, LinkedDataKey, PluginHeaderV1, PluginRegistryV1,
-        SecureDataStore,
+        initialize_external_plugin_adapter, update_external_plugin_adapter_data,
+        AssetLinkedSecureDataStore, DataSectionInitInfo, ExternalPluginAdapter,
+        ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalRegistryRecord,
+        LifecycleHook, LinkedDataKey, PluginHeaderV1, PluginRegistryV1, SecureDataStore,
     },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -159,10 +159,10 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
     buffer: Option<&AccountInfo<'a>>,
     data: Option<&[u8]>,
     core: &T,
-    _record: &ExternalRegistryRecord,
+    record: &ExternalRegistryRecord,
     wrapped_plugin: &ExternalPluginAdapter,
-    _header: &mut PluginHeaderV1,
-    _registry: &mut PluginRegistryV1,
+    header: &mut PluginHeaderV1,
+    registry: &mut PluginRegistryV1,
     authorities: &[Authority],
     _key: &ExternalPluginAdapterKey,
 ) -> ProgramResult {
@@ -194,7 +194,16 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
     // AssetLinkedSecureDataStore writes the data to the asset directly.
     match wrapped_plugin {
         ExternalPluginAdapter::LifecycleHook(_) | ExternalPluginAdapter::SecureDataStore(_) => {
-            todo!()
+            update_external_plugin_adapter_data(
+                record,
+                Some(core),
+                header,
+                registry,
+                account,
+                payer,
+                system_program,
+                data.unwrap_or(&buffer.unwrap().data.borrow()),
+            )
         }
         ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
             let (_, mut plugin_header, mut plugin_registry) =
@@ -206,7 +215,16 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                     data_store.data_authority,
                 )),
             ) {
-                Ok(_) => todo!(),
+                Ok(_) => update_external_plugin_adapter_data(
+                    record,
+                    Some(core),
+                    header,
+                    registry,
+                    account,
+                    payer,
+                    system_program,
+                    data.unwrap_or(&buffer.unwrap().data.borrow()),
+                ),
                 Err(_) => initialize_external_plugin_adapter::<T>(
                     &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
                         parent_key: LinkedDataKey::AssetLinkedSecureDataStore(
@@ -226,84 +244,4 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
         }
         _ => Err(MplCoreError::UnsupportedOperation.into()),
     }
-
-    // let data_offset = record
-    //     .data_offset
-    //     .ok_or(MplCoreError::InvalidPluginSetting)? as isize;
-    // let data_len = record.data_len.ok_or(MplCoreError::InvalidPluginSetting)? as isize;
-    // let data_to_move = data_offset
-    //     .checked_add(data_len)
-    //     .ok_or(MplCoreError::NumericalOverflow)?;
-
-    // let record_mut = registry
-    //     .external_registry
-    //     .iter_mut()
-    //     .find(|r| **r == record)
-    //     .ok_or(MplCoreError::PluginNotFound)?;
 }
-
-// TODO: Copied until #113 is complete.
-// #[allow(clippy::too_many_arguments)]
-// fn move_plugins_and_registry<'a>(
-//     header_location: usize,
-//     size_diff: isize,
-//     first_plugin_location: usize,
-//     data_to_move_location: usize,
-//     plugin_header: &mut PluginHeaderV1,
-//     plugin_registry: &mut PluginRegistryV1,
-//     account: &AccountInfo<'a>,
-//     payer: &AccountInfo<'a>,
-//     system_program: &AccountInfo<'a>,
-// ) -> ProgramResult {
-//     // The new size of the account.
-//     let new_size = (account.data_len() as isize)
-//         .checked_add(size_diff)
-//         .ok_or(MplCoreError::NumericalOverflow)?;
-
-//     // The new offset of the plugin registry is the old offset plus the size difference.
-//     let registry_offset = plugin_header.plugin_registry_offset;
-//     let new_registry_offset = (registry_offset as isize)
-//         .checked_add(size_diff)
-//         .ok_or(MplCoreError::NumericalOverflow)?;
-//     plugin_header.plugin_registry_offset = new_registry_offset as usize;
-
-//     let new_data_location = (data_to_move_location as isize)
-//         .checked_add(size_diff)
-//         .ok_or(MplCoreError::NumericalOverflow)?;
-
-//     // //TODO: This is memory intensive, we should use memmove instead probably.
-//     let src = account.data.borrow()[(data_to_move_location)..registry_offset].to_vec();
-
-//     resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
-
-//     sol_memcpy(
-//         &mut account.data.borrow_mut()[(new_data_location as usize)..],
-//         &src,
-//         src.len(),
-//     );
-
-//     plugin_header.save(account, header_location)?;
-
-//     // Move offsets for existing registry records.
-//     for record in &mut plugin_registry.external_registry {
-//         if first_plugin_location == data_to_move_location || first_plugin_location < record.offset {
-//             let new_offset = (record.offset as isize)
-//                 .checked_add(size_diff)
-//                 .ok_or(MplCoreError::NumericalOverflow)?;
-
-//             record.offset = new_offset as usize;
-//         }
-//     }
-
-//     for record in &mut plugin_registry.registry {
-//         if first_plugin_location == data_to_move_location || first_plugin_location < record.offset {
-//             let new_offset = (record.offset as isize)
-//                 .checked_add(size_diff)
-//                 .ok_or(MplCoreError::NumericalOverflow)?;
-
-//             record.offset = new_offset as usize;
-//         }
-//     }
-
-//     plugin_registry.save(account, new_registry_offset as usize)
-// }

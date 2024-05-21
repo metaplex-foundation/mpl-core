@@ -1,7 +1,10 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
-    program_memory::sol_memcpy, pubkey::Pubkey,
+    account_info::AccountInfo,
+    entrypoint::ProgramResult,
+    program_error::ProgramError,
+    program_memory::{sol_memcpy, sol_memmove},
+    pubkey::Pubkey,
 };
 use std::collections::HashSet;
 
@@ -467,10 +470,48 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
     let data_offset = record.data_offset.ok_or(MplCoreError::InvalidPlugin)?;
     let data_len = record.data_len.ok_or(MplCoreError::InvalidPlugin)?;
     let new_data_len = data.len();
-    let size_diff = new_data_len
-        .checked_sub(data_len)
+    let size_diff = (new_data_len as isize)
+        .checked_sub(data_len as isize)
         .ok_or(MplCoreError::NumericalOverflow)?;
+
+    // Update any offsets that will change.
     plugin_registry.bump_offsets(data_offset, size_diff)?;
+
+    let new_registry_offset = (plugin_header.plugin_registry_offset as isize)
+        .checked_add(size_diff)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+    plugin_header.plugin_registry_offset = new_registry_offset as usize;
+
+    let new_size = (account.data_len() as isize)
+        .checked_add(size_diff)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
+    resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
+
+    let next_plugin_offset = data_offset
+        .checked_add(data_len)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+    let new_next_plugin_offset = (next_plugin_offset as isize)
+        .checked_add(size_diff)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
+    unsafe {
+        sol_memmove(
+            account.data.borrow_mut()[new_next_plugin_offset as usize..].as_mut_ptr(),
+            account.data.borrow_mut()[next_plugin_offset..].as_mut_ptr(),
+            account.data_len().saturating_sub(next_plugin_offset),
+        )
+    }
+
+    sol_memcpy(
+        &mut account.data.borrow_mut()[data_offset..],
+        data,
+        new_data_len,
+    );
+
+    plugin_registry.save(account, new_registry_offset as usize)?;
+    plugin_header.save(account, core.map_or(0, |core| core.get_size()))?;
+
     Ok(())
 }
 
@@ -750,7 +791,8 @@ pub(crate) fn find_external_plugin_adapter<'b>(
         if record.plugin_type == ExternalPluginAdapterType::from(plugin_key)
             && (match plugin_key {
                 ExternalPluginAdapterKey::LifecycleHook(address)
-                | ExternalPluginAdapterKey::Oracle(address) => {
+                | ExternalPluginAdapterKey::Oracle(address)
+                | ExternalPluginAdapterKey::AssetLinkedLifecycleHook(address) => {
                     let pubkey_offset = record
                         .offset
                         .checked_add(1)

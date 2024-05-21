@@ -23,13 +23,11 @@ import {
 } from '.';
 
 export type LinkedDataKey =
-  | { __kind: 'LifecycleHook'; fields: [PublicKey, BasePluginAuthority] }
-  | { __kind: 'SecureDataStore'; fields: [BasePluginAuthority] }
+  | { __kind: 'AssetLinkedLifecycleHook'; fields: [PublicKey] }
   | { __kind: 'AssetLinkedSecureDataStore'; fields: [BasePluginAuthority] };
 
 export type LinkedDataKeyArgs =
-  | { __kind: 'LifecycleHook'; fields: [PublicKey, BasePluginAuthorityArgs] }
-  | { __kind: 'SecureDataStore'; fields: [BasePluginAuthorityArgs] }
+  | { __kind: 'AssetLinkedLifecycleHook'; fields: [PublicKey] }
   | { __kind: 'AssetLinkedSecureDataStore'; fields: [BasePluginAuthorityArgs] };
 
 export function getLinkedDataKeySerializer(): Serializer<
@@ -39,19 +37,10 @@ export function getLinkedDataKeySerializer(): Serializer<
   return dataEnum<LinkedDataKey>(
     [
       [
-        'LifecycleHook',
-        struct<GetDataEnumKindContent<LinkedDataKey, 'LifecycleHook'>>([
-          [
-            'fields',
-            tuple([publicKeySerializer(), getBasePluginAuthoritySerializer()]),
-          ],
-        ]),
-      ],
-      [
-        'SecureDataStore',
-        struct<GetDataEnumKindContent<LinkedDataKey, 'SecureDataStore'>>([
-          ['fields', tuple([getBasePluginAuthoritySerializer()])],
-        ]),
+        'AssetLinkedLifecycleHook',
+        struct<
+          GetDataEnumKindContent<LinkedDataKey, 'AssetLinkedLifecycleHook'>
+        >([['fields', tuple([publicKeySerializer()])]]),
       ],
       [
         'AssetLinkedSecureDataStore',
@@ -66,13 +55,12 @@ export function getLinkedDataKeySerializer(): Serializer<
 
 // Data Enum Helpers.
 export function linkedDataKey(
-  kind: 'LifecycleHook',
-  data: GetDataEnumKindContent<LinkedDataKeyArgs, 'LifecycleHook'>['fields']
-): GetDataEnumKind<LinkedDataKeyArgs, 'LifecycleHook'>;
-export function linkedDataKey(
-  kind: 'SecureDataStore',
-  data: GetDataEnumKindContent<LinkedDataKeyArgs, 'SecureDataStore'>['fields']
-): GetDataEnumKind<LinkedDataKeyArgs, 'SecureDataStore'>;
+  kind: 'AssetLinkedLifecycleHook',
+  data: GetDataEnumKindContent<
+    LinkedDataKeyArgs,
+    'AssetLinkedLifecycleHook'
+  >['fields']
+): GetDataEnumKind<LinkedDataKeyArgs, 'AssetLinkedLifecycleHook'>;
 export function linkedDataKey(
   kind: 'AssetLinkedSecureDataStore',
   data: GetDataEnumKindContent<

@@ -75,30 +75,31 @@ impl PluginRegistryV1 {
     }
 
     /// Increase the offsets of all plugins after a certain offset.
-    pub(crate) fn bump_offsets(&mut self, offset: usize, size_diff: usize) -> ProgramResult {
+    pub(crate) fn bump_offsets(&mut self, offset: usize, size_diff: isize) -> ProgramResult {
         for record in &mut self.registry {
             if record.offset > offset {
-                record.offset = record
-                    .offset
+                record.offset = (record.offset as isize)
                     .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?;
+                    .ok_or(MplCoreError::NumericalOverflow)?
+                    as usize;
             }
         }
 
         for record in &mut self.external_registry {
             if record.offset > offset {
-                record.offset = record
-                    .offset
+                record.offset = (record.offset as isize)
                     .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?;
+                    .ok_or(MplCoreError::NumericalOverflow)?
+                    as usize;
             }
 
             if let Some(data_offset) = record.data_offset {
                 if data_offset > offset {
                     record.data_offset = Some(
-                        data_offset
+                        (data_offset as isize)
                             .checked_add(size_diff)
-                            .ok_or(MplCoreError::NumericalOverflow)?,
+                            .ok_or(MplCoreError::NumericalOverflow)?
+                            as usize,
                     );
                 }
             }
