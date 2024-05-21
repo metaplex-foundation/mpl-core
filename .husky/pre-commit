@@ -2,7 +2,7 @@
 
 set +e
 
-# Stash un-staged changes - optional, see note below
+# Stash un-staged changes
 git stash -q --keep-index
 
 # Run pnpm commands
@@ -10,7 +10,7 @@ echo "Linting..."
 pnpm lint
 LINT_EXIT_CODE=$?
 
-# Restore un-staged changes - optional, see note below
+# Restore un-staged changes
 git stash pop -q
 
 # Check if tests or lint failed
