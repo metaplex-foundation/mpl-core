@@ -1,13 +1,15 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 
-use super::{LinkedDataKey, PluginValidation};
+use super::{ExternalPluginAdapterSchema, LinkedDataKey, PluginValidation};
 
 /// The data section plugin is a third party plugin that is _always_ managed by another plugin.
 /// Currently these are used for the `SecureDataStore`, `AssetLinkedSecureDataStore`, and `LifecycleHook` plugins.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct DataSection {
     /// The key to the plugin that manages this data section.
-    pub manager_key: LinkedDataKey,
+    pub parent_key: LinkedDataKey,
+    /// Schema for the data used by the plugin.
+    pub schema: ExternalPluginAdapterSchema,
 }
 
 impl PluginValidation for DataSection {}
@@ -15,7 +17,8 @@ impl PluginValidation for DataSection {}
 impl From<&DataSectionInitInfo> for DataSection {
     fn from(init_info: &DataSectionInitInfo) -> Self {
         Self {
-            manager_key: init_info.manager_key,
+            parent_key: init_info.parent_key,
+            schema: init_info.schema,
         }
     }
 }
@@ -24,7 +27,9 @@ impl From<&DataSectionInitInfo> for DataSection {
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct DataSectionInitInfo {
     /// The key to the plugin that manages this data section.
-    pub manager_key: LinkedDataKey,
+    pub parent_key: LinkedDataKey,
+    /// Schema for the data used by the plugin.
+    pub schema: ExternalPluginAdapterSchema,
 }
 
 /// Data store update info.

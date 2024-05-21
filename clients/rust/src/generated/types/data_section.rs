@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::ExternalPluginAdapterSchema;
 use crate::generated::types::LinkedDataKey;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
@@ -16,5 +17,6 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DataSection {
-    pub manager_key: LinkedDataKey,
+    pub parent_key: LinkedDataKey,
+    pub schema: ExternalPluginAdapterSchema,
 }

@@ -23,13 +23,12 @@ export type DataSection = Omit<BaseDataSection, 'dataAuthority'> & {
 export type DataSectionPlugin = BaseExternalPluginAdapter &
   DataSection & {
     type: 'DataSection';
-    managerKey: LinkedDataKey;
+    parentKey: LinkedDataKey;
     data: any;
   };
 
 export type DataSectionInitInfoArgs = BaseDataSectionInitInfoArgs & {
   type: 'DataSection';
-  managerKey: LinkedDataKey;
 };
 
 export type DataSectionUpdateInfoArgs =
@@ -41,7 +40,8 @@ export function dataSectionInitInfoArgsToBase(
   d: DataSectionInitInfoArgs
 ): BaseDataSectionInitInfoArgs {
   return {
-    managerKey: d.managerKey,
+    parentKey: d.parentKey,
+    schema: d.schema,
   };
 }
 

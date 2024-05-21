@@ -451,6 +451,29 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     Ok(())
 }
 
+/// Add an external plugin adapter to the registry and initialize it.
+#[allow(clippy::too_many_arguments)]
+pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
+    record: &ExternalRegistryRecord,
+    core: Option<&T>,
+    plugin_header: &mut PluginHeaderV1,
+    plugin_registry: &mut PluginRegistryV1,
+    account: &AccountInfo<'a>,
+    payer: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+    data: &[u8],
+) -> ProgramResult {
+    // Extract the data offset and data length as they should always be set.
+    let data_offset = record.data_offset.ok_or(MplCoreError::InvalidPlugin)?;
+    let data_len = record.data_len.ok_or(MplCoreError::InvalidPlugin)?;
+    let new_data_len = data.len();
+    let size_diff = new_data_len
+        .checked_sub(data_len)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+    plugin_registry.bump_offsets(data_offset, size_diff)?;
+    Ok(())
+}
+
 pub(crate) fn validate_lifecycle_checks(
     lifecycle_checks: &[(HookableLifecycleEvent, ExternalCheckResult)],
     can_reject_only: bool,

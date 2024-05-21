@@ -10,9 +10,10 @@ use crate::{
     },
     plugins::{
         create_meta_idempotent, fetch_wrapped_external_plugin_adapter,
-        initialize_external_plugin_adapter, AssetLinkedSecureDataStore, ExternalPluginAdapter,
-        ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalRegistryRecord,
-        LifecycleHook, LinkedDataKey, PluginHeaderV1, PluginRegistryV1, SecureDataStore,
+        initialize_external_plugin_adapter, AssetLinkedSecureDataStore, DataSectionInitInfo,
+        ExternalPluginAdapter, ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey,
+        ExternalRegistryRecord, LifecycleHook, LinkedDataKey, PluginHeaderV1, PluginRegistryV1,
+        SecureDataStore,
     },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -198,18 +199,30 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
         ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
             let (_, mut plugin_header, mut plugin_registry) =
                 create_meta_idempotent::<T>(account, payer, system_program)?;
-            initialize_external_plugin_adapter::<T>(
-                &ExternalPluginAdapterInitInfo::DataSection(
-                    LinkedDataKey::AssetLinkedSecureDataStore(data_store.data_authority),
-                ),
-                Some(core),
-                &mut plugin_header,
-                &mut plugin_registry,
+            match fetch_wrapped_external_plugin_adapter(
                 account,
-                payer,
-                system_program,
-                Some(data.unwrap_or(data.unwrap_or(&[]))),
-            )
+                Some(core),
+                &ExternalPluginAdapterKey::DataSection(LinkedDataKey::AssetLinkedSecureDataStore(
+                    data_store.data_authority,
+                )),
+            ) {
+                Ok(_) => todo!(),
+                Err(_) => initialize_external_plugin_adapter::<T>(
+                    &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
+                        parent_key: LinkedDataKey::AssetLinkedSecureDataStore(
+                            data_store.data_authority,
+                        ),
+                        schema: data_store.schema,
+                    }),
+                    Some(core),
+                    &mut plugin_header,
+                    &mut plugin_registry,
+                    account,
+                    payer,
+                    system_program,
+                    Some(data.unwrap_or(&buffer.unwrap().data.borrow())),
+                ),
+            }
         }
         _ => Err(MplCoreError::UnsupportedOperation.into()),
     }

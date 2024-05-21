@@ -4,6 +4,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 use std::{cmp::Ordering, collections::BTreeMap};
 
 use crate::{
+    error::MplCoreError,
     plugins::validate_lifecycle_checks,
     state::{Authority, DataBlob, Key, SolanaAccount},
 };
@@ -66,6 +67,39 @@ impl PluginRegistryV1 {
                             ),
                         );
                     }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Increase the offsets of all plugins after a certain offset.
+    pub(crate) fn bump_offsets(&mut self, offset: usize, size_diff: usize) -> ProgramResult {
+        for record in &mut self.registry {
+            if record.offset > offset {
+                record.offset = record
+                    .offset
+                    .checked_add(size_diff)
+                    .ok_or(MplCoreError::NumericalOverflow)?;
+            }
+        }
+
+        for record in &mut self.external_registry {
+            if record.offset > offset {
+                record.offset = record
+                    .offset
+                    .checked_add(size_diff)
+                    .ok_or(MplCoreError::NumericalOverflow)?;
+            }
+
+            if let Some(data_offset) = record.data_offset {
+                if data_offset > offset {
+                    record.data_offset = Some(
+                        data_offset
+                            .checked_add(size_diff)
+                            .ok_or(MplCoreError::NumericalOverflow)?,
+                    );
                 }
             }
         }

@@ -17,19 +17,19 @@ import {
 import {
   BaseAssetLinkedSecureDataStoreInitInfo,
   BaseAssetLinkedSecureDataStoreInitInfoArgs,
+  BaseDataSectionInitInfo,
+  BaseDataSectionInitInfoArgs,
   BaseLifecycleHookInitInfo,
   BaseLifecycleHookInitInfoArgs,
   BaseOracleInitInfo,
   BaseOracleInitInfoArgs,
   BaseSecureDataStoreInitInfo,
   BaseSecureDataStoreInitInfoArgs,
-  LinkedDataKey,
-  LinkedDataKeyArgs,
   getBaseAssetLinkedSecureDataStoreInitInfoSerializer,
+  getBaseDataSectionInitInfoSerializer,
   getBaseLifecycleHookInitInfoSerializer,
   getBaseOracleInitInfoSerializer,
   getBaseSecureDataStoreInitInfoSerializer,
-  getLinkedDataKeySerializer,
 } from '.';
 
 export type BaseExternalPluginAdapterInitInfo =
@@ -40,7 +40,7 @@ export type BaseExternalPluginAdapterInitInfo =
       __kind: 'AssetLinkedSecureDataStore';
       fields: [BaseAssetLinkedSecureDataStoreInitInfo];
     }
-  | { __kind: 'DataSection'; fields: [LinkedDataKey] };
+  | { __kind: 'DataSection'; fields: [BaseDataSectionInitInfo] };
 
 export type BaseExternalPluginAdapterInitInfoArgs =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookInitInfoArgs] }
@@ -50,7 +50,7 @@ export type BaseExternalPluginAdapterInitInfoArgs =
       __kind: 'AssetLinkedSecureDataStore';
       fields: [BaseAssetLinkedSecureDataStoreInitInfoArgs];
     }
-  | { __kind: 'DataSection'; fields: [LinkedDataKeyArgs] };
+  | { __kind: 'DataSection'; fields: [BaseDataSectionInitInfoArgs] };
 
 export function getBaseExternalPluginAdapterInitInfoSerializer(): Serializer<
   BaseExternalPluginAdapterInitInfoArgs,
@@ -103,7 +103,7 @@ export function getBaseExternalPluginAdapterInitInfoSerializer(): Serializer<
             BaseExternalPluginAdapterInitInfo,
             'DataSection'
           >
-        >([['fields', tuple([getLinkedDataKeySerializer()])]]),
+        >([['fields', tuple([getBaseDataSectionInitInfoSerializer()])]]),
       ],
     ],
     { description: 'BaseExternalPluginAdapterInitInfo' }

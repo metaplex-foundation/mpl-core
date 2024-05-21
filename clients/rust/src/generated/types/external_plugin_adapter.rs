@@ -6,8 +6,8 @@
 //!
 
 use crate::generated::types::AssetLinkedSecureDataStore;
+use crate::generated::types::DataSection;
 use crate::generated::types::LifecycleHook;
-use crate::generated::types::LinkedDataKey;
 use crate::generated::types::Oracle;
 use crate::generated::types::SecureDataStore;
 #[cfg(feature = "anchor")]
@@ -24,5 +24,5 @@ pub enum ExternalPluginAdapter {
     Oracle(Oracle),
     SecureDataStore(SecureDataStore),
     AssetLinkedSecureDataStore(AssetLinkedSecureDataStore),
-    DataSection(LinkedDataKey),
+    DataSection(DataSection),
 }

@@ -12,10 +12,11 @@ use crate::{
 
 use super::{
     AssetLinkedSecureDataStore, AssetLinkedSecureDataStoreInitInfo,
-    AssetLinkedSecureDataStoreUpdateInfo, Authority, ExternalCheckResult, ExternalRegistryRecord,
-    LifecycleHook, LifecycleHookInitInfo, LifecycleHookUpdateInfo, Oracle, OracleInitInfo,
-    OracleUpdateInfo, PluginValidation, PluginValidationContext, SecureDataStore,
-    SecureDataStoreInitInfo, SecureDataStoreUpdateInfo, ValidationResult,
+    AssetLinkedSecureDataStoreUpdateInfo, Authority, DataSection, DataSectionInitInfo,
+    ExternalCheckResult, ExternalRegistryRecord, LifecycleHook, LifecycleHookInitInfo,
+    LifecycleHookUpdateInfo, Oracle, OracleInitInfo, OracleUpdateInfo, PluginValidation,
+    PluginValidationContext, SecureDataStore, SecureDataStoreInitInfo, SecureDataStoreUpdateInfo,
+    ValidationResult,
 };
 
 /// List of third party plugin types.
@@ -90,7 +91,7 @@ pub enum ExternalPluginAdapter {
     AssetLinkedSecureDataStore(AssetLinkedSecureDataStore),
     /// Data Section.  This is a special plugin that is used to contain the data of other external
     /// plugins.
-    DataSection(LinkedDataKey),
+    DataSection(DataSection),
 }
 
 impl ExternalPluginAdapter {
@@ -283,7 +284,7 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapter {
                 ))
             }
             ExternalPluginAdapterInitInfo::DataSection(init_info) => {
-                ExternalPluginAdapter::DataSection(*init_info)
+                ExternalPluginAdapter::DataSection(DataSection::from(init_info))
             }
         }
     }
@@ -529,7 +530,7 @@ pub enum ExternalPluginAdapterInitInfo {
     /// Asset-Linked Secure Store.
     AssetLinkedSecureDataStore(AssetLinkedSecureDataStoreInitInfo),
     /// Data Section.
-    DataSection(LinkedDataKey),
+    DataSection(DataSectionInitInfo),
 }
 
 /// Information needed to update an external plugin adapter.
@@ -637,7 +638,7 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapterKey {
                 ExternalPluginAdapterKey::AssetLinkedSecureDataStore(init_info.data_authority)
             }
             ExternalPluginAdapterInitInfo::DataSection(init_info) => {
-                ExternalPluginAdapterKey::DataSection(*init_info)
+                ExternalPluginAdapterKey::DataSection(init_info.parent_key)
             }
         }
     }

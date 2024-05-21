@@ -2217,9 +2217,15 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "managerKey",
+            "name": "parentKey",
             "type": {
               "defined": "LinkedDataKey"
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
             }
           }
         ]
@@ -2231,9 +2237,15 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "managerKey",
+            "name": "parentKey",
             "type": {
               "defined": "LinkedDataKey"
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
             }
           }
         ]
@@ -3675,7 +3687,7 @@
             "name": "DataSection",
             "fields": [
               {
-                "defined": "LinkedDataKey"
+                "defined": "DataSection"
               }
             ]
           }
@@ -3909,7 +3921,7 @@
             "name": "DataSection",
             "fields": [
               {
-                "defined": "LinkedDataKey"
+                "defined": "DataSectionInitInfo"
               }
             ]
           }
