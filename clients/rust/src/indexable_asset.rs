@@ -50,6 +50,7 @@ pub struct IndexableExternalPluginSchemaV1 {
     pub lifecycle_checks: Option<LifecycleChecks>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
+    pub r#type: ExternalPluginAdapterType,
     pub adapter_config: ExternalPluginAdapter,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub data_offset: Option<u64>,
@@ -70,7 +71,7 @@ pub struct IndexableUnknownExternalPluginSchemaV1 {
     pub lifecycle_checks: Option<LifecycleChecks>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
-    pub unknown_adapter_type: u8,
+    pub r#type: u8,
     pub unknown_adapter_config: String,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub data_offset: Option<u64>,
@@ -96,7 +97,7 @@ impl ProcessedPlugin {
         plugin_type: u8,
         plugin_slice: &mut &[u8],
     ) -> Result<Self, std::io::Error> {
-        let processed_plugin = if let Some(plugin_type) = PluginType::from_u8(plugin_type) {
+        let processed_plugin = if let Some(known_plugin_type) = PluginType::from_u8(plugin_type) {
             let data = Plugin::deserialize(plugin_slice)?;
             let indexable_plugin_schema = IndexablePluginSchemaV1 {
                 index,
@@ -104,7 +105,7 @@ impl ProcessedPlugin {
                 authority,
                 data,
             };
-            ProcessedPlugin::Known((plugin_type, indexable_plugin_schema))
+            ProcessedPlugin::Known((known_plugin_type, indexable_plugin_schema))
         } else {
             let encoded: String = BASE64_STANDARD.encode(plugin_slice);
             ProcessedPlugin::Unknown(IndexableUnknownPluginSchemaV1 {
@@ -124,7 +125,7 @@ impl ProcessedPlugin {
 // type.  Used when building an `IndexableAsset`.
 #[derive(Clone, Debug, Eq, PartialEq)]
 enum ProcessedExternalPlugin {
-    Known((ExternalPluginAdapterType, IndexableExternalPluginSchemaV1)),
+    Known(IndexableExternalPluginSchemaV1),
     Unknown(IndexableUnknownExternalPluginSchemaV1),
 }
 
@@ -224,7 +225,7 @@ impl ProcessedExternalPlugin {
             (!unknown_lifecycle_checks.is_empty()).then_some(unknown_lifecycle_checks);
 
         // Next, process the external plugin adapter and save them as known and unknown variants.
-        let processed_plugin = if let Some(external_plugin_adapter_type) =
+        let processed_plugin = if let Some(r#type) =
             ExternalPluginAdapterType::from_u8(external_plugin_adapter_type)
         {
             let adapter_config = ExternalPluginAdapter::deserialize(plugin_slice)?;
@@ -253,12 +254,13 @@ impl ProcessedExternalPlugin {
                 authority,
                 lifecycle_checks: known_lifecycle_checks,
                 unknown_lifecycle_checks,
+                r#type,
                 adapter_config,
                 data_offset,
                 data_len,
                 data,
             };
-            ProcessedExternalPlugin::Known((external_plugin_adapter_type, indexable_plugin_schema))
+            ProcessedExternalPlugin::Known(indexable_plugin_schema)
         } else {
             let encoded: String = BASE64_STANDARD.encode(plugin_slice);
 
@@ -278,7 +280,7 @@ impl ProcessedExternalPlugin {
                 authority,
                 lifecycle_checks: known_lifecycle_checks,
                 unknown_lifecycle_checks,
-                unknown_adapter_type: external_plugin_adapter_type,
+                r#type: external_plugin_adapter_type,
                 unknown_adapter_config: encoded,
                 data_offset,
                 data_len,
@@ -327,7 +329,7 @@ pub struct IndexableAsset {
     pub current_size: Option<u32>,
     pub plugins: HashMap<PluginType, IndexablePluginSchemaV1>,
     pub unknown_plugins: Vec<IndexableUnknownPluginSchemaV1>,
-    pub external_plugins: HashMap<ExternalPluginAdapterType, IndexableExternalPluginSchemaV1>,
+    pub external_plugins: Vec<IndexableExternalPluginSchemaV1>,
     pub unknown_external_plugins: Vec<IndexableUnknownExternalPluginSchemaV1>,
 }
 
@@ -344,9 +346,9 @@ impl IndexableAsset {
             num_minted: None,
             current_size: None,
             plugins: HashMap::new(),
-            unknown_plugins: Vec::new(),
-            external_plugins: HashMap::new(),
-            unknown_external_plugins: Vec::new(),
+            unknown_plugins: vec![],
+            external_plugins: vec![],
+            unknown_external_plugins: vec![],
         }
     }
 
@@ -361,9 +363,9 @@ impl IndexableAsset {
             num_minted: Some(collection.num_minted),
             current_size: Some(collection.current_size),
             plugins: HashMap::new(),
-            unknown_plugins: Vec::new(),
-            external_plugins: HashMap::new(),
-            unknown_external_plugins: Vec::new(),
+            unknown_plugins: vec![],
+            external_plugins: vec![],
+            unknown_external_plugins: vec![],
         }
     }
 
@@ -382,9 +384,8 @@ impl IndexableAsset {
     // Add a processed external plugin to the correct `IndexableAsset` struct member.
     fn add_processed_external_plugin(&mut self, plugin: ProcessedExternalPlugin) {
         match plugin {
-            ProcessedExternalPlugin::Known((plugin_type, indexable_plugin_schema)) => {
-                self.external_plugins
-                    .insert(plugin_type, indexable_plugin_schema);
+            ProcessedExternalPlugin::Known(indexable_plugin_schema) => {
+                self.external_plugins.push(indexable_plugin_schema);
             }
             ProcessedExternalPlugin::Unknown(indexable_unknown_plugin_schema) => self
                 .unknown_external_plugins
