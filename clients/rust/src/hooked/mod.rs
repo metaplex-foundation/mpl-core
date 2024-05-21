@@ -16,13 +16,14 @@ use anchor_lang::prelude::{
 };
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize as CrateDeserialize, BorshSerialize as CrateSerialize};
+use modular_bitfield::{bitfield, specifiers::B29};
 use num_traits::FromPrimitive;
 use std::{cmp::Ordering, mem::size_of};
 
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1, PluginRegistryV1},
     errors::MplCoreError,
-    types::{Key, Plugin, PluginType, RegistryRecord},
+    types::{ExternalCheckResult, Key, Plugin, PluginType, RegistryRecord},
 };
 use solana_program::account_info::AccountInfo;
 
@@ -152,5 +153,29 @@ impl RegistryRecord {
     /// Associated function for sorting `RegistryRecords` by offset.
     pub fn compare_offsets(a: &RegistryRecord, b: &RegistryRecord) -> Ordering {
         a.offset.cmp(&b.offset)
+    }
+}
+
+/// Bitfield representation of lifecycle permissions for external plugin adapter, third party plugins.
+#[bitfield(bits = 32)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+pub struct ExternalCheckResultBits {
+    pub can_listen: bool,
+    pub can_approve: bool,
+    pub can_reject: bool,
+    pub empty_bits: B29,
+}
+
+impl From<ExternalCheckResult> for ExternalCheckResultBits {
+    fn from(check_result: ExternalCheckResult) -> Self {
+        ExternalCheckResultBits::from_bytes(check_result.flags.to_le_bytes())
+    }
+}
+
+impl From<ExternalCheckResultBits> for ExternalCheckResult {
+    fn from(bits: ExternalCheckResultBits) -> Self {
+        ExternalCheckResult {
+            flags: u32::from_le_bytes(bits.into_bytes()),
+        }
     }
 }

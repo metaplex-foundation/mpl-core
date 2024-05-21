@@ -14,7 +14,8 @@ use crate::{
         ExternalPluginAdapterType, HookableLifecycleEvent, Key, Plugin, PluginAuthority,
         PluginType, UpdateAuthority,
     },
-    DataBlob, ExternalRegistryRecordSafe, PluginRegistryV1Safe, RegistryRecordSafe,
+    DataBlob, ExternalCheckResultBits, ExternalRegistryRecordSafe, PluginRegistryV1Safe,
+    RegistryRecordSafe,
 };
 
 /// Schema used for indexing known plugin types.
@@ -45,11 +46,15 @@ pub struct IndexableExternalPluginSchemaV1 {
     pub index: u64,
     pub offset: u64,
     pub authority: PluginAuthority,
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
+    pub lifecycle_checks: Option<LifecycleChecks>,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
     pub external_plugin_adapter: ExternalPluginAdapter,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub data_offset: Option<u64>,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub data_len: Option<u64>,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub data: Option<String>,
 }
 
@@ -60,12 +65,16 @@ pub struct IndexableUnknownExternalPluginSchemaV1 {
     pub index: u64,
     pub offset: u64,
     pub authority: PluginAuthority,
-    pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
+    pub lifecycle_checks: Option<LifecycleChecks>,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
-    pub external_plugin_adapter_type: u8,
-    pub external_plugin_adapter_data: String,
+    pub unknown_external_plugin_adapter_type: u8,
+    pub unknown_external_plugin_adapter: String,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub data_offset: Option<u64>,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub data_len: Option<u64>,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub data: Option<String>,
 }
 
@@ -117,6 +126,53 @@ enum ProcessedExternalPlugin {
     Unknown(IndexableUnknownExternalPluginSchemaV1),
 }
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct LifecycleChecks {
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
+    pub create: Vec<CheckResult>,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
+    pub update: Vec<CheckResult>,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
+    pub transfer: Vec<CheckResult>,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
+    pub burn: Vec<CheckResult>,
+}
+
+impl LifecycleChecks {
+    pub fn is_all_empty(&self) -> bool {
+        self.create.is_empty()
+            && self.update.is_empty()
+            && self.transfer.is_empty()
+            && self.burn.is_empty()
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum CheckResult {
+    CanListen,
+    CanApprove,
+    CanReject,
+}
+
+impl From<ExternalCheckResult> for Vec<CheckResult> {
+    fn from(check_result: ExternalCheckResult) -> Self {
+        let check_result_bits = ExternalCheckResultBits::from(check_result);
+        let mut check_result_vec = vec![];
+        if check_result_bits.can_listen() {
+            check_result_vec.push(CheckResult::CanListen);
+        }
+        if check_result_bits.can_approve() {
+            check_result_vec.push(CheckResult::CanApprove);
+        }
+        if check_result_bits.can_reject() {
+            check_result_vec.push(CheckResult::CanReject);
+        }
+        check_result_vec
+    }
+}
+
 struct ExternalPluginDataInfo<'a> {
     data_offset: u64,
     data_len: u64,
@@ -134,13 +190,26 @@ impl ProcessedExternalPlugin {
         external_plugin_data_info: Option<ExternalPluginDataInfo>,
     ) -> Result<Self, std::io::Error> {
         // First process the lifecycle checks.
-        let mut known_lifecycle_checks = vec![];
+        let mut known_lifecycle_checks = LifecycleChecks::default();
         let mut unknown_lifecycle_checks = vec![];
 
         if let Some(checks) = lifecycle_checks {
             for (event, check) in checks {
                 match HookableLifecycleEvent::from_u8(event) {
-                    Some(val) => known_lifecycle_checks.push((val, check)),
+                    Some(val) => match val {
+                        HookableLifecycleEvent::Create => {
+                            known_lifecycle_checks.create = Vec::<CheckResult>::from(check)
+                        }
+                        HookableLifecycleEvent::Update => {
+                            known_lifecycle_checks.update = Vec::<CheckResult>::from(check)
+                        }
+                        HookableLifecycleEvent::Transfer => {
+                            known_lifecycle_checks.transfer = Vec::<CheckResult>::from(check)
+                        }
+                        HookableLifecycleEvent::Burn => {
+                            known_lifecycle_checks.burn = Vec::<CheckResult>::from(check)
+                        }
+                    },
                     None => unknown_lifecycle_checks.push((event, check)),
                 }
             }
@@ -148,7 +217,7 @@ impl ProcessedExternalPlugin {
 
         // Save them as known and unknown.
         let known_lifecycle_checks =
-            (!known_lifecycle_checks.is_empty()).then_some(known_lifecycle_checks);
+            (!known_lifecycle_checks.is_all_empty()).then_some(known_lifecycle_checks);
         let unknown_lifecycle_checks =
             (!unknown_lifecycle_checks.is_empty()).then_some(unknown_lifecycle_checks);
 
@@ -207,8 +276,8 @@ impl ProcessedExternalPlugin {
                 authority,
                 lifecycle_checks: known_lifecycle_checks,
                 unknown_lifecycle_checks,
-                external_plugin_adapter_type,
-                external_plugin_adapter_data: encoded,
+                unknown_external_plugin_adapter_type: external_plugin_adapter_type,
+                unknown_external_plugin_adapter: encoded,
                 data_offset,
                 data_len,
                 data,

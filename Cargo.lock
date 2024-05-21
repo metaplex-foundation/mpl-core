@@ -2287,6 +2287,7 @@ dependencies = [
  "assert_matches",
  "base64 0.22.0",
  "borsh 0.10.3",
+ "modular-bitfield",
  "num-derive 0.3.3",
  "num-traits",
  "rmp-serde",
