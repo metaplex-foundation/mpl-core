@@ -264,3 +264,33 @@ test('it cannot burn an asset with the wrong collection specified', async (t) =>
 
   await t.throwsAsync(result, { name: 'InvalidCollection' });
 });
+
+test('it can burn asset with different payer', async (t) => {
+  const umi = await createUmi();
+  const owner = await generateSignerWithSol(umi);
+  const asset = await createAsset(umi, {
+    owner: owner.publicKey,
+  });
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  const lamportsBefore = await umi.rpc.getBalance(umi.identity.publicKey);
+
+  await burnV1(umi, {
+    asset: asset.publicKey,
+    payer: umi.identity,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  // And the asset address still exists but was resized to 1.
+  const afterAsset = await assertBurned(t, umi, asset.publicKey);
+  t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
+
+  const lamportsAfter = await umi.rpc.getBalance(umi.identity.publicKey);
+
+  t.true(lamportsAfter.basisPoints > lamportsBefore.basisPoints);
+});
