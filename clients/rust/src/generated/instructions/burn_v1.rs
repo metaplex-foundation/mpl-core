@@ -58,7 +58,7 @@ impl BurnV1 {
             self.payer, true,
         ));
         if let Some(authority) = self.authority {
-            accounts.push(solana_program::instruction::AccountMeta::new(
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 authority, true,
             ));
         } else {
@@ -129,7 +129,7 @@ pub struct BurnV1InstructionArgs {
 ///   0. `[writable]` asset
 ///   1. `[writable, optional]` collection
 ///   2. `[writable, signer]` payer
-///   3. `[writable, signer, optional]` authority
+///   3. `[signer, optional]` authority
 ///   4. `[optional]` system_program
 ///   5. `[optional]` log_wrapper
 #[derive(Default)]
@@ -343,7 +343,7 @@ impl<'a, 'b> BurnV1Cpi<'a, 'b> {
             true,
         ));
         if let Some(authority) = self.authority {
-            accounts.push(solana_program::instruction::AccountMeta::new(
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 *authority.key,
                 true,
             ));
@@ -426,7 +426,7 @@ impl<'a, 'b> BurnV1Cpi<'a, 'b> {
 ///   0. `[writable]` asset
 ///   1. `[writable, optional]` collection
 ///   2. `[writable, signer]` payer
-///   3. `[writable, signer, optional]` authority
+///   3. `[signer, optional]` authority
 ///   4. `[optional]` system_program
 ///   5. `[optional]` log_wrapper
 pub struct BurnV1CpiBuilder<'a, 'b> {

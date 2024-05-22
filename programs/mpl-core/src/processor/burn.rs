@@ -101,7 +101,13 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
         Some(HookableLifecycleEvent::Burn),
     )?;
 
-    process_burn(ctx.accounts.asset, authority)?;
+    msg!(
+        "asset: {} authority: {}",
+        ctx.accounts.asset.is_writable,
+        authority.is_writable
+    );
+
+    process_burn(ctx.accounts.asset, ctx.accounts.payer)?;
     if let Some(mut collection) = collection {
         collection.decrement()?;
         collection.save(ctx.accounts.collection.unwrap(), 0)?;
@@ -146,7 +152,7 @@ pub(crate) fn burn_collection<'a>(
         Some(HookableLifecycleEvent::Burn),
     )?;
 
-    process_burn(ctx.accounts.collection, authority)
+    process_burn(ctx.accounts.collection, ctx.accounts.payer)
 }
 
 fn process_burn<'a>(core_info: &AccountInfo<'a>, authority: &AccountInfo<'a>) -> ProgramResult {
