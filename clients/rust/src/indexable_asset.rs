@@ -49,7 +49,7 @@ pub struct IndexableExternalPluginSchemaV1 {
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub lifecycle_checks: Option<LifecycleChecks>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
-    pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
+    pub unknown_lifecycle_checks: Option<Vec<(u8, Vec<IndexableCheckResult>)>>,
     pub r#type: ExternalPluginAdapterType,
     pub adapter_config: ExternalPluginAdapter,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
@@ -70,7 +70,7 @@ pub struct IndexableUnknownExternalPluginSchemaV1 {
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub lifecycle_checks: Option<LifecycleChecks>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
-    pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
+    pub unknown_lifecycle_checks: Option<Vec<(u8, Vec<IndexableCheckResult>)>>,
     pub r#type: u8,
     pub unknown_adapter_config: String,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
@@ -133,13 +133,13 @@ enum ProcessedExternalPlugin {
 #[derive(Clone, Debug, Eq, PartialEq, Default)]
 pub struct LifecycleChecks {
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
-    pub create: Vec<CheckResult>,
+    pub create: Vec<IndexableCheckResult>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
-    pub update: Vec<CheckResult>,
+    pub update: Vec<IndexableCheckResult>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
-    pub transfer: Vec<CheckResult>,
+    pub transfer: Vec<IndexableCheckResult>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
-    pub burn: Vec<CheckResult>,
+    pub burn: Vec<IndexableCheckResult>,
 }
 
 impl LifecycleChecks {
@@ -153,24 +153,24 @@ impl LifecycleChecks {
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum CheckResult {
+pub enum IndexableCheckResult {
     CanListen,
     CanApprove,
     CanReject,
 }
 
-impl From<ExternalCheckResult> for Vec<CheckResult> {
+impl From<ExternalCheckResult> for Vec<IndexableCheckResult> {
     fn from(check_result: ExternalCheckResult) -> Self {
         let check_result_bits = ExternalCheckResultBits::from(check_result);
         let mut check_result_vec = vec![];
         if check_result_bits.can_listen() {
-            check_result_vec.push(CheckResult::CanListen);
+            check_result_vec.push(IndexableCheckResult::CanListen);
         }
         if check_result_bits.can_approve() {
-            check_result_vec.push(CheckResult::CanApprove);
+            check_result_vec.push(IndexableCheckResult::CanApprove);
         }
         if check_result_bits.can_reject() {
-            check_result_vec.push(CheckResult::CanReject);
+            check_result_vec.push(IndexableCheckResult::CanReject);
         }
         check_result_vec
     }
@@ -198,22 +198,17 @@ impl ProcessedExternalPlugin {
 
         if let Some(checks) = lifecycle_checks {
             for (event, check) in checks {
+                let checks = Vec::<IndexableCheckResult>::from(check);
                 match HookableLifecycleEvent::from_u8(event) {
                     Some(val) => match val {
-                        HookableLifecycleEvent::Create => {
-                            known_lifecycle_checks.create = Vec::<CheckResult>::from(check)
-                        }
-                        HookableLifecycleEvent::Update => {
-                            known_lifecycle_checks.update = Vec::<CheckResult>::from(check)
-                        }
+                        HookableLifecycleEvent::Create => known_lifecycle_checks.create = checks,
+                        HookableLifecycleEvent::Update => known_lifecycle_checks.update = checks,
                         HookableLifecycleEvent::Transfer => {
-                            known_lifecycle_checks.transfer = Vec::<CheckResult>::from(check)
+                            known_lifecycle_checks.transfer = checks
                         }
-                        HookableLifecycleEvent::Burn => {
-                            known_lifecycle_checks.burn = Vec::<CheckResult>::from(check)
-                        }
+                        HookableLifecycleEvent::Burn => known_lifecycle_checks.burn = checks,
                     },
-                    None => unknown_lifecycle_checks.push((event, check)),
+                    None => unknown_lifecycle_checks.push((event, checks)),
                 }
             }
         }
@@ -417,9 +412,15 @@ impl IndexableAsset {
                 &account[(header.plugin_registry_offset as usize)..],
             )?;
 
+            // Sort the internal plugin registry.
             let mut registry_records = plugin_registry.registry;
             registry_records.sort_by(RegistryRecordSafe::compare_offsets);
 
+            // Sort the external plugin registry.
+            let mut external_registry_records = plugin_registry.external_registry;
+            external_registry_records.sort_by(ExternalRegistryRecordSafe::compare_offsets);
+
+            // Process internal plugins using windows of 2 so that plugin slice length can be calculated.
             for (i, records) in registry_records.windows(2).enumerate() {
                 let mut plugin_slice =
                     &account[records[0].offset as usize..records[1].offset as usize];
@@ -434,9 +435,16 @@ impl IndexableAsset {
                 indexable_asset.add_processed_plugin(processed_plugin);
             }
 
+            // Process the last internal plugin.
             if let Some(record) = registry_records.last() {
-                let mut plugin_slice =
-                    &account[record.offset as usize..header.plugin_registry_offset as usize];
+                // For the last internal plugin, the slice ends at either the first external plugin
+                // or in the case of no external plugins, the plugin registry offset.
+                let end = external_registry_records
+                    .first()
+                    .map(|record| record.offset as usize)
+                    .unwrap_or(header.plugin_registry_offset as usize);
+
+                let mut plugin_slice = &account[record.offset as usize..end];
 
                 let processed_plugin = ProcessedPlugin::from_data(
                     registry_records.len() as u64 - 1,
@@ -449,9 +457,7 @@ impl IndexableAsset {
                 indexable_asset.add_processed_plugin(processed_plugin);
             }
 
-            let mut external_registry_records = plugin_registry.external_registry;
-            external_registry_records.sort_by(ExternalRegistryRecordSafe::compare_offsets);
-
+            // Process external plugins using windows of 2 so that plugin slice length can be calculated.
             for (i, records) in external_registry_records.windows(2).enumerate() {
                 let mut plugin_slice =
                     &account[records[0].offset as usize..records[1].offset as usize];
@@ -475,7 +481,9 @@ impl IndexableAsset {
                 indexable_asset.add_processed_external_plugin(processed_plugin);
             }
 
+            // Process the last external plugin.
             if let Some(record) = external_registry_records.last() {
+                // For external plugins, the slice always ends at the plugin registry offset.
                 let mut plugin_slice =
                     &account[record.offset as usize..header.plugin_registry_offset as usize];
 
