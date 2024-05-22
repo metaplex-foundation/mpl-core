@@ -36,12 +36,29 @@ import {
 } from './oracle';
 import { BasePlugin } from './types';
 import { extraAccountToAccountMeta } from './extraAccount';
-import { AssetLinkedSecureDataStorePlugin } from './assetLinkedSecureDataStore';
+import {
+  assetLinkedSecureDataStoreFromBase,
+  AssetLinkedSecureDataStoreInitInfoArgs,
+  assetLinkedSecureDataStoreManifest,
+  AssetLinkedSecureDataStorePlugin,
+  AssetLinkedSecureDataStoreUpdateInfoArgs,
+} from './assetLinkedSecureDataStore';
+import {
+  dataSectionManifest,
+  DataSectionPlugin,
+} from './dataSection';
 
 export type ExternalPluginAdapterTypeString =
   BaseExternalPluginAdapterKey['__kind'];
 
 export type BaseExternalPluginAdapter = BasePlugin & LifecycleChecksContainer;
+
+export type ExternalPluginAdapters =
+  | OraclePlugin
+  | SecureDataStorePlugin
+  | LifecycleHookPlugin
+  | AssetLinkedSecureDataStorePlugin
+  | DataSectionPlugin;
 
 export type ExternalPluginAdaptersList = {
   oracles?: OraclePlugin[];
@@ -53,30 +70,41 @@ export type ExternalPluginAdaptersList = {
 
 export type ExternalPluginAdapterInitInfoArgs =
   | ({
-    type: 'Oracle';
-  } & OracleInitInfoArgs)
+      type: 'Oracle';
+    } & OracleInitInfoArgs)
   | ({
-    type: 'LifecycleHook';
-  } & LifecycleHookInitInfoArgs)
+      type: 'LifecycleHook';
+    } & LifecycleHookInitInfoArgs)
   | ({
-    type: 'SecureDataStore';
-  } & SecureDataStoreInitInfoArgs);
+      type: 'SecureDataStore';
+    } & SecureDataStoreInitInfoArgs)
+  | ({
+      type: 'AssetLinkedSecureDataStore';
+    } & AssetLinkedSecureDataStoreInitInfoArgs)
+  | ({
+      type: 'DataSection';
+    } & SecureDataStoreInitInfoArgs);
 
 export type ExternalPluginAdapterUpdateInfoArgs =
   | ({
-    type: 'Oracle';
-  } & OracleUpdateInfoArgs)
+      type: 'Oracle';
+    } & OracleUpdateInfoArgs)
   | ({
-    type: 'LifecycleHook';
-  } & LifecycleHookUpdateInfoArgs)
+      type: 'LifecycleHook';
+    } & LifecycleHookUpdateInfoArgs)
   | ({
-    type: 'SecureDataStore';
-  } & SecureDataStoreUpdateInfoArgs);
+      type: 'SecureDataStore';
+    } & SecureDataStoreUpdateInfoArgs)
+  | ({
+      type: 'AssetLinkedSecureDataStore';
+    } & AssetLinkedSecureDataStoreUpdateInfoArgs);
 
 export const externalPluginAdapterManifests = {
   Oracle: oracleManifest,
   SecureDataStore: secureDataStoreManifest,
   LifecycleHook: lifecycleHookManifest,
+  AssetLinkedSecureDataStore: assetLinkedSecureDataStoreManifest,
+  DataSection: dataSectionManifest,
 };
 
 export type ExternalPluginAdapterData = {
@@ -119,12 +147,16 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
       if (!result.secureDataStores) {
         result.secureDataStores = [];
       }
-      console.log("deserializedPlugin", deserializedPlugin)
-      console.log("record", record)
+      console.log('deserializedPlugin', deserializedPlugin);
+      console.log('record', record);
       result.secureDataStores.push({
         type: 'SecureDataStore',
         ...mappedPlugin,
-        ...secureDataStoreFromBase(deserializedPlugin.fields[0], record, accountData),
+        ...secureDataStoreFromBase(
+          deserializedPlugin.fields[0],
+          record,
+          accountData
+        ),
       });
     } else if (deserializedPlugin.__kind === 'LifecycleHook') {
       if (!result.lifecycleHooks) {
@@ -134,6 +166,19 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
         type: 'LifecycleHook',
         ...mappedPlugin,
         ...lifecycleHookFromBase(
+          deserializedPlugin.fields[0],
+          record,
+          accountData
+        ),
+      });
+    } else if (deserializedPlugin.__kind === 'AssetLinkedSecureDataStore') {
+      if (!result.assetLinkedSecureDataStores) {
+        result.assetLinkedSecureDataStores = [];
+      }
+      result.assetLinkedSecureDataStores.push({
+        type: 'AssetLinkedSecureDataStore',
+        ...mappedPlugin,
+        ...assetLinkedSecureDataStoreFromBase(
           deserializedPlugin.fields[0],
           record,
           accountData
@@ -149,7 +194,9 @@ export const isExternalPluginAdapterType = (plugin: { type: string }) => {
   if (
     plugin.type === 'Oracle' ||
     plugin.type === 'LifecycleHook' ||
-    plugin.type === 'SecureDataStore'
+    plugin.type === 'SecureDataStore' ||
+    plugin.type === 'DataSection' ||
+    plugin.type === 'AssetLinkedSecureDataStore'
   ) {
     return true;
   }

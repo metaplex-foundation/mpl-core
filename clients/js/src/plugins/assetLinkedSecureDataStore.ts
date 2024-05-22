@@ -16,7 +16,10 @@ import {
   pluginAuthorityToBase,
 } from './pluginAuthority';
 
-export type AssetLinkedSecureDataStore = Omit<BaseAssetLinkedSecureDataStore, 'dataAuthority'> & {
+export type AssetLinkedSecureDataStore = Omit<
+  BaseAssetLinkedSecureDataStore,
+  'dataAuthority'
+> & {
   dataAuthority: PluginAuthority;
   data?: any;
 };

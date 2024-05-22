@@ -8,21 +8,21 @@
 
 import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseLinkedDataKey,
+  BaseLinkedDataKeyArgs,
   ExternalPluginAdapterSchema,
   ExternalPluginAdapterSchemaArgs,
-  LinkedDataKey,
-  LinkedDataKeyArgs,
+  getBaseLinkedDataKeySerializer,
   getExternalPluginAdapterSchemaSerializer,
-  getLinkedDataKeySerializer,
 } from '.';
 
 export type BaseDataSectionInitInfo = {
-  parentKey: LinkedDataKey;
+  parentKey: BaseLinkedDataKey;
   schema: ExternalPluginAdapterSchema;
 };
 
 export type BaseDataSectionInitInfoArgs = {
-  parentKey: LinkedDataKeyArgs;
+  parentKey: BaseLinkedDataKeyArgs;
   schema: ExternalPluginAdapterSchemaArgs;
 };
 
@@ -32,7 +32,7 @@ export function getBaseDataSectionInitInfoSerializer(): Serializer<
 > {
   return struct<BaseDataSectionInitInfo>(
     [
-      ['parentKey', getLinkedDataKeySerializer()],
+      ['parentKey', getBaseLinkedDataKeySerializer()],
       ['schema', getExternalPluginAdapterSchemaSerializer()],
     ],
     { description: 'BaseDataSectionInitInfo' }

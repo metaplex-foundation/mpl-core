@@ -2,45 +2,51 @@ import {
   BaseDataSection,
   BaseDataSectionInitInfoArgs,
   BaseDataSectionUpdateInfoArgs,
-  ExternalPluginAdapterSchema,
+  BasePluginAuthority,
   ExternalRegistryRecord,
-  LinkedDataKey,
 } from '../generated';
 import { ExternalPluginAdapterKey } from './externalPluginAdapterKey';
 import { ExternalPluginAdapterManifest } from './externalPluginAdapterManifest';
 import { BaseExternalPluginAdapter } from './externalPluginAdapters';
 import { parseExternalPluginAdapterData } from './lib';
 import {
-  PluginAuthority,
-  pluginAuthorityFromBase,
-} from './pluginAuthority';
+  LinkedDataKey,
+  linkedDataKeyFromBase,
+  linkedDataKeyToBase,
+} from './linkedDataKey';
+import { PluginAuthority, pluginAuthorityFromBase } from './pluginAuthority';
 
-export type DataSection = Omit<BaseDataSection, 'dataAuthority'> & {
+export type DataSection = Omit<
+  BaseDataSection,
+  'dataAuthority' | 'parentKey'
+> & {
   dataAuthority: PluginAuthority;
+  parentKey: LinkedDataKey;
   data?: any;
 };
 
 export type DataSectionPlugin = BaseExternalPluginAdapter &
   DataSection & {
     type: 'DataSection';
-    parentKey: LinkedDataKey;
-    data: any;
   };
 
-export type DataSectionInitInfoArgs = BaseDataSectionInitInfoArgs & {
+export type DataSectionInitInfoArgs = Omit<
+  BaseDataSectionInitInfoArgs,
+  'parentKey'
+> & {
   type: 'DataSection';
+  parentKey: LinkedDataKey;
 };
 
-export type DataSectionUpdateInfoArgs =
-  BaseDataSectionUpdateInfoArgs & {
-    key: ExternalPluginAdapterKey;
-  };
+export type DataSectionUpdateInfoArgs = BaseDataSectionUpdateInfoArgs & {
+  key: ExternalPluginAdapterKey;
+};
 
 export function dataSectionInitInfoArgsToBase(
   d: DataSectionInitInfoArgs
 ): BaseDataSectionInitInfoArgs {
   return {
-    parentKey: d.parentKey,
+    parentKey: linkedDataKeyToBase(d.parentKey),
     schema: d.schema,
   };
 }
@@ -48,6 +54,7 @@ export function dataSectionInitInfoArgsToBase(
 export function dataSectionUpdateInfoArgsToBase(
   d: DataSectionUpdateInfoArgs
 ): BaseDataSectionUpdateInfoArgs {
+  // TODO fix this
   return {};
 }
 
@@ -56,8 +63,17 @@ export function dataSectionFromBase(
   r: ExternalRegistryRecord,
   account: Uint8Array
 ): DataSection {
+  let dataAuthority: BasePluginAuthority;
+  if (s.parentKey.__kind === 'LifecycleHook') {
+    [, dataAuthority] = s.parentKey.fields;
+  } else {
+    [dataAuthority] = s.parentKey.fields;
+  }
+
   return {
     ...s,
+    parentKey: linkedDataKeyFromBase(s.parentKey),
+    dataAuthority: pluginAuthorityFromBase(dataAuthority),
     data: parseExternalPluginAdapterData(s, r, account),
   };
 }

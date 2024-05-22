@@ -17,12 +17,12 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseLinkedDataKey,
+  BaseLinkedDataKeyArgs,
   BasePluginAuthority,
   BasePluginAuthorityArgs,
-  LinkedDataKey,
-  LinkedDataKeyArgs,
+  getBaseLinkedDataKeySerializer,
   getBasePluginAuthoritySerializer,
-  getLinkedDataKeySerializer,
 } from '.';
 
 export type BaseExternalPluginAdapterKey =
@@ -30,14 +30,14 @@ export type BaseExternalPluginAdapterKey =
   | { __kind: 'Oracle'; fields: [PublicKey] }
   | { __kind: 'SecureDataStore'; fields: [BasePluginAuthority] }
   | { __kind: 'AssetLinkedSecureDataStore'; fields: [BasePluginAuthority] }
-  | { __kind: 'DataSection'; fields: [LinkedDataKey] };
+  | { __kind: 'DataSection'; fields: [BaseLinkedDataKey] };
 
 export type BaseExternalPluginAdapterKeyArgs =
   | { __kind: 'LifecycleHook'; fields: [PublicKey] }
   | { __kind: 'Oracle'; fields: [PublicKey] }
   | { __kind: 'SecureDataStore'; fields: [BasePluginAuthorityArgs] }
   | { __kind: 'AssetLinkedSecureDataStore'; fields: [BasePluginAuthorityArgs] }
-  | { __kind: 'DataSection'; fields: [LinkedDataKeyArgs] };
+  | { __kind: 'DataSection'; fields: [BaseLinkedDataKeyArgs] };
 
 export function getBaseExternalPluginAdapterKeySerializer(): Serializer<
   BaseExternalPluginAdapterKeyArgs,
@@ -79,7 +79,7 @@ export function getBaseExternalPluginAdapterKeySerializer(): Serializer<
         'DataSection',
         struct<
           GetDataEnumKindContent<BaseExternalPluginAdapterKey, 'DataSection'>
-        >([['fields', tuple([getLinkedDataKeySerializer()])]]),
+        >([['fields', tuple([getBaseLinkedDataKeySerializer()])]]),
       ],
     ],
     { description: 'BaseExternalPluginAdapterKey' }

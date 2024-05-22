@@ -198,6 +198,9 @@ kinobi.update(
     externalPluginAdapterKey: {
       name: "baseExternalPluginAdapterKey"
     },
+    linkedDataKey: {
+      name: 'baseLinkedDataKey'
+    },
     externalPluginAdapterInitInfo: {
       name: "baseExternalPluginAdapterInitInfo"
     },
