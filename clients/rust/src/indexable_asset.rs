@@ -412,9 +412,15 @@ impl IndexableAsset {
                 &account[(header.plugin_registry_offset as usize)..],
             )?;
 
+            // Sort the internal plugin registry.
             let mut registry_records = plugin_registry.registry;
             registry_records.sort_by(RegistryRecordSafe::compare_offsets);
 
+            // Sort the external plugin registry.
+            let mut external_registry_records = plugin_registry.external_registry;
+            external_registry_records.sort_by(ExternalRegistryRecordSafe::compare_offsets);
+
+            // Process internal plugins using windows of 2 so that plugin slice length can be calculated.
             for (i, records) in registry_records.windows(2).enumerate() {
                 let mut plugin_slice =
                     &account[records[0].offset as usize..records[1].offset as usize];
@@ -429,9 +435,16 @@ impl IndexableAsset {
                 indexable_asset.add_processed_plugin(processed_plugin);
             }
 
+            // Process the last internal plugin.
             if let Some(record) = registry_records.last() {
-                let mut plugin_slice =
-                    &account[record.offset as usize..header.plugin_registry_offset as usize];
+                // For the last internal plugin, the slice ends at either the first external plugin
+                // or in the case of no external plugins, the plugin registry offset.
+                let end = external_registry_records
+                    .first()
+                    .map(|record| record.offset as usize)
+                    .unwrap_or(header.plugin_registry_offset as usize);
+
+                let mut plugin_slice = &account[record.offset as usize..end];
 
                 let processed_plugin = ProcessedPlugin::from_data(
                     registry_records.len() as u64 - 1,
@@ -444,9 +457,7 @@ impl IndexableAsset {
                 indexable_asset.add_processed_plugin(processed_plugin);
             }
 
-            let mut external_registry_records = plugin_registry.external_registry;
-            external_registry_records.sort_by(ExternalRegistryRecordSafe::compare_offsets);
-
+            // Process external plugins using windows of 2 so that plugin slice length can be calculated.
             for (i, records) in external_registry_records.windows(2).enumerate() {
                 let mut plugin_slice =
                     &account[records[0].offset as usize..records[1].offset as usize];
@@ -470,7 +481,9 @@ impl IndexableAsset {
                 indexable_asset.add_processed_external_plugin(processed_plugin);
             }
 
+            // Process the last external plugin.
             if let Some(record) = external_registry_records.last() {
+                // For external plugins, the slice always ends at the plugin registry offset.
                 let mut plugin_slice =
                     &account[record.offset as usize..header.plugin_registry_offset as usize];
 
