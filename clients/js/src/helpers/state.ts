@@ -47,13 +47,15 @@ export const getExternalPluginAdapterKeyAsString = (
     case 'Oracle':
       return `${plugin.type}-${plugin.baseAddress}`;
     case 'SecureDataStore':
-      return `${plugin.type}-${plugin.dataAuthority.type}${plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
-        }`;
+      return `${plugin.type}-${plugin.dataAuthority.type}${
+        plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
+      }`;
     case 'LifecycleHook':
       return `${plugin.type}-${plugin.hookedProgram}`;
     case 'AssetLinkedSecureDataStore':
-      return `${plugin.type}-${plugin.dataAuthority.type}${plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
-        }`;
+      return `${plugin.type}-${plugin.dataAuthority.type}${
+        plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
+      }`;
     case 'DataSection':
       return `${plugin.type}-${getExternalPluginAdapterKeyAsString(plugin.parentKey)}`;
     default:

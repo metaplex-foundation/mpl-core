@@ -1,10 +1,7 @@
 import test from 'ava';
 import { assertAsset, createUmi, DEFAULT_ASSET } from '../_setupRaw';
 import { createAsset } from '../_setupSdk';
-import {
-  ExternalPluginAdapterSchema,
-  writeData,
-} from '../../src';
+import { ExternalPluginAdapterSchema, writeData } from '../../src';
 
 test('it can create a secure store', async (t) => {
   const umi = await createUmi();
@@ -75,7 +72,7 @@ test('it can write data to a secure store', async (t) => {
     key: {
       type: 'AssetLinkedSecureDataStore',
       dataAuthority: {
-          type: 'UpdateAuthority',
+        type: 'UpdateAuthority',
       },
     },
     data: Buffer.from('Hello'),

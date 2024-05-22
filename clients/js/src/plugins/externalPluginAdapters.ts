@@ -43,10 +43,7 @@ import {
   AssetLinkedSecureDataStorePlugin,
   AssetLinkedSecureDataStoreUpdateInfoArgs,
 } from './assetLinkedSecureDataStore';
-import {
-  dataSectionManifest,
-  DataSectionPlugin,
-} from './dataSection';
+import { dataSectionManifest, DataSectionPlugin } from './dataSection';
 
 export type ExternalPluginAdapterTypeString =
   BaseExternalPluginAdapterKey['__kind'];

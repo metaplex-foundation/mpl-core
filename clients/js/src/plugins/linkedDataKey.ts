@@ -9,13 +9,13 @@ import { BaseLinkedDataKey } from '../generated';
 
 export type LinkedDataKey =
   | {
-    type: 'AssetLinkedLifecycleHook';
-    hookedProgram: PublicKey;
-  }
+      type: 'AssetLinkedLifecycleHook';
+      hookedProgram: PublicKey;
+    }
   | {
-    type: 'AssetLinkedSecureDataStore';
-    dataAuthority: PluginAuthority;
-  };
+      type: 'AssetLinkedSecureDataStore';
+      dataAuthority: PluginAuthority;
+    };
 
 export function linkedDataKeyToBase(e: LinkedDataKey): BaseLinkedDataKey {
   switch (e.type) {

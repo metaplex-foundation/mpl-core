@@ -65,7 +65,10 @@ export function dataSectionFromBase(
   return {
     ...s,
     parentKey: linkedDataKeyFromBase(s.parentKey),
-    dataAuthority: (s.parentKey.__kind !== 'AssetLinkedLifecycleHook') ? pluginAuthorityFromBase(s.parentKey.fields[0]) : undefined,
+    dataAuthority:
+      s.parentKey.__kind !== 'AssetLinkedLifecycleHook'
+        ? pluginAuthorityFromBase(s.parentKey.fields[0])
+        : undefined,
     data: parseExternalPluginAdapterData(s, r, account),
   };
 }

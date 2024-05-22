@@ -1,5 +1,6 @@
 import {
   Context,
+  publicKey,
   PublicKey,
   Signer,
   transactionBuilder,
@@ -19,7 +20,7 @@ import { addressPluginAuthority } from '../authority';
 
 export type FreezeAssetArgs = {
   asset: AssetV1;
-  delegate: PublicKey;
+  delegate: PublicKey | Signer;
   authority?: Signer;
   collection?: CollectionV1;
 };
@@ -75,7 +76,7 @@ export function freezeAsset(
         type: 'FreezeDelegate',
         data: { frozen: true },
       }),
-      initAuthority: addressPluginAuthority(delegate),
+      initAuthority: addressPluginAuthority(publicKey(delegate)),
       authority,
     })
   );

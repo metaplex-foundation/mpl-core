@@ -214,7 +214,10 @@ pub struct ExternalRegistryRecordSafe {
 
 impl ExternalRegistryRecordSafe {
     /// Associated function for sorting `RegistryRecordIndexable` by offset.
-    pub fn compare_offsets(a: &RegistryRecordSafe, b: &RegistryRecordSafe) -> Ordering {
+    pub fn compare_offsets(
+        a: &ExternalRegistryRecordSafe,
+        b: &ExternalRegistryRecordSafe,
+    ) -> Ordering {
         a.offset.cmp(&b.offset)
     }
 }

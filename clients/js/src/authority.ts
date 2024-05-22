@@ -2,7 +2,8 @@ import { PublicKey } from '@metaplex-foundation/umi';
 import { pluginAuthority } from './plugins';
 
 /**
- * @deprecated use SDK v1 methods like `create` or `update` no longer require this helper
+ * @deprecated use SDK v1 methods like `create` or `update` instead of `createV1` or `updateV1`. The new methods no longer require this helper
+ *
  * @returns umi plugin authority with type 'None'
  */
 export function nonePluginAuthority() {
@@ -10,7 +11,7 @@ export function nonePluginAuthority() {
 }
 
 /**
- * @deprecated use SDK v1 methods like `create` or `update` no longer require this helper
+ * @deprecated use SDK v1 methods like `create` or `update` instead of `createV1` or `updateV1`. The new methods no longer require this helper
  * @returns umi plugin authority with type 'None'
  */
 export function ownerPluginAuthority() {
@@ -18,7 +19,7 @@ export function ownerPluginAuthority() {
 }
 
 /**
- * @deprecated use SDK v1 methods like `create` or `update` no longer require this helper
+ * @deprecated use SDK v1 methods like `create` or `update` instead of `createV1` or `updateV1`. The new methods no longer require this helper
  * @returns umi plugin authority with type 'UpdateAuthority'
  */
 export function updatePluginAuthority() {
@@ -26,7 +27,7 @@ export function updatePluginAuthority() {
 }
 
 /**
- * @deprecated use SDK v1 methods like `create` or `update` no longer require this helper
+ * @deprecated use SDK v1 methods like `create` or `update` instead of `createV1` or `updateV1`. The new methods no longer require this helper
  * @returns umi plugin authority with type 'Address'
  */
 export function addressPluginAuthority(address: PublicKey) {
