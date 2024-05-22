@@ -49,7 +49,7 @@ pub struct IndexableExternalPluginSchemaV1 {
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub lifecycle_checks: Option<LifecycleChecks>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
-    pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
+    pub unknown_lifecycle_checks: Option<Vec<(u8, Vec<IndexableCheckResult>)>>,
     pub r#type: ExternalPluginAdapterType,
     pub adapter_config: ExternalPluginAdapter,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
@@ -70,7 +70,7 @@ pub struct IndexableUnknownExternalPluginSchemaV1 {
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub lifecycle_checks: Option<LifecycleChecks>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
-    pub unknown_lifecycle_checks: Option<Vec<(u8, ExternalCheckResult)>>,
+    pub unknown_lifecycle_checks: Option<Vec<(u8, Vec<IndexableCheckResult>)>>,
     pub r#type: u8,
     pub unknown_adapter_config: String,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
@@ -133,13 +133,13 @@ enum ProcessedExternalPlugin {
 #[derive(Clone, Debug, Eq, PartialEq, Default)]
 pub struct LifecycleChecks {
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
-    pub create: Vec<CheckResult>,
+    pub create: Vec<IndexableCheckResult>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
-    pub update: Vec<CheckResult>,
+    pub update: Vec<IndexableCheckResult>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
-    pub transfer: Vec<CheckResult>,
+    pub transfer: Vec<IndexableCheckResult>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
-    pub burn: Vec<CheckResult>,
+    pub burn: Vec<IndexableCheckResult>,
 }
 
 impl LifecycleChecks {
@@ -153,24 +153,24 @@ impl LifecycleChecks {
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum CheckResult {
+pub enum IndexableCheckResult {
     CanListen,
     CanApprove,
     CanReject,
 }
 
-impl From<ExternalCheckResult> for Vec<CheckResult> {
+impl From<ExternalCheckResult> for Vec<IndexableCheckResult> {
     fn from(check_result: ExternalCheckResult) -> Self {
         let check_result_bits = ExternalCheckResultBits::from(check_result);
         let mut check_result_vec = vec![];
         if check_result_bits.can_listen() {
-            check_result_vec.push(CheckResult::CanListen);
+            check_result_vec.push(IndexableCheckResult::CanListen);
         }
         if check_result_bits.can_approve() {
-            check_result_vec.push(CheckResult::CanApprove);
+            check_result_vec.push(IndexableCheckResult::CanApprove);
         }
         if check_result_bits.can_reject() {
-            check_result_vec.push(CheckResult::CanReject);
+            check_result_vec.push(IndexableCheckResult::CanReject);
         }
         check_result_vec
     }
@@ -198,22 +198,17 @@ impl ProcessedExternalPlugin {
 
         if let Some(checks) = lifecycle_checks {
             for (event, check) in checks {
+                let checks = Vec::<IndexableCheckResult>::from(check);
                 match HookableLifecycleEvent::from_u8(event) {
                     Some(val) => match val {
-                        HookableLifecycleEvent::Create => {
-                            known_lifecycle_checks.create = Vec::<CheckResult>::from(check)
-                        }
-                        HookableLifecycleEvent::Update => {
-                            known_lifecycle_checks.update = Vec::<CheckResult>::from(check)
-                        }
+                        HookableLifecycleEvent::Create => known_lifecycle_checks.create = checks,
+                        HookableLifecycleEvent::Update => known_lifecycle_checks.update = checks,
                         HookableLifecycleEvent::Transfer => {
-                            known_lifecycle_checks.transfer = Vec::<CheckResult>::from(check)
+                            known_lifecycle_checks.transfer = checks
                         }
-                        HookableLifecycleEvent::Burn => {
-                            known_lifecycle_checks.burn = Vec::<CheckResult>::from(check)
-                        }
+                        HookableLifecycleEvent::Burn => known_lifecycle_checks.burn = checks,
                     },
-                    None => unknown_lifecycle_checks.push((event, check)),
+                    None => unknown_lifecycle_checks.push((event, checks)),
                 }
             }
         }
