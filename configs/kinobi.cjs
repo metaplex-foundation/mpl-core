@@ -198,6 +198,9 @@ kinobi.update(
     externalPluginAdapterKey: {
       name: "baseExternalPluginAdapterKey"
     },
+    linkedDataKey: {
+      name: 'baseLinkedDataKey'
+    },
     externalPluginAdapterInitInfo: {
       name: "baseExternalPluginAdapterInitInfo"
     },
@@ -221,6 +224,15 @@ kinobi.update(
     },
     lifecycleHookUpdateInfo: {
       name: "baseLifecycleHookUpdateInfo"
+    },
+    assetLinkedLifecycleHook: {
+      name: "baseAssetLinkedLifecycleHook"
+    },
+    assetLinkedLifecycleHookInitInfo: {
+      name: "baseAssetLinkedLifecycleHookInitInfo"
+    },
+    assetLinkedLifecycleHookUpdateInfo: {
+      name: "baseAssetLinkedLifecycleHookUpdateInfo"
     },
     secureDataStore: {
       name: "baseSecureDataStore"

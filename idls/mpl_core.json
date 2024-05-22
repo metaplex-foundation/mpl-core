@@ -2107,6 +2107,146 @@
       }
     },
     {
+      "name": "AssetLinkedLifecycleHook",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hookedProgram",
+            "type": "publicKey"
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "dataAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetLinkedLifecycleHookInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hookedProgram",
+            "type": "publicKey"
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "vec": {
+                "tuple": [
+                  {
+                    "defined": "HookableLifecycleEvent"
+                  },
+                  {
+                    "defined": "ExternalCheckResult"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "dataAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetLinkedLifecycleHookUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "AssetLinkedSecureDataStore",
       "type": {
         "kind": "struct",

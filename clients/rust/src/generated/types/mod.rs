@@ -6,6 +6,9 @@
 //!
 
 pub(crate) mod r#add_blocker;
+pub(crate) mod r#asset_linked_lifecycle_hook;
+pub(crate) mod r#asset_linked_lifecycle_hook_init_info;
+pub(crate) mod r#asset_linked_lifecycle_hook_update_info;
 pub(crate) mod r#asset_linked_secure_data_store;
 pub(crate) mod r#asset_linked_secure_data_store_init_info;
 pub(crate) mod r#asset_linked_secure_data_store_update_info;
@@ -65,6 +68,9 @@ pub(crate) mod r#validation_result;
 pub(crate) mod r#validation_results_offset;
 
 pub use self::r#add_blocker::*;
+pub use self::r#asset_linked_lifecycle_hook::*;
+pub use self::r#asset_linked_lifecycle_hook_init_info::*;
+pub use self::r#asset_linked_lifecycle_hook_update_info::*;
 pub use self::r#asset_linked_secure_data_store::*;
 pub use self::r#asset_linked_secure_data_store_init_info::*;
 pub use self::r#asset_linked_secure_data_store_update_info::*;

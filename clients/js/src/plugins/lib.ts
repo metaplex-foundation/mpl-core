@@ -199,14 +199,11 @@ export function parseExternalPluginAdapterData(
   account: Uint8Array
 ): any {
   let data;
-  console.log("innerrecord", record)
   if (isSome(record.dataOffset) && isSome(record.dataLen)) {
     const dataSlice = account.slice(
       Number(record.dataOffset.value),
       Number(record.dataOffset.value) + Number(record.dataLen.value)
     );
-    console.log("account", account)
-    console.log("dataSlice", dataSlice)
 
     if (plugin.schema === ExternalPluginAdapterSchema.Binary) {
       data = dataSlice;
@@ -222,5 +219,4 @@ export function parseExternalPluginAdapterData(
     return data;
   }
   throw new Error('Invalid DataStore, missing dataOffset or dataLen');
-
 }

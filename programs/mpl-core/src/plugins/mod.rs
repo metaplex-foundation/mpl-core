@@ -1,4 +1,5 @@
 mod add_blocker;
+mod asset_linked_lifecycle_hook;
 mod asset_linked_secure_data_store;
 mod attributes;
 mod burn_delegate;
@@ -23,6 +24,7 @@ mod update_delegate;
 mod utils;
 
 pub use add_blocker::*;
+pub use asset_linked_lifecycle_hook::*;
 pub use asset_linked_secure_data_store::*;
 pub use attributes::*;
 pub use burn_delegate::*;

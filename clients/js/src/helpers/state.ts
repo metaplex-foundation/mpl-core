@@ -1,12 +1,12 @@
 import { PublicKey, publicKey } from '@metaplex-foundation/umi';
+import { AssetLinkedLifecycleHookPlugin } from 'src/plugins/assetLinkedLifecycleHook';
 import { AssetV1, CollectionV1 } from '../generated';
-import { ExternalPluginAdaptersList } from '../plugins';
-import { OracleInitInfoArgs, OraclePlugin } from '../plugins/oracle';
-import { SecureDataStoreInitInfoArgs, SecureDataStorePlugin } from '../plugins/secureDataStore';
-import {
-  LifecycleHookInitInfoArgs,
-  LifecycleHookPlugin,
-} from '../plugins/lifecycleHook';
+import { ExternalPluginAdapters, ExternalPluginAdaptersList } from '../plugins';
+import { OraclePlugin } from '../plugins/oracle';
+import { SecureDataStorePlugin } from '../plugins/secureDataStore';
+import { LifecycleHookPlugin } from '../plugins/lifecycleHook';
+import { DataSectionPlugin } from '../plugins/dataSection';
+import { AssetLinkedSecureDataStorePlugin } from '../plugins/assetLinkedSecureDataStore';
 
 /**
  * Find the collection address for the given asset if it is part of a collection.
@@ -25,16 +25,24 @@ const externalPluginAdapterKeys: (keyof ExternalPluginAdaptersList)[] = [
   'oracles',
   'secureDataStores',
   'lifecycleHooks',
+  'dataSections',
+  'assetLinkedSecureDataStores',
 ];
 export const getExternalPluginAdapterKeyAsString = (
   plugin:
-    | OraclePlugin
-    | SecureDataStorePlugin
-    | LifecycleHookPlugin
-    | OracleInitInfoArgs
-    | LifecycleHookInitInfoArgs
-    | SecureDataStoreInitInfoArgs
-) => {
+    | Pick<OraclePlugin, 'type' | 'baseAddress'>
+    | Pick<SecureDataStorePlugin, 'type' | 'dataAuthority'>
+    | Pick<LifecycleHookPlugin, 'type' | 'hookedProgram'>
+    | Pick<AssetLinkedSecureDataStorePlugin, 'type' | 'dataAuthority'>
+    | Pick<AssetLinkedLifecycleHookPlugin, 'type' | 'hookedProgram'>
+    | Pick<DataSectionPlugin, 'type' | 'parentKey'>
+  // | ExternalPluginAdapters
+  // | OracleInitInfoArgs
+  // | LifecycleHookInitInfoArgs
+  // | SecureDataStoreInitInfoArgs
+  // | AssetLinkedSecureDataStoreInitInfoArgs
+  // | DataSectionInitInfoArgs
+): string => {
   switch (plugin.type) {
     case 'Oracle':
       return `${plugin.type}-${plugin.baseAddress}`;
@@ -42,8 +50,14 @@ export const getExternalPluginAdapterKeyAsString = (
       return `${plugin.type}-${plugin.dataAuthority.type}${plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
         }`;
     case 'LifecycleHook':
-    default:
       return `${plugin.type}-${plugin.hookedProgram}`;
+    case 'AssetLinkedSecureDataStore':
+      return `${plugin.type}-${plugin.dataAuthority.type}${plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
+        }`;
+    case 'DataSection':
+      return `${plugin.type}-${getExternalPluginAdapterKeyAsString(plugin.parentKey)}`;
+    default:
+      throw new Error('Unknown ExternalPluginAdapter type');
   }
 };
 
@@ -60,20 +74,16 @@ export const deriveExternalPluginAdapters = (
     if (asset[key] || collection[key]) {
       externalPluginAdapters[key] = [];
     }
-    asset[key]?.forEach(
-      (plugin: OraclePlugin | SecureDataStorePlugin | LifecycleHookPlugin) => {
-        set.add(getExternalPluginAdapterKeyAsString(plugin));
+    asset[key]?.forEach((plugin: ExternalPluginAdapters) => {
+      set.add(getExternalPluginAdapterKeyAsString(plugin));
+      externalPluginAdapters[key]?.push(plugin as any);
+    });
+
+    collection[key]?.forEach((plugin: ExternalPluginAdapters) => {
+      if (!set.has(getExternalPluginAdapterKeyAsString(plugin))) {
         externalPluginAdapters[key]?.push(plugin as any);
       }
-    );
-
-    collection[key]?.forEach(
-      (plugin: OraclePlugin | SecureDataStorePlugin | LifecycleHookPlugin) => {
-        if (!set.has(getExternalPluginAdapterKeyAsString(plugin))) {
-          externalPluginAdapters[key]?.push(plugin as any);
-        }
-      }
-    );
+    });
   });
 
   return externalPluginAdapters;
@@ -96,10 +106,14 @@ export function deriveAssetPlugins(
     collection
   );
 
+  // TODO copy linked data section
+
   return {
     ...{
       ...collection,
-      masterEdition: undefined, // master edition can only be on the collection
+      // the following plugins can only be on the collection
+      masterEdition: undefined,
+      assetLinkedSecureDataStores: undefined,
     },
     ...asset,
     ...externalPluginAdapters,
