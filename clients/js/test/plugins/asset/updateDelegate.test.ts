@@ -42,47 +42,64 @@ test('it can create an asset with updateDelegate', async (t) => {
   });
 });
 
-test('it cannot create an asset with updateDelegate with additional delegates', async (t) => {
+test('it can create an asset with updateDelegate with additional delegates', async (t) => {
   const umi = await createUmi();
+  const updateDelegate = generateSigner(umi);
 
-  const result = createAsset(umi, {
+  const asset = await createAsset(umi, {
     plugins: [
       pluginAuthorityPair({
         type: 'UpdateDelegate',
-        data: { additionalDelegates: [generateSigner(umi).publicKey] },
+        data: { additionalDelegates: [updateDelegate.publicKey] },
       }),
     ],
   });
-
-  await t.throwsAsync(result, { name: 'NotAvailable' });
-});
-
-test('it cannot add updateDelegate to asset with additional delegates', async (t) => {
-  const umi = await createUmi();
-  const asset = await createAsset(umi);
-
-  const result = addPluginV1(umi, {
-    asset: asset.publicKey,
-    plugin: createPlugin({
-      type: 'UpdateDelegate',
-      data: { additionalDelegates: [generateSigner(umi).publicKey] },
-    }),
-  }).sendAndConfirm(umi);
-
-  await t.throwsAsync(result, { name: 'NotAvailable' });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-    updateDelegate: undefined,
+    updateDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      additionalDelegates: [updateDelegate.publicKey],
+    },
   });
 });
 
-test('it cannot update updateDelegate on asset with additional delegates', async (t) => {
+test('it can add updateDelegate to asset with additional delegates', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi);
+  const updateDelegate = generateSigner(umi);
+
+  await addPluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'UpdateDelegate',
+      data: { additionalDelegates: [updateDelegate.publicKey] },
+    }),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    updateDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      additionalDelegates: [updateDelegate.publicKey],
+    },
+  });
+});
+
+test('it can update updateDelegate on asset with additional delegates', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi);
+  const updateDelegate = generateSigner(umi);
 
   await addPluginV1(umi, {
     asset: asset.publicKey,
@@ -104,15 +121,13 @@ test('it cannot update updateDelegate on asset with additional delegates', async
     },
   });
 
-  const result = updatePluginV1(umi, {
+  await updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'UpdateDelegate',
-      data: { additionalDelegates: [generateSigner(umi).publicKey] },
+      data: { additionalDelegates: [updateDelegate.publicKey] },
     }),
   }).sendAndConfirm(umi);
-
-  await t.throwsAsync(result, { name: 'NotAvailable' });
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -123,12 +138,12 @@ test('it cannot update updateDelegate on asset with additional delegates', async
       authority: {
         type: 'UpdateAuthority',
       },
-      additionalDelegates: [],
+      additionalDelegates: [updateDelegate.publicKey],
     },
   });
 });
 
-test('it updateDelegate can update an asset', async (t) => {
+test('an updateDelegate can update an asset', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi, {
     name: 'short',
@@ -183,7 +198,60 @@ test('it updateDelegate can update an asset', async (t) => {
   });
 });
 
-test('it updateDelegate cannot update an asset after delegate authority revoked', async (t) => {
+test('an updateDelegate additionalDelegate can update an asset', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi, {
+    name: 'short',
+    uri: 'https://short.com',
+  });
+  const updateDelegate = generateSigner(umi);
+
+  await addPluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'UpdateDelegate',
+      data: { additionalDelegates: [updateDelegate.publicKey] },
+    }),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    updateDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      additionalDelegates: [updateDelegate.publicKey],
+    },
+    name: 'short',
+    uri: 'https://short.com',
+  });
+
+  await updateV1(umi, {
+    asset: asset.publicKey,
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
+    authority: updateDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    updateDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      additionalDelegates: [updateDelegate.publicKey],
+    },
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
+  });
+});
+
+test('an updateDelegate cannot update an asset after delegate authority revoked', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi, {
     name: 'short',
@@ -217,6 +285,84 @@ test('it updateDelegate cannot update an asset after delegate authority revoked'
   await revokePluginAuthorityV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.UpdateDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    updateDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      additionalDelegates: [],
+    },
+    name: 'short',
+    uri: 'https://short.com',
+  });
+
+  const result = updateV1(umi, {
+    asset: asset.publicKey,
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
+    authority: updateDelegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    updateDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      additionalDelegates: [],
+    },
+    name: 'short',
+    uri: 'https://short.com',
+  });
+});
+
+test('an updateDelegate additionalDelegate cannot update an asset after delegate authority revoked', async (t) => {
+  const umi = await createUmi();
+  const { identity } = umi;
+  const asset = await createAsset(umi, {
+    name: 'short',
+    uri: 'https://short.com',
+  });
+  const updateDelegate = generateSigner(umi);
+
+  await addPluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'UpdateDelegate',
+      data: { additionalDelegates: [updateDelegate.publicKey] },
+    }),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    updateDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      additionalDelegates: [updateDelegate.publicKey],
+    },
+    name: 'short',
+    uri: 'https://short.com',
+  });
+
+  await updatePluginV1(umi, {
+    asset: asset.publicKey,
+    authority: identity,
+    plugin: createPlugin({
+      type: 'UpdateDelegate',
+      data: { additionalDelegates: [] },
+    })
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
