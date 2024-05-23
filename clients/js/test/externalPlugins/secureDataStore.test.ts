@@ -107,10 +107,9 @@ test('it can add and write to secure data store on asset with data authority', a
       {
         type: 'SecureDataStore',
         dataAuthority: {
-          type: 'Address',
-          address: dataAuthority.publicKey,
+          type: 'UpdateAuthority',
         },
-        schema: ExternalPluginAdapterSchema.Json,
+        schema: ExternalPluginAdapterSchema.Binary,
       },
     ],
   });
@@ -124,7 +123,7 @@ test('it can add and write to secure data store on asset with data authority', a
         address: dataAuthority.publicKey,
       },
     },
-    data: new TextEncoder().encode(JSON.stringify({ hello: 'world' })),
+    data: Uint8Array.from([0, 1, 2, 3]),
   });
 
   await assertAsset(t, umi, {
@@ -137,12 +136,11 @@ test('it can add and write to secure data store on asset with data authority', a
         authority: {
           type: 'UpdateAuthority',
         },
-        data: { hello: 'world' },
+        data: Uint8Array.from([0, 1, 2, 3]),
         dataAuthority: {
-          type: 'Address',
-          address: dataAuthority.publicKey,
+          type: 'UpdateAuthority',
         },
-        schema: ExternalPluginAdapterSchema.Json,
+        schema: ExternalPluginAdapterSchema.Binary,
       },
     ],
   });

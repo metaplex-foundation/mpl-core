@@ -516,6 +516,14 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         new_data_len,
     );
 
+    // Find the record in the registry and update the data length.
+    let record_index = plugin_registry
+        .external_registry
+        .iter()
+        .position(|r| r == record)
+        .ok_or(MplCoreError::InvalidPlugin)?;
+    plugin_registry.external_registry[record_index].data_len = Some(new_data_len);
+
     plugin_registry.save(account, new_registry_offset as usize)?;
     plugin_header.save(account, core.map_or(0, |core| core.get_size()))?;
 

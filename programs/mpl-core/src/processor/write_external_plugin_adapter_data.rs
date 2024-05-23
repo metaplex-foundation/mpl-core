@@ -194,6 +194,7 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
     // } else if data.is_none() && buffer.is_none() {
     //     return Err(MplCoreError::NoDataSources.into());
     // }
+    solana_program::msg!("Data: {:?}", data);
 
     // SecureDataStore and LifecycleHook both write the data after the plugin.
     // AssetLinkedSecureDataStore writes the data to the asset directly.
