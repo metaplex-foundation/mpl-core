@@ -51,7 +51,7 @@ export const createAsset = async (
       ? await fetchCollectionV1(umi, input.collection as PublicKey)
       : (input.collection as CollectionV1 | undefined);
 
-  const res = await create(umi, {
+  await create(umi, {
     owner,
     payer,
     dataState: input.dataState,
@@ -64,7 +64,7 @@ export const createAsset = async (
     authority: input.authority,
   }).sendAndConfirm(umi);
 
-  console.log('res', await umi.rpc.getTransaction(res.signature));
+  // console.log('res', await umi.rpc.getTransaction(res.signature));
 
   return fetchAssetV1(umi, publicKey(asset));
 };

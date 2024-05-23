@@ -3,7 +3,7 @@ import { assertAsset, createUmi, DEFAULT_ASSET } from '../_setupRaw';
 import { createAsset } from '../_setupSdk';
 import { ExternalPluginAdapterSchema, writeData } from '../../src';
 
-test('it can create a secure store', async (t) => {
+test('it can create an asset linked secure store', async (t) => {
   const umi = await createUmi();
 
   // create asset referencing the oracle account
@@ -36,7 +36,7 @@ test('it can create a secure store', async (t) => {
   });
 });
 
-test('it can write data to a secure store', async (t) => {
+test('it can write data to an asset linked secure store', async (t) => {
   const umi = await createUmi();
 
   // create asset referencing the oracle account

@@ -144,8 +144,6 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
       if (!result.secureDataStores) {
         result.secureDataStores = [];
       }
-      console.log('deserializedPlugin', deserializedPlugin);
-      console.log('record', record);
       result.secureDataStores.push({
         type: 'SecureDataStore',
         ...mappedPlugin,

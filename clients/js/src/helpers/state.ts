@@ -36,12 +36,6 @@ export const getExternalPluginAdapterKeyAsString = (
     | Pick<AssetLinkedSecureDataStorePlugin, 'type' | 'dataAuthority'>
     | Pick<AssetLinkedLifecycleHookPlugin, 'type' | 'hookedProgram'>
     | Pick<DataSectionPlugin, 'type' | 'parentKey'>
-  // | ExternalPluginAdapters
-  // | OracleInitInfoArgs
-  // | LifecycleHookInitInfoArgs
-  // | SecureDataStoreInitInfoArgs
-  // | AssetLinkedSecureDataStoreInitInfoArgs
-  // | DataSectionInitInfoArgs
 ): string => {
   switch (plugin.type) {
     case 'Oracle':

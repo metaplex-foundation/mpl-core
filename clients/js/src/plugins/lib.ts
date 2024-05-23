@@ -208,7 +208,15 @@ export function parseExternalPluginAdapterData(
     if (plugin.schema === ExternalPluginAdapterSchema.Binary) {
       data = dataSlice;
     } else if (plugin.schema === ExternalPluginAdapterSchema.Json) {
-      data = JSON.parse(new TextDecoder().decode(dataSlice));
+      // if data is empty, the data slice is uninitialized and should be ignored
+      if (dataSlice.length !== 0) {
+        try {
+          data = JSON.parse(new TextDecoder().decode(dataSlice));
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn('Invalid JSON in external plugin data', e.message);
+        }
+      }
     } else if (plugin.schema === ExternalPluginAdapterSchema.MsgPack) {
       // eslint-disable-next-line no-console
       console.warn(
