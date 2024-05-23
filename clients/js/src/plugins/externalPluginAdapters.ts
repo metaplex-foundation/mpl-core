@@ -43,7 +43,11 @@ import {
   AssetLinkedSecureDataStorePlugin,
   AssetLinkedSecureDataStoreUpdateInfoArgs,
 } from './assetLinkedSecureDataStore';
-import { dataSectionManifest, DataSectionPlugin } from './dataSection';
+import {
+  dataSectionFromBase,
+  dataSectionManifest,
+  DataSectionPlugin,
+} from './dataSection';
 
 export type ExternalPluginAdapterTypeString =
   BaseExternalPluginAdapterKey['__kind'];
@@ -174,6 +178,19 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
         type: 'AssetLinkedSecureDataStore',
         ...mappedPlugin,
         ...assetLinkedSecureDataStoreFromBase(
+          deserializedPlugin.fields[0],
+          record,
+          accountData
+        ),
+      });
+    } else if (deserializedPlugin.__kind === 'DataSection') {
+      if (!result.dataSections) {
+        result.dataSections = [];
+      }
+      result.dataSections.push({
+        type: 'DataSection',
+        ...mappedPlugin,
+        ...dataSectionFromBase(
           deserializedPlugin.fields[0],
           record,
           accountData

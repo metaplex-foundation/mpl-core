@@ -64,8 +64,6 @@ export const createAsset = async (
     authority: input.authority,
   }).sendAndConfirm(umi);
 
-  // console.log('res', await umi.rpc.getTransaction(res.signature));
-
   return fetchAssetV1(umi, publicKey(asset));
 };
 

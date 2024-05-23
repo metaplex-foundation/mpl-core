@@ -1,28 +1,41 @@
 import test from 'ava';
-import { assertAsset, createUmi, DEFAULT_ASSET } from '../_setupRaw';
-import { createAsset } from '../_setupSdk';
+import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
+import {
+  assertAsset,
+  assertCollection,
+  createUmi,
+  DEFAULT_ASSET,
+} from '../_setupRaw';
+import { createAsset, createAssetWithCollection } from '../_setupSdk';
 import { ExternalPluginAdapterSchema, writeData } from '../../src';
 
-test('it can create an asset linked secure store', async (t) => {
+test('it can create an asset linked secure store to collection', async (t) => {
   const umi = await createUmi();
-
-  // create asset referencing the oracle account
-  const asset = await createAsset(umi, {
-    plugins: [
-      {
-        type: 'AssetLinkedSecureDataStore',
-        dataAuthority: {
-          type: 'UpdateAuthority',
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        {
+          type: 'AssetLinkedSecureDataStore',
+          dataAuthority: {
+            type: 'UpdateAuthority',
+          },
+          schema: ExternalPluginAdapterSchema.Binary,
         },
-        schema: ExternalPluginAdapterSchema.Binary,
-      },
-    ],
-  });
+      ],
+    }
+  );
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_ASSET,
+    collection: collection.publicKey,
     assetLinkedSecureDataStores: [
       {
         type: 'AssetLinkedSecureDataStore',
@@ -36,11 +49,10 @@ test('it can create an asset linked secure store', async (t) => {
   });
 });
 
-test('it can write data to an asset linked secure store', async (t) => {
+test('it cannot add asset linked secure store to an asset', async (t) => {
   const umi = await createUmi();
 
-  // create asset referencing the oracle account
-  const asset = await createAsset(umi, {
+  const res = createAsset(umi, {
     plugins: [
       {
         type: 'AssetLinkedSecureDataStore',
@@ -52,21 +64,28 @@ test('it can write data to an asset linked secure store', async (t) => {
     ],
   });
 
-  await assertAsset(t, umi, {
-    ...DEFAULT_ASSET,
-    asset: asset.publicKey,
-    owner: umi.identity.publicKey,
-    assetLinkedSecureDataStores: [
-      {
-        type: 'AssetLinkedSecureDataStore',
-        authority: { type: 'UpdateAuthority' },
-        dataAuthority: {
-          type: 'UpdateAuthority',
+  await t.throwsAsync(res, { message: /SomeError/ });
+});
+
+test('it can write data to an asset linked secure store', async (t) => {
+  const umi = await createUmi();
+  const dataAuthority = await generateSignerWithSol(umi);
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        {
+          type: 'AssetLinkedSecureDataStore',
+          dataAuthority: {
+            type: 'Address',
+            address: dataAuthority.publicKey,
+          },
+          schema: ExternalPluginAdapterSchema.Json,
         },
-        schema: ExternalPluginAdapterSchema.Binary,
-      },
-    ],
-  });
+      ],
+    }
+  );
 
   const result = await writeData(umi, {
     key: {
@@ -75,8 +94,10 @@ test('it can write data to an asset linked secure store', async (t) => {
         type: 'UpdateAuthority',
       },
     },
-    data: Buffer.from('Hello'),
+    collection: collection.publicKey,
+    data: new TextEncoder().encode(JSON.stringify({ hello: 'world' })),
     asset: asset.publicKey,
+    authority: dataAuthority,
   }).sendAndConfirm(umi);
 
   console.log(await umi.rpc.getTransaction(result.signature));
@@ -85,14 +106,19 @@ test('it can write data to an asset linked secure store', async (t) => {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
-    assetLinkedSecureDataStores: [
+    dataSections: [
       {
-        type: 'AssetLinkedSecureDataStore',
-        authority: { type: 'UpdateAuthority' },
-        dataAuthority: {
-          type: 'UpdateAuthority',
+        type: 'DataSection',
+        parentKey: {
+          type: 'AssetLinkedSecureDataStore',
+          dataAuthority: {
+            type: 'Address',
+            address: dataAuthority.publicKey,
+          },
         },
-        schema: ExternalPluginAdapterSchema.Binary,
+        authority: { type: 'UpdateAuthority' },
+        data: { hello: 'world' },
+        schema: ExternalPluginAdapterSchema.Json,
       },
     ],
   });
