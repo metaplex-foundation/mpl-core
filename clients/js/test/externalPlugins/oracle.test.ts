@@ -45,10 +45,269 @@ import {
   updatePlugin,
   fetchAssetV1,
   ExternalValidationResult,
+  ruleSet,
 } from '../../src';
 
 const createUmi = async () =>
   (await baseCreateUmi()).use(mplCoreOracleExample());
+
+test('it can add oracle to asset for multiple lifecycle events', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+
+  // write to example program oracle account
+  await fixedAccountInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Rejected,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  // create asset referencing the oracle account
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: account.publicKey,
+      },
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+});
+
+test('it can add multiple oracles and internal plugins to asset', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+  const account2 = generateSigner(umi);
+  const delegateAddress = generateSigner(umi);
+
+  // write to example program oracle account
+  await fixedAccountInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Rejected,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  // write to example program oracle account
+  await fixedAccountInit(umi, {
+    account: account2,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Rejected,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  // create asset referencing the oracle account
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'TransferDelegate',
+      },
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: account.publicKey,
+      },
+    ],
+  });
+
+  await addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'Royalties',
+      basisPoints: 5,
+      creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+      ruleSet: ruleSet('None'),
+    },
+  }).sendAndConfirm(umi);
+
+  await addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
+      },
+      lifecycleChecks: {
+        update: [CheckResult.CAN_REJECT],
+        burn: [CheckResult.CAN_REJECT],
+      },
+      baseAddress: account2.publicKey,
+    },
+  }).sendAndConfirm(umi);
+
+  await addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'FreezeDelegate',
+      authority: {
+        type: 'Address',
+        address: delegateAddress.publicKey,
+      },
+      frozen: false,
+    },
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    transferDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+    royalties: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      basisPoints: 5,
+      creators: [{ address: umi.identity.publicKey, percentage: 100 }],
+      ruleSet: ruleSet('None'),
+    },
+    freezeDelegate: {
+      authority: {
+        type: 'Address',
+        address: delegateAddress.publicKey,
+      },
+      frozen: false,
+    },
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddressConfig: undefined,
+      },
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account2.publicKey,
+        lifecycleChecks: {
+          update: [CheckResult.CAN_REJECT],
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+});
+
+test.skip('add oracle to asset with no offset', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+
+  // create asset referencing the oracle account
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'NoOffset',
+        },
+        lifecycleChecks: {
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: account.publicKey,
+      },
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    oracles: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'NoOffset',
+        },
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        baseAddress: account.publicKey,
+        lifecycleChecks: {
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+});
 
 test('it can use fixed address oracle to deny update', async (t) => {
   const umi = await createUmi();

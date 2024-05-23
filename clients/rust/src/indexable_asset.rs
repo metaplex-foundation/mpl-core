@@ -5,7 +5,7 @@ use base64::prelude::*;
 use borsh::BorshDeserialize;
 use num_traits::FromPrimitive;
 use solana_program::pubkey::Pubkey;
-use std::{collections::HashMap, io::ErrorKind};
+use std::{cmp::Ordering, collections::HashMap, io::ErrorKind};
 
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
@@ -328,6 +328,27 @@ pub struct IndexableAsset {
     pub unknown_external_plugins: Vec<IndexableUnknownExternalPluginSchemaV1>,
 }
 
+enum CombinedRecord<'a> {
+    Internal(&'a RegistryRecordSafe),
+    External(&'a ExternalRegistryRecordSafe),
+}
+
+struct CombinedRecordWithDataInfo<'a> {
+    pub offset: u64,
+    pub data_offset: Option<u64>,
+    pub record: CombinedRecord<'a>,
+}
+
+impl<'a> CombinedRecordWithDataInfo<'a> {
+    // Associated function for sorting `RegistryRecordIndexable` by offset.
+    pub fn compare_offsets(
+        a: &CombinedRecordWithDataInfo,
+        b: &CombinedRecordWithDataInfo,
+    ) -> Ordering {
+        a.offset.cmp(&b.offset)
+    }
+}
+
 impl IndexableAsset {
     /// Create a new `IndexableAsset` from a `BaseAssetV1``.  Note this uses a passed-in `seq` rather than
     /// the one contained in `asset` to avoid errors.
@@ -388,7 +409,72 @@ impl IndexableAsset {
         }
     }
 
-    /// Fetch the base `Asset`` or `Collection`` and all the plugins and store in an `IndexableAsset`.
+    fn slice_external_plugin_data(
+        data_offset: Option<u64>,
+        data_len: Option<u64>,
+        account: &[u8],
+    ) -> Result<Option<ExternalPluginDataInfo>, std::io::Error> {
+        if data_offset.is_some() && data_len.is_some() {
+            let data_offset = data_offset.unwrap() as usize;
+            let data_len = data_len.unwrap() as usize;
+
+            let end = data_offset
+                .checked_add(data_len)
+                .ok_or(ErrorKind::InvalidData)?;
+            let data_slice = &account[data_offset..end];
+
+            Ok(Some(ExternalPluginDataInfo {
+                data_offset: data_offset as u64,
+                data_len: data_len as u64,
+                data_slice,
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn process_combined_record(
+        index: u64,
+        combined_record: &CombinedRecord,
+        plugin_slice: &mut &[u8],
+        account: &[u8],
+        indexable_asset: &mut IndexableAsset,
+    ) -> Result<(), std::io::Error> {
+        match combined_record {
+            CombinedRecord::Internal(record) => {
+                let processed_plugin = ProcessedPlugin::from_data(
+                    index,
+                    record.offset,
+                    record.authority.clone(),
+                    record.plugin_type,
+                    plugin_slice,
+                )?;
+
+                indexable_asset.add_processed_plugin(processed_plugin);
+            }
+            CombinedRecord::External(record) => {
+                let external_plugin_data_info =
+                    Self::slice_external_plugin_data(record.data_offset, record.data_len, account)?;
+
+                let processed_plugin = ProcessedExternalPlugin::from_data(
+                    index,
+                    record.offset,
+                    record.authority.clone(),
+                    record.lifecycle_checks.clone(),
+                    record.plugin_type,
+                    plugin_slice,
+                    external_plugin_data_info,
+                )?;
+
+                indexable_asset.add_processed_external_plugin(processed_plugin);
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Fetch the base `Asset`` or `Collection`` and all the plugins and store in an
+    /// `IndexableAsset`.
     pub fn fetch(key: Key, account: &[u8]) -> Result<Self, std::io::Error> {
         let (mut indexable_asset, base_size) = match key {
             Key::AssetV1 => {
@@ -412,121 +498,65 @@ impl IndexableAsset {
                 &account[(header.plugin_registry_offset as usize)..],
             )?;
 
-            // Sort the internal plugin registry.
-            let mut registry_records = plugin_registry.registry;
-            registry_records.sort_by(RegistryRecordSafe::compare_offsets);
+            // Combine internal and external plugin registry records.
+            let mut combined_records = vec![];
 
-            // Sort the external plugin registry.
-            let mut external_registry_records = plugin_registry.external_registry;
-            external_registry_records.sort_by(ExternalRegistryRecordSafe::compare_offsets);
+            // Add internal registry records.
+            for record in &plugin_registry.registry {
+                combined_records.push(CombinedRecordWithDataInfo {
+                    offset: record.offset,
+                    data_offset: None,
+                    record: CombinedRecord::Internal(record),
+                });
+            }
 
-            // Process internal plugins using windows of 2 so that plugin slice length can be calculated.
-            for (i, records) in registry_records.windows(2).enumerate() {
-                let mut plugin_slice =
-                    &account[records[0].offset as usize..records[1].offset as usize];
-                let processed_plugin = ProcessedPlugin::from_data(
+            // Add external registry records.
+            for record in &plugin_registry.external_registry {
+                combined_records.push(CombinedRecordWithDataInfo {
+                    offset: record.offset,
+                    data_offset: record.data_offset,
+                    record: CombinedRecord::External(record),
+                });
+            }
+
+            // Sort combined registry records by offset.
+            combined_records.sort_by(CombinedRecordWithDataInfo::compare_offsets);
+
+            // Process combined registry records using windows of 2 so that plugin slice length can
+            // be calculated.
+            for (i, records) in combined_records.windows(2).enumerate() {
+                // For internal plugins, the end of the slice is the start of the next plugin.  For
+                // external plugins, the end of the adapter is either the start of the data (if
+                // present) or the start of the next plugin.
+                let end = records[0].data_offset.unwrap_or(records[1].offset);
+                let mut plugin_slice = &account[records[0].offset as usize..end as usize];
+
+                Self::process_combined_record(
                     i as u64,
-                    records[0].offset,
-                    records[0].authority.clone(),
-                    records[0].plugin_type,
+                    &records[0].record,
                     &mut plugin_slice,
-                )?;
-
-                indexable_asset.add_processed_plugin(processed_plugin);
-            }
-
-            // Process the last internal plugin.
-            if let Some(record) = registry_records.last() {
-                // For the last internal plugin, the slice ends at either the first external plugin
-                // or in the case of no external plugins, the plugin registry offset.
-                let end = external_registry_records
-                    .first()
-                    .map(|record| record.offset as usize)
-                    .unwrap_or(header.plugin_registry_offset as usize);
-
-                let mut plugin_slice = &account[record.offset as usize..end];
-
-                let processed_plugin = ProcessedPlugin::from_data(
-                    registry_records.len() as u64 - 1,
-                    record.offset,
-                    record.authority.clone(),
-                    record.plugin_type,
-                    &mut plugin_slice,
-                )?;
-
-                indexable_asset.add_processed_plugin(processed_plugin);
-            }
-
-            // Process external plugins using windows of 2 so that plugin slice length can be calculated.
-            for (i, records) in external_registry_records.windows(2).enumerate() {
-                let mut plugin_slice =
-                    &account[records[0].offset as usize..records[1].offset as usize];
-
-                let external_plugin_data_info = Self::slice_external_plugin_data(
-                    records[0].data_offset,
-                    records[0].data_len,
                     account,
+                    &mut indexable_asset,
                 )?;
-
-                let processed_plugin = ProcessedExternalPlugin::from_data(
-                    i as u64,
-                    records[0].offset,
-                    records[0].authority.clone(),
-                    records[0].lifecycle_checks.clone(),
-                    records[0].plugin_type,
-                    &mut plugin_slice,
-                    external_plugin_data_info,
-                )?;
-
-                indexable_asset.add_processed_external_plugin(processed_plugin);
             }
 
-            // Process the last external plugin.
-            if let Some(record) = external_registry_records.last() {
-                // For external plugins, the slice always ends at the plugin registry offset.
-                let mut plugin_slice =
-                    &account[record.offset as usize..header.plugin_registry_offset as usize];
+            // Process the last combined registry record.
+            if let Some(record) = combined_records.last() {
+                // For the last plugin, if it is an internal pluging, the slice ends at the plugin
+                // registry offset.  If it is an external plugin, the end of the adapter is either
+                // the start of the data (if present) or the plugin registry offset.
+                let end = record.data_offset.unwrap_or(header.plugin_registry_offset);
+                let mut plugin_slice = &account[record.offset as usize..end as usize];
 
-                let external_plugin_data_info =
-                    Self::slice_external_plugin_data(record.data_offset, record.data_len, account)?;
-
-                let processed_plugin = ProcessedExternalPlugin::from_data(
-                    external_registry_records.len() as u64 - 1,
-                    record.offset,
-                    record.authority.clone(),
-                    record.lifecycle_checks.clone(),
-                    record.plugin_type,
+                Self::process_combined_record(
+                    combined_records.len() as u64 - 1,
+                    &record.record,
                     &mut plugin_slice,
-                    external_plugin_data_info,
+                    account,
+                    &mut indexable_asset,
                 )?;
-
-                indexable_asset.add_processed_external_plugin(processed_plugin);
             }
         }
         Ok(indexable_asset)
-    }
-
-    fn slice_external_plugin_data(
-        data_offset: Option<u64>,
-        data_len: Option<u64>,
-        account: &[u8],
-    ) -> Result<Option<ExternalPluginDataInfo>, std::io::Error> {
-        if data_offset.is_some() && data_len.is_some() {
-            let data_offset = data_offset.unwrap() as usize;
-            let data_len = data_len.unwrap() as usize;
-
-            let end = data_offset
-                .checked_add(data_len)
-                .ok_or(ErrorKind::InvalidData)?;
-            let data_slice = &account[data_offset..end];
-
-            Ok(Some(ExternalPluginDataInfo {
-                data_offset: data_offset as u64,
-                data_len: data_len as u64,
-                data_slice,
-            }))
-        } else {
-            Ok(None)
-        }
     }
 }
