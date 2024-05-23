@@ -63,13 +63,18 @@ pub(crate) fn write_external_plugin_adapter_data<'a>(
     }
 
     // TODO: Better way to default while still propagating error. Unwrap_or is eagerly evaluated.
-    let (record, plugin) =
-        fetch_wrapped_external_plugin_adapter::<AssetV1>(ctx.accounts.asset, None, &args.key)
-            .unwrap_or(fetch_wrapped_external_plugin_adapter::<CollectionV1>(
-                ctx.accounts.asset,
-                None,
-                &args.key,
-            )?);
+    let mut result =
+        fetch_wrapped_external_plugin_adapter::<AssetV1>(ctx.accounts.asset, None, &args.key);
+
+    if result.is_err() {
+        result = fetch_wrapped_external_plugin_adapter::<CollectionV1>(
+            ctx.accounts.asset,
+            None,
+            &args.key,
+        );
+    }
+
+    let (record, plugin) = result?;
 
     process_write_external_plugin_data::<AssetV1>(
         ctx.accounts.asset,
@@ -184,26 +189,40 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
         _ => return Err(MplCoreError::UnsupportedOperation.into()),
     }
 
-    if data.is_some() && buffer.is_some() {
-        return Err(MplCoreError::TwoDataSources.into());
-    } else if data.is_none() && buffer.is_none() {
-        return Err(MplCoreError::NoDataSources.into());
-    }
+    // if data.is_some() && buffer.is_some() {
+    //     return Err(MplCoreError::TwoDataSources.into());
+    // } else if data.is_none() && buffer.is_none() {
+    //     return Err(MplCoreError::NoDataSources.into());
+    // }
 
     // SecureDataStore and LifecycleHook both write the data after the plugin.
     // AssetLinkedSecureDataStore writes the data to the asset directly.
     match wrapped_plugin {
         ExternalPluginAdapter::LifecycleHook(_) | ExternalPluginAdapter::SecureDataStore(_) => {
-            update_external_plugin_adapter_data(
-                record,
-                Some(core),
-                header,
-                registry,
-                account,
-                payer,
-                system_program,
-                data.unwrap_or(&buffer.unwrap().data.borrow()),
-            )
+            match (data, buffer) {
+                (Some(data), None) => update_external_plugin_adapter_data(
+                    record,
+                    Some(core),
+                    header,
+                    registry,
+                    account,
+                    payer,
+                    system_program,
+                    data,
+                ),
+                (None, Some(buffer)) => update_external_plugin_adapter_data(
+                    record,
+                    Some(core),
+                    header,
+                    registry,
+                    account,
+                    payer,
+                    system_program,
+                    &buffer.data.borrow(),
+                ),
+                (Some(_), Some(_)) => Err(MplCoreError::TwoDataSources.into()),
+                (None, None) => Err(MplCoreError::NoDataSources.into()),
+            }
         }
         ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
             let (_, mut plugin_header, mut plugin_registry) =

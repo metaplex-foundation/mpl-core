@@ -232,6 +232,7 @@ pub(crate) fn process_create<'a>(
                             approved = false;
                         }
                     }
+                    solana_program::msg!("InitInfo: {:?}", plugin_init_info);
                     initialize_external_plugin_adapter::<AssetV1>(
                         plugin_init_info,
                         Some(&new_asset),

@@ -405,8 +405,10 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         _ => {}
     };
 
-    let plugin_metadata = plugin.try_to_vec()?;
-    let plugin_size = plugin_metadata.len();
+    let serialized_plugin = plugin.try_to_vec()?;
+    let plugin_size = serialized_plugin.len();
+    solana_program::msg!("Plugin size: {}", plugin_size);
+    solana_program::msg!("Plugin: {:?}", plugin);
 
     let size_increase = plugin_size
         .checked_add(new_registry_record.try_to_vec()?.len())
@@ -500,9 +502,10 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     unsafe {
+        let base = account.data.borrow_mut().as_mut_ptr();
         sol_memmove(
-            account.data.borrow_mut()[new_next_plugin_offset as usize..].as_mut_ptr(),
-            account.data.borrow_mut()[next_plugin_offset..].as_mut_ptr(),
+            base.add(new_next_plugin_offset as usize),
+            base.add(next_plugin_offset),
             account.data_len().saturating_sub(next_plugin_offset),
         )
     }
