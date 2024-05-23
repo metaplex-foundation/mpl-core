@@ -333,14 +333,18 @@ enum CombinedRecord<'a> {
     External(&'a ExternalRegistryRecordSafe),
 }
 
-struct CombinedRecordWithOffset<'a> {
+struct CombinedRecordWithDataInfo<'a> {
     pub offset: u64,
+    pub data_offset: Option<u64>,
     pub record: CombinedRecord<'a>,
 }
 
-impl<'a> CombinedRecordWithOffset<'a> {
+impl<'a> CombinedRecordWithDataInfo<'a> {
     // Associated function for sorting `RegistryRecordIndexable` by offset.
-    pub fn compare_offsets(a: &CombinedRecordWithOffset, b: &CombinedRecordWithOffset) -> Ordering {
+    pub fn compare_offsets(
+        a: &CombinedRecordWithDataInfo,
+        b: &CombinedRecordWithDataInfo,
+    ) -> Ordering {
         a.offset.cmp(&b.offset)
     }
 }
@@ -469,7 +473,8 @@ impl IndexableAsset {
         Ok(())
     }
 
-    /// Fetch the base `Asset`` or `Collection`` and all the plugins and store in an `IndexableAsset`.
+    /// Fetch the base `Asset`` or `Collection`` and all the plugins and store in an
+    /// `IndexableAsset`.
     pub fn fetch(key: Key, account: &[u8]) -> Result<Self, std::io::Error> {
         let (mut indexable_asset, base_size) = match key {
             Key::AssetV1 => {
@@ -498,27 +503,33 @@ impl IndexableAsset {
 
             // Add internal registry records.
             for record in &plugin_registry.registry {
-                combined_records.push(CombinedRecordWithOffset {
+                combined_records.push(CombinedRecordWithDataInfo {
                     offset: record.offset,
+                    data_offset: None,
                     record: CombinedRecord::Internal(record),
                 });
             }
 
             // Add external registry records.
             for record in &plugin_registry.external_registry {
-                combined_records.push(CombinedRecordWithOffset {
+                combined_records.push(CombinedRecordWithDataInfo {
                     offset: record.offset,
+                    data_offset: record.data_offset,
                     record: CombinedRecord::External(record),
                 });
             }
 
             // Sort combined registry records by offset.
-            combined_records.sort_by(CombinedRecordWithOffset::compare_offsets);
+            combined_records.sort_by(CombinedRecordWithDataInfo::compare_offsets);
 
-            // Process combined registry records using windows of 2 so that plugin slice length can be calculated.
+            // Process combined registry records using windows of 2 so that plugin slice length can
+            // be calculated.
             for (i, records) in combined_records.windows(2).enumerate() {
-                let mut plugin_slice =
-                    &account[records[0].offset as usize..records[1].offset as usize];
+                // For internal plugins, the end of the slice is the start of the next plugin.  For
+                // external plugins, the end of the adapter is either the start of the data (if
+                // present) or the start of the next plugin.
+                let end = records[0].data_offset.unwrap_or(records[1].offset);
+                let mut plugin_slice = &account[records[0].offset as usize..end as usize];
 
                 Self::process_combined_record(
                     i as u64,
@@ -531,9 +542,11 @@ impl IndexableAsset {
 
             // Process the last combined registry record.
             if let Some(record) = combined_records.last() {
-                // For the last plugin, the slice ends the plugin registry offset.
-                let mut plugin_slice =
-                    &account[record.offset as usize..header.plugin_registry_offset as usize];
+                // For the last plugin, if it is an internal pluging, the slice ends at the plugin
+                // registry offset.  If it is an external plugin, the end of the adapter is either
+                // the start of the data (if present) or the plugin registry offset.
+                let end = record.data_offset.unwrap_or(header.plugin_registry_offset);
+                let mut plugin_slice = &account[record.offset as usize..end as usize];
 
                 Self::process_combined_record(
                     combined_records.len() as u64 - 1,
