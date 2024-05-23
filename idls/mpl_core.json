@@ -1819,7 +1819,16 @@
           "isSigner": true,
           "isOptional": true,
           "docs": [
-            "The Data Authority of the External PluginExternalPluginAdapter"
+            "The Data Authority of the External Plugin Adapter"
+          ]
+        },
+        {
+          "name": "buffer",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The buffer to write to the external plugin"
           ]
         },
         {
@@ -1878,7 +1887,16 @@
           "isSigner": true,
           "isOptional": true,
           "docs": [
-            "The Data Authority of the External PluginExternalPluginAdapter"
+            "The Data Authority of the External Plugin Adapter"
+          ]
+        },
+        {
+          "name": "buffer",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The buffer to write to the external plugin"
           ]
         },
         {
@@ -2089,6 +2107,212 @@
       }
     },
     {
+      "name": "AssetLinkedLifecycleHook",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hookedProgram",
+            "type": "publicKey"
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "dataAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetLinkedLifecycleHookInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hookedProgram",
+            "type": "publicKey"
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "vec": {
+                "tuple": [
+                  {
+                    "defined": "HookableLifecycleEvent"
+                  },
+                  {
+                    "defined": "ExternalCheckResult"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "dataAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetLinkedLifecycleHookUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetLinkedSecureDataStore",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetLinkedSecureDataStoreInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetLinkedSecureDataStoreUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Attribute",
       "type": {
         "kind": "struct",
@@ -2128,14 +2352,14 @@
       }
     },
     {
-      "name": "DataStore",
+      "name": "DataSection",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "dataAuthority",
+            "name": "parentKey",
             "type": {
-              "defined": "Authority"
+              "defined": "LinkedDataKey"
             }
           },
           {
@@ -2148,49 +2372,30 @@
       }
     },
     {
-      "name": "DataStoreInitInfo",
+      "name": "DataSectionInitInfo",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "dataAuthority",
+            "name": "parentKey",
             "type": {
-              "defined": "Authority"
-            }
-          },
-          {
-            "name": "initPluginAuthority",
-            "type": {
-              "option": {
-                "defined": "Authority"
-              }
+              "defined": "LinkedDataKey"
             }
           },
           {
             "name": "schema",
             "type": {
-              "option": {
-                "defined": "ExternalPluginAdapterSchema"
-              }
+              "defined": "ExternalPluginAdapterSchema"
             }
           }
         ]
       }
     },
     {
-      "name": "DataStoreUpdateInfo",
+      "name": "DataSectionUpdateInfo",
       "type": {
         "kind": "struct",
-        "fields": [
-          {
-            "name": "schema",
-            "type": {
-              "option": {
-                "defined": "ExternalPluginAdapterSchema"
-              }
-            }
-          }
-        ]
+        "fields": []
       }
     },
     {
@@ -2660,6 +2865,72 @@
             "name": "ruleSet",
             "type": {
               "defined": "RuleSet"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SecureDataStore",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SecureDataStoreInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SecureDataStoreUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
             }
           }
         ]
@@ -3216,7 +3487,9 @@
           },
           {
             "name": "data",
-            "type": "bytes"
+            "type": {
+              "option": "bytes"
+            }
           }
         ]
       }
@@ -3234,7 +3507,9 @@
           },
           {
             "name": "data",
-            "type": "bytes"
+            "type": {
+              "option": "bytes"
+            }
           }
         ]
       }
@@ -3497,10 +3772,19 @@
             "name": "LifecycleHook"
           },
           {
+            "name": "AssetLinkedLifecycleHook"
+          },
+          {
             "name": "Oracle"
           },
           {
-            "name": "DataStore"
+            "name": "SecureDataStore"
+          },
+          {
+            "name": "AssetLinkedSecureDataStore"
+          },
+          {
+            "name": "DataSection"
           }
         ]
       }
@@ -3527,10 +3811,26 @@
             ]
           },
           {
-            "name": "DataStore",
+            "name": "SecureDataStore",
             "fields": [
               {
-                "defined": "DataStore"
+                "defined": "SecureDataStore"
+              }
+            ]
+          },
+          {
+            "name": "AssetLinkedSecureDataStore",
+            "fields": [
+              {
+                "defined": "AssetLinkedSecureDataStore"
+              }
+            ]
+          },
+          {
+            "name": "DataSection",
+            "fields": [
+              {
+                "defined": "DataSection"
               }
             ]
           }
@@ -3745,10 +4045,26 @@
             ]
           },
           {
-            "name": "DataStore",
+            "name": "SecureDataStore",
             "fields": [
               {
-                "defined": "DataStoreInitInfo"
+                "defined": "SecureDataStoreInitInfo"
+              }
+            ]
+          },
+          {
+            "name": "AssetLinkedSecureDataStore",
+            "fields": [
+              {
+                "defined": "AssetLinkedSecureDataStoreInitInfo"
+              }
+            ]
+          },
+          {
+            "name": "DataSection",
+            "fields": [
+              {
+                "defined": "DataSectionInitInfo"
               }
             ]
           }
@@ -3777,10 +4093,18 @@
             ]
           },
           {
-            "name": "DataStore",
+            "name": "SecureDataStore",
             "fields": [
               {
-                "defined": "DataStoreUpdateInfo"
+                "defined": "SecureDataStoreUpdateInfo"
+              }
+            ]
+          },
+          {
+            "name": "AssetLinkedSecureDataStore",
+            "fields": [
+              {
+                "defined": "AssetLinkedSecureDataStoreUpdateInfo"
               }
             ]
           }
@@ -3799,13 +4123,57 @@
             ]
           },
           {
+            "name": "AssetLinkedLifecycleHook",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
             "name": "Oracle",
             "fields": [
               "publicKey"
             ]
           },
           {
-            "name": "DataStore",
+            "name": "SecureDataStore",
+            "fields": [
+              {
+                "defined": "Authority"
+              }
+            ]
+          },
+          {
+            "name": "AssetLinkedSecureDataStore",
+            "fields": [
+              {
+                "defined": "Authority"
+              }
+            ]
+          },
+          {
+            "name": "DataSection",
+            "fields": [
+              {
+                "defined": "LinkedDataKey"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedDataKey",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "AssetLinkedLifecycleHook",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "AssetLinkedSecureDataStore",
             "fields": [
               {
                 "defined": "Authority"
@@ -4229,6 +4597,21 @@
       "code": 39,
       "name": "UninitializedOracleAccount",
       "msg": "Oracle account is uninitialized"
+    },
+    {
+      "code": 40,
+      "name": "TwoDataSources",
+      "msg": "Two data sources provided, only one is allowed"
+    },
+    {
+      "code": 41,
+      "name": "UnsupportedOperation",
+      "msg": "External Plugin does not support this operation"
+    },
+    {
+      "code": 42,
+      "name": "NoDataSources",
+      "msg": "No data sources provided, one is required"
     }
   ],
   "metadata": {

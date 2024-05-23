@@ -1,6 +1,6 @@
 export * from './royalties';
 export * from './lib';
-export * from './dataStore';
+export * from './secureDataStore';
 export * from './lifecycleChecks';
 export * from './lifecycleHook';
 export * from './oracle';

@@ -130,6 +130,15 @@ pub enum MplCoreError {
     /// 39 (0x27) - Oracle account is uninitialized
     #[error("Oracle account is uninitialized")]
     UninitializedOracleAccount,
+    /// 40 (0x28) - Two data sources provided, only one is allowed
+    #[error("Two data sources provided, only one is allowed")]
+    TwoDataSources,
+    /// 41 (0x29) - External Plugin does not support this operation
+    #[error("External Plugin does not support this operation")]
+    UnsupportedOperation,
+    /// 42 (0x2A) - No data sources provided, one is required
+    #[error("No data sources provided, one is required")]
+    NoDataSources,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

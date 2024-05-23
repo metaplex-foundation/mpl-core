@@ -196,11 +196,13 @@ pub(crate) fn process_create_collection<'a>(
                 }
                 initialize_external_plugin_adapter::<CollectionV1>(
                     plugin_init_info,
+                    Some(&new_collection),
                     &mut plugin_header,
                     &mut plugin_registry,
                     ctx.accounts.collection,
                     ctx.accounts.payer,
                     ctx.accounts.system_program,
+                    None,
                 )?;
             }
         }

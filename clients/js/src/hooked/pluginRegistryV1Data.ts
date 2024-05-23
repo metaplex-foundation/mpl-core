@@ -103,7 +103,7 @@ export function getAdapterRegistryRecordSerializer(): Serializer<
       offset = 0
     ): [ExternalRegistryRecordWithUnknown, number] => {
       let [pluginType, pluginTypeOffset, isUnknown] = [
-        ExternalPluginAdapterType.DataStore,
+        ExternalPluginAdapterType.SecureDataStore,
         offset + 1,
         true,
       ];

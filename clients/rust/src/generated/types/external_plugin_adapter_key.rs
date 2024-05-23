@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::LinkedDataKey;
 use crate::generated::types::PluginAuthority;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
@@ -26,6 +27,13 @@ pub enum ExternalPluginAdapterKey {
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
+    AssetLinkedLifecycleHook(Pubkey),
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
+    )]
     Oracle(Pubkey),
-    DataStore(PluginAuthority),
+    SecureDataStore(PluginAuthority),
+    AssetLinkedSecureDataStore(PluginAuthority),
+    DataSection(LinkedDataKey),
 }

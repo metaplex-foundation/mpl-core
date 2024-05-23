@@ -168,6 +168,18 @@ pub enum MplCoreError {
     /// 39 - Oracle account is uninitialized
     #[error("Oracle account is uninitialized")]
     UninitializedOracleAccount,
+
+    /// 40 - Two data sources provided, only one is allowed
+    #[error("Two data sources provided, only one is allowed")]
+    TwoDataSources,
+
+    /// 41 - External Plugin does not support this operation
+    #[error("External Plugin does not support this operation")]
+    UnsupportedOperation,
+
+    /// 42 - No data sources provided, one is required
+    #[error("No data sources provided, one is required")]
+    NoDataSources,
 }
 
 impl PrintProgramError for MplCoreError {

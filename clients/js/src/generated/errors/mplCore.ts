@@ -582,6 +582,45 @@ nameToErrorMap.set(
   UninitializedOracleAccountError
 );
 
+/** TwoDataSources: Two data sources provided, only one is allowed */
+export class TwoDataSourcesError extends ProgramError {
+  override readonly name: string = 'TwoDataSources';
+
+  readonly code: number = 0x28; // 40
+
+  constructor(program: Program, cause?: Error) {
+    super('Two data sources provided, only one is allowed', program, cause);
+  }
+}
+codeToErrorMap.set(0x28, TwoDataSourcesError);
+nameToErrorMap.set('TwoDataSources', TwoDataSourcesError);
+
+/** UnsupportedOperation: External Plugin does not support this operation */
+export class UnsupportedOperationError extends ProgramError {
+  override readonly name: string = 'UnsupportedOperation';
+
+  readonly code: number = 0x29; // 41
+
+  constructor(program: Program, cause?: Error) {
+    super('External Plugin does not support this operation', program, cause);
+  }
+}
+codeToErrorMap.set(0x29, UnsupportedOperationError);
+nameToErrorMap.set('UnsupportedOperation', UnsupportedOperationError);
+
+/** NoDataSources: No data sources provided, one is required */
+export class NoDataSourcesError extends ProgramError {
+  override readonly name: string = 'NoDataSources';
+
+  readonly code: number = 0x2a; // 42
+
+  constructor(program: Program, cause?: Error) {
+    super('No data sources provided, one is required', program, cause);
+  }
+}
+codeToErrorMap.set(0x2a, NoDataSourcesError);
+nameToErrorMap.set('NoDataSources', NoDataSourcesError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
