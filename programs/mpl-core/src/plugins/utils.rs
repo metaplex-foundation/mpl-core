@@ -422,7 +422,10 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         .checked_add(plugin_size)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
-    new_registry_record.data_offset = Some(data_offset);
+    // If the data offset has been initialized, then we need to set it to the correct value.
+    if new_registry_record.data_offset.is_some() {
+        new_registry_record.data_offset = Some(data_offset);
+    }
 
     let new_registry_offset = data_offset
         .checked_add(new_registry_record.data_len.unwrap_or(0))
@@ -437,8 +440,11 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         .checked_add(size_increase)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
+    solana_program::msg!("Resizing account to {}", new_size);
     resize_or_reallocate_account(account, payer, system_program, new_size)?;
+    solana_program::msg!("Saving plugin header at {}", header_offset);
     plugin_header.save(account, header_offset)?;
+    solana_program::msg!("Saving plugin at {}", old_registry_offset);
     plugin.save(account, old_registry_offset)?;
 
     if let Some(data) = appended_data {
@@ -449,6 +455,7 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         );
     };
 
+    solana_program::msg!("Saving plugin registry at {}", new_registry_offset);
     plugin_registry.save(account, new_registry_offset)?;
 
     Ok(())
