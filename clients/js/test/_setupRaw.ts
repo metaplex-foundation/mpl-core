@@ -76,8 +76,6 @@ export const createAsset = async (
     authority: input.authority,
   }).sendAndConfirm(umi);
 
-  // console.log("Creating with:", input.plugins, "cost", (await umi.rpc.getTransaction(tx.signature))?.meta.computeUnitsConsumed);
-
   return fetchAssetV1(umi, publicKey(asset));
 };
 

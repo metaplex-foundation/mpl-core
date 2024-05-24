@@ -397,10 +397,15 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
 
     // If the plugin is a LifecycleHook or SecureDataStore, then we need to set the data offset and length.
     match plugin {
-        ExternalPluginAdapter::LifecycleHook(_) | ExternalPluginAdapter::SecureDataStore(_) => {
+        ExternalPluginAdapter::LifecycleHook(_)
+        | ExternalPluginAdapter::SecureDataStore(_)
+        | ExternalPluginAdapter::DataSection(_) => {
             // Here we use a 0 value for the data offset as it will be updated after the data is appended.
             new_registry_record.data_offset = Some(0);
-            new_registry_record.data_len = Some(0);
+            new_registry_record.data_len = match appended_data {
+                Some(data) => Some(data.len()),
+                None => Some(0),
+            };
         }
         _ => {}
     };

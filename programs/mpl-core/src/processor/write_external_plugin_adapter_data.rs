@@ -241,31 +241,64 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                     data_store.data_authority,
                 )),
             ) {
-                Ok(_) => update_external_plugin_adapter_data(
-                    record,
-                    Some(core),
-                    &mut header,
-                    &mut registry,
-                    account,
-                    payer,
-                    system_program,
-                    data.unwrap_or(&buffer.unwrap().data.borrow()),
-                ),
-                Err(_) => initialize_external_plugin_adapter::<T>(
-                    &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
-                        parent_key: LinkedDataKey::AssetLinkedSecureDataStore(
-                            data_store.data_authority,
-                        ),
-                        schema: data_store.schema,
-                    }),
-                    Some(core),
-                    &mut header,
-                    &mut registry,
-                    account,
-                    payer,
-                    system_program,
-                    Some(data.unwrap_or(&buffer.unwrap().data.borrow())),
-                ),
+                Ok(_) => match (data, buffer) {
+                    (Some(data), None) => update_external_plugin_adapter_data(
+                        record,
+                        Some(core),
+                        &mut header,
+                        &mut registry,
+                        account,
+                        payer,
+                        system_program,
+                        data,
+                    ),
+                    (None, Some(buffer)) => update_external_plugin_adapter_data(
+                        record,
+                        Some(core),
+                        &mut header,
+                        &mut registry,
+                        account,
+                        payer,
+                        system_program,
+                        &buffer.data.borrow(),
+                    ),
+                    (Some(_), Some(_)) => Err(MplCoreError::TwoDataSources.into()),
+                    (None, None) => Err(MplCoreError::NoDataSources.into()),
+                },
+                Err(_) => match (data, buffer) {
+                    (Some(data), None) => initialize_external_plugin_adapter::<T>(
+                        &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
+                            parent_key: LinkedDataKey::AssetLinkedSecureDataStore(
+                                data_store.data_authority,
+                            ),
+                            schema: data_store.schema,
+                        }),
+                        Some(core),
+                        &mut header,
+                        &mut registry,
+                        account,
+                        payer,
+                        system_program,
+                        Some(data),
+                    ),
+                    (None, Some(buffer)) => initialize_external_plugin_adapter::<T>(
+                        &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
+                            parent_key: LinkedDataKey::AssetLinkedSecureDataStore(
+                                data_store.data_authority,
+                            ),
+                            schema: data_store.schema,
+                        }),
+                        Some(core),
+                        &mut header,
+                        &mut registry,
+                        account,
+                        payer,
+                        system_program,
+                        Some(&buffer.data.borrow()),
+                    ),
+                    (Some(_), Some(_)) => Err(MplCoreError::TwoDataSources.into()),
+                    (None, None) => Err(MplCoreError::NoDataSources.into()),
+                },
             }
         }
         _ => Err(MplCoreError::UnsupportedOperation.into()),

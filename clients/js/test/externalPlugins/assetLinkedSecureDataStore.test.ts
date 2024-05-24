@@ -88,7 +88,7 @@ test('it can write data to an asset linked secure store', async (t) => {
     }
   );
 
-  const result = await writeData(umi, {
+  await writeData(umi, {
     key: {
       type: 'AssetLinkedSecureDataStore',
       dataAuthority: {
@@ -101,8 +101,6 @@ test('it can write data to an asset linked secure store', async (t) => {
     asset: asset.publicKey,
     authority: dataAuthority,
   }).sendAndConfirm(umi);
-
-  console.log(await umi.rpc.getTransaction(result.signature));
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
@@ -118,7 +116,7 @@ test('it can write data to an asset linked secure store', async (t) => {
             address: dataAuthority.publicKey,
           },
         },
-        authority: { type: 'UpdateAuthority' },
+        authority: { type: 'None' },
         data: { hello: 'world' },
         schema: ExternalPluginAdapterSchema.Json,
       },
