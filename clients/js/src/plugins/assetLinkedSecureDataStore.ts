@@ -8,7 +8,7 @@ import {
 import { ExternalPluginAdapterKey } from './externalPluginAdapterKey';
 import { ExternalPluginAdapterManifest } from './externalPluginAdapterManifest';
 import { BaseExternalPluginAdapter } from './externalPluginAdapters';
-import { parseExternalPluginAdapterData } from './lib';
+// import { parseExternalPluginAdapterData } from './lib';
 import { LifecycleChecks } from './lifecycleChecks';
 import {
   PluginAuthority,
@@ -77,7 +77,7 @@ export function assetLinkedSecureDataStoreFromBase(
   return {
     ...s,
     dataAuthority: pluginAuthorityFromBase(s.dataAuthority),
-    data: parseExternalPluginAdapterData(s, r, account),
+    // data: parseExternalPluginAdapterData(s, r, account),
   };
 }
 

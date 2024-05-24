@@ -4556,12 +4556,12 @@
     {
       "code": 31,
       "name": "ExternalPluginAdapterNotFound",
-      "msg": "External PluginExternalPluginAdapter not found"
+      "msg": "External Plugin Adapter not found"
     },
     {
       "code": 32,
       "name": "ExternalPluginAdapterAlreadyExists",
-      "msg": "External PluginExternalPluginAdapter already exists"
+      "msg": "External Plugin Adapter already exists"
     },
     {
       "code": 33,
@@ -4612,6 +4612,11 @@
       "code": 42,
       "name": "NoDataSources",
       "msg": "No data sources provided, one is required"
+    },
+    {
+      "code": 43,
+      "name": "InvalidPluginAdapterTarget",
+      "msg": "This plugin adapter cannot be added to an Asset"
     }
   ],
   "metadata": {

@@ -20,7 +20,7 @@ import {
 import { BaseExternalPluginAdapter } from './externalPluginAdapters';
 import { ExternalPluginAdapterManifest } from './externalPluginAdapterManifest';
 import { ExternalPluginAdapterKey } from './externalPluginAdapterKey';
-import { parseExternalPluginAdapterData } from './lib';
+// import { parseExternalPluginAdapterData } from './lib';
 
 export type AssetLinkedLifecycleHook = Omit<
   BaseAssetLinkedLifecycleHook,
@@ -108,7 +108,7 @@ export function assetLinkedLifecycleHookFromBase(
       s.extraAccounts.__option === 'Some'
         ? s.extraAccounts.value.map(extraAccountFromBase)
         : undefined,
-    data: parseExternalPluginAdapterData(s, r, account),
+    // data: parseExternalPluginAdapterData(s, r, account),
     dataAuthority:
       s.dataAuthority.__option === 'Some'
         ? pluginAuthorityFromBase(s.dataAuthority.value)

@@ -433,14 +433,14 @@ export class InvalidLogWrapperProgramError extends ProgramError {
 codeToErrorMap.set(0x1e, InvalidLogWrapperProgramError);
 nameToErrorMap.set('InvalidLogWrapperProgram', InvalidLogWrapperProgramError);
 
-/** ExternalPluginAdapterNotFound: External PluginExternalPluginAdapter not found */
+/** ExternalPluginAdapterNotFound: External Plugin Adapter not found */
 export class ExternalPluginAdapterNotFoundError extends ProgramError {
   override readonly name: string = 'ExternalPluginAdapterNotFound';
 
   readonly code: number = 0x1f; // 31
 
   constructor(program: Program, cause?: Error) {
-    super('External PluginExternalPluginAdapter not found', program, cause);
+    super('External Plugin Adapter not found', program, cause);
   }
 }
 codeToErrorMap.set(0x1f, ExternalPluginAdapterNotFoundError);
@@ -449,18 +449,14 @@ nameToErrorMap.set(
   ExternalPluginAdapterNotFoundError
 );
 
-/** ExternalPluginAdapterAlreadyExists: External PluginExternalPluginAdapter already exists */
+/** ExternalPluginAdapterAlreadyExists: External Plugin Adapter already exists */
 export class ExternalPluginAdapterAlreadyExistsError extends ProgramError {
   override readonly name: string = 'ExternalPluginAdapterAlreadyExists';
 
   readonly code: number = 0x20; // 32
 
   constructor(program: Program, cause?: Error) {
-    super(
-      'External PluginExternalPluginAdapter already exists',
-      program,
-      cause
-    );
+    super('External Plugin Adapter already exists', program, cause);
   }
 }
 codeToErrorMap.set(0x20, ExternalPluginAdapterAlreadyExistsError);
@@ -620,6 +616,22 @@ export class NoDataSourcesError extends ProgramError {
 }
 codeToErrorMap.set(0x2a, NoDataSourcesError);
 nameToErrorMap.set('NoDataSources', NoDataSourcesError);
+
+/** InvalidPluginAdapterTarget: This plugin adapter cannot be added to an Asset */
+export class InvalidPluginAdapterTargetError extends ProgramError {
+  override readonly name: string = 'InvalidPluginAdapterTarget';
+
+  readonly code: number = 0x2b; // 43
+
+  constructor(program: Program, cause?: Error) {
+    super('This plugin adapter cannot be added to an Asset', program, cause);
+  }
+}
+codeToErrorMap.set(0x2b, InvalidPluginAdapterTargetError);
+nameToErrorMap.set(
+  'InvalidPluginAdapterTarget',
+  InvalidPluginAdapterTargetError
+);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

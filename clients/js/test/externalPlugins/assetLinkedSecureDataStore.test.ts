@@ -5,11 +5,12 @@ import {
   assertCollection,
   createUmi,
   DEFAULT_ASSET,
+  DEFAULT_COLLECTION,
 } from '../_setupRaw';
 import { createAsset, createAssetWithCollection } from '../_setupSdk';
 import { ExternalPluginAdapterSchema, writeData } from '../../src';
 
-test('it can create an asset linked secure store to collection', async (t) => {
+test('it can create an asset linked secure store on a collection', async (t) => {
   const umi = await createUmi();
   const { asset, collection } = await createAssetWithCollection(
     umi,
@@ -34,7 +35,7 @@ test('it can create an asset linked secure store to collection', async (t) => {
   });
 
   await assertCollection(t, umi, {
-    ...DEFAULT_ASSET,
+    ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     assetLinkedSecureDataStores: [
       {
@@ -64,7 +65,7 @@ test('it cannot add asset linked secure store to an asset', async (t) => {
     ],
   });
 
-  await t.throwsAsync(res, { message: /SomeError/ });
+  await t.throwsAsync(res, { name: 'InvalidPluginAdapterTarget' });
 });
 
 test('it can write data to an asset linked secure store', async (t) => {
@@ -91,7 +92,8 @@ test('it can write data to an asset linked secure store', async (t) => {
     key: {
       type: 'AssetLinkedSecureDataStore',
       dataAuthority: {
-        type: 'UpdateAuthority',
+        type: 'Address',
+        address: dataAuthority.publicKey,
       },
     },
     collection: collection.publicKey,

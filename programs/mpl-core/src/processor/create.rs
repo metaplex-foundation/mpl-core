@@ -212,6 +212,13 @@ pub(crate) fn process_create<'a>(
                         ExternalPluginAdapter::check_create(plugin_init_info),
                     );
 
+                    // TODO: This should be handled in the validate call.
+                    if let ExternalPluginAdapterInitInfo::AssetLinkedSecureDataStore(_) =
+                        plugin_init_info
+                    {
+                        return Err(MplCoreError::InvalidPluginAdapterTarget.into());
+                    }
+
                     if external_check_result_bits.can_reject() {
                         let validation_ctx = PluginValidationContext {
                             accounts,
@@ -232,7 +239,6 @@ pub(crate) fn process_create<'a>(
                             approved = false;
                         }
                     }
-                    solana_program::msg!("InitInfo: {:?}", plugin_init_info);
                     initialize_external_plugin_adapter::<AssetV1>(
                         plugin_init_info,
                         Some(&new_asset),

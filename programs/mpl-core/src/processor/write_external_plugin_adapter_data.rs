@@ -41,9 +41,7 @@ pub(crate) fn write_external_plugin_adapter_data<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    let (asset, header, registry) = fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
-    let mut header = header.ok_or(MplCoreError::PluginsNotInitialized)?;
-    let mut registry = registry.ok_or(MplCoreError::PluginsNotInitialized)?;
+    let (asset, mut header, mut registry) = fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
 
     let authorities = resolve_pubkey_to_authorities(authority, ctx.accounts.collection, &asset)?;
 
@@ -62,20 +60,26 @@ pub(crate) fn write_external_plugin_adapter_data<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    // TODO: Better way to default while still propagating error. Unwrap_or is eagerly evaluated.
-    let mut result =
-        fetch_wrapped_external_plugin_adapter::<AssetV1>(ctx.accounts.asset, None, &args.key);
+    msg!("Fetching plugin");
+    let (record, plugin) = match args.key {
+        ExternalPluginAdapterKey::LifecycleHook(_)
+        | ExternalPluginAdapterKey::SecureDataStore(_) => {
+            msg!("Fetching plugin from Asset");
+            fetch_wrapped_external_plugin_adapter::<AssetV1>(ctx.accounts.asset, None, &args.key)
+        }
+        ExternalPluginAdapterKey::AssetLinkedLifecycleHook(_)
+        | ExternalPluginAdapterKey::AssetLinkedSecureDataStore(_) => {
+            msg!("Fetching plugin from Collection");
+            let collection = ctx
+                .accounts
+                .collection
+                .ok_or(MplCoreError::MissingCollection)?;
+            fetch_wrapped_external_plugin_adapter::<CollectionV1>(collection, None, &args.key)
+        }
+        _ => return Err(MplCoreError::UnsupportedOperation.into()),
+    }?;
 
-    if result.is_err() {
-        result = fetch_wrapped_external_plugin_adapter::<CollectionV1>(
-            ctx.accounts.asset,
-            None,
-            &args.key,
-        );
-    }
-
-    let (record, plugin) = result?;
-
+    msg!("Processing plugin");
     process_write_external_plugin_data::<AssetV1>(
         ctx.accounts.asset,
         ctx.accounts.payer,
@@ -85,8 +89,8 @@ pub(crate) fn write_external_plugin_adapter_data<'a>(
         &asset,
         &record,
         &plugin,
-        &mut header,
-        &mut registry,
+        header.as_mut(),
+        registry.as_mut(),
         &authorities,
         &args.key,
     )?;
@@ -118,9 +122,8 @@ pub(crate) fn write_collection_external_plugin_adapter_data<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    let (collection, header, registry) = fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;
-    let mut header = header.ok_or(MplCoreError::PluginsNotInitialized)?;
-    let mut registry = registry.ok_or(MplCoreError::PluginsNotInitialized)?;
+    let (collection, mut header, mut registry) =
+        fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;
 
     let authorities = resolve_pubkey_to_authorities_collection(authority, ctx.accounts.collection)?;
 
@@ -149,8 +152,8 @@ pub(crate) fn write_collection_external_plugin_adapter_data<'a>(
         &collection,
         &record,
         &plugin,
-        &mut header,
-        &mut registry,
+        header.as_mut(),
+        registry.as_mut(),
         &authorities,
         &args.key,
     )
@@ -166,12 +169,13 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
     core: &T,
     record: &ExternalRegistryRecord,
     wrapped_plugin: &ExternalPluginAdapter,
-    header: &mut PluginHeaderV1,
-    registry: &mut PluginRegistryV1,
+    header: Option<&mut PluginHeaderV1>,
+    registry: Option<&mut PluginRegistryV1>,
     authorities: &[Authority],
     _key: &ExternalPluginAdapterKey,
 ) -> ProgramResult {
     // Check that the authority is the same as the plugin's data authority.
+    msg!("Checking authority");
     match wrapped_plugin {
         ExternalPluginAdapter::LifecycleHook(LifecycleHook {
             data_authority: Some(data_authority),
@@ -200,6 +204,8 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
     // AssetLinkedSecureDataStore writes the data to the asset directly.
     match wrapped_plugin {
         ExternalPluginAdapter::LifecycleHook(_) | ExternalPluginAdapter::SecureDataStore(_) => {
+            let header = header.ok_or(MplCoreError::PluginsNotInitialized)?;
+            let registry = registry.ok_or(MplCoreError::PluginsNotInitialized)?;
             match (data, buffer) {
                 (Some(data), None) => update_external_plugin_adapter_data(
                     record,
@@ -226,7 +232,7 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
             }
         }
         ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
-            let (_, mut plugin_header, mut plugin_registry) =
+            let (_, mut header, mut registry) =
                 create_meta_idempotent::<T>(account, payer, system_program)?;
             match fetch_wrapped_external_plugin_adapter(
                 account,
@@ -238,8 +244,8 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                 Ok(_) => update_external_plugin_adapter_data(
                     record,
                     Some(core),
-                    header,
-                    registry,
+                    &mut header,
+                    &mut registry,
                     account,
                     payer,
                     system_program,
@@ -253,8 +259,8 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                         schema: data_store.schema,
                     }),
                     Some(core),
-                    &mut plugin_header,
-                    &mut plugin_registry,
+                    &mut header,
+                    &mut registry,
                     account,
                     payer,
                     system_program,

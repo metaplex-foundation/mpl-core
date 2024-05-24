@@ -1,6 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 
-use super::{Authority, ExternalPluginAdapterSchema, PluginValidation};
+use super::{
+    Authority, ExternalPluginAdapterSchema, PluginValidation, PluginValidationContext,
+    ValidationResult,
+};
 
 /// The data store third party plugin contains arbitrary data that can be written to by the
 /// `data_authority`.  Note this is different then the overall plugin authority stored in the
@@ -25,7 +28,19 @@ impl AssetLinkedSecureDataStore {
     }
 }
 
-impl PluginValidation for AssetLinkedSecureDataStore {}
+impl PluginValidation for AssetLinkedSecureDataStore {
+    fn validate_create(
+        &self,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, solana_program::program_error::ProgramError> {
+        solana_program::msg!("AssetLinkedSecureDataStore::validate_create");
+        if ctx.asset_info.is_some() {
+            Ok(ValidationResult::Rejected)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+}
 
 impl From<&AssetLinkedSecureDataStoreInitInfo> for AssetLinkedSecureDataStore {
     fn from(init_info: &AssetLinkedSecureDataStoreInitInfo) -> Self {

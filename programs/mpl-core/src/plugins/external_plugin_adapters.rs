@@ -163,6 +163,7 @@ impl ExternalPluginAdapter {
         external_plugin_adapter: &ExternalPluginAdapter,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        solana_program::msg!("ExternalPluginAdapter::validate_create");
         match external_plugin_adapter {
             ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
                 lifecycle_hook.validate_create(ctx)
@@ -172,7 +173,7 @@ impl ExternalPluginAdapter {
             ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
                 data_store.validate_create(ctx)
             }
-            // This should be unreachable because no corresponding InitInfo variant exists.
+            // This should be unreachable because no corresponding it cannot be added by a user.
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
         }
     }
