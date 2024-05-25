@@ -2312,6 +2312,7 @@ dependencies = [
  "num-traits",
  "podded",
  "shank",
+ "smalloc",
  "solana-program",
  "spl-noop",
  "strum 0.26.1",
@@ -3612,6 +3613,12 @@ checksum = "8f92a496fb766b417c996b9c5e57daf2f7ad3b0bebe1ccfca4856390e3d3bb67"
 dependencies = [
  "autocfg",
 ]
+
+[[package]]
+name = "smalloc"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe4dc8671765eaefc12e36c40a397e963149dfc4aac7c727ba42db1827408298"
 
 [[package]]
 name = "smallvec"

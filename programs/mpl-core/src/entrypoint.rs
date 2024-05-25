@@ -5,6 +5,19 @@ use solana_program::{
 
 use crate::{error::MplCoreError, processor};
 
+// START: Heap start
+// LENGTH: Heap length
+// MIN: Minimal allocation size
+// PAGE_SIZE: Allocation page size
+#[cfg(target_os = "solana")]
+#[global_allocator]
+static ALLOC: smalloc::Smalloc<
+    { solana_program::entrypoint::HEAP_START_ADDRESS as usize },
+    { solana_program::entrypoint::HEAP_LENGTH as usize },
+    16,
+    1024,
+> = smalloc::Smalloc::new();
+
 entrypoint!(process_instruction);
 
 /// Entrypoint function

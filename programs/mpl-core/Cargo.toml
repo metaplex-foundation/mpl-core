@@ -6,6 +6,10 @@ readme = "./README.md"
 license-file = "../../LICENSE"
 publish = false
 
+[features]
+default = ["custom-heap"]
+custom-heap = []
+
 [lib]
 crate-type = ["cdylib", "lib"]
 
@@ -22,3 +26,4 @@ mpl-utils = "0.3.5"
 spl-noop = { version = "0.2.0", features = ["cpi"] }
 podded = "0.5.1"
 strum = { version = "0.26.1", features = ["derive"] }
+smalloc = "0.1.2"
