@@ -149,7 +149,12 @@ impl PluginValidation for VerifiedCreators {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        validate_verified_creators_as_plugin_authority(self, None, ctx.authority_info.key)
+        match ctx.target_plugin {
+            Some(Plugin::VerifiedCreators(_verified_creators)) => {
+                validate_verified_creators_as_plugin_authority(self, None, ctx.authority_info.key)
+            }
+            _ => Ok(ValidationResult::Pass),
+        }
     }
 
     fn validate_update_plugin(

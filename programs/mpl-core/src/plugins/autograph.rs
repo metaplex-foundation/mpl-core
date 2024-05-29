@@ -88,8 +88,13 @@ impl PluginValidation for Autograph {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        validate_autograph(self, None, ctx.authority_info.key, true)?;
-        Ok(ValidationResult::Approved)
+        match ctx.target_plugin {
+            Some(Plugin::Autograph(_autograph)) => {
+                validate_autograph(self, None, ctx.authority_info.key, true)?;
+                Ok(ValidationResult::Approved)
+            }
+            _ => Ok(ValidationResult::Pass),
+        }
     }
 
     fn validate_update_plugin(
