@@ -168,6 +168,14 @@ pub enum MplCoreError {
     /// 39 - Oracle account is uninitialized
     #[error("Oracle account is uninitialized")]
     UninitializedOracleAccount,
+
+    /// 40 - Missing signer for operation
+    #[error("Missing required signer for operation")]
+    MissingSigner,
+
+    /// 41 - Missing signer for operation
+    #[error("Invalid plugin operation")]
+    InvalidPluginOperation,
 }
 
 impl PrintProgramError for MplCoreError {

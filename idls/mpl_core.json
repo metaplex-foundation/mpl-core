@@ -2121,6 +2121,38 @@
       }
     },
     {
+      "name": "AutographSignature",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": "publicKey"
+          },
+          {
+            "name": "message",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Autograph",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "signatures",
+            "type": {
+              "vec": {
+                "defined": "AutographSignature"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "BurnDelegate",
       "type": {
         "kind": "struct",
@@ -2681,6 +2713,38 @@
             "name": "additionalDelegates",
             "type": {
               "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "VerifiedCreatorsSignature",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": "publicKey"
+          },
+          {
+            "name": "verified",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VerifiedCreators",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "signatures",
+            "type": {
+              "vec": {
+                "defined": "VerifiedCreatorsSignature"
+              }
             }
           }
         ]
@@ -3437,6 +3501,22 @@
                 "defined": "ImmutableMetadata"
               }
             ]
+          },
+          {
+            "name": "VerifiedCreators",
+            "fields": [
+              {
+                "defined": "VerifiedCreators"
+              }
+            ]
+          },
+          {
+            "name": "Autograph",
+            "fields": [
+              {
+                "defined": "Autograph"
+              }
+            ]
           }
         ]
       }
@@ -3484,6 +3564,12 @@
           },
           {
             "name": "ImmutableMetadata"
+          },
+          {
+            "name": "VerifiedCreators"
+          },
+          {
+            "name": "Autograph"
           }
         ]
       }
@@ -4229,6 +4315,16 @@
       "code": 39,
       "name": "UninitializedOracleAccount",
       "msg": "Oracle account is uninitialized"
+    },
+    {
+      "code": 40,
+      "name": "MissingSigner",
+      "msg": "Missing required signer for operation"
+    },
+    {
+      "code": 41,
+      "name": "InvalidPluginOperation",
+      "msg": "Invalid plugin operation"
     }
   ],
   "metadata": {

@@ -12,12 +12,12 @@ use crate::{
         ExternalPluginAdapter, ExternalPluginAdapterType, Plugin, PluginAuthority, PluginType,
         RegistryRecord,
     },
-    AddBlockerPlugin, AttributesPlugin, BaseAuthority, BasePlugin, BurnDelegatePlugin, DataBlob,
-    EditionPlugin, ExternalPluginAdaptersList, ExternalRegistryRecordSafe, FreezeDelegatePlugin,
-    ImmutableMetadataPlugin, MasterEditionPlugin, PermanentBurnDelegatePlugin,
-    PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin, PluginRegistryV1Safe,
-    PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount, TransferDelegatePlugin,
-    UpdateDelegatePlugin,
+    AddBlockerPlugin, AttributesPlugin, AutographPlugin, BaseAuthority, BasePlugin,
+    BurnDelegatePlugin, DataBlob, EditionPlugin, ExternalPluginAdaptersList,
+    ExternalRegistryRecordSafe, FreezeDelegatePlugin, ImmutableMetadataPlugin, MasterEditionPlugin,
+    PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin,
+    PluginRegistryV1Safe, PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount,
+    TransferDelegatePlugin, UpdateDelegatePlugin, VerifiedCreatorsPlugin,
 };
 
 /// Fetch the plugin from the registry.
@@ -206,6 +206,15 @@ pub(crate) fn registry_records_to_plugin_list(
                             base,
                             immutable_metadata,
                         })
+                    }
+                    Plugin::VerifiedCreators(verified_creators) => {
+                        acc.verified_creators = Some(VerifiedCreatorsPlugin {
+                            base,
+                            verified_creators,
+                        })
+                    }
+                    Plugin::Autograph(autograph) => {
+                        acc.autograph = Some(AutographPlugin { base, autograph })
                     }
                 }
             }

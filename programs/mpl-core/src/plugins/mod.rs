@@ -13,6 +13,7 @@ mod oracle;
 
 mod master_edition;
 
+mod autograph;
 mod permanent_burn_delegate;
 mod permanent_freeze_delegate;
 mod permanent_transfer_delegate;
@@ -22,9 +23,11 @@ mod royalties;
 mod transfer;
 mod update_delegate;
 mod utils;
+mod verified_creators;
 
 pub use add_blocker::*;
 pub use attributes::*;
+pub use autograph::*;
 pub use burn_delegate::*;
 pub use data_store::*;
 pub use edition::*;
@@ -44,6 +47,7 @@ pub use royalties::*;
 pub use transfer::*;
 pub use update_delegate::*;
 pub use utils::*;
+pub use verified_creators::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use num_derive::ToPrimitive;
@@ -87,6 +91,10 @@ pub enum Plugin {
     AddBlocker(AddBlocker),
     /// ImmutableMetadata plugin. Makes metadata of the asset immutable.
     ImmutableMetadata(ImmutableMetadata),
+    /// VerifiedCreators plugin allows update auth to specify verified creators and additional creators to sign
+    VerifiedCreators(VerifiedCreators),
+    /// Autograph plugin allows anybody to add their signature to the asset with an optional message
+    Autograph(Autograph),
 }
 
 impl Plugin {
@@ -157,6 +165,10 @@ pub enum PluginType {
     AddBlocker,
     /// ImmutableMetadata plugin.
     ImmutableMetadata,
+    /// VerifiedCreators plugin.
+    VerifiedCreators,
+    /// Autograph plugin.
+    Autograph,
 }
 
 impl DataBlob for PluginType {
@@ -185,6 +197,8 @@ impl From<&Plugin> for PluginType {
             Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
             Plugin::Edition(_) => PluginType::Edition,
             Plugin::MasterEdition(_) => PluginType::MasterEdition,
+            Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
+            Plugin::Autograph(_) => PluginType::Autograph,
         }
     }
 }
@@ -206,6 +220,8 @@ impl PluginType {
             PluginType::PermanentBurnDelegate => Authority::UpdateAuthority,
             PluginType::Edition => Authority::UpdateAuthority,
             PluginType::MasterEdition => Authority::UpdateAuthority,
+            PluginType::VerifiedCreators => Authority::UpdateAuthority,
+            PluginType::Autograph => Authority::Owner,
         }
     }
 }

@@ -82,6 +82,8 @@ impl PluginType {
             PluginType::PermanentTransferDelegate => CheckResult::CanReject,
             PluginType::PermanentBurnDelegate => CheckResult::CanReject,
             PluginType::Edition => CheckResult::CanReject,
+            PluginType::Autograph => CheckResult::CanApprove,
+            PluginType::VerifiedCreators => CheckResult::CanApprove,
             _ => CheckResult::None,
         }
     }
@@ -131,6 +133,8 @@ impl PluginType {
         match plugin_type {
             PluginType::Royalties => CheckResult::CanReject,
             PluginType::UpdateDelegate => CheckResult::CanApprove,
+            PluginType::Autograph => CheckResult::CanReject,
+            PluginType::VerifiedCreators => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -237,6 +241,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_add_plugin(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_add_plugin(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_add_plugin(ctx),
         }
     }
 
@@ -275,6 +283,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_remove_plugin(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_remove_plugin(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_remove_plugin(ctx),
         }
     }
 
@@ -319,6 +331,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_approve_plugin_authority(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_approve_plugin_authority(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_approve_plugin_authority(ctx),
         }
     }
 
@@ -362,6 +378,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_revoke_plugin_authority(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_revoke_plugin_authority(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_revoke_plugin_authority(ctx),
         }
     }
 
@@ -390,6 +410,8 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_create(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_create(ctx),
+            Plugin::Autograph(autograph) => autograph.validate_create(ctx),
         }
     }
 
@@ -418,6 +440,8 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_update(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_update(ctx),
+            Plugin::Autograph(autograph) => autograph.validate_update(ctx),
         }
     }
 
@@ -459,6 +483,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_update_plugin(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_update_plugin(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_update_plugin(ctx),
         }?;
 
         match (&base_result, &result) {
@@ -504,6 +532,8 @@ impl Plugin {
             Plugin::MasterEdition(master_edition) => master_edition.validate_burn(ctx),
             Plugin::AddBlocker(add_blocker) => add_blocker.validate_burn(ctx),
             Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.validate_burn(ctx),
+            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_burn(ctx),
+            Plugin::Autograph(autograph) => autograph.validate_burn(ctx),
         }
     }
 
@@ -532,6 +562,8 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_transfer(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_transfer(ctx),
+            Plugin::Autograph(autograph) => autograph.validate_transfer(ctx),
         }
     }
 
@@ -560,6 +592,8 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_compress(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_compress(ctx),
+            Plugin::Autograph(autograph) => autograph.validate_compress(ctx),
         }
     }
 
@@ -590,6 +624,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_decompress(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_decompress(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_decompress(ctx),
         }
     }
 
@@ -628,6 +666,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_add_external_plugin_adapter(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_add_external_plugin_adapter(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_add_external_plugin_adapter(ctx),
         }
     }
 
@@ -668,6 +710,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_remove_external_plugin_adapter(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_remove_external_plugin_adapter(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_remove_external_plugin_adapter(ctx),
         }
     }
 
@@ -719,6 +765,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_update_external_plugin_adapter(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_update_external_plugin_adapter(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_update_external_plugin_adapter(ctx),
         }?;
 
         match (&base_result, &result) {

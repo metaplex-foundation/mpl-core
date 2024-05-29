@@ -22,6 +22,8 @@ export enum PluginType {
   MasterEdition,
   AddBlocker,
   ImmutableMetadata,
+  VerifiedCreators,
+  Autograph,
 }
 
 export type PluginTypeArgs = PluginType;
