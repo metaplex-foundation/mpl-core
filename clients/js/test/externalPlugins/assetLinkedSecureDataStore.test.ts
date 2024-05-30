@@ -122,4 +122,46 @@ test('it can write data to an asset linked secure store', async (t) => {
       },
     ],
   });
+
+  // check the derived asset sdk correctly injects the data
+  await assertAsset(
+    t,
+    umi,
+    {
+      ...DEFAULT_ASSET,
+      asset: asset.publicKey,
+      owner: umi.identity.publicKey,
+      assetLinkedSecureDataStores: [
+        {
+          type: 'AssetLinkedSecureDataStore',
+          authority: { type: 'UpdateAuthority' },
+          dataAuthority: {
+            type: 'Address',
+            address: dataAuthority.publicKey,
+          },
+          schema: ExternalPluginAdapterSchema.Json,
+          data: { hello: 'world' },
+        },
+      ],
+
+      dataSections: [
+        {
+          type: 'DataSection',
+          parentKey: {
+            type: 'AssetLinkedSecureDataStore',
+            dataAuthority: {
+              type: 'Address',
+              address: dataAuthority.publicKey,
+            },
+          },
+          authority: { type: 'None' },
+          data: { hello: 'world' },
+          schema: ExternalPluginAdapterSchema.Json,
+        },
+      ],
+    },
+    {
+      derivePlugins: true,
+    }
+  );
 });

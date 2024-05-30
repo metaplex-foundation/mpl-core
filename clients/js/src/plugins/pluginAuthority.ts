@@ -28,3 +28,13 @@ export function pluginAuthorityFromBase(
     address: (authority as any).address,
   };
 }
+export function comparePluginAuthorities(
+  a: PluginAuthority,
+  b: PluginAuthority
+): boolean {
+  if (a.type !== b.type) {
+    return false;
+  }
+
+  return a.address === b.address;
+}

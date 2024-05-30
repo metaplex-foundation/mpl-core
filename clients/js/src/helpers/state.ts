@@ -1,7 +1,12 @@
 import { PublicKey, publicKey } from '@metaplex-foundation/umi';
 import { AssetLinkedLifecycleHookPlugin } from 'src/plugins/assetLinkedLifecycleHook';
 import { AssetV1, CollectionV1 } from '../generated';
-import { ExternalPluginAdapters, ExternalPluginAdaptersList } from '../plugins';
+import {
+  comparePluginAuthorities,
+  ExternalPluginAdapters,
+  ExternalPluginAdaptersList,
+  PluginAuthority,
+} from '../plugins';
 import { OraclePlugin } from '../plugins/oracle';
 import { SecureDataStorePlugin } from '../plugins/secureDataStore';
 import { LifecycleHookPlugin } from '../plugins/lifecycleHook';
@@ -102,14 +107,31 @@ export function deriveAssetPlugins(
     collection
   );
 
-  // TODO copy linked data section
+  // for every data section, find a matching asset linked plugin and inject the data for convenience
+  externalPluginAdapters.dataSections?.forEach((dataSection) => {
+    let store;
+    let dataAuth: PluginAuthority;
+    switch (dataSection.parentKey.type) {
+      case 'AssetLinkedSecureDataStore':
+        dataAuth = dataSection.parentKey.dataAuthority;
+        store = externalPluginAdapters.assetLinkedSecureDataStores?.find(
+          (plugin) => comparePluginAuthorities(dataAuth, plugin.dataAuthority)
+        );
+        if (store) {
+          store.data = dataSection.data;
+        }
+        break;
+      case 'AssetLinkedLifecycleHook':
+      default:
+        throw new Error('AssetLinkedLifecycleHook currently unsupported');
+    }
+  });
 
   return {
     ...{
       ...collection,
       // the following plugins can only be on the collection
       masterEdition: undefined,
-      assetLinkedSecureDataStores: undefined,
     },
     ...asset,
     ...externalPluginAdapters,

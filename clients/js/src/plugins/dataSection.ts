@@ -53,7 +53,7 @@ export function dataSectionInitInfoArgsToBase(
 export function dataSectionUpdateInfoArgsToBase(
   d: DataSectionUpdateInfoArgs
 ): BaseDataSectionUpdateInfoArgs {
-  // TODO fix this
+  // You can't update the data section directly
   return {};
 }
 

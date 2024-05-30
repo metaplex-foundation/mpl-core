@@ -24,6 +24,7 @@ import {
   ExternalPluginAdaptersList,
   AssetPluginsList,
   CollectionPluginsList,
+  fetchAsset,
 } from '../src';
 
 export const createUmi = async () => (await basecreateUmi()).use(mplCore());
@@ -38,7 +39,6 @@ export type CreateAssetHelperArgs = {
   authority?: Signer;
   updateAuthority?: PublicKey | Signer;
   collection?: PublicKey;
-  // TODO use PluginList type here
   plugins?: PluginAuthorityPairArgs[];
 };
 
@@ -85,7 +85,6 @@ export type CreateCollectionHelperArgs = {
   name?: string;
   uri?: string;
   updateAuthority?: PublicKey | Signer;
-  // TODO use CollectionPluginList type here
   plugins?: PluginAuthorityPairArgs[];
 };
 
@@ -145,11 +144,16 @@ export const assertAsset = async (
     name?: string | RegExp;
     uri?: string | RegExp;
   } & AssetPluginsList &
-    ExternalPluginAdaptersList
+    ExternalPluginAdaptersList,
+  options: { derivePlugins: boolean } = {
+    derivePlugins: false,
+  }
 ) => {
   const { asset, owner, name, uri, ...rest } = input;
   const assetAddress = publicKey(input.asset);
-  const assetWithPlugins = await fetchAssetV1(umi, assetAddress);
+  const assetWithPlugins = options.derivePlugins
+    ? await fetchAsset(umi, assetAddress)
+    : await fetchAssetV1(umi, assetAddress);
 
   // Name.
   if (typeof name === 'string') t.is(assetWithPlugins.name, name);
