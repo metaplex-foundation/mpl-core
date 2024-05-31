@@ -118,11 +118,11 @@ impl PluginValidation for UpdateDelegate {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if (ctx.self_authority
+        if ctx.self_authority
             == (&Authority::Address {
                 address: *ctx.authority_info.key,
             })
-            || self.additional_delegates.contains(ctx.authority_info.key))
+            || self.additional_delegates.contains(ctx.authority_info.key)
         {
             solana_program::msg!("UpdateDelegate: Approved");
             Ok(ValidationResult::Approved)
