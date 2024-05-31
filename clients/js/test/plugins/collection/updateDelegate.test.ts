@@ -8,6 +8,7 @@ import {
   revokeCollectionPluginAuthority,
   revokePluginAuthority,
   update,
+  updateCollection,
   updateCollectionPlugin,
   updatePlugin,
 } from '../../../src';
@@ -650,5 +651,56 @@ test('it can approve/revoke non-updateDelegate plugin on an asset as collection 
       authority: { type: 'UpdateAuthority' },
       number: 1,
     },
+  });
+});
+
+test('it cannot update the update authority of the collection as an updateDelegate additional delegate', async (t) => {
+  const umi = await createUmi();
+  const updateDelegate = generateSigner(umi);
+  const updateDelegate2 = generateSigner(umi);
+
+  const collection = await createCollection(umi, {
+    plugins: [
+      {
+        type: 'UpdateDelegate',
+        additionalDelegates: [updateDelegate.publicKey],
+      },
+    ],
+  });
+
+  const result = updateCollection(umi, {
+    collection: collection.publicKey,
+    authority: updateDelegate,
+    newUpdateAuthority: updateDelegate2.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+});
+
+test('it can update collection details as an updateDelegate additional delegate', async (t) => {
+  const umi = await createUmi();
+  const updateDelegate = generateSigner(umi);
+
+  const collection = await createCollection(umi, {
+    plugins: [
+      {
+        type: 'UpdateDelegate',
+        additionalDelegates: [updateDelegate.publicKey],
+      },
+    ],
+  });
+
+  await updateCollection(umi, {
+    collection: collection.publicKey,
+    authority: updateDelegate,
+    name: 'new name',
+    uri: 'new uri',
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    name: 'new name',
+    uri: 'new uri',
   });
 });
