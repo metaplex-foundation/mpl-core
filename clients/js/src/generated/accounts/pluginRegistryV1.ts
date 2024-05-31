@@ -25,10 +25,10 @@ import {
   getPluginRegistryV1AccountDataSerializer,
 } from '../../hooked';
 import {
-  ExternalPluginRecordArgs,
+  ExternalRegistryRecordArgs,
   KeyArgs,
   RegistryRecordArgs,
-  getExternalPluginRecordSerializer,
+  getExternalRegistryRecordSerializer,
   getKeySerializer,
   getRegistryRecordSerializer,
 } from '../types';
@@ -111,11 +111,11 @@ export function getPluginRegistryV1GpaBuilder(
     .registerFields<{
       key: KeyArgs;
       registry: Array<RegistryRecordArgs>;
-      externalPlugins: Array<ExternalPluginRecordArgs>;
+      externalRegistry: Array<ExternalRegistryRecordArgs>;
     }>({
       key: [0, getKeySerializer()],
       registry: [1, array(getRegistryRecordSerializer())],
-      externalPlugins: [null, array(getExternalPluginRecordSerializer())],
+      externalRegistry: [null, array(getExternalRegistryRecordSerializer())],
     })
     .deserializeUsing<PluginRegistryV1>((account) =>
       deserializePluginRegistryV1(account)

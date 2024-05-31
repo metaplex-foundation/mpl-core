@@ -11,15 +11,20 @@ import {
   CollectionV1AccountDataArgs as GenCollectionV1AccountDataArgs,
   getCollectionV1AccountDataSerializer as genGetCollectionV1AccountDataSerializer,
 } from '../generated/types/collectionV1AccountData';
-import { PluginsList } from '../types';
-import { registryRecordsToPluginsList } from '../plugins';
+import {
+  CollectionPluginsList,
+  ExternalPluginAdaptersList,
+  externalRegistryRecordsToExternalPluginAdapterList,
+  registryRecordsToPluginsList,
+} from '../plugins';
 import {
   PluginRegistryV1AccountData,
   getPluginRegistryV1AccountDataSerializer,
 } from './pluginRegistryV1Data';
 
 export type CollectionV1AccountData = GenCollectionV1AccountData &
-  PluginsList & {
+  CollectionPluginsList &
+  ExternalPluginAdaptersList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
   };
 
@@ -27,7 +32,7 @@ export type CollectionV1AccountDataArgs = Omit<
   GenCollectionV1AccountDataArgs,
   'updateAuthority'
 > &
-  PluginsList & {
+  CollectionPluginsList & {
     pluginHeader?: Omit<PluginHeaderV1, 'publicKey' | 'header'>;
   };
 
@@ -56,7 +61,8 @@ export const getCollectionV1AccountDataSerializer = (): Serializer<
 
     let pluginHeader: PluginHeaderV1AccountData | undefined;
     let pluginRegistry: PluginRegistryV1AccountData | undefined;
-    let pluginsList: PluginsList | undefined;
+    let pluginsList: CollectionPluginsList | undefined;
+    let externalPluginAdaptersList: ExternalPluginAdaptersList | undefined;
     let finalOffset = collectionOffset;
 
     if (buffer.length !== collectionOffset) {
@@ -75,12 +81,19 @@ export const getCollectionV1AccountDataSerializer = (): Serializer<
         pluginRegistry.registry,
         buffer
       );
+
+      externalPluginAdaptersList =
+        externalRegistryRecordsToExternalPluginAdapterList(
+          pluginRegistry.externalRegistry,
+          buffer
+        );
     }
 
     return [
       {
         pluginHeader,
         ...pluginsList,
+        ...externalPluginAdaptersList,
         ...collection,
       },
       finalOffset,

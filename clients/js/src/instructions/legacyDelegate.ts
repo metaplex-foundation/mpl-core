@@ -4,15 +4,14 @@ import {
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import { ERR_CANNOT_DELEGATE } from './errors';
+import { addPluginV1, AssetV1 } from '../generated';
 import {
-  addPluginV1,
-  approvePluginAuthorityV1,
-  AssetV1,
-  PluginType,
-} from '../generated';
-import { createPlugin, pluginKeyToPluginType } from '../plugins';
+  AssetPluginsList,
+  createPlugin,
+  pluginKeyToPluginType,
+} from '../plugins';
 import { addressPluginAuthority } from '../authority';
-import { PluginsList } from '../types';
+import { approvePluginAuthority } from './approvePluginAuthority';
 
 export function legacyDelegate(
   context: Pick<Context, 'payer' | 'programs'>,
@@ -51,13 +50,16 @@ export function legacyDelegate(
 
   // Change the plugin authority of the defined plugins.
   definedPluginsKeys.forEach((pluginKey) => {
-    const plugType = pluginKeyToPluginType(pluginKey as keyof PluginsList);
+    const plugType = pluginKeyToPluginType(pluginKey as keyof AssetPluginsList);
 
     txBuilder = txBuilder.add(
-      approvePluginAuthorityV1(context, {
+      approvePluginAuthority(context, {
         asset: asset.publicKey,
-        pluginType: PluginType[plugType],
-        newAuthority: addressPluginAuthority(targetDelegate),
+        plugin: { type: plugType },
+        newAuthority: {
+          type: 'Address',
+          address: targetDelegate,
+        },
       })
     );
   });

@@ -1,5 +1,5 @@
 import test from 'ava';
-import { none, some } from '@metaplex-foundation/umi';
+
 import {
   pluginAuthorityPair,
   updatePluginAuthority,
@@ -13,7 +13,7 @@ import {
   createAsset,
   createCollection,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('it can add masterEdition to collection', async (t) => {
   const umi = await createUmi();
@@ -39,9 +39,9 @@ test('it can add masterEdition to collection', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      maxSupply: some(100),
-      name: some('name'),
-      uri: some('uri'),
+      maxSupply: 100,
+      name: 'name',
+      uri: 'uri',
     },
   });
 });
@@ -71,9 +71,9 @@ test('it can create collection with masterEdition', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      maxSupply: some(100),
-      name: some('name'),
-      uri: some('uri'),
+      maxSupply: 100,
+      name: 'name',
+      uri: 'uri',
     },
   });
 });
@@ -103,9 +103,9 @@ test('it can create master edition with default values', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      maxSupply: none(),
-      name: none(),
-      uri: none(),
+      maxSupply: undefined,
+      name: undefined,
+      uri: undefined,
     },
   });
 });

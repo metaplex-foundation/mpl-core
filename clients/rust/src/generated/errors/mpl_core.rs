@@ -103,6 +103,33 @@ pub enum MplCoreError {
     /// 30 (0x1E) - Invalid Log Wrapper Program
     #[error("Invalid Log Wrapper Program")]
     InvalidLogWrapperProgram,
+    /// 31 (0x1F) - External PluginExternalPluginAdapter not found
+    #[error("External PluginExternalPluginAdapter not found")]
+    ExternalPluginAdapterNotFound,
+    /// 32 (0x20) - External PluginExternalPluginAdapter already exists
+    #[error("External PluginExternalPluginAdapter already exists")]
+    ExternalPluginAdapterAlreadyExists,
+    /// 33 (0x21) - Missing asset needed for extra account PDA derivation
+    #[error("Missing asset needed for extra account PDA derivation")]
+    MissingAsset,
+    /// 34 (0x22) - Missing account needed for external plugin adapter
+    #[error("Missing account needed for external plugin adapter")]
+    MissingExternalPluginAdapterAccount,
+    /// 35 (0x23) - Oracle external plugin adapter can only be configured to reject
+    #[error("Oracle external plugin adapter can only be configured to reject")]
+    OracleCanRejectOnly,
+    /// 36 (0x24) - External plugin adapter must have at least one lifecycle check
+    #[error("External plugin adapter must have at least one lifecycle check")]
+    RequiresLifecycleCheck,
+    /// 37 (0x25) - Duplicate lifecycle checks were provided for external plugin adapter
+    #[error("Duplicate lifecycle checks were provided for external plugin adapter ")]
+    DuplicateLifecycleChecks,
+    /// 38 (0x26) - Could not read from oracle account
+    #[error("Could not read from oracle account")]
+    InvalidOracleAccountData,
+    /// 39 (0x27) - Oracle account is uninitialized
+    #[error("Oracle account is uninitialized")]
+    UninitializedOracleAccount,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

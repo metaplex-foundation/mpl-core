@@ -57,17 +57,21 @@ pub(crate) fn remove_plugin<'a>(
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
+        accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
         Some(&plugin_to_remove),
+        None,
         AssetV1::check_remove_plugin,
         CollectionV1::check_remove_plugin,
         PluginType::check_remove_plugin,
         AssetV1::validate_remove_plugin,
         CollectionV1::validate_remove_plugin,
         Plugin::validate_remove_plugin,
+        None,
+        None,
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -124,13 +128,17 @@ pub(crate) fn remove_collection_plugin<'a>(
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
+        accounts,
         authority,
         ctx.accounts.collection,
         Some(&plugin_to_remove),
+        None,
         CollectionV1::check_remove_plugin,
         PluginType::check_remove_plugin,
         CollectionV1::validate_remove_plugin,
         Plugin::validate_remove_plugin,
+        None,
+        None,
     )?;
 
     process_remove_plugin(

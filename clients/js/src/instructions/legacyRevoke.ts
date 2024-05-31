@@ -1,8 +1,7 @@
 import { Context, transactionBuilder } from '@metaplex-foundation/umi';
 import { AssetV1, PluginType, revokePluginAuthorityV1 } from '../generated';
 import { ERR_CANNOT_REVOKE } from './errors';
-import { pluginKeyToPluginType } from '../plugins';
-import { PluginsList } from '../types';
+import { AssetPluginsList, pluginKeyToPluginType } from '../plugins';
 
 export function legacyRevoke(
   context: Pick<Context, 'payer' | 'programs'>,
@@ -39,7 +38,7 @@ export function legacyRevoke(
 
   // Change the plugin authority of the defined plugins.
   Object.keys(definedPlugins).forEach((pluginKey) => {
-    const plugType = pluginKeyToPluginType(pluginKey as keyof PluginsList);
+    const plugType = pluginKeyToPluginType(pluginKey as keyof AssetPluginsList);
 
     txBuilder = txBuilder.add(
       revokePluginAuthorityV1(context, {

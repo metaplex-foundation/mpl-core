@@ -17,10 +17,11 @@ import {
 } from '../../../src';
 import {
   assertAsset,
+  assertBurned,
   createAsset,
   createCollection,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('it can burn an assets as an owner', async (t) => {
   // Given a Umi instance and a new signer.
@@ -39,12 +40,8 @@ test('it can burn an assets as an owner', async (t) => {
     asset: asset.publicKey,
   }).sendAndConfirm(umi);
 
-  const afterAsset = await umi.rpc.getAccount(asset.publicKey);
-  t.true(afterAsset.exists);
-  assertAccountExists(afterAsset);
+  const afterAsset = await assertBurned(t, umi, asset.publicKey);
   t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
-  t.is(afterAsset.data.length, 1);
-  t.is(afterAsset.data[0], Key.Uninitialized);
 });
 
 test('it can burn an assets as a delegate', async (t) => {

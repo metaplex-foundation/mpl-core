@@ -1,18 +1,9 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 
-import {
-  addPluginV1,
-  createPlugin,
-  pluginAuthorityPair,
-  updateV1,
-} from '../../../src';
-import {
-  DEFAULT_ASSET,
-  assertAsset,
-  createAsset,
-  createUmi,
-} from '../../_setup';
+import { addPlugin, update } from '../../../src';
+import { DEFAULT_ASSET, assertAsset, createUmi } from '../../_setupRaw';
+import { createAsset } from '../../_setupSdk';
 
 test('it can prevent the asset from metadata updating', async (t) => {
   // Given a Umi instance and a new signer.
@@ -20,16 +11,16 @@ test('it can prevent the asset from metadata updating', async (t) => {
 
   const asset = await createAsset(umi, {
     plugins: [
-      pluginAuthorityPair({
+      {
         type: 'ImmutableMetadata',
-      }),
+      },
     ],
   });
 
-  const result = updateV1(umi, {
-    asset: asset.publicKey,
-    newName: 'bread',
-    newUri: 'https://example.com/bread',
+  const result = update(umi, {
+    asset,
+    name: 'bread',
+    uri: 'https://example.com/bread',
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -41,10 +32,10 @@ test('it can mutate its metadata unless ImmutableMetadata plugin is added', asyn
   const umi = await createUmi();
   const asset = await createAsset(umi);
 
-  await updateV1(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  await update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -55,17 +46,17 @@ test('it can mutate its metadata unless ImmutableMetadata plugin is added', asyn
     uri: 'https://example.com/bread2',
   });
 
-  await addPluginV1(umi, {
+  await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'ImmutableMetadata',
-    }),
+    },
   }).sendAndConfirm(umi);
 
-  const result = updateV1(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 3',
-    newUri: 'https://example.com/bread3',
+  const result = update(umi, {
+    asset,
+    name: 'Test Bread 3',
+    uri: 'https://example.com/bread3',
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -82,12 +73,12 @@ test('it states that UA is the only one who can add the ImmutableMetadata', asyn
   });
 
   // random keypair can't add ImmutableMetadata
-  let result = addPluginV1(umi, {
+  let result = addPlugin(umi, {
     authority: randomUser,
     asset: asset.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'ImmutableMetadata',
-    }),
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -95,12 +86,12 @@ test('it states that UA is the only one who can add the ImmutableMetadata', asyn
   });
 
   // Owner can't add ImmutableMetadata
-  result = addPluginV1(umi, {
+  result = addPlugin(umi, {
     authority: umi.identity,
     asset: asset.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'ImmutableMetadata',
-    }),
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -108,10 +99,10 @@ test('it states that UA is the only one who can add the ImmutableMetadata', asyn
   });
 
   // UA CAN add ImmutableMetadata
-  await addPluginV1(umi, {
+  await addPlugin(umi, {
     authority: updateAuthority,
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'ImmutableMetadata' }),
+    plugin: { type: 'ImmutableMetadata' },
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {

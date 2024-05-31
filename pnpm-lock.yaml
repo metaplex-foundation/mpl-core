@@ -14,6 +14,9 @@ devDependencies:
   '@metaplex-foundation/shank-js':
     specifier: ^0.1.7
     version: 0.1.7
+  husky:
+    specifier: ^9.0.11
+    version: 9.0.11
   typescript:
     specifier: ^4.9.4
     version: 4.9.4
@@ -801,6 +804,12 @@ packages:
     resolution: {integrity: sha512-Fl70vYtsAFb/C06PTS9dZBo7ihau+Tu/DNCk/OyHhea07S+aeMWpFFkUaXRa8fI+ScZbEI8dfSxwY7gxZ9SAVQ==}
     dependencies:
       ms: 2.1.3
+    dev: true
+
+  /husky@9.0.11:
+    resolution: {integrity: sha512-AB6lFlbwwyIqMdHYhwPe+kjOC3Oc5P3nThEoW/AaO2BX3vJDjWPFxYLxokUZOo6RNX20He3AaT8sESs9NJcmEw==}
+    engines: {node: '>=18'}
+    hasBin: true
     dev: true
 
   /ieee754@1.2.1:

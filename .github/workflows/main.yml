@@ -2,9 +2,9 @@ name: Main
 
 on:
   push:
-    branches: [main]
+    branches: [main, third-party-plugins-staging]
   pull_request:
-    branches: [main]
+    branches: [main, third-party-plugins-staging]
 
 env:
   CACHE: true

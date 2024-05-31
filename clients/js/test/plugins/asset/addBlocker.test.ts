@@ -1,13 +1,9 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 
-import { addPluginV1, createPlugin, pluginAuthorityPair } from '../../../src';
-import {
-  DEFAULT_ASSET,
-  assertAsset,
-  createAsset,
-  createUmi,
-} from '../../_setup';
+import { addPlugin } from '../../../src';
+import { DEFAULT_ASSET, assertAsset, createUmi } from '../../_setupRaw';
+import { createAsset } from '../../_setupSdk';
 
 test('it cannot add UA-managed plugin if addBlocker had been added on creation', async (t) => {
   // Given a Umi instance and a new signer.
@@ -15,20 +11,18 @@ test('it cannot add UA-managed plugin if addBlocker had been added on creation',
 
   const asset = await createAsset(umi, {
     plugins: [
-      pluginAuthorityPair({
+      {
         type: 'AddBlocker',
-      }),
+      },
     ],
   });
 
-  const result = addPluginV1(umi, {
+  const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'Attributes',
-      data: {
-        attributeList: [],
-      },
-    }),
+      attributeList: [],
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -40,21 +34,20 @@ test('it can add plugins unless AddBlocker is added', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi);
 
-  await addPluginV1(umi, {
+  await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'Attributes',
-      data: {
-        attributeList: [],
-      },
-    }),
+
+      attributeList: [],
+    },
   }).sendAndConfirm(umi);
 
-  await addPluginV1(umi, {
+  await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'AddBlocker',
-    }),
+    },
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -74,14 +67,13 @@ test('it can add plugins unless AddBlocker is added', async (t) => {
     },
   });
 
-  const result = addPluginV1(umi, {
+  const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'Attributes',
-      data: {
-        attributeList: [],
-      },
-    }),
+
+      attributeList: [],
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -95,15 +87,15 @@ test('it can add owner-managed plugins even if AddBlocker had been added', async
 
   const asset = await createAsset(umi, {
     plugins: [
-      pluginAuthorityPair({
+      {
         type: 'AddBlocker',
-      }),
+      },
     ],
   });
 
-  await addPluginV1(umi, {
+  await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: false } }),
+    plugin: { type: 'FreezeDelegate', frozen: false },
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -133,12 +125,12 @@ test('it states that UA is the only one who can add the AddBlocker', async (t) =
   });
 
   // random keypair can't add AddBlocker
-  let result = addPluginV1(umi, {
+  let result = addPlugin(umi, {
     authority: randomUser,
     asset: asset.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'AddBlocker',
-    }),
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -146,12 +138,12 @@ test('it states that UA is the only one who can add the AddBlocker', async (t) =
   });
 
   // Owner can't add AddBlocker
-  result = addPluginV1(umi, {
+  result = addPlugin(umi, {
     authority: umi.identity,
     asset: asset.publicKey,
-    plugin: createPlugin({
+    plugin: {
       type: 'AddBlocker',
-    }),
+    },
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -159,10 +151,10 @@ test('it states that UA is the only one who can add the AddBlocker', async (t) =
   });
 
   // UA CAN add AddBlocker
-  await addPluginV1(umi, {
+  await addPlugin(umi, {
     authority: updateAuthority,
     asset: asset.publicKey,
-    plugin: createPlugin({ type: 'AddBlocker' }),
+    plugin: { type: 'AddBlocker' },
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {

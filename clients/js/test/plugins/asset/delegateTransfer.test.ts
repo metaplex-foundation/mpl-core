@@ -13,7 +13,7 @@ import {
   assertAsset,
   createAsset,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('a delegate can transfer the asset', async (t) => {
   // Given a Umi instance and a new signer.

@@ -4,6 +4,10 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 OUTPUT="./programs/.bin"
 # saves external programs binaries to the output directory
 source ${SCRIPT_DIR}/dump.sh ${OUTPUT}
+
+# Oracle program used for tests and is only deployed to devnet
+source ${SCRIPT_DIR}/dump_oracle_example.sh ${OUTPUT}
+
 # go to parent folder
 cd $(dirname $(dirname $(dirname ${SCRIPT_DIR})))
 

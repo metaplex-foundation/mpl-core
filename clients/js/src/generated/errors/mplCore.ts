@@ -433,6 +433,155 @@ export class InvalidLogWrapperProgramError extends ProgramError {
 codeToErrorMap.set(0x1e, InvalidLogWrapperProgramError);
 nameToErrorMap.set('InvalidLogWrapperProgram', InvalidLogWrapperProgramError);
 
+/** ExternalPluginAdapterNotFound: External PluginExternalPluginAdapter not found */
+export class ExternalPluginAdapterNotFoundError extends ProgramError {
+  override readonly name: string = 'ExternalPluginAdapterNotFound';
+
+  readonly code: number = 0x1f; // 31
+
+  constructor(program: Program, cause?: Error) {
+    super('External PluginExternalPluginAdapter not found', program, cause);
+  }
+}
+codeToErrorMap.set(0x1f, ExternalPluginAdapterNotFoundError);
+nameToErrorMap.set(
+  'ExternalPluginAdapterNotFound',
+  ExternalPluginAdapterNotFoundError
+);
+
+/** ExternalPluginAdapterAlreadyExists: External PluginExternalPluginAdapter already exists */
+export class ExternalPluginAdapterAlreadyExistsError extends ProgramError {
+  override readonly name: string = 'ExternalPluginAdapterAlreadyExists';
+
+  readonly code: number = 0x20; // 32
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'External PluginExternalPluginAdapter already exists',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x20, ExternalPluginAdapterAlreadyExistsError);
+nameToErrorMap.set(
+  'ExternalPluginAdapterAlreadyExists',
+  ExternalPluginAdapterAlreadyExistsError
+);
+
+/** MissingAsset: Missing asset needed for extra account PDA derivation */
+export class MissingAssetError extends ProgramError {
+  override readonly name: string = 'MissingAsset';
+
+  readonly code: number = 0x21; // 33
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Missing asset needed for extra account PDA derivation',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x21, MissingAssetError);
+nameToErrorMap.set('MissingAsset', MissingAssetError);
+
+/** MissingExternalPluginAdapterAccount: Missing account needed for external plugin adapter */
+export class MissingExternalPluginAdapterAccountError extends ProgramError {
+  override readonly name: string = 'MissingExternalPluginAdapterAccount';
+
+  readonly code: number = 0x22; // 34
+
+  constructor(program: Program, cause?: Error) {
+    super('Missing account needed for external plugin adapter', program, cause);
+  }
+}
+codeToErrorMap.set(0x22, MissingExternalPluginAdapterAccountError);
+nameToErrorMap.set(
+  'MissingExternalPluginAdapterAccount',
+  MissingExternalPluginAdapterAccountError
+);
+
+/** OracleCanRejectOnly: Oracle external plugin adapter can only be configured to reject */
+export class OracleCanRejectOnlyError extends ProgramError {
+  override readonly name: string = 'OracleCanRejectOnly';
+
+  readonly code: number = 0x23; // 35
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Oracle external plugin adapter can only be configured to reject',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x23, OracleCanRejectOnlyError);
+nameToErrorMap.set('OracleCanRejectOnly', OracleCanRejectOnlyError);
+
+/** RequiresLifecycleCheck: External plugin adapter must have at least one lifecycle check */
+export class RequiresLifecycleCheckError extends ProgramError {
+  override readonly name: string = 'RequiresLifecycleCheck';
+
+  readonly code: number = 0x24; // 36
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'External plugin adapter must have at least one lifecycle check',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x24, RequiresLifecycleCheckError);
+nameToErrorMap.set('RequiresLifecycleCheck', RequiresLifecycleCheckError);
+
+/** DuplicateLifecycleChecks: Duplicate lifecycle checks were provided for external plugin adapter  */
+export class DuplicateLifecycleChecksError extends ProgramError {
+  override readonly name: string = 'DuplicateLifecycleChecks';
+
+  readonly code: number = 0x25; // 37
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Duplicate lifecycle checks were provided for external plugin adapter ',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x25, DuplicateLifecycleChecksError);
+nameToErrorMap.set('DuplicateLifecycleChecks', DuplicateLifecycleChecksError);
+
+/** InvalidOracleAccountData: Could not read from oracle account */
+export class InvalidOracleAccountDataError extends ProgramError {
+  override readonly name: string = 'InvalidOracleAccountData';
+
+  readonly code: number = 0x26; // 38
+
+  constructor(program: Program, cause?: Error) {
+    super('Could not read from oracle account', program, cause);
+  }
+}
+codeToErrorMap.set(0x26, InvalidOracleAccountDataError);
+nameToErrorMap.set('InvalidOracleAccountData', InvalidOracleAccountDataError);
+
+/** UninitializedOracleAccount: Oracle account is uninitialized */
+export class UninitializedOracleAccountError extends ProgramError {
+  override readonly name: string = 'UninitializedOracleAccount';
+
+  readonly code: number = 0x27; // 39
+
+  constructor(program: Program, cause?: Error) {
+    super('Oracle account is uninitialized', program, cause);
+  }
+}
+codeToErrorMap.set(0x27, UninitializedOracleAccountError);
+nameToErrorMap.set(
+  'UninitializedOracleAccount',
+  UninitializedOracleAccountError
+);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

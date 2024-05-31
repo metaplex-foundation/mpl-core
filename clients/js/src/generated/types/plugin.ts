@@ -19,6 +19,10 @@ import {
   AddBlockerArgs,
   Attributes,
   AttributesArgs,
+  BaseMasterEdition,
+  BaseMasterEditionArgs,
+  BaseRoyalties,
+  BaseRoyaltiesArgs,
   BurnDelegate,
   BurnDelegateArgs,
   Edition,
@@ -27,37 +31,33 @@ import {
   FreezeDelegateArgs,
   ImmutableMetadata,
   ImmutableMetadataArgs,
-  MasterEdition,
-  MasterEditionArgs,
   PermanentBurnDelegate,
   PermanentBurnDelegateArgs,
   PermanentFreezeDelegate,
   PermanentFreezeDelegateArgs,
   PermanentTransferDelegate,
   PermanentTransferDelegateArgs,
-  Royalties,
-  RoyaltiesArgs,
   TransferDelegate,
   TransferDelegateArgs,
   UpdateDelegate,
   UpdateDelegateArgs,
   getAddBlockerSerializer,
   getAttributesSerializer,
+  getBaseMasterEditionSerializer,
+  getBaseRoyaltiesSerializer,
   getBurnDelegateSerializer,
   getEditionSerializer,
   getFreezeDelegateSerializer,
   getImmutableMetadataSerializer,
-  getMasterEditionSerializer,
   getPermanentBurnDelegateSerializer,
   getPermanentFreezeDelegateSerializer,
   getPermanentTransferDelegateSerializer,
-  getRoyaltiesSerializer,
   getTransferDelegateSerializer,
   getUpdateDelegateSerializer,
 } from '.';
 
 export type Plugin =
-  | { __kind: 'Royalties'; fields: [Royalties] }
+  | { __kind: 'Royalties'; fields: [BaseRoyalties] }
   | { __kind: 'FreezeDelegate'; fields: [FreezeDelegate] }
   | { __kind: 'BurnDelegate'; fields: [BurnDelegate] }
   | { __kind: 'TransferDelegate'; fields: [TransferDelegate] }
@@ -67,12 +67,12 @@ export type Plugin =
   | { __kind: 'PermanentTransferDelegate'; fields: [PermanentTransferDelegate] }
   | { __kind: 'PermanentBurnDelegate'; fields: [PermanentBurnDelegate] }
   | { __kind: 'Edition'; fields: [Edition] }
-  | { __kind: 'MasterEdition'; fields: [MasterEdition] }
+  | { __kind: 'MasterEdition'; fields: [BaseMasterEdition] }
   | { __kind: 'AddBlocker'; fields: [AddBlocker] }
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadata] };
 
 export type PluginArgs =
-  | { __kind: 'Royalties'; fields: [RoyaltiesArgs] }
+  | { __kind: 'Royalties'; fields: [BaseRoyaltiesArgs] }
   | { __kind: 'FreezeDelegate'; fields: [FreezeDelegateArgs] }
   | { __kind: 'BurnDelegate'; fields: [BurnDelegateArgs] }
   | { __kind: 'TransferDelegate'; fields: [TransferDelegateArgs] }
@@ -85,7 +85,7 @@ export type PluginArgs =
     }
   | { __kind: 'PermanentBurnDelegate'; fields: [PermanentBurnDelegateArgs] }
   | { __kind: 'Edition'; fields: [EditionArgs] }
-  | { __kind: 'MasterEdition'; fields: [MasterEditionArgs] }
+  | { __kind: 'MasterEdition'; fields: [BaseMasterEditionArgs] }
   | { __kind: 'AddBlocker'; fields: [AddBlockerArgs] }
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadataArgs] };
 
@@ -95,7 +95,7 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
       [
         'Royalties',
         struct<GetDataEnumKindContent<Plugin, 'Royalties'>>([
-          ['fields', tuple([getRoyaltiesSerializer()])],
+          ['fields', tuple([getBaseRoyaltiesSerializer()])],
         ]),
       ],
       [
@@ -155,7 +155,7 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
       [
         'MasterEdition',
         struct<GetDataEnumKindContent<Plugin, 'MasterEdition'>>([
-          ['fields', tuple([getMasterEditionSerializer()])],
+          ['fields', tuple([getBaseMasterEditionSerializer()])],
         ]),
       ],
       [

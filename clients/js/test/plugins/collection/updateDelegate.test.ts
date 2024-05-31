@@ -20,7 +20,7 @@ import {
   createAsset,
   createCollection,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('it can create a new asset with a collection if it is the collection updateDelegate', async (t) => {
   // Given a Umi instance and a new signer.

@@ -16,17 +16,17 @@ import {
   u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseUpdateAuthority,
+  BaseUpdateAuthorityArgs,
   HashablePluginSchema,
   HashablePluginSchemaArgs,
-  UpdateAuthority,
-  UpdateAuthorityArgs,
+  getBaseUpdateAuthoritySerializer,
   getHashablePluginSchemaSerializer,
-  getUpdateAuthoritySerializer,
 } from '.';
 
 export type CompressionProof = {
   owner: PublicKey;
-  updateAuthority: UpdateAuthority;
+  updateAuthority: BaseUpdateAuthority;
   name: string;
   uri: string;
   seq: bigint;
@@ -35,7 +35,7 @@ export type CompressionProof = {
 
 export type CompressionProofArgs = {
   owner: PublicKey;
-  updateAuthority: UpdateAuthorityArgs;
+  updateAuthority: BaseUpdateAuthorityArgs;
   name: string;
   uri: string;
   seq: number | bigint;
@@ -49,7 +49,7 @@ export function getCompressionProofSerializer(): Serializer<
   return struct<CompressionProof>(
     [
       ['owner', publicKeySerializer()],
-      ['updateAuthority', getUpdateAuthoritySerializer()],
+      ['updateAuthority', getBaseUpdateAuthoritySerializer()],
       ['name', string()],
       ['uri', string()],
       ['seq', u64()],

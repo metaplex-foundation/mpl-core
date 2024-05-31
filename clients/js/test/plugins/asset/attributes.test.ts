@@ -9,7 +9,7 @@ import {
   assertAsset,
   createAsset,
   createUmi,
-} from '../../_setup';
+} from '../../_setupRaw';
 
 test('it can add attributes to an asset', async (t) => {
   // Given a Umi instance and a new signer.

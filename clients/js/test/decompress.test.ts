@@ -14,7 +14,7 @@ import {
   HashedAssetSchema,
   updateAuthority,
 } from '../src';
-import { createUmi } from './_setup';
+import { createUmi } from './_setupRaw';
 
 test.skip('it can decompress a previously compressed asset as the owner', async (t) => {
   // Given a Umi instance and a new signer.

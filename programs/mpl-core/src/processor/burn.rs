@@ -5,7 +5,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{BurnCollectionV1Accounts, BurnV1Accounts},
-    plugins::{Plugin, PluginType},
+    plugins::{ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginType},
     state::{AssetV1, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_authority,
@@ -84,9 +84,11 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
+        accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
+        None,
         None,
         None,
         AssetV1::check_burn,
@@ -95,9 +97,11 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
         AssetV1::validate_burn,
         CollectionV1::validate_burn,
         Plugin::validate_burn,
+        Some(ExternalPluginAdapter::validate_burn),
+        Some(HookableLifecycleEvent::Burn),
     )?;
 
-    process_burn(ctx.accounts.asset, authority)?;
+    process_burn(ctx.accounts.asset, ctx.accounts.payer)?;
     if let Some(mut collection) = collection {
         collection.decrement()?;
         collection.save(ctx.accounts.collection.unwrap(), 0)?;
@@ -129,16 +133,20 @@ pub(crate) fn burn_collection<'a>(
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
+        accounts,
         authority,
         ctx.accounts.collection,
+        None,
         None,
         CollectionV1::check_burn,
         PluginType::check_burn,
         CollectionV1::validate_burn,
         Plugin::validate_burn,
+        Some(ExternalPluginAdapter::validate_burn),
+        Some(HookableLifecycleEvent::Burn),
     )?;
 
-    process_burn(ctx.accounts.collection, authority)
+    process_burn(ctx.accounts.collection, ctx.accounts.payer)
 }
 
 fn process_burn<'a>(core_info: &AccountInfo<'a>, authority: &AccountInfo<'a>) -> ProgramResult {

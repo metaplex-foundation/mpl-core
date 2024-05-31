@@ -60,9 +60,11 @@ pub(crate) fn decompress<'a>(
 
             // Validate asset permissions.
             let _ = validate_asset_permissions(
+                accounts,
                 authority,
                 ctx.accounts.asset,
                 ctx.accounts.collection,
+                None,
                 None,
                 None,
                 AssetV1::check_decompress,
@@ -71,6 +73,8 @@ pub(crate) fn decompress<'a>(
                 AssetV1::validate_decompress,
                 CollectionV1::validate_decompress,
                 Plugin::validate_decompress,
+                None,
+                None,
             )?;
 
             // TODO Enable compression.

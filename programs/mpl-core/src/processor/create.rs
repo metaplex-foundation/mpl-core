@@ -7,12 +7,16 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::CreateV1Accounts,
+    instruction::accounts::CreateV2Accounts,
     plugins::{
-        create_plugin_meta, initialize_plugin, CheckResult, Plugin, PluginAuthorityPair,
-        PluginType, PluginValidationContext, ValidationResult,
+        create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
+        initialize_plugin, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
+        ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair, PluginType,
+        PluginValidationContext, ValidationResult,
     },
-    state::{AssetV1, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT},
+    state::{
+        AssetV1, Authority, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT,
+    },
     utils::resolve_authority,
 };
 
@@ -25,9 +29,41 @@ pub(crate) struct CreateV1Args {
     pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
 }
 
-pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) -> ProgramResult {
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct CreateV2Args {
+    pub(crate) data_state: DataState,
+    pub(crate) name: String,
+    pub(crate) uri: String,
+    pub(crate) plugins: Option<Vec<PluginAuthorityPair>>,
+    pub(crate) external_plugin_adapters: Option<Vec<ExternalPluginAdapterInitInfo>>,
+}
+
+impl From<CreateV1Args> for CreateV2Args {
+    fn from(item: CreateV1Args) -> Self {
+        CreateV2Args {
+            data_state: item.data_state,
+            name: item.name,
+            uri: item.uri,
+            plugins: item.plugins,
+            external_plugin_adapters: None,
+        }
+    }
+}
+
+pub(crate) fn create_v1<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) -> ProgramResult {
+    process_create(accounts, CreateV2Args::from(args))
+}
+pub(crate) fn create_v2<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV2Args) -> ProgramResult {
+    process_create(accounts, args)
+}
+
+pub(crate) fn process_create<'a>(
+    accounts: &'a [AccountInfo<'a>],
+    args: CreateV2Args,
+) -> ProgramResult {
     // Accounts.
-    let ctx = CreateV1Accounts::context(accounts)?;
+    let ctx = CreateV2Accounts::context(accounts)?;
     let rent = Rent::get()?;
 
     // Guards.
@@ -114,51 +150,102 @@ pub(crate) fn create<'a>(accounts: &'a [AccountInfo<'a>], args: CreateV1Args) ->
         serialized_data.len(),
     );
 
-    if let (Some(plugins), DataState::AccountState) = (args.plugins, args.data_state) {
-        if !plugins.is_empty() {
-            let (mut plugin_header, mut plugin_registry) = create_plugin_meta::<AssetV1>(
-                new_asset,
-                ctx.accounts.asset,
-                ctx.accounts.payer,
-                ctx.accounts.system_program,
-            )?;
-            let mut approved = true;
-            let mut force_approved = false;
-            for plugin in &plugins {
-                // TODO move into plugin validation when asset/collection is part of validation context
-                let plugin_type = PluginType::from(&plugin.plugin);
-                if plugin_type == PluginType::MasterEdition {
-                    return Err(MplCoreError::InvalidPlugin.into());
-                }
-                if PluginType::check_create(&PluginType::from(&plugin.plugin)) != CheckResult::None
-                {
-                    let validation_ctx = PluginValidationContext {
-                        self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
-                        authority_info: authority,
-                        resolved_authorities: None,
-                        new_owner: None,
-                        target_plugin: None,
-                    };
-                    match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
-                        ValidationResult::Rejected => approved = false,
-                        ValidationResult::ForceApproved => force_approved = true,
-                        _ => (),
-                    };
-                }
-                initialize_plugin::<AssetV1>(
-                    &plugin.plugin,
-                    &plugin.authority.unwrap_or(plugin.plugin.manager()),
-                    &mut plugin_header,
-                    &mut plugin_registry,
+    if args.data_state == DataState::AccountState {
+        let mut approved = true;
+        let mut force_approved = false;
+
+        if let Some(plugins) = args.plugins {
+            if !plugins.is_empty() {
+                let (mut plugin_header, mut plugin_registry) = create_plugin_meta::<AssetV1>(
+                    &new_asset,
                     ctx.accounts.asset,
                     ctx.accounts.payer,
                     ctx.accounts.system_program,
                 )?;
+                for plugin in &plugins {
+                    // TODO move into plugin validation when asset/collection is part of validation context
+                    let plugin_type = PluginType::from(&plugin.plugin);
+                    if plugin_type == PluginType::MasterEdition {
+                        return Err(MplCoreError::InvalidPlugin.into());
+                    }
+                    if PluginType::check_create(&PluginType::from(&plugin.plugin))
+                        != CheckResult::None
+                    {
+                        let validation_ctx = PluginValidationContext {
+                            accounts,
+                            asset_info: Some(ctx.accounts.asset),
+                            collection_info: ctx.accounts.collection,
+                            self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
+                            authority_info: authority,
+                            resolved_authorities: None,
+                            new_owner: None,
+                            target_plugin: None,
+                        };
+                        match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
+                            ValidationResult::Rejected => approved = false,
+                            ValidationResult::ForceApproved => force_approved = true,
+                            _ => (),
+                        };
+                    }
+                    initialize_plugin::<AssetV1>(
+                        &plugin.plugin,
+                        &plugin.authority.unwrap_or(plugin.plugin.manager()),
+                        &mut plugin_header,
+                        &mut plugin_registry,
+                        ctx.accounts.asset,
+                        ctx.accounts.payer,
+                        ctx.accounts.system_program,
+                    )?;
+                }
             }
+        }
 
-            if !(approved || force_approved) {
-                return Err(MplCoreError::InvalidAuthority.into());
+        if let Some(plugins) = args.external_plugin_adapters {
+            if !plugins.is_empty() {
+                let (_, mut plugin_header, mut plugin_registry) = create_meta_idempotent::<AssetV1>(
+                    ctx.accounts.asset,
+                    ctx.accounts.payer,
+                    ctx.accounts.system_program,
+                )?;
+                for plugin_init_info in &plugins {
+                    let external_check_result_bits = ExternalCheckResultBits::from(
+                        ExternalPluginAdapter::check_create(plugin_init_info),
+                    );
+
+                    if external_check_result_bits.can_reject() {
+                        let validation_ctx = PluginValidationContext {
+                            accounts,
+                            asset_info: Some(ctx.accounts.asset),
+                            collection_info: ctx.accounts.collection,
+                            // External plugin adapters are always managed by the update authority.
+                            self_authority: &Authority::UpdateAuthority,
+                            authority_info: authority,
+                            resolved_authorities: None,
+                            new_owner: None,
+                            target_plugin: None,
+                        };
+                        if ExternalPluginAdapter::validate_create(
+                            &ExternalPluginAdapter::from(plugin_init_info),
+                            &validation_ctx,
+                        )? == ValidationResult::Rejected
+                        {
+                            approved = false;
+                        }
+                    }
+                    initialize_external_plugin_adapter::<AssetV1>(
+                        plugin_init_info,
+                        &mut plugin_header,
+                        &mut plugin_registry,
+                        ctx.accounts.asset,
+                        ctx.accounts.payer,
+                        ctx.accounts.system_program,
+                    )?;
+                }
             }
+        }
+
+        if !(approved || force_approved) {
+            return Err(MplCoreError::InvalidAuthority.into());
         }
     }
 

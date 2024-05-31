@@ -1,7 +1,7 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
 import { DataState, createV1 /* fetchAsset, fetchHashedAsset */ } from '../src';
-import { createUmi } from './_setup';
+import { createUmi } from './_setupRaw';
 
 test('fetch account info for account state', async (t) => {
   // Given a Umi instance and a new signer.
@@ -46,7 +46,7 @@ test.skip('fetch account info for ledger state', async (t) => {
   // Print the size of the account.
   const account = await umi.rpc.getAccount(assetAddress.publicKey);
   if (account.exists) {
-    console.log(`Account Size ${account.data.length} bytes`);
+    // console.log(`Account Size ${account.data.length} bytes`);
   }
 
   // Then an account was created with the correct data.

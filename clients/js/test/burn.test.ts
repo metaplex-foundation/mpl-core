@@ -1,24 +1,21 @@
-import {
-  assertAccountExists,
-  generateSigner,
-  sol,
-} from '@metaplex-foundation/umi';
+import { generateSigner, sol } from '@metaplex-foundation/umi';
 import test from 'ava';
 
-import { burnCollectionV1, burnV1, Key, pluginAuthorityPair } from '../src';
+import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
+import { burnCollectionV1, burnV1, pluginAuthorityPair } from '../src';
 import {
   DEFAULT_ASSET,
   DEFAULT_COLLECTION,
   assertAsset,
+  assertBurned,
   assertCollection,
   createAsset,
   createAssetWithCollection,
   createCollection,
   createUmi,
-} from './_setup';
+} from './_setupRaw';
 
 test('it can burn an asset as the owner', async (t) => {
-  // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = await createAsset(umi);
   await assertAsset(t, umi, {
@@ -33,16 +30,11 @@ test('it can burn an asset as the owner', async (t) => {
   }).sendAndConfirm(umi);
 
   // And the asset address still exists but was resized to 1.
-  const afterAsset = await umi.rpc.getAccount(asset.publicKey);
-  t.true(afterAsset.exists);
-  assertAccountExists(afterAsset);
+  const afterAsset = await assertBurned(t, umi, asset.publicKey);
   t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
-  t.is(afterAsset.data.length, 1);
-  t.is(afterAsset.data[0], Key.Uninitialized);
 });
 
 test('it cannot burn an asset if not the owner', async (t) => {
-  // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const attacker = generateSigner(umi);
 
@@ -69,7 +61,6 @@ test('it cannot burn an asset if not the owner', async (t) => {
 });
 
 test('it cannot burn an asset if it is frozen', async (t) => {
-  // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
@@ -114,7 +105,6 @@ test('it cannot burn an asset if it is frozen', async (t) => {
 });
 
 test('it cannot burn asset in collection if no collection specified', async (t) => {
-  // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
   const { asset, collection } = await createAssetWithCollection(umi, {});
@@ -133,7 +123,6 @@ test('it cannot burn asset in collection if no collection specified', async (t) 
 });
 
 test('it cannot burn an asset if collection permanently frozen', async (t) => {
-  // Given a Umi instance and a new signer.
   const umi = await createUmi();
 
   const { asset, collection } = await createAssetWithCollection(
@@ -182,7 +171,6 @@ test('it cannot burn an asset if collection permanently frozen', async (t) => {
 });
 
 test('it cannot use an invalid system program for assets', async (t) => {
-  // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = await createAsset(umi);
   const fakeSystemProgram = generateSigner(umi);
@@ -202,7 +190,6 @@ test('it cannot use an invalid system program for assets', async (t) => {
 });
 
 test('it cannot use an invalid noop program for assets', async (t) => {
-  // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = await createAsset(umi);
   const fakeLogWrapper = generateSigner(umi);
@@ -222,7 +209,6 @@ test('it cannot use an invalid noop program for assets', async (t) => {
 });
 
 test('it cannot use an invalid noop program for collections', async (t) => {
-  // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const collection = await createCollection(umi);
   const fakeLogWrapper = generateSigner(umi);
@@ -241,6 +227,29 @@ test('it cannot use an invalid noop program for collections', async (t) => {
   await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
 });
 
+test('it can burn using owner authority', async (t) => {
+  const umi = await createUmi();
+  const owner = await generateSignerWithSol(umi);
+  const asset = await createAsset(umi, {
+    owner: owner.publicKey,
+  });
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  await burnV1(umi, {
+    asset: asset.publicKey,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  // And the asset address still exists but was resized to 1.
+  const afterAsset = await assertBurned(t, umi, asset.publicKey);
+  t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
+});
+
 test('it cannot burn an asset with the wrong collection specified', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
@@ -254,4 +263,34 @@ test('it cannot burn an asset with the wrong collection specified', async (t) =>
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidCollection' });
+});
+
+test('it can burn asset with different payer', async (t) => {
+  const umi = await createUmi();
+  const owner = await generateSignerWithSol(umi);
+  const asset = await createAsset(umi, {
+    owner: owner.publicKey,
+  });
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  const lamportsBefore = await umi.rpc.getBalance(umi.identity.publicKey);
+
+  await burnV1(umi, {
+    asset: asset.publicKey,
+    payer: umi.identity,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  // And the asset address still exists but was resized to 1.
+  const afterAsset = await assertBurned(t, umi, asset.publicKey);
+  t.deepEqual(afterAsset.lamports, sol(0.00089784 + 0.0015));
+
+  const lamportsAfter = await umi.rpc.getBalance(umi.identity.publicKey);
+
+  t.true(lamportsAfter.basisPoints > lamportsBefore.basisPoints);
 });
