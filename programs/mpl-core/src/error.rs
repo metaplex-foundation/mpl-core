@@ -173,7 +173,7 @@ pub enum MplCoreError {
     #[error("Missing required signer for operation")]
     MissingSigner,
 
-    /// 41 - Missing signer for operation
+    /// 41 - Invalid plugin operation
     #[error("Invalid plugin operation")]
     InvalidPluginOperation,
 }

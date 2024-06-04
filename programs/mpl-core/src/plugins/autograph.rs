@@ -27,12 +27,13 @@ fn validate_autograph(
     authority: &Pubkey,
     is_plugin_authority: bool,
 ) -> Result<ValidationResult, ProgramError> {
-    let mut existing_map: BTreeMap<Pubkey, &AutographSignature> = BTreeMap::new();
-    if let Some(autograph) = autograph {
-        for sig in autograph.signatures.iter() {
-            existing_map.insert(sig.address, sig);
-        }
-    }
+    let existing_map = autograph.map_or_else(BTreeMap::new, |autograph| {
+        autograph
+            .signatures
+            .iter()
+            .map(|sig| (sig.address, sig))
+            .collect::<BTreeMap<Pubkey, &AutographSignature>>()
+    });
 
     for sig in new_autograph.signatures.iter() {
         // only the signing authority can add their own signature
@@ -129,7 +130,7 @@ impl PluginValidation for Autograph {
                 address: *ctx.authority_info.key,
             })
             && ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Royalties
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Autograph
         {
             solana_program::msg!("Autograph: Approved");
             Ok(ValidationResult::Approved)

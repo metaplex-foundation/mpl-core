@@ -34,12 +34,13 @@ fn calculate_signature_changes(
     new_verified_creators: &VerifiedCreators,
     verified_creators: Option<&VerifiedCreators>,
 ) -> Result<SignatureChangeIndices, ProgramError> {
-    let mut existing_map: BTreeMap<Pubkey, &VerifiedCreatorsSignature> = BTreeMap::new();
-    if let Some(verified_creators) = verified_creators {
-        for sig in verified_creators.signatures.iter() {
-            existing_map.insert(sig.address, sig);
-        }
-    }
+    let existing_map = verified_creators.map_or_else(BTreeMap::new, |verified_creators| {
+        verified_creators
+            .signatures
+            .iter()
+            .map(|sig| (sig.address, sig))
+            .collect::<BTreeMap<Pubkey, &VerifiedCreatorsSignature>>()
+    });
 
     let new_signatures: HashSet<_> = new_verified_creators
         .signatures
@@ -106,7 +107,7 @@ fn validate_verified_creators_as_creator(
         }
     }
 
-    Ok(ValidationResult::Approved)
+    Ok(ValidationResult::Pass)
 }
 
 fn validate_verified_creators_as_plugin_authority(
@@ -114,14 +115,25 @@ fn validate_verified_creators_as_plugin_authority(
     verified_creators: Option<&VerifiedCreators>,
     authority: &Pubkey,
 ) -> Result<ValidationResult, ProgramError> {
-    // Plugin auth is allowed to change anything except the verified status of a signature to true
+    // The plugin auth is allowed to: add/remove unverified creators, add self and sign for self.
+    // The plugin auth cannot remove or unverify any existing creators other than self.
+    // This is in line with legacy Token Metadata behaviour for verified creators
+
     let changes = calculate_signature_changes(new_verified_creators, verified_creators)?;
+
+    for removal in changes.removed.iter() {
+        let sig = &verified_creators.unwrap().signatures[*removal as usize];
+        if sig.verified && &sig.address != authority {
+            solana_program::msg!("Verified creators: Rejected");
+            return Err(MplCoreError::InvalidPluginOperation.into());
+        }
+    }
 
     for change in changes.changed.iter() {
         let sig = &new_verified_creators.signatures[*change as usize];
-        if sig.verified && &sig.address != authority {
+        if &sig.address != authority {
             solana_program::msg!("Verified creators: Rejected");
-            return Err(MplCoreError::MissingSigner.into());
+            return Err(MplCoreError::InvalidPluginOperation.into());
         }
     }
 
@@ -133,7 +145,7 @@ fn validate_verified_creators_as_plugin_authority(
         }
     }
 
-    Ok(ValidationResult::Approved)
+    Ok(ValidationResult::Pass)
 }
 
 impl PluginValidation for VerifiedCreators {
@@ -141,8 +153,7 @@ impl PluginValidation for VerifiedCreators {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        validate_verified_creators_as_plugin_authority(self, None, ctx.authority_info.key)?;
-        Ok(ValidationResult::Pass)
+        validate_verified_creators_as_plugin_authority(self, None, ctx.authority_info.key)
     }
 
     fn validate_add_plugin(
@@ -171,13 +182,15 @@ impl PluginValidation for VerifiedCreators {
                         verified_creators,
                         Some(self),
                         ctx.authority_info.key,
-                    )
+                    )?;
+                    Ok(ValidationResult::Approved)
                 } else {
                     validate_verified_creators_as_creator(
                         verified_creators,
                         self,
                         ctx.authority_info.key,
-                    )
+                    )?;
+                    Ok(ValidationResult::Approved)
                 }
             }
             _ => Ok(ValidationResult::Pass),
@@ -194,7 +207,7 @@ impl PluginValidation for VerifiedCreators {
                 address: *ctx.authority_info.key,
             })
             && ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Royalties
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::VerifiedCreators
         {
             solana_program::msg!("Verified creators: Approved");
             Ok(ValidationResult::Approved)

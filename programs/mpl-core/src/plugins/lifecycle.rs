@@ -82,8 +82,8 @@ impl PluginType {
             PluginType::PermanentTransferDelegate => CheckResult::CanReject,
             PluginType::PermanentBurnDelegate => CheckResult::CanReject,
             PluginType::Edition => CheckResult::CanReject,
-            PluginType::Autograph => CheckResult::CanApprove,
-            PluginType::VerifiedCreators => CheckResult::CanApprove,
+            PluginType::Autograph => CheckResult::CanReject,
+            PluginType::VerifiedCreators => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -861,7 +861,7 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the remove plugin lifecycle action.
-    /// This gets called on all existing plugins when a new plugin is removed.
+    /// This gets called on all existing plugins when the target plugin is removed.
     fn validate_remove_plugin(
         &self,
         _ctx: &PluginValidationContext,

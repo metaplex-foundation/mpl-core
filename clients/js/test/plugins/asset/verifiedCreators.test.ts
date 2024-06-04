@@ -360,7 +360,7 @@ test('it cannot remove verified creator plugin signture with unauthorized signat
   await t.throwsAsync(res, { name: 'MissingSigner' });
 });
 
-test('it can remove and add verified creator plugin signature with update auth', async (t) => {
+test('it can remove and add unverified creator plugin signature with update auth', async (t) => {
   const umi = await createUmi();
   const owner = generateSigner(umi);
   const creator = generateSigner(umi);
@@ -415,6 +415,137 @@ test('it can remove and add verified creator plugin signature with update auth',
       ],
     },
   });
+});
+
+test('it cannot remove verified creator plugin signature with update auth', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const creator = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner,
+    plugins: [
+      {
+        type: 'VerifiedCreators',
+        signatures: [
+          {
+            address: creator.publicKey,
+            verified: false,
+          },
+        ],
+      },
+    ],
+  });
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'VerifiedCreators',
+      signatures: [
+        {
+          address: creator.publicKey,
+          verified: true,
+        },
+      ],
+    },
+    authority: creator,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    verifiedCreators: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      signatures: [
+        {
+          address: creator.publicKey,
+          verified: true,
+        },
+      ],
+    },
+  });
+
+  const res = updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'VerifiedCreators',
+      signatures: [],
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(res, { name: 'InvalidPluginOperation' });
+});
+
+test('it cannot unverify verified creator plugin signature with update auth', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const creator = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner,
+    plugins: [
+      {
+        type: 'VerifiedCreators',
+        signatures: [
+          {
+            address: creator.publicKey,
+            verified: false,
+          },
+        ],
+      },
+    ],
+  });
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'VerifiedCreators',
+      signatures: [
+        {
+          address: creator.publicKey,
+          verified: true,
+        },
+      ],
+    },
+    authority: creator,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    verifiedCreators: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      signatures: [
+        {
+          address: creator.publicKey,
+          verified: true,
+        },
+      ],
+    },
+  });
+
+  const res = updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'VerifiedCreators',
+      signatures: [
+        {
+          address: creator.publicKey,
+          verified: false,
+        },
+      ],
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(res, { name: 'InvalidPluginOperation' });
 });
 
 test('it cannot add duplicate verified creator signatures', async (t) => {
