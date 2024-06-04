@@ -674,7 +674,7 @@ test('it cannot update the update authority of the collection as an updateDelega
     newUpdateAuthority: updateDelegate2.publicKey,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'NoApprovals' });
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });
 
 test('it can update collection details as an updateDelegate additional delegate', async (t) => {

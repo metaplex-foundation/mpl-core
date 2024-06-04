@@ -131,6 +131,7 @@ pub(crate) fn remove_collection_plugin<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
+        None,
         Some(&plugin_to_remove),
         None,
         CollectionV1::check_remove_plugin,

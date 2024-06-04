@@ -138,6 +138,7 @@ pub(crate) fn burn_collection<'a>(
         ctx.accounts.collection,
         None,
         None,
+        None,
         CollectionV1::check_burn,
         PluginType::check_burn,
         CollectionV1::validate_burn,

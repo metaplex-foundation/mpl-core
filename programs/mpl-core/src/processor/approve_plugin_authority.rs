@@ -115,6 +115,7 @@ pub(crate) fn approve_collection_plugin_authority<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
+        None,
         Some(&plugin),
         None,
         CollectionV1::check_approve_plugin_authority,

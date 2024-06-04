@@ -138,6 +138,7 @@ pub(crate) fn remove_collection_external_plugin_adapter<'a>(
         authority,
         ctx.accounts.collection,
         None,
+        None,
         Some(&plugin_to_remove),
         CollectionV1::check_remove_external_plugin_adapter,
         PluginType::check_remove_external_plugin_adapter,

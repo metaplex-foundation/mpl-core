@@ -136,6 +136,7 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
+        None,
         Some(&plugin),
         None,
         CollectionV1::check_revoke_plugin_authority,

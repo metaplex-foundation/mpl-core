@@ -135,6 +135,7 @@ pub(crate) fn update_collection_external_plugin_adapter<'a>(
         authority,
         ctx.accounts.collection,
         None,
+        None,
         Some(&plugin),
         CollectionV1::check_update_plugin,
         PluginType::check_update_plugin,

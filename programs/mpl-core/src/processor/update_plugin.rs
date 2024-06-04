@@ -111,6 +111,7 @@ pub(crate) fn update_collection_plugin<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
+        None,
         Some(&args.plugin),
         None,
         CollectionV1::check_update_plugin,

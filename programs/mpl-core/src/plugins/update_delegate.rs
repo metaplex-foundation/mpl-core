@@ -1,3 +1,5 @@
+use std::collections::BTreeSet;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
@@ -7,7 +9,7 @@ use crate::{
     state::{Authority, DataBlob},
 };
 
-use super::{PluginValidation, PluginValidationContext, ValidationResult};
+use super::{Plugin, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// This plugin manages additional permissions to burn.
 /// Any authorities approved are given permission to burn the asset on behalf of the owner.
@@ -95,17 +97,48 @@ impl PluginValidation for UpdateDelegate {
         }
     }
 
+    // Validate the approve plugin authority lifecycle action.
+    fn validate_approve_plugin_authority(
+        &self,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        let plugin = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
+
+        // If the plugin authority is the authority signing.
+        if (ctx.self_authority
+            == &(Authority::Address {
+                address: *ctx.authority_info.key,
+            })
+            // Or the authority is one of the additional delegates.
+            || self.additional_delegates.contains(ctx.authority_info.key))
+            // And it's an authority-managed plugin.
+            && plugin.manager() == Authority::UpdateAuthority
+            // And the plugin is not an UpdateDelegate plugin, because we cannot change the authority of the UpdateDelegate plugin.
+            && PluginType::from(plugin) != PluginType::UpdateDelegate
+        {
+            solana_program::msg!("UpdateDelegate: Approved");
+            Ok(ValidationResult::Approved)
+        } else {
+            Ok(ValidationResult::Pass)
+        }
+    }
+
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        let plugin = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
+
+        // If the plugin authority is the authority signing.
         if ctx.self_authority
             == &(Authority::Address {
                 address: *ctx.authority_info.key,
             })
-            && ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::UpdateDelegate
+            // Or the authority is one of the additional delegates.
+            || (self.additional_delegates.contains(ctx.authority_info.key) && PluginType::from(plugin) != PluginType::UpdateDelegate)
+            // And it's an authority-managed plugin.
+            && plugin.manager() == Authority::UpdateAuthority
         {
             solana_program::msg!("UpdateDelegate: Approved");
             Ok(ValidationResult::Approved)
@@ -118,11 +151,13 @@ impl PluginValidation for UpdateDelegate {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority
+        if (ctx.self_authority
             == (&Authority::Address {
                 address: *ctx.authority_info.key,
             })
-            || self.additional_delegates.contains(ctx.authority_info.key)
+            || self.additional_delegates.contains(ctx.authority_info.key))
+            // We do not allow the collection authority to be changed by this delegate.
+            && ctx.new_authority.is_none()
         {
             solana_program::msg!("UpdateDelegate: Approved");
             Ok(ValidationResult::Approved)
@@ -133,8 +168,32 @@ impl PluginValidation for UpdateDelegate {
 
     fn validate_update_plugin(
         &self,
-        _ctx: &PluginValidationContext,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        let plugin = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
+
+        // If the plugin itself is being updated.
+        if ctx.self_authority
+            == (&Authority::Address {
+                address: *ctx.authority_info.key,
+            })
+            || self.additional_delegates.contains(ctx.authority_info.key)
+        {
+            if let Plugin::UpdateDelegate(update_delegate) = plugin {
+                let existing: BTreeSet<_> = self.additional_delegates.iter().collect();
+                let new: BTreeSet<_> = update_delegate.additional_delegates.iter().collect();
+
+                if existing.difference(&new).collect::<Vec<_>>() == vec![&ctx.authority_info.key]
+                    && new.difference(&existing).collect::<Vec<_>>().is_empty()
+                {
+                    solana_program::msg!("UpdateDelegate: Approved");
+                    return Ok(ValidationResult::Approved);
+                }
+            } else {
+                return Ok(ValidationResult::Approved);
+            }
+        }
+
         Ok(ValidationResult::Pass)
     }
 }
