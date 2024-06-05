@@ -670,3 +670,20 @@ test('it can update a non-updateDelegate plugin as additional delegate', async (
     },
   });
 });
+
+test('it cannot add updateDelegate plugin with additional delegate as additional delegate', async (t) => {
+  const umi = await createUmi();
+  const updateDelegate = generateSigner(umi);
+  const asset = await createAsset(umi);
+
+  const result = addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'UpdateDelegate',
+      additionalDelegates: [updateDelegate.publicKey],
+    },
+    authority: updateDelegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+});
