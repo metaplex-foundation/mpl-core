@@ -8,7 +8,7 @@ use std::mem::size_of;
 
 use crate::{
     error::MplCoreError,
-    plugins::{CheckResult, ExternalPluginAdapter, Plugin, ValidationResult},
+    plugins::{approve, CheckResult, ExternalPluginAdapter, Plugin, ValidationResult},
     state::{Compressible, CompressionProof, DataBlob, Key, SolanaAccount},
 };
 
@@ -146,8 +146,7 @@ impl AssetV1 {
             || (UpdateAuthority::Address(*authority_info.key) == self.update_authority
                 && new_plugin.manager() == Authority::UpdateAuthority)
         {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -169,8 +168,7 @@ impl AssetV1 {
             && self.update_authority == UpdateAuthority::Address(*authority_info.key))
             || (plugin.manager() == Authority::Owner && authority_info.key == &self.owner)
         {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -198,8 +196,7 @@ impl AssetV1 {
                 && self.update_authority == UpdateAuthority::Address(*authority_info.key))
                 || (plugin.manager() == Authority::Owner && authority_info.key == &self.owner)
             {
-                solana_program::msg!("Asset: Approved");
-                Ok(ValidationResult::Approved)
+                approve!()
             } else {
                 Ok(ValidationResult::Pass)
             }
@@ -220,8 +217,7 @@ impl AssetV1 {
                 && self.update_authority == UpdateAuthority::Address(*authority_info.key))
                 || (plugin.manager() == Authority::Owner && authority_info.key == &self.owner)
             {
-                solana_program::msg!("Asset: Approved");
-                Ok(ValidationResult::Approved)
+                approve!()
             } else {
                 Ok(ValidationResult::Pass)
             }
@@ -238,8 +234,7 @@ impl AssetV1 {
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.update_authority.key() {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -253,8 +248,7 @@ impl AssetV1 {
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.owner {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -268,8 +262,7 @@ impl AssetV1 {
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.owner {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -283,8 +276,7 @@ impl AssetV1 {
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.owner {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -298,8 +290,7 @@ impl AssetV1 {
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.owner {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -314,8 +305,7 @@ impl AssetV1 {
     ) -> Result<ValidationResult, ProgramError> {
         // If it's not in a collection, then it can be added.
         if UpdateAuthority::Address(*authority_info.key) == self.update_authority {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -329,8 +319,7 @@ impl AssetV1 {
         _plugin_to_remove: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if self.update_authority == UpdateAuthority::Address(*authority_info.key) {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -344,8 +333,7 @@ impl AssetV1 {
         _plugin: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if self.update_authority == UpdateAuthority::Address(*authority_info.key) {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }

@@ -3,7 +3,9 @@ use solana_program::program_error::ProgramError;
 
 use crate::state::Authority;
 
-use super::{PluginType, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{
+    approve, reject, PluginType, PluginValidation, PluginValidationContext, ValidationResult,
+};
 
 /// The edition plugin allows the creator to set an edition number on the asset
 /// The default authority for this plugin is the creator.
@@ -24,8 +26,7 @@ impl PluginValidation for Edition {
         if ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Edition
         {
-            solana_program::msg!("Edition: Rejected");
-            Ok(ValidationResult::Rejected)
+            reject!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -40,8 +41,7 @@ impl PluginValidation for Edition {
         if ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Edition
         {
-            solana_program::msg!("Edition: Rejected");
-            Ok(ValidationResult::Rejected)
+            reject!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -58,8 +58,7 @@ impl PluginValidation for Edition {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Edition
         {
-            solana_program::msg!("Edition: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }

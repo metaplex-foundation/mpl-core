@@ -7,7 +7,7 @@ use crate::{
     state::{Authority, DataBlob},
 };
 
-use super::{Plugin, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{approve, Plugin, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// This plugin manages additional permissions to burn.
 /// Any authorities approved are given permission to burn the asset on behalf of the owner.
@@ -71,8 +71,7 @@ impl PluginValidation for UpdateDelegate {
                 })
                 && new_plugin.manager() == Authority::UpdateAuthority
             {
-                solana_program::msg!("UpdateDelegate: Approved");
-                Ok(ValidationResult::Approved)
+                approve!()
             } else {
                 Ok(ValidationResult::Pass)
             }
@@ -92,8 +91,7 @@ impl PluginValidation for UpdateDelegate {
                 })
                 && plugin_to_remove.manager() == Authority::UpdateAuthority
             {
-                solana_program::msg!("UpdateDelegate: Approved");
-                Ok(ValidationResult::Approved)
+                approve!()
             } else {
                 Ok(ValidationResult::Pass)
             }
@@ -114,8 +112,7 @@ impl PluginValidation for UpdateDelegate {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::UpdateDelegate
         {
-            solana_program::msg!("UpdateDelegate: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -130,8 +127,7 @@ impl PluginValidation for UpdateDelegate {
                 address: *ctx.authority_info.key,
             })
         {
-            solana_program::msg!("UpdateDelegate: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }

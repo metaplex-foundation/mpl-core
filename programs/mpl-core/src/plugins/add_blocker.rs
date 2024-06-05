@@ -3,7 +3,7 @@ use solana_program::program_error::ProgramError;
 
 use crate::state::{Authority, DataBlob};
 
-use super::{PluginType, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{reject, PluginType, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The AddBlocker plugin prevents any plugin except for owner-managed plugins from being added.
 /// The default authority for this plugin is None.
@@ -35,6 +35,6 @@ impl PluginValidation for AddBlocker {
             }
         }
 
-        Ok(ValidationResult::Rejected)
+        reject!()
     }
 }

@@ -8,7 +8,9 @@ use crate::{
         BurnV1Accounts, CompressV1Accounts, CreateV2Accounts, DecompressV1Accounts,
         TransferV1Accounts, UpdateV1Accounts,
     },
-    plugins::{fetch_plugin, CheckResult, PluginType, UpdateDelegate, ValidationResult},
+    plugins::{
+        approve, fetch_plugin, reject, CheckResult, PluginType, UpdateDelegate, ValidationResult,
+    },
     processor::CreateV2Args,
     state::{Authority, CollectionV1, SolanaAccount},
     utils::assert_collection_authority,
@@ -82,11 +84,11 @@ impl UpdateAuthority {
                         .is_err()
                     {
                         solana_program::msg!("UA: Rejected");
-                        return Ok(ValidationResult::Rejected);
+                        return reject!();
                     }
                 } else if authority_info.key != &collection.update_authority {
                     solana_program::msg!("UA: Rejected");
-                    return Ok(ValidationResult::Rejected);
+                    return reject!();
                 }
 
                 Ok(ValidationResult::Pass)
@@ -94,7 +96,7 @@ impl UpdateAuthority {
             // If you're not trying add a collection, then just pass.
             (_, UpdateAuthority::Address(_)) => Ok(ValidationResult::Pass),
             // Otherwise reject because you're doing something weird.
-            _ => Ok(ValidationResult::Rejected),
+            _ => reject!(),
         }
     }
 
@@ -104,14 +106,13 @@ impl UpdateAuthority {
         ctx: &UpdateV1Accounts,
     ) -> Result<ValidationResult, ProgramError> {
         let authority = match self {
-            Self::None => return Ok(ValidationResult::Rejected),
+            Self::None => return reject!(),
             Self::Address(address) => address,
             Self::Collection(address) => address,
         };
 
         if ctx.authority.unwrap_or(ctx.payer).key == authority {
-            solana_program::msg!("UA: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }

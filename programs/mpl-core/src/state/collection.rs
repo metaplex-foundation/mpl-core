@@ -4,7 +4,7 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError, pub
 
 use crate::{
     error::MplCoreError,
-    plugins::{CheckResult, ExternalPluginAdapter, Plugin, ValidationResult},
+    plugins::{approve, CheckResult, ExternalPluginAdapter, Plugin, ValidationResult},
 };
 
 use super::{Authority, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
@@ -128,8 +128,7 @@ impl CollectionV1 {
         if *authority_info.key == self.update_authority
             && new_plugin.manager() == Authority::UpdateAuthority
         {
-            solana_program::msg!("Collection: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -150,8 +149,7 @@ impl CollectionV1 {
         if *authority_info.key == self.update_authority
             && plugin_to_remove.manager() == Authority::UpdateAuthority
         {
-            solana_program::msg!("Collection: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -182,8 +180,7 @@ impl CollectionV1 {
         if *authority_info.key == self.update_authority
             && plugin.manager() == Authority::UpdateAuthority
         {
-            solana_program::msg!("Collection: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -204,8 +201,7 @@ impl CollectionV1 {
         if *authority_info.key == self.update_authority
             && plugin.manager() == Authority::UpdateAuthority
         {
-            solana_program::msg!("Collection: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -239,8 +235,7 @@ impl CollectionV1 {
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if authority_info.key == &self.update_authority {
-            solana_program::msg!("Collection: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -275,8 +270,7 @@ impl CollectionV1 {
     ) -> Result<ValidationResult, ProgramError> {
         // Approve if the update authority matches the authority.
         if *authority_info.key == self.update_authority {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -290,8 +284,7 @@ impl CollectionV1 {
         _plugin_to_remove: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if self.update_authority == *authority_info.key {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -305,8 +298,7 @@ impl CollectionV1 {
         _plugin: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         if self.update_authority == *authority_info.key {
-            solana_program::msg!("Asset: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }

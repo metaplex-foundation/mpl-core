@@ -6,7 +6,7 @@ use crate::{
     state::{Authority, DataBlob},
 };
 
-use super::{PluginValidation, PluginValidationContext, ValidationResult};
+use super::{approve, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// This plugin manages the ability to transfer an asset and any authorities
 /// approved are permitted to transfer the asset on behalf of the owner.
@@ -47,8 +47,7 @@ impl PluginValidation for TransferDelegate {
                 address: *ctx.authority_info.key,
             })
         {
-            solana_program::msg!("TransferDelegate: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -63,8 +62,7 @@ impl PluginValidation for TransferDelegate {
                 address: *ctx.authority_info.key,
             })
         {
-            solana_program::msg!("TransferDelegate: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -82,8 +80,7 @@ impl PluginValidation for TransferDelegate {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::TransferDelegate
         {
-            solana_program::msg!("TransferDelegate: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }

@@ -2,11 +2,11 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
-    plugins::PluginType,
+    plugins::{reject, PluginType},
     state::{Authority, DataBlob},
 };
 
-use super::{PluginValidation, PluginValidationContext, ValidationResult};
+use super::{approve, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The permanent freeze plugin allows any authority to lock the asset so it's no longer transferable.
 /// The default authority for this plugin is the update authority.
@@ -46,8 +46,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
-            solana_program::msg!("PermanentFreezeDelegate: Rejected");
-            Ok(ValidationResult::Rejected)
+            reject!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -58,8 +57,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
-            solana_program::msg!("PermanentFreezeDelegate: Rejected");
-            Ok(ValidationResult::Rejected)
+            reject!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -74,8 +72,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         if ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentFreezeDelegate
         {
-            solana_program::msg!("PermanentFreezeDelegate: Rejected");
-            Ok(ValidationResult::Rejected)
+            reject!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -93,8 +90,7 @@ impl PluginValidation for PermanentFreezeDelegate {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentFreezeDelegate
         {
-            solana_program::msg!("PermanentFreezeDelegate: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
             Ok(ValidationResult::Pass)
         }
@@ -106,8 +102,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if ctx.target_plugin.is_some() && self.frozen {
-            solana_program::msg!("PermanentFreezeDelegate: Rejected");
-            Ok(ValidationResult::Rejected)
+            reject!()
         } else {
             Ok(ValidationResult::Pass)
         }
