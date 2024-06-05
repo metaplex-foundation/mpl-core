@@ -7,6 +7,7 @@
 
 use crate::generated::types::AddBlocker;
 use crate::generated::types::Attributes;
+use crate::generated::types::Autograph;
 use crate::generated::types::BurnDelegate;
 use crate::generated::types::Edition;
 use crate::generated::types::FreezeDelegate;
@@ -18,6 +19,7 @@ use crate::generated::types::PermanentTransferDelegate;
 use crate::generated::types::Royalties;
 use crate::generated::types::TransferDelegate;
 use crate::generated::types::UpdateDelegate;
+use crate::generated::types::VerifiedCreators;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
@@ -41,4 +43,6 @@ pub enum Plugin {
     MasterEdition(MasterEdition),
     AddBlocker(AddBlocker),
     ImmutableMetadata(ImmutableMetadata),
+    VerifiedCreators(VerifiedCreators),
+    Autograph(Autograph),
 }

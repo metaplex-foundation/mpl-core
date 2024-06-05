@@ -82,6 +82,8 @@ impl PluginType {
             PluginType::PermanentTransferDelegate => CheckResult::CanReject,
             PluginType::PermanentBurnDelegate => CheckResult::CanReject,
             PluginType::Edition => CheckResult::CanReject,
+            PluginType::Autograph => CheckResult::CanReject,
+            PluginType::VerifiedCreators => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -131,6 +133,8 @@ impl PluginType {
         match plugin_type {
             PluginType::Royalties => CheckResult::CanReject,
             PluginType::UpdateDelegate => CheckResult::CanApprove,
+            PluginType::Autograph => CheckResult::CanReject,
+            PluginType::VerifiedCreators => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -237,6 +241,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_add_plugin(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_add_plugin(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_add_plugin(ctx),
         }
     }
 
@@ -275,6 +283,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_remove_plugin(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_remove_plugin(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_remove_plugin(ctx),
         }
     }
 
@@ -319,6 +331,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_approve_plugin_authority(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_approve_plugin_authority(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_approve_plugin_authority(ctx),
         }
     }
 
@@ -362,6 +378,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_revoke_plugin_authority(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_revoke_plugin_authority(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_revoke_plugin_authority(ctx),
         }
     }
 
@@ -390,6 +410,8 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_create(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_create(ctx),
+            Plugin::Autograph(autograph) => autograph.validate_create(ctx),
         }
     }
 
@@ -418,6 +440,8 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_update(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_update(ctx),
+            Plugin::Autograph(autograph) => autograph.validate_update(ctx),
         }
     }
 
@@ -459,6 +483,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_update_plugin(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_update_plugin(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_update_plugin(ctx),
         }?;
 
         match (&base_result, &result) {
@@ -504,6 +532,8 @@ impl Plugin {
             Plugin::MasterEdition(master_edition) => master_edition.validate_burn(ctx),
             Plugin::AddBlocker(add_blocker) => add_blocker.validate_burn(ctx),
             Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.validate_burn(ctx),
+            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_burn(ctx),
+            Plugin::Autograph(autograph) => autograph.validate_burn(ctx),
         }
     }
 
@@ -532,6 +562,8 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_transfer(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_transfer(ctx),
+            Plugin::Autograph(autograph) => autograph.validate_transfer(ctx),
         }
     }
 
@@ -560,6 +592,8 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_compress(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_compress(ctx),
+            Plugin::Autograph(autograph) => autograph.validate_compress(ctx),
         }
     }
 
@@ -590,6 +624,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_decompress(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_decompress(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_decompress(ctx),
         }
     }
 
@@ -628,6 +666,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_add_external_plugin_adapter(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_add_external_plugin_adapter(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_add_external_plugin_adapter(ctx),
         }
     }
 
@@ -668,6 +710,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_remove_external_plugin_adapter(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_remove_external_plugin_adapter(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_remove_external_plugin_adapter(ctx),
         }
     }
 
@@ -719,6 +765,10 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => {
                 immutable_metadata.validate_update_external_plugin_adapter(ctx)
             }
+            Plugin::VerifiedCreators(verified_creators) => {
+                verified_creators.validate_update_external_plugin_adapter(ctx)
+            }
+            Plugin::Autograph(autograph) => autograph.validate_update_external_plugin_adapter(ctx),
         }?;
 
         match (&base_result, &result) {
@@ -787,21 +837,22 @@ pub(crate) struct PluginValidationContext<'a, 'b> {
     pub asset_info: Option<&'a AccountInfo<'a>>,
     /// The collection account.
     pub collection_info: Option<&'a AccountInfo<'a>>,
-    /// The authority.
+    /// The authority of the current (self) plugin
     pub self_authority: &'b Authority,
-    /// The authority account.
+    /// The authority account info of ix `authority` signer
     pub authority_info: &'a AccountInfo<'a>,
-    /// The resolved authority.
+    /// The authorities types which match the authority signer
     pub resolved_authorities: Option<&'b [Authority]>,
-    /// The new owner account.
+    /// The new owner account for transfers
     pub new_owner: Option<&'a AccountInfo<'a>>,
-    /// The new plugin.
+    /// The plugin being acted upon with new data from the ix if any. This None for create.
     pub target_plugin: Option<&'b Plugin>,
 }
 
 /// Plugin validation trait which is implemented by each plugin.
 pub(crate) trait PluginValidation {
     /// Validate the add plugin lifecycle action.
+    /// This gets called on all existing plugins when a new plugin is added.
     fn validate_add_plugin(
         &self,
         _ctx: &PluginValidationContext,
@@ -810,6 +861,7 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the remove plugin lifecycle action.
+    /// This gets called on all existing plugins when the target plugin is removed.
     fn validate_remove_plugin(
         &self,
         _ctx: &PluginValidationContext,
@@ -818,6 +870,7 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the add plugin lifecycle action.
+    /// This gets called on all existing plugins when a new external plugin is added.
     fn validate_add_external_plugin_adapter(
         &self,
         _ctx: &PluginValidationContext,
@@ -826,6 +879,7 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the remove plugin lifecycle action.
+    /// This gets called on all existing plugins when a new external plugin is removed.
     fn validate_remove_external_plugin_adapter(
         &self,
         _ctx: &PluginValidationContext,
@@ -850,6 +904,7 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the create lifecycle action.
+    /// This ONLY gets called to validate the self plugin
     fn validate_create(
         &self,
         _ctx: &PluginValidationContext,
@@ -858,6 +913,7 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the update lifecycle action.
+    /// This gets called on all existing plugins when an asset or collection is updated.
     fn validate_update(
         &self,
         _ctx: &PluginValidationContext,
@@ -866,6 +922,7 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the update_plugin lifecycle action.
+    /// This gets called on all existing plugins when a plugin is updated.
     fn validate_update_plugin(
         &self,
         _ctx: &PluginValidationContext,
@@ -874,6 +931,7 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the burn lifecycle action.
+    /// This gets called on all existing plugins when an asset is burned.
     fn validate_burn(
         &self,
         _ctx: &PluginValidationContext,
@@ -882,6 +940,7 @@ pub(crate) trait PluginValidation {
     }
 
     /// Validate the transfer lifecycle action.
+    /// This gets called on all existing plugins when an asset is transferred.
     fn validate_transfer(
         &self,
         _ctx: &PluginValidationContext,

@@ -582,6 +582,32 @@ nameToErrorMap.set(
   UninitializedOracleAccountError
 );
 
+/** MissingSigner: Missing required signer for operation */
+export class MissingSignerError extends ProgramError {
+  override readonly name: string = 'MissingSigner';
+
+  readonly code: number = 0x28; // 40
+
+  constructor(program: Program, cause?: Error) {
+    super('Missing required signer for operation', program, cause);
+  }
+}
+codeToErrorMap.set(0x28, MissingSignerError);
+nameToErrorMap.set('MissingSigner', MissingSignerError);
+
+/** InvalidPluginOperation: Invalid plugin operation */
+export class InvalidPluginOperationError extends ProgramError {
+  override readonly name: string = 'InvalidPluginOperation';
+
+  readonly code: number = 0x29; // 41
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid plugin operation', program, cause);
+  }
+}
+codeToErrorMap.set(0x29, InvalidPluginOperationError);
+nameToErrorMap.set('InvalidPluginOperation', InvalidPluginOperationError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
