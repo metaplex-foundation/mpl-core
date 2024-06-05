@@ -3,7 +3,7 @@ use solana_program::program_error::ProgramError;
 
 use crate::state::Authority;
 
-use super::{PluginType, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{Plugin, PluginType, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The edition plugin allows the creator to set an edition number on the asset
 /// The default authority for this plugin is the creator.
@@ -21,13 +21,12 @@ impl PluginValidation for Edition {
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
         // always reject it.
-        if ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Edition
-        {
-            solana_program::msg!("Edition: Rejected");
-            Ok(ValidationResult::Rejected)
-        } else {
-            Ok(ValidationResult::Pass)
+        match ctx.target_plugin {
+            Some(Plugin::Edition(_edition)) => {
+                solana_program::msg!("Edition: Rejected");
+                Ok(ValidationResult::Rejected)
+            }
+            _ => Ok(ValidationResult::Pass),
         }
     }
 
@@ -37,13 +36,12 @@ impl PluginValidation for Edition {
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin cannot be removed
         // always reject it.
-        if ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Edition
-        {
-            solana_program::msg!("Edition: Rejected");
-            Ok(ValidationResult::Rejected)
-        } else {
-            Ok(ValidationResult::Pass)
+        match ctx.target_plugin {
+            Some(Plugin::Edition(_edition)) => {
+                solana_program::msg!("Edition: Rejected");
+                Ok(ValidationResult::Rejected)
+            }
+            _ => Ok(ValidationResult::Pass),
         }
     }
     /// Validate the revoke plugin authority lifecycle action.

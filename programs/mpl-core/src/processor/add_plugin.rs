@@ -53,7 +53,8 @@ pub(crate) fn add_plugin<'a>(
         return Err(MplCoreError::InvalidPlugin.into());
     }
 
-    //TODO: Seed with Rejected
+    // TODO: Seed with Rejected
+    // TODO: refactor to allow add_plugin to approve additions
     let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: Some(ctx.accounts.asset),
