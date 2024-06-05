@@ -9,7 +9,9 @@ use crate::{
     state::{Authority, DataBlob},
 };
 
-use super::{Plugin, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{
+    abstain, approve, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+};
 
 /// This plugin manages additional permissions to burn.
 /// Any authorities approved are given permission to burn the asset on behalf of the owner.
@@ -50,7 +52,7 @@ impl PluginValidation for UpdateDelegate {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     fn validate_add_plugin(
@@ -65,10 +67,9 @@ impl PluginValidation for UpdateDelegate {
                 || self.additional_delegates.contains(ctx.authority_info.key))
                 && new_plugin.manager() == Authority::UpdateAuthority
             {
-                solana_program::msg!("UpdateDelegate: Approved");
-                Ok(ValidationResult::Approved)
+                approve!()
             } else {
-                Ok(ValidationResult::Pass)
+                abstain!()
             }
         } else {
             Err(MplCoreError::InvalidPlugin.into())
@@ -87,10 +88,9 @@ impl PluginValidation for UpdateDelegate {
                 || self.additional_delegates.contains(ctx.authority_info.key))
                 && plugin_to_remove.manager() == Authority::UpdateAuthority
             {
-                solana_program::msg!("UpdateDelegate: Approved");
-                Ok(ValidationResult::Approved)
+                approve!()
             } else {
-                Ok(ValidationResult::Pass)
+                abstain!()
             }
         } else {
             Err(MplCoreError::InvalidPlugin.into())
@@ -140,10 +140,9 @@ impl PluginValidation for UpdateDelegate {
             // And it's an authority-managed plugin.
             && plugin.manager() == Authority::UpdateAuthority
         {
-            solana_program::msg!("UpdateDelegate: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -159,10 +158,9 @@ impl PluginValidation for UpdateDelegate {
             // We do not allow the collection authority to be changed by this delegate.
             && ctx.new_authority.is_none()
         {
-            solana_program::msg!("UpdateDelegate: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -194,6 +192,6 @@ impl PluginValidation for UpdateDelegate {
             }
         }
 
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }
