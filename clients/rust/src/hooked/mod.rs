@@ -43,6 +43,8 @@ impl From<&Plugin> for PluginType {
             Plugin::MasterEdition(_) => PluginType::MasterEdition,
             Plugin::AddBlocker(_) => PluginType::AddBlocker,
             Plugin::ImmutableMetadata(_) => PluginType::ImmutableMetadata,
+            Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
+            Plugin::Autograph(_) => PluginType::Autograph,
         }
     }
 }

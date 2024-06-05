@@ -130,6 +130,12 @@ pub enum MplCoreError {
     /// 39 (0x27) - Oracle account is uninitialized
     #[error("Oracle account is uninitialized")]
     UninitializedOracleAccount,
+    /// 40 (0x28) - Missing required signer for operation
+    #[error("Missing required signer for operation")]
+    MissingSigner,
+    /// 41 (0x29) - Invalid plugin operation
+    #[error("Invalid plugin operation")]
+    InvalidPluginOperation,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

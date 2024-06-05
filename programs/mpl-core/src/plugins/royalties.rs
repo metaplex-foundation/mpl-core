@@ -102,9 +102,12 @@ impl PluginValidation for Royalties {
 
     fn validate_add_plugin(
         &self,
-        _ctx: &PluginValidationContext,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        validate_royalties(self)
+        match ctx.target_plugin {
+            Some(Plugin::Royalties(_royalties)) => validate_royalties(self),
+            _ => Ok(ValidationResult::Pass),
+        }
     }
 
     fn validate_update_plugin(

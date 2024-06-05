@@ -8,10 +8,11 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, Attributes, BurnDelegate, DataStore, Edition, ExternalCheckResult,
+        AddBlocker, Attributes, Autograph, BurnDelegate, DataStore, Edition, ExternalCheckResult,
         ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate, ImmutableMetadata, Key,
         LifecycleHook, MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
         PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
+        VerifiedCreators,
     },
 };
 
@@ -147,6 +148,18 @@ pub struct ImmutableMetadataPlugin {
     pub immutable_metadata: ImmutableMetadata,
 }
 
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct VerifiedCreatorsPlugin {
+    pub base: BasePlugin,
+    pub verified_creators: VerifiedCreators,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct AutographPlugin {
+    pub base: BasePlugin,
+    pub autograph: Autograph,
+}
+
 #[derive(Debug, Default)]
 pub struct PluginsList {
     pub royalties: Option<RoyaltiesPlugin>,
@@ -162,6 +175,8 @@ pub struct PluginsList {
     pub master_edition: Option<MasterEditionPlugin>,
     pub add_blocker: Option<AddBlockerPlugin>,
     pub immutable_metadata: Option<ImmutableMetadataPlugin>,
+    pub verified_creators: Option<VerifiedCreatorsPlugin>,
+    pub autograph: Option<AutographPlugin>,
 }
 
 #[derive(Debug, Default)]

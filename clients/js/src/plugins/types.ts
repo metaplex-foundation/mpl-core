@@ -21,6 +21,10 @@ import {
   BaseMasterEditionArgs,
   AddBlocker,
   ImmutableMetadata,
+  AutographArgs,
+  VerifiedCreatorsArgs,
+  Autograph,
+  VerifiedCreators,
 } from '../generated';
 import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
 import { PluginAuthority } from './pluginAuthority';
@@ -113,7 +117,10 @@ export type OwnerManagedPluginArgsV2 =
     }
   | {
       type: 'TransferDelegate';
-    };
+    }
+  | ({
+      type: 'Autograph';
+    } & AutographArgs);
 
 export type AuthorityManagedPluginArgsV2 =
   | ({
@@ -133,7 +140,10 @@ export type AuthorityManagedPluginArgsV2 =
     }
   | {
       type: 'AddBlocker';
-    };
+    }
+  | ({
+      type: 'VerifiedCreators';
+    } & VerifiedCreatorsArgs);
 
 export type AssetAddablePluginArgsV2 =
   | OwnerManagedPluginArgsV2
@@ -169,6 +179,8 @@ export type EditionPlugin = BasePlugin & Edition;
 export type MasterEditionPlugin = BasePlugin & MasterEdition;
 export type AddBlockerPlugin = BasePlugin & AddBlocker;
 export type ImmutableMetadataPlugin = BasePlugin & ImmutableMetadata;
+export type VerifiedCreatorsPlugin = BasePlugin & VerifiedCreators;
+export type AutographPlugin = BasePlugin & Autograph;
 
 export type CommonPluginsList = {
   attributes?: AttributesPlugin;
@@ -179,6 +191,8 @@ export type CommonPluginsList = {
   permanentBurnDelegate?: PermanentBurnDelegatePlugin;
   addBlocker?: AddBlockerPlugin;
   immutableMetadata?: ImmutableMetadataPlugin;
+  autograph?: AutographPlugin;
+  verifiedCreators?: VerifiedCreatorsPlugin;
 };
 
 export type AssetPluginsList = {

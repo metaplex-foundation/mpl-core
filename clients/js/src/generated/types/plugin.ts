@@ -19,6 +19,8 @@ import {
   AddBlockerArgs,
   Attributes,
   AttributesArgs,
+  Autograph,
+  AutographArgs,
   BaseMasterEdition,
   BaseMasterEditionArgs,
   BaseRoyalties,
@@ -41,8 +43,11 @@ import {
   TransferDelegateArgs,
   UpdateDelegate,
   UpdateDelegateArgs,
+  VerifiedCreators,
+  VerifiedCreatorsArgs,
   getAddBlockerSerializer,
   getAttributesSerializer,
+  getAutographSerializer,
   getBaseMasterEditionSerializer,
   getBaseRoyaltiesSerializer,
   getBurnDelegateSerializer,
@@ -54,6 +59,7 @@ import {
   getPermanentTransferDelegateSerializer,
   getTransferDelegateSerializer,
   getUpdateDelegateSerializer,
+  getVerifiedCreatorsSerializer,
 } from '.';
 
 export type Plugin =
@@ -69,7 +75,9 @@ export type Plugin =
   | { __kind: 'Edition'; fields: [Edition] }
   | { __kind: 'MasterEdition'; fields: [BaseMasterEdition] }
   | { __kind: 'AddBlocker'; fields: [AddBlocker] }
-  | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadata] };
+  | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadata] }
+  | { __kind: 'VerifiedCreators'; fields: [VerifiedCreators] }
+  | { __kind: 'Autograph'; fields: [Autograph] };
 
 export type PluginArgs =
   | { __kind: 'Royalties'; fields: [BaseRoyaltiesArgs] }
@@ -87,7 +95,9 @@ export type PluginArgs =
   | { __kind: 'Edition'; fields: [EditionArgs] }
   | { __kind: 'MasterEdition'; fields: [BaseMasterEditionArgs] }
   | { __kind: 'AddBlocker'; fields: [AddBlockerArgs] }
-  | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadataArgs] };
+  | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadataArgs] }
+  | { __kind: 'VerifiedCreators'; fields: [VerifiedCreatorsArgs] }
+  | { __kind: 'Autograph'; fields: [AutographArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -170,6 +180,18 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
           ['fields', tuple([getImmutableMetadataSerializer()])],
         ]),
       ],
+      [
+        'VerifiedCreators',
+        struct<GetDataEnumKindContent<Plugin, 'VerifiedCreators'>>([
+          ['fields', tuple([getVerifiedCreatorsSerializer()])],
+        ]),
+      ],
+      [
+        'Autograph',
+        struct<GetDataEnumKindContent<Plugin, 'Autograph'>>([
+          ['fields', tuple([getAutographSerializer()])],
+        ]),
+      ],
     ],
     { description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
@@ -231,6 +253,14 @@ export function plugin(
   kind: 'ImmutableMetadata',
   data: GetDataEnumKindContent<PluginArgs, 'ImmutableMetadata'>['fields']
 ): GetDataEnumKind<PluginArgs, 'ImmutableMetadata'>;
+export function plugin(
+  kind: 'VerifiedCreators',
+  data: GetDataEnumKindContent<PluginArgs, 'VerifiedCreators'>['fields']
+): GetDataEnumKind<PluginArgs, 'VerifiedCreators'>;
+export function plugin(
+  kind: 'Autograph',
+  data: GetDataEnumKindContent<PluginArgs, 'Autograph'>['fields']
+): GetDataEnumKind<PluginArgs, 'Autograph'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any

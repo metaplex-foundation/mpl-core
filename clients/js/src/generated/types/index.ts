@@ -9,6 +9,8 @@
 export * from './addBlocker';
 export * from './attribute';
 export * from './attributes';
+export * from './autograph';
+export * from './autographSignature';
 export * from './baseDataStore';
 export * from './baseDataStoreInitInfo';
 export * from './baseDataStoreUpdateInfo';
@@ -57,3 +59,5 @@ export * from './registryRecord';
 export * from './transferDelegate';
 export * from './updateDelegate';
 export * from './validationResult';
+export * from './verifiedCreators';
+export * from './verifiedCreatorsSignature';

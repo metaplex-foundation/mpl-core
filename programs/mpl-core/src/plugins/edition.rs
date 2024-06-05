@@ -1,10 +1,10 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::state::Authority;
+use crate::{plugins::approve, state::Authority};
 
 use super::{
-    approve, reject, PluginType, PluginValidation, PluginValidationContext, ValidationResult,
+    reject, Plugin, PluginType, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// The edition plugin allows the creator to set an edition number on the asset
@@ -23,12 +23,11 @@ impl PluginValidation for Edition {
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
         // always reject it.
-        if ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Edition
-        {
-            reject!()
-        } else {
-            Ok(ValidationResult::Pass)
+        match ctx.target_plugin {
+            Some(Plugin::Edition(_edition)) => {
+                reject!()
+            }
+            _ => Ok(ValidationResult::Pass),
         }
     }
 
@@ -38,12 +37,11 @@ impl PluginValidation for Edition {
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin cannot be removed
         // always reject it.
-        if ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Edition
-        {
-            reject!()
-        } else {
-            Ok(ValidationResult::Pass)
+        match ctx.target_plugin {
+            Some(Plugin::Edition(_edition)) => {
+                reject!()
+            }
+            _ => Ok(ValidationResult::Pass),
         }
     }
     /// Validate the revoke plugin authority lifecycle action.
