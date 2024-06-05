@@ -1,6 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
+use crate::plugins::abstain;
+
 use super::{
     Authority, ExternalPluginAdapterSchema, PluginValidation, PluginValidationContext,
     ValidationResult,
@@ -34,14 +36,14 @@ impl PluginValidation for DataStore {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     fn validate_transfer(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }
 

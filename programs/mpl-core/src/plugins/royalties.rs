@@ -5,7 +5,9 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{error::MplCoreError, plugins::PluginType, state::Authority};
 
-use super::{Plugin, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{
+    abstain, approve, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+};
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
@@ -61,7 +63,7 @@ fn validate_royalties(royalties: &Royalties) -> Result<ValidationResult, Program
         return Err(MplCoreError::InvalidPluginSetting.into());
     }
 
-    Ok(ValidationResult::Pass)
+    abstain!()
 }
 
 impl PluginValidation for Royalties {
@@ -78,25 +80,23 @@ impl PluginValidation for Royalties {
     ) -> Result<ValidationResult, ProgramError> {
         let new_owner = ctx.new_owner.ok_or(MplCoreError::MissingNewOwner)?;
         match &self.rule_set {
-            RuleSet::None => Ok(ValidationResult::Pass),
+            RuleSet::None => abstain!(),
             RuleSet::ProgramAllowList(allow_list) => {
                 if allow_list.contains(ctx.authority_info.owner)
                     && allow_list.contains(new_owner.owner)
                 {
-                    Ok(ValidationResult::Pass)
+                    abstain!()
                 } else {
-                    solana_program::msg!("Royalties: Rejected");
-                    Ok(ValidationResult::Rejected)
+                    reject!()
                 }
             }
             RuleSet::ProgramDenyList(deny_list) => {
                 if deny_list.contains(ctx.authority_info.owner)
                     || deny_list.contains(new_owner.owner)
                 {
-                    solana_program::msg!("Royalties: Rejected");
-                    Ok(ValidationResult::Rejected)
+                    reject!()
                 } else {
-                    Ok(ValidationResult::Pass)
+                    abstain!()
                 }
             }
         }
@@ -108,7 +108,7 @@ impl PluginValidation for Royalties {
     ) -> Result<ValidationResult, ProgramError> {
         match ctx.target_plugin {
             Some(Plugin::Royalties(_royalties)) => validate_royalties(self),
-            _ => Ok(ValidationResult::Pass),
+            _ => abstain!(),
         }
     }
 
@@ -126,10 +126,10 @@ impl PluginValidation for Royalties {
             if resolved_authorities.contains(ctx.self_authority) {
                 validate_royalties(royalties)
             } else {
-                Ok(ValidationResult::Pass)
+                abstain!()
             }
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -145,10 +145,9 @@ impl PluginValidation for Royalties {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Royalties
         {
-            solana_program::msg!("Royalties: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 }

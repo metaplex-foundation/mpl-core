@@ -1,9 +1,12 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::state::Authority;
+use crate::{plugins::approve, state::Authority};
 
-use super::{Plugin, PluginType, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{
+    abstain, reject, Plugin, PluginType, PluginValidation, PluginValidationContext,
+    ValidationResult,
+};
 
 /// The edition plugin allows the creator to set an edition number on the asset
 /// The default authority for this plugin is the creator.
@@ -23,10 +26,9 @@ impl PluginValidation for Edition {
         // always reject it.
         match ctx.target_plugin {
             Some(Plugin::Edition(_edition)) => {
-                solana_program::msg!("Edition: Rejected");
-                Ok(ValidationResult::Rejected)
+                reject!()
             }
-            _ => Ok(ValidationResult::Pass),
+            _ => abstain!(),
         }
     }
 
@@ -38,10 +40,9 @@ impl PluginValidation for Edition {
         // always reject it.
         match ctx.target_plugin {
             Some(Plugin::Edition(_edition)) => {
-                solana_program::msg!("Edition: Rejected");
-                Ok(ValidationResult::Rejected)
+                reject!()
             }
-            _ => Ok(ValidationResult::Pass),
+            _ => abstain!(),
         }
     }
     /// Validate the revoke plugin authority lifecycle action.
@@ -56,10 +57,9 @@ impl PluginValidation for Edition {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Edition
         {
-            solana_program::msg!("Edition: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 }

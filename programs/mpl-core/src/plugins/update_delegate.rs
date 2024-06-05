@@ -7,7 +7,9 @@ use crate::{
     state::{Authority, DataBlob},
 };
 
-use super::{Plugin, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{
+    abstain, approve, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+};
 
 /// This plugin manages additional permissions to burn.
 /// Any authorities approved are given permission to burn the asset on behalf of the owner.
@@ -51,7 +53,7 @@ impl PluginValidation for UpdateDelegate {
         if !self.additional_delegates.is_empty() {
             return Err(MplCoreError::NotAvailable.into());
         }
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     fn validate_add_plugin(
@@ -71,10 +73,9 @@ impl PluginValidation for UpdateDelegate {
                 })
                 && new_plugin.manager() == Authority::UpdateAuthority
             {
-                solana_program::msg!("UpdateDelegate: Approved");
-                Ok(ValidationResult::Approved)
+                approve!()
             } else {
-                Ok(ValidationResult::Pass)
+                abstain!()
             }
         } else {
             Err(MplCoreError::InvalidPlugin.into())
@@ -92,10 +93,9 @@ impl PluginValidation for UpdateDelegate {
                 })
                 && plugin_to_remove.manager() == Authority::UpdateAuthority
             {
-                solana_program::msg!("UpdateDelegate: Approved");
-                Ok(ValidationResult::Approved)
+                approve!()
             } else {
-                Ok(ValidationResult::Pass)
+                abstain!()
             }
         } else {
             Err(MplCoreError::InvalidPlugin.into())
@@ -114,10 +114,9 @@ impl PluginValidation for UpdateDelegate {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::UpdateDelegate
         {
-            solana_program::msg!("UpdateDelegate: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -130,10 +129,9 @@ impl PluginValidation for UpdateDelegate {
                 address: *ctx.authority_info.key,
             })
         {
-            solana_program::msg!("UpdateDelegate: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -148,6 +146,6 @@ impl PluginValidation for UpdateDelegate {
             }
         }
 
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }

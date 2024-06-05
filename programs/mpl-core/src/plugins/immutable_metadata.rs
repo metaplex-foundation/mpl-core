@@ -3,7 +3,7 @@ use solana_program::program_error::ProgramError;
 
 use crate::state::DataBlob;
 
-use super::{PluginValidation, PluginValidationContext, ValidationResult};
+use super::{reject, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The immutable metadata plugin allows its authority to prevent plugin's meta from changing.
 /// The default authority for this plugin is None.
@@ -28,6 +28,6 @@ impl PluginValidation for ImmutableMetadata {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Rejected)
+        reject!()
     }
 }

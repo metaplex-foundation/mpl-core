@@ -5,7 +5,7 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{error::MplCoreError, plugins::PluginType, state::Authority};
 
-use super::{Plugin, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{abstain, Plugin, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Hash)]
@@ -107,7 +107,7 @@ fn validate_verified_creators_as_creator(
         }
     }
 
-    Ok(ValidationResult::Pass)
+    abstain!()
 }
 
 fn validate_verified_creators_as_plugin_authority(
@@ -145,7 +145,7 @@ fn validate_verified_creators_as_plugin_authority(
         }
     }
 
-    Ok(ValidationResult::Pass)
+    abstain!()
 }
 
 impl PluginValidation for VerifiedCreators {
@@ -164,7 +164,7 @@ impl PluginValidation for VerifiedCreators {
             Some(Plugin::VerifiedCreators(_verified_creators)) => {
                 validate_verified_creators_as_plugin_authority(self, None, ctx.authority_info.key)
             }
-            _ => Ok(ValidationResult::Pass),
+            _ => abstain!(),
         }
     }
 
@@ -193,7 +193,7 @@ impl PluginValidation for VerifiedCreators {
                     Ok(ValidationResult::Approved)
                 }
             }
-            _ => Ok(ValidationResult::Pass),
+            _ => abstain!(),
         }
     }
 
@@ -212,7 +212,7 @@ impl PluginValidation for VerifiedCreators {
             solana_program::msg!("Verified creators: Approved");
             Ok(ValidationResult::Approved)
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 }

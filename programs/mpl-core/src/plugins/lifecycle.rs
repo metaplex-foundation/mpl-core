@@ -257,8 +257,7 @@ impl Plugin {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::from(plugin)
         {
-            solana_program::msg!("Base: Rejected");
-            return Ok(ValidationResult::Rejected);
+            return reject!();
         }
 
         match plugin {
@@ -348,8 +347,7 @@ impl Plugin {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::from(plugin)
         {
-            solana_program::msg!("Base: Rejected");
-            return Ok(ValidationResult::Rejected);
+            return reject!();
         }
 
         match plugin {
@@ -491,21 +489,21 @@ impl Plugin {
 
         match (&base_result, &result) {
             (ValidationResult::Approved, ValidationResult::Approved) => {
-                Ok(ValidationResult::Approved)
+                approve!()
             }
             (ValidationResult::Approved, ValidationResult::Rejected) => {
-                Ok(ValidationResult::Rejected)
+                reject!()
             }
             (ValidationResult::Rejected, ValidationResult::Approved) => {
-                Ok(ValidationResult::Rejected)
+                reject!()
             }
             (ValidationResult::Rejected, ValidationResult::Rejected) => {
-                Ok(ValidationResult::Rejected)
+                reject!()
             }
             (ValidationResult::Pass, _) => Ok(result),
-            (ValidationResult::ForceApproved, _) => Ok(ValidationResult::ForceApproved),
+            (ValidationResult::ForceApproved, _) => force_approve!(),
             (_, ValidationResult::Pass) => Ok(base_result),
-            (_, ValidationResult::ForceApproved) => Ok(ValidationResult::ForceApproved),
+            (_, ValidationResult::ForceApproved) => force_approve!(),
         }
     }
 
@@ -773,21 +771,21 @@ impl Plugin {
 
         match (&base_result, &result) {
             (ValidationResult::Approved, ValidationResult::Approved) => {
-                Ok(ValidationResult::Approved)
+                approve!()
             }
             (ValidationResult::Approved, ValidationResult::Rejected) => {
-                Ok(ValidationResult::Rejected)
+                reject!()
             }
             (ValidationResult::Rejected, ValidationResult::Approved) => {
-                Ok(ValidationResult::Rejected)
+                reject!()
             }
             (ValidationResult::Rejected, ValidationResult::Rejected) => {
-                Ok(ValidationResult::Rejected)
+                reject!()
             }
             (ValidationResult::Pass, _) => Ok(result),
-            (ValidationResult::ForceApproved, _) => Ok(ValidationResult::ForceApproved),
+            (ValidationResult::ForceApproved, _) => force_approve!(),
             (_, ValidationResult::Pass) => Ok(base_result),
-            (_, ValidationResult::ForceApproved) => Ok(ValidationResult::ForceApproved),
+            (_, ValidationResult::ForceApproved) => force_approve!(),
         }
     }
 }
@@ -805,6 +803,41 @@ pub enum ValidationResult {
     /// The plugin force approves the lifecycle action.
     ForceApproved,
 }
+
+// Create a shortcut macro for passing on a lifecycle action.
+macro_rules! abstain {
+    () => {{
+        Ok(ValidationResult::Pass)
+    }};
+}
+pub(crate) use abstain;
+
+// Create a shortcut macro for rejecting a lifecycle action.
+macro_rules! reject {
+    () => {{
+        solana_program::msg!("{}:{}:Reject", std::file!(), std::line!());
+        Ok(ValidationResult::Rejected)
+    }};
+}
+pub(crate) use reject;
+
+// Create a shortcut macro for approving a lifecycle action.
+macro_rules! approve {
+    () => {{
+        solana_program::msg!("{}:{}:Approve", std::file!(), std::line!());
+        Ok(ValidationResult::Approved)
+    }};
+}
+pub(crate) use approve;
+
+// Create a shortcut macro for force-approving a lifecycle action.
+macro_rules! force_approve {
+    () => {{
+        solana_program::msg!("{}:{}:ForceApprove", std::file!(), std::line!());
+        Ok(ValidationResult::ForceApproved)
+    }};
+}
+pub(crate) use force_approve;
 
 /// External plugin adapters lifecycle validations
 /// External plugin adapters utilize this to indicate whether they approve or reject a lifecycle action.
@@ -857,7 +890,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the remove plugin lifecycle action.
@@ -866,7 +899,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the add plugin lifecycle action.
@@ -875,7 +908,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the remove plugin lifecycle action.
@@ -884,7 +917,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the approve plugin authority lifecycle action.
@@ -892,7 +925,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the revoke plugin authority lifecycle action.
@@ -900,7 +933,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the create lifecycle action.
@@ -909,7 +942,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the update lifecycle action.
@@ -918,7 +951,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the update_plugin lifecycle action.
@@ -927,7 +960,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the burn lifecycle action.
@@ -936,7 +969,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the transfer lifecycle action.
@@ -945,7 +978,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the compress lifecycle action.
@@ -953,7 +986,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the decompress lifecycle action.
@@ -961,7 +994,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the add_authority lifecycle action.
@@ -969,7 +1002,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the add_authority lifecycle action.
@@ -977,7 +1010,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the update_plugin lifecycle action.
@@ -985,7 +1018,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }
 
@@ -1042,17 +1075,17 @@ pub(crate) fn validate_plugin_checks<'a>(
                 ValidationResult::Rejected => rejected = true,
                 ValidationResult::Approved => approved = true,
                 ValidationResult::Pass => continue,
-                ValidationResult::ForceApproved => return Ok(ValidationResult::ForceApproved),
+                ValidationResult::ForceApproved => return force_approve!(),
             }
         }
     }
 
     if rejected {
-        Ok(ValidationResult::Rejected)
+        reject!()
     } else if approved {
-        Ok(ValidationResult::Approved)
+        approve!()
     } else {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }
 
@@ -1109,7 +1142,7 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
             match result {
                 ValidationResult::Rejected => {
                     if check_result.can_reject() {
-                        return Ok(ValidationResult::Rejected);
+                        return reject!();
                     }
                 }
                 ValidationResult::Approved => {
@@ -1125,8 +1158,8 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
     }
 
     if approved {
-        Ok(ValidationResult::Approved)
+        approve!()
     } else {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }

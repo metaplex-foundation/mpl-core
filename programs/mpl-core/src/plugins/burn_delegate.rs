@@ -2,7 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
-    plugins::PluginType,
+    plugins::{abstain, approve, PluginType},
     state::{Authority, DataBlob},
 };
 
@@ -47,10 +47,9 @@ impl PluginValidation for BurnDelegate {
                 address: *ctx.authority_info.key,
             })
         {
-            solana_program::msg!("BurnDelegate: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -66,10 +65,9 @@ impl PluginValidation for BurnDelegate {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::BurnDelegate
         {
-            solana_program::msg!("BurnDelegate: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 }

@@ -4,8 +4,8 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use crate::error::MplCoreError;
 
 use super::{
-    Authority, ExternalCheckResult, ExternalValidationResult, ExtraAccount, HookableLifecycleEvent,
-    PluginValidation, PluginValidationContext, ValidationResult,
+    abstain, Authority, ExternalCheckResult, ExternalValidationResult, ExtraAccount,
+    HookableLifecycleEvent, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// Oracle plugin that allows getting a `ValidationResult` for a lifecycle event from an arbitrary
@@ -41,7 +41,7 @@ impl PluginValidation for Oracle {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     fn validate_create(

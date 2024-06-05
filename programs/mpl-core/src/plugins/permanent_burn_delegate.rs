@@ -3,7 +3,10 @@ use solana_program::program_error::ProgramError;
 
 use crate::state::DataBlob;
 
-use super::{PluginType, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{
+    abstain, approve, force_approve, reject, PluginType, PluginValidation, PluginValidationContext,
+    ValidationResult,
+};
 
 /// The permanent burn plugin allows any authority to burn the asset.
 /// The default authority for this plugin is the update authority.
@@ -31,10 +34,9 @@ impl PluginValidation for PermanentBurnDelegate {
         if ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentBurnDelegate
         {
-            solana_program::msg!("PermanentBurnDelegate: Rejected");
-            Ok(ValidationResult::Rejected)
+            reject!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -42,8 +44,7 @@ impl PluginValidation for PermanentBurnDelegate {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        solana_program::msg!("PermanentBurnDelegate: Approved");
-        Ok(ValidationResult::Approved)
+        approve!()
     }
 
     fn validate_burn(
@@ -52,11 +53,10 @@ impl PluginValidation for PermanentBurnDelegate {
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(resolved_authorities) = ctx.resolved_authorities {
             if resolved_authorities.contains(ctx.self_authority) {
-                solana_program::msg!("PermanentBurnDelegate: ForceApproved");
-                return Ok(ValidationResult::ForceApproved);
+                return force_approve!();
             }
         }
 
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }

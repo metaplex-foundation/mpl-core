@@ -1,9 +1,12 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::state::{Authority, DataBlob};
+use crate::{
+    plugins::abstain,
+    state::{Authority, DataBlob},
+};
 
-use super::{PluginType, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{reject, PluginType, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The AddBlocker plugin prevents any plugin except for owner-managed plugins from being added.
 /// The default authority for this plugin is None.
@@ -31,10 +34,10 @@ impl PluginValidation for AddBlocker {
             if plugin.manager() == Authority::Owner
                 || PluginType::from(plugin) == PluginType::AddBlocker
             {
-                return Ok(ValidationResult::Pass);
+                return abstain!();
             }
         }
 
-        Ok(ValidationResult::Rejected)
+        reject!()
     }
 }
