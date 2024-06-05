@@ -1,7 +1,10 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::state::{Authority, DataBlob};
+use crate::{
+    plugins::abstain,
+    state::{Authority, DataBlob},
+};
 
 use super::{reject, PluginType, PluginValidation, PluginValidationContext, ValidationResult};
 
@@ -31,7 +34,7 @@ impl PluginValidation for AddBlocker {
             if plugin.manager() == Authority::Owner
                 || PluginType::from(plugin) == PluginType::AddBlocker
             {
-                return Ok(ValidationResult::Pass);
+                return abstain!();
             }
         }
 

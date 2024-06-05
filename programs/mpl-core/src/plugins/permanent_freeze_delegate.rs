@@ -6,7 +6,7 @@ use crate::{
     state::{Authority, DataBlob},
 };
 
-use super::{approve, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{abstain, approve, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The permanent freeze plugin allows any authority to lock the asset so it's no longer transferable.
 /// The default authority for this plugin is the update authority.
@@ -48,7 +48,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         if self.frozen {
             reject!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -59,7 +59,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         if self.frozen {
             reject!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -74,7 +74,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         {
             reject!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -92,7 +92,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -104,7 +104,7 @@ impl PluginValidation for PermanentFreezeDelegate {
         if ctx.target_plugin.is_some() && self.frozen {
             reject!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 }

@@ -8,7 +8,7 @@ use std::mem::size_of;
 
 use crate::{
     error::MplCoreError,
-    plugins::{approve, CheckResult, ExternalPluginAdapter, Plugin, ValidationResult},
+    plugins::{abstain, approve, CheckResult, ExternalPluginAdapter, Plugin, ValidationResult},
     state::{Compressible, CompressionProof, DataBlob, Key, SolanaAccount},
 };
 
@@ -148,7 +148,7 @@ impl AssetV1 {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -170,7 +170,7 @@ impl AssetV1 {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -181,7 +181,7 @@ impl AssetV1 {
         _plugin: Option<&Plugin>,
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the approve plugin authority lifecycle event.
@@ -198,10 +198,10 @@ impl AssetV1 {
             {
                 approve!()
             } else {
-                Ok(ValidationResult::Pass)
+                abstain!()
             }
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -219,10 +219,10 @@ impl AssetV1 {
             {
                 approve!()
             } else {
-                Ok(ValidationResult::Pass)
+                abstain!()
             }
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -236,7 +236,7 @@ impl AssetV1 {
         if authority_info.key == &self.update_authority.key() {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -250,7 +250,7 @@ impl AssetV1 {
         if authority_info.key == &self.owner {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -264,7 +264,7 @@ impl AssetV1 {
         if authority_info.key == &self.owner {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -278,7 +278,7 @@ impl AssetV1 {
         if authority_info.key == &self.owner {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -292,7 +292,7 @@ impl AssetV1 {
         if authority_info.key == &self.owner {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -307,7 +307,7 @@ impl AssetV1 {
         if UpdateAuthority::Address(*authority_info.key) == self.update_authority {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -321,7 +321,7 @@ impl AssetV1 {
         if self.update_authority == UpdateAuthority::Address(*authority_info.key) {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -335,7 +335,7 @@ impl AssetV1 {
         if self.update_authority == UpdateAuthority::Address(*authority_info.key) {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 }

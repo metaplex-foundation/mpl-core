@@ -804,6 +804,14 @@ pub enum ValidationResult {
     ForceApproved,
 }
 
+// Create a shortcut macro for passing on a lifecycle action.
+macro_rules! abstain {
+    () => {{
+        Ok(ValidationResult::Pass)
+    }};
+}
+pub(crate) use abstain;
+
 // Create a shortcut macro for rejecting a lifecycle action.
 macro_rules! reject {
     () => {{
@@ -822,7 +830,7 @@ macro_rules! approve {
 }
 pub(crate) use approve;
 
-// Create a shortcut macro for approving a lifecycle action.
+// Create a shortcut macro for force-approving a lifecycle action.
 macro_rules! force_approve {
     () => {{
         solana_program::msg!("{}:{}:ForceApprove", std::file!(), std::line!());
@@ -882,7 +890,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the remove plugin lifecycle action.
@@ -891,7 +899,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the add plugin lifecycle action.
@@ -900,7 +908,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the remove plugin lifecycle action.
@@ -909,7 +917,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the approve plugin authority lifecycle action.
@@ -917,7 +925,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the revoke plugin authority lifecycle action.
@@ -925,7 +933,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the create lifecycle action.
@@ -934,7 +942,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the update lifecycle action.
@@ -943,7 +951,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the update_plugin lifecycle action.
@@ -952,7 +960,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the burn lifecycle action.
@@ -961,7 +969,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the transfer lifecycle action.
@@ -970,7 +978,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the compress lifecycle action.
@@ -978,7 +986,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the decompress lifecycle action.
@@ -986,7 +994,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the add_authority lifecycle action.
@@ -994,7 +1002,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the add_authority lifecycle action.
@@ -1002,7 +1010,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the update_plugin lifecycle action.
@@ -1010,7 +1018,7 @@ pub(crate) trait PluginValidation {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }
 
@@ -1077,7 +1085,7 @@ pub(crate) fn validate_plugin_checks<'a>(
     } else if approved {
         approve!()
     } else {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }
 
@@ -1152,6 +1160,6 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
     if approved {
         approve!()
     } else {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }

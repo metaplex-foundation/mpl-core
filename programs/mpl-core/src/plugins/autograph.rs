@@ -5,7 +5,9 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{error::MplCoreError, plugins::PluginType, state::Authority};
 
-use super::{Plugin, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{
+    abstain, approve, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+};
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Hash)]
@@ -74,7 +76,7 @@ fn validate_autograph(
         }
     }
 
-    Ok(ValidationResult::Pass)
+    abstain!()
 }
 
 impl PluginValidation for Autograph {
@@ -92,9 +94,9 @@ impl PluginValidation for Autograph {
         match ctx.target_plugin {
             Some(Plugin::Autograph(_autograph)) => {
                 validate_autograph(self, None, ctx.authority_info.key, true)?;
-                Ok(ValidationResult::Approved)
+                approve!()
             }
-            _ => Ok(ValidationResult::Pass),
+            _ => abstain!(),
         }
     }
 
@@ -113,10 +115,9 @@ impl PluginValidation for Autograph {
                     ctx.authority_info.key,
                     resolved_authorities.contains(ctx.self_authority),
                 )?;
-                solana_program::msg!("Autograph: Approved");
-                Ok(ValidationResult::Approved)
+                approve!()
             }
-            _ => Ok(ValidationResult::Pass),
+            _ => abstain!(),
         }
     }
 
@@ -132,10 +133,9 @@ impl PluginValidation for Autograph {
             && ctx.target_plugin.is_some()
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Autograph
         {
-            solana_program::msg!("Autograph: Approved");
-            Ok(ValidationResult::Approved)
+            approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 }

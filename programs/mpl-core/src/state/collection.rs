@@ -4,7 +4,7 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError, pub
 
 use crate::{
     error::MplCoreError,
-    plugins::{approve, CheckResult, ExternalPluginAdapter, Plugin, ValidationResult},
+    plugins::{abstain, approve, CheckResult, ExternalPluginAdapter, Plugin, ValidationResult},
 };
 
 use super::{Authority, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
@@ -130,7 +130,7 @@ impl CollectionV1 {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -151,7 +151,7 @@ impl CollectionV1 {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -162,7 +162,7 @@ impl CollectionV1 {
         _plugin: Option<&Plugin>,
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the approve plugin authority lifecycle event.
@@ -182,7 +182,7 @@ impl CollectionV1 {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -203,7 +203,7 @@ impl CollectionV1 {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -214,7 +214,7 @@ impl CollectionV1 {
         _: Option<&Plugin>,
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the burn lifecycle event.
@@ -224,7 +224,7 @@ impl CollectionV1 {
         _: Option<&Plugin>,
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the update lifecycle event.
@@ -237,7 +237,7 @@ impl CollectionV1 {
         if authority_info.key == &self.update_authority {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -248,7 +248,7 @@ impl CollectionV1 {
         _: Option<&Plugin>,
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the decompress lifecycle event.
@@ -258,7 +258,7 @@ impl CollectionV1 {
         _: Option<&Plugin>,
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the add external plugin adapter lifecycle event.
@@ -272,7 +272,7 @@ impl CollectionV1 {
         if *authority_info.key == self.update_authority {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -286,7 +286,7 @@ impl CollectionV1 {
         if self.update_authority == *authority_info.key {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -300,7 +300,7 @@ impl CollectionV1 {
         if self.update_authority == *authority_info.key {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 

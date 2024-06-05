@@ -9,7 +9,8 @@ use crate::{
         TransferV1Accounts, UpdateV1Accounts,
     },
     plugins::{
-        approve, fetch_plugin, reject, CheckResult, PluginType, UpdateDelegate, ValidationResult,
+        abstain, approve, fetch_plugin, reject, CheckResult, PluginType, UpdateDelegate,
+        ValidationResult,
     },
     processor::CreateV2Args,
     state::{Authority, CollectionV1, SolanaAccount},
@@ -91,10 +92,10 @@ impl UpdateAuthority {
                     return reject!();
                 }
 
-                Ok(ValidationResult::Pass)
+                abstain!()
             }
             // If you're not trying add a collection, then just pass.
-            (_, UpdateAuthority::Address(_)) => Ok(ValidationResult::Pass),
+            (_, UpdateAuthority::Address(_)) => abstain!(),
             // Otherwise reject because you're doing something weird.
             _ => reject!(),
         }
@@ -114,13 +115,13 @@ impl UpdateAuthority {
         if ctx.authority.unwrap_or(ctx.payer).key == authority {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
     /// Validate the burn lifecycle event.
     pub fn validate_burn(&self, _ctx: &BurnV1Accounts) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the transfer lifecycle event.
@@ -128,7 +129,7 @@ impl UpdateAuthority {
         &self,
         _ctx: &TransferV1Accounts,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the compress lifecycle event.
@@ -136,7 +137,7 @@ impl UpdateAuthority {
         &self,
         _ctx: &CompressV1Accounts,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     /// Validate the decompress lifecycle event.
@@ -144,6 +145,6 @@ impl UpdateAuthority {
         &self,
         _ctx: &DecompressV1Accounts,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }

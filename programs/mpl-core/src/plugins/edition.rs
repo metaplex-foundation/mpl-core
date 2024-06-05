@@ -4,7 +4,8 @@ use solana_program::program_error::ProgramError;
 use crate::{plugins::approve, state::Authority};
 
 use super::{
-    reject, Plugin, PluginType, PluginValidation, PluginValidationContext, ValidationResult,
+    abstain, reject, Plugin, PluginType, PluginValidation, PluginValidationContext,
+    ValidationResult,
 };
 
 /// The edition plugin allows the creator to set an edition number on the asset
@@ -27,7 +28,7 @@ impl PluginValidation for Edition {
             Some(Plugin::Edition(_edition)) => {
                 reject!()
             }
-            _ => Ok(ValidationResult::Pass),
+            _ => abstain!(),
         }
     }
 
@@ -41,7 +42,7 @@ impl PluginValidation for Edition {
             Some(Plugin::Edition(_edition)) => {
                 reject!()
             }
-            _ => Ok(ValidationResult::Pass),
+            _ => abstain!(),
         }
     }
     /// Validate the revoke plugin authority lifecycle action.
@@ -58,7 +59,7 @@ impl PluginValidation for Edition {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 }

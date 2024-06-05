@@ -6,7 +6,7 @@ use crate::{
     state::{Authority, DataBlob},
 };
 
-use super::{approve, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{abstain, approve, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// This plugin manages the ability to transfer an asset and any authorities
 /// approved are permitted to transfer the asset on behalf of the owner.
@@ -49,7 +49,7 @@ impl PluginValidation for TransferDelegate {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -64,7 +64,7 @@ impl PluginValidation for TransferDelegate {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -82,7 +82,7 @@ impl PluginValidation for TransferDelegate {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 }

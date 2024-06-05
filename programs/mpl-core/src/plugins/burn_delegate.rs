@@ -2,7 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
-    plugins::{approve, PluginType},
+    plugins::{abstain, approve, PluginType},
     state::{Authority, DataBlob},
 };
 
@@ -49,7 +49,7 @@ impl PluginValidation for BurnDelegate {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -67,7 +67,7 @@ impl PluginValidation for BurnDelegate {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 }

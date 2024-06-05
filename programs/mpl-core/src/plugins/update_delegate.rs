@@ -7,7 +7,9 @@ use crate::{
     state::{Authority, DataBlob},
 };
 
-use super::{approve, Plugin, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{
+    abstain, approve, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+};
 
 /// This plugin manages additional permissions to burn.
 /// Any authorities approved are given permission to burn the asset on behalf of the owner.
@@ -51,7 +53,7 @@ impl PluginValidation for UpdateDelegate {
         if !self.additional_delegates.is_empty() {
             return Err(MplCoreError::NotAvailable.into());
         }
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     fn validate_add_plugin(
@@ -73,7 +75,7 @@ impl PluginValidation for UpdateDelegate {
             {
                 approve!()
             } else {
-                Ok(ValidationResult::Pass)
+                abstain!()
             }
         } else {
             Err(MplCoreError::InvalidPlugin.into())
@@ -93,7 +95,7 @@ impl PluginValidation for UpdateDelegate {
             {
                 approve!()
             } else {
-                Ok(ValidationResult::Pass)
+                abstain!()
             }
         } else {
             Err(MplCoreError::InvalidPlugin.into())
@@ -114,7 +116,7 @@ impl PluginValidation for UpdateDelegate {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -129,7 +131,7 @@ impl PluginValidation for UpdateDelegate {
         {
             approve!()
         } else {
-            Ok(ValidationResult::Pass)
+            abstain!()
         }
     }
 
@@ -144,6 +146,6 @@ impl PluginValidation for UpdateDelegate {
             }
         }
 
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }

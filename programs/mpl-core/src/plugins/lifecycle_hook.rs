@@ -2,7 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use super::{
-    Authority, ExternalCheckResult, ExternalPluginAdapterSchema, ExtraAccount,
+    abstain, Authority, ExternalCheckResult, ExternalPluginAdapterSchema, ExtraAccount,
     HookableLifecycleEvent, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
@@ -43,14 +43,14 @@ impl PluginValidation for LifecycleHook {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 
     fn validate_transfer(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }
 
