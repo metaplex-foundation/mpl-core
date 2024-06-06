@@ -71,6 +71,7 @@ pub(crate) fn remove_external_plugin_adapter<'a>(
         ctx.accounts.collection,
         None,
         None,
+        None,
         Some(&plugin_to_remove),
         AssetV1::check_remove_external_plugin_adapter,
         CollectionV1::check_remove_external_plugin_adapter,

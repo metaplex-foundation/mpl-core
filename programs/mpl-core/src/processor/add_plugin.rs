@@ -63,7 +63,8 @@ pub(crate) fn add_plugin<'a>(
         authority_info: authority,
         resolved_authorities: None,
         new_owner: None,
-        new_authority: None,
+        new_asset_authority: None,
+        new_collection_authority: None,
         target_plugin: Some(&args.plugin),
     };
     if Plugin::validate_add_plugin(&args.plugin, &validation_ctx)? == ValidationResult::Rejected {
@@ -76,6 +77,7 @@ pub(crate) fn add_plugin<'a>(
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
+        None,
         None,
         Some(&args.plugin),
         None,
@@ -136,7 +138,8 @@ pub(crate) fn add_collection_plugin<'a>(
         authority_info: authority,
         resolved_authorities: None,
         new_owner: None,
-        new_authority: None,
+        new_asset_authority: None,
+        new_collection_authority: None,
         target_plugin: Some(&args.plugin),
     };
     if Plugin::validate_add_plugin(&args.plugin, &validation_ctx)? == ValidationResult::Rejected {

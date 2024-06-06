@@ -5,6 +5,7 @@ import {
   approvePluginAuthority,
   revokePluginAuthority,
   update,
+  updateAuthority,
   updatePlugin,
 } from '../../../src';
 import { DEFAULT_ASSET, assertAsset, createUmi } from '../../_setupRaw';
@@ -683,6 +684,29 @@ test('it cannot add updateDelegate plugin with additional delegate as additional
       additionalDelegates: [updateDelegate.publicKey],
     },
     authority: updateDelegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+});
+
+test('it cannot update the update authority of the asset as an updateDelegate additional delegate', async (t) => {
+  const umi = await createUmi();
+  const updateDelegate = generateSigner(umi);
+  const updateDelegate2 = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'UpdateDelegate',
+        additionalDelegates: [updateDelegate.publicKey],
+      },
+    ],
+  });
+
+  const result = update(umi, {
+    asset,
+    authority: updateDelegate,
+    newUpdateAuthority: updateAuthority('Address', [updateDelegate2.publicKey]),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'NoApprovals' });

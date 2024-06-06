@@ -56,6 +56,7 @@ pub(crate) fn approve_plugin_authority<'a>(
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
+        None,
         Some(&plugin),
         None,
         AssetV1::check_approve_plugin_authority,

@@ -62,6 +62,7 @@ pub(crate) fn remove_plugin<'a>(
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
+        None,
         Some(&plugin_to_remove),
         None,
         AssetV1::check_remove_plugin,

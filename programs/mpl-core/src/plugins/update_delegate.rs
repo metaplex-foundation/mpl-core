@@ -48,13 +48,6 @@ impl DataBlob for UpdateDelegate {
 }
 
 impl PluginValidation for UpdateDelegate {
-    fn validate_create(
-        &self,
-        _ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        abstain!()
-    }
-
     fn validate_add_plugin(
         &self,
         ctx: &PluginValidationContext,
@@ -155,8 +148,8 @@ impl PluginValidation for UpdateDelegate {
                 address: *ctx.authority_info.key,
             })
             || self.additional_delegates.contains(ctx.authority_info.key))
-            // We do not allow the collection authority to be changed by this delegate.
-            && ctx.new_authority.is_none()
+            // We do not allow the root authority (either Collection or Address) to be changed by this delegate.
+            && ctx.new_collection_authority.is_none() && ctx.new_asset_authority.is_none()
         {
             approve!()
         } else {

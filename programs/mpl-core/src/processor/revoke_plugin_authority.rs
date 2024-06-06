@@ -63,6 +63,7 @@ pub(crate) fn revoke_plugin_authority<'a>(
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
+        None,
         Some(&plugin),
         None,
         AssetV1::check_revoke_plugin_authority,

@@ -58,7 +58,8 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         authority_info: authority,
         resolved_authorities: None,
         new_owner: None,
-        new_authority: None,
+        new_asset_authority: None,
+        new_collection_authority: None,
         target_plugin: None,
     };
 
@@ -78,6 +79,7 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
+        None,
         None,
         None,
         Some(&external_plugin_adapter),
@@ -137,7 +139,8 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         authority_info: authority,
         resolved_authorities: None,
         new_owner: None,
-        new_authority: None,
+        new_asset_authority: None,
+        new_collection_authority: None,
         target_plugin: None,
     };
 

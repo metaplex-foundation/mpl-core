@@ -66,6 +66,7 @@ pub(crate) fn update_external_plugin_adapter<'a>(
         ctx.accounts.collection,
         None,
         None,
+        None,
         Some(&plugin),
         AssetV1::check_update_external_plugin_adapter,
         CollectionV1::check_update_external_plugin_adapter,

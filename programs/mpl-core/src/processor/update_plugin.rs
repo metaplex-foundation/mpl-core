@@ -53,6 +53,7 @@ pub(crate) fn update_plugin<'a>(
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
+        None,
         Some(&args.plugin),
         None,
         AssetV1::check_update_plugin,

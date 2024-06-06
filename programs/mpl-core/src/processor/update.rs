@@ -55,6 +55,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
+        args.new_update_authority.as_ref(),
         None,
         None,
         AssetV1::check_update,
