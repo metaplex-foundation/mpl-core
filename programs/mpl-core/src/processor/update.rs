@@ -158,18 +158,31 @@ fn update<'a>(
 
         // Removing the asset from a collection.
         if let UpdateAuthority::Collection(existing_collection_address) = asset.update_authority {
-            let existing_collection_account = ctx
-                .accounts
-                .collection
-                .ok_or(MplCoreError::MissingCollection)?;
+            match ix_version {
+                InstructionVersion::V1 => {
+                    if let UpdateAuthority::Collection(_collection_address) = asset.update_authority
+                    {
+                        // Removing from collection is not currently available.
+                        // will require the collection size to be updated
+                        return Err(MplCoreError::NotAvailable.into());
+                    }
+                }
+                InstructionVersion::V2 => {
+                    let existing_collection_account = ctx
+                        .accounts
+                        .collection
+                        .ok_or(MplCoreError::MissingCollection)?;
 
-            if existing_collection_account.key != &existing_collection_address {
-                return Err(MplCoreError::MissingCollection.into());
+                    if existing_collection_account.key != &existing_collection_address {
+                        return Err(MplCoreError::MissingCollection.into());
+                    }
+
+                    let mut existing_collection =
+                        CollectionV1::load(existing_collection_account, 0)?;
+                    existing_collection.decrement()?;
+                    existing_collection.save(existing_collection_account, 0)?;
+                }
             }
-
-            let mut existing_collection = CollectionV1::load(existing_collection_account, 0)?;
-            existing_collection.decrement()?;
-            existing_collection.save(existing_collection_account, 0)?;
         }
 
         asset.update_authority = new_update_authority;
