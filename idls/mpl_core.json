@@ -1929,6 +1929,83 @@
         "type": "u8",
         "value": 29
       }
+    },
+    {
+      "name": "UpdateV2",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or update authority delegate of the asset"
+          ]
+        },
+        {
+          "name": "newCollection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "A new collection to which to move the asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updateV2Args",
+          "type": {
+            "defined": "UpdateV2Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 30
+      }
     }
   ],
   "accounts": [
@@ -3424,6 +3501,34 @@
     },
     {
       "name": "UpdateV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "newName",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "newUri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "newUpdateAuthority",
+            "type": {
+              "option": {
+                "defined": "UpdateAuthority"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateV2Args",
       "type": {
         "kind": "struct",
         "fields": [
