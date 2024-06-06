@@ -6,7 +6,9 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::{UpdateCollectionV1Accounts, UpdateV1Accounts},
+    instruction::accounts::{
+        Context, UpdateCollectionV1Accounts, UpdateV1Accounts, UpdateV2Accounts,
+    },
     plugins::{
         ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
         PluginType,
@@ -26,10 +28,65 @@ pub(crate) struct UpdateV1Args {
     pub new_update_authority: Option<UpdateAuthority>,
 }
 
-pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) -> ProgramResult {
-    // Accounts.
-    let ctx = UpdateV1Accounts::context(accounts)?;
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct UpdateV2Args {
+    pub new_name: Option<String>,
+    pub new_uri: Option<String>,
+    pub new_update_authority: Option<UpdateAuthority>,
+}
 
+impl From<UpdateV1Args> for UpdateV2Args {
+    fn from(item: UpdateV1Args) -> Self {
+        UpdateV2Args {
+            new_name: item.new_name,
+            new_uri: item.new_uri,
+            new_update_authority: item.new_update_authority,
+        }
+    }
+}
+
+enum InstructionVersion {
+    V1,
+    V2,
+}
+
+pub(crate) fn update_v1<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) -> ProgramResult {
+    let ctx = UpdateV1Accounts::context(accounts)?;
+    let v2_accounts = UpdateV2Accounts {
+        asset: ctx.accounts.asset,
+        collection: ctx.accounts.collection,
+        payer: ctx.accounts.payer,
+        authority: ctx.accounts.authority,
+        new_collection: None,
+        system_program: ctx.accounts.system_program,
+        log_wrapper: ctx.accounts.log_wrapper,
+    };
+
+    let v2_ctx = Context {
+        accounts: v2_accounts,
+        remaining_accounts: ctx.remaining_accounts,
+    };
+
+    update(
+        v2_ctx,
+        accounts,
+        UpdateV2Args::from(args),
+        InstructionVersion::V1,
+    )
+}
+
+pub(crate) fn update_v2<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV2Args) -> ProgramResult {
+    let ctx = UpdateV2Accounts::context(accounts)?;
+    update(ctx, accounts, args, InstructionVersion::V2)
+}
+
+fn update<'a>(
+    ctx: Context<UpdateV2Accounts<'a>>,
+    accounts: &'a [AccountInfo<'a>],
+    args: UpdateV2Args,
+    ix_version: InstructionVersion,
+) -> ProgramResult {
     // Guards.
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
@@ -75,15 +132,44 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
 
     let mut dirty = false;
     if let Some(new_update_authority) = args.new_update_authority {
-        if let UpdateAuthority::Collection(_collection_address) = new_update_authority {
-            // Updating collections is not currently available.
-            return Err(MplCoreError::NotAvailable.into());
-        };
+        // Adding the asset to a collection.
+        if let UpdateAuthority::Collection(new_collection_address) = new_update_authority {
+            match ix_version {
+                InstructionVersion::V1 => {
+                    // Updating collections is not currently available.
+                    return Err(MplCoreError::NotAvailable.into());
+                }
+                InstructionVersion::V2 => {
+                    let new_collection_account = ctx
+                        .accounts
+                        .new_collection
+                        .ok_or(MplCoreError::MissingCollection)?;
 
-        if let UpdateAuthority::Collection(_collection_address) = asset.update_authority {
-            // Removing from collection is not currently available.
-            // will require the collection size to be updated
-            return Err(MplCoreError::NotAvailable.into());
+                    if new_collection_account.key != &new_collection_address {
+                        return Err(MplCoreError::MissingCollection.into());
+                    }
+
+                    let mut new_collection = CollectionV1::load(new_collection_account, 0)?;
+                    new_collection.increment()?;
+                    new_collection.save(new_collection_account, 0)?;
+                }
+            };
+        }
+
+        // Removing the asset from a collection.
+        if let UpdateAuthority::Collection(existing_collection_address) = asset.update_authority {
+            let existing_collection_account = ctx
+                .accounts
+                .collection
+                .ok_or(MplCoreError::MissingCollection)?;
+
+            if existing_collection_account.key != &existing_collection_address {
+                return Err(MplCoreError::MissingCollection.into());
+            }
+
+            let mut existing_collection = CollectionV1::load(existing_collection_account, 0)?;
+            existing_collection.decrement()?;
+            existing_collection.save(existing_collection_account, 0)?;
         }
 
         asset.update_authority = new_update_authority;
