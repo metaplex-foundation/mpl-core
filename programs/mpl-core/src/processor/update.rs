@@ -134,7 +134,7 @@ fn update<'a>(
     if let Some(new_update_authority) = args.new_update_authority {
         // If asset is currently in a collection, remove it from the collection.
         // This block is executed when we want to go from collection to no collection, or collection to
-        // new collection.
+        // new collection.  The permission for this block is established by `validate_asset_permissions`.
         if let UpdateAuthority::Collection(_existing_collection_address) = asset.update_authority {
             match ix_version {
                 InstructionVersion::V1 => {
@@ -160,7 +160,9 @@ fn update<'a>(
 
         // If new update authority is a collection, add the asset to the new collection.
         // This block is executed when we want to go from no collection to collection, or collection
-        // to new collection.
+        // to new collection.  The permission for this block is established in the code block.  It is
+        // similar to creating an asset, in that the new collection's authority or an update delegate
+        // for the new collecton can approve adding the asset to the new collection.
         if let UpdateAuthority::Collection(new_collection_address) = new_update_authority {
             match ix_version {
                 InstructionVersion::V1 => {
@@ -182,7 +184,7 @@ fn update<'a>(
                     // Deserialize the collection.
                     let mut new_collection = CollectionV1::load(new_collection_account, 0)?;
 
-                    // See if there is an update delegate.
+                    // See if there is an update delegate on the new collection.
                     let maybe_update_delegate = fetch_plugin::<CollectionV1, UpdateDelegate>(
                         new_collection_account,
                         PluginType::UpdateDelegate,
