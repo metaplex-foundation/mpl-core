@@ -10,13 +10,13 @@ use crate::{
         Context, UpdateCollectionV1Accounts, UpdateV1Accounts, UpdateV2Accounts,
     },
     plugins::{
-        ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
-        PluginType,
+        fetch_plugin, ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginHeaderV1,
+        PluginRegistryV1, PluginType, UpdateDelegate,
     },
-    state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
+    state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
-        load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
-        validate_collection_permissions,
+        assert_collection_authority, load_key, resize_or_reallocate_account, resolve_authority,
+        validate_asset_permissions, validate_collection_permissions,
     },
 };
 
@@ -132,40 +132,16 @@ fn update<'a>(
 
     let mut dirty = false;
     if let Some(new_update_authority) = args.new_update_authority {
-        // Adding the asset to a collection.
-        if let UpdateAuthority::Collection(new_collection_address) = new_update_authority {
+        // If asset is currently in a collection, remove it from the collection.
+        // This block is executed when we want to go from collection to no collection, or collection to
+        // new collection.
+        if let UpdateAuthority::Collection(_existing_collection_address) = asset.update_authority {
             match ix_version {
                 InstructionVersion::V1 => {
-                    // Updating collections is not currently available.
+                    // Removing from or changing collection requires collection size to be updated
+                    // and is not supported by `UpdateV1`.
+                    msg!("Error: Use UpdateV2 to remove asset from or change collection");
                     return Err(MplCoreError::NotAvailable.into());
-                }
-                InstructionVersion::V2 => {
-                    let new_collection_account = ctx
-                        .accounts
-                        .new_collection
-                        .ok_or(MplCoreError::MissingCollection)?;
-
-                    if new_collection_account.key != &new_collection_address {
-                        return Err(MplCoreError::MissingCollection.into());
-                    }
-
-                    let mut new_collection = CollectionV1::load(new_collection_account, 0)?;
-                    new_collection.increment()?;
-                    new_collection.save(new_collection_account, 0)?;
-                }
-            };
-        }
-
-        // Removing the asset from a collection.
-        if let UpdateAuthority::Collection(existing_collection_address) = asset.update_authority {
-            match ix_version {
-                InstructionVersion::V1 => {
-                    if let UpdateAuthority::Collection(_collection_address) = asset.update_authority
-                    {
-                        // Removing from collection is not currently available.
-                        // will require the collection size to be updated
-                        return Err(MplCoreError::NotAvailable.into());
-                    }
                 }
                 InstructionVersion::V2 => {
                     let existing_collection_account = ctx
@@ -173,16 +149,72 @@ fn update<'a>(
                         .collection
                         .ok_or(MplCoreError::MissingCollection)?;
 
-                    if existing_collection_account.key != &existing_collection_address {
-                        return Err(MplCoreError::MissingCollection.into());
-                    }
-
                     let mut existing_collection =
                         CollectionV1::load(existing_collection_account, 0)?;
+
                     existing_collection.decrement()?;
                     existing_collection.save(existing_collection_account, 0)?;
                 }
             }
+        }
+
+        // If new update authority is a collection, add the asset to the new collection.
+        // This block is executed when we want to go from no collection to collection, or collection
+        // to new collection.
+        if let UpdateAuthority::Collection(new_collection_address) = new_update_authority {
+            match ix_version {
+                InstructionVersion::V1 => {
+                    msg!("Error: Use UpdateV2 to add asset to a new collection");
+                    return Err(MplCoreError::NotAvailable.into());
+                }
+                InstructionVersion::V2 => {
+                    // Make sure the account was provided.
+                    let new_collection_account = ctx
+                        .accounts
+                        .new_collection
+                        .ok_or(MplCoreError::MissingCollection)?;
+
+                    // Make sure account matches what was provided in the args.
+                    if new_collection_account.key != &new_collection_address {
+                        return Err(MplCoreError::InvalidCollection.into());
+                    }
+
+                    // Deserialize the collection.
+                    let mut new_collection = CollectionV1::load(new_collection_account, 0)?;
+
+                    // See if there is an update delegate.
+                    let maybe_update_delegate = fetch_plugin::<CollectionV1, UpdateDelegate>(
+                        new_collection_account,
+                        PluginType::UpdateDelegate,
+                    );
+
+                    // Make sure the authority has authority to add the asset to the new collection.
+                    if let Ok((plugin_authority, _, _)) = maybe_update_delegate {
+                        if assert_collection_authority(
+                            &new_collection,
+                            authority,
+                            &plugin_authority,
+                        )
+                        .is_err()
+                            && assert_collection_authority(
+                                &new_collection,
+                                authority,
+                                &Authority::UpdateAuthority,
+                            )
+                            .is_err()
+                        {
+                            solana_program::msg!("UA: Rejected");
+                            return Err(MplCoreError::InvalidAuthority.into());
+                        }
+                    } else if authority.key != &new_collection.update_authority {
+                        solana_program::msg!("UA: Rejected");
+                        return Err(MplCoreError::InvalidAuthority.into());
+                    }
+
+                    new_collection.increment()?;
+                    new_collection.save(new_collection_account, 0)?;
+                }
+            };
         }
 
         asset.update_authority = new_update_authority;

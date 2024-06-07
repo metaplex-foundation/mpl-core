@@ -6,11 +6,10 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{
         BurnV1Accounts, CompressV1Accounts, CreateV2Accounts, DecompressV1Accounts,
-        TransferV1Accounts, UpdateV1Accounts,
+        TransferV1Accounts,
     },
     plugins::{
-        abstain, approve, fetch_plugin, reject, CheckResult, PluginType, UpdateDelegate,
-        ValidationResult,
+        abstain, fetch_plugin, reject, CheckResult, PluginType, UpdateDelegate, ValidationResult,
     },
     processor::CreateV2Args,
     state::{Authority, CollectionV1, SolanaAccount},
@@ -101,24 +100,6 @@ impl UpdateAuthority {
             (_, UpdateAuthority::Address(_)) => abstain!(),
             // Otherwise reject because you're doing something weird.
             _ => reject!(),
-        }
-    }
-
-    /// Validate the update lifecycle event.
-    pub fn validate_update(
-        &self,
-        ctx: &UpdateV1Accounts,
-    ) -> Result<ValidationResult, ProgramError> {
-        let authority = match self {
-            Self::None => return reject!(),
-            Self::Address(address) => address,
-            Self::Collection(address) => address,
-        };
-
-        if ctx.authority.unwrap_or(ctx.payer).key == authority {
-            approve!()
-        } else {
-            abstain!()
         }
     }
 

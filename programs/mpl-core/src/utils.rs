@@ -63,14 +63,14 @@ pub fn assert_authority<T: CoreAsset>(
 
 /// Assert that the account info address is the same as the authority.
 pub fn assert_collection_authority(
-    asset: &CollectionV1,
+    collection: &CollectionV1,
     authority_info: &AccountInfo,
     authority: &Authority,
 ) -> ProgramResult {
     match authority {
         Authority::None | Authority::Owner => (),
         Authority::UpdateAuthority => {
-            if &asset.update_authority == authority_info.key {
+            if &collection.update_authority == authority_info.key {
                 return Ok(());
             }
         }
