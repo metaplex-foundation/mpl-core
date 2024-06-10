@@ -27,13 +27,13 @@ pub enum ExternalPluginAdapterKey {
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
-    AssetLinkedLifecycleHook(Pubkey),
+    Oracle(Pubkey),
+    SecureDataStore(PluginAuthority),
     #[cfg_attr(
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
-    Oracle(Pubkey),
-    SecureDataStore(PluginAuthority),
+    AssetLinkedLifecycleHook(Pubkey),
     AssetLinkedSecureDataStore(PluginAuthority),
     DataSection(LinkedDataKey),
 }

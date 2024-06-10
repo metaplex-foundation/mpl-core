@@ -68,6 +68,9 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapterType {
             ExternalPluginAdapterInitInfo::SecureDataStore(_) => {
                 ExternalPluginAdapterType::SecureDataStore
             }
+            ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(_) => {
+                ExternalPluginAdapterType::AssetLinkedLifecycleHook
+            }
             ExternalPluginAdapterInitInfo::AssetLinkedSecureDataStore(_) => {
                 ExternalPluginAdapterType::AssetLinkedSecureDataStore
             }
@@ -155,6 +158,17 @@ impl ExternalPluginAdapter {
                 }
             }
             ExternalPluginAdapterInitInfo::SecureDataStore(_) => ExternalCheckResult::none(),
+            ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(init_info) => {
+                if let Some(checks) = init_info
+                    .lifecycle_checks
+                    .iter()
+                    .find(|event| event.0 == HookableLifecycleEvent::Create)
+                {
+                    checks.1
+                } else {
+                    ExternalCheckResult::none()
+                }
+            }
             ExternalPluginAdapterInitInfo::AssetLinkedSecureDataStore(_) => {
                 ExternalCheckResult::none()
             }
@@ -174,6 +188,9 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapter::Oracle(oracle) => oracle.validate_create(ctx),
             ExternalPluginAdapter::SecureDataStore(data_store) => data_store.validate_create(ctx),
+            ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+                lifecycle_hook.validate_create(ctx)
+            }
             ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
                 data_store.validate_create(ctx)
             }
@@ -193,6 +210,9 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapter::Oracle(oracle) => oracle.validate_update(ctx),
             ExternalPluginAdapter::SecureDataStore(data_store) => data_store.validate_update(ctx),
+            ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+                lifecycle_hook.validate_update(ctx)
+            }
             ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
                 data_store.validate_update(ctx)
             }
@@ -211,6 +231,9 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapter::Oracle(oracle) => oracle.validate_burn(ctx),
             ExternalPluginAdapter::SecureDataStore(data_store) => data_store.validate_burn(ctx),
+            ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+                lifecycle_hook.validate_burn(ctx)
+            }
             ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
                 data_store.validate_burn(ctx)
             }
@@ -229,6 +252,9 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapter::Oracle(oracle) => oracle.validate_transfer(ctx),
             ExternalPluginAdapter::SecureDataStore(data_store) => data_store.validate_transfer(ctx),
+            ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+                lifecycle_hook.validate_transfer(ctx)
+            }
             ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
                 data_store.validate_transfer(ctx)
             }
@@ -250,6 +276,9 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapter::SecureDataStore(data_store) => {
                 data_store.validate_add_external_plugin_adapter(ctx)
+            }
+            ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+                lifecycle_hook.validate_add_external_plugin_adapter(ctx)
             }
             ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
                 data_store.validate_add_external_plugin_adapter(ctx)
@@ -287,6 +316,11 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapter {
             }
             ExternalPluginAdapterInitInfo::SecureDataStore(init_info) => {
                 ExternalPluginAdapter::SecureDataStore(SecureDataStore::from(init_info))
+            }
+            ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(init_info) => {
+                ExternalPluginAdapter::AssetLinkedLifecycleHook(AssetLinkedLifecycleHook::from(
+                    init_info,
+                ))
             }
             ExternalPluginAdapterInitInfo::AssetLinkedSecureDataStore(init_info) => {
                 ExternalPluginAdapter::AssetLinkedSecureDataStore(AssetLinkedSecureDataStore::from(
@@ -650,6 +684,9 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapterKey {
             }
             ExternalPluginAdapterInitInfo::SecureDataStore(init_info) => {
                 ExternalPluginAdapterKey::SecureDataStore(init_info.data_authority)
+            }
+            ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(init_info) => {
+                ExternalPluginAdapterKey::AssetLinkedLifecycleHook(init_info.hooked_program)
             }
             ExternalPluginAdapterInitInfo::AssetLinkedSecureDataStore(init_info) => {
                 ExternalPluginAdapterKey::AssetLinkedSecureDataStore(init_info.data_authority)

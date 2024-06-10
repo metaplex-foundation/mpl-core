@@ -365,6 +365,13 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
                 Some(init_info.lifecycle_checks.clone()),
             )
         }
+        ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(init_info) => {
+            validate_lifecycle_checks(&init_info.lifecycle_checks, false)?;
+            (
+                init_info.init_plugin_authority,
+                Some(init_info.lifecycle_checks.clone()),
+            )
+        }
         ExternalPluginAdapterInitInfo::Oracle(init_info) => {
             validate_lifecycle_checks(&init_info.lifecycle_checks, true)?;
             (

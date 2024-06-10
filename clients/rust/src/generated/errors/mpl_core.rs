@@ -136,6 +136,18 @@ pub enum MplCoreError {
     /// 41 (0x29) - Invalid plugin operation
     #[error("Invalid plugin operation")]
     InvalidPluginOperation,
+    /// 42 (0x2A) - Two data sources provided, only one is allowed
+    #[error("Two data sources provided, only one is allowed")]
+    TwoDataSources,
+    /// 43 (0x2B) - External Plugin does not support this operation
+    #[error("External Plugin does not support this operation")]
+    UnsupportedOperation,
+    /// 44 (0x2C) - No data sources provided, one is required
+    #[error("No data sources provided, one is required")]
+    NoDataSources,
+    /// 45 (0x2D) - This plugin adapter cannot be added to an Asset
+    #[error("This plugin adapter cannot be added to an Asset")]
+    InvalidPluginAdapterTarget,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

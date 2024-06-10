@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::AssetLinkedLifecycleHook;
 use crate::generated::types::AssetLinkedSecureDataStore;
 use crate::generated::types::DataSection;
 use crate::generated::types::LifecycleHook;
@@ -15,16 +16,14 @@ use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize, BorshSerialize};
 
-use super::AssetLinkedLifecycleHook;
-
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ExternalPluginAdapter {
     LifecycleHook(LifecycleHook),
-    AssetLinkedLifecycleHook(AssetLinkedLifecycleHook),
     Oracle(Oracle),
+    AssetLinkedLifecycleHook(AssetLinkedLifecycleHook),
     SecureDataStore(SecureDataStore),
     AssetLinkedSecureDataStore(AssetLinkedSecureDataStore),
     DataSection(DataSection),

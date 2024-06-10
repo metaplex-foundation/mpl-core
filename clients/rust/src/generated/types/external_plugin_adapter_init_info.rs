@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::AssetLinkedLifecycleHookInitInfo;
 use crate::generated::types::AssetLinkedSecureDataStoreInitInfo;
 use crate::generated::types::DataSectionInitInfo;
 use crate::generated::types::LifecycleHookInitInfo;
@@ -23,6 +24,7 @@ pub enum ExternalPluginAdapterInitInfo {
     LifecycleHook(LifecycleHookInitInfo),
     Oracle(OracleInitInfo),
     SecureDataStore(SecureDataStoreInitInfo),
+    AssetLinkedLifecycleHook(AssetLinkedLifecycleHookInitInfo),
     AssetLinkedSecureDataStore(AssetLinkedSecureDataStoreInitInfo),
     DataSection(DataSectionInitInfo),
 }

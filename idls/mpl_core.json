@@ -3858,13 +3858,13 @@
             "name": "LifecycleHook"
           },
           {
-            "name": "AssetLinkedLifecycleHook"
-          },
-          {
             "name": "Oracle"
           },
           {
             "name": "SecureDataStore"
+          },
+          {
+            "name": "AssetLinkedLifecycleHook"
           },
           {
             "name": "AssetLinkedSecureDataStore"
@@ -3893,6 +3893,14 @@
             "fields": [
               {
                 "defined": "Oracle"
+              }
+            ]
+          },
+          {
+            "name": "AssetLinkedLifecycleHook",
+            "fields": [
+              {
+                "defined": "AssetLinkedLifecycleHook"
               }
             ]
           },
@@ -4139,6 +4147,14 @@
             ]
           },
           {
+            "name": "AssetLinkedLifecycleHook",
+            "fields": [
+              {
+                "defined": "AssetLinkedLifecycleHookInitInfo"
+              }
+            ]
+          },
+          {
             "name": "AssetLinkedSecureDataStore",
             "fields": [
               {
@@ -4209,12 +4225,6 @@
             ]
           },
           {
-            "name": "AssetLinkedLifecycleHook",
-            "fields": [
-              "publicKey"
-            ]
-          },
-          {
             "name": "Oracle",
             "fields": [
               "publicKey"
@@ -4226,6 +4236,12 @@
               {
                 "defined": "Authority"
               }
+            ]
+          },
+          {
+            "name": "AssetLinkedLifecycleHook",
+            "fields": [
+              "publicKey"
             ]
           },
           {
@@ -4693,6 +4709,26 @@
       "code": 41,
       "name": "InvalidPluginOperation",
       "msg": "Invalid plugin operation"
+    },
+    {
+      "code": 42,
+      "name": "TwoDataSources",
+      "msg": "Two data sources provided, only one is allowed"
+    },
+    {
+      "code": 43,
+      "name": "UnsupportedOperation",
+      "msg": "External Plugin does not support this operation"
+    },
+    {
+      "code": 44,
+      "name": "NoDataSources",
+      "msg": "No data sources provided, one is required"
+    },
+    {
+      "code": 45,
+      "name": "InvalidPluginAdapterTarget",
+      "msg": "This plugin adapter cannot be added to an Asset"
     }
   ],
   "metadata": {

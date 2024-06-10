@@ -15,6 +15,8 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseAssetLinkedLifecycleHook,
+  BaseAssetLinkedLifecycleHookArgs,
   BaseAssetLinkedSecureDataStore,
   BaseAssetLinkedSecureDataStoreArgs,
   BaseDataSection,
@@ -25,6 +27,7 @@ import {
   BaseOracleArgs,
   BaseSecureDataStore,
   BaseSecureDataStoreArgs,
+  getBaseAssetLinkedLifecycleHookSerializer,
   getBaseAssetLinkedSecureDataStoreSerializer,
   getBaseDataSectionSerializer,
   getBaseLifecycleHookSerializer,
@@ -35,6 +38,10 @@ import {
 export type ExternalPluginAdapter =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHook] }
   | { __kind: 'Oracle'; fields: [BaseOracle] }
+  | {
+      __kind: 'AssetLinkedLifecycleHook';
+      fields: [BaseAssetLinkedLifecycleHook];
+    }
   | { __kind: 'SecureDataStore'; fields: [BaseSecureDataStore] }
   | {
       __kind: 'AssetLinkedSecureDataStore';
@@ -45,6 +52,10 @@ export type ExternalPluginAdapter =
 export type ExternalPluginAdapterArgs =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookArgs] }
   | { __kind: 'Oracle'; fields: [BaseOracleArgs] }
+  | {
+      __kind: 'AssetLinkedLifecycleHook';
+      fields: [BaseAssetLinkedLifecycleHookArgs];
+    }
   | { __kind: 'SecureDataStore'; fields: [BaseSecureDataStoreArgs] }
   | {
       __kind: 'AssetLinkedSecureDataStore';
@@ -69,6 +80,15 @@ export function getExternalPluginAdapterSerializer(): Serializer<
         struct<GetDataEnumKindContent<ExternalPluginAdapter, 'Oracle'>>([
           ['fields', tuple([getBaseOracleSerializer()])],
         ]),
+      ],
+      [
+        'AssetLinkedLifecycleHook',
+        struct<
+          GetDataEnumKindContent<
+            ExternalPluginAdapter,
+            'AssetLinkedLifecycleHook'
+          >
+        >([['fields', tuple([getBaseAssetLinkedLifecycleHookSerializer()])]]),
       ],
       [
         'SecureDataStore',
@@ -108,6 +128,13 @@ export function externalPluginAdapter(
   kind: 'Oracle',
   data: GetDataEnumKindContent<ExternalPluginAdapterArgs, 'Oracle'>['fields']
 ): GetDataEnumKind<ExternalPluginAdapterArgs, 'Oracle'>;
+export function externalPluginAdapter(
+  kind: 'AssetLinkedLifecycleHook',
+  data: GetDataEnumKindContent<
+    ExternalPluginAdapterArgs,
+    'AssetLinkedLifecycleHook'
+  >['fields']
+): GetDataEnumKind<ExternalPluginAdapterArgs, 'AssetLinkedLifecycleHook'>;
 export function externalPluginAdapter(
   kind: 'SecureDataStore',
   data: GetDataEnumKindContent<

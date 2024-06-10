@@ -10,9 +10,9 @@ import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 
 export enum ExternalPluginAdapterType {
   LifecycleHook,
-  AssetLinkedLifecycleHook,
   Oracle,
   SecureDataStore,
+  AssetLinkedLifecycleHook,
   AssetLinkedSecureDataStore,
   DataSection,
 }
