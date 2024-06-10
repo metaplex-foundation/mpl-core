@@ -12,7 +12,7 @@ use crate::{
         abstain, fetch_plugin, reject, CheckResult, PluginType, UpdateDelegate, ValidationResult,
     },
     processor::CreateV2Args,
-    state::{Authority, CollectionV1, SolanaAccount},
+    state::{CollectionV1, SolanaAccount},
     utils::assert_collection_authority,
 };
 
@@ -76,12 +76,7 @@ impl UpdateAuthority {
 
                 if let Ok((authority, update_delegate_plugin, _)) = maybe_update_delegate {
                     if assert_collection_authority(&collection, authority_info, &authority).is_err()
-                        && assert_collection_authority(
-                            &collection,
-                            authority_info,
-                            &Authority::UpdateAuthority,
-                        )
-                        .is_err()
+                        && authority_info.key != &collection.update_authority
                         && !update_delegate_plugin
                             .additional_delegates
                             .contains(authority_info.key)
