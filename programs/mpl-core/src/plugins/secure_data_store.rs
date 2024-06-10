@@ -14,7 +14,7 @@ use super::{
 /// plugin.  The data is stored at the plugin's data offset (which in the account is immediately
 /// after this header).
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct DataStore {
+pub struct SecureDataStore {
     /// Data authority who can update the data store.  Cannot be changed after plugin is
     /// added.
     pub data_authority: Authority,
@@ -22,16 +22,16 @@ pub struct DataStore {
     pub schema: ExternalPluginAdapterSchema,
 }
 
-impl DataStore {
+impl SecureDataStore {
     /// Updates the data store with the new info.
-    pub fn update(&mut self, info: &DataStoreUpdateInfo) {
+    pub fn update(&mut self, info: &SecureDataStoreUpdateInfo) {
         if let Some(schema) = &info.schema {
             self.schema = *schema;
         }
     }
 }
 
-impl PluginValidation for DataStore {
+impl PluginValidation for SecureDataStore {
     fn validate_add_external_plugin_adapter(
         &self,
         _ctx: &PluginValidationContext,
@@ -47,8 +47,8 @@ impl PluginValidation for DataStore {
     }
 }
 
-impl From<&DataStoreInitInfo> for DataStore {
-    fn from(init_info: &DataStoreInitInfo) -> Self {
+impl From<&SecureDataStoreInitInfo> for SecureDataStore {
+    fn from(init_info: &SecureDataStoreInitInfo) -> Self {
         Self {
             data_authority: init_info.data_authority,
             schema: init_info.schema.unwrap_or_default(),
@@ -58,7 +58,7 @@ impl From<&DataStoreInitInfo> for DataStore {
 
 /// Data store initialization info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct DataStoreInitInfo {
+pub struct SecureDataStoreInitInfo {
     /// Data authority who can update the data store.  This field cannot be
     /// changed after the plugin is added.
     pub data_authority: Authority,
@@ -70,7 +70,7 @@ pub struct DataStoreInitInfo {
 
 /// Data store update info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct DataStoreUpdateInfo {
+pub struct SecureDataStoreUpdateInfo {
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginAdapterSchema>,
 }

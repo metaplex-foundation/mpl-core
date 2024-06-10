@@ -242,9 +242,18 @@ pub(crate) fn registry_records_to_external_plugin_adapter_list(
                     ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
                         acc.lifecycle_hooks.push(lifecycle_hook)
                     }
+                    ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+                        acc.asset_linked_lifecycle_hooks.push(lifecycle_hook)
+                    }
                     ExternalPluginAdapter::Oracle(oracle) => acc.oracles.push(oracle),
-                    ExternalPluginAdapter::DataStore(data_store) => {
+                    ExternalPluginAdapter::SecureDataStore(data_store) => {
                         acc.data_stores.push(data_store)
+                    }
+                    ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
+                        acc.asset_linked_data_stores.push(data_store)
+                    }
+                    ExternalPluginAdapter::DataSection(data_section) => {
+                        acc.data_sections.push(data_section)
                     }
                 }
             }

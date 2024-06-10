@@ -230,7 +230,7 @@ impl ProcessedExternalPlugin {
                         ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
                             &lifecycle_hook.schema
                         }
-                        ExternalPluginAdapter::DataStore(data_store) => &data_store.schema,
+                        ExternalPluginAdapter::SecureDataStore(data_store) => &data_store.schema,
                         _ => &ExternalPluginAdapterSchema::Binary, // is this possible
                     };
 

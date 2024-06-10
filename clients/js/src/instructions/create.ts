@@ -59,7 +59,7 @@ export const create = (
             type: 'Oracle',
           });
           break;
-        case 'DataStore':
+        case 'SecureDataStore':
           // Do nothing, datastore has no extra accounts
           break;
         case 'LifecycleHook':

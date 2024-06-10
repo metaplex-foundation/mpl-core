@@ -198,6 +198,9 @@ kinobi.update(
     externalPluginAdapterKey: {
       name: "baseExternalPluginAdapterKey"
     },
+    linkedDataKey: {
+      name: 'baseLinkedDataKey'
+    },
     externalPluginAdapterInitInfo: {
       name: "baseExternalPluginAdapterInitInfo"
     },
@@ -222,14 +225,41 @@ kinobi.update(
     lifecycleHookUpdateInfo: {
       name: "baseLifecycleHookUpdateInfo"
     },
-    dataStore: {
-      name: "baseDataStore"
+    assetLinkedLifecycleHook: {
+      name: "baseAssetLinkedLifecycleHook"
     },
-    dataStoreInitInfo: {
-      name: "baseDataStoreInitInfo"
+    assetLinkedLifecycleHookInitInfo: {
+      name: "baseAssetLinkedLifecycleHookInitInfo"
     },
-    dataStoreUpdateInfo: {
-      name: "baseDataStoreUpdateInfo"
+    assetLinkedLifecycleHookUpdateInfo: {
+      name: "baseAssetLinkedLifecycleHookUpdateInfo"
+    },
+    secureDataStore: {
+      name: "baseSecureDataStore"
+    },
+    secureDataStoreInitInfo: {
+      name: "baseSecureDataStoreInitInfo"
+    },
+    secureDataStoreUpdateInfo: {
+      name: "baseSecureDataStoreUpdateInfo"
+    },
+    assetLinkedSecureDataStore: {
+      name: "baseAssetLinkedSecureDataStore"
+    },
+    assetLinkedSecureDataStoreInitInfo: {
+      name: "baseAssetLinkedSecureDataStoreInitInfo"
+    },
+    assetLinkedSecureDataStoreUpdateInfo: {
+      name: "baseAssetLinkedSecureDataStoreUpdateInfo"
+    },
+    dataSection: {
+      name: "baseDataSection"
+    },
+    dataSectionInitInfo: {
+      name: "baseDataSectionInitInfo"
+    },
+    dataSectionUpdateInfo: {
+      name: "baseDataSectionUpdateInfo"
     },
     validationResultsOffset: {
       name: "baseValidationResultsOffset"

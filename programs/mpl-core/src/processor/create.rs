@@ -212,6 +212,15 @@ pub(crate) fn process_create<'a>(
                         ExternalPluginAdapter::check_create(plugin_init_info),
                     );
 
+                    // TODO: This should be handled in the validate call.
+                    match plugin_init_info {
+                        ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(_)
+                        | ExternalPluginAdapterInitInfo::AssetLinkedSecureDataStore(_) => {
+                            return Err(MplCoreError::InvalidPluginAdapterTarget.into())
+                        }
+                        _ => (),
+                    }
+
                     if external_check_result_bits.can_reject() {
                         let validation_ctx = PluginValidationContext {
                             accounts,
@@ -234,11 +243,13 @@ pub(crate) fn process_create<'a>(
                     }
                     initialize_external_plugin_adapter::<AssetV1>(
                         plugin_init_info,
+                        Some(&new_asset),
                         &mut plugin_header,
                         &mut plugin_registry,
                         ctx.accounts.asset,
                         ctx.accounts.payer,
                         ctx.accounts.system_program,
+                        None,
                     )?;
                 }
             }

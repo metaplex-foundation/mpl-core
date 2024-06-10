@@ -17,6 +17,9 @@ use num_derive::FromPrimitive;
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Hash, FromPrimitive)]
 pub enum ExternalPluginAdapterType {
     LifecycleHook,
+    AssetLinkedLifecycleHook,
     Oracle,
-    DataStore,
+    SecureDataStore,
+    AssetLinkedSecureDataStore,
+    DataSection,
 }

@@ -8,11 +8,12 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, Attributes, Autograph, BurnDelegate, DataStore, Edition, ExternalCheckResult,
-        ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate, ImmutableMetadata, Key,
-        LifecycleHook, MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
-        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
-        VerifiedCreators,
+        AddBlocker, AssetLinkedLifecycleHook, AssetLinkedSecureDataStore, Attributes, Autograph,
+        BurnDelegate, DataSection, Edition, ExternalCheckResult, ExternalPluginAdapter,
+        ExternalPluginAdapterKey, FreezeDelegate, ImmutableMetadata, Key, LifecycleHook,
+        MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
+        PermanentTransferDelegate, PluginAuthority, Royalties, SecureDataStore, TransferDelegate,
+        UpdateDelegate, VerifiedCreators,
     },
 };
 
@@ -182,8 +183,11 @@ pub struct PluginsList {
 #[derive(Debug, Default)]
 pub struct ExternalPluginAdaptersList {
     pub lifecycle_hooks: Vec<LifecycleHook>,
+    pub asset_linked_lifecycle_hooks: Vec<AssetLinkedLifecycleHook>,
     pub oracles: Vec<Oracle>,
-    pub data_stores: Vec<DataStore>,
+    pub data_stores: Vec<SecureDataStore>,
+    pub asset_linked_data_stores: Vec<AssetLinkedSecureDataStore>,
+    pub data_sections: Vec<DataSection>,
 }
 
 #[derive(Debug)]
@@ -303,15 +307,22 @@ impl PluginRegistryV1Safe {
 impl From<&ExternalPluginAdapter> for ExternalPluginAdapterKey {
     fn from(plugin: &ExternalPluginAdapter) -> Self {
         match plugin {
-            ExternalPluginAdapter::DataStore(data_store) => {
-                ExternalPluginAdapterKey::DataStore(data_store.data_authority.clone())
+            ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
+                ExternalPluginAdapterKey::SecureDataStore(data_store.data_authority.clone())
+            }
+            ExternalPluginAdapter::SecureDataStore(data_store) => {
+                ExternalPluginAdapterKey::SecureDataStore(data_store.data_authority.clone())
             }
             ExternalPluginAdapter::Oracle(oracle) => {
                 ExternalPluginAdapterKey::Oracle(oracle.base_address)
             }
+            ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+                ExternalPluginAdapterKey::LifecycleHook(lifecycle_hook.hooked_program)
+            }
             ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
                 ExternalPluginAdapterKey::LifecycleHook(lifecycle_hook.hooked_program)
             }
+            ExternalPluginAdapter::DataSection(_) => todo!(),
         }
     }
 }
