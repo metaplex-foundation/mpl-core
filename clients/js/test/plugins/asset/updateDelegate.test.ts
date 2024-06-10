@@ -711,3 +711,27 @@ test('it cannot update the update authority of the asset as an updateDelegate ad
 
   await t.throwsAsync(result, { name: 'NoApprovals' });
 });
+
+test('it cannot update the update authority of the asset as an updateDelegate root authority', async (t) => {
+  const umi = await createUmi();
+  const updateDelegate = generateSigner(umi);
+  const updateDelegate2 = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'UpdateDelegate',
+        authority: { type: 'Address', address: updateDelegate.publicKey },
+        additionalDelegates: [],
+      },
+    ],
+  });
+
+  const result = update(umi, {
+    asset,
+    authority: updateDelegate,
+    newUpdateAuthority: updateAuthority('Address', [updateDelegate2.publicKey]),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+});

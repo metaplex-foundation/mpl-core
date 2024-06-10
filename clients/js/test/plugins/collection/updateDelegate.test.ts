@@ -677,6 +677,30 @@ test('it cannot update the update authority of the collection as an updateDelega
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });
 
+test('it cannot update the update authority of the collection as an updateDelegate root authority', async (t) => {
+  const umi = await createUmi();
+  const updateDelegate = generateSigner(umi);
+  const updateDelegate2 = generateSigner(umi);
+
+  const collection = await createCollection(umi, {
+    plugins: [
+      {
+        type: 'UpdateDelegate',
+        authority: { type: 'Address', address: updateDelegate.publicKey },
+        additionalDelegates: [],
+      },
+    ],
+  });
+
+  const result = updateCollection(umi, {
+    collection: collection.publicKey,
+    authority: updateDelegate,
+    newUpdateAuthority: updateDelegate2.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+});
+
 test('it can update collection details as an updateDelegate additional delegate', async (t) => {
   const umi = await createUmi();
   const updateDelegate = generateSigner(umi);
