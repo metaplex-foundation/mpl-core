@@ -130,6 +130,20 @@ kinobi.update(
         },
       }
     },
+    updateV2: {
+      arguments: {
+        newUpdateAuthority: {
+          defaultValue: k.noneValueNode()
+        },
+        newName: {
+          defaultValue: k.noneValueNode()
+        },
+        newUri: {
+          defaultValue: k.noneValueNode()
+        },
+      }
+    },
+
     updateCollectionV1: {
       arguments: {
         newName: {
