@@ -131,3 +131,72 @@ test.serial('it can collect burned asset', async (t) => {
   t.deepEqual(subtractAmounts(balEnd1, balStart1), sol(0.0015 / 2));
   t.deepEqual(subtractAmounts(balEnd2, balStart2), sol(0.0015 / 2));
 });
+
+test.serial(
+  'it can collect multiple times on same asset idempotently',
+  async (t) => {
+    const umi = await createUmi();
+    const asset = await createAsset(umi);
+    const balStart1 = await umi.rpc.getBalance(recipient1);
+    const balStart2 = await umi.rpc.getBalance(recipient2);
+    await collect(umi, {})
+      .addRemainingAccounts({
+        isSigner: false,
+        isWritable: true,
+        pubkey: asset.publicKey,
+      })
+      .sendAndConfirm(umi);
+    const balMid1 = await umi.rpc.getBalance(recipient1);
+    const balMid2 = await umi.rpc.getBalance(recipient2);
+    t.is(await hasCollectAmount(umi, asset.publicKey), false);
+    t.deepEqual(subtractAmounts(balMid1, balStart1), sol(0.0015 / 2));
+    t.deepEqual(subtractAmounts(balMid2, balStart2), sol(0.0015 / 2));
+    await collect(umi, {})
+      .addRemainingAccounts({
+        isSigner: false,
+        isWritable: true,
+        pubkey: asset.publicKey,
+      })
+      .sendAndConfirm(umi);
+    const balEnd1 = await umi.rpc.getBalance(recipient1);
+    const balEnd2 = await umi.rpc.getBalance(recipient2);
+    t.is(await hasCollectAmount(umi, asset.publicKey), false);
+    t.deepEqual(subtractAmounts(balEnd1, balStart1), sol(0.0015 / 2));
+    t.deepEqual(subtractAmounts(balEnd2, balStart2), sol(0.0015 / 2));
+  }
+);
+
+test.serial('it can collect multiple assets at once', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi);
+  const asset2 = await createAsset(umi);
+  const asset3 = await createAsset(umi);
+  const balStart1 = await umi.rpc.getBalance(recipient1);
+  const balStart2 = await umi.rpc.getBalance(recipient2);
+  await collect(umi, {})
+    .addRemainingAccounts([
+      {
+        isSigner: false,
+        isWritable: true,
+        pubkey: asset.publicKey,
+      },
+      {
+        isSigner: false,
+        isWritable: true,
+        pubkey: asset2.publicKey,
+      },
+      {
+        isSigner: false,
+        isWritable: true,
+        pubkey: asset3.publicKey,
+      },
+    ])
+    .sendAndConfirm(umi);
+  const balEnd1 = await umi.rpc.getBalance(recipient1);
+  const balEnd2 = await umi.rpc.getBalance(recipient2);
+  t.is(await hasCollectAmount(umi, asset.publicKey), false);
+  t.is(await hasCollectAmount(umi, asset2.publicKey), false);
+  t.is(await hasCollectAmount(umi, asset3.publicKey), false);
+  t.deepEqual(subtractAmounts(balEnd1, balStart1), sol((0.0015 / 2) * 3));
+  t.deepEqual(subtractAmounts(balEnd2, balStart2), sol((0.0015 / 2) * 3));
+});
