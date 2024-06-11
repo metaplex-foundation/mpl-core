@@ -6,6 +6,8 @@ import {
   pluginAuthorityPair,
   updateAuthority,
   updateCollectionV1,
+  addCollectionPlugin,
+  approveCollectionPluginAuthority,
 } from '../src';
 import {
   assertAsset,
@@ -318,6 +320,102 @@ test('it can update an asset update authority to be part of a collection using u
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Collection', address: collection.publicKey },
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
+  });
+});
+
+test('it cannot update an asset using only new collection authority', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = await createAsset(umi);
+  const newCollectionAuthority = generateSigner(umi);
+  const collection = await createCollection(umi, {
+    updateAuthority: newCollectionAuthority,
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  const result = updateV2(umi, {
+    asset: asset.publicKey,
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
+    newUpdateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    newCollection: collection.publicKey,
+    authority: newCollectionAuthority,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+});
+
+test('it can change an asset collection using delegate', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const originalCollectionAuthority = generateSigner(umi);
+  const { asset, collection: originalCollection } =
+    await createAssetWithCollection(
+      umi,
+      { authority: originalCollectionAuthority },
+      { updateAuthority: originalCollectionAuthority }
+    );
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: {
+      type: 'Collection',
+      address: originalCollection.publicKey,
+    },
+  });
+
+  const newCollectionAuthority = generateSigner(umi);
+  const newCollection = await createCollection(umi, {
+    updateAuthority: newCollectionAuthority,
+  });
+
+  await addCollectionPlugin(umi, {
+    collection: newCollection.publicKey,
+    plugin: {
+      type: 'UpdateDelegate',
+      additionalDelegates: [],
+    },
+    authority: newCollectionAuthority,
+  }).sendAndConfirm(umi);
+
+  await approveCollectionPluginAuthority(umi, {
+    collection: newCollection.publicKey,
+    plugin: {
+      type: 'UpdateDelegate',
+    },
+    newAuthority: {
+      type: 'Address',
+      address: originalCollectionAuthority.publicKey,
+    },
+    authority: newCollectionAuthority,
+  }).sendAndConfirm(umi);
+
+  await updateV2(umi, {
+    asset: asset.publicKey,
+    collection: originalCollection.publicKey,
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
+    newUpdateAuthority: updateAuthority('Collection', [
+      newCollection.publicKey,
+    ]),
+    newCollection: newCollection.publicKey,
+    authority: originalCollectionAuthority,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: newCollection.publicKey },
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
   });

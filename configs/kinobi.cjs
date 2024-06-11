@@ -143,7 +143,6 @@ kinobi.update(
         },
       }
     },
-
     updateCollectionV1: {
       arguments: {
         newName: {
