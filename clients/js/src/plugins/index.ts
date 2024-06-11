@@ -1,6 +1,6 @@
 export * from './royalties';
 export * from './lib';
-export * from './secureDataStore';
+export * from './appData';
 export * from './lifecycleChecks';
 export * from './lifecycleHook';
 export * from './oracle';
@@ -14,7 +14,7 @@ export * from './seed';
 export * from './extraAccount';
 export * from './validationResultsOffset';
 export * from './assetLinkedLifecycleHook';
-export * from './assetLinkedSecureDataStore';
+export * from './assetLinkedAppData';
 export * from './dataSection';
 export * from './linkedDataKey';
 export * from './masterEdition';

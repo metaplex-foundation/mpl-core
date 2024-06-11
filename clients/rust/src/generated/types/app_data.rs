@@ -16,8 +16,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct SecureDataStoreInitInfo {
+pub struct AppData {
     pub data_authority: PluginAuthority,
-    pub init_plugin_authority: Option<PluginAuthority>,
-    pub schema: Option<ExternalPluginAdapterSchema>,
+    pub schema: ExternalPluginAdapterSchema,
 }

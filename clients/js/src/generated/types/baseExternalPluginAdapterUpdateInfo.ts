@@ -15,36 +15,36 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  BaseAssetLinkedSecureDataStoreUpdateInfo,
-  BaseAssetLinkedSecureDataStoreUpdateInfoArgs,
+  BaseAppDataUpdateInfo,
+  BaseAppDataUpdateInfoArgs,
+  BaseAssetLinkedAppDataUpdateInfo,
+  BaseAssetLinkedAppDataUpdateInfoArgs,
   BaseLifecycleHookUpdateInfo,
   BaseLifecycleHookUpdateInfoArgs,
   BaseOracleUpdateInfo,
   BaseOracleUpdateInfoArgs,
-  BaseSecureDataStoreUpdateInfo,
-  BaseSecureDataStoreUpdateInfoArgs,
-  getBaseAssetLinkedSecureDataStoreUpdateInfoSerializer,
+  getBaseAppDataUpdateInfoSerializer,
+  getBaseAssetLinkedAppDataUpdateInfoSerializer,
   getBaseLifecycleHookUpdateInfoSerializer,
   getBaseOracleUpdateInfoSerializer,
-  getBaseSecureDataStoreUpdateInfoSerializer,
 } from '.';
 
 export type BaseExternalPluginAdapterUpdateInfo =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookUpdateInfo] }
   | { __kind: 'Oracle'; fields: [BaseOracleUpdateInfo] }
-  | { __kind: 'SecureDataStore'; fields: [BaseSecureDataStoreUpdateInfo] }
+  | { __kind: 'AppData'; fields: [BaseAppDataUpdateInfo] }
   | {
-      __kind: 'AssetLinkedSecureDataStore';
-      fields: [BaseAssetLinkedSecureDataStoreUpdateInfo];
+      __kind: 'AssetLinkedAppData';
+      fields: [BaseAssetLinkedAppDataUpdateInfo];
     };
 
 export type BaseExternalPluginAdapterUpdateInfoArgs =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookUpdateInfoArgs] }
   | { __kind: 'Oracle'; fields: [BaseOracleUpdateInfoArgs] }
-  | { __kind: 'SecureDataStore'; fields: [BaseSecureDataStoreUpdateInfoArgs] }
+  | { __kind: 'AppData'; fields: [BaseAppDataUpdateInfoArgs] }
   | {
-      __kind: 'AssetLinkedSecureDataStore';
-      fields: [BaseAssetLinkedSecureDataStoreUpdateInfoArgs];
+      __kind: 'AssetLinkedAppData';
+      fields: [BaseAssetLinkedAppDataUpdateInfoArgs];
     };
 
 export function getBaseExternalPluginAdapterUpdateInfoSerializer(): Serializer<
@@ -69,26 +69,20 @@ export function getBaseExternalPluginAdapterUpdateInfoSerializer(): Serializer<
         >([['fields', tuple([getBaseOracleUpdateInfoSerializer()])]]),
       ],
       [
-        'SecureDataStore',
+        'AppData',
         struct<
-          GetDataEnumKindContent<
-            BaseExternalPluginAdapterUpdateInfo,
-            'SecureDataStore'
-          >
-        >([['fields', tuple([getBaseSecureDataStoreUpdateInfoSerializer()])]]),
+          GetDataEnumKindContent<BaseExternalPluginAdapterUpdateInfo, 'AppData'>
+        >([['fields', tuple([getBaseAppDataUpdateInfoSerializer()])]]),
       ],
       [
-        'AssetLinkedSecureDataStore',
+        'AssetLinkedAppData',
         struct<
           GetDataEnumKindContent<
             BaseExternalPluginAdapterUpdateInfo,
-            'AssetLinkedSecureDataStore'
+            'AssetLinkedAppData'
           >
         >([
-          [
-            'fields',
-            tuple([getBaseAssetLinkedSecureDataStoreUpdateInfoSerializer()]),
-          ],
+          ['fields', tuple([getBaseAssetLinkedAppDataUpdateInfoSerializer()])],
         ]),
       ],
     ],
@@ -115,21 +109,21 @@ export function baseExternalPluginAdapterUpdateInfo(
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'Oracle'>;
 export function baseExternalPluginAdapterUpdateInfo(
-  kind: 'SecureDataStore',
+  kind: 'AppData',
   data: GetDataEnumKindContent<
     BaseExternalPluginAdapterUpdateInfoArgs,
-    'SecureDataStore'
+    'AppData'
   >['fields']
-): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'SecureDataStore'>;
+): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'AppData'>;
 export function baseExternalPluginAdapterUpdateInfo(
-  kind: 'AssetLinkedSecureDataStore',
+  kind: 'AssetLinkedAppData',
   data: GetDataEnumKindContent<
     BaseExternalPluginAdapterUpdateInfoArgs,
-    'AssetLinkedSecureDataStore'
+    'AssetLinkedAppData'
   >['fields']
 ): GetDataEnumKind<
   BaseExternalPluginAdapterUpdateInfoArgs,
-  'AssetLinkedSecureDataStore'
+  'AssetLinkedAppData'
 >;
 export function baseExternalPluginAdapterUpdateInfo<
   K extends BaseExternalPluginAdapterUpdateInfoArgs['__kind'],

@@ -13,7 +13,7 @@ export type LinkedDataKey =
       hookedProgram: PublicKey;
     }
   | {
-      type: 'AssetLinkedSecureDataStore';
+      type: 'AssetLinkedAppData';
       dataAuthority: PluginAuthority;
     };
 
@@ -24,7 +24,7 @@ export function linkedDataKeyToBase(e: LinkedDataKey): BaseLinkedDataKey {
         __kind: e.type,
         fields: [e.hookedProgram],
       };
-    case 'AssetLinkedSecureDataStore':
+    case 'AssetLinkedAppData':
       return {
         __kind: e.type,
         fields: [pluginAuthorityToBase(e.dataAuthority)],
@@ -41,7 +41,7 @@ export function linkedDataKeyFromBase(e: BaseLinkedDataKey): LinkedDataKey {
         type: e.__kind,
         hookedProgram: e.fields[0],
       };
-    case 'AssetLinkedSecureDataStore':
+    case 'AssetLinkedAppData':
       return {
         type: e.__kind,
         dataAuthority: pluginAuthorityFromBase(e.fields[0]),

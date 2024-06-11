@@ -18,23 +18,20 @@ import {
   getExternalPluginAdapterSchemaSerializer,
 } from '.';
 
-export type BaseSecureDataStoreUpdateInfo = {
+export type BaseAppDataUpdateInfo = {
   schema: Option<ExternalPluginAdapterSchema>;
 };
 
-export type BaseSecureDataStoreUpdateInfoArgs = {
+export type BaseAppDataUpdateInfoArgs = {
   schema: OptionOrNullable<ExternalPluginAdapterSchemaArgs>;
 };
 
-export function getBaseSecureDataStoreUpdateInfoSerializer(): Serializer<
-  BaseSecureDataStoreUpdateInfoArgs,
-  BaseSecureDataStoreUpdateInfo
+export function getBaseAppDataUpdateInfoSerializer(): Serializer<
+  BaseAppDataUpdateInfoArgs,
+  BaseAppDataUpdateInfo
 > {
-  return struct<BaseSecureDataStoreUpdateInfo>(
+  return struct<BaseAppDataUpdateInfo>(
     [['schema', option(getExternalPluginAdapterSchemaSerializer())]],
-    { description: 'BaseSecureDataStoreUpdateInfo' }
-  ) as Serializer<
-    BaseSecureDataStoreUpdateInfoArgs,
-    BaseSecureDataStoreUpdateInfo
-  >;
+    { description: 'BaseAppDataUpdateInfo' }
+  ) as Serializer<BaseAppDataUpdateInfoArgs, BaseAppDataUpdateInfo>;
 }

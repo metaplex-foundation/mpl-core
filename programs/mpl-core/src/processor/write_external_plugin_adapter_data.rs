@@ -10,10 +10,10 @@ use crate::{
     },
     plugins::{
         create_meta_idempotent, fetch_wrapped_external_plugin_adapter,
-        initialize_external_plugin_adapter, update_external_plugin_adapter_data,
-        AssetLinkedSecureDataStore, DataSectionInitInfo, ExternalPluginAdapter,
+        initialize_external_plugin_adapter, update_external_plugin_adapter_data, AppData,
+        AssetLinkedAppData, DataSectionInitInfo, ExternalPluginAdapter,
         ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalRegistryRecord,
-        LifecycleHook, LinkedDataKey, PluginHeaderV1, PluginRegistryV1, SecureDataStore,
+        LifecycleHook, LinkedDataKey, PluginHeaderV1, PluginRegistryV1,
     },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -61,12 +61,11 @@ pub(crate) fn write_external_plugin_adapter_data<'a>(
     }
 
     let (record, plugin) = match args.key {
-        ExternalPluginAdapterKey::LifecycleHook(_)
-        | ExternalPluginAdapterKey::SecureDataStore(_) => {
+        ExternalPluginAdapterKey::LifecycleHook(_) | ExternalPluginAdapterKey::AppData(_) => {
             fetch_wrapped_external_plugin_adapter::<AssetV1>(ctx.accounts.asset, None, &args.key)
         }
         ExternalPluginAdapterKey::AssetLinkedLifecycleHook(_)
-        | ExternalPluginAdapterKey::AssetLinkedSecureDataStore(_) => {
+        | ExternalPluginAdapterKey::AssetLinkedAppData(_) => {
             let collection = ctx
                 .accounts
                 .collection
@@ -169,10 +168,9 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
             data_authority: Some(data_authority),
             ..
         })
-        | ExternalPluginAdapter::SecureDataStore(SecureDataStore { data_authority, .. })
-        | ExternalPluginAdapter::AssetLinkedSecureDataStore(AssetLinkedSecureDataStore {
-            data_authority,
-            ..
+        | ExternalPluginAdapter::AppData(AppData { data_authority, .. })
+        | ExternalPluginAdapter::AssetLinkedAppData(AssetLinkedAppData {
+            data_authority, ..
         }) => {
             if !authorities.contains(data_authority) {
                 return Err(MplCoreError::InvalidAuthority.into());
@@ -181,10 +179,10 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
         _ => return Err(MplCoreError::UnsupportedOperation.into()),
     }
 
-    // SecureDataStore and LifecycleHook both write the data after the plugin.
-    // AssetLinkedSecureDataStore writes the data to the asset directly.
+    // AppData and LifecycleHook both write the data after the plugin.
+    // AssetLinkedAppData writes the data to the asset directly.
     match wrapped_plugin {
-        ExternalPluginAdapter::LifecycleHook(_) | ExternalPluginAdapter::SecureDataStore(_) => {
+        ExternalPluginAdapter::LifecycleHook(_) | ExternalPluginAdapter::AppData(_) => {
             let header = header.ok_or(MplCoreError::PluginsNotInitialized)?;
             let registry = registry.ok_or(MplCoreError::PluginsNotInitialized)?;
             match (data, buffer) {
@@ -212,15 +210,15 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                 (None, None) => Err(MplCoreError::NoDataSources.into()),
             }
         }
-        ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
+        ExternalPluginAdapter::AssetLinkedAppData(app_data) => {
             let (_, mut header, mut registry) =
                 create_meta_idempotent::<T>(account, payer, system_program)?;
 
             match fetch_wrapped_external_plugin_adapter(
                 account,
                 Some(core),
-                &ExternalPluginAdapterKey::DataSection(LinkedDataKey::AssetLinkedSecureDataStore(
-                    data_store.data_authority,
+                &ExternalPluginAdapterKey::DataSection(LinkedDataKey::AssetLinkedAppData(
+                    app_data.data_authority,
                 )),
             ) {
                 Ok((section_record, _)) => match (data, buffer) {
@@ -250,10 +248,8 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                 Err(_) => match (data, buffer) {
                     (Some(data), None) => initialize_external_plugin_adapter::<T>(
                         &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
-                            parent_key: LinkedDataKey::AssetLinkedSecureDataStore(
-                                data_store.data_authority,
-                            ),
-                            schema: data_store.schema,
+                            parent_key: LinkedDataKey::AssetLinkedAppData(app_data.data_authority),
+                            schema: app_data.schema,
                         }),
                         Some(core),
                         &mut header,
@@ -265,10 +261,8 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                     ),
                     (None, Some(buffer)) => initialize_external_plugin_adapter::<T>(
                         &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
-                            parent_key: LinkedDataKey::AssetLinkedSecureDataStore(
-                                data_store.data_authority,
-                            ),
-                            schema: data_store.schema,
+                            parent_key: LinkedDataKey::AssetLinkedAppData(app_data.data_authority),
+                            schema: app_data.schema,
                         }),
                         Some(core),
                         &mut header,

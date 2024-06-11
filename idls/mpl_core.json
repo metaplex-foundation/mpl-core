@@ -2107,6 +2107,138 @@
       }
     },
     {
+      "name": "AppData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AppDataInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AppDataUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetLinkedAppData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetLinkedAppDataInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetLinkedAppDataUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "AssetLinkedLifecycleHook",
       "type": {
         "kind": "struct",
@@ -2235,72 +2367,6 @@
               }
             }
           },
-          {
-            "name": "schema",
-            "type": {
-              "option": {
-                "defined": "ExternalPluginAdapterSchema"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "AssetLinkedSecureDataStore",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "dataAuthority",
-            "type": {
-              "defined": "Authority"
-            }
-          },
-          {
-            "name": "schema",
-            "type": {
-              "defined": "ExternalPluginAdapterSchema"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "AssetLinkedSecureDataStoreInitInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "dataAuthority",
-            "type": {
-              "defined": "Authority"
-            }
-          },
-          {
-            "name": "initPluginAuthority",
-            "type": {
-              "option": {
-                "defined": "Authority"
-              }
-            }
-          },
-          {
-            "name": "schema",
-            "type": {
-              "option": {
-                "defined": "ExternalPluginAdapterSchema"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "AssetLinkedSecureDataStoreUpdateInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
           {
             "name": "schema",
             "type": {
@@ -2897,72 +2963,6 @@
             "name": "ruleSet",
             "type": {
               "defined": "RuleSet"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "SecureDataStore",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "dataAuthority",
-            "type": {
-              "defined": "Authority"
-            }
-          },
-          {
-            "name": "schema",
-            "type": {
-              "defined": "ExternalPluginAdapterSchema"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "SecureDataStoreInitInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "dataAuthority",
-            "type": {
-              "defined": "Authority"
-            }
-          },
-          {
-            "name": "initPluginAuthority",
-            "type": {
-              "option": {
-                "defined": "Authority"
-              }
-            }
-          },
-          {
-            "name": "schema",
-            "type": {
-              "option": {
-                "defined": "ExternalPluginAdapterSchema"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "SecureDataStoreUpdateInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "schema",
-            "type": {
-              "option": {
-                "defined": "ExternalPluginAdapterSchema"
-              }
             }
           }
         ]
@@ -3861,13 +3861,13 @@
             "name": "Oracle"
           },
           {
-            "name": "SecureDataStore"
+            "name": "AppData"
           },
           {
             "name": "AssetLinkedLifecycleHook"
           },
           {
-            "name": "AssetLinkedSecureDataStore"
+            "name": "AssetLinkedAppData"
           },
           {
             "name": "DataSection"
@@ -3905,18 +3905,18 @@
             ]
           },
           {
-            "name": "SecureDataStore",
+            "name": "AppData",
             "fields": [
               {
-                "defined": "SecureDataStore"
+                "defined": "AppData"
               }
             ]
           },
           {
-            "name": "AssetLinkedSecureDataStore",
+            "name": "AssetLinkedAppData",
             "fields": [
               {
-                "defined": "AssetLinkedSecureDataStore"
+                "defined": "AssetLinkedAppData"
               }
             ]
           },
@@ -4139,10 +4139,10 @@
             ]
           },
           {
-            "name": "SecureDataStore",
+            "name": "AppData",
             "fields": [
               {
-                "defined": "SecureDataStoreInitInfo"
+                "defined": "AppDataInitInfo"
               }
             ]
           },
@@ -4155,10 +4155,10 @@
             ]
           },
           {
-            "name": "AssetLinkedSecureDataStore",
+            "name": "AssetLinkedAppData",
             "fields": [
               {
-                "defined": "AssetLinkedSecureDataStoreInitInfo"
+                "defined": "AssetLinkedAppDataInitInfo"
               }
             ]
           },
@@ -4195,18 +4195,18 @@
             ]
           },
           {
-            "name": "SecureDataStore",
+            "name": "AppData",
             "fields": [
               {
-                "defined": "SecureDataStoreUpdateInfo"
+                "defined": "AppDataUpdateInfo"
               }
             ]
           },
           {
-            "name": "AssetLinkedSecureDataStore",
+            "name": "AssetLinkedAppData",
             "fields": [
               {
-                "defined": "AssetLinkedSecureDataStoreUpdateInfo"
+                "defined": "AssetLinkedAppDataUpdateInfo"
               }
             ]
           }
@@ -4231,7 +4231,7 @@
             ]
           },
           {
-            "name": "SecureDataStore",
+            "name": "AppData",
             "fields": [
               {
                 "defined": "Authority"
@@ -4245,7 +4245,7 @@
             ]
           },
           {
-            "name": "AssetLinkedSecureDataStore",
+            "name": "AssetLinkedAppData",
             "fields": [
               {
                 "defined": "Authority"
@@ -4275,7 +4275,7 @@
             ]
           },
           {
-            "name": "AssetLinkedSecureDataStore",
+            "name": "AssetLinkedAppData",
             "fields": [
               {
                 "defined": "Authority"

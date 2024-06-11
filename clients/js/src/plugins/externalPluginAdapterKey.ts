@@ -9,7 +9,7 @@ export type ExternalPluginAdapterKey =
       baseAddress: PublicKey;
     }
   | {
-      type: 'SecureDataStore';
+      type: 'AppData';
       dataAuthority: PluginAuthority;
     }
   | {
@@ -17,7 +17,7 @@ export type ExternalPluginAdapterKey =
       hookedProgram: PublicKey;
     }
   | {
-      type: 'AssetLinkedSecureDataStore';
+      type: 'AssetLinkedAppData';
       dataAuthority: PluginAuthority;
     }
   | { type: 'DataSection'; parentKey: LinkedDataKey };
@@ -30,8 +30,8 @@ export function externalPluginAdapterKeyToBase(
         __kind: e.type,
         fields: [e.baseAddress],
       };
-    case 'SecureDataStore':
-    case 'AssetLinkedSecureDataStore':
+    case 'AppData':
+    case 'AssetLinkedAppData':
       return {
         __kind: e.type,
         fields: [pluginAuthorityToBase(e.dataAuthority)],

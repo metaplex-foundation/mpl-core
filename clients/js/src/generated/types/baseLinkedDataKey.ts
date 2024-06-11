@@ -24,11 +24,11 @@ import {
 
 export type BaseLinkedDataKey =
   | { __kind: 'AssetLinkedLifecycleHook'; fields: [PublicKey] }
-  | { __kind: 'AssetLinkedSecureDataStore'; fields: [BasePluginAuthority] };
+  | { __kind: 'AssetLinkedAppData'; fields: [BasePluginAuthority] };
 
 export type BaseLinkedDataKeyArgs =
   | { __kind: 'AssetLinkedLifecycleHook'; fields: [PublicKey] }
-  | { __kind: 'AssetLinkedSecureDataStore'; fields: [BasePluginAuthorityArgs] };
+  | { __kind: 'AssetLinkedAppData'; fields: [BasePluginAuthorityArgs] };
 
 export function getBaseLinkedDataKeySerializer(): Serializer<
   BaseLinkedDataKeyArgs,
@@ -43,13 +43,10 @@ export function getBaseLinkedDataKeySerializer(): Serializer<
         >([['fields', tuple([publicKeySerializer()])]]),
       ],
       [
-        'AssetLinkedSecureDataStore',
-        struct<
-          GetDataEnumKindContent<
-            BaseLinkedDataKey,
-            'AssetLinkedSecureDataStore'
-          >
-        >([['fields', tuple([getBasePluginAuthoritySerializer()])]]),
+        'AssetLinkedAppData',
+        struct<GetDataEnumKindContent<BaseLinkedDataKey, 'AssetLinkedAppData'>>(
+          [['fields', tuple([getBasePluginAuthoritySerializer()])]]
+        ),
       ],
     ],
     { description: 'BaseLinkedDataKey' }
@@ -65,12 +62,12 @@ export function baseLinkedDataKey(
   >['fields']
 ): GetDataEnumKind<BaseLinkedDataKeyArgs, 'AssetLinkedLifecycleHook'>;
 export function baseLinkedDataKey(
-  kind: 'AssetLinkedSecureDataStore',
+  kind: 'AssetLinkedAppData',
   data: GetDataEnumKindContent<
     BaseLinkedDataKeyArgs,
-    'AssetLinkedSecureDataStore'
+    'AssetLinkedAppData'
   >['fields']
-): GetDataEnumKind<BaseLinkedDataKeyArgs, 'AssetLinkedSecureDataStore'>;
+): GetDataEnumKind<BaseLinkedDataKeyArgs, 'AssetLinkedAppData'>;
 export function baseLinkedDataKey<K extends BaseLinkedDataKeyArgs['__kind']>(
   kind: K,
   data?: any

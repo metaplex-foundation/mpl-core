@@ -8,10 +8,10 @@ import {
   PluginAuthority,
 } from '../plugins';
 import { OraclePlugin } from '../plugins/oracle';
-import { SecureDataStorePlugin } from '../plugins/secureDataStore';
+import { AppDataPlugin } from '../plugins/appData';
 import { LifecycleHookPlugin } from '../plugins/lifecycleHook';
 import { DataSectionPlugin } from '../plugins/dataSection';
-import { AssetLinkedSecureDataStorePlugin } from '../plugins/assetLinkedSecureDataStore';
+import { AssetLinkedAppDataPlugin } from '../plugins/assetLinkedAppData';
 
 /**
  * Find the collection address for the given asset if it is part of a collection.
@@ -28,30 +28,30 @@ export function collectionAddress(asset: AssetV1): PublicKey | undefined {
 
 const externalPluginAdapterKeys: (keyof ExternalPluginAdaptersList)[] = [
   'oracles',
-  'secureDataStores',
+  'appDatas',
   'lifecycleHooks',
   'dataSections',
-  'assetLinkedSecureDataStores',
+  'assetLinkedAppDatas',
 ];
 export const getExternalPluginAdapterKeyAsString = (
   plugin:
     | Pick<OraclePlugin, 'type' | 'baseAddress'>
-    | Pick<SecureDataStorePlugin, 'type' | 'dataAuthority'>
+    | Pick<AppDataPlugin, 'type' | 'dataAuthority'>
     | Pick<LifecycleHookPlugin, 'type' | 'hookedProgram'>
-    | Pick<AssetLinkedSecureDataStorePlugin, 'type' | 'dataAuthority'>
+    | Pick<AssetLinkedAppDataPlugin, 'type' | 'dataAuthority'>
     | Pick<AssetLinkedLifecycleHookPlugin, 'type' | 'hookedProgram'>
     | Pick<DataSectionPlugin, 'type' | 'parentKey'>
 ): string => {
   switch (plugin.type) {
     case 'Oracle':
       return `${plugin.type}-${plugin.baseAddress}`;
-    case 'SecureDataStore':
+    case 'AppData':
       return `${plugin.type}-${plugin.dataAuthority.type}${
         plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
       }`;
     case 'LifecycleHook':
       return `${plugin.type}-${plugin.hookedProgram}`;
-    case 'AssetLinkedSecureDataStore':
+    case 'AssetLinkedAppData':
       return `${plugin.type}-${plugin.dataAuthority.type}${
         plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
       }`;
@@ -109,16 +109,16 @@ export function deriveAssetPlugins(
 
   // for every data section, find a matching asset linked plugin and inject the data for convenience
   externalPluginAdapters.dataSections?.forEach((dataSection) => {
-    let store;
+    let appData;
     let dataAuth: PluginAuthority;
     switch (dataSection.parentKey.type) {
-      case 'AssetLinkedSecureDataStore':
+      case 'AssetLinkedAppData':
         dataAuth = dataSection.parentKey.dataAuthority;
-        store = externalPluginAdapters.assetLinkedSecureDataStores?.find(
-          (plugin) => comparePluginAuthorities(dataAuth, plugin.dataAuthority)
+        appData = externalPluginAdapters.assetLinkedAppDatas?.find((plugin) =>
+          comparePluginAuthorities(dataAuth, plugin.dataAuthority)
         );
-        if (store) {
-          store.data = dataSection.data;
+        if (appData) {
+          appData.data = dataSection.data;
         }
         break;
       case 'AssetLinkedLifecycleHook':

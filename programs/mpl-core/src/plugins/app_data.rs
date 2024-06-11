@@ -8,30 +8,30 @@ use super::{
     ValidationResult,
 };
 
-/// The data store third party plugin contains arbitrary data that can be written to by the
+/// The app data third party plugin contains arbitrary data that can be written to by the
 /// `data_authority`.  Note this is different then the overall plugin authority stored in the
 /// `ExternalRegistryRecord` as it cannot update/revoke authority or change other metadata for the
 /// plugin.  The data is stored at the plugin's data offset (which in the account is immediately
 /// after this header).
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct SecureDataStore {
-    /// Data authority who can update the data store.  Cannot be changed after plugin is
+pub struct AppData {
+    /// Data authority who can update the app data.  Cannot be changed after plugin is
     /// added.
     pub data_authority: Authority,
     /// Schema for the data used by the plugin.
     pub schema: ExternalPluginAdapterSchema,
 }
 
-impl SecureDataStore {
-    /// Updates the data store with the new info.
-    pub fn update(&mut self, info: &SecureDataStoreUpdateInfo) {
+impl AppData {
+    /// Updates the app data with the new info.
+    pub fn update(&mut self, info: &AppDataUpdateInfo) {
         if let Some(schema) = &info.schema {
             self.schema = *schema;
         }
     }
 }
 
-impl PluginValidation for SecureDataStore {
+impl PluginValidation for AppData {
     fn validate_add_external_plugin_adapter(
         &self,
         _ctx: &PluginValidationContext,
@@ -47,8 +47,8 @@ impl PluginValidation for SecureDataStore {
     }
 }
 
-impl From<&SecureDataStoreInitInfo> for SecureDataStore {
-    fn from(init_info: &SecureDataStoreInitInfo) -> Self {
+impl From<&AppDataInitInfo> for AppData {
+    fn from(init_info: &AppDataInitInfo) -> Self {
         Self {
             data_authority: init_info.data_authority,
             schema: init_info.schema.unwrap_or_default(),
@@ -56,10 +56,10 @@ impl From<&SecureDataStoreInitInfo> for SecureDataStore {
     }
 }
 
-/// Data store initialization info.
+/// App data initialization info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct SecureDataStoreInitInfo {
-    /// Data authority who can update the data store.  This field cannot be
+pub struct AppDataInitInfo {
+    /// Data authority who can update the app data.  This field cannot be
     /// changed after the plugin is added.
     pub data_authority: Authority,
     /// Initial plugin authority who can update plugin properties.
@@ -68,9 +68,9 @@ pub struct SecureDataStoreInitInfo {
     pub schema: Option<ExternalPluginAdapterSchema>,
 }
 
-/// Data store update info.
+/// App data update info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct SecureDataStoreUpdateInfo {
+pub struct AppDataUpdateInfo {
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginAdapterSchema>,
 }

@@ -215,7 +215,7 @@ pub(crate) fn process_create<'a>(
                     // TODO: This should be handled in the validate call.
                     match plugin_init_info {
                         ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(_)
-                        | ExternalPluginAdapterInitInfo::AssetLinkedSecureDataStore(_) => {
+                        | ExternalPluginAdapterInitInfo::AssetLinkedAppData(_) => {
                             return Err(MplCoreError::InvalidPluginAdapterTarget.into())
                         }
                         _ => (),

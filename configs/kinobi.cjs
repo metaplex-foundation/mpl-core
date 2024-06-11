@@ -234,23 +234,23 @@ kinobi.update(
     assetLinkedLifecycleHookUpdateInfo: {
       name: "baseAssetLinkedLifecycleHookUpdateInfo"
     },
-    secureDataStore: {
-      name: "baseSecureDataStore"
+    appData: {
+      name: "baseAppData"
     },
-    secureDataStoreInitInfo: {
-      name: "baseSecureDataStoreInitInfo"
+    appDataInitInfo: {
+      name: "baseAppDataInitInfo"
     },
-    secureDataStoreUpdateInfo: {
-      name: "baseSecureDataStoreUpdateInfo"
+    appDataUpdateInfo: {
+      name: "baseAppDataUpdateInfo"
     },
-    assetLinkedSecureDataStore: {
-      name: "baseAssetLinkedSecureDataStore"
+    assetLinkedAppData: {
+      name: "baseAssetLinkedAppData"
     },
-    assetLinkedSecureDataStoreInitInfo: {
-      name: "baseAssetLinkedSecureDataStoreInitInfo"
+    assetLinkedAppDataInitInfo: {
+      name: "baseAssetLinkedAppDataInitInfo"
     },
-    assetLinkedSecureDataStoreUpdateInfo: {
-      name: "baseAssetLinkedSecureDataStoreUpdateInfo"
+    assetLinkedAppDataUpdateInfo: {
+      name: "baseAssetLinkedAppDataUpdateInfo"
     },
     dataSection: {
       name: "baseDataSection"

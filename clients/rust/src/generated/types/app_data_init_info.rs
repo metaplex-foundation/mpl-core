@@ -6,6 +6,7 @@
 //!
 
 use crate::generated::types::ExternalPluginAdapterSchema;
+use crate::generated::types::PluginAuthority;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
@@ -15,6 +16,8 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct SecureDataStoreUpdateInfo {
+pub struct AppDataInitInfo {
+    pub data_authority: PluginAuthority,
+    pub init_plugin_authority: Option<PluginAuthority>,
     pub schema: Option<ExternalPluginAdapterSchema>,
 }

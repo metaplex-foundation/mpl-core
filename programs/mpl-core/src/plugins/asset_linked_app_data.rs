@@ -5,35 +5,35 @@ use super::{
     ValidationResult,
 };
 
-/// The data store third party plugin contains arbitrary data that can be written to by the
+/// The app data third party plugin contains arbitrary data that can be written to by the
 /// `data_authority`.  Note this is different then the overall plugin authority stored in the
 /// `ExternalRegistryRecord` as it cannot update/revoke authority or change other metadata for the
 /// plugin.  The data is stored at the plugin's data offset (which in the account is immediately
 /// after this header).
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct AssetLinkedSecureDataStore {
-    /// Data authority who can update the data store.  Cannot be changed after plugin is
+pub struct AssetLinkedAppData {
+    /// Data authority who can update the app data.  Cannot be changed after plugin is
     /// added.
     pub data_authority: Authority,
     /// Schema for the data used by the plugin.
     pub schema: ExternalPluginAdapterSchema,
 }
 
-impl AssetLinkedSecureDataStore {
-    /// Updates the data store with the new info.
-    pub fn update(&mut self, info: &AssetLinkedSecureDataStoreUpdateInfo) {
+impl AssetLinkedAppData {
+    /// Updates the app data with the new info.
+    pub fn update(&mut self, info: &AssetLinkedAppDataUpdateInfo) {
         if let Some(schema) = &info.schema {
             self.schema = *schema;
         }
     }
 }
 
-impl PluginValidation for AssetLinkedSecureDataStore {
+impl PluginValidation for AssetLinkedAppData {
     fn validate_create(
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, solana_program::program_error::ProgramError> {
-        solana_program::msg!("AssetLinkedSecureDataStore::validate_create");
+        solana_program::msg!("AssetLinkedAppData::validate_create");
         if ctx.asset_info.is_some() {
             Ok(ValidationResult::Rejected)
         } else {
@@ -42,8 +42,8 @@ impl PluginValidation for AssetLinkedSecureDataStore {
     }
 }
 
-impl From<&AssetLinkedSecureDataStoreInitInfo> for AssetLinkedSecureDataStore {
-    fn from(init_info: &AssetLinkedSecureDataStoreInitInfo) -> Self {
+impl From<&AssetLinkedAppDataInitInfo> for AssetLinkedAppData {
+    fn from(init_info: &AssetLinkedAppDataInitInfo) -> Self {
         Self {
             data_authority: init_info.data_authority,
             schema: init_info.schema.unwrap_or_default(),
@@ -51,10 +51,10 @@ impl From<&AssetLinkedSecureDataStoreInitInfo> for AssetLinkedSecureDataStore {
     }
 }
 
-/// Data store initialization info.
+/// App data initialization info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct AssetLinkedSecureDataStoreInitInfo {
-    /// Data authority who can update the data store.  This field cannot be
+pub struct AssetLinkedAppDataInitInfo {
+    /// Data authority who can update the app data.  This field cannot be
     /// changed after the plugin is added.
     pub data_authority: Authority,
     /// Initial plugin authority who can update plugin properties.
@@ -63,9 +63,9 @@ pub struct AssetLinkedSecureDataStoreInitInfo {
     pub schema: Option<ExternalPluginAdapterSchema>,
 }
 
-/// Data store update info.
+/// App data update info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct AssetLinkedSecureDataStoreUpdateInfo {
+pub struct AssetLinkedAppDataUpdateInfo {
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginAdapterSchema>,
 }

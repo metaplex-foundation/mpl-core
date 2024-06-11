@@ -22,5 +22,5 @@ pub enum LinkedDataKey {
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     AssetLinkedLifecycleHook(Pubkey),
-    AssetLinkedSecureDataStore(PluginAuthority),
+    AssetLinkedAppData(PluginAuthority),
 }

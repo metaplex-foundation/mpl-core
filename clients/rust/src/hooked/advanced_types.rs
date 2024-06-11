@@ -8,12 +8,12 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, AssetLinkedLifecycleHook, AssetLinkedSecureDataStore, Attributes, Autograph,
+        AddBlocker, AppData, AssetLinkedAppData, AssetLinkedLifecycleHook, Attributes, Autograph,
         BurnDelegate, DataSection, Edition, ExternalCheckResult, ExternalPluginAdapter,
         ExternalPluginAdapterKey, FreezeDelegate, ImmutableMetadata, Key, LifecycleHook,
         MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
-        PermanentTransferDelegate, PluginAuthority, Royalties, SecureDataStore, TransferDelegate,
-        UpdateDelegate, VerifiedCreators,
+        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
+        VerifiedCreators,
     },
 };
 
@@ -185,8 +185,8 @@ pub struct ExternalPluginAdaptersList {
     pub lifecycle_hooks: Vec<LifecycleHook>,
     pub asset_linked_lifecycle_hooks: Vec<AssetLinkedLifecycleHook>,
     pub oracles: Vec<Oracle>,
-    pub data_stores: Vec<SecureDataStore>,
-    pub asset_linked_data_stores: Vec<AssetLinkedSecureDataStore>,
+    pub app_data: Vec<AppData>,
+    pub asset_linked_app_data: Vec<AssetLinkedAppData>,
     pub data_sections: Vec<DataSection>,
 }
 
@@ -307,11 +307,11 @@ impl PluginRegistryV1Safe {
 impl From<&ExternalPluginAdapter> for ExternalPluginAdapterKey {
     fn from(plugin: &ExternalPluginAdapter) -> Self {
         match plugin {
-            ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
-                ExternalPluginAdapterKey::SecureDataStore(data_store.data_authority.clone())
+            ExternalPluginAdapter::AssetLinkedAppData(app_data) => {
+                ExternalPluginAdapterKey::AppData(app_data.data_authority.clone())
             }
-            ExternalPluginAdapter::SecureDataStore(data_store) => {
-                ExternalPluginAdapterKey::SecureDataStore(data_store.data_authority.clone())
+            ExternalPluginAdapter::AppData(app_data) => {
+                ExternalPluginAdapterKey::AppData(app_data.data_authority.clone())
             }
             ExternalPluginAdapter::Oracle(oracle) => {
                 ExternalPluginAdapterKey::Oracle(oracle.base_address)

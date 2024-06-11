@@ -15,51 +15,48 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseAppDataInitInfo,
+  BaseAppDataInitInfoArgs,
+  BaseAssetLinkedAppDataInitInfo,
+  BaseAssetLinkedAppDataInitInfoArgs,
   BaseAssetLinkedLifecycleHookInitInfo,
   BaseAssetLinkedLifecycleHookInitInfoArgs,
-  BaseAssetLinkedSecureDataStoreInitInfo,
-  BaseAssetLinkedSecureDataStoreInitInfoArgs,
   BaseDataSectionInitInfo,
   BaseDataSectionInitInfoArgs,
   BaseLifecycleHookInitInfo,
   BaseLifecycleHookInitInfoArgs,
   BaseOracleInitInfo,
   BaseOracleInitInfoArgs,
-  BaseSecureDataStoreInitInfo,
-  BaseSecureDataStoreInitInfoArgs,
+  getBaseAppDataInitInfoSerializer,
+  getBaseAssetLinkedAppDataInitInfoSerializer,
   getBaseAssetLinkedLifecycleHookInitInfoSerializer,
-  getBaseAssetLinkedSecureDataStoreInitInfoSerializer,
   getBaseDataSectionInitInfoSerializer,
   getBaseLifecycleHookInitInfoSerializer,
   getBaseOracleInitInfoSerializer,
-  getBaseSecureDataStoreInitInfoSerializer,
 } from '.';
 
 export type BaseExternalPluginAdapterInitInfo =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookInitInfo] }
   | { __kind: 'Oracle'; fields: [BaseOracleInitInfo] }
-  | { __kind: 'SecureDataStore'; fields: [BaseSecureDataStoreInitInfo] }
+  | { __kind: 'AppData'; fields: [BaseAppDataInitInfo] }
   | {
       __kind: 'AssetLinkedLifecycleHook';
       fields: [BaseAssetLinkedLifecycleHookInitInfo];
     }
-  | {
-      __kind: 'AssetLinkedSecureDataStore';
-      fields: [BaseAssetLinkedSecureDataStoreInitInfo];
-    }
+  | { __kind: 'AssetLinkedAppData'; fields: [BaseAssetLinkedAppDataInitInfo] }
   | { __kind: 'DataSection'; fields: [BaseDataSectionInitInfo] };
 
 export type BaseExternalPluginAdapterInitInfoArgs =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookInitInfoArgs] }
   | { __kind: 'Oracle'; fields: [BaseOracleInitInfoArgs] }
-  | { __kind: 'SecureDataStore'; fields: [BaseSecureDataStoreInitInfoArgs] }
+  | { __kind: 'AppData'; fields: [BaseAppDataInitInfoArgs] }
   | {
       __kind: 'AssetLinkedLifecycleHook';
       fields: [BaseAssetLinkedLifecycleHookInitInfoArgs];
     }
   | {
-      __kind: 'AssetLinkedSecureDataStore';
-      fields: [BaseAssetLinkedSecureDataStoreInitInfoArgs];
+      __kind: 'AssetLinkedAppData';
+      fields: [BaseAssetLinkedAppDataInitInfoArgs];
     }
   | { __kind: 'DataSection'; fields: [BaseDataSectionInitInfoArgs] };
 
@@ -85,13 +82,10 @@ export function getBaseExternalPluginAdapterInitInfoSerializer(): Serializer<
         >([['fields', tuple([getBaseOracleInitInfoSerializer()])]]),
       ],
       [
-        'SecureDataStore',
+        'AppData',
         struct<
-          GetDataEnumKindContent<
-            BaseExternalPluginAdapterInitInfo,
-            'SecureDataStore'
-          >
-        >([['fields', tuple([getBaseSecureDataStoreInitInfoSerializer()])]]),
+          GetDataEnumKindContent<BaseExternalPluginAdapterInitInfo, 'AppData'>
+        >([['fields', tuple([getBaseAppDataInitInfoSerializer()])]]),
       ],
       [
         'AssetLinkedLifecycleHook',
@@ -108,18 +102,13 @@ export function getBaseExternalPluginAdapterInitInfoSerializer(): Serializer<
         ]),
       ],
       [
-        'AssetLinkedSecureDataStore',
+        'AssetLinkedAppData',
         struct<
           GetDataEnumKindContent<
             BaseExternalPluginAdapterInitInfo,
-            'AssetLinkedSecureDataStore'
+            'AssetLinkedAppData'
           >
-        >([
-          [
-            'fields',
-            tuple([getBaseAssetLinkedSecureDataStoreInitInfoSerializer()]),
-          ],
-        ]),
+        >([['fields', tuple([getBaseAssetLinkedAppDataInitInfoSerializer()])]]),
       ],
       [
         'DataSection',
@@ -154,12 +143,12 @@ export function baseExternalPluginAdapterInitInfo(
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'Oracle'>;
 export function baseExternalPluginAdapterInitInfo(
-  kind: 'SecureDataStore',
+  kind: 'AppData',
   data: GetDataEnumKindContent<
     BaseExternalPluginAdapterInitInfoArgs,
-    'SecureDataStore'
+    'AppData'
   >['fields']
-): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'SecureDataStore'>;
+): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'AppData'>;
 export function baseExternalPluginAdapterInitInfo(
   kind: 'AssetLinkedLifecycleHook',
   data: GetDataEnumKindContent<
@@ -171,15 +160,12 @@ export function baseExternalPluginAdapterInitInfo(
   'AssetLinkedLifecycleHook'
 >;
 export function baseExternalPluginAdapterInitInfo(
-  kind: 'AssetLinkedSecureDataStore',
+  kind: 'AssetLinkedAppData',
   data: GetDataEnumKindContent<
     BaseExternalPluginAdapterInitInfoArgs,
-    'AssetLinkedSecureDataStore'
+    'AssetLinkedAppData'
   >['fields']
-): GetDataEnumKind<
-  BaseExternalPluginAdapterInitInfoArgs,
-  'AssetLinkedSecureDataStore'
->;
+): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'AssetLinkedAppData'>;
 export function baseExternalPluginAdapterInitInfo(
   kind: 'DataSection',
   data: GetDataEnumKindContent<

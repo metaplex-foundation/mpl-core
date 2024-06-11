@@ -5,10 +5,10 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::AssetLinkedSecureDataStoreUpdateInfo;
+use crate::generated::types::AppDataUpdateInfo;
+use crate::generated::types::AssetLinkedAppDataUpdateInfo;
 use crate::generated::types::LifecycleHookUpdateInfo;
 use crate::generated::types::OracleUpdateInfo;
-use crate::generated::types::SecureDataStoreUpdateInfo;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
@@ -21,6 +21,6 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub enum ExternalPluginAdapterUpdateInfo {
     LifecycleHook(LifecycleHookUpdateInfo),
     Oracle(OracleUpdateInfo),
-    SecureDataStore(SecureDataStoreUpdateInfo),
-    AssetLinkedSecureDataStore(AssetLinkedSecureDataStoreUpdateInfo),
+    AppData(AppDataUpdateInfo),
+    AssetLinkedAppData(AssetLinkedAppDataUpdateInfo),
 }

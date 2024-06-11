@@ -16,9 +16,10 @@ use crate::{
 };
 
 use super::{
-    AssetLinkedSecureDataStoreInitInfo, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
-    ExternalPluginAdapterKey, ExternalPluginAdapterType, ExternalRegistryRecord, LinkedDataKey,
-    Plugin, PluginHeaderV1, PluginRegistryV1, PluginType, RegistryRecord, SecureDataStoreInitInfo,
+    AppDataInitInfo, AssetLinkedAppDataInitInfo, ExternalPluginAdapter,
+    ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalPluginAdapterType,
+    ExternalRegistryRecord, LinkedDataKey, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType,
+    RegistryRecord,
 };
 
 /// Create plugin header and registry if it doesn't exist
@@ -379,16 +380,14 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
                 Some(init_info.lifecycle_checks.clone()),
             )
         }
-        ExternalPluginAdapterInitInfo::SecureDataStore(SecureDataStoreInitInfo {
+        ExternalPluginAdapterInitInfo::AppData(AppDataInitInfo {
             init_plugin_authority,
             ..
         })
-        | ExternalPluginAdapterInitInfo::AssetLinkedSecureDataStore(
-            AssetLinkedSecureDataStoreInitInfo {
-                init_plugin_authority,
-                ..
-            },
-        ) => (*init_plugin_authority, None),
+        | ExternalPluginAdapterInitInfo::AssetLinkedAppData(AssetLinkedAppDataInitInfo {
+            init_plugin_authority,
+            ..
+        }) => (*init_plugin_authority, None),
         // The DataSection is only updated via its managing plugin so it has no authority.
         ExternalPluginAdapterInitInfo::DataSection(_) => (Some(Authority::None), None),
     };
@@ -406,10 +405,10 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
 
     let plugin = ExternalPluginAdapter::from(init_info);
 
-    // If the plugin is a LifecycleHook or SecureDataStore, then we need to set the data offset and length.
+    // If the plugin is a LifecycleHook or AppData, then we need to set the data offset and length.
     match plugin {
         ExternalPluginAdapter::LifecycleHook(_)
-        | ExternalPluginAdapter::SecureDataStore(_)
+        | ExternalPluginAdapter::AppData(_)
         | ExternalPluginAdapter::DataSection(_) => {
             // Here we use a 0 value for the data offset as it will be updated after the data is appended.
             new_registry_record.data_offset = Some(0);
@@ -835,7 +834,7 @@ pub(crate) fn find_external_plugin_adapter<'b>(
                             Err(_) => return Err(MplCoreError::DeserializationError.into()),
                         }
                 }
-                ExternalPluginAdapterKey::SecureDataStore(authority) => {
+                ExternalPluginAdapterKey::AppData(authority) => {
                     let authority_offset = record
                         .offset
                         .checked_add(1)
@@ -848,7 +847,7 @@ pub(crate) fn find_external_plugin_adapter<'b>(
                             Err(_) => return Err(MplCoreError::DeserializationError.into()),
                         }
                 }
-                ExternalPluginAdapterKey::AssetLinkedSecureDataStore(authority) => {
+                ExternalPluginAdapterKey::AssetLinkedAppData(authority) => {
                     let authority_offset = record
                         .offset
                         .checked_add(1)

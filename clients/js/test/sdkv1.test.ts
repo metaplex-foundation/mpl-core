@@ -1053,7 +1053,7 @@ test('it can fetch asset which correctly derived plugins', async (t) => {
     {
       plugins: [
         {
-          type: 'AssetLinkedSecureDataStore',
+          type: 'AssetLinkedAppData',
           dataAuthority: {
             type: 'Address',
             address: dataAuth.publicKey,
@@ -1090,9 +1090,9 @@ test('it can fetch asset which correctly derived plugins', async (t) => {
           type: 'UpdateAuthority',
         },
       },
-      assetLinkedSecureDataStores: [
+      assetLinkedAppDatas: [
         {
-          type: 'AssetLinkedSecureDataStore',
+          type: 'AssetLinkedAppData',
           authority: {
             type: 'UpdateAuthority',
           },

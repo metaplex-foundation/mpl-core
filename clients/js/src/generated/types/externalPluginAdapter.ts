@@ -15,24 +15,24 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseAppData,
+  BaseAppDataArgs,
+  BaseAssetLinkedAppData,
+  BaseAssetLinkedAppDataArgs,
   BaseAssetLinkedLifecycleHook,
   BaseAssetLinkedLifecycleHookArgs,
-  BaseAssetLinkedSecureDataStore,
-  BaseAssetLinkedSecureDataStoreArgs,
   BaseDataSection,
   BaseDataSectionArgs,
   BaseLifecycleHook,
   BaseLifecycleHookArgs,
   BaseOracle,
   BaseOracleArgs,
-  BaseSecureDataStore,
-  BaseSecureDataStoreArgs,
+  getBaseAppDataSerializer,
+  getBaseAssetLinkedAppDataSerializer,
   getBaseAssetLinkedLifecycleHookSerializer,
-  getBaseAssetLinkedSecureDataStoreSerializer,
   getBaseDataSectionSerializer,
   getBaseLifecycleHookSerializer,
   getBaseOracleSerializer,
-  getBaseSecureDataStoreSerializer,
 } from '.';
 
 export type ExternalPluginAdapter =
@@ -42,11 +42,8 @@ export type ExternalPluginAdapter =
       __kind: 'AssetLinkedLifecycleHook';
       fields: [BaseAssetLinkedLifecycleHook];
     }
-  | { __kind: 'SecureDataStore'; fields: [BaseSecureDataStore] }
-  | {
-      __kind: 'AssetLinkedSecureDataStore';
-      fields: [BaseAssetLinkedSecureDataStore];
-    }
+  | { __kind: 'AppData'; fields: [BaseAppData] }
+  | { __kind: 'AssetLinkedAppData'; fields: [BaseAssetLinkedAppData] }
   | { __kind: 'DataSection'; fields: [BaseDataSection] };
 
 export type ExternalPluginAdapterArgs =
@@ -56,11 +53,8 @@ export type ExternalPluginAdapterArgs =
       __kind: 'AssetLinkedLifecycleHook';
       fields: [BaseAssetLinkedLifecycleHookArgs];
     }
-  | { __kind: 'SecureDataStore'; fields: [BaseSecureDataStoreArgs] }
-  | {
-      __kind: 'AssetLinkedSecureDataStore';
-      fields: [BaseAssetLinkedSecureDataStoreArgs];
-    }
+  | { __kind: 'AppData'; fields: [BaseAppDataArgs] }
+  | { __kind: 'AssetLinkedAppData'; fields: [BaseAssetLinkedAppDataArgs] }
   | { __kind: 'DataSection'; fields: [BaseDataSectionArgs] };
 
 export function getExternalPluginAdapterSerializer(): Serializer<
@@ -91,19 +85,16 @@ export function getExternalPluginAdapterSerializer(): Serializer<
         >([['fields', tuple([getBaseAssetLinkedLifecycleHookSerializer()])]]),
       ],
       [
-        'SecureDataStore',
-        struct<
-          GetDataEnumKindContent<ExternalPluginAdapter, 'SecureDataStore'>
-        >([['fields', tuple([getBaseSecureDataStoreSerializer()])]]),
+        'AppData',
+        struct<GetDataEnumKindContent<ExternalPluginAdapter, 'AppData'>>([
+          ['fields', tuple([getBaseAppDataSerializer()])],
+        ]),
       ],
       [
-        'AssetLinkedSecureDataStore',
+        'AssetLinkedAppData',
         struct<
-          GetDataEnumKindContent<
-            ExternalPluginAdapter,
-            'AssetLinkedSecureDataStore'
-          >
-        >([['fields', tuple([getBaseAssetLinkedSecureDataStoreSerializer()])]]),
+          GetDataEnumKindContent<ExternalPluginAdapter, 'AssetLinkedAppData'>
+        >([['fields', tuple([getBaseAssetLinkedAppDataSerializer()])]]),
       ],
       [
         'DataSection',
@@ -136,19 +127,16 @@ export function externalPluginAdapter(
   >['fields']
 ): GetDataEnumKind<ExternalPluginAdapterArgs, 'AssetLinkedLifecycleHook'>;
 export function externalPluginAdapter(
-  kind: 'SecureDataStore',
-  data: GetDataEnumKindContent<
-    ExternalPluginAdapterArgs,
-    'SecureDataStore'
-  >['fields']
-): GetDataEnumKind<ExternalPluginAdapterArgs, 'SecureDataStore'>;
+  kind: 'AppData',
+  data: GetDataEnumKindContent<ExternalPluginAdapterArgs, 'AppData'>['fields']
+): GetDataEnumKind<ExternalPluginAdapterArgs, 'AppData'>;
 export function externalPluginAdapter(
-  kind: 'AssetLinkedSecureDataStore',
+  kind: 'AssetLinkedAppData',
   data: GetDataEnumKindContent<
     ExternalPluginAdapterArgs,
-    'AssetLinkedSecureDataStore'
+    'AssetLinkedAppData'
   >['fields']
-): GetDataEnumKind<ExternalPluginAdapterArgs, 'AssetLinkedSecureDataStore'>;
+): GetDataEnumKind<ExternalPluginAdapterArgs, 'AssetLinkedAppData'>;
 export function externalPluginAdapter(
   kind: 'DataSection',
   data: GetDataEnumKindContent<

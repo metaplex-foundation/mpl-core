@@ -246,11 +246,9 @@ pub(crate) fn registry_records_to_external_plugin_adapter_list(
                         acc.asset_linked_lifecycle_hooks.push(lifecycle_hook)
                     }
                     ExternalPluginAdapter::Oracle(oracle) => acc.oracles.push(oracle),
-                    ExternalPluginAdapter::SecureDataStore(data_store) => {
-                        acc.data_stores.push(data_store)
-                    }
-                    ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
-                        acc.asset_linked_data_stores.push(data_store)
+                    ExternalPluginAdapter::AppData(app_data) => acc.app_data.push(app_data),
+                    ExternalPluginAdapter::AssetLinkedAppData(app_data) => {
+                        acc.asset_linked_app_data.push(app_data)
                     }
                     ExternalPluginAdapter::DataSection(data_section) => {
                         acc.data_sections.push(data_section)

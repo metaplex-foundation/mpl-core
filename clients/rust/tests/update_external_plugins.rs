@@ -4,12 +4,11 @@ use mpl_core::{
     errors::MplCoreError,
     instructions::UpdateExternalPluginAdapterV1Builder,
     types::{
-        ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
-        ExternalPluginAdapterKey, ExternalPluginAdapterSchema, ExternalPluginAdapterUpdateInfo,
-        HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, LifecycleHookUpdateInfo,
-        Oracle, OracleInitInfo, OracleUpdateInfo, PluginAuthority, SecureDataStore,
-        SecureDataStoreInitInfo, SecureDataStoreUpdateInfo, UpdateAuthority,
-        ValidationResultsOffset,
+        AppData, AppDataInitInfo, AppDataUpdateInfo, ExternalCheckResult, ExternalPluginAdapter,
+        ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
+        ExternalPluginAdapterUpdateInfo, HookableLifecycleEvent, LifecycleHook,
+        LifecycleHookInitInfo, LifecycleHookUpdateInfo, Oracle, OracleInitInfo, OracleUpdateInfo,
+        PluginAuthority, UpdateAuthority, ValidationResultsOffset,
     },
 };
 pub use setup::*;
@@ -405,7 +404,7 @@ async fn test_cannot_update_oracle_to_have_duplicate_lifecycle_checks() {
 
 #[tokio::test]
 #[ignore]
-async fn test_update_data_store() {
+async fn test_update_app_data() {
     let mut context = program_test().start_with_context().await;
 
     let asset = Keypair::new();
@@ -422,8 +421,8 @@ async fn test_update_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::SecureDataStore(
-                SecureDataStoreInitInfo {
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::AppData(
+                AppDataInitInfo {
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     data_authority: PluginAuthority::UpdateAuthority,
                     schema: None,
@@ -445,12 +444,10 @@ async fn test_update_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapter::SecureDataStore(
-                SecureDataStore {
-                    data_authority: PluginAuthority::UpdateAuthority,
-                    schema: ExternalPluginAdapterSchema::Binary,
-                },
-            )],
+            external_plugin_adapters: vec![ExternalPluginAdapter::AppData(AppData {
+                data_authority: PluginAuthority::UpdateAuthority,
+                schema: ExternalPluginAdapterSchema::Binary,
+            })],
         },
     )
     .await;
@@ -458,11 +455,11 @@ async fn test_update_data_store() {
     let ix = UpdateExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .key(ExternalPluginAdapterKey::SecureDataStore(
+        .key(ExternalPluginAdapterKey::AppData(
             PluginAuthority::UpdateAuthority,
         ))
-        .update_info(ExternalPluginAdapterUpdateInfo::SecureDataStore(
-            SecureDataStoreUpdateInfo {
+        .update_info(ExternalPluginAdapterUpdateInfo::AppData(
+            AppDataUpdateInfo {
                 schema: Some(ExternalPluginAdapterSchema::Json),
             },
         ))
@@ -486,12 +483,10 @@ async fn test_update_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapter::SecureDataStore(
-                SecureDataStore {
-                    data_authority: PluginAuthority::UpdateAuthority,
-                    schema: ExternalPluginAdapterSchema::Json,
-                },
-            )],
+            external_plugin_adapters: vec![ExternalPluginAdapter::AppData(AppData {
+                data_authority: PluginAuthority::UpdateAuthority,
+                schema: ExternalPluginAdapterSchema::Json,
+            })],
         },
     )
     .await;
