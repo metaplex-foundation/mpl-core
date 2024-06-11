@@ -1,7 +1,7 @@
 import {
-  BaseAssetLinkedAppData,
-  BaseAssetLinkedAppDataInitInfoArgs,
-  BaseAssetLinkedAppDataUpdateInfoArgs,
+  BaseLinkedAppData,
+  BaseLinkedAppDataInitInfoArgs,
+  BaseLinkedAppDataUpdateInfoArgs,
   ExternalPluginAdapterSchema,
   ExternalRegistryRecord,
 } from '../generated';
@@ -15,42 +15,39 @@ import {
   pluginAuthorityToBase,
 } from './pluginAuthority';
 
-export type AssetLinkedAppData = Omit<
-  BaseAssetLinkedAppData,
-  'dataAuthority'
-> & {
+export type LinkedAppData = Omit<BaseLinkedAppData, 'dataAuthority'> & {
   dataAuthority: PluginAuthority;
   data?: any;
 };
 
-export type AssetLinkedAppDataPlugin = BaseExternalPluginAdapter &
-  AssetLinkedAppData & {
-    type: 'AssetLinkedAppData';
+export type LinkedAppDataPlugin = BaseExternalPluginAdapter &
+  LinkedAppData & {
+    type: 'LinkedAppData';
     dataAuthority: PluginAuthority;
   };
 
-export type AssetLinkedAppDataInitInfoArgs = Omit<
-  BaseAssetLinkedAppDataInitInfoArgs,
+export type LinkedAppDataInitInfoArgs = Omit<
+  BaseLinkedAppDataInitInfoArgs,
   'initPluginAuthority' | 'lifecycleChecks' | 'dataAuthority'
 > & {
-  type: 'AssetLinkedAppData';
+  type: 'LinkedAppData';
   initPluginAuthority?: PluginAuthority;
   lifecycleChecks?: LifecycleChecks;
   schema?: ExternalPluginAdapterSchema;
   dataAuthority: PluginAuthority;
 };
 
-export type AssetLinkedAppDataUpdateInfoArgs = Omit<
-  BaseAssetLinkedAppDataUpdateInfoArgs,
+export type LinkedAppDataUpdateInfoArgs = Omit<
+  BaseLinkedAppDataUpdateInfoArgs,
   'schema'
 > & {
   key: ExternalPluginAdapterKey;
   schema?: ExternalPluginAdapterSchema;
 };
 
-export function assetLinkedAppDataInitInfoArgsToBase(
-  d: AssetLinkedAppDataInitInfoArgs
-): BaseAssetLinkedAppDataInitInfoArgs {
+export function linkedAppDataInitInfoArgsToBase(
+  d: LinkedAppDataInitInfoArgs
+): BaseLinkedAppDataInitInfoArgs {
   return {
     dataAuthority: pluginAuthorityToBase(d.dataAuthority),
     initPluginAuthority: d.initPluginAuthority
@@ -60,19 +57,19 @@ export function assetLinkedAppDataInitInfoArgsToBase(
   };
 }
 
-export function assetLinkedAppDataUpdateInfoArgsToBase(
-  d: AssetLinkedAppDataUpdateInfoArgs
-): BaseAssetLinkedAppDataUpdateInfoArgs {
+export function linkedAppDataUpdateInfoArgsToBase(
+  d: LinkedAppDataUpdateInfoArgs
+): BaseLinkedAppDataUpdateInfoArgs {
   return {
     schema: d.schema ? d.schema : null,
   };
 }
 
-export function assetLinkedAppDataFromBase(
-  s: BaseAssetLinkedAppData,
+export function linkedAppDataFromBase(
+  s: BaseLinkedAppData,
   r: ExternalRegistryRecord,
   account: Uint8Array
-): AssetLinkedAppData {
+): LinkedAppData {
   return {
     ...s,
     dataAuthority: pluginAuthorityFromBase(s.dataAuthority),
@@ -80,16 +77,16 @@ export function assetLinkedAppDataFromBase(
   };
 }
 
-export const assetLinkedAppDataManifest: ExternalPluginAdapterManifest<
-  AssetLinkedAppData,
-  BaseAssetLinkedAppData,
-  AssetLinkedAppDataInitInfoArgs,
-  BaseAssetLinkedAppDataInitInfoArgs,
-  AssetLinkedAppDataUpdateInfoArgs,
-  BaseAssetLinkedAppDataUpdateInfoArgs
+export const linkedAppDataManifest: ExternalPluginAdapterManifest<
+  LinkedAppData,
+  BaseLinkedAppData,
+  LinkedAppDataInitInfoArgs,
+  BaseLinkedAppDataInitInfoArgs,
+  LinkedAppDataUpdateInfoArgs,
+  BaseLinkedAppDataUpdateInfoArgs
 > = {
-  type: 'AssetLinkedAppData',
-  fromBase: assetLinkedAppDataFromBase,
-  initToBase: assetLinkedAppDataInitInfoArgsToBase,
-  updateToBase: assetLinkedAppDataUpdateInfoArgsToBase,
+  type: 'LinkedAppData',
+  fromBase: linkedAppDataFromBase,
+  initToBase: linkedAppDataInitInfoArgsToBase,
+  updateToBase: linkedAppDataUpdateInfoArgsToBase,
 };

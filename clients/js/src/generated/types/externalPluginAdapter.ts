@@ -17,44 +17,38 @@ import {
 import {
   BaseAppData,
   BaseAppDataArgs,
-  BaseAssetLinkedAppData,
-  BaseAssetLinkedAppDataArgs,
-  BaseAssetLinkedLifecycleHook,
-  BaseAssetLinkedLifecycleHookArgs,
   BaseDataSection,
   BaseDataSectionArgs,
   BaseLifecycleHook,
   BaseLifecycleHookArgs,
+  BaseLinkedAppData,
+  BaseLinkedAppDataArgs,
+  BaseLinkedLifecycleHook,
+  BaseLinkedLifecycleHookArgs,
   BaseOracle,
   BaseOracleArgs,
   getBaseAppDataSerializer,
-  getBaseAssetLinkedAppDataSerializer,
-  getBaseAssetLinkedLifecycleHookSerializer,
   getBaseDataSectionSerializer,
   getBaseLifecycleHookSerializer,
+  getBaseLinkedAppDataSerializer,
+  getBaseLinkedLifecycleHookSerializer,
   getBaseOracleSerializer,
 } from '.';
 
 export type ExternalPluginAdapter =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHook] }
   | { __kind: 'Oracle'; fields: [BaseOracle] }
-  | {
-      __kind: 'AssetLinkedLifecycleHook';
-      fields: [BaseAssetLinkedLifecycleHook];
-    }
+  | { __kind: 'LinkedLifecycleHook'; fields: [BaseLinkedLifecycleHook] }
   | { __kind: 'AppData'; fields: [BaseAppData] }
-  | { __kind: 'AssetLinkedAppData'; fields: [BaseAssetLinkedAppData] }
+  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppData] }
   | { __kind: 'DataSection'; fields: [BaseDataSection] };
 
 export type ExternalPluginAdapterArgs =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookArgs] }
   | { __kind: 'Oracle'; fields: [BaseOracleArgs] }
-  | {
-      __kind: 'AssetLinkedLifecycleHook';
-      fields: [BaseAssetLinkedLifecycleHookArgs];
-    }
+  | { __kind: 'LinkedLifecycleHook'; fields: [BaseLinkedLifecycleHookArgs] }
   | { __kind: 'AppData'; fields: [BaseAppDataArgs] }
-  | { __kind: 'AssetLinkedAppData'; fields: [BaseAssetLinkedAppDataArgs] }
+  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataArgs] }
   | { __kind: 'DataSection'; fields: [BaseDataSectionArgs] };
 
 export function getExternalPluginAdapterSerializer(): Serializer<
@@ -76,13 +70,10 @@ export function getExternalPluginAdapterSerializer(): Serializer<
         ]),
       ],
       [
-        'AssetLinkedLifecycleHook',
+        'LinkedLifecycleHook',
         struct<
-          GetDataEnumKindContent<
-            ExternalPluginAdapter,
-            'AssetLinkedLifecycleHook'
-          >
-        >([['fields', tuple([getBaseAssetLinkedLifecycleHookSerializer()])]]),
+          GetDataEnumKindContent<ExternalPluginAdapter, 'LinkedLifecycleHook'>
+        >([['fields', tuple([getBaseLinkedLifecycleHookSerializer()])]]),
       ],
       [
         'AppData',
@@ -91,10 +82,10 @@ export function getExternalPluginAdapterSerializer(): Serializer<
         ]),
       ],
       [
-        'AssetLinkedAppData',
-        struct<
-          GetDataEnumKindContent<ExternalPluginAdapter, 'AssetLinkedAppData'>
-        >([['fields', tuple([getBaseAssetLinkedAppDataSerializer()])]]),
+        'LinkedAppData',
+        struct<GetDataEnumKindContent<ExternalPluginAdapter, 'LinkedAppData'>>([
+          ['fields', tuple([getBaseLinkedAppDataSerializer()])],
+        ]),
       ],
       [
         'DataSection',
@@ -120,23 +111,23 @@ export function externalPluginAdapter(
   data: GetDataEnumKindContent<ExternalPluginAdapterArgs, 'Oracle'>['fields']
 ): GetDataEnumKind<ExternalPluginAdapterArgs, 'Oracle'>;
 export function externalPluginAdapter(
-  kind: 'AssetLinkedLifecycleHook',
+  kind: 'LinkedLifecycleHook',
   data: GetDataEnumKindContent<
     ExternalPluginAdapterArgs,
-    'AssetLinkedLifecycleHook'
+    'LinkedLifecycleHook'
   >['fields']
-): GetDataEnumKind<ExternalPluginAdapterArgs, 'AssetLinkedLifecycleHook'>;
+): GetDataEnumKind<ExternalPluginAdapterArgs, 'LinkedLifecycleHook'>;
 export function externalPluginAdapter(
   kind: 'AppData',
   data: GetDataEnumKindContent<ExternalPluginAdapterArgs, 'AppData'>['fields']
 ): GetDataEnumKind<ExternalPluginAdapterArgs, 'AppData'>;
 export function externalPluginAdapter(
-  kind: 'AssetLinkedAppData',
+  kind: 'LinkedAppData',
   data: GetDataEnumKindContent<
     ExternalPluginAdapterArgs,
-    'AssetLinkedAppData'
+    'LinkedAppData'
   >['fields']
-): GetDataEnumKind<ExternalPluginAdapterArgs, 'AssetLinkedAppData'>;
+): GetDataEnumKind<ExternalPluginAdapterArgs, 'LinkedAppData'>;
 export function externalPluginAdapter(
   kind: 'DataSection',
   data: GetDataEnumKindContent<

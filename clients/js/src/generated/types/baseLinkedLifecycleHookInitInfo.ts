@@ -33,7 +33,7 @@ import {
   getHookableLifecycleEventSerializer,
 } from '.';
 
-export type BaseAssetLinkedLifecycleHookInitInfo = {
+export type BaseLinkedLifecycleHookInitInfo = {
   hookedProgram: PublicKey;
   initPluginAuthority: Option<BasePluginAuthority>;
   lifecycleChecks: Array<[HookableLifecycleEvent, ExternalCheckResult]>;
@@ -42,7 +42,7 @@ export type BaseAssetLinkedLifecycleHookInitInfo = {
   schema: Option<ExternalPluginAdapterSchema>;
 };
 
-export type BaseAssetLinkedLifecycleHookInitInfoArgs = {
+export type BaseLinkedLifecycleHookInitInfoArgs = {
   hookedProgram: PublicKey;
   initPluginAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
   lifecycleChecks: Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>;
@@ -51,11 +51,11 @@ export type BaseAssetLinkedLifecycleHookInitInfoArgs = {
   schema: OptionOrNullable<ExternalPluginAdapterSchemaArgs>;
 };
 
-export function getBaseAssetLinkedLifecycleHookInitInfoSerializer(): Serializer<
-  BaseAssetLinkedLifecycleHookInitInfoArgs,
-  BaseAssetLinkedLifecycleHookInitInfo
+export function getBaseLinkedLifecycleHookInitInfoSerializer(): Serializer<
+  BaseLinkedLifecycleHookInitInfoArgs,
+  BaseLinkedLifecycleHookInitInfo
 > {
-  return struct<BaseAssetLinkedLifecycleHookInitInfo>(
+  return struct<BaseLinkedLifecycleHookInitInfo>(
     [
       ['hookedProgram', publicKeySerializer()],
       ['initPluginAuthority', option(getBasePluginAuthoritySerializer())],
@@ -72,9 +72,9 @@ export function getBaseAssetLinkedLifecycleHookInitInfoSerializer(): Serializer<
       ['dataAuthority', option(getBasePluginAuthoritySerializer())],
       ['schema', option(getExternalPluginAdapterSchemaSerializer())],
     ],
-    { description: 'BaseAssetLinkedLifecycleHookInitInfo' }
+    { description: 'BaseLinkedLifecycleHookInitInfo' }
   ) as Serializer<
-    BaseAssetLinkedLifecycleHookInitInfoArgs,
-    BaseAssetLinkedLifecycleHookInitInfo
+    BaseLinkedLifecycleHookInitInfoArgs,
+    BaseLinkedLifecycleHookInitInfo
   >;
 }

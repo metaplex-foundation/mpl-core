@@ -17,7 +17,7 @@ export type ExternalPluginAdapterKey =
       hookedProgram: PublicKey;
     }
   | {
-      type: 'AssetLinkedAppData';
+      type: 'LinkedAppData';
       dataAuthority: PluginAuthority;
     }
   | { type: 'DataSection'; parentKey: LinkedDataKey };
@@ -31,7 +31,7 @@ export function externalPluginAdapterKeyToBase(
         fields: [e.baseAddress],
       };
     case 'AppData':
-    case 'AssetLinkedAppData':
+    case 'LinkedAppData':
       return {
         __kind: e.type,
         fields: [pluginAuthorityToBase(e.dataAuthority)],

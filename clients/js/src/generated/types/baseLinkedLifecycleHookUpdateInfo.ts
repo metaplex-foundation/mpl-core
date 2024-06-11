@@ -29,13 +29,13 @@ import {
   getHookableLifecycleEventSerializer,
 } from '.';
 
-export type BaseAssetLinkedLifecycleHookUpdateInfo = {
+export type BaseLinkedLifecycleHookUpdateInfo = {
   lifecycleChecks: Option<Array<[HookableLifecycleEvent, ExternalCheckResult]>>;
   extraAccounts: Option<Array<BaseExtraAccount>>;
   schema: Option<ExternalPluginAdapterSchema>;
 };
 
-export type BaseAssetLinkedLifecycleHookUpdateInfoArgs = {
+export type BaseLinkedLifecycleHookUpdateInfoArgs = {
   lifecycleChecks: OptionOrNullable<
     Array<[HookableLifecycleEventArgs, ExternalCheckResultArgs]>
   >;
@@ -43,11 +43,11 @@ export type BaseAssetLinkedLifecycleHookUpdateInfoArgs = {
   schema: OptionOrNullable<ExternalPluginAdapterSchemaArgs>;
 };
 
-export function getBaseAssetLinkedLifecycleHookUpdateInfoSerializer(): Serializer<
-  BaseAssetLinkedLifecycleHookUpdateInfoArgs,
-  BaseAssetLinkedLifecycleHookUpdateInfo
+export function getBaseLinkedLifecycleHookUpdateInfoSerializer(): Serializer<
+  BaseLinkedLifecycleHookUpdateInfoArgs,
+  BaseLinkedLifecycleHookUpdateInfo
 > {
-  return struct<BaseAssetLinkedLifecycleHookUpdateInfo>(
+  return struct<BaseLinkedLifecycleHookUpdateInfo>(
     [
       [
         'lifecycleChecks',
@@ -63,9 +63,9 @@ export function getBaseAssetLinkedLifecycleHookUpdateInfoSerializer(): Serialize
       ['extraAccounts', option(array(getBaseExtraAccountSerializer()))],
       ['schema', option(getExternalPluginAdapterSchemaSerializer())],
     ],
-    { description: 'BaseAssetLinkedLifecycleHookUpdateInfo' }
+    { description: 'BaseLinkedLifecycleHookUpdateInfo' }
   ) as Serializer<
-    BaseAssetLinkedLifecycleHookUpdateInfoArgs,
-    BaseAssetLinkedLifecycleHookUpdateInfo
+    BaseLinkedLifecycleHookUpdateInfoArgs,
+    BaseLinkedLifecycleHookUpdateInfo
   >;
 }

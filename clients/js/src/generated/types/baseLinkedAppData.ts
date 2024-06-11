@@ -16,25 +16,25 @@ import {
   getExternalPluginAdapterSchemaSerializer,
 } from '.';
 
-export type BaseAssetLinkedAppData = {
+export type BaseLinkedAppData = {
   dataAuthority: BasePluginAuthority;
   schema: ExternalPluginAdapterSchema;
 };
 
-export type BaseAssetLinkedAppDataArgs = {
+export type BaseLinkedAppDataArgs = {
   dataAuthority: BasePluginAuthorityArgs;
   schema: ExternalPluginAdapterSchemaArgs;
 };
 
-export function getBaseAssetLinkedAppDataSerializer(): Serializer<
-  BaseAssetLinkedAppDataArgs,
-  BaseAssetLinkedAppData
+export function getBaseLinkedAppDataSerializer(): Serializer<
+  BaseLinkedAppDataArgs,
+  BaseLinkedAppData
 > {
-  return struct<BaseAssetLinkedAppData>(
+  return struct<BaseLinkedAppData>(
     [
       ['dataAuthority', getBasePluginAuthoritySerializer()],
       ['schema', getExternalPluginAdapterSchemaSerializer()],
     ],
-    { description: 'BaseAssetLinkedAppData' }
-  ) as Serializer<BaseAssetLinkedAppDataArgs, BaseAssetLinkedAppData>;
+    { description: 'BaseLinkedAppData' }
+  ) as Serializer<BaseLinkedAppDataArgs, BaseLinkedAppData>;
 }

@@ -17,15 +17,15 @@ import {
 import {
   BaseAppDataUpdateInfo,
   BaseAppDataUpdateInfoArgs,
-  BaseAssetLinkedAppDataUpdateInfo,
-  BaseAssetLinkedAppDataUpdateInfoArgs,
   BaseLifecycleHookUpdateInfo,
   BaseLifecycleHookUpdateInfoArgs,
+  BaseLinkedAppDataUpdateInfo,
+  BaseLinkedAppDataUpdateInfoArgs,
   BaseOracleUpdateInfo,
   BaseOracleUpdateInfoArgs,
   getBaseAppDataUpdateInfoSerializer,
-  getBaseAssetLinkedAppDataUpdateInfoSerializer,
   getBaseLifecycleHookUpdateInfoSerializer,
+  getBaseLinkedAppDataUpdateInfoSerializer,
   getBaseOracleUpdateInfoSerializer,
 } from '.';
 
@@ -33,19 +33,13 @@ export type BaseExternalPluginAdapterUpdateInfo =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookUpdateInfo] }
   | { __kind: 'Oracle'; fields: [BaseOracleUpdateInfo] }
   | { __kind: 'AppData'; fields: [BaseAppDataUpdateInfo] }
-  | {
-      __kind: 'AssetLinkedAppData';
-      fields: [BaseAssetLinkedAppDataUpdateInfo];
-    };
+  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataUpdateInfo] };
 
 export type BaseExternalPluginAdapterUpdateInfoArgs =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookUpdateInfoArgs] }
   | { __kind: 'Oracle'; fields: [BaseOracleUpdateInfoArgs] }
   | { __kind: 'AppData'; fields: [BaseAppDataUpdateInfoArgs] }
-  | {
-      __kind: 'AssetLinkedAppData';
-      fields: [BaseAssetLinkedAppDataUpdateInfoArgs];
-    };
+  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataUpdateInfoArgs] };
 
 export function getBaseExternalPluginAdapterUpdateInfoSerializer(): Serializer<
   BaseExternalPluginAdapterUpdateInfoArgs,
@@ -75,15 +69,13 @@ export function getBaseExternalPluginAdapterUpdateInfoSerializer(): Serializer<
         >([['fields', tuple([getBaseAppDataUpdateInfoSerializer()])]]),
       ],
       [
-        'AssetLinkedAppData',
+        'LinkedAppData',
         struct<
           GetDataEnumKindContent<
             BaseExternalPluginAdapterUpdateInfo,
-            'AssetLinkedAppData'
+            'LinkedAppData'
           >
-        >([
-          ['fields', tuple([getBaseAssetLinkedAppDataUpdateInfoSerializer()])],
-        ]),
+        >([['fields', tuple([getBaseLinkedAppDataUpdateInfoSerializer()])]]),
       ],
     ],
     { description: 'BaseExternalPluginAdapterUpdateInfo' }
@@ -116,15 +108,12 @@ export function baseExternalPluginAdapterUpdateInfo(
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'AppData'>;
 export function baseExternalPluginAdapterUpdateInfo(
-  kind: 'AssetLinkedAppData',
+  kind: 'LinkedAppData',
   data: GetDataEnumKindContent<
     BaseExternalPluginAdapterUpdateInfoArgs,
-    'AssetLinkedAppData'
+    'LinkedAppData'
   >['fields']
-): GetDataEnumKind<
-  BaseExternalPluginAdapterUpdateInfoArgs,
-  'AssetLinkedAppData'
->;
+): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'LinkedAppData'>;
 export function baseExternalPluginAdapterUpdateInfo<
   K extends BaseExternalPluginAdapterUpdateInfoArgs['__kind'],
 >(

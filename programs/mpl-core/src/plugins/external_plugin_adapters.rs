@@ -11,11 +11,11 @@ use crate::{
 };
 
 use super::{
-    AppData, AppDataInitInfo, AppDataUpdateInfo, AssetLinkedAppData, AssetLinkedAppDataInitInfo,
-    AssetLinkedAppDataUpdateInfo, AssetLinkedLifecycleHook, AssetLinkedLifecycleHookInitInfo,
-    Authority, DataSection, DataSectionInitInfo, ExternalCheckResult, ExternalRegistryRecord,
-    LifecycleHook, LifecycleHookInitInfo, LifecycleHookUpdateInfo, Oracle, OracleInitInfo,
-    OracleUpdateInfo, PluginValidation, PluginValidationContext, ValidationResult,
+    AppData, AppDataInitInfo, AppDataUpdateInfo, Authority, DataSection, DataSectionInitInfo,
+    ExternalCheckResult, ExternalRegistryRecord, LifecycleHook, LifecycleHookInitInfo,
+    LifecycleHookUpdateInfo, LinkedAppData, LinkedAppDataInitInfo, LinkedAppDataUpdateInfo,
+    LinkedLifecycleHook, LinkedLifecycleHookInitInfo, Oracle, OracleInitInfo, OracleUpdateInfo,
+    PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// List of third party plugin types.
@@ -30,10 +30,10 @@ pub enum ExternalPluginAdapterType {
     Oracle,
     /// App Data.
     AppData,
-    /// Asset Linked Lifecycle Hook.
-    AssetLinkedLifecycleHook,
-    /// Asset Linked App Data.
-    AssetLinkedAppData,
+    /// Linked Lifecycle Hook.
+    LinkedLifecycleHook,
+    /// Linked App Data.
+    LinkedAppData,
     /// Data Section.
     DataSection,
 }
@@ -42,14 +42,12 @@ impl From<&ExternalPluginAdapterKey> for ExternalPluginAdapterType {
     fn from(key: &ExternalPluginAdapterKey) -> Self {
         match key {
             ExternalPluginAdapterKey::LifecycleHook(_) => ExternalPluginAdapterType::LifecycleHook,
-            ExternalPluginAdapterKey::AssetLinkedLifecycleHook(_) => {
-                ExternalPluginAdapterType::AssetLinkedLifecycleHook
+            ExternalPluginAdapterKey::LinkedLifecycleHook(_) => {
+                ExternalPluginAdapterType::LinkedLifecycleHook
             }
             ExternalPluginAdapterKey::Oracle(_) => ExternalPluginAdapterType::Oracle,
             ExternalPluginAdapterKey::AppData(_) => ExternalPluginAdapterType::AppData,
-            ExternalPluginAdapterKey::AssetLinkedAppData(_) => {
-                ExternalPluginAdapterType::AssetLinkedAppData
-            }
+            ExternalPluginAdapterKey::LinkedAppData(_) => ExternalPluginAdapterType::LinkedAppData,
             ExternalPluginAdapterKey::DataSection(_) => ExternalPluginAdapterType::DataSection,
         }
     }
@@ -63,11 +61,11 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapterType {
             }
             ExternalPluginAdapterInitInfo::Oracle(_) => ExternalPluginAdapterType::Oracle,
             ExternalPluginAdapterInitInfo::AppData(_) => ExternalPluginAdapterType::AppData,
-            ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(_) => {
-                ExternalPluginAdapterType::AssetLinkedLifecycleHook
+            ExternalPluginAdapterInitInfo::LinkedLifecycleHook(_) => {
+                ExternalPluginAdapterType::LinkedLifecycleHook
             }
-            ExternalPluginAdapterInitInfo::AssetLinkedAppData(_) => {
-                ExternalPluginAdapterType::AssetLinkedAppData
+            ExternalPluginAdapterInitInfo::LinkedAppData(_) => {
+                ExternalPluginAdapterType::LinkedAppData
             }
             ExternalPluginAdapterInitInfo::DataSection(_) => ExternalPluginAdapterType::DataSection,
         }
@@ -86,16 +84,16 @@ pub enum ExternalPluginAdapter {
     /// Oracle.  Get a `ValidationResult` result from an account either specified by or derived
     /// from a `Pubkey` stored in the attached struct.
     Oracle(Oracle),
-    /// Collection Only: Asset-Linked Lifecycle Hook.  The hooked program and extra accounts are specified in the attached
+    /// Collection Only: Linked Lifecycle Hook.  The hooked program and extra accounts are specified in the attached
     /// struct.  The hooked program is called at specified lifecycle events and will return a
     /// validation result and new data to store.
-    AssetLinkedLifecycleHook(AssetLinkedLifecycleHook),
+    LinkedLifecycleHook(LinkedLifecycleHook),
     /// Arbitrary data that can be written to by the data `Authority` stored in the attached
     /// struct.  Note this data authority is different then the plugin authority.
     AppData(AppData),
     /// Collection only: Arbitrary data that can be written to by the data `Authority` stored on any asset in the Collection in the Data Section struct.
     /// Authority is different then the plugin authority.
-    AssetLinkedAppData(AssetLinkedAppData),
+    LinkedAppData(LinkedAppData),
     /// Data Section.  This is a special plugin that is used to contain the data of other external
     /// plugins.
     DataSection(DataSection),
@@ -153,7 +151,7 @@ impl ExternalPluginAdapter {
                 }
             }
             ExternalPluginAdapterInitInfo::AppData(_) => ExternalCheckResult::none(),
-            ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(init_info) => {
+            ExternalPluginAdapterInitInfo::LinkedLifecycleHook(init_info) => {
                 if let Some(checks) = init_info
                     .lifecycle_checks
                     .iter()
@@ -164,7 +162,7 @@ impl ExternalPluginAdapter {
                     ExternalCheckResult::none()
                 }
             }
-            ExternalPluginAdapterInitInfo::AssetLinkedAppData(_) => ExternalCheckResult::none(),
+            ExternalPluginAdapterInitInfo::LinkedAppData(_) => ExternalCheckResult::none(),
             ExternalPluginAdapterInitInfo::DataSection(_) => ExternalCheckResult::none(),
         }
     }
@@ -181,10 +179,10 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapter::Oracle(oracle) => oracle.validate_create(ctx),
             ExternalPluginAdapter::AppData(app_data) => app_data.validate_create(ctx),
-            ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
                 lifecycle_hook.validate_create(ctx)
             }
-            ExternalPluginAdapter::AssetLinkedAppData(app_data) => app_data.validate_create(ctx),
+            ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_create(ctx),
             // This should be unreachable because no corresponding it cannot be added by a user.
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
         }
@@ -201,10 +199,10 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapter::Oracle(oracle) => oracle.validate_update(ctx),
             ExternalPluginAdapter::AppData(app_data) => app_data.validate_update(ctx),
-            ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
                 lifecycle_hook.validate_update(ctx)
             }
-            ExternalPluginAdapter::AssetLinkedAppData(app_data) => app_data.validate_update(ctx),
+            ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_update(ctx),
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Pass),
         }
     }
@@ -220,10 +218,10 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapter::Oracle(oracle) => oracle.validate_burn(ctx),
             ExternalPluginAdapter::AppData(app_data) => app_data.validate_burn(ctx),
-            ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
                 lifecycle_hook.validate_burn(ctx)
             }
-            ExternalPluginAdapter::AssetLinkedAppData(app_data) => app_data.validate_burn(ctx),
+            ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_burn(ctx),
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Pass),
         }
     }
@@ -239,10 +237,10 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapter::Oracle(oracle) => oracle.validate_transfer(ctx),
             ExternalPluginAdapter::AppData(app_data) => app_data.validate_transfer(ctx),
-            ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
                 lifecycle_hook.validate_transfer(ctx)
             }
-            ExternalPluginAdapter::AssetLinkedAppData(app_data) => app_data.validate_transfer(ctx),
+            ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_transfer(ctx),
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Pass),
         }
     }
@@ -262,10 +260,10 @@ impl ExternalPluginAdapter {
             ExternalPluginAdapter::AppData(app_data) => {
                 app_data.validate_add_external_plugin_adapter(ctx)
             }
-            ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
                 lifecycle_hook.validate_add_external_plugin_adapter(ctx)
             }
-            ExternalPluginAdapter::AssetLinkedAppData(app_data) => {
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
                 app_data.validate_add_external_plugin_adapter(ctx)
             }
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Pass),
@@ -302,13 +300,11 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapter {
             ExternalPluginAdapterInitInfo::AppData(init_info) => {
                 ExternalPluginAdapter::AppData(AppData::from(init_info))
             }
-            ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(init_info) => {
-                ExternalPluginAdapter::AssetLinkedLifecycleHook(AssetLinkedLifecycleHook::from(
-                    init_info,
-                ))
+            ExternalPluginAdapterInitInfo::LinkedLifecycleHook(init_info) => {
+                ExternalPluginAdapter::LinkedLifecycleHook(LinkedLifecycleHook::from(init_info))
             }
-            ExternalPluginAdapterInitInfo::AssetLinkedAppData(init_info) => {
-                ExternalPluginAdapter::AssetLinkedAppData(AssetLinkedAppData::from(init_info))
+            ExternalPluginAdapterInitInfo::LinkedAppData(init_info) => {
+                ExternalPluginAdapter::LinkedAppData(LinkedAppData::from(init_info))
             }
             ExternalPluginAdapterInitInfo::DataSection(init_info) => {
                 ExternalPluginAdapter::DataSection(DataSection::from(init_info))
@@ -554,10 +550,10 @@ pub enum ExternalPluginAdapterInitInfo {
     Oracle(OracleInitInfo),
     /// App Data.
     AppData(AppDataInitInfo),
-    /// Asset-Linked Lifecycle Hook.
-    AssetLinkedLifecycleHook(AssetLinkedLifecycleHookInitInfo),
-    /// Asset-Linked App Data.
-    AssetLinkedAppData(AssetLinkedAppDataInitInfo),
+    /// Linked Lifecycle Hook.
+    LinkedLifecycleHook(LinkedLifecycleHookInitInfo),
+    /// Linked App Data.
+    LinkedAppData(LinkedAppDataInitInfo),
     /// Data Section.
     DataSection(DataSectionInitInfo),
 }
@@ -572,8 +568,8 @@ pub enum ExternalPluginAdapterUpdateInfo {
     Oracle(OracleUpdateInfo),
     /// App Data.
     AppData(AppDataUpdateInfo),
-    /// Asset-Linked App Data.
-    AssetLinkedAppData(AssetLinkedAppDataUpdateInfo),
+    /// Linked App Data.
+    LinkedAppData(LinkedAppDataUpdateInfo),
 }
 
 /// Key used to uniquely specify an external plugin adapter after it is created.
@@ -588,10 +584,10 @@ pub enum ExternalPluginAdapterKey {
     Oracle(Pubkey),
     /// App Data.
     AppData(Authority),
-    /// Asset-Linked Lifecycle Hook.
-    AssetLinkedLifecycleHook(Pubkey),
-    /// Asset-Linked App Data.
-    AssetLinkedAppData(Authority),
+    /// Linked Lifecycle Hook.
+    LinkedLifecycleHook(Pubkey),
+    /// Linked App Data.
+    LinkedAppData(Authority),
     /// Data Section.
     DataSection(LinkedDataKey),
 }
@@ -603,9 +599,9 @@ pub enum ExternalPluginAdapterKey {
 )]
 pub enum LinkedDataKey {
     /// Lifecycle Hook.
-    AssetLinkedLifecycleHook(Pubkey),
-    /// Asset-Linked App Data.
-    AssetLinkedAppData(Authority),
+    LinkedLifecycleHook(Pubkey),
+    /// Linked App Data.
+    LinkedAppData(Authority),
 }
 
 impl ExternalPluginAdapterKey {
@@ -624,10 +620,10 @@ impl ExternalPluginAdapterKey {
                     Pubkey::deserialize(&mut &account.data.borrow()[pubkey_or_authority_offset..])?;
                 Ok(Self::LifecycleHook(pubkey))
             }
-            ExternalPluginAdapterType::AssetLinkedLifecycleHook => {
+            ExternalPluginAdapterType::LinkedLifecycleHook => {
                 let pubkey =
                     Pubkey::deserialize(&mut &account.data.borrow()[pubkey_or_authority_offset..])?;
-                Ok(Self::AssetLinkedLifecycleHook(pubkey))
+                Ok(Self::LinkedLifecycleHook(pubkey))
             }
             ExternalPluginAdapterType::Oracle => {
                 let pubkey =
@@ -640,11 +636,11 @@ impl ExternalPluginAdapterKey {
                 )?;
                 Ok(Self::AppData(authority))
             }
-            ExternalPluginAdapterType::AssetLinkedAppData => {
+            ExternalPluginAdapterType::LinkedAppData => {
                 let authority = Authority::deserialize(
                     &mut &account.data.borrow()[pubkey_or_authority_offset..],
                 )?;
-                Ok(Self::AssetLinkedAppData(authority))
+                Ok(Self::LinkedAppData(authority))
             }
             ExternalPluginAdapterType::DataSection => {
                 let linked_data_key = LinkedDataKey::deserialize(
@@ -668,11 +664,11 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapterKey {
             ExternalPluginAdapterInitInfo::AppData(init_info) => {
                 ExternalPluginAdapterKey::AppData(init_info.data_authority)
             }
-            ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(init_info) => {
-                ExternalPluginAdapterKey::AssetLinkedLifecycleHook(init_info.hooked_program)
+            ExternalPluginAdapterInitInfo::LinkedLifecycleHook(init_info) => {
+                ExternalPluginAdapterKey::LinkedLifecycleHook(init_info.hooked_program)
             }
-            ExternalPluginAdapterInitInfo::AssetLinkedAppData(init_info) => {
-                ExternalPluginAdapterKey::AssetLinkedAppData(init_info.data_authority)
+            ExternalPluginAdapterInitInfo::LinkedAppData(init_info) => {
+                ExternalPluginAdapterKey::LinkedAppData(init_info.data_authority)
             }
             ExternalPluginAdapterInitInfo::DataSection(init_info) => {
                 ExternalPluginAdapterKey::DataSection(init_info.parent_key)

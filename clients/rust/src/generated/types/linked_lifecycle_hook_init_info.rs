@@ -20,7 +20,7 @@ use solana_program::pubkey::Pubkey;
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct AssetLinkedLifecycleHookInitInfo {
+pub struct LinkedLifecycleHookInitInfo {
     #[cfg_attr(
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")

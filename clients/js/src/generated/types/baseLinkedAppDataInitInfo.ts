@@ -21,31 +21,28 @@ import {
   getExternalPluginAdapterSchemaSerializer,
 } from '.';
 
-export type BaseAssetLinkedAppDataInitInfo = {
+export type BaseLinkedAppDataInitInfo = {
   dataAuthority: BasePluginAuthority;
   initPluginAuthority: Option<BasePluginAuthority>;
   schema: Option<ExternalPluginAdapterSchema>;
 };
 
-export type BaseAssetLinkedAppDataInitInfoArgs = {
+export type BaseLinkedAppDataInitInfoArgs = {
   dataAuthority: BasePluginAuthorityArgs;
   initPluginAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
   schema: OptionOrNullable<ExternalPluginAdapterSchemaArgs>;
 };
 
-export function getBaseAssetLinkedAppDataInitInfoSerializer(): Serializer<
-  BaseAssetLinkedAppDataInitInfoArgs,
-  BaseAssetLinkedAppDataInitInfo
+export function getBaseLinkedAppDataInitInfoSerializer(): Serializer<
+  BaseLinkedAppDataInitInfoArgs,
+  BaseLinkedAppDataInitInfo
 > {
-  return struct<BaseAssetLinkedAppDataInitInfo>(
+  return struct<BaseLinkedAppDataInitInfo>(
     [
       ['dataAuthority', getBasePluginAuthoritySerializer()],
       ['initPluginAuthority', option(getBasePluginAuthoritySerializer())],
       ['schema', option(getExternalPluginAdapterSchemaSerializer())],
     ],
-    { description: 'BaseAssetLinkedAppDataInitInfo' }
-  ) as Serializer<
-    BaseAssetLinkedAppDataInitInfoArgs,
-    BaseAssetLinkedAppDataInitInfo
-  >;
+    { description: 'BaseLinkedAppDataInitInfo' }
+  ) as Serializer<BaseLinkedAppDataInitInfoArgs, BaseLinkedAppDataInitInfo>;
 }

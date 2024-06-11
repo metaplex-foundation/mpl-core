@@ -15,6 +15,6 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct AssetLinkedAppDataUpdateInfo {
+pub struct LinkedAppDataUpdateInfo {
     pub schema: Option<ExternalPluginAdapterSchema>,
 }

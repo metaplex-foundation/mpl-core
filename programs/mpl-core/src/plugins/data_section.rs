@@ -3,7 +3,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use super::{ExternalPluginAdapterSchema, LinkedDataKey, PluginValidation};
 
 /// The data section plugin is a third party plugin that is _always_ managed by another plugin.
-/// Currently these are used for the `AppData`, `AssetLinkedAppData`, and `LifecycleHook` plugins.
+/// Currently these are used for the `AppData`, `LinkedAppData`, and `LifecycleHook` plugins.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
 pub struct DataSection {
     /// The key to the plugin that manages this data section.

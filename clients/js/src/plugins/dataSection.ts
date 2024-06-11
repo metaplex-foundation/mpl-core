@@ -66,7 +66,7 @@ export function dataSectionFromBase(
     ...s,
     parentKey: linkedDataKeyFromBase(s.parentKey),
     dataAuthority:
-      s.parentKey.__kind !== 'AssetLinkedLifecycleHook'
+      s.parentKey.__kind !== 'LinkedLifecycleHook'
         ? pluginAuthorityFromBase(s.parentKey.fields[0])
         : undefined,
     data: parseExternalPluginAdapterData(s, r, account),

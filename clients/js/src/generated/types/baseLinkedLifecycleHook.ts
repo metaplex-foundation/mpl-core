@@ -26,34 +26,31 @@ import {
   getExternalPluginAdapterSchemaSerializer,
 } from '.';
 
-export type BaseAssetLinkedLifecycleHook = {
+export type BaseLinkedLifecycleHook = {
   hookedProgram: PublicKey;
   extraAccounts: Option<Array<BaseExtraAccount>>;
   dataAuthority: Option<BasePluginAuthority>;
   schema: ExternalPluginAdapterSchema;
 };
 
-export type BaseAssetLinkedLifecycleHookArgs = {
+export type BaseLinkedLifecycleHookArgs = {
   hookedProgram: PublicKey;
   extraAccounts: OptionOrNullable<Array<BaseExtraAccountArgs>>;
   dataAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
   schema: ExternalPluginAdapterSchemaArgs;
 };
 
-export function getBaseAssetLinkedLifecycleHookSerializer(): Serializer<
-  BaseAssetLinkedLifecycleHookArgs,
-  BaseAssetLinkedLifecycleHook
+export function getBaseLinkedLifecycleHookSerializer(): Serializer<
+  BaseLinkedLifecycleHookArgs,
+  BaseLinkedLifecycleHook
 > {
-  return struct<BaseAssetLinkedLifecycleHook>(
+  return struct<BaseLinkedLifecycleHook>(
     [
       ['hookedProgram', publicKeySerializer()],
       ['extraAccounts', option(array(getBaseExtraAccountSerializer()))],
       ['dataAuthority', option(getBasePluginAuthoritySerializer())],
       ['schema', getExternalPluginAdapterSchemaSerializer()],
     ],
-    { description: 'BaseAssetLinkedLifecycleHook' }
-  ) as Serializer<
-    BaseAssetLinkedLifecycleHookArgs,
-    BaseAssetLinkedLifecycleHook
-  >;
+    { description: 'BaseLinkedLifecycleHook' }
+  ) as Serializer<BaseLinkedLifecycleHookArgs, BaseLinkedLifecycleHook>;
 }

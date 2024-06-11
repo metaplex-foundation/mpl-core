@@ -2173,212 +2173,6 @@
       }
     },
     {
-      "name": "AssetLinkedAppData",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "dataAuthority",
-            "type": {
-              "defined": "Authority"
-            }
-          },
-          {
-            "name": "schema",
-            "type": {
-              "defined": "ExternalPluginAdapterSchema"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "AssetLinkedAppDataInitInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "dataAuthority",
-            "type": {
-              "defined": "Authority"
-            }
-          },
-          {
-            "name": "initPluginAuthority",
-            "type": {
-              "option": {
-                "defined": "Authority"
-              }
-            }
-          },
-          {
-            "name": "schema",
-            "type": {
-              "option": {
-                "defined": "ExternalPluginAdapterSchema"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "AssetLinkedAppDataUpdateInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "schema",
-            "type": {
-              "option": {
-                "defined": "ExternalPluginAdapterSchema"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "AssetLinkedLifecycleHook",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "hookedProgram",
-            "type": "publicKey"
-          },
-          {
-            "name": "extraAccounts",
-            "type": {
-              "option": {
-                "vec": {
-                  "defined": "ExtraAccount"
-                }
-              }
-            }
-          },
-          {
-            "name": "dataAuthority",
-            "type": {
-              "option": {
-                "defined": "Authority"
-              }
-            }
-          },
-          {
-            "name": "schema",
-            "type": {
-              "defined": "ExternalPluginAdapterSchema"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "AssetLinkedLifecycleHookInitInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "hookedProgram",
-            "type": "publicKey"
-          },
-          {
-            "name": "initPluginAuthority",
-            "type": {
-              "option": {
-                "defined": "Authority"
-              }
-            }
-          },
-          {
-            "name": "lifecycleChecks",
-            "type": {
-              "vec": {
-                "tuple": [
-                  {
-                    "defined": "HookableLifecycleEvent"
-                  },
-                  {
-                    "defined": "ExternalCheckResult"
-                  }
-                ]
-              }
-            }
-          },
-          {
-            "name": "extraAccounts",
-            "type": {
-              "option": {
-                "vec": {
-                  "defined": "ExtraAccount"
-                }
-              }
-            }
-          },
-          {
-            "name": "dataAuthority",
-            "type": {
-              "option": {
-                "defined": "Authority"
-              }
-            }
-          },
-          {
-            "name": "schema",
-            "type": {
-              "option": {
-                "defined": "ExternalPluginAdapterSchema"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "AssetLinkedLifecycleHookUpdateInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "lifecycleChecks",
-            "type": {
-              "option": {
-                "vec": {
-                  "tuple": [
-                    {
-                      "defined": "HookableLifecycleEvent"
-                    },
-                    {
-                      "defined": "ExternalCheckResult"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          {
-            "name": "extraAccounts",
-            "type": {
-              "option": {
-                "vec": {
-                  "defined": "ExtraAccount"
-                }
-              }
-            }
-          },
-          {
-            "name": "schema",
-            "type": {
-              "option": {
-                "defined": "ExternalPluginAdapterSchema"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "Attribute",
       "type": {
         "kind": "struct",
@@ -2638,6 +2432,212 @@
     },
     {
       "name": "LifecycleHookUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedAppData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedAppDataInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedAppDataUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedLifecycleHook",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hookedProgram",
+            "type": "publicKey"
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "dataAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedLifecycleHookInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hookedProgram",
+            "type": "publicKey"
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "vec": {
+                "tuple": [
+                  {
+                    "defined": "HookableLifecycleEvent"
+                  },
+                  {
+                    "defined": "ExternalCheckResult"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "dataAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedLifecycleHookUpdateInfo",
       "type": {
         "kind": "struct",
         "fields": [
@@ -3864,10 +3864,10 @@
             "name": "AppData"
           },
           {
-            "name": "AssetLinkedLifecycleHook"
+            "name": "LinkedLifecycleHook"
           },
           {
-            "name": "AssetLinkedAppData"
+            "name": "LinkedAppData"
           },
           {
             "name": "DataSection"
@@ -3897,10 +3897,10 @@
             ]
           },
           {
-            "name": "AssetLinkedLifecycleHook",
+            "name": "LinkedLifecycleHook",
             "fields": [
               {
-                "defined": "AssetLinkedLifecycleHook"
+                "defined": "LinkedLifecycleHook"
               }
             ]
           },
@@ -3913,10 +3913,10 @@
             ]
           },
           {
-            "name": "AssetLinkedAppData",
+            "name": "LinkedAppData",
             "fields": [
               {
-                "defined": "AssetLinkedAppData"
+                "defined": "LinkedAppData"
               }
             ]
           },
@@ -4147,18 +4147,18 @@
             ]
           },
           {
-            "name": "AssetLinkedLifecycleHook",
+            "name": "LinkedLifecycleHook",
             "fields": [
               {
-                "defined": "AssetLinkedLifecycleHookInitInfo"
+                "defined": "LinkedLifecycleHookInitInfo"
               }
             ]
           },
           {
-            "name": "AssetLinkedAppData",
+            "name": "LinkedAppData",
             "fields": [
               {
-                "defined": "AssetLinkedAppDataInitInfo"
+                "defined": "LinkedAppDataInitInfo"
               }
             ]
           },
@@ -4203,10 +4203,10 @@
             ]
           },
           {
-            "name": "AssetLinkedAppData",
+            "name": "LinkedAppData",
             "fields": [
               {
-                "defined": "AssetLinkedAppDataUpdateInfo"
+                "defined": "LinkedAppDataUpdateInfo"
               }
             ]
           }
@@ -4239,13 +4239,13 @@
             ]
           },
           {
-            "name": "AssetLinkedLifecycleHook",
+            "name": "LinkedLifecycleHook",
             "fields": [
               "publicKey"
             ]
           },
           {
-            "name": "AssetLinkedAppData",
+            "name": "LinkedAppData",
             "fields": [
               {
                 "defined": "Authority"
@@ -4269,13 +4269,13 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "AssetLinkedLifecycleHook",
+            "name": "LinkedLifecycleHook",
             "fields": [
               "publicKey"
             ]
           },
           {
-            "name": "AssetLinkedAppData",
+            "name": "LinkedAppData",
             "fields": [
               {
                 "defined": "Authority"

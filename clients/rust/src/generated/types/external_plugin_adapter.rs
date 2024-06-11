@@ -6,10 +6,10 @@
 //!
 
 use crate::generated::types::AppData;
-use crate::generated::types::AssetLinkedAppData;
-use crate::generated::types::AssetLinkedLifecycleHook;
 use crate::generated::types::DataSection;
 use crate::generated::types::LifecycleHook;
+use crate::generated::types::LinkedAppData;
+use crate::generated::types::LinkedLifecycleHook;
 use crate::generated::types::Oracle;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
@@ -23,8 +23,8 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub enum ExternalPluginAdapter {
     LifecycleHook(LifecycleHook),
     Oracle(Oracle),
-    AssetLinkedLifecycleHook(AssetLinkedLifecycleHook),
+    LinkedLifecycleHook(LinkedLifecycleHook),
     AppData(AppData),
-    AssetLinkedAppData(AssetLinkedAppData),
+    LinkedAppData(LinkedAppData),
     DataSection(DataSection),
 }

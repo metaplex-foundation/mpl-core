@@ -13,7 +13,7 @@ use super::{
 /// program.  The hooked program will return a validation result and new data to store at the
 /// plugin's data offset (which in the account is immediately after this header).
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct AssetLinkedLifecycleHook {
+pub struct LinkedLifecycleHook {
     /// The `Pubkey` for the hooked program.
     pub hooked_program: Pubkey, // 32
     /// The extra accounts to use for the lifecycle hook.
@@ -26,9 +26,9 @@ pub struct AssetLinkedLifecycleHook {
     pub schema: ExternalPluginAdapterSchema, // 1
 }
 
-impl AssetLinkedLifecycleHook {
+impl LinkedLifecycleHook {
     /// Updates the lifecycle hook with the new info.
-    pub fn update(&mut self, info: &AssetLinkedLifecycleHookUpdateInfo) {
+    pub fn update(&mut self, info: &LinkedLifecycleHookUpdateInfo) {
         if let Some(extra_accounts) = &info.extra_accounts {
             self.extra_accounts = Some(extra_accounts.clone());
         }
@@ -38,7 +38,7 @@ impl AssetLinkedLifecycleHook {
     }
 }
 
-impl PluginValidation for AssetLinkedLifecycleHook {
+impl PluginValidation for LinkedLifecycleHook {
     fn validate_add_external_plugin_adapter(
         &self,
         _ctx: &PluginValidationContext,
@@ -54,8 +54,8 @@ impl PluginValidation for AssetLinkedLifecycleHook {
     }
 }
 
-impl From<&AssetLinkedLifecycleHookInitInfo> for AssetLinkedLifecycleHook {
-    fn from(init_info: &AssetLinkedLifecycleHookInitInfo) -> Self {
+impl From<&LinkedLifecycleHookInitInfo> for LinkedLifecycleHook {
+    fn from(init_info: &LinkedLifecycleHookInitInfo) -> Self {
         Self {
             hooked_program: init_info.hooked_program,
             extra_accounts: init_info.extra_accounts.clone(),
@@ -67,7 +67,7 @@ impl From<&AssetLinkedLifecycleHookInitInfo> for AssetLinkedLifecycleHook {
 
 /// Lifecycle hook initialization info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct AssetLinkedLifecycleHookInitInfo {
+pub struct LinkedLifecycleHookInitInfo {
     /// The `Pubkey` for the hooked program.
     pub hooked_program: Pubkey,
     /// Initial plugin authority.
@@ -86,7 +86,7 @@ pub struct AssetLinkedLifecycleHookInitInfo {
 
 /// Lifecycle hook update info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct AssetLinkedLifecycleHookUpdateInfo {
+pub struct LinkedLifecycleHookUpdateInfo {
     /// The lifecyle events for which the the external plugin adapter is active.
     pub lifecycle_checks: Option<Vec<(HookableLifecycleEvent, ExternalCheckResult)>>,
     /// The extra accounts to use for the lifecycle hook.

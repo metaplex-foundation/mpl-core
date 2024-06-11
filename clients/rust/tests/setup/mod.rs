@@ -155,16 +155,16 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
                     .app_data
                     .contains(&app_data))
             }
-            ExternalPluginAdapter::AssetLinkedLifecycleHook(hook) => {
+            ExternalPluginAdapter::LinkedLifecycleHook(hook) => {
                 assert!(asset
                     .external_plugin_adapter_list
-                    .asset_linked_lifecycle_hooks
+                    .linked_lifecycle_hooks
                     .contains(&hook))
             }
-            ExternalPluginAdapter::AssetLinkedAppData(app_data) => {
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
                 assert!(asset
                     .external_plugin_adapter_list
-                    .asset_linked_app_data
+                    .linked_app_data
                     .contains(&app_data))
             }
             ExternalPluginAdapter::DataSection(data) => {

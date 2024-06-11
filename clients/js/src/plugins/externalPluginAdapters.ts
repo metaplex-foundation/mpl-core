@@ -37,12 +37,12 @@ import {
 import { BasePlugin } from './types';
 import { extraAccountToAccountMeta } from './extraAccount';
 import {
-  assetLinkedAppDataFromBase,
-  AssetLinkedAppDataInitInfoArgs,
-  assetLinkedAppDataManifest,
-  AssetLinkedAppDataPlugin,
-  AssetLinkedAppDataUpdateInfoArgs,
-} from './assetLinkedAppData';
+  linkedAppDataFromBase,
+  LinkedAppDataInitInfoArgs,
+  linkedAppDataManifest,
+  LinkedAppDataPlugin,
+  LinkedAppDataUpdateInfoArgs,
+} from './linkedAppData';
 import {
   dataSectionFromBase,
   dataSectionManifest,
@@ -58,13 +58,13 @@ export type ExternalPluginAdapters =
   | OraclePlugin
   | AppDataPlugin
   | LifecycleHookPlugin
-  | AssetLinkedAppDataPlugin
+  | LinkedAppDataPlugin
   | DataSectionPlugin;
 
 export type ExternalPluginAdaptersList = {
   oracles?: OraclePlugin[];
   appDatas?: AppDataPlugin[];
-  assetLinkedAppDatas?: AssetLinkedAppDataPlugin[];
+  linkedAppDatas?: LinkedAppDataPlugin[];
   lifecycleHooks?: LifecycleHookPlugin[];
   dataSections?: DataSectionPlugin[];
 };
@@ -80,8 +80,8 @@ export type ExternalPluginAdapterInitInfoArgs =
       type: 'AppData';
     } & AppDataInitInfoArgs)
   | ({
-      type: 'AssetLinkedAppData';
-    } & AssetLinkedAppDataInitInfoArgs)
+      type: 'LinkedAppData';
+    } & LinkedAppDataInitInfoArgs)
   | ({
       type: 'DataSection';
     } & AppDataInitInfoArgs);
@@ -97,14 +97,14 @@ export type ExternalPluginAdapterUpdateInfoArgs =
       type: 'AppData';
     } & AppDataUpdateInfoArgs)
   | ({
-      type: 'AssetLinkedAppData';
-    } & AssetLinkedAppDataUpdateInfoArgs);
+      type: 'LinkedAppData';
+    } & LinkedAppDataUpdateInfoArgs);
 
 export const externalPluginAdapterManifests = {
   Oracle: oracleManifest,
   AppData: appDataManifest,
   LifecycleHook: lifecycleHookManifest,
-  AssetLinkedAppData: assetLinkedAppDataManifest,
+  LinkedAppData: linkedAppDataManifest,
   DataSection: dataSectionManifest,
 };
 
@@ -166,14 +166,14 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
           accountData
         ),
       });
-    } else if (deserializedPlugin.__kind === 'AssetLinkedAppData') {
-      if (!result.assetLinkedAppDatas) {
-        result.assetLinkedAppDatas = [];
+    } else if (deserializedPlugin.__kind === 'LinkedAppData') {
+      if (!result.linkedAppDatas) {
+        result.linkedAppDatas = [];
       }
-      result.assetLinkedAppDatas.push({
-        type: 'AssetLinkedAppData',
+      result.linkedAppDatas.push({
+        type: 'LinkedAppData',
         ...mappedPlugin,
-        ...assetLinkedAppDataFromBase(
+        ...linkedAppDataFromBase(
           deserializedPlugin.fields[0],
           record,
           accountData
@@ -204,7 +204,7 @@ export const isExternalPluginAdapterType = (plugin: { type: string }) => {
     plugin.type === 'LifecycleHook' ||
     plugin.type === 'AppData' ||
     plugin.type === 'DataSection' ||
-    plugin.type === 'AssetLinkedAppData'
+    plugin.type === 'LinkedAppData'
   ) {
     return true;
   }

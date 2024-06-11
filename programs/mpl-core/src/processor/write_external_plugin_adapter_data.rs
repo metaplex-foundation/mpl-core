@@ -11,9 +11,9 @@ use crate::{
     plugins::{
         create_meta_idempotent, fetch_wrapped_external_plugin_adapter,
         initialize_external_plugin_adapter, update_external_plugin_adapter_data, AppData,
-        AssetLinkedAppData, DataSectionInitInfo, ExternalPluginAdapter,
-        ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalRegistryRecord,
-        LifecycleHook, LinkedDataKey, PluginHeaderV1, PluginRegistryV1,
+        DataSectionInitInfo, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
+        ExternalPluginAdapterKey, ExternalRegistryRecord, LifecycleHook, LinkedAppData,
+        LinkedDataKey, PluginHeaderV1, PluginRegistryV1,
     },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -64,8 +64,8 @@ pub(crate) fn write_external_plugin_adapter_data<'a>(
         ExternalPluginAdapterKey::LifecycleHook(_) | ExternalPluginAdapterKey::AppData(_) => {
             fetch_wrapped_external_plugin_adapter::<AssetV1>(ctx.accounts.asset, None, &args.key)
         }
-        ExternalPluginAdapterKey::AssetLinkedLifecycleHook(_)
-        | ExternalPluginAdapterKey::AssetLinkedAppData(_) => {
+        ExternalPluginAdapterKey::LinkedLifecycleHook(_)
+        | ExternalPluginAdapterKey::LinkedAppData(_) => {
             let collection = ctx
                 .accounts
                 .collection
@@ -169,9 +169,7 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
             ..
         })
         | ExternalPluginAdapter::AppData(AppData { data_authority, .. })
-        | ExternalPluginAdapter::AssetLinkedAppData(AssetLinkedAppData {
-            data_authority, ..
-        }) => {
+        | ExternalPluginAdapter::LinkedAppData(LinkedAppData { data_authority, .. }) => {
             if !authorities.contains(data_authority) {
                 return Err(MplCoreError::InvalidAuthority.into());
             }
@@ -180,7 +178,7 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
     }
 
     // AppData and LifecycleHook both write the data after the plugin.
-    // AssetLinkedAppData writes the data to the asset directly.
+    // LinkedAppData writes the data to the asset directly.
     match wrapped_plugin {
         ExternalPluginAdapter::LifecycleHook(_) | ExternalPluginAdapter::AppData(_) => {
             let header = header.ok_or(MplCoreError::PluginsNotInitialized)?;
@@ -210,14 +208,14 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                 (None, None) => Err(MplCoreError::NoDataSources.into()),
             }
         }
-        ExternalPluginAdapter::AssetLinkedAppData(app_data) => {
+        ExternalPluginAdapter::LinkedAppData(app_data) => {
             let (_, mut header, mut registry) =
                 create_meta_idempotent::<T>(account, payer, system_program)?;
 
             match fetch_wrapped_external_plugin_adapter(
                 account,
                 Some(core),
-                &ExternalPluginAdapterKey::DataSection(LinkedDataKey::AssetLinkedAppData(
+                &ExternalPluginAdapterKey::DataSection(LinkedDataKey::LinkedAppData(
                     app_data.data_authority,
                 )),
             ) {
@@ -248,7 +246,7 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                 Err(_) => match (data, buffer) {
                     (Some(data), None) => initialize_external_plugin_adapter::<T>(
                         &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
-                            parent_key: LinkedDataKey::AssetLinkedAppData(app_data.data_authority),
+                            parent_key: LinkedDataKey::LinkedAppData(app_data.data_authority),
                             schema: app_data.schema,
                         }),
                         Some(core),
@@ -261,7 +259,7 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                     ),
                     (None, Some(buffer)) => initialize_external_plugin_adapter::<T>(
                         &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
-                            parent_key: LinkedDataKey::AssetLinkedAppData(app_data.data_authority),
+                            parent_key: LinkedDataKey::LinkedAppData(app_data.data_authority),
                             schema: app_data.schema,
                         }),
                         Some(core),

@@ -17,21 +17,21 @@ import {
 import {
   BaseAppDataInitInfo,
   BaseAppDataInitInfoArgs,
-  BaseAssetLinkedAppDataInitInfo,
-  BaseAssetLinkedAppDataInitInfoArgs,
-  BaseAssetLinkedLifecycleHookInitInfo,
-  BaseAssetLinkedLifecycleHookInitInfoArgs,
   BaseDataSectionInitInfo,
   BaseDataSectionInitInfoArgs,
   BaseLifecycleHookInitInfo,
   BaseLifecycleHookInitInfoArgs,
+  BaseLinkedAppDataInitInfo,
+  BaseLinkedAppDataInitInfoArgs,
+  BaseLinkedLifecycleHookInitInfo,
+  BaseLinkedLifecycleHookInitInfoArgs,
   BaseOracleInitInfo,
   BaseOracleInitInfoArgs,
   getBaseAppDataInitInfoSerializer,
-  getBaseAssetLinkedAppDataInitInfoSerializer,
-  getBaseAssetLinkedLifecycleHookInitInfoSerializer,
   getBaseDataSectionInitInfoSerializer,
   getBaseLifecycleHookInitInfoSerializer,
+  getBaseLinkedAppDataInitInfoSerializer,
+  getBaseLinkedLifecycleHookInitInfoSerializer,
   getBaseOracleInitInfoSerializer,
 } from '.';
 
@@ -39,11 +39,8 @@ export type BaseExternalPluginAdapterInitInfo =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookInitInfo] }
   | { __kind: 'Oracle'; fields: [BaseOracleInitInfo] }
   | { __kind: 'AppData'; fields: [BaseAppDataInitInfo] }
-  | {
-      __kind: 'AssetLinkedLifecycleHook';
-      fields: [BaseAssetLinkedLifecycleHookInitInfo];
-    }
-  | { __kind: 'AssetLinkedAppData'; fields: [BaseAssetLinkedAppDataInitInfo] }
+  | { __kind: 'LinkedLifecycleHook'; fields: [BaseLinkedLifecycleHookInitInfo] }
+  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataInitInfo] }
   | { __kind: 'DataSection'; fields: [BaseDataSectionInitInfo] };
 
 export type BaseExternalPluginAdapterInitInfoArgs =
@@ -51,13 +48,10 @@ export type BaseExternalPluginAdapterInitInfoArgs =
   | { __kind: 'Oracle'; fields: [BaseOracleInitInfoArgs] }
   | { __kind: 'AppData'; fields: [BaseAppDataInitInfoArgs] }
   | {
-      __kind: 'AssetLinkedLifecycleHook';
-      fields: [BaseAssetLinkedLifecycleHookInitInfoArgs];
+      __kind: 'LinkedLifecycleHook';
+      fields: [BaseLinkedLifecycleHookInitInfoArgs];
     }
-  | {
-      __kind: 'AssetLinkedAppData';
-      fields: [BaseAssetLinkedAppDataInitInfoArgs];
-    }
+  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataInitInfoArgs] }
   | { __kind: 'DataSection'; fields: [BaseDataSectionInitInfoArgs] };
 
 export function getBaseExternalPluginAdapterInitInfoSerializer(): Serializer<
@@ -88,27 +82,24 @@ export function getBaseExternalPluginAdapterInitInfoSerializer(): Serializer<
         >([['fields', tuple([getBaseAppDataInitInfoSerializer()])]]),
       ],
       [
-        'AssetLinkedLifecycleHook',
+        'LinkedLifecycleHook',
         struct<
           GetDataEnumKindContent<
             BaseExternalPluginAdapterInitInfo,
-            'AssetLinkedLifecycleHook'
+            'LinkedLifecycleHook'
           >
         >([
-          [
-            'fields',
-            tuple([getBaseAssetLinkedLifecycleHookInitInfoSerializer()]),
-          ],
+          ['fields', tuple([getBaseLinkedLifecycleHookInitInfoSerializer()])],
         ]),
       ],
       [
-        'AssetLinkedAppData',
+        'LinkedAppData',
         struct<
           GetDataEnumKindContent<
             BaseExternalPluginAdapterInitInfo,
-            'AssetLinkedAppData'
+            'LinkedAppData'
           >
-        >([['fields', tuple([getBaseAssetLinkedAppDataInitInfoSerializer()])]]),
+        >([['fields', tuple([getBaseLinkedAppDataInitInfoSerializer()])]]),
       ],
       [
         'DataSection',
@@ -150,22 +141,22 @@ export function baseExternalPluginAdapterInitInfo(
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'AppData'>;
 export function baseExternalPluginAdapterInitInfo(
-  kind: 'AssetLinkedLifecycleHook',
+  kind: 'LinkedLifecycleHook',
   data: GetDataEnumKindContent<
     BaseExternalPluginAdapterInitInfoArgs,
-    'AssetLinkedLifecycleHook'
+    'LinkedLifecycleHook'
   >['fields']
 ): GetDataEnumKind<
   BaseExternalPluginAdapterInitInfoArgs,
-  'AssetLinkedLifecycleHook'
+  'LinkedLifecycleHook'
 >;
 export function baseExternalPluginAdapterInitInfo(
-  kind: 'AssetLinkedAppData',
+  kind: 'LinkedAppData',
   data: GetDataEnumKindContent<
     BaseExternalPluginAdapterInitInfoArgs,
-    'AssetLinkedAppData'
+    'LinkedAppData'
   >['fields']
-): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'AssetLinkedAppData'>;
+): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'LinkedAppData'>;
 export function baseExternalPluginAdapterInitInfo(
   kind: 'DataSection',
   data: GetDataEnumKindContent<

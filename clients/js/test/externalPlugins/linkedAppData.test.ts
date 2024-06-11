@@ -114,13 +114,13 @@ async function generateTestContext(
 
 DATA_AUTHORITIES.forEach((dataAuthorityType) => {
   SCHEMAS.forEach((schema) => {
-    test(`it can create an asset-linked secure app data with ${dataAuthorityType} as data authority and ${ExternalPluginAdapterSchema[schema]} as schema`, async (t) => {
+    test(`it can create an linked secure app data with ${dataAuthorityType} as data authority and ${ExternalPluginAdapterSchema[schema]} as schema`, async (t) => {
       const { umi, dataAuthority, owner } = await generateTestContext(
         dataAuthorityType,
         schema
       );
 
-      // create collection with asset-linked secure app data
+      // create collection with linked secure app data
       const { collection } = await createAssetWithCollection(
         umi,
         {
@@ -129,7 +129,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
         {
           plugins: [
             {
-              type: 'AssetLinkedAppData',
+              type: 'LinkedAppData',
               dataAuthority,
               schema,
             },
@@ -140,9 +140,9 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       await assertCollection(t, umi, {
         ...DEFAULT_COLLECTION,
         collection: collection.publicKey,
-        assetLinkedAppDatas: [
+        linkedAppDatas: [
           {
-            type: 'AssetLinkedAppData',
+            type: 'LinkedAppData',
             authority: { type: 'UpdateAuthority' },
             dataAuthority,
             schema,
@@ -151,11 +151,11 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       });
     });
 
-    test(`it can write ${ExternalPluginAdapterSchema[schema]} data to an asset-linked secure app data as ${dataAuthorityType} data authority`, async (t) => {
+    test(`it can write ${ExternalPluginAdapterSchema[schema]} data to an linked secure app data as ${dataAuthorityType} data authority`, async (t) => {
       const { umi, owner, dataAuthoritySigner, dataAuthority, data } =
         await generateTestContext(dataAuthorityType, schema);
 
-      // create collection with asset-linked secure app data
+      // create collection with linked secure app data
       const { asset, collection } = await createAssetWithCollection(
         umi,
         {
@@ -164,7 +164,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
         {
           plugins: [
             {
-              type: 'AssetLinkedAppData',
+              type: 'LinkedAppData',
               dataAuthority,
               schema,
             },
@@ -175,9 +175,9 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       await assertCollection(t, umi, {
         ...DEFAULT_COLLECTION,
         collection: collection.publicKey,
-        assetLinkedAppDatas: [
+        linkedAppDatas: [
           {
-            type: 'AssetLinkedAppData',
+            type: 'LinkedAppData',
             authority: { type: 'UpdateAuthority' },
             dataAuthority,
             schema,
@@ -187,7 +187,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
 
       await writeData(umi, {
         key: {
-          type: 'AssetLinkedAppData',
+          type: 'LinkedAppData',
           dataAuthority,
         },
         authority: dataAuthoritySigner,
@@ -211,9 +211,9 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
           ...DEFAULT_ASSET,
           asset: asset.publicKey,
           owner: owner.publicKey,
-          assetLinkedAppDatas: [
+          linkedAppDatas: [
             {
-              type: 'AssetLinkedAppData',
+              type: 'LinkedAppData',
               authority: { type: 'UpdateAuthority' },
               dataAuthority,
               schema,
@@ -224,7 +224,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
             {
               type: 'DataSection',
               parentKey: {
-                type: 'AssetLinkedAppData',
+                type: 'LinkedAppData',
                 dataAuthority,
               },
               authority: { type: 'None' },
@@ -239,7 +239,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       );
     });
 
-    test(`it can write ${ExternalPluginAdapterSchema[schema]} data to an asset-linked secure app data as ${dataAuthorityType} data authority multiple times`, async (t) => {
+    test(`it can write ${ExternalPluginAdapterSchema[schema]} data to an linked secure app data as ${dataAuthorityType} data authority multiple times`, async (t) => {
       const {
         umi,
         owner,
@@ -249,7 +249,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
         otherData,
       } = await generateTestContext(dataAuthorityType, schema);
 
-      // create collection with asset-linked secure app data
+      // create collection with linked secure app data
       const { asset, collection } = await createAssetWithCollection(
         umi,
         {
@@ -258,7 +258,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
         {
           plugins: [
             {
-              type: 'AssetLinkedAppData',
+              type: 'LinkedAppData',
               dataAuthority,
               schema,
             },
@@ -269,9 +269,9 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       await assertCollection(t, umi, {
         ...DEFAULT_COLLECTION,
         collection: collection.publicKey,
-        assetLinkedAppDatas: [
+        linkedAppDatas: [
           {
-            type: 'AssetLinkedAppData',
+            type: 'LinkedAppData',
             authority: { type: 'UpdateAuthority' },
             dataAuthority,
             schema,
@@ -281,7 +281,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
 
       await writeData(umi, {
         key: {
-          type: 'AssetLinkedAppData',
+          type: 'LinkedAppData',
           dataAuthority,
         },
         authority: dataAuthoritySigner,
@@ -305,9 +305,9 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
           ...DEFAULT_ASSET,
           asset: asset.publicKey,
           owner: owner.publicKey,
-          assetLinkedAppDatas: [
+          linkedAppDatas: [
             {
-              type: 'AssetLinkedAppData',
+              type: 'LinkedAppData',
               authority: { type: 'UpdateAuthority' },
               dataAuthority,
               schema,
@@ -318,7 +318,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
             {
               type: 'DataSection',
               parentKey: {
-                type: 'AssetLinkedAppData',
+                type: 'LinkedAppData',
                 dataAuthority,
               },
               authority: { type: 'None' },
@@ -334,7 +334,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
 
       await writeData(umi, {
         key: {
-          type: 'AssetLinkedAppData',
+          type: 'LinkedAppData',
           dataAuthority,
         },
         authority: dataAuthoritySigner,
@@ -357,9 +357,9 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
           ...DEFAULT_ASSET,
           asset: asset.publicKey,
           owner: owner.publicKey,
-          assetLinkedAppDatas: [
+          linkedAppDatas: [
             {
-              type: 'AssetLinkedAppData',
+              type: 'LinkedAppData',
               authority: { type: 'UpdateAuthority' },
               dataAuthority,
               schema,
@@ -370,7 +370,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
             {
               type: 'DataSection',
               parentKey: {
-                type: 'AssetLinkedAppData',
+                type: 'LinkedAppData',
                 dataAuthority,
               },
               authority: { type: 'None' },
@@ -389,7 +389,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
   DATA_AUTHORITIES.filter(
     (da) => da === 'Address' || da !== dataAuthorityType
   ).forEach((otherDataAuthorityType) => {
-    test(`it cannot write data to an asset-linked secure app data with ${dataAuthorityType} data authority using ${otherDataAuthorityType} data authority`, async (t) => {
+    test(`it cannot write data to an linked secure app data with ${dataAuthorityType} data authority using ${otherDataAuthorityType} data authority`, async (t) => {
       const { umi, owner, dataAuthority, wrongDataAuthoritySigner, data } =
         await generateTestContext(
           dataAuthorityType,
@@ -397,7 +397,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
           otherDataAuthorityType
         );
 
-      // create collection with asset-linked secure app data
+      // create collection with linked secure app data
       const { asset, collection } = await createAssetWithCollection(
         umi,
         {
@@ -406,7 +406,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
         {
           plugins: [
             {
-              type: 'AssetLinkedAppData',
+              type: 'LinkedAppData',
               dataAuthority,
               schema: ExternalPluginAdapterSchema.Binary,
             },
@@ -417,9 +417,9 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       await assertCollection(t, umi, {
         ...DEFAULT_COLLECTION,
         collection: collection.publicKey,
-        assetLinkedAppDatas: [
+        linkedAppDatas: [
           {
-            type: 'AssetLinkedAppData',
+            type: 'LinkedAppData',
             authority: { type: 'UpdateAuthority' },
             dataAuthority,
             schema: ExternalPluginAdapterSchema.Binary,
@@ -429,7 +429,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
 
       const res = writeData(umi, {
         key: {
-          type: 'AssetLinkedAppData',
+          type: 'LinkedAppData',
           dataAuthority,
         },
         authority: wrongDataAuthoritySigner,
@@ -442,13 +442,13 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
     });
   });
 
-  test(`it cannot write data to an asset-linked secure app data as ${dataAuthorityType} data authority if the data authority is None`, async (t) => {
+  test(`it cannot write data to an linked secure app data as ${dataAuthorityType} data authority if the data authority is None`, async (t) => {
     const { umi, owner, dataAuthoritySigner, data } = await generateTestContext(
       dataAuthorityType,
       ExternalPluginAdapterSchema.Binary
     );
 
-    // create collection with asset-linked secure app data
+    // create collection with linked secure app data
     const { asset, collection } = await createAssetWithCollection(
       umi,
       {
@@ -457,7 +457,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       {
         plugins: [
           {
-            type: 'AssetLinkedAppData',
+            type: 'LinkedAppData',
             dataAuthority: { type: 'None' },
             schema: ExternalPluginAdapterSchema.Binary,
           },
@@ -468,9 +468,9 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
     await assertCollection(t, umi, {
       ...DEFAULT_COLLECTION,
       collection: collection.publicKey,
-      assetLinkedAppDatas: [
+      linkedAppDatas: [
         {
-          type: 'AssetLinkedAppData',
+          type: 'LinkedAppData',
           authority: { type: 'UpdateAuthority' },
           dataAuthority: { type: 'None' },
           schema: ExternalPluginAdapterSchema.Binary,
@@ -480,7 +480,7 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
 
     const res = writeData(umi, {
       key: {
-        type: 'AssetLinkedAppData',
+        type: 'LinkedAppData',
         dataAuthority: { type: 'None' },
       },
       authority: dataAuthoritySigner,
@@ -500,7 +500,7 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
       ExternalPluginAdapterSchema.Binary
     );
 
-  // create collection with asset-linked secure app data
+  // create collection with linked secure app data
   const { asset, collection } = await createAssetWithCollection(
     umi,
     {
@@ -520,7 +520,7 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
     {
       plugins: [
         {
-          type: 'AssetLinkedAppData',
+          type: 'LinkedAppData',
           dataAuthority,
           schema: ExternalPluginAdapterSchema.Binary,
         },
@@ -530,7 +530,7 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
 
   await writeData(umi, {
     key: {
-      type: 'AssetLinkedAppData',
+      type: 'LinkedAppData',
       dataAuthority,
     },
     authority: dataAuthoritySigner,
@@ -542,9 +542,9 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
   await assertCollection(t, umi, {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
-    assetLinkedAppDatas: [
+    linkedAppDatas: [
       {
-        type: 'AssetLinkedAppData',
+        type: 'LinkedAppData',
         authority: { type: 'UpdateAuthority' },
         dataAuthority,
         schema: ExternalPluginAdapterSchema.Binary,
@@ -566,9 +566,9 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
         authority: { type: 'UpdateAuthority' },
         attributeList: [{ key: 'Test', value: 'Test' }],
       },
-      assetLinkedAppDatas: [
+      linkedAppDatas: [
         {
-          type: 'AssetLinkedAppData',
+          type: 'LinkedAppData',
           authority: { type: 'UpdateAuthority' },
           dataAuthority,
           schema: ExternalPluginAdapterSchema.Binary,
@@ -579,7 +579,7 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
         {
           type: 'DataSection',
           parentKey: {
-            type: 'AssetLinkedAppData',
+            type: 'LinkedAppData',
             dataAuthority,
           },
           authority: { type: 'None' },
@@ -614,9 +614,9 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
         authority: { type: 'UpdateAuthority' },
         attributeList: [{ key: 'Updated Test', value: 'Updated Test' }],
       },
-      assetLinkedAppDatas: [
+      linkedAppDatas: [
         {
-          type: 'AssetLinkedAppData',
+          type: 'LinkedAppData',
           authority: { type: 'UpdateAuthority' },
           dataAuthority,
           schema: ExternalPluginAdapterSchema.Binary,
@@ -627,7 +627,7 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
         {
           type: 'DataSection',
           parentKey: {
-            type: 'AssetLinkedAppData',
+            type: 'LinkedAppData',
             dataAuthority,
           },
           authority: { type: 'None' },
@@ -659,9 +659,9 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
         authority: { type: 'UpdateAuthority' },
         attributeList: [{ key: '', value: '' }],
       },
-      assetLinkedAppDatas: [
+      linkedAppDatas: [
         {
-          type: 'AssetLinkedAppData',
+          type: 'LinkedAppData',
           authority: { type: 'UpdateAuthority' },
           dataAuthority,
           schema: ExternalPluginAdapterSchema.Binary,
@@ -672,7 +672,7 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
         {
           type: 'DataSection',
           parentKey: {
-            type: 'AssetLinkedAppData',
+            type: 'LinkedAppData',
             dataAuthority,
           },
           authority: { type: 'None' },

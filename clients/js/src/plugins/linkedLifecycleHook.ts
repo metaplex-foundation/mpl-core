@@ -5,9 +5,9 @@ import {
   extraAccountToBase,
 } from './extraAccount';
 import {
-  BaseAssetLinkedLifecycleHook,
-  BaseAssetLinkedLifecycleHookInitInfoArgs,
-  BaseAssetLinkedLifecycleHookUpdateInfoArgs,
+  BaseLinkedLifecycleHook,
+  BaseLinkedLifecycleHookInitInfoArgs,
+  BaseLinkedLifecycleHookUpdateInfoArgs,
   ExternalPluginAdapterSchema,
   ExternalRegistryRecord,
 } from '../generated';
@@ -22,8 +22,8 @@ import { ExternalPluginAdapterManifest } from './externalPluginAdapterManifest';
 import { ExternalPluginAdapterKey } from './externalPluginAdapterKey';
 // import { parseExternalPluginAdapterData } from './lib';
 
-export type AssetLinkedLifecycleHook = Omit<
-  BaseAssetLinkedLifecycleHook,
+export type LinkedLifecycleHook = Omit<
+  BaseLinkedLifecycleHook,
   'extraAccounts' | 'dataAuthority'
 > & {
   extraAccounts?: Array<ExtraAccount>;
@@ -31,21 +31,21 @@ export type AssetLinkedLifecycleHook = Omit<
   data?: any;
 };
 
-export type AssetLinkedLifecycleHookPlugin = BaseExternalPluginAdapter &
-  AssetLinkedLifecycleHook & {
-    type: 'AssetLinkedLifecycleHook';
+export type LinkedLifecycleHookPlugin = BaseExternalPluginAdapter &
+  LinkedLifecycleHook & {
+    type: 'LinkedLifecycleHook';
     hookedProgram: PublicKey;
   };
 
-export type AssetLinkedLifecycleHookInitInfoArgs = Omit<
-  BaseAssetLinkedLifecycleHookInitInfoArgs,
+export type LinkedLifecycleHookInitInfoArgs = Omit<
+  BaseLinkedLifecycleHookInitInfoArgs,
   | 'initPluginAuthority'
   | 'lifecycleChecks'
   | 'schema'
   | 'extraAccounts'
   | 'dataAuthority'
 > & {
-  type: 'AssetLinkedLifecycleHook';
+  type: 'LinkedLifecycleHook';
   initPluginAuthority?: PluginAuthority;
   lifecycleChecks: LifecycleChecks;
   schema?: ExternalPluginAdapterSchema;
@@ -53,8 +53,8 @@ export type AssetLinkedLifecycleHookInitInfoArgs = Omit<
   dataAuthority?: PluginAuthority;
 };
 
-export type AssetLinkedLifecycleHookUpdateInfoArgs = Omit<
-  BaseAssetLinkedLifecycleHookUpdateInfoArgs,
+export type LinkedLifecycleHookUpdateInfoArgs = Omit<
+  BaseLinkedLifecycleHookUpdateInfoArgs,
   'lifecycleChecks' | 'extraAccounts' | 'schema'
 > & {
   key: ExternalPluginAdapterKey;
@@ -63,9 +63,9 @@ export type AssetLinkedLifecycleHookUpdateInfoArgs = Omit<
   schema?: ExternalPluginAdapterSchema;
 };
 
-export function assetLinkedLifecycleHookInitInfoArgsToBase(
-  l: AssetLinkedLifecycleHookInitInfoArgs
-): BaseAssetLinkedLifecycleHookInitInfoArgs {
+export function linkedLifecycleHookInitInfoArgsToBase(
+  l: LinkedLifecycleHookInitInfoArgs
+): BaseLinkedLifecycleHookInitInfoArgs {
   return {
     extraAccounts: l.extraAccounts
       ? l.extraAccounts.map(extraAccountToBase)
@@ -82,9 +82,9 @@ export function assetLinkedLifecycleHookInitInfoArgsToBase(
   };
 }
 
-export function assetLinkedLifecycleHookUpdateInfoArgsToBase(
-  l: AssetLinkedLifecycleHookUpdateInfoArgs
-): BaseAssetLinkedLifecycleHookUpdateInfoArgs {
+export function linkedLifecycleHookUpdateInfoArgsToBase(
+  l: LinkedLifecycleHookUpdateInfoArgs
+): BaseLinkedLifecycleHookUpdateInfoArgs {
   return {
     lifecycleChecks: l.lifecycleChecks
       ? lifecycleChecksToBase(l.lifecycleChecks)
@@ -97,11 +97,11 @@ export function assetLinkedLifecycleHookUpdateInfoArgsToBase(
   };
 }
 
-export function assetLinkedLifecycleHookFromBase(
-  s: BaseAssetLinkedLifecycleHook,
+export function linkedLifecycleHookFromBase(
+  s: BaseLinkedLifecycleHook,
   r: ExternalRegistryRecord,
   account: Uint8Array
-): AssetLinkedLifecycleHook {
+): LinkedLifecycleHook {
   return {
     ...s,
     extraAccounts:
@@ -116,16 +116,16 @@ export function assetLinkedLifecycleHookFromBase(
   };
 }
 
-export const assetLinkedLifecycleHookManifest: ExternalPluginAdapterManifest<
-  AssetLinkedLifecycleHook,
-  BaseAssetLinkedLifecycleHook,
-  AssetLinkedLifecycleHookInitInfoArgs,
-  BaseAssetLinkedLifecycleHookInitInfoArgs,
-  AssetLinkedLifecycleHookUpdateInfoArgs,
-  BaseAssetLinkedLifecycleHookUpdateInfoArgs
+export const linkedLifecycleHookManifest: ExternalPluginAdapterManifest<
+  LinkedLifecycleHook,
+  BaseLinkedLifecycleHook,
+  LinkedLifecycleHookInitInfoArgs,
+  BaseLinkedLifecycleHookInitInfoArgs,
+  LinkedLifecycleHookUpdateInfoArgs,
+  BaseLinkedLifecycleHookUpdateInfoArgs
 > = {
-  type: 'AssetLinkedLifecycleHook',
-  fromBase: assetLinkedLifecycleHookFromBase,
-  initToBase: assetLinkedLifecycleHookInitInfoArgsToBase,
-  updateToBase: assetLinkedLifecycleHookUpdateInfoArgsToBase,
+  type: 'LinkedLifecycleHook',
+  fromBase: linkedLifecycleHookFromBase,
+  initToBase: linkedLifecycleHookInitInfoArgsToBase,
+  updateToBase: linkedLifecycleHookUpdateInfoArgsToBase,
 };

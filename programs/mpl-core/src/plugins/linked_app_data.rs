@@ -11,7 +11,7 @@ use super::{
 /// plugin.  The data is stored at the plugin's data offset (which in the account is immediately
 /// after this header).
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct AssetLinkedAppData {
+pub struct LinkedAppData {
     /// Data authority who can update the app data.  Cannot be changed after plugin is
     /// added.
     pub data_authority: Authority,
@@ -19,21 +19,21 @@ pub struct AssetLinkedAppData {
     pub schema: ExternalPluginAdapterSchema,
 }
 
-impl AssetLinkedAppData {
+impl LinkedAppData {
     /// Updates the app data with the new info.
-    pub fn update(&mut self, info: &AssetLinkedAppDataUpdateInfo) {
+    pub fn update(&mut self, info: &LinkedAppDataUpdateInfo) {
         if let Some(schema) = &info.schema {
             self.schema = *schema;
         }
     }
 }
 
-impl PluginValidation for AssetLinkedAppData {
+impl PluginValidation for LinkedAppData {
     fn validate_create(
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, solana_program::program_error::ProgramError> {
-        solana_program::msg!("AssetLinkedAppData::validate_create");
+        solana_program::msg!("LinkedAppData::validate_create");
         if ctx.asset_info.is_some() {
             Ok(ValidationResult::Rejected)
         } else {
@@ -42,8 +42,8 @@ impl PluginValidation for AssetLinkedAppData {
     }
 }
 
-impl From<&AssetLinkedAppDataInitInfo> for AssetLinkedAppData {
-    fn from(init_info: &AssetLinkedAppDataInitInfo) -> Self {
+impl From<&LinkedAppDataInitInfo> for LinkedAppData {
+    fn from(init_info: &LinkedAppDataInitInfo) -> Self {
         Self {
             data_authority: init_info.data_authority,
             schema: init_info.schema.unwrap_or_default(),
@@ -53,7 +53,7 @@ impl From<&AssetLinkedAppDataInitInfo> for AssetLinkedAppData {
 
 /// App data initialization info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct AssetLinkedAppDataInitInfo {
+pub struct LinkedAppDataInitInfo {
     /// Data authority who can update the app data.  This field cannot be
     /// changed after the plugin is added.
     pub data_authority: Authority,
@@ -65,7 +65,7 @@ pub struct AssetLinkedAppDataInitInfo {
 
 /// App data update info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct AssetLinkedAppDataUpdateInfo {
+pub struct LinkedAppDataUpdateInfo {
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginAdapterSchema>,
 }

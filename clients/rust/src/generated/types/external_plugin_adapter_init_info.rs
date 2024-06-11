@@ -6,10 +6,10 @@
 //!
 
 use crate::generated::types::AppDataInitInfo;
-use crate::generated::types::AssetLinkedAppDataInitInfo;
-use crate::generated::types::AssetLinkedLifecycleHookInitInfo;
 use crate::generated::types::DataSectionInitInfo;
 use crate::generated::types::LifecycleHookInitInfo;
+use crate::generated::types::LinkedAppDataInitInfo;
+use crate::generated::types::LinkedLifecycleHookInitInfo;
 use crate::generated::types::OracleInitInfo;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
@@ -24,7 +24,7 @@ pub enum ExternalPluginAdapterInitInfo {
     LifecycleHook(LifecycleHookInitInfo),
     Oracle(OracleInitInfo),
     AppData(AppDataInitInfo),
-    AssetLinkedLifecycleHook(AssetLinkedLifecycleHookInitInfo),
-    AssetLinkedAppData(AssetLinkedAppDataInitInfo),
+    LinkedLifecycleHook(LinkedLifecycleHookInitInfo),
+    LinkedAppData(LinkedAppDataInitInfo),
     DataSection(DataSectionInitInfo),
 }

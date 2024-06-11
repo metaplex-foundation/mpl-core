@@ -225,14 +225,14 @@ kinobi.update(
     lifecycleHookUpdateInfo: {
       name: "baseLifecycleHookUpdateInfo"
     },
-    assetLinkedLifecycleHook: {
-      name: "baseAssetLinkedLifecycleHook"
+    linkedLifecycleHook: {
+      name: "baseLinkedLifecycleHook"
     },
-    assetLinkedLifecycleHookInitInfo: {
-      name: "baseAssetLinkedLifecycleHookInitInfo"
+    linkedLifecycleHookInitInfo: {
+      name: "baseLinkedLifecycleHookInitInfo"
     },
-    assetLinkedLifecycleHookUpdateInfo: {
-      name: "baseAssetLinkedLifecycleHookUpdateInfo"
+    linkedLifecycleHookUpdateInfo: {
+      name: "baseLinkedLifecycleHookUpdateInfo"
     },
     appData: {
       name: "baseAppData"
@@ -243,14 +243,14 @@ kinobi.update(
     appDataUpdateInfo: {
       name: "baseAppDataUpdateInfo"
     },
-    assetLinkedAppData: {
-      name: "baseAssetLinkedAppData"
+    linkedAppData: {
+      name: "baseLinkedAppData"
     },
-    assetLinkedAppDataInitInfo: {
-      name: "baseAssetLinkedAppDataInitInfo"
+    linkedAppDataInitInfo: {
+      name: "baseLinkedAppDataInitInfo"
     },
-    assetLinkedAppDataUpdateInfo: {
-      name: "baseAssetLinkedAppDataUpdateInfo"
+    linkedAppDataUpdateInfo: {
+      name: "baseLinkedAppDataUpdateInfo"
     },
     dataSection: {
       name: "baseDataSection"

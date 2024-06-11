@@ -9,22 +9,22 @@ import { BaseLinkedDataKey } from '../generated';
 
 export type LinkedDataKey =
   | {
-      type: 'AssetLinkedLifecycleHook';
+      type: 'LinkedLifecycleHook';
       hookedProgram: PublicKey;
     }
   | {
-      type: 'AssetLinkedAppData';
+      type: 'LinkedAppData';
       dataAuthority: PluginAuthority;
     };
 
 export function linkedDataKeyToBase(e: LinkedDataKey): BaseLinkedDataKey {
   switch (e.type) {
-    case 'AssetLinkedLifecycleHook':
+    case 'LinkedLifecycleHook':
       return {
         __kind: e.type,
         fields: [e.hookedProgram],
       };
-    case 'AssetLinkedAppData':
+    case 'LinkedAppData':
       return {
         __kind: e.type,
         fields: [pluginAuthorityToBase(e.dataAuthority)],
@@ -36,12 +36,12 @@ export function linkedDataKeyToBase(e: LinkedDataKey): BaseLinkedDataKey {
 
 export function linkedDataKeyFromBase(e: BaseLinkedDataKey): LinkedDataKey {
   switch (e.__kind) {
-    case 'AssetLinkedLifecycleHook':
+    case 'LinkedLifecycleHook':
       return {
         type: e.__kind,
         hookedProgram: e.fields[0],
       };
-    case 'AssetLinkedAppData':
+    case 'LinkedAppData':
       return {
         type: e.__kind,
         dataAuthority: pluginAuthorityFromBase(e.fields[0]),

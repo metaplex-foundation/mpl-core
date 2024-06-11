@@ -19,7 +19,7 @@ pub enum ExternalPluginAdapterType {
     LifecycleHook,
     Oracle,
     AppData,
-    AssetLinkedLifecycleHook,
-    AssetLinkedAppData,
+    LinkedLifecycleHook,
+    LinkedAppData,
     DataSection,
 }

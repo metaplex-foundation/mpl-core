@@ -8,12 +8,11 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, AppData, AssetLinkedAppData, AssetLinkedLifecycleHook, Attributes, Autograph,
-        BurnDelegate, DataSection, Edition, ExternalCheckResult, ExternalPluginAdapter,
-        ExternalPluginAdapterKey, FreezeDelegate, ImmutableMetadata, Key, LifecycleHook,
-        MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
-        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
-        VerifiedCreators,
+        AddBlocker, AppData, Attributes, Autograph, BurnDelegate, DataSection, Edition,
+        ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate,
+        ImmutableMetadata, Key, LifecycleHook, LinkedAppData, LinkedLifecycleHook, MasterEdition,
+        Oracle, PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate,
+        PluginAuthority, Royalties, TransferDelegate, UpdateDelegate, VerifiedCreators,
     },
 };
 
@@ -183,10 +182,10 @@ pub struct PluginsList {
 #[derive(Debug, Default)]
 pub struct ExternalPluginAdaptersList {
     pub lifecycle_hooks: Vec<LifecycleHook>,
-    pub asset_linked_lifecycle_hooks: Vec<AssetLinkedLifecycleHook>,
+    pub linked_lifecycle_hooks: Vec<LinkedLifecycleHook>,
     pub oracles: Vec<Oracle>,
     pub app_data: Vec<AppData>,
-    pub asset_linked_app_data: Vec<AssetLinkedAppData>,
+    pub linked_app_data: Vec<LinkedAppData>,
     pub data_sections: Vec<DataSection>,
 }
 
@@ -307,7 +306,7 @@ impl PluginRegistryV1Safe {
 impl From<&ExternalPluginAdapter> for ExternalPluginAdapterKey {
     fn from(plugin: &ExternalPluginAdapter) -> Self {
         match plugin {
-            ExternalPluginAdapter::AssetLinkedAppData(app_data) => {
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
                 ExternalPluginAdapterKey::AppData(app_data.data_authority.clone())
             }
             ExternalPluginAdapter::AppData(app_data) => {
@@ -316,7 +315,7 @@ impl From<&ExternalPluginAdapter> for ExternalPluginAdapterKey {
             ExternalPluginAdapter::Oracle(oracle) => {
                 ExternalPluginAdapterKey::Oracle(oracle.base_address)
             }
-            ExternalPluginAdapter::AssetLinkedLifecycleHook(lifecycle_hook) => {
+            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
                 ExternalPluginAdapterKey::LifecycleHook(lifecycle_hook.hooked_program)
             }
             ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {

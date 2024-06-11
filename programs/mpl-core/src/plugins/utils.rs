@@ -16,9 +16,9 @@ use crate::{
 };
 
 use super::{
-    AppDataInitInfo, AssetLinkedAppDataInitInfo, ExternalPluginAdapter,
-    ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalPluginAdapterType,
-    ExternalRegistryRecord, LinkedDataKey, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType,
+    AppDataInitInfo, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
+    ExternalPluginAdapterKey, ExternalPluginAdapterType, ExternalRegistryRecord,
+    LinkedAppDataInitInfo, LinkedDataKey, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType,
     RegistryRecord,
 };
 
@@ -339,11 +339,11 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     };
     let plugin_type = init_info.into();
 
-    // Note currently we are blocking adding LifecycleHook and AssetLinkedLifecycleHook external plugin adapters as they
+    // Note currently we are blocking adding LifecycleHook and LinkedLifecycleHook external plugin adapters as they
     // are still in development.
     match init_info {
         ExternalPluginAdapterInitInfo::LifecycleHook(_)
-        | ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(_) => {
+        | ExternalPluginAdapterInitInfo::LinkedLifecycleHook(_) => {
             return Err(MplCoreError::NotAvailable.into())
         }
         _ => {}
@@ -366,7 +366,7 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
                 Some(init_info.lifecycle_checks.clone()),
             )
         }
-        ExternalPluginAdapterInitInfo::AssetLinkedLifecycleHook(init_info) => {
+        ExternalPluginAdapterInitInfo::LinkedLifecycleHook(init_info) => {
             validate_lifecycle_checks(&init_info.lifecycle_checks, false)?;
             (
                 init_info.init_plugin_authority,
@@ -384,7 +384,7 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
             init_plugin_authority,
             ..
         })
-        | ExternalPluginAdapterInitInfo::AssetLinkedAppData(AssetLinkedAppDataInitInfo {
+        | ExternalPluginAdapterInitInfo::LinkedAppData(LinkedAppDataInitInfo {
             init_plugin_authority,
             ..
         }) => (*init_plugin_authority, None),
@@ -822,7 +822,7 @@ pub(crate) fn find_external_plugin_adapter<'b>(
             && (match plugin_key {
                 ExternalPluginAdapterKey::LifecycleHook(address)
                 | ExternalPluginAdapterKey::Oracle(address)
-                | ExternalPluginAdapterKey::AssetLinkedLifecycleHook(address) => {
+                | ExternalPluginAdapterKey::LinkedLifecycleHook(address) => {
                     let pubkey_offset = record
                         .offset
                         .checked_add(1)
@@ -847,7 +847,7 @@ pub(crate) fn find_external_plugin_adapter<'b>(
                             Err(_) => return Err(MplCoreError::DeserializationError.into()),
                         }
                 }
-                ExternalPluginAdapterKey::AssetLinkedAppData(authority) => {
+                ExternalPluginAdapterKey::LinkedAppData(authority) => {
                     let authority_offset = record
                         .offset
                         .checked_add(1)
