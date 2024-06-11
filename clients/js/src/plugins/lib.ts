@@ -36,6 +36,11 @@ export function formPluginHeaderV1(
   };
 }
 
+/**
+ * @deprecated Use the new 1.0 sdk instruction helpers like `create` instead of `createV1` which no longer require sub create functions like this.
+ * @param args
+ * @returns
+ */
 export function createPlugin(args: CreatePluginArgs): BasePlugin {
   // TODO refactor when there are more required empty fields in plugins
   if (args.type === 'UpdateDelegate') {
@@ -53,6 +58,12 @@ export function createPlugin(args: CreatePluginArgs): BasePlugin {
     fields: [(args as any).data || {}],
   };
 }
+
+/**
+ * @deprecated Use the new 1.0 sdk instruction helpers like `create` instead of `createV1` which no longer require sub create functions like this.
+ * @param args
+ * @returns
+ */
 export function pluginAuthorityPair(
   args: PluginAuthorityPairHelperArgs
 ): PluginAuthorityPair {
@@ -98,6 +109,11 @@ export function createPluginV2(args: AssetAllPluginArgsV2): BasePlugin {
   };
 }
 
+/**
+ * @deprecated Use the new 1.0 sdk instruction helpers like `create` instead of `createV1` which no longer require sub create functions like this.
+ * @param args
+ * @returns
+ */
 export function pluginAuthorityPairV2({
   type,
   authority,
