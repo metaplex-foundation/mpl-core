@@ -6,9 +6,9 @@ use mpl_core::{
         AddCollectionExternalPluginAdapterV1Builder, AddExternalPluginAdapterV1Builder,
     },
     types::{
-        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPluginAdapter,
-        ExternalPluginAdapterInitInfo, ExternalPluginAdapterSchema, HookableLifecycleEvent,
-        LifecycleHook, LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority,
+        ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
+        ExternalPluginAdapterSchema, HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo,
+        Oracle, OracleInitInfo, PluginAuthority, SecureDataStore, SecureDataStoreInitInfo,
         UpdateAuthority, ValidationResultsOffset,
     },
 };
@@ -578,8 +578,8 @@ async fn test_add_data_store() {
     let add_external_plugin_adapter_ix = AddExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginAdapterInitInfo::DataStore(
-            DataStoreInitInfo {
+        .init_info(ExternalPluginAdapterInitInfo::SecureDataStore(
+            SecureDataStoreInitInfo {
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 data_authority: PluginAuthority::UpdateAuthority,
                 schema: None,
@@ -605,10 +605,12 @@ async fn test_add_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapter::DataStore(DataStore {
-                data_authority: PluginAuthority::UpdateAuthority,
-                schema: ExternalPluginAdapterSchema::Binary,
-            })],
+            external_plugin_adapters: vec![ExternalPluginAdapter::SecureDataStore(
+                SecureDataStore {
+                    data_authority: PluginAuthority::UpdateAuthority,
+                    schema: ExternalPluginAdapterSchema::Binary,
+                },
+            )],
         },
     )
     .await;
@@ -657,8 +659,8 @@ async fn test_temporarily_cannot_add_data_store() {
     let add_external_plugin_adapter_ix = AddExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginAdapterInitInfo::DataStore(
-            DataStoreInitInfo {
+        .init_info(ExternalPluginAdapterInitInfo::SecureDataStore(
+            SecureDataStoreInitInfo {
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 data_authority: PluginAuthority::UpdateAuthority,
                 schema: None,
@@ -734,8 +736,8 @@ async fn test_temporarily_cannot_add_data_store_on_collection() {
     let add_external_plugin_adapter_ix = AddCollectionExternalPluginAdapterV1Builder::new()
         .collection(collection.pubkey())
         .payer(context.payer.pubkey())
-        .init_info(ExternalPluginAdapterInitInfo::DataStore(
-            DataStoreInitInfo {
+        .init_info(ExternalPluginAdapterInitInfo::SecureDataStore(
+            SecureDataStoreInitInfo {
                 init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                 data_authority: PluginAuthority::UpdateAuthority,
                 schema: None,

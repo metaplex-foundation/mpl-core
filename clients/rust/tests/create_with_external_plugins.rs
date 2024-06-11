@@ -3,9 +3,9 @@ pub mod setup;
 use mpl_core::{
     errors::MplCoreError,
     types::{
-        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPluginAdapter,
-        ExternalPluginAdapterInitInfo, ExternalPluginAdapterSchema, HookableLifecycleEvent,
-        LifecycleHook, LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority,
+        ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
+        ExternalPluginAdapterSchema, HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo,
+        Oracle, OracleInitInfo, PluginAuthority, SecureDataStore, SecureDataStoreInitInfo,
         UpdateAuthority, ValidationResultsOffset,
     },
 };
@@ -309,8 +309,8 @@ async fn test_create_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::DataStore(
-                DataStoreInitInfo {
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::SecureDataStore(
+                SecureDataStoreInitInfo {
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     data_authority: PluginAuthority::UpdateAuthority,
                     schema: None,
@@ -332,10 +332,12 @@ async fn test_create_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapter::DataStore(DataStore {
-                data_authority: PluginAuthority::UpdateAuthority,
-                schema: ExternalPluginAdapterSchema::Binary,
-            })],
+            external_plugin_adapters: vec![ExternalPluginAdapter::SecureDataStore(
+                SecureDataStore {
+                    data_authority: PluginAuthority::UpdateAuthority,
+                    schema: ExternalPluginAdapterSchema::Binary,
+                },
+            )],
         },
     )
     .await;
@@ -359,8 +361,8 @@ async fn test_temporarily_cannot_create_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::DataStore(
-                DataStoreInitInfo {
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::SecureDataStore(
+                SecureDataStoreInitInfo {
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     data_authority: PluginAuthority::UpdateAuthority,
                     schema: None,
@@ -388,8 +390,8 @@ async fn test_temporarily_cannot_create_data_store_on_collection() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::DataStore(
-                DataStoreInitInfo {
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::SecureDataStore(
+                SecureDataStoreInitInfo {
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     data_authority: PluginAuthority::UpdateAuthority,
                     schema: None,

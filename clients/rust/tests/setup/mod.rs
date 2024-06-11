@@ -149,11 +149,29 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
             ExternalPluginAdapter::Oracle(oracle) => {
                 assert!(asset.external_plugin_adapter_list.oracles.contains(&oracle))
             }
-            ExternalPluginAdapter::DataStore(data_store) => {
+            ExternalPluginAdapter::SecureDataStore(data_store) => {
                 assert!(asset
                     .external_plugin_adapter_list
                     .data_stores
                     .contains(&data_store))
+            }
+            ExternalPluginAdapter::AssetLinkedLifecycleHook(hook) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .asset_linked_lifecycle_hooks
+                    .contains(&hook))
+            }
+            ExternalPluginAdapter::AssetLinkedSecureDataStore(data_store) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .asset_linked_data_stores
+                    .contains(&data_store))
+            }
+            ExternalPluginAdapter::DataSection(data) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .data_sections
+                    .contains(&data))
             }
         }
     }

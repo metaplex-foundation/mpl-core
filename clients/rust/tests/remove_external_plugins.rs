@@ -3,10 +3,10 @@ pub mod setup;
 use mpl_core::{
     instructions::RemoveExternalPluginAdapterV1Builder,
     types::{
-        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPluginAdapter,
-        ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
-        HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle, OracleInitInfo,
-        PluginAuthority, UpdateAuthority, ValidationResultsOffset,
+        ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
+        ExternalPluginAdapterKey, ExternalPluginAdapterSchema, HookableLifecycleEvent,
+        LifecycleHook, LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority,
+        SecureDataStore, SecureDataStoreInitInfo, UpdateAuthority, ValidationResultsOffset,
     },
 };
 pub use setup::*;
@@ -207,8 +207,8 @@ async fn test_remove_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::DataStore(
-                DataStoreInitInfo {
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::SecureDataStore(
+                SecureDataStoreInitInfo {
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     data_authority: PluginAuthority::UpdateAuthority,
                     schema: None,
@@ -230,10 +230,12 @@ async fn test_remove_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapter::DataStore(DataStore {
-                data_authority: PluginAuthority::UpdateAuthority,
-                schema: ExternalPluginAdapterSchema::Binary,
-            })],
+            external_plugin_adapters: vec![ExternalPluginAdapter::SecureDataStore(
+                SecureDataStore {
+                    data_authority: PluginAuthority::UpdateAuthority,
+                    schema: ExternalPluginAdapterSchema::Binary,
+                },
+            )],
         },
     )
     .await;
@@ -241,7 +243,7 @@ async fn test_remove_data_store() {
     let ix = RemoveExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .key(ExternalPluginAdapterKey::DataStore(
+        .key(ExternalPluginAdapterKey::SecureDataStore(
             PluginAuthority::UpdateAuthority,
         ))
         .instruction();
