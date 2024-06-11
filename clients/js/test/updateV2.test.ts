@@ -323,6 +323,14 @@ test('it cannot remove an asset from a collection when missing collection accoun
     updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    currentSize: 1,
+    numMinted: 1,
+  });
+
   const result = updateV2(umi, {
     asset: asset.publicKey,
     newName: 'Test Bread 2',
@@ -331,6 +339,21 @@ test('it cannot remove an asset from a collection when missing collection accoun
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'MissingCollection' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    currentSize: 1,
+    numMinted: 1,
+  });
 });
 
 test('it cannot remove an asset from a collection when using incorrect collection account', async (t) => {
@@ -412,6 +435,14 @@ test('it cannot update an asset update authority to be part of a collection when
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    currentSize: 0,
+    numMinted: 0,
+  });
+
   const result = updateV2(umi, {
     asset: asset.publicKey,
     newName: 'Test Bread 2',
@@ -420,6 +451,21 @@ test('it cannot update an asset update authority to be part of a collection when
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'MissingCollection' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    currentSize: 0,
+    numMinted: 0,
+  });
 });
 
 test('it cannot update an asset update authority to be part of a collection when using incorrect collection account', async (t) => {
