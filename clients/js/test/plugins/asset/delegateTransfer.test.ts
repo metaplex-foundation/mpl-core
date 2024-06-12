@@ -6,7 +6,7 @@ import {
   revokePluginAuthority,
 } from '../../../src';
 import { DEFAULT_ASSET, assertAsset, createUmi } from '../../_setupRaw';
-import { createAsset, createAssetWithCollection } from '../../_setupSdk';
+import { createAsset, createCollection } from '../../_setupSdk';
 
 test('a delegate can transfer the asset', async (t) => {
   const umi = await createUmi();
@@ -167,9 +167,15 @@ test('it can transfer using delegated update authority from collection', async (
   const umi = await createUmi();
   const owner = generateSigner(umi);
   const newOwner = generateSigner(umi);
+  const updateAuthority = generateSigner(umi);
 
-  const { asset, collection } = await createAssetWithCollection(umi, {
+  const collection = await createCollection(umi, {
+    updateAuthority: updateAuthority.publicKey,
+  });
+
+  const asset = await createAsset(umi, {
     owner: owner.publicKey,
+    collection: collection.publicKey,
     plugins: [
       {
         type: 'TransferDelegate',
@@ -178,12 +184,14 @@ test('it can transfer using delegated update authority from collection', async (
         },
       },
     ],
+    authority: updateAuthority,
   });
 
   await transfer(umi, {
     asset,
     collection,
     newOwner: newOwner.publicKey,
+    authority: updateAuthority,
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
