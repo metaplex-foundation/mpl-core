@@ -2,10 +2,10 @@ import test from 'ava';
 
 import { generateSigner } from '@metaplex-foundation/umi';
 import {
-  updateV2,
+  update,
   pluginAuthorityPair,
   updateAuthority,
-  updateCollectionV1,
+  updateCollection,
   addCollectionPlugin,
   approveCollectionPluginAuthority,
 } from '../src';
@@ -25,10 +25,10 @@ test('it can update an asset to be larger', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi);
 
-  await updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  await update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -50,10 +50,10 @@ test('it cannot update an asset using asset as authority', async (t) => {
     uri: 'https://short.com',
   });
 
-  const result = updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  const result = update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     authority: myAsset,
   }).sendAndConfirm(umi);
 
@@ -73,10 +73,10 @@ test('it can update an asset to be smaller', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi);
 
-  await updateV2(umi, {
-    asset: asset.publicKey,
-    newName: '',
-    newUri: '',
+  await update(umi, {
+    asset,
+    name: '',
+    uri: '',
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -99,10 +99,10 @@ test('it can update an asset with plugins to be larger', async (t) => {
     ],
   });
 
-  await updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  await update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -131,10 +131,10 @@ test('it can update an asset with plugins to be smaller', async (t) => {
     ],
   });
 
-  await updateV2(umi, {
-    asset: asset.publicKey,
-    newName: '',
-    newUri: '',
+  await update(umi, {
+    asset,
+    name: '',
+    uri: '',
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -158,10 +158,10 @@ test('it can update an asset update authority', async (t) => {
   const asset = await createAsset(umi);
   const newUpdateAuthority = generateSigner(umi);
 
-  await updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  await update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     newUpdateAuthority: updateAuthority('Address', [
       newUpdateAuthority.publicKey,
     ]),
@@ -185,10 +185,10 @@ test('it cannot update an asset using wrong authority', async (t) => {
   });
 
   const newUpdateAuthority = generateSigner(umi);
-  const result = updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  const result = update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     newUpdateAuthority: updateAuthority('Address', [
       newUpdateAuthority.publicKey,
     ]),
@@ -210,10 +210,10 @@ test('it cannot use an invalid system program for assets', async (t) => {
   const asset = await createAsset(umi);
   const fakeSystemProgram = generateSigner(umi);
 
-  const result = updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  const result = update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     systemProgram: fakeSystemProgram.publicKey,
   }).sendAndConfirm(umi);
 
@@ -226,10 +226,10 @@ test('it cannot use an invalid noop program for assets', async (t) => {
   const asset = await createAsset(umi);
   const fakeLogWrapper = generateSigner(umi);
 
-  const result = updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  const result = update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     logWrapper: fakeLogWrapper.publicKey,
   }).sendAndConfirm(umi);
 
@@ -242,10 +242,10 @@ test('it cannot use an invalid system program for collections', async (t) => {
   const collection = await createCollection(umi);
   const fakeSystemProgram = generateSigner(umi);
 
-  const result = updateCollectionV1(umi, {
+  const result = updateCollection(umi, {
     collection: collection.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     systemProgram: fakeSystemProgram.publicKey,
   }).sendAndConfirm(umi);
 
@@ -258,17 +258,17 @@ test('it cannot use an invalid noop program for collections', async (t) => {
   const collection = await createCollection(umi);
   const fakeLogWrapper = generateSigner(umi);
 
-  const result = updateCollectionV1(umi, {
+  const result = updateCollection(umi, {
     collection: collection.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     logWrapper: fakeLogWrapper.publicKey,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
 });
 
-test('it can remove an asset from a collection using updateV2', async (t) => {
+test('it can remove an asset from a collection using update', async (t) => {
   const umi = await createUmi();
   const { asset, collection } = await createAssetWithCollection(umi, {}, {});
 
@@ -287,11 +287,11 @@ test('it can remove an asset from a collection using updateV2', async (t) => {
     numMinted: 1,
   });
 
-  await updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
-    collection: collection.publicKey,
+  await update(umi, {
+    asset,
+    collection,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     newUpdateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
   }).sendAndConfirm(umi);
 
@@ -331,10 +331,10 @@ test('it cannot remove an asset from a collection when missing collection accoun
     numMinted: 1,
   });
 
-  const result = updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  const result = update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     newUpdateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
   }).sendAndConfirm(umi);
 
@@ -367,18 +367,20 @@ test('it cannot remove an asset from a collection when using incorrect collectio
     updateAuthority: { type: 'Collection', address: collection.publicKey },
   });
 
-  const result = updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
-    collection: generateSigner(umi).publicKey,
+  const randomCollection = await createCollection(umi);
+
+  const result = update(umi, {
+    asset,
+    collection: randomCollection,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     newUpdateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidCollection' });
 });
 
-test('it can update an asset update authority to be part of a collection using updateV2', async (t) => {
+test('it can update an asset update authority to be part of a collection using update', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi);
   const collection = await createCollection(umi);
@@ -398,10 +400,10 @@ test('it can update an asset update authority to be part of a collection using u
     numMinted: 0,
   });
 
-  await updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  await update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     newUpdateAuthority: updateAuthority('Collection', [collection.publicKey]),
     newCollection: collection.publicKey,
   }).sendAndConfirm(umi);
@@ -443,10 +445,10 @@ test('it cannot update an asset update authority to be part of a collection when
     numMinted: 0,
   });
 
-  const result = updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  const result = update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     newUpdateAuthority: updateAuthority('Collection', [collection.publicKey]),
   }).sendAndConfirm(umi);
 
@@ -480,10 +482,10 @@ test('it cannot update an asset update authority to be part of a collection when
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
-  const result = updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  const result = update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     newUpdateAuthority: updateAuthority('Collection', [collection.publicKey]),
     newCollection: generateSigner(umi).publicKey,
   }).sendAndConfirm(umi);
@@ -506,10 +508,10 @@ test('it cannot update an asset using only new collection authority', async (t) 
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
 
-  const result = updateV2(umi, {
-    asset: asset.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  const result = update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     newUpdateAuthority: updateAuthority('Collection', [collection.publicKey]),
     newCollection: collection.publicKey,
     authority: newCollectionAuthority,
@@ -564,11 +566,11 @@ test('it can change an asset collection using delegate', async (t) => {
     authority: newCollectionAuthority,
   }).sendAndConfirm(umi);
 
-  await updateV2(umi, {
-    asset: asset.publicKey,
-    collection: originalCollection.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  await update(umi, {
+    asset,
+    collection: originalCollection,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     newUpdateAuthority: updateAuthority('Collection', [
       newCollection.publicKey,
     ]),
@@ -609,11 +611,11 @@ test('it can change an asset collection using same update update authority (no d
     updateAuthority: collectionAuthority,
   });
 
-  await updateV2(umi, {
-    asset: asset.publicKey,
-    collection: originalCollection.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  await update(umi, {
+    asset,
+    collection: originalCollection,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     newUpdateAuthority: updateAuthority('Collection', [
       newCollection.publicKey,
     ]),
@@ -675,11 +677,11 @@ test('it can change an asset collection using same update update authority (dele
     authority: collectionAuthority,
   }).sendAndConfirm(umi);
 
-  await updateV2(umi, {
-    asset: asset.publicKey,
-    collection: originalCollection.publicKey,
-    newName: 'Test Bread 2',
-    newUri: 'https://example.com/bread2',
+  await update(umi, {
+    asset,
+    collection: originalCollection,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
     newUpdateAuthority: updateAuthority('Collection', [
       newCollection.publicKey,
     ]),
