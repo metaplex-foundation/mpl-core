@@ -3,7 +3,6 @@ import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
 import {
   update,
-  pluginAuthorityPair,
   updateAuthority,
   updateCollection,
   addCollectionPlugin,
@@ -12,13 +11,16 @@ import {
 import {
   assertAsset,
   assertCollection,
-  createAsset,
-  createAssetWithCollection,
-  createCollection,
   createUmi,
   DEFAULT_ASSET,
   DEFAULT_COLLECTION,
 } from './_setupRaw';
+
+import {
+  createAsset,
+  createAssetWithCollection,
+  createCollection,
+} from './_setupSdk';
 
 test('it can update an asset to be larger', async (t) => {
   // Given a Umi instance and a new signer.
@@ -95,7 +97,10 @@ test('it can update an asset with plugins to be larger', async (t) => {
     name: 'short',
     uri: 'https://short.com',
     plugins: [
-      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+      {
+        type: 'FreezeDelegate',
+        frozen: false,
+      },
     ],
   });
 
@@ -127,7 +132,10 @@ test('it can update an asset with plugins to be smaller', async (t) => {
     name: 'Test Bread 2',
     uri: 'https://example.com/bread2',
     plugins: [
-      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+      {
+        type: 'FreezeDelegate',
+        frozen: false,
+      },
     ],
   });
 
