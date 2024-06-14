@@ -3897,18 +3897,18 @@
             ]
           },
           {
-            "name": "LinkedLifecycleHook",
-            "fields": [
-              {
-                "defined": "LinkedLifecycleHook"
-              }
-            ]
-          },
-          {
             "name": "AppData",
             "fields": [
               {
                 "defined": "AppData"
+              }
+            ]
+          },
+          {
+            "name": "LinkedLifecycleHook",
+            "fields": [
+              {
+                "defined": "LinkedLifecycleHook"
               }
             ]
           },
@@ -4199,6 +4199,14 @@
             "fields": [
               {
                 "defined": "AppDataUpdateInfo"
+              }
+            ]
+          },
+          {
+            "name": "LinkedLifecycleHook",
+            "fields": [
+              {
+                "defined": "LinkedLifecycleHookUpdateInfo"
               }
             ]
           },

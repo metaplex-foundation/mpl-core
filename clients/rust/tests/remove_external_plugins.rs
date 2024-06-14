@@ -189,7 +189,6 @@ async fn test_remove_oracle() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_remove_app_data() {
     let mut context = program_test().start_with_context().await;
 

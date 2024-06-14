@@ -14,8 +14,8 @@ use super::{
     AppData, AppDataInitInfo, AppDataUpdateInfo, Authority, DataSection, DataSectionInitInfo,
     ExternalCheckResult, ExternalRegistryRecord, LifecycleHook, LifecycleHookInitInfo,
     LifecycleHookUpdateInfo, LinkedAppData, LinkedAppDataInitInfo, LinkedAppDataUpdateInfo,
-    LinkedLifecycleHook, LinkedLifecycleHookInitInfo, Oracle, OracleInitInfo, OracleUpdateInfo,
-    PluginValidation, PluginValidationContext, ValidationResult,
+    LinkedLifecycleHook, LinkedLifecycleHookInitInfo, LinkedLifecycleHookUpdateInfo, Oracle,
+    OracleInitInfo, OracleUpdateInfo, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// List of third party plugin types.
@@ -84,13 +84,13 @@ pub enum ExternalPluginAdapter {
     /// Oracle.  Get a `ValidationResult` result from an account either specified by or derived
     /// from a `Pubkey` stored in the attached struct.
     Oracle(Oracle),
+    /// Arbitrary data that can be written to by the data `Authority` stored in the attached
+    /// struct.  Note this data authority is different then the plugin authority.
+    AppData(AppData),
     /// Collection Only: Linked Lifecycle Hook.  The hooked program and extra accounts are specified in the attached
     /// struct.  The hooked program is called at specified lifecycle events and will return a
     /// validation result and new data to store.
     LinkedLifecycleHook(LinkedLifecycleHook),
-    /// Arbitrary data that can be written to by the data `Authority` stored in the attached
-    /// struct.  Note this data authority is different then the plugin authority.
-    AppData(AppData),
     /// Collection only: Arbitrary data that can be written to by the data `Authority` stored on any asset in the Collection in the Data Section struct.
     /// Authority is different then the plugin authority.
     LinkedAppData(LinkedAppData),
@@ -183,7 +183,7 @@ impl ExternalPluginAdapter {
                 lifecycle_hook.validate_create(ctx)
             }
             ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_create(ctx),
-            // This should be unreachable because no corresponding it cannot be added by a user.
+            // Here we block the creation of a DataSection plugin because this is only done internally.
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
         }
     }
@@ -266,7 +266,8 @@ impl ExternalPluginAdapter {
             ExternalPluginAdapter::LinkedAppData(app_data) => {
                 app_data.validate_add_external_plugin_adapter(ctx)
             }
-            ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Pass),
+            // Here we block the creation of a DataSection plugin because this is only done internally.
+            ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
         }
     }
 
@@ -568,6 +569,8 @@ pub enum ExternalPluginAdapterUpdateInfo {
     Oracle(OracleUpdateInfo),
     /// App Data.
     AppData(AppDataUpdateInfo),
+    /// Linked Lifecycle Hook.
+    LinkedLifecycleHook(LinkedLifecycleHookUpdateInfo),
     /// Linked App Data.
     LinkedAppData(LinkedAppDataUpdateInfo),
 }

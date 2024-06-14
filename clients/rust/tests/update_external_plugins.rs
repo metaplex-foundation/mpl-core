@@ -403,7 +403,6 @@ async fn test_cannot_update_oracle_to_have_duplicate_lifecycle_checks() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_update_app_data() {
     let mut context = program_test().start_with_context().await;
 

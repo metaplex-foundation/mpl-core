@@ -5,6 +5,10 @@ import { LinkedDataKey, linkedDataKeyToBase } from './linkedDataKey';
 
 export type ExternalPluginAdapterKey =
   | {
+      type: 'LifecycleHook';
+      hookedProgram: PublicKey;
+    }
+  | {
       type: 'Oracle';
       baseAddress: PublicKey;
     }
@@ -13,14 +17,15 @@ export type ExternalPluginAdapterKey =
       dataAuthority: PluginAuthority;
     }
   | {
-      type: 'LifecycleHook';
-      hookedProgram: PublicKey;
+      type: 'LinkedLifecycleHook';
+      dataAuthority: PublicKey;
     }
   | {
       type: 'LinkedAppData';
       dataAuthority: PluginAuthority;
     }
   | { type: 'DataSection'; parentKey: LinkedDataKey };
+
 export function externalPluginAdapterKeyToBase(
   e: ExternalPluginAdapterKey
 ): BaseExternalPluginAdapterKey {

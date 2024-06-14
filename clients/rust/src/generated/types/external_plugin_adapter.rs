@@ -23,8 +23,8 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub enum ExternalPluginAdapter {
     LifecycleHook(LifecycleHook),
     Oracle(Oracle),
-    LinkedLifecycleHook(LinkedLifecycleHook),
     AppData(AppData),
+    LinkedLifecycleHook(LinkedLifecycleHook),
     LinkedAppData(LinkedAppData),
     DataSection(DataSection),
 }

@@ -8,6 +8,7 @@
 use crate::generated::types::AppDataUpdateInfo;
 use crate::generated::types::LifecycleHookUpdateInfo;
 use crate::generated::types::LinkedAppDataUpdateInfo;
+use crate::generated::types::LinkedLifecycleHookUpdateInfo;
 use crate::generated::types::OracleUpdateInfo;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
@@ -22,5 +23,6 @@ pub enum ExternalPluginAdapterUpdateInfo {
     LifecycleHook(LifecycleHookUpdateInfo),
     Oracle(OracleUpdateInfo),
     AppData(AppDataUpdateInfo),
+    LinkedLifecycleHook(LinkedLifecycleHookUpdateInfo),
     LinkedAppData(LinkedAppDataUpdateInfo),
 }
