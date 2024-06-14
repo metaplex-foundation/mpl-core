@@ -1,6 +1,7 @@
 import {
   PublicKey,
   Umi,
+  generateSigner,
   publicKey,
   sol,
   subtractAmounts,
@@ -15,8 +16,9 @@ import {
   createPlugin,
   pluginAuthorityPair,
   removePluginV1,
+  transfer,
 } from '../src';
-import { createAsset, createUmi } from './_setupRaw';
+import { assertAsset, createAsset, createUmi } from './_setupRaw';
 
 const recipient1 = publicKey('8AT6o8Qk5T9QnZvPThMrF9bcCQLTGkyGvVZZzHgCw11v');
 const recipient2 = publicKey('MmHsqX4LxTfifxoH8BVRLUKrwDn1LPCac6YcCZTHhwt');
@@ -199,4 +201,29 @@ test.serial('it can collect multiple assets at once', async (t) => {
   t.is(await hasCollectAmount(umi, asset3.publicKey), false);
   t.deepEqual(subtractAmounts(balEnd1, balStart1), sol((0.0015 / 2) * 3));
   t.deepEqual(subtractAmounts(balEnd2, balStart2), sol((0.0015 / 2) * 3));
+});
+
+test('it can transfer after collecting', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi);
+  await collect(umi, {})
+    .addRemainingAccounts({
+      isSigner: false,
+      isWritable: true,
+      pubkey: asset.publicKey,
+    })
+    .sendAndConfirm(umi);
+  t.is(await hasCollectAmount(umi, asset.publicKey), false);
+  const newOwner = generateSigner(umi);
+
+  await transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
 });
