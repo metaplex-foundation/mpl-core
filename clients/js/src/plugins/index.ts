@@ -13,3 +13,4 @@ export * from './updateAuthority';
 export * from './seed';
 export * from './extraAccount';
 export * from './validationResultsOffset';
+export * from './masterEdition';

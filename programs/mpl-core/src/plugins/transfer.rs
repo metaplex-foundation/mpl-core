@@ -57,15 +57,23 @@ impl PluginValidation for TransferDelegate {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority
-            == (&Authority::Address {
-                address: *ctx.authority_info.key,
-            })
-        {
-            approve!()
-        } else {
-            abstain!()
+        match ctx.self_authority {
+            Authority::Address { address } if address == ctx.authority_info.key => {
+                return approve!();
+            }
+
+            Authority::UpdateAuthority => {
+                if ctx
+                    .resolved_authorities
+                    .map_or(false, |auths| auths.contains(&Authority::UpdateAuthority))
+                {
+                    return approve!();
+                }
+            }
+
+            _ => {}
         }
+        abstain!()
     }
 
     /// Validate the revoke plugin authority lifecycle action.
