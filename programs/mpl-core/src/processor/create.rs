@@ -218,6 +218,9 @@ pub(crate) fn process_create<'a>(
                         | ExternalPluginAdapterInitInfo::LinkedAppData(_) => {
                             return Err(MplCoreError::InvalidPluginAdapterTarget.into())
                         }
+                        ExternalPluginAdapterInitInfo::DataSection(_) => {
+                            return Err(MplCoreError::CannotAddDataSection.into())
+                        }
                         _ => (),
                     }
 

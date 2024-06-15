@@ -4737,6 +4737,11 @@
       "code": 45,
       "name": "InvalidPluginAdapterTarget",
       "msg": "This plugin adapter cannot be added to an Asset"
+    },
+    {
+      "code": 46,
+      "name": "CannotAddDataSection",
+      "msg": "Cannot add a Data Section without a linked external plugin"
     }
   ],
   "metadata": {

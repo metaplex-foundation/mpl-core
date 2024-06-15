@@ -170,6 +170,10 @@ pub(crate) fn process_create_collection<'a>(
                 ctx.accounts.system_program,
             )?;
             for plugin_init_info in &plugins {
+                if let ExternalPluginAdapterInitInfo::DataSection(_) = plugin_init_info {
+                    return Err(MplCoreError::CannotAddDataSection.into());
+                }
+
                 let external_check_result_bits = ExternalCheckResultBits::from(
                     ExternalPluginAdapter::check_create(plugin_init_info),
                 );

@@ -659,6 +659,23 @@ nameToErrorMap.set(
   InvalidPluginAdapterTargetError
 );
 
+/** CannotAddDataSection: Cannot add a Data Section without a linked external plugin */
+export class CannotAddDataSectionError extends ProgramError {
+  override readonly name: string = 'CannotAddDataSection';
+
+  readonly code: number = 0x2e; // 46
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Cannot add a Data Section without a linked external plugin',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x2e, CannotAddDataSectionError);
+nameToErrorMap.set('CannotAddDataSection', CannotAddDataSectionError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

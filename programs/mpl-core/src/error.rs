@@ -192,6 +192,10 @@ pub enum MplCoreError {
     /// 45 - This plugin adapter cannot be added to an Asset
     #[error("This plugin adapter cannot be added to an Asset")]
     InvalidPluginAdapterTarget,
+
+    /// 46 - Cannot add a Data Section without a linked external plugin
+    #[error("Cannot add a Data Section without a linked external plugin")]
+    CannotAddDataSection,
 }
 
 impl PrintProgramError for MplCoreError {

@@ -422,8 +422,6 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
 
     let serialized_plugin = plugin.try_to_vec()?;
     let plugin_size = serialized_plugin.len();
-    solana_program::msg!("Plugin size: {}", plugin_size);
-    solana_program::msg!("Plugin: {:?}", plugin);
 
     let size_increase = plugin_size
         .checked_add(new_registry_record.try_to_vec()?.len())
@@ -454,11 +452,8 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         .checked_add(size_increase)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
-    solana_program::msg!("Resizing account to {}", new_size);
     resize_or_reallocate_account(account, payer, system_program, new_size)?;
-    solana_program::msg!("Saving plugin header at {}", header_offset);
     plugin_header.save(account, header_offset)?;
-    solana_program::msg!("Saving plugin at {}", old_registry_offset);
     plugin.save(account, old_registry_offset)?;
 
     if let Some(data) = appended_data {
@@ -469,7 +464,6 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         );
     };
 
-    solana_program::msg!("Saving plugin registry at {}", new_registry_offset);
     plugin_registry.save(account, new_registry_offset)?;
 
     Ok(())

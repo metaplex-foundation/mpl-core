@@ -148,6 +148,9 @@ pub enum MplCoreError {
     /// 45 (0x2D) - This plugin adapter cannot be added to an Asset
     #[error("This plugin adapter cannot be added to an Asset")]
     InvalidPluginAdapterTarget,
+    /// 46 (0x2E) - Cannot add a Data Section without a linked external plugin
+    #[error("Cannot add a Data Section without a linked external plugin")]
+    CannotAddDataSection,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

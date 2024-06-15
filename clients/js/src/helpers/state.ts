@@ -1,5 +1,5 @@
 import { PublicKey, publicKey } from '@metaplex-foundation/umi';
-import { LinkedLifecycleHookPlugin } from 'src/plugins/linkedLifecycleHook';
+import { LinkedLifecycleHookPlugin } from '../plugins/linkedLifecycleHook';
 import { AssetV1, CollectionV1 } from '../generated';
 import {
   comparePluginAuthorities,

@@ -93,7 +93,6 @@ export function linkedLifecycleHookUpdateInfoArgsToBase(
       ? l.extraAccounts.map(extraAccountToBase)
       : null,
     schema: l.schema ? l.schema : null,
-    // TODO update dataAuthority?
   };
 }
 
@@ -108,7 +107,6 @@ export function linkedLifecycleHookFromBase(
       s.extraAccounts.__option === 'Some'
         ? s.extraAccounts.value.map(extraAccountFromBase)
         : undefined,
-    // data: parseExternalPluginAdapterData(s, r, account),
     dataAuthority:
       s.dataAuthority.__option === 'Some'
         ? pluginAuthorityFromBase(s.dataAuthority.value)

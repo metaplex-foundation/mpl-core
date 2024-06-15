@@ -1,6 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
+};
 
 use crate::{
     error::MplCoreError,
@@ -13,7 +15,7 @@ use crate::{
         initialize_external_plugin_adapter, update_external_plugin_adapter_data, AppData,
         DataSectionInitInfo, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
         ExternalPluginAdapterKey, ExternalRegistryRecord, LifecycleHook, LinkedAppData,
-        LinkedDataKey, PluginHeaderV1, PluginRegistryV1,
+        LinkedDataKey, LinkedLifecycleHook, PluginHeaderV1, PluginRegistryV1,
     },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -168,6 +170,10 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
             data_authority: Some(data_authority),
             ..
         })
+        | ExternalPluginAdapter::LinkedLifecycleHook(LinkedLifecycleHook {
+            data_authority: Some(data_authority),
+            ..
+        })
         | ExternalPluginAdapter::AppData(AppData { data_authority, .. })
         | ExternalPluginAdapter::LinkedAppData(LinkedAppData { data_authority, .. }) => {
             if !authorities.contains(data_authority) {
@@ -243,36 +249,44 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                     (Some(_), Some(_)) => Err(MplCoreError::TwoDataSources.into()),
                     (None, None) => Err(MplCoreError::NoDataSources.into()),
                 },
-                Err(_) => match (data, buffer) {
-                    (Some(data), None) => initialize_external_plugin_adapter::<T>(
-                        &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
-                            parent_key: LinkedDataKey::LinkedAppData(app_data.data_authority),
-                            schema: app_data.schema,
-                        }),
-                        Some(core),
-                        &mut header,
-                        &mut registry,
-                        account,
-                        payer,
-                        system_program,
-                        Some(data),
-                    ),
-                    (None, Some(buffer)) => initialize_external_plugin_adapter::<T>(
-                        &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
-                            parent_key: LinkedDataKey::LinkedAppData(app_data.data_authority),
-                            schema: app_data.schema,
-                        }),
-                        Some(core),
-                        &mut header,
-                        &mut registry,
-                        account,
-                        payer,
-                        system_program,
-                        Some(&buffer.data.borrow()),
-                    ),
-                    (Some(_), Some(_)) => Err(MplCoreError::TwoDataSources.into()),
-                    (None, None) => Err(MplCoreError::NoDataSources.into()),
-                },
+                Err(ref e)
+                    if *e
+                        == ProgramError::Custom(
+                            MplCoreError::ExternalPluginAdapterNotFound as u32,
+                        ) =>
+                {
+                    match (data, buffer) {
+                        (Some(data), None) => initialize_external_plugin_adapter::<T>(
+                            &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
+                                parent_key: LinkedDataKey::LinkedAppData(app_data.data_authority),
+                                schema: app_data.schema,
+                            }),
+                            Some(core),
+                            &mut header,
+                            &mut registry,
+                            account,
+                            payer,
+                            system_program,
+                            Some(data),
+                        ),
+                        (None, Some(buffer)) => initialize_external_plugin_adapter::<T>(
+                            &ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
+                                parent_key: LinkedDataKey::LinkedAppData(app_data.data_authority),
+                                schema: app_data.schema,
+                            }),
+                            Some(core),
+                            &mut header,
+                            &mut registry,
+                            account,
+                            payer,
+                            system_program,
+                            Some(&buffer.data.borrow()),
+                        ),
+                        (Some(_), Some(_)) => Err(MplCoreError::TwoDataSources.into()),
+                        (None, None) => Err(MplCoreError::NoDataSources.into()),
+                    }
+                }
+                Err(e) => Err(e),
             }
         }
         _ => Err(MplCoreError::UnsupportedOperation.into()),
