@@ -172,6 +172,10 @@ pub(crate) fn process_create_collection<'a>(
                 ctx.accounts.system_program,
             )?;
             for plugin_init_info in &plugins {
+                if let ExternalPluginAdapterInitInfo::DataSection(_) = plugin_init_info {
+                    return Err(MplCoreError::CannotAddDataSection.into());
+                }
+
                 let external_check_result_bits = ExternalCheckResultBits::from(
                     ExternalPluginAdapter::check_create(plugin_init_info),
                 );
@@ -200,11 +204,13 @@ pub(crate) fn process_create_collection<'a>(
                 }
                 initialize_external_plugin_adapter::<CollectionV1>(
                     plugin_init_info,
+                    Some(&new_collection),
                     &mut plugin_header,
                     &mut plugin_registry,
                     ctx.accounts.collection,
                     ctx.accounts.payer,
                     ctx.accounts.system_program,
+                    None,
                 )?;
             }
         }

@@ -1819,7 +1819,16 @@
           "isSigner": true,
           "isOptional": true,
           "docs": [
-            "The Data Authority of the External PluginExternalPluginAdapter"
+            "The Data Authority of the External Plugin Adapter"
+          ]
+        },
+        {
+          "name": "buffer",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The buffer to write to the external plugin"
           ]
         },
         {
@@ -1878,7 +1887,16 @@
           "isSigner": true,
           "isOptional": true,
           "docs": [
-            "The Data Authority of the External PluginExternalPluginAdapter"
+            "The Data Authority of the External Plugin Adapter"
+          ]
+        },
+        {
+          "name": "buffer",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The buffer to write to the external plugin"
           ]
         },
         {
@@ -2089,6 +2107,72 @@
       }
     },
     {
+      "name": "AppData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AppDataInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AppDataUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Attribute",
       "type": {
         "kind": "struct",
@@ -2160,14 +2244,14 @@
       }
     },
     {
-      "name": "DataStore",
+      "name": "DataSection",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "dataAuthority",
+            "name": "parentKey",
             "type": {
-              "defined": "Authority"
+              "defined": "LinkedDataKey"
             }
           },
           {
@@ -2180,49 +2264,30 @@
       }
     },
     {
-      "name": "DataStoreInitInfo",
+      "name": "DataSectionInitInfo",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "dataAuthority",
+            "name": "parentKey",
             "type": {
-              "defined": "Authority"
-            }
-          },
-          {
-            "name": "initPluginAuthority",
-            "type": {
-              "option": {
-                "defined": "Authority"
-              }
+              "defined": "LinkedDataKey"
             }
           },
           {
             "name": "schema",
             "type": {
-              "option": {
-                "defined": "ExternalPluginAdapterSchema"
-              }
+              "defined": "ExternalPluginAdapterSchema"
             }
           }
         ]
       }
     },
     {
-      "name": "DataStoreUpdateInfo",
+      "name": "DataSectionUpdateInfo",
       "type": {
         "kind": "struct",
-        "fields": [
-          {
-            "name": "schema",
-            "type": {
-              "option": {
-                "defined": "ExternalPluginAdapterSchema"
-              }
-            }
-          }
-        ]
+        "fields": []
       }
     },
     {
@@ -2367,6 +2432,212 @@
     },
     {
       "name": "LifecycleHookUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedAppData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedAppDataInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dataAuthority",
+            "type": {
+              "defined": "Authority"
+            }
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedAppDataUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedLifecycleHook",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hookedProgram",
+            "type": "publicKey"
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "dataAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "defined": "ExternalPluginAdapterSchema"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedLifecycleHookInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hookedProgram",
+            "type": "publicKey"
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "vec": {
+                "tuple": [
+                  {
+                    "defined": "HookableLifecycleEvent"
+                  },
+                  {
+                    "defined": "ExternalCheckResult"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "extraAccounts",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtraAccount"
+                }
+              }
+            }
+          },
+          {
+            "name": "dataAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "schema",
+            "type": {
+              "option": {
+                "defined": "ExternalPluginAdapterSchema"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedLifecycleHookUpdateInfo",
       "type": {
         "kind": "struct",
         "fields": [
@@ -3280,7 +3551,9 @@
           },
           {
             "name": "data",
-            "type": "bytes"
+            "type": {
+              "option": "bytes"
+            }
           }
         ]
       }
@@ -3298,7 +3571,9 @@
           },
           {
             "name": "data",
-            "type": "bytes"
+            "type": {
+              "option": "bytes"
+            }
           }
         ]
       }
@@ -3586,7 +3861,16 @@
             "name": "Oracle"
           },
           {
-            "name": "DataStore"
+            "name": "AppData"
+          },
+          {
+            "name": "LinkedLifecycleHook"
+          },
+          {
+            "name": "LinkedAppData"
+          },
+          {
+            "name": "DataSection"
           }
         ]
       }
@@ -3613,10 +3897,34 @@
             ]
           },
           {
-            "name": "DataStore",
+            "name": "AppData",
             "fields": [
               {
-                "defined": "DataStore"
+                "defined": "AppData"
+              }
+            ]
+          },
+          {
+            "name": "LinkedLifecycleHook",
+            "fields": [
+              {
+                "defined": "LinkedLifecycleHook"
+              }
+            ]
+          },
+          {
+            "name": "LinkedAppData",
+            "fields": [
+              {
+                "defined": "LinkedAppData"
+              }
+            ]
+          },
+          {
+            "name": "DataSection",
+            "fields": [
+              {
+                "defined": "DataSection"
               }
             ]
           }
@@ -3831,10 +4139,34 @@
             ]
           },
           {
-            "name": "DataStore",
+            "name": "AppData",
             "fields": [
               {
-                "defined": "DataStoreInitInfo"
+                "defined": "AppDataInitInfo"
+              }
+            ]
+          },
+          {
+            "name": "LinkedLifecycleHook",
+            "fields": [
+              {
+                "defined": "LinkedLifecycleHookInitInfo"
+              }
+            ]
+          },
+          {
+            "name": "LinkedAppData",
+            "fields": [
+              {
+                "defined": "LinkedAppDataInitInfo"
+              }
+            ]
+          },
+          {
+            "name": "DataSection",
+            "fields": [
+              {
+                "defined": "DataSectionInitInfo"
               }
             ]
           }
@@ -3863,10 +4195,26 @@
             ]
           },
           {
-            "name": "DataStore",
+            "name": "AppData",
             "fields": [
               {
-                "defined": "DataStoreUpdateInfo"
+                "defined": "AppDataUpdateInfo"
+              }
+            ]
+          },
+          {
+            "name": "LinkedLifecycleHook",
+            "fields": [
+              {
+                "defined": "LinkedLifecycleHookUpdateInfo"
+              }
+            ]
+          },
+          {
+            "name": "LinkedAppData",
+            "fields": [
+              {
+                "defined": "LinkedAppDataUpdateInfo"
               }
             ]
           }
@@ -3891,7 +4239,51 @@
             ]
           },
           {
-            "name": "DataStore",
+            "name": "AppData",
+            "fields": [
+              {
+                "defined": "Authority"
+              }
+            ]
+          },
+          {
+            "name": "LinkedLifecycleHook",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "LinkedAppData",
+            "fields": [
+              {
+                "defined": "Authority"
+              }
+            ]
+          },
+          {
+            "name": "DataSection",
+            "fields": [
+              {
+                "defined": "LinkedDataKey"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "LinkedDataKey",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "LinkedLifecycleHook",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "LinkedAppData",
             "fields": [
               {
                 "defined": "Authority"
@@ -4274,12 +4666,12 @@
     {
       "code": 31,
       "name": "ExternalPluginAdapterNotFound",
-      "msg": "External PluginExternalPluginAdapter not found"
+      "msg": "External Plugin Adapter not found"
     },
     {
       "code": 32,
       "name": "ExternalPluginAdapterAlreadyExists",
-      "msg": "External PluginExternalPluginAdapter already exists"
+      "msg": "External Plugin Adapter already exists"
     },
     {
       "code": 33,
@@ -4325,6 +4717,31 @@
       "code": 41,
       "name": "InvalidPluginOperation",
       "msg": "Invalid plugin operation"
+    },
+    {
+      "code": 42,
+      "name": "TwoDataSources",
+      "msg": "Two data sources provided, only one is allowed"
+    },
+    {
+      "code": 43,
+      "name": "UnsupportedOperation",
+      "msg": "External Plugin does not support this operation"
+    },
+    {
+      "code": 44,
+      "name": "NoDataSources",
+      "msg": "No data sources provided, one is required"
+    },
+    {
+      "code": 45,
+      "name": "InvalidPluginAdapterTarget",
+      "msg": "This plugin adapter cannot be added to an Asset"
+    },
+    {
+      "code": 46,
+      "name": "CannotAddDataSection",
+      "msg": "Cannot add a Data Section without a linked external plugin"
     }
   ],
   "metadata": {

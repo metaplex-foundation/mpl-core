@@ -8,11 +8,11 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, Attributes, Autograph, BurnDelegate, DataStore, Edition, ExternalCheckResult,
-        ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate, ImmutableMetadata, Key,
-        LifecycleHook, MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
-        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
-        VerifiedCreators,
+        AddBlocker, AppData, Attributes, Autograph, BurnDelegate, DataSection, Edition,
+        ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate,
+        ImmutableMetadata, Key, LifecycleHook, LinkedAppData, LinkedLifecycleHook, MasterEdition,
+        Oracle, PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate,
+        PluginAuthority, Royalties, TransferDelegate, UpdateDelegate, VerifiedCreators,
     },
 };
 
@@ -182,8 +182,11 @@ pub struct PluginsList {
 #[derive(Debug, Default)]
 pub struct ExternalPluginAdaptersList {
     pub lifecycle_hooks: Vec<LifecycleHook>,
+    pub linked_lifecycle_hooks: Vec<LinkedLifecycleHook>,
     pub oracles: Vec<Oracle>,
-    pub data_stores: Vec<DataStore>,
+    pub app_data: Vec<AppData>,
+    pub linked_app_data: Vec<LinkedAppData>,
+    pub data_sections: Vec<DataSection>,
 }
 
 #[derive(Debug)]
@@ -303,15 +306,22 @@ impl PluginRegistryV1Safe {
 impl From<&ExternalPluginAdapter> for ExternalPluginAdapterKey {
     fn from(plugin: &ExternalPluginAdapter) -> Self {
         match plugin {
-            ExternalPluginAdapter::DataStore(data_store) => {
-                ExternalPluginAdapterKey::DataStore(data_store.data_authority.clone())
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
+                ExternalPluginAdapterKey::AppData(app_data.data_authority.clone())
+            }
+            ExternalPluginAdapter::AppData(app_data) => {
+                ExternalPluginAdapterKey::AppData(app_data.data_authority.clone())
             }
             ExternalPluginAdapter::Oracle(oracle) => {
                 ExternalPluginAdapterKey::Oracle(oracle.base_address)
             }
+            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
+                ExternalPluginAdapterKey::LifecycleHook(lifecycle_hook.hooked_program)
+            }
             ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
                 ExternalPluginAdapterKey::LifecycleHook(lifecycle_hook.hooked_program)
             }
+            ExternalPluginAdapter::DataSection(_) => todo!(),
         }
     }
 }

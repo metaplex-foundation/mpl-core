@@ -136,7 +136,7 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
         input.external_plugin_adapters.len(),
         asset.external_plugin_adapter_list.lifecycle_hooks.len()
             + asset.external_plugin_adapter_list.oracles.len()
-            + asset.external_plugin_adapter_list.data_stores.len()
+            + asset.external_plugin_adapter_list.app_data.len()
     );
     for plugin in input.external_plugin_adapters {
         match plugin {
@@ -149,11 +149,29 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
             ExternalPluginAdapter::Oracle(oracle) => {
                 assert!(asset.external_plugin_adapter_list.oracles.contains(&oracle))
             }
-            ExternalPluginAdapter::DataStore(data_store) => {
+            ExternalPluginAdapter::AppData(app_data) => {
                 assert!(asset
                     .external_plugin_adapter_list
-                    .data_stores
-                    .contains(&data_store))
+                    .app_data
+                    .contains(&app_data))
+            }
+            ExternalPluginAdapter::LinkedLifecycleHook(hook) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .linked_lifecycle_hooks
+                    .contains(&hook))
+            }
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .linked_app_data
+                    .contains(&app_data))
+            }
+            ExternalPluginAdapter::DataSection(data) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .data_sections
+                    .contains(&data))
             }
         }
     }

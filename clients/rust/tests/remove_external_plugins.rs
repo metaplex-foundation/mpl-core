@@ -3,7 +3,7 @@ pub mod setup;
 use mpl_core::{
     instructions::RemoveExternalPluginAdapterV1Builder,
     types::{
-        DataStore, DataStoreInitInfo, ExternalCheckResult, ExternalPluginAdapter,
+        AppData, AppDataInitInfo, ExternalCheckResult, ExternalPluginAdapter,
         ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
         HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle, OracleInitInfo,
         PluginAuthority, UpdateAuthority, ValidationResultsOffset,
@@ -189,8 +189,7 @@ async fn test_remove_oracle() {
 }
 
 #[tokio::test]
-#[ignore]
-async fn test_remove_data_store() {
+async fn test_remove_app_data() {
     let mut context = program_test().start_with_context().await;
 
     let asset = Keypair::new();
@@ -207,8 +206,8 @@ async fn test_remove_data_store() {
             update_authority: None,
             collection: None,
             plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::DataStore(
-                DataStoreInitInfo {
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::AppData(
+                AppDataInitInfo {
                     init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
                     data_authority: PluginAuthority::UpdateAuthority,
                     schema: None,
@@ -230,7 +229,7 @@ async fn test_remove_data_store() {
             name: None,
             uri: None,
             plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapter::DataStore(DataStore {
+            external_plugin_adapters: vec![ExternalPluginAdapter::AppData(AppData {
                 data_authority: PluginAuthority::UpdateAuthority,
                 schema: ExternalPluginAdapterSchema::Binary,
             })],
@@ -241,7 +240,7 @@ async fn test_remove_data_store() {
     let ix = RemoveExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
-        .key(ExternalPluginAdapterKey::DataStore(
+        .key(ExternalPluginAdapterKey::AppData(
             PluginAuthority::UpdateAuthority,
         ))
         .instruction();

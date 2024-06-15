@@ -1,14 +1,13 @@
 import {
-  BaseDataStore,
-  BaseDataStoreInitInfoArgs,
-  BaseDataStoreUpdateInfoArgs,
+  BaseLinkedAppData,
+  BaseLinkedAppDataInitInfoArgs,
+  BaseLinkedAppDataUpdateInfoArgs,
   ExternalPluginAdapterSchema,
   ExternalRegistryRecord,
 } from '../generated';
 import { ExternalPluginAdapterKey } from './externalPluginAdapterKey';
 import { ExternalPluginAdapterManifest } from './externalPluginAdapterManifest';
 import { BaseExternalPluginAdapter } from './externalPluginAdapters';
-import { parseExternalPluginAdapterData } from './lib';
 import { LifecycleChecks } from './lifecycleChecks';
 import {
   PluginAuthority,
@@ -16,39 +15,39 @@ import {
   pluginAuthorityToBase,
 } from './pluginAuthority';
 
-export type DataStore = Omit<BaseDataStore, 'dataAuthority'> & {
+export type LinkedAppData = Omit<BaseLinkedAppData, 'dataAuthority'> & {
   dataAuthority: PluginAuthority;
   data?: any;
 };
 
-export type DataStorePlugin = BaseExternalPluginAdapter &
-  DataStore & {
-    type: 'DataStore';
+export type LinkedAppDataPlugin = BaseExternalPluginAdapter &
+  LinkedAppData & {
+    type: 'LinkedAppData';
     dataAuthority: PluginAuthority;
   };
 
-export type DataStoreInitInfoArgs = Omit<
-  BaseDataStoreInitInfoArgs,
+export type LinkedAppDataInitInfoArgs = Omit<
+  BaseLinkedAppDataInitInfoArgs,
   'initPluginAuthority' | 'lifecycleChecks' | 'dataAuthority'
 > & {
-  type: 'DataStore';
+  type: 'LinkedAppData';
   initPluginAuthority?: PluginAuthority;
   lifecycleChecks?: LifecycleChecks;
   schema?: ExternalPluginAdapterSchema;
   dataAuthority: PluginAuthority;
 };
 
-export type DataStoreUpdateInfoArgs = Omit<
-  BaseDataStoreUpdateInfoArgs,
+export type LinkedAppDataUpdateInfoArgs = Omit<
+  BaseLinkedAppDataUpdateInfoArgs,
   'schema'
 > & {
   key: ExternalPluginAdapterKey;
   schema?: ExternalPluginAdapterSchema;
 };
 
-export function dataStoreInitInfoArgsToBase(
-  d: DataStoreInitInfoArgs
-): BaseDataStoreInitInfoArgs {
+export function linkedAppDataInitInfoArgsToBase(
+  d: LinkedAppDataInitInfoArgs
+): BaseLinkedAppDataInitInfoArgs {
   return {
     dataAuthority: pluginAuthorityToBase(d.dataAuthority),
     initPluginAuthority: d.initPluginAuthority
@@ -58,36 +57,36 @@ export function dataStoreInitInfoArgsToBase(
   };
 }
 
-export function dataStoreUpdateInfoArgsToBase(
-  d: DataStoreUpdateInfoArgs
-): BaseDataStoreUpdateInfoArgs {
+export function linkedAppDataUpdateInfoArgsToBase(
+  d: LinkedAppDataUpdateInfoArgs
+): BaseLinkedAppDataUpdateInfoArgs {
   return {
     schema: d.schema ? d.schema : null,
   };
 }
 
-export function dataStoreFromBase(
-  s: BaseDataStore,
+export function linkedAppDataFromBase(
+  s: BaseLinkedAppData,
   r: ExternalRegistryRecord,
   account: Uint8Array
-): DataStore {
+): LinkedAppData {
   return {
     ...s,
     dataAuthority: pluginAuthorityFromBase(s.dataAuthority),
-    data: parseExternalPluginAdapterData(s, r, account),
+    // plugin has no data but injected in the derivation of the asset
   };
 }
 
-export const dataStoreManifest: ExternalPluginAdapterManifest<
-  DataStore,
-  BaseDataStore,
-  DataStoreInitInfoArgs,
-  BaseDataStoreInitInfoArgs,
-  DataStoreUpdateInfoArgs,
-  BaseDataStoreUpdateInfoArgs
+export const linkedAppDataManifest: ExternalPluginAdapterManifest<
+  LinkedAppData,
+  BaseLinkedAppData,
+  LinkedAppDataInitInfoArgs,
+  BaseLinkedAppDataInitInfoArgs,
+  LinkedAppDataUpdateInfoArgs,
+  BaseLinkedAppDataUpdateInfoArgs
 > = {
-  type: 'DataStore',
-  fromBase: dataStoreFromBase,
-  initToBase: dataStoreInitInfoArgsToBase,
-  updateToBase: dataStoreUpdateInfoArgsToBase,
+  type: 'LinkedAppData',
+  fromBase: linkedAppDataFromBase,
+  initToBase: linkedAppDataInitInfoArgsToBase,
+  updateToBase: linkedAppDataUpdateInfoArgsToBase,
 };

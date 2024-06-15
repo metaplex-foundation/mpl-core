@@ -15,26 +15,42 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  BaseDataStoreUpdateInfo,
-  BaseDataStoreUpdateInfoArgs,
+  BaseAppDataUpdateInfo,
+  BaseAppDataUpdateInfoArgs,
   BaseLifecycleHookUpdateInfo,
   BaseLifecycleHookUpdateInfoArgs,
+  BaseLinkedAppDataUpdateInfo,
+  BaseLinkedAppDataUpdateInfoArgs,
+  BaseLinkedLifecycleHookUpdateInfo,
+  BaseLinkedLifecycleHookUpdateInfoArgs,
   BaseOracleUpdateInfo,
   BaseOracleUpdateInfoArgs,
-  getBaseDataStoreUpdateInfoSerializer,
+  getBaseAppDataUpdateInfoSerializer,
   getBaseLifecycleHookUpdateInfoSerializer,
+  getBaseLinkedAppDataUpdateInfoSerializer,
+  getBaseLinkedLifecycleHookUpdateInfoSerializer,
   getBaseOracleUpdateInfoSerializer,
 } from '.';
 
 export type BaseExternalPluginAdapterUpdateInfo =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookUpdateInfo] }
   | { __kind: 'Oracle'; fields: [BaseOracleUpdateInfo] }
-  | { __kind: 'DataStore'; fields: [BaseDataStoreUpdateInfo] };
+  | { __kind: 'AppData'; fields: [BaseAppDataUpdateInfo] }
+  | {
+      __kind: 'LinkedLifecycleHook';
+      fields: [BaseLinkedLifecycleHookUpdateInfo];
+    }
+  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataUpdateInfo] };
 
 export type BaseExternalPluginAdapterUpdateInfoArgs =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookUpdateInfoArgs] }
   | { __kind: 'Oracle'; fields: [BaseOracleUpdateInfoArgs] }
-  | { __kind: 'DataStore'; fields: [BaseDataStoreUpdateInfoArgs] };
+  | { __kind: 'AppData'; fields: [BaseAppDataUpdateInfoArgs] }
+  | {
+      __kind: 'LinkedLifecycleHook';
+      fields: [BaseLinkedLifecycleHookUpdateInfoArgs];
+    }
+  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataUpdateInfoArgs] };
 
 export function getBaseExternalPluginAdapterUpdateInfoSerializer(): Serializer<
   BaseExternalPluginAdapterUpdateInfoArgs,
@@ -58,13 +74,30 @@ export function getBaseExternalPluginAdapterUpdateInfoSerializer(): Serializer<
         >([['fields', tuple([getBaseOracleUpdateInfoSerializer()])]]),
       ],
       [
-        'DataStore',
+        'AppData',
+        struct<
+          GetDataEnumKindContent<BaseExternalPluginAdapterUpdateInfo, 'AppData'>
+        >([['fields', tuple([getBaseAppDataUpdateInfoSerializer()])]]),
+      ],
+      [
+        'LinkedLifecycleHook',
         struct<
           GetDataEnumKindContent<
             BaseExternalPluginAdapterUpdateInfo,
-            'DataStore'
+            'LinkedLifecycleHook'
           >
-        >([['fields', tuple([getBaseDataStoreUpdateInfoSerializer()])]]),
+        >([
+          ['fields', tuple([getBaseLinkedLifecycleHookUpdateInfoSerializer()])],
+        ]),
+      ],
+      [
+        'LinkedAppData',
+        struct<
+          GetDataEnumKindContent<
+            BaseExternalPluginAdapterUpdateInfo,
+            'LinkedAppData'
+          >
+        >([['fields', tuple([getBaseLinkedAppDataUpdateInfoSerializer()])]]),
       ],
     ],
     { description: 'BaseExternalPluginAdapterUpdateInfo' }
@@ -90,12 +123,29 @@ export function baseExternalPluginAdapterUpdateInfo(
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'Oracle'>;
 export function baseExternalPluginAdapterUpdateInfo(
-  kind: 'DataStore',
+  kind: 'AppData',
   data: GetDataEnumKindContent<
     BaseExternalPluginAdapterUpdateInfoArgs,
-    'DataStore'
+    'AppData'
   >['fields']
-): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'DataStore'>;
+): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'AppData'>;
+export function baseExternalPluginAdapterUpdateInfo(
+  kind: 'LinkedLifecycleHook',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterUpdateInfoArgs,
+    'LinkedLifecycleHook'
+  >['fields']
+): GetDataEnumKind<
+  BaseExternalPluginAdapterUpdateInfoArgs,
+  'LinkedLifecycleHook'
+>;
+export function baseExternalPluginAdapterUpdateInfo(
+  kind: 'LinkedAppData',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterUpdateInfoArgs,
+    'LinkedAppData'
+  >['fields']
+): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'LinkedAppData'>;
 export function baseExternalPluginAdapterUpdateInfo<
   K extends BaseExternalPluginAdapterUpdateInfoArgs['__kind'],
 >(

@@ -16,6 +16,7 @@ import {
   CollectionAddablePluginAuthorityPairArgsV2,
   addCollectionPlugin,
   removeCollectionPlugin,
+  ExternalPluginAdapterSchema,
 } from '../src';
 import {
   createAsset,
@@ -1030,4 +1031,81 @@ test('it can burn asset in collection', async (t) => {
   assertAccountExists(afterAsset);
   t.is(afterAsset.data.length, 1);
   t.is(afterAsset.data[0], Key.Uninitialized);
+});
+
+test('it can fetch asset which correctly derived plugins', async (t) => {
+  const umi = await createUmi();
+  const dataAuth = generateSigner(umi);
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {
+      plugins: [
+        {
+          type: 'Edition',
+          number: 1,
+        },
+        {
+          type: 'PermanentFreezeDelegate',
+          frozen: false,
+        },
+      ],
+    },
+    {
+      plugins: [
+        {
+          type: 'LinkedAppData',
+          dataAuthority: {
+            type: 'Address',
+            address: dataAuth.publicKey,
+          },
+          schema: ExternalPluginAdapterSchema.Json,
+        },
+        {
+          type: 'PermanentFreezeDelegate',
+          frozen: true,
+        },
+      ],
+    }
+  );
+
+  await assertAsset(
+    t,
+    umi,
+    {
+      asset: asset.publicKey,
+      owner: umi.identity.publicKey,
+      updateAuthority: {
+        type: 'Collection',
+        address: collection.publicKey,
+      },
+      edition: {
+        number: 1,
+        authority: {
+          type: 'UpdateAuthority',
+        },
+      },
+      permanentFreezeDelegate: {
+        frozen: false,
+        authority: {
+          type: 'UpdateAuthority',
+        },
+      },
+      linkedAppDatas: [
+        {
+          type: 'LinkedAppData',
+          authority: {
+            type: 'UpdateAuthority',
+          },
+          dataAuthority: {
+            type: 'Address',
+            address: dataAuth.publicKey,
+          },
+          schema: ExternalPluginAdapterSchema.Json,
+        },
+      ],
+    },
+    {
+      derivePlugins: true,
+    }
+  );
 });

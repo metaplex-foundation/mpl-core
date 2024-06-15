@@ -1,4 +1,4 @@
-import { none, Option, some } from '@metaplex-foundation/umi';
+import { isSome, none, Option, some } from '@metaplex-foundation/umi';
 
 import {
   Key,
@@ -215,21 +215,32 @@ export function parseExternalPluginAdapterData(
   account: Uint8Array
 ): any {
   let data;
-  const dataSlice = account.slice(
-    Number(record.dataOffset),
-    Number(record.dataOffset) + Number(record.dataLen)
-  );
-
-  if (plugin.schema === ExternalPluginAdapterSchema.Binary) {
-    data = dataSlice;
-  } else if (plugin.schema === ExternalPluginAdapterSchema.Json) {
-    data = JSON.parse(new TextDecoder().decode(dataSlice));
-  } else if (plugin.schema === ExternalPluginAdapterSchema.MsgPack) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      'MsgPack schema currently not supported, falling back to binary'
+  if (isSome(record.dataOffset) && isSome(record.dataLen)) {
+    const dataSlice = account.slice(
+      Number(record.dataOffset.value),
+      Number(record.dataOffset.value) + Number(record.dataLen.value)
     );
-    data = dataSlice;
+
+    if (plugin.schema === ExternalPluginAdapterSchema.Binary) {
+      data = dataSlice;
+    } else if (plugin.schema === ExternalPluginAdapterSchema.Json) {
+      // if data is empty, the data slice is uninitialized and should be ignored
+      if (dataSlice.length !== 0) {
+        try {
+          data = JSON.parse(new TextDecoder().decode(dataSlice));
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn('Invalid JSON in external plugin data', e.message);
+        }
+      }
+    } else if (plugin.schema === ExternalPluginAdapterSchema.MsgPack) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        'MsgPack schema currently not supported, falling back to binary'
+      );
+      data = dataSlice;
+    }
+    return data;
   }
-  return data;
+  throw new Error('Invalid DataStore, missing dataOffset or dataLen');
 }

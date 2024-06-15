@@ -19,8 +19,10 @@ pub struct WriteExternalPluginAdapterDataV1 {
     pub collection: Option<solana_program::pubkey::Pubkey>,
     /// The account paying for the storage fees
     pub payer: solana_program::pubkey::Pubkey,
-    /// The Data Authority of the External PluginExternalPluginAdapter
+    /// The Data Authority of the External Plugin Adapter
     pub authority: Option<solana_program::pubkey::Pubkey>,
+    /// The buffer to write to the external plugin
+    pub buffer: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
     /// The SPL Noop Program
@@ -40,7 +42,7 @@ impl WriteExternalPluginAdapterDataV1 {
         args: WriteExternalPluginAdapterDataV1InstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset, false,
         ));
@@ -60,6 +62,16 @@ impl WriteExternalPluginAdapterDataV1 {
         if let Some(authority) = self.authority {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 authority, true,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_CORE_ID,
+                false,
+            ));
+        }
+        if let Some(buffer) = self.buffer {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                buffer, false,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -115,7 +127,7 @@ impl WriteExternalPluginAdapterDataV1InstructionData {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct WriteExternalPluginAdapterDataV1InstructionArgs {
     pub key: ExternalPluginAdapterKey,
-    pub data: Vec<u8>,
+    pub data: Option<Vec<u8>>,
 }
 
 /// Instruction builder for `WriteExternalPluginAdapterDataV1`.
@@ -126,14 +138,16 @@ pub struct WriteExternalPluginAdapterDataV1InstructionArgs {
 ///   1. `[writable, optional]` collection
 ///   2. `[writable, signer]` payer
 ///   3. `[signer, optional]` authority
-///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
-///   5. `[optional]` log_wrapper
+///   4. `[optional]` buffer
+///   5. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   6. `[optional]` log_wrapper
 #[derive(Default)]
 pub struct WriteExternalPluginAdapterDataV1Builder {
     asset: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
+    buffer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     log_wrapper: Option<solana_program::pubkey::Pubkey>,
     key: Option<ExternalPluginAdapterKey>,
@@ -165,10 +179,17 @@ impl WriteExternalPluginAdapterDataV1Builder {
         self
     }
     /// `[optional account]`
-    /// The Data Authority of the External PluginExternalPluginAdapter
+    /// The Data Authority of the External Plugin Adapter
     #[inline(always)]
     pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.authority = authority;
+        self
+    }
+    /// `[optional account]`
+    /// The buffer to write to the external plugin
+    #[inline(always)]
+    pub fn buffer(&mut self, buffer: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.buffer = buffer;
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
@@ -193,6 +214,7 @@ impl WriteExternalPluginAdapterDataV1Builder {
         self.key = Some(key);
         self
     }
+    /// `[optional argument]`
     #[inline(always)]
     pub fn data(&mut self, data: Vec<u8>) -> &mut Self {
         self.data = Some(data);
@@ -223,6 +245,7 @@ impl WriteExternalPluginAdapterDataV1Builder {
             collection: self.collection,
             payer: self.payer.expect("payer is not set"),
             authority: self.authority,
+            buffer: self.buffer,
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
@@ -230,7 +253,7 @@ impl WriteExternalPluginAdapterDataV1Builder {
         };
         let args = WriteExternalPluginAdapterDataV1InstructionArgs {
             key: self.key.clone().expect("key is not set"),
-            data: self.data.clone().expect("data is not set"),
+            data: self.data.clone(),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -245,8 +268,10 @@ pub struct WriteExternalPluginAdapterDataV1CpiAccounts<'a, 'b> {
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The Data Authority of the External PluginExternalPluginAdapter
+    /// The Data Authority of the External Plugin Adapter
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The buffer to write to the external plugin
+    pub buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The SPL Noop Program
@@ -263,8 +288,10 @@ pub struct WriteExternalPluginAdapterDataV1Cpi<'a, 'b> {
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The Data Authority of the External PluginExternalPluginAdapter
+    /// The Data Authority of the External Plugin Adapter
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The buffer to write to the external plugin
+    pub buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The SPL Noop Program
@@ -285,6 +312,7 @@ impl<'a, 'b> WriteExternalPluginAdapterDataV1Cpi<'a, 'b> {
             collection: accounts.collection,
             payer: accounts.payer,
             authority: accounts.authority,
+            buffer: accounts.buffer,
             system_program: accounts.system_program,
             log_wrapper: accounts.log_wrapper,
             __args: args,
@@ -323,7 +351,7 @@ impl<'a, 'b> WriteExternalPluginAdapterDataV1Cpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset.key,
             false,
@@ -347,6 +375,17 @@ impl<'a, 'b> WriteExternalPluginAdapterDataV1Cpi<'a, 'b> {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 *authority.key,
                 true,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::MPL_CORE_ID,
+                false,
+            ));
+        }
+        if let Some(buffer) = self.buffer {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *buffer.key,
+                false,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -387,7 +426,7 @@ impl<'a, 'b> WriteExternalPluginAdapterDataV1Cpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(7 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
         if let Some(collection) = self.collection {
@@ -396,6 +435,9 @@ impl<'a, 'b> WriteExternalPluginAdapterDataV1Cpi<'a, 'b> {
         account_infos.push(self.payer.clone());
         if let Some(authority) = self.authority {
             account_infos.push(authority.clone());
+        }
+        if let Some(buffer) = self.buffer {
+            account_infos.push(buffer.clone());
         }
         account_infos.push(self.system_program.clone());
         if let Some(log_wrapper) = self.log_wrapper {
@@ -421,8 +463,9 @@ impl<'a, 'b> WriteExternalPluginAdapterDataV1Cpi<'a, 'b> {
 ///   1. `[writable, optional]` collection
 ///   2. `[writable, signer]` payer
 ///   3. `[signer, optional]` authority
-///   4. `[]` system_program
-///   5. `[optional]` log_wrapper
+///   4. `[optional]` buffer
+///   5. `[]` system_program
+///   6. `[optional]` log_wrapper
 pub struct WriteExternalPluginAdapterDataV1CpiBuilder<'a, 'b> {
     instruction: Box<WriteExternalPluginAdapterDataV1CpiBuilderInstruction<'a, 'b>>,
 }
@@ -435,6 +478,7 @@ impl<'a, 'b> WriteExternalPluginAdapterDataV1CpiBuilder<'a, 'b> {
             collection: None,
             payer: None,
             authority: None,
+            buffer: None,
             system_program: None,
             log_wrapper: None,
             key: None,
@@ -466,13 +510,23 @@ impl<'a, 'b> WriteExternalPluginAdapterDataV1CpiBuilder<'a, 'b> {
         self
     }
     /// `[optional account]`
-    /// The Data Authority of the External PluginExternalPluginAdapter
+    /// The Data Authority of the External Plugin Adapter
     #[inline(always)]
     pub fn authority(
         &mut self,
         authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
         self.instruction.authority = authority;
+        self
+    }
+    /// `[optional account]`
+    /// The buffer to write to the external plugin
+    #[inline(always)]
+    pub fn buffer(
+        &mut self,
+        buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.buffer = buffer;
         self
     }
     /// The system program
@@ -499,6 +553,7 @@ impl<'a, 'b> WriteExternalPluginAdapterDataV1CpiBuilder<'a, 'b> {
         self.instruction.key = Some(key);
         self
     }
+    /// `[optional argument]`
     #[inline(always)]
     pub fn data(&mut self, data: Vec<u8>) -> &mut Self {
         self.instruction.data = Some(data);
@@ -547,7 +602,7 @@ impl<'a, 'b> WriteExternalPluginAdapterDataV1CpiBuilder<'a, 'b> {
     ) -> solana_program::entrypoint::ProgramResult {
         let args = WriteExternalPluginAdapterDataV1InstructionArgs {
             key: self.instruction.key.clone().expect("key is not set"),
-            data: self.instruction.data.clone().expect("data is not set"),
+            data: self.instruction.data.clone(),
         };
         let instruction = WriteExternalPluginAdapterDataV1Cpi {
             __program: self.instruction.__program,
@@ -559,6 +614,8 @@ impl<'a, 'b> WriteExternalPluginAdapterDataV1CpiBuilder<'a, 'b> {
             payer: self.instruction.payer.expect("payer is not set"),
 
             authority: self.instruction.authority,
+
+            buffer: self.instruction.buffer,
 
             system_program: self
                 .instruction
@@ -581,6 +638,7 @@ struct WriteExternalPluginAdapterDataV1CpiBuilderInstruction<'a, 'b> {
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     log_wrapper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     key: Option<ExternalPluginAdapterKey>,

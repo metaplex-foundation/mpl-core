@@ -17,20 +17,29 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseLinkedDataKey,
+  BaseLinkedDataKeyArgs,
   BasePluginAuthority,
   BasePluginAuthorityArgs,
+  getBaseLinkedDataKeySerializer,
   getBasePluginAuthoritySerializer,
 } from '.';
 
 export type BaseExternalPluginAdapterKey =
   | { __kind: 'LifecycleHook'; fields: [PublicKey] }
   | { __kind: 'Oracle'; fields: [PublicKey] }
-  | { __kind: 'DataStore'; fields: [BasePluginAuthority] };
+  | { __kind: 'AppData'; fields: [BasePluginAuthority] }
+  | { __kind: 'LinkedLifecycleHook'; fields: [PublicKey] }
+  | { __kind: 'LinkedAppData'; fields: [BasePluginAuthority] }
+  | { __kind: 'DataSection'; fields: [BaseLinkedDataKey] };
 
 export type BaseExternalPluginAdapterKeyArgs =
   | { __kind: 'LifecycleHook'; fields: [PublicKey] }
   | { __kind: 'Oracle'; fields: [PublicKey] }
-  | { __kind: 'DataStore'; fields: [BasePluginAuthorityArgs] };
+  | { __kind: 'AppData'; fields: [BasePluginAuthorityArgs] }
+  | { __kind: 'LinkedLifecycleHook'; fields: [PublicKey] }
+  | { __kind: 'LinkedAppData'; fields: [BasePluginAuthorityArgs] }
+  | { __kind: 'DataSection'; fields: [BaseLinkedDataKeyArgs] };
 
 export function getBaseExternalPluginAdapterKeySerializer(): Serializer<
   BaseExternalPluginAdapterKeyArgs,
@@ -51,10 +60,31 @@ export function getBaseExternalPluginAdapterKeySerializer(): Serializer<
         ]),
       ],
       [
-        'DataStore',
+        'AppData',
+        struct<GetDataEnumKindContent<BaseExternalPluginAdapterKey, 'AppData'>>(
+          [['fields', tuple([getBasePluginAuthoritySerializer()])]]
+        ),
+      ],
+      [
+        'LinkedLifecycleHook',
         struct<
-          GetDataEnumKindContent<BaseExternalPluginAdapterKey, 'DataStore'>
+          GetDataEnumKindContent<
+            BaseExternalPluginAdapterKey,
+            'LinkedLifecycleHook'
+          >
+        >([['fields', tuple([publicKeySerializer()])]]),
+      ],
+      [
+        'LinkedAppData',
+        struct<
+          GetDataEnumKindContent<BaseExternalPluginAdapterKey, 'LinkedAppData'>
         >([['fields', tuple([getBasePluginAuthoritySerializer()])]]),
+      ],
+      [
+        'DataSection',
+        struct<
+          GetDataEnumKindContent<BaseExternalPluginAdapterKey, 'DataSection'>
+        >([['fields', tuple([getBaseLinkedDataKeySerializer()])]]),
       ],
     ],
     { description: 'BaseExternalPluginAdapterKey' }
@@ -80,12 +110,33 @@ export function baseExternalPluginAdapterKey(
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'Oracle'>;
 export function baseExternalPluginAdapterKey(
-  kind: 'DataStore',
+  kind: 'AppData',
   data: GetDataEnumKindContent<
     BaseExternalPluginAdapterKeyArgs,
-    'DataStore'
+    'AppData'
   >['fields']
-): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'DataStore'>;
+): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'AppData'>;
+export function baseExternalPluginAdapterKey(
+  kind: 'LinkedLifecycleHook',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterKeyArgs,
+    'LinkedLifecycleHook'
+  >['fields']
+): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'LinkedLifecycleHook'>;
+export function baseExternalPluginAdapterKey(
+  kind: 'LinkedAppData',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterKeyArgs,
+    'LinkedAppData'
+  >['fields']
+): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'LinkedAppData'>;
+export function baseExternalPluginAdapterKey(
+  kind: 'DataSection',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterKeyArgs,
+    'DataSection'
+  >['fields']
+): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'DataSection'>;
 export function baseExternalPluginAdapterKey<
   K extends BaseExternalPluginAdapterKeyArgs['__kind'],
 >(
