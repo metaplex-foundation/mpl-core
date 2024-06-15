@@ -141,6 +141,8 @@ pub(crate) fn process_create_collection<'a>(
                         authority_info: ctx.accounts.payer,
                         resolved_authorities: None,
                         new_owner: None,
+                        new_asset_authority: None,
+                        new_collection_authority: None,
                         target_plugin: None,
                     };
                     match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
@@ -184,6 +186,8 @@ pub(crate) fn process_create_collection<'a>(
                         authority_info: authority,
                         resolved_authorities: None,
                         new_owner: None,
+                        new_asset_authority: None,
+                        new_collection_authority: None,
                         target_plugin: None,
                     };
                     if ExternalPluginAdapter::validate_create(

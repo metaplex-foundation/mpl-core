@@ -55,6 +55,7 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
+        args.new_update_authority.as_ref(),
         None,
         None,
         AssetV1::check_update,
@@ -89,11 +90,11 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
         dirty = true;
     }
     if let Some(new_name) = &args.new_name {
-        asset.name = new_name.clone();
+        asset.name.clone_from(new_name);
         dirty = true;
     }
     if let Some(new_uri) = &args.new_uri {
-        asset.uri = new_uri.clone();
+        asset.uri.clone_from(new_uri);
         dirty = true;
     }
     if dirty {
@@ -143,6 +144,7 @@ pub(crate) fn update_collection<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
+        ctx.accounts.new_update_authority.map(|a| a.key),
         None,
         None,
         CollectionV1::check_update,
@@ -161,11 +163,11 @@ pub(crate) fn update_collection<'a>(
         dirty = true;
     }
     if let Some(new_name) = &args.new_name {
-        collection.name = new_name.clone();
+        collection.name.clone_from(new_name);
         dirty = true;
     }
     if let Some(new_uri) = &args.new_uri {
-        collection.uri = new_uri.clone();
+        collection.uri.clone_from(new_uri);
         dirty = true;
     }
     if dirty {

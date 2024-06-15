@@ -75,7 +75,7 @@ impl UpdateAuthority {
                     PluginType::UpdateDelegate,
                 );
 
-                if let Ok((authority, _, _)) = maybe_update_delegate {
+                if let Ok((authority, update_delegate_plugin, _)) = maybe_update_delegate {
                     if assert_collection_authority(&collection, authority_info, &authority).is_err()
                         && assert_collection_authority(
                             &collection,
@@ -83,6 +83,9 @@ impl UpdateAuthority {
                             &Authority::UpdateAuthority,
                         )
                         .is_err()
+                        && !update_delegate_plugin
+                            .additional_delegates
+                            .contains(authority_info.key)
                     {
                         solana_program::msg!("UA: Rejected");
                         return reject!();

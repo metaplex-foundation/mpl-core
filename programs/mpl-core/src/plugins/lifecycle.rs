@@ -1,11 +1,11 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use modular_bitfield::{bitfield, specifiers::B29};
-use solana_program::{account_info::AccountInfo, program_error::ProgramError};
+use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 use std::collections::BTreeMap;
 
 use crate::{
     error::MplCoreError,
-    state::{Authority, Key},
+    state::{Authority, Key, UpdateAuthority},
 };
 
 use super::{
@@ -878,6 +878,10 @@ pub(crate) struct PluginValidationContext<'a, 'b> {
     pub resolved_authorities: Option<&'b [Authority]>,
     /// The new owner account for transfers
     pub new_owner: Option<&'a AccountInfo<'a>>,
+    /// The new asset authority address.
+    pub new_asset_authority: Option<&'b UpdateAuthority>,
+    /// The new collection authority address.
+    pub new_collection_authority: Option<&'b Pubkey>,
     /// The plugin being acted upon with new data from the ix if any. This None for create.
     pub target_plugin: Option<&'b Plugin>,
 }
@@ -1032,6 +1036,8 @@ pub(crate) fn validate_plugin_checks<'a>(
     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &'a AccountInfo<'a>,
     new_owner: Option<&'a AccountInfo<'a>>,
+    new_asset_authority: Option<&UpdateAuthority>,
+    new_collection_authority: Option<&Pubkey>,
     new_plugin: Option<&Plugin>,
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
@@ -1064,6 +1070,8 @@ pub(crate) fn validate_plugin_checks<'a>(
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),
                 new_owner,
+                new_asset_authority,
+                new_collection_authority,
                 target_plugin: new_plugin,
             };
 
@@ -1102,6 +1110,8 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
     >,
     authority: &'a AccountInfo<'a>,
     new_owner: Option<&'a AccountInfo<'a>>,
+    new_asset_authority: Option<&UpdateAuthority>,
+    new_collection_authority: Option<&Pubkey>,
     new_plugin: Option<&Plugin>,
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
@@ -1132,6 +1142,8 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),
                 new_owner,
+                new_asset_authority,
+                new_collection_authority,
                 target_plugin: new_plugin,
             };
 

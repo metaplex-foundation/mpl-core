@@ -2,9 +2,9 @@ name: Main
 
 on:
   push:
-    branches: [main, third-party-plugins-staging]
+    branches: [main, jun-2024-feature-staging]
   pull_request:
-    branches: [main, third-party-plugins-staging]
+    branches: [main, jun-2024-feature-staging]
 
 env:
   CACHE: true
