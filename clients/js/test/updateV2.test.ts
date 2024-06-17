@@ -655,6 +655,51 @@ test('it cannot update an asset update authority to be part of a collection if n
   });
 });
 
+test('it can change an asset collection using same update authority', async (t) => {
+  const umi = await createUmi();
+  const collectionAuthority = generateSigner(umi);
+  const { asset, collection: originalCollection } =
+    await createAssetWithCollection(
+      umi,
+      { authority: collectionAuthority },
+      { updateAuthority: collectionAuthority }
+    );
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: {
+      type: 'Collection',
+      address: originalCollection.publicKey,
+    },
+  });
+
+  const newCollection = await createCollection(umi, {
+    updateAuthority: collectionAuthority,
+  });
+
+  await update(umi, {
+    asset,
+    collection: originalCollection,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
+    newUpdateAuthority: updateAuthority('Collection', [
+      newCollection.publicKey,
+    ]),
+    newCollection: newCollection.publicKey,
+    authority: collectionAuthority,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: newCollection.publicKey },
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
+  });
+});
+
 test('it cannot change an asset collection if not both asset and collection auth', async (t) => {
   const umi = await createUmi();
   const originalCollectionAuthority = generateSigner(umi);
@@ -842,52 +887,7 @@ test('it can change an asset collection using delegate', async (t) => {
   });
 });
 
-test('it can change an asset collection using same update update authority (no delegate)', async (t) => {
-  const umi = await createUmi();
-  const collectionAuthority = generateSigner(umi);
-  const { asset, collection: originalCollection } =
-    await createAssetWithCollection(
-      umi,
-      { authority: collectionAuthority },
-      { updateAuthority: collectionAuthority }
-    );
-
-  await assertAsset(t, umi, {
-    ...DEFAULT_ASSET,
-    asset: asset.publicKey,
-    owner: umi.identity.publicKey,
-    updateAuthority: {
-      type: 'Collection',
-      address: originalCollection.publicKey,
-    },
-  });
-
-  const newCollection = await createCollection(umi, {
-    updateAuthority: collectionAuthority,
-  });
-
-  await update(umi, {
-    asset,
-    collection: originalCollection,
-    name: 'Test Bread 2',
-    uri: 'https://example.com/bread2',
-    newUpdateAuthority: updateAuthority('Collection', [
-      newCollection.publicKey,
-    ]),
-    newCollection: newCollection.publicKey,
-    authority: collectionAuthority,
-  }).sendAndConfirm(umi);
-
-  await assertAsset(t, umi, {
-    asset: asset.publicKey,
-    owner: umi.identity.publicKey,
-    updateAuthority: { type: 'Collection', address: newCollection.publicKey },
-    name: 'Test Bread 2',
-    uri: 'https://example.com/bread2',
-  });
-});
-
-test('it can change an asset collection using same update update authority (delegate exists but not used)', async (t) => {
+test('it can change an asset collection using same update authority (delegate exists but not used)', async (t) => {
   const umi = await createUmi();
   const collectionAuthority = generateSigner(umi);
   const { asset, collection: originalCollection } =
