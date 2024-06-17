@@ -268,7 +268,7 @@ pub(crate) fn process_create<'a>(
     }
 
     if let Some(mut collection) = collection {
-        collection.increment()?;
+        collection.increment(true)?;
         collection.save(ctx.accounts.collection.unwrap(), 0)?;
     };
 

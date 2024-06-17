@@ -208,7 +208,7 @@ fn update<'a>(
                         return Err(MplCoreError::InvalidAuthority.into());
                     }
 
-                    new_collection.increment()?;
+                    new_collection.increment(false)?;
                     new_collection.save(new_collection_account, 0)?;
                 }
             };

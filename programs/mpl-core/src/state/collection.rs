@@ -305,11 +305,13 @@ impl CollectionV1 {
     }
 
     /// Increment size of the Collection
-    pub fn increment(&mut self) -> Result<(), ProgramError> {
-        self.num_minted = self
-            .num_minted
-            .checked_add(1)
-            .ok_or(MplCoreError::NumericalOverflowError)?;
+    pub fn increment(&mut self, mint: bool) -> Result<(), ProgramError> {
+        if mint {
+            self.num_minted = self
+                .num_minted
+                .checked_add(1)
+                .ok_or(MplCoreError::NumericalOverflowError)?;
+        }
 
         self.current_size = self
             .current_size
