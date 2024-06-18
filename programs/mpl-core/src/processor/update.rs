@@ -152,7 +152,7 @@ fn update<'a>(
                     let mut existing_collection =
                         CollectionV1::load(existing_collection_account, 0)?;
 
-                    existing_collection.decrement()?;
+                    existing_collection.decrement_size()?;
                     existing_collection.save(existing_collection_account, 0)?;
                 }
             }
@@ -208,7 +208,7 @@ fn update<'a>(
                         return Err(MplCoreError::InvalidAuthority.into());
                     }
 
-                    new_collection.increment(false)?;
+                    new_collection.increment_size()?;
                     new_collection.save(new_collection_account, 0)?;
                 }
             };
