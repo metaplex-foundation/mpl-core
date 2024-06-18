@@ -6,15 +6,17 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::{UpdateCollectionV1Accounts, UpdateV1Accounts},
+    instruction::accounts::{
+        Context, UpdateCollectionV1Accounts, UpdateV1Accounts, UpdateV2Accounts,
+    },
     plugins::{
-        ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
-        PluginType,
+        fetch_plugin, ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginHeaderV1,
+        PluginRegistryV1, PluginType, UpdateDelegate,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
-        load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
-        validate_collection_permissions,
+        assert_collection_authority, load_key, resize_or_reallocate_account, resolve_authority,
+        validate_asset_permissions, validate_collection_permissions,
     },
 };
 
@@ -26,10 +28,65 @@ pub(crate) struct UpdateV1Args {
     pub new_update_authority: Option<UpdateAuthority>,
 }
 
-pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) -> ProgramResult {
-    // Accounts.
-    let ctx = UpdateV1Accounts::context(accounts)?;
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct UpdateV2Args {
+    pub new_name: Option<String>,
+    pub new_uri: Option<String>,
+    pub new_update_authority: Option<UpdateAuthority>,
+}
 
+impl From<UpdateV1Args> for UpdateV2Args {
+    fn from(item: UpdateV1Args) -> Self {
+        UpdateV2Args {
+            new_name: item.new_name,
+            new_uri: item.new_uri,
+            new_update_authority: item.new_update_authority,
+        }
+    }
+}
+
+enum InstructionVersion {
+    V1,
+    V2,
+}
+
+pub(crate) fn update_v1<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) -> ProgramResult {
+    let ctx = UpdateV1Accounts::context(accounts)?;
+    let v2_accounts = UpdateV2Accounts {
+        asset: ctx.accounts.asset,
+        collection: ctx.accounts.collection,
+        payer: ctx.accounts.payer,
+        authority: ctx.accounts.authority,
+        new_collection: None,
+        system_program: ctx.accounts.system_program,
+        log_wrapper: ctx.accounts.log_wrapper,
+    };
+
+    let v2_ctx = Context {
+        accounts: v2_accounts,
+        remaining_accounts: ctx.remaining_accounts,
+    };
+
+    update(
+        v2_ctx,
+        accounts,
+        UpdateV2Args::from(args),
+        InstructionVersion::V1,
+    )
+}
+
+pub(crate) fn update_v2<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV2Args) -> ProgramResult {
+    let ctx = UpdateV2Accounts::context(accounts)?;
+    update(ctx, accounts, args, InstructionVersion::V2)
+}
+
+fn update<'a>(
+    ctx: Context<UpdateV2Accounts<'a>>,
+    accounts: &'a [AccountInfo<'a>],
+    args: UpdateV2Args,
+    ix_version: InstructionVersion,
+) -> ProgramResult {
     // Guards.
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
@@ -75,15 +132,86 @@ pub(crate) fn update<'a>(accounts: &'a [AccountInfo<'a>], args: UpdateV1Args) ->
 
     let mut dirty = false;
     if let Some(new_update_authority) = args.new_update_authority {
-        if let UpdateAuthority::Collection(_collection_address) = new_update_authority {
-            // Updating collections is not currently available.
-            return Err(MplCoreError::NotAvailable.into());
-        };
+        // If asset is currently in a collection, remove it from the collection.
+        // This block is executed when we want to go from collection to no collection, or collection to
+        // new collection.  The permission for this block is established by `validate_asset_permissions`.
+        if let UpdateAuthority::Collection(_existing_collection_address) = asset.update_authority {
+            match ix_version {
+                InstructionVersion::V1 => {
+                    // Removing from or changing collection requires collection size to be updated
+                    // and is not supported by `UpdateV1`.
+                    msg!("Error: Use UpdateV2 to remove asset from or change collection");
+                    return Err(MplCoreError::NotAvailable.into());
+                }
+                InstructionVersion::V2 => {
+                    let existing_collection_account = ctx
+                        .accounts
+                        .collection
+                        .ok_or(MplCoreError::MissingCollection)?;
 
-        if let UpdateAuthority::Collection(_collection_address) = asset.update_authority {
-            // Removing from collection is not currently available.
-            // will require the collection size to be updated
-            return Err(MplCoreError::NotAvailable.into());
+                    let mut existing_collection =
+                        CollectionV1::load(existing_collection_account, 0)?;
+
+                    existing_collection.decrement_size()?;
+                    existing_collection.save(existing_collection_account, 0)?;
+                }
+            }
+        }
+
+        // If new update authority is a collection, add the asset to the new collection.
+        // This block is executed when we want to go from no collection to collection, or collection
+        // to new collection.  The permission for this block is established in the code block.  It is
+        // similar to creating an asset, in that the new collection's authority or an update delegate
+        // for the new collecton can approve adding the asset to the new collection.
+        if let UpdateAuthority::Collection(new_collection_address) = new_update_authority {
+            match ix_version {
+                InstructionVersion::V1 => {
+                    msg!("Error: Use UpdateV2 to add asset to a new collection");
+                    return Err(MplCoreError::NotAvailable.into());
+                }
+                InstructionVersion::V2 => {
+                    // Make sure the account was provided.
+                    let new_collection_account = ctx
+                        .accounts
+                        .new_collection
+                        .ok_or(MplCoreError::MissingCollection)?;
+
+                    // Make sure account matches what was provided in the args.
+                    if new_collection_account.key != &new_collection_address {
+                        return Err(MplCoreError::InvalidCollection.into());
+                    }
+
+                    // Deserialize the collection.
+                    let mut new_collection = CollectionV1::load(new_collection_account, 0)?;
+
+                    // See if there is an update delegate on the new collection.
+                    let maybe_update_delegate = fetch_plugin::<CollectionV1, UpdateDelegate>(
+                        new_collection_account,
+                        PluginType::UpdateDelegate,
+                    );
+
+                    // Make sure the authority has authority to add the asset to the new collection.
+                    if let Ok((plugin_authority, _, _)) = maybe_update_delegate {
+                        if assert_collection_authority(
+                            &new_collection,
+                            authority,
+                            &plugin_authority,
+                        )
+                        .is_err()
+                            && authority.key != &new_collection.update_authority
+                        {
+                            solana_program::msg!("UA: Rejected");
+                            return Err(MplCoreError::InvalidAuthority.into());
+                        }
+                    } else if authority.key != &new_collection.update_authority {
+                        solana_program::msg!("UA: Rejected");
+                        return Err(MplCoreError::InvalidAuthority.into());
+                    }
+
+                    new_collection.increment_size()?;
+                    new_collection.save(new_collection_account, 0)?;
+                }
+            };
         }
 
         asset.update_authority = new_update_authority;

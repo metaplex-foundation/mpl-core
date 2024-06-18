@@ -109,7 +109,7 @@ pub fn process_instruction<'a>(
         }
         MplAssetInstruction::UpdateV1(args) => {
             msg!("Instruction: Update");
-            update(accounts, args)
+            update_v1(accounts, args)
         }
         MplAssetInstruction::UpdateCollectionV1(args) => {
             msg!("Instruction: UpdateCollection");
@@ -163,6 +163,10 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::WriteCollectionExternalPluginAdapterDataV1(args) => {
             msg!("Instruction: WriteCollectionExternalPluginAdapterDataV1");
             write_collection_external_plugin_adapter_data(accounts, args)
+        }
+        MplAssetInstruction::UpdateV2(args) => {
+            msg!("Instruction: UpdateV2");
+            update_v2(accounts, args)
         }
     }
 }

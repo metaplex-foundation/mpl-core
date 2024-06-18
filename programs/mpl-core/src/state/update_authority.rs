@@ -6,14 +6,13 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{
         BurnV1Accounts, CompressV1Accounts, CreateV2Accounts, DecompressV1Accounts,
-        TransferV1Accounts, UpdateV1Accounts,
+        TransferV1Accounts,
     },
     plugins::{
-        abstain, approve, fetch_plugin, reject, CheckResult, PluginType, UpdateDelegate,
-        ValidationResult,
+        abstain, fetch_plugin, reject, CheckResult, PluginType, UpdateDelegate, ValidationResult,
     },
     processor::CreateV2Args,
-    state::{Authority, CollectionV1, SolanaAccount},
+    state::{CollectionV1, SolanaAccount},
     utils::assert_collection_authority,
 };
 
@@ -77,12 +76,7 @@ impl UpdateAuthority {
 
                 if let Ok((authority, update_delegate_plugin, _)) = maybe_update_delegate {
                     if assert_collection_authority(&collection, authority_info, &authority).is_err()
-                        && assert_collection_authority(
-                            &collection,
-                            authority_info,
-                            &Authority::UpdateAuthority,
-                        )
-                        .is_err()
+                        && authority_info.key != &collection.update_authority
                         && !update_delegate_plugin
                             .additional_delegates
                             .contains(authority_info.key)
@@ -101,24 +95,6 @@ impl UpdateAuthority {
             (_, UpdateAuthority::Address(_)) => abstain!(),
             // Otherwise reject because you're doing something weird.
             _ => reject!(),
-        }
-    }
-
-    /// Validate the update lifecycle event.
-    pub fn validate_update(
-        &self,
-        ctx: &UpdateV1Accounts,
-    ) -> Result<ValidationResult, ProgramError> {
-        let authority = match self {
-            Self::None => return reject!(),
-            Self::Address(address) => address,
-            Self::Collection(address) => address,
-        };
-
-        if ctx.authority.unwrap_or(ctx.payer).key == authority {
-            approve!()
-        } else {
-            abstain!()
         }
     }
 

@@ -11,7 +11,7 @@ use crate::processor::{
     RemoveExternalPluginAdapterV1Args, RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args,
     RevokePluginAuthorityV1Args, TransferV1Args, UpdateCollectionExternalPluginAdapterV1Args,
     UpdateCollectionPluginV1Args, UpdateCollectionV1Args, UpdateExternalPluginAdapterV1Args,
-    UpdatePluginV1Args, UpdateV1Args, WriteCollectionExternalPluginAdapterDataV1Args,
+    UpdatePluginV1Args, UpdateV1Args, UpdateV2Args, WriteCollectionExternalPluginAdapterDataV1Args,
     WriteExternalPluginAdapterDataV1Args,
 };
 
@@ -282,4 +282,14 @@ pub(crate) enum MplAssetInstruction {
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     WriteCollectionExternalPluginAdapterDataV1(WriteCollectionExternalPluginAdapterDataV1Args),
+
+    /// Update an mpl-core V2.
+    #[account(0, writable, name="asset", desc = "The address of the asset")]
+    #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, signer, name="authority", desc = "The update authority or update authority delegate of the asset")]
+    #[account(4, optional, writable, name="new_collection", desc = "A new collection to which to move the asset")]
+    #[account(5, name="system_program", desc = "The system program")]
+    #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    UpdateV2(UpdateV2Args),
 }
