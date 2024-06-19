@@ -127,12 +127,10 @@ export function deriveAssetPlugins(
     }
   });
 
+  const { numMinted, currentSize, masterEdition, ...colRest } = collection; // remove collection only fields
+
   return {
-    ...{
-      ...collection,
-      // the following plugins can only be on the collection
-      masterEdition: undefined,
-    },
+    ...colRest,
     ...asset,
     ...externalPluginAdapters,
   };
