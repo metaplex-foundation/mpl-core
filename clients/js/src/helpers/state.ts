@@ -97,11 +97,10 @@ export function deriveAssetPlugins(
     collection
   );
 
+  const { numMinted, currentSize, masterEdition, ...colRest } = collection; // remove collection only fields
+
   return {
-    ...{
-      ...collection,
-      masterEdition: undefined, // master edition can only be on the collection
-    },
+    ...colRest,
     ...asset,
     ...externalPluginAdapters,
   };
