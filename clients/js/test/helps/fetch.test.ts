@@ -131,6 +131,8 @@ test('it can use helper to fetch assets by collection and derive plugins', async
   fetchedAssets.forEach((asset) => {
     if (asset.publicKey === override.publicKey) {
       t.like(asset, {
+        numMinted: undefined,
+        currentSize: undefined,
         attributes: {
           attributeList: [
             {
@@ -142,6 +144,8 @@ test('it can use helper to fetch assets by collection and derive plugins', async
       });
     } else {
       t.like(asset, {
+        numMinted: undefined,
+        currentSize: undefined,
         freezeDelegate: {
           frozen: true,
         },
