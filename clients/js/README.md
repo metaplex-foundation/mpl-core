@@ -110,73 +110,73 @@ A Umi-compatible JavaScript library for the project.
    const umi = await createUmi();
 
   // Freezing an asset
-  const assetAddress = generateSigner(umi);
-  const freezeDelegate = generateSigner(umi);
+   const assetAddress = generateSigner(umi);
+   const freezeDelegate = generateSigner(umi);
 
-  await addPlugin(umi, {
-    asset: assetAddress.publicKey,
-    // adds the owner-managed freeze plugin to the asset
-    plugin: {
-      type: 'FreezeDelegate',
-      frozen: true,
-      
-      // Optionally set the authority to a delegate who can unfreeze. If unset, this will be the Owner
-      // This is functionally the same as calling addPlugin and approvePluginAuthority separately.
-      // Freezing with a delegate is commonly used for escrowless staking programs.
-      authority: {
-        type: 'Address',
-        address: freezeDelegate.publicKey,
-      },
-    }
-  }).sendAndConfirm(umi);
+   await addPlugin(umi, {
+     asset: assetAddress.publicKey,
+     // adds the owner-managed freeze plugin to the asset
+     plugin: {
+       type: 'FreezeDelegate',
+       frozen: true,
+       
+       // Optionally set the authority to a delegate who can unfreeze. If unset, this will be the Owner
+       // This is functionally the same as calling addPlugin and approvePluginAuthority separately.
+       // Freezing with a delegate is commonly used for escrowless staking programs.
+       authority: {
+         type: 'Address',
+         address: freezeDelegate.publicKey,
+       },
+     }
+   }).sendAndConfirm(umi);
 
-  // Unfreezing an asset with a delegate
-  // Revoking an authority will revert the authority back to the owner for owner-managed plugins
-  await revokePluginAuthority(umi, {
-    asset: assetAddress.publicKey,
-    plugin: {
-      type: 'FreezeDelegate',
-    },
-    authority: freezeDelegate,
-  }).sendAndConfirm(umi);
+   // Unfreezing an asset with a delegate
+   // Revoking an authority will revert the authority back to the owner for owner-managed plugins
+   await revokePluginAuthority(umi, {
+     asset: assetAddress.publicKey,
+     plugin: {
+       type: 'FreezeDelegate',
+     },
+     authority: freezeDelegate,
+   }).sendAndConfirm(umi);
 
-  // Create a collection with royalties
-  const collectionAddress = generateSigner(umi);
-  const creator1 = generateSigner(umi);
-  const creator2 = generateSigner(umi);
+   // Create a collection with royalties
+   const collectionAddress = generateSigner(umi);
+   const creator1 = generateSigner(umi);
+   const creator2 = generateSigner(umi);
 
-  await createCollection(umi, {
-    name: 'Test Collection',
-    uri: 'https://example.com/collection.json',
-    collection: collectionAddress,
-    plugins: [
-      {
-        type: 'Royalties',
-          basisPoints: 500,
-          creators: [
-            {
-              address: creator1.publicKey,
-              percentage: 20,
-            },
-            {
-              address: creator2.publicKey,
-              percentage: 80,
-            },
-          ],
-          ruleSet: ruleSet('None'), // Compatibility rule set
+   await createCollection(umi, {
+     name: 'Test Collection',
+     uri: 'https://example.com/collection.json',
+     collection: collectionAddress,
+     plugins: [
+       {
+         type: 'Royalties',
+           basisPoints: 500,
+           creators: [
+             {
+               address: creator1.publicKey,
+               percentage: 20,
+             },
+             {
+               address: creator2.publicKey,
+               percentage: 80,
+             },
+           ],
+           ruleSet: ruleSet('None'), // Compatibility rule set
 
-      },
-    ],
-  }).sendAndConfirm(umi);
+       },
+     ],
+   }).sendAndConfirm(umi);
 
-  // Create an asset in a collection.
-  // Assets in a collection will inherit the collection's authority-managed plugins, in this case the royalties plugin
-  await create(umi, {
-    name: 'Test Asset',
-    uri: 'https://example.com/asset.json',
-    asset: assetAddress,
-    collection: await fetchCollectionV1(umi, collectionAddress.publicKey),
-  }).sendAndConfirm(umi);
+   // Create an asset in a collection.
+   // Assets in a collection will inherit the collection's authority-managed plugins, in this case the royalties plugin
+   await create(umi, {
+     name: 'Test Asset',
+     uri: 'https://example.com/asset.json',
+     asset: assetAddress,
+     collection: await fetchCollectionV1(umi, collectionAddress.publicKey),
+   }).sendAndConfirm(umi);
    ```
 
 You can learn more about this library's API by reading its generated [TypeDoc documentation](https://mpl-core-js-docs.vercel.app).
