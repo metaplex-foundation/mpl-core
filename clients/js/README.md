@@ -109,7 +109,7 @@ A Umi-compatible JavaScript library for the project.
    ```ts
    const umi = await createUmi();
 
-  // Freezing an asset
+   // Freezing an asset
    const assetAddress = generateSigner(umi);
    const freezeDelegate = generateSigner(umi);
 
