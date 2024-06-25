@@ -38,72 +38,71 @@ A Umi-compatible JavaScript library for the project.
 4. Examples
    ```ts
    // Create an asset
-  const assetAddress = generateSigner(umi);
-  const owner = generateSigner(umi);
+   const assetAddress = generateSigner(umi);
+   const owner = generateSigner(umi);
+   await create(umi, {
+     name: 'Test Asset',
+     uri: 'https://example.com/asset.json',
+     asset: assetAddress,
+     owner: owner.publicKey, // optional, will default to payer
+   }).sendAndConfirm(umi);
 
-  await create(umi, {
-    name: 'Test Asset',
-    uri: 'https://example.com/asset.json',
-    asset: assetAddress,
-    owner: owner.publicKey, // optional, will default to payer
-  }).sendAndConfirm(umi);
+   // Fetch an asset
+   const asset = await fetchAssetV1(umi, assetAddress.publicKey);
 
-  // Fetch an asset
-  const asset = await fetchAssetV1(umi, assetAddress.publicKey);
+   // Create a collection
+   const collectionUpdateAuthority = generateSigner(umi);
+   const collectionAddress = generateSigner(umi);
+   await createCollection(umi, {
+     name: 'Test Collection',
+     uri: 'https://example.com/collection.json',
+     collection: collectionAddress,
+     updateAuthority: collectionUpdateAuthority.publicKey, // optional, defaults to payer
+   }).sendAndConfirm(umi);
 
-  // Create a collection
-  const collectionUpdateAuthority = generateSigner(umi);
-  const collectionAddress = generateSigner(umi);
-  await createCollection(umi, {
-    name: 'Test Collection',
-    uri: 'https://example.com/collection.json',
-    collection: collectionAddress,
-    updateAuthority: collectionUpdateAuthority.publicKey, // optional, defaults to payer
-  }).sendAndConfirm(umi);
+   // Fetch a collection
+   const collection = await fetchCollectionV1(umi, collectionAddress.publicKey);
 
-  // Fetch a collection
-  const collection = await fetchCollectionV1(umi, collectionAddress.publicKey);
+   // Create an asset in a collection, the authority must be the updateAuthority of the collection
+   await create(umi, {
+     name: 'Test Asset',
+     uri: 'https://example.com/asset.json',
+     asset: assetAddress,
+     collection,
+     authority: collectionUpdateAuthority, // optional, defaults to payer
+   }).sendAndConfirm(umi);
 
-  // Create an asset in a collection, the authority must be the updateAuthority of the collection
-  await create(umi, {
-    name: 'Test Asset',
-    uri: 'https://example.com/asset.json',
-    asset: assetAddress,
-    collection,
-    authority: collectionUpdateAuthority, // optional, defaults to payer
-  }).sendAndConfirm(umi);
+   // Transfer an asset
+   const recipient = generateSigner(umi);
+   await transfer(umi, {
+     asset,
+     newOwner: recipient.publicKey,
+   }).sendAndConfirm(umi);
 
-  // Transfer an asset
-  const recipient = generateSigner(umi);
-  await transfer(umi, {
-    asset,
-    newOwner: recipient.publicKey,
-  }).sendAndConfirm(umi);
+   // Transfer an asset in a collection
+   await transfer(umi, {
+     asset,
+     newOwner: recipient.publicKey,
+     collection,
+   }).sendAndConfirm(umi);
 
-  // Transfer an asset in a collection
-  await transfer(umi, {
-    asset,
-    newOwner: recipient.publicKey,
-    collection,
-  }).sendAndConfirm(umi);
+   // GPA fetch assets by owner
+   const assetsByOwner = await getAssetV1GpaBuilder(umi)
+     .whereField('key', Key.AssetV1)
+     .whereField('owner', owner.publicKey)
+     .getDeserialized();
 
-  // GPA fetch assets by owner
-  const assetsByOwner = await getAssetV1GpaBuilder(umi)
-    .whereField('key', Key.AssetV1)
-    .whereField('owner', owner.publicKey)
-    .getDeserialized();
+   // GPA fetch assets by collection
+   const assetsByCollection = await getAssetV1GpaBuilder(umi)
+     .whereField('key', Key.AssetV1)
+     .whereField(
+       'updateAuthority',
+       updateAuthority('Collection', [collectionAddress.publicKey])
+     )
+     .getDeserialized();
 
-  // GPA fetch assets by collection
-  const assetsByCollection = await getAssetV1GpaBuilder(umi)
-    .whereField('key', Key.AssetV1)
-    .whereField(
-      'updateAuthority',
-      updateAuthority('Collection', [collectionAddress.publicKey])
-    )
-    .getDeserialized();
-
-  // DAS API (RPC based indexing) fetch assets by owner/collection
-  // Coming soon
+   // DAS API (RPC based indexing) fetch assets by owner/collection
+   // Coming soon
 
    ```
 5. Some advanced examples
