@@ -108,12 +108,11 @@ pub fn fetch_plugins(account_data: &[u8]) -> Result<Vec<RegistryRecord>, std::io
     Ok(filtered_plugin_registry)
 }
 
-/// Fetch the external plugin adapter from the registry.
-pub fn fetch_wrapped_external_plugin_adapter<T: DataBlob + SolanaAccount>(
+fn fetch_external_registry_record<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
     core: Option<&T>,
     plugin_key: &ExternalPluginAdapterKey,
-) -> Result<(ExternalRegistryRecordSafe, ExternalPluginAdapter), std::io::Error> {
+) -> Result<ExternalRegistryRecordSafe, std::io::Error> {
     let size = match core {
         Some(core) => core.get_size(),
         None => {
@@ -139,13 +138,7 @@ pub fn fetch_wrapped_external_plugin_adapter<T: DataBlob + SolanaAccount>(
     let result = find_external_plugin_adapter(&plugin_registry, plugin_key, account)?;
 
     if let (_, Some(record)) = result {
-        // Deserialize the plugin.
-        let plugin = ExternalPluginAdapter::deserialize(
-            &mut &(*account.data).borrow()[record.offset as usize..],
-        )?;
-
-        // Return the plugin and its authority.
-        Ok((record.clone(), plugin))
+        Ok(record.clone())
     } else {
         Err(std::io::Error::new(
             std::io::ErrorKind::Other,
@@ -160,7 +153,7 @@ pub fn fetch_external_plugin_adapter<T: DataBlob + SolanaAccount, U: CrateDeseri
     core: Option<&T>,
     plugin_key: &ExternalPluginAdapterKey,
 ) -> Result<(PluginAuthority, U, usize), std::io::Error> {
-    let (registry_record, _) = fetch_wrapped_external_plugin_adapter(account, core, plugin_key)?;
+    let registry_record = fetch_external_registry_record(account, core, plugin_key)?;
 
     let inner = U::deserialize(
         &mut &(*account.data).borrow()[registry_record.offset.checked_add(1).ok_or(
