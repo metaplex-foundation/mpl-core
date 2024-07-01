@@ -171,7 +171,7 @@ fn unwrap_data_offset_and_data_len(
 }
 
 /// Fetch the external_plugin_adapter data from the registry and convert to string.
-/// May not be suitable for large amounts of data.
+/// May not be suitable for larger amounts of data.
 pub fn fetch_external_plugin_adapter_data_as_string<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
     core: Option<&T>,
@@ -208,8 +208,9 @@ pub fn fetch_external_plugin_adapter_data_as_string<T: DataBlob + SolanaAccount>
     Ok((data_string, data_offset, data_len))
 }
 
-/// Fetch the external_plugin_adapter data offset and length.  This can then be used to
+/// Fetch the external plugin adapter data offset and length.  These can be used to
 /// directly slice the account data for use of the external plugin adapter data elsewhere.
+/// This function is more suitable for larger amounts of external plugin adapter data.
 pub fn fetch_external_plugin_adapter_data_info<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
     core: Option<&T>,
