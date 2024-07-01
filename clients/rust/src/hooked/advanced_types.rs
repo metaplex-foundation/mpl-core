@@ -221,6 +221,7 @@ impl RegistryRecordSafe {
 
 ///ExternalPluginAdapter Registry record that can be used when the plugin type is not known (i.e. a `ExternalPluginAdapterType` that
 /// is too new for this client to know about).
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ExternalRegistryRecordSafe {
     pub plugin_type: u8,
     pub authority: PluginAuthority,

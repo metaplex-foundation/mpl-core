@@ -3,14 +3,14 @@ use anchor_lang::prelude::AnchorDeserialize as CrateDeserialize;
 #[cfg(not(feature = "anchor"))]
 use borsh::BorshDeserialize as CrateDeserialize;
 use num_traits::FromPrimitive;
-use solana_program::account_info::AccountInfo;
+use solana_program::{account_info::AccountInfo, pubkey::Pubkey};
 
 use crate::{
     accounts::{BaseAssetV1, PluginHeaderV1},
     errors::MplCoreError,
     types::{
-        ExternalPluginAdapter, ExternalPluginAdapterType, Plugin, PluginAuthority, PluginType,
-        RegistryRecord,
+        ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalPluginAdapterType, LinkedDataKey,
+        Plugin, PluginAuthority, PluginType, RegistryRecord,
     },
     AddBlockerPlugin, AttributesPlugin, AutographPlugin, BaseAuthority, BasePlugin,
     BurnDelegatePlugin, DataBlob, EditionPlugin, ExternalPluginAdaptersList,
@@ -106,6 +106,70 @@ pub fn fetch_plugins(account_data: &[u8]) -> Result<Vec<RegistryRecord>, std::io
         .collect();
 
     Ok(filtered_plugin_registry)
+}
+
+fn fetch_external_registry_record<T: DataBlob + SolanaAccount>(
+    account: &AccountInfo,
+    core: Option<&T>,
+    plugin_key: &ExternalPluginAdapterKey,
+) -> Result<ExternalRegistryRecordSafe, std::io::Error> {
+    let size = match core {
+        Some(core) => core.get_size(),
+        None => {
+            let asset = T::load(account, 0)?;
+
+            if asset.get_size() == account.data_len() {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    MplCoreError::ExternalPluginAdapterNotFound.to_string(),
+                ));
+            }
+
+            asset.get_size()
+        }
+    };
+
+    let header = PluginHeaderV1::from_bytes(&(*account.data).borrow()[size..])?;
+    let plugin_registry = PluginRegistryV1Safe::from_bytes(
+        &(*account.data).borrow()[header.plugin_registry_offset as usize..],
+    )?;
+
+    // Find the plugin in the registry.
+    let result = find_external_plugin_adapter(&plugin_registry, plugin_key, account)?;
+
+    if let (_, Some(record)) = result {
+        Ok(record.clone())
+    } else {
+        Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            MplCoreError::ExternalPluginAdapterNotFound.to_string(),
+        ))
+    }
+}
+
+/// Fetch the plugin from the registry.
+pub fn fetch_external_plugin_adapter<T: DataBlob + SolanaAccount, U: CrateDeserialize>(
+    account: &AccountInfo,
+    core: Option<&T>,
+    plugin_key: &ExternalPluginAdapterKey,
+) -> Result<(PluginAuthority, U, usize), std::io::Error> {
+    let registry_record = fetch_external_registry_record(account, core, plugin_key)?;
+
+    let inner = U::deserialize(
+        &mut &(*account.data).borrow()[registry_record.offset.checked_add(1).ok_or(
+            std::io::Error::new(
+                std::io::ErrorKind::Other,
+                MplCoreError::NumericalOverflow.to_string(),
+            ),
+        )? as usize..],
+    )?;
+
+    // Return the plugin and its authority.
+    Ok((
+        registry_record.authority.clone(),
+        inner,
+        registry_record.offset as usize,
+    ))
 }
 
 /// List all plugins in an account, dropping any unknown plugins (i.e. `PluginType`s that are too
@@ -260,4 +324,108 @@ pub(crate) fn registry_records_to_external_plugin_adapter_list(
     );
 
     result
+}
+
+pub(crate) fn find_external_plugin_adapter<'b>(
+    plugin_registry: &'b PluginRegistryV1Safe,
+    plugin_key: &ExternalPluginAdapterKey,
+    account: &AccountInfo<'_>,
+) -> Result<(Option<usize>, Option<&'b ExternalRegistryRecordSafe>), std::io::Error> {
+    let mut result = (None, None);
+    for (i, record) in plugin_registry.external_registry.iter().enumerate() {
+        if record.plugin_type == ExternalPluginAdapterType::from(plugin_key) as u8
+            && (match plugin_key {
+                ExternalPluginAdapterKey::LifecycleHook(address)
+                | ExternalPluginAdapterKey::Oracle(address)
+                | ExternalPluginAdapterKey::LinkedLifecycleHook(address) => {
+                    let pubkey_offset = record.offset.checked_add(1).ok_or(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        MplCoreError::NumericalOverflow,
+                    ))?;
+                    address
+                        == &match Pubkey::deserialize(
+                            &mut &account.data.borrow()[pubkey_offset as usize..],
+                        ) {
+                            Ok(address) => address,
+                            Err(_) => {
+                                return Err(std::io::Error::new(
+                                    std::io::ErrorKind::Other,
+                                    Box::<dyn std::error::Error + Send + Sync>::from(
+                                        MplCoreError::DeserializationError,
+                                    ),
+                                ))
+                            }
+                        }
+                }
+                ExternalPluginAdapterKey::AppData(authority) => {
+                    let authority_offset =
+                        record.offset.checked_add(1).ok_or(std::io::Error::new(
+                            std::io::ErrorKind::Other,
+                            MplCoreError::NumericalOverflow,
+                        ))?;
+                    authority
+                        == &match PluginAuthority::deserialize(
+                            &mut &account.data.borrow()[authority_offset as usize..],
+                        ) {
+                            Ok(authority) => authority,
+                            Err(_) => {
+                                return Err(std::io::Error::new(
+                                    std::io::ErrorKind::Other,
+                                    Box::<dyn std::error::Error + Send + Sync>::from(
+                                        MplCoreError::DeserializationError,
+                                    ),
+                                ))
+                            }
+                        }
+                }
+                ExternalPluginAdapterKey::LinkedAppData(authority) => {
+                    let authority_offset =
+                        record.offset.checked_add(1).ok_or(std::io::Error::new(
+                            std::io::ErrorKind::Other,
+                            MplCoreError::NumericalOverflow,
+                        ))?;
+                    authority
+                        == &match PluginAuthority::deserialize(
+                            &mut &account.data.borrow()[authority_offset as usize..],
+                        ) {
+                            Ok(authority) => authority,
+                            Err(_) => {
+                                return Err(std::io::Error::new(
+                                    std::io::ErrorKind::Other,
+                                    Box::<dyn std::error::Error + Send + Sync>::from(
+                                        MplCoreError::DeserializationError,
+                                    ),
+                                ))
+                            }
+                        }
+                }
+                ExternalPluginAdapterKey::DataSection(linked_data_key) => {
+                    let linked_data_key_offset =
+                        record.offset.checked_add(1).ok_or(std::io::Error::new(
+                            std::io::ErrorKind::Other,
+                            MplCoreError::NumericalOverflow,
+                        ))?;
+                    linked_data_key
+                        == &match LinkedDataKey::deserialize(
+                            &mut &account.data.borrow()[linked_data_key_offset as usize..],
+                        ) {
+                            Ok(linked_data_key) => linked_data_key,
+                            Err(_) => {
+                                return Err(std::io::Error::new(
+                                    std::io::ErrorKind::Other,
+                                    Box::<dyn std::error::Error + Send + Sync>::from(
+                                        MplCoreError::DeserializationError,
+                                    ),
+                                ))
+                            }
+                        }
+                }
+            })
+        {
+            result = (Some(i), Some(record));
+            break;
+        }
+    }
+
+    Ok(result)
 }

@@ -23,7 +23,10 @@ use std::{cmp::Ordering, mem::size_of};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1, PluginRegistryV1},
     errors::MplCoreError,
-    types::{ExternalCheckResult, Key, Plugin, PluginType, RegistryRecord},
+    types::{
+        ExternalCheckResult, ExternalPluginAdapterKey, ExternalPluginAdapterType, Key, Plugin,
+        PluginType, RegistryRecord,
+    },
 };
 use solana_program::account_info::AccountInfo;
 
@@ -160,7 +163,7 @@ impl RegistryRecord {
 
 /// Bitfield representation of lifecycle permissions for external plugin adapter, third party plugins.
 #[bitfield(bits = 32)]
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, Default)]
 pub struct ExternalCheckResultBits {
     pub can_listen: bool,
     pub can_approve: bool,
@@ -178,6 +181,21 @@ impl From<ExternalCheckResultBits> for ExternalCheckResult {
     fn from(bits: ExternalCheckResultBits) -> Self {
         ExternalCheckResult {
             flags: u32::from_le_bytes(bits.into_bytes()),
+        }
+    }
+}
+
+impl From<&ExternalPluginAdapterKey> for ExternalPluginAdapterType {
+    fn from(key: &ExternalPluginAdapterKey) -> Self {
+        match key {
+            ExternalPluginAdapterKey::LifecycleHook(_) => ExternalPluginAdapterType::LifecycleHook,
+            ExternalPluginAdapterKey::LinkedLifecycleHook(_) => {
+                ExternalPluginAdapterType::LinkedLifecycleHook
+            }
+            ExternalPluginAdapterKey::Oracle(_) => ExternalPluginAdapterType::Oracle,
+            ExternalPluginAdapterKey::AppData(_) => ExternalPluginAdapterType::AppData,
+            ExternalPluginAdapterKey::LinkedAppData(_) => ExternalPluginAdapterType::LinkedAppData,
+            ExternalPluginAdapterKey::DataSection(_) => ExternalPluginAdapterType::DataSection,
         }
     }
 }
