@@ -14,6 +14,7 @@ pub use collection::*;
 use anchor_lang::prelude::{
     AnchorDeserialize as CrateDeserialize, AnchorSerialize as CrateSerialize,
 };
+use base64::prelude::*;
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize as CrateDeserialize, BorshSerialize as CrateSerialize};
 use modular_bitfield::{bitfield, specifiers::B29};
@@ -24,8 +25,8 @@ use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1, PluginRegistryV1},
     errors::MplCoreError,
     types::{
-        ExternalCheckResult, ExternalPluginAdapterKey, ExternalPluginAdapterType, Key, Plugin,
-        PluginType, RegistryRecord,
+        ExternalCheckResult, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
+        ExternalPluginAdapterType, Key, Plugin, PluginType, RegistryRecord,
     },
 };
 use solana_program::account_info::AccountInfo;
@@ -60,6 +61,61 @@ impl BaseAssetV1 {
 impl BaseCollectionV1 {
     /// The base length of the collection account with an empty name and uri.
     pub const BASE_LENGTH: usize = 1 + 32 + 4 + 4 + 4 + 4;
+}
+
+/// Anchor implementations that enable using `Account<BaseAssetV1>` and `Account<BaseCollectionV1>`
+/// in Anchor programs.
+#[cfg(feature = "anchor")]
+mod anchor_impl {
+    use super::*;
+    use anchor_lang::{
+        prelude::{Owner, Pubkey},
+        AccountDeserialize, AccountSerialize, Discriminator,
+    };
+
+    impl AccountDeserialize for BaseAssetV1 {
+        fn try_deserialize_unchecked(buf: &mut &[u8]) -> anchor_lang::Result<Self> {
+            let base_asset = Self::from_bytes(buf)?;
+            Ok(base_asset)
+        }
+    }
+
+    // Not used as an Anchor program using Account<BaseAssetV1> would not have permission to
+    // reserialize the account as it's owned by mpl-core.
+    impl AccountSerialize for BaseAssetV1 {}
+
+    // Not used but needed for Anchor.
+    impl Discriminator for BaseAssetV1 {
+        const DISCRIMINATOR: [u8; 8] = [0; 8];
+    }
+
+    impl Owner for BaseAssetV1 {
+        fn owner() -> Pubkey {
+            crate::ID
+        }
+    }
+
+    impl AccountDeserialize for BaseCollectionV1 {
+        fn try_deserialize_unchecked(buf: &mut &[u8]) -> anchor_lang::Result<Self> {
+            let base_asset = Self::from_bytes(buf)?;
+            Ok(base_asset)
+        }
+    }
+
+    // Not used as an Anchor program using Account<BaseCollectionV1> would not have permission to
+    // reserialize the account as it's owned by mpl-core.
+    impl AccountSerialize for BaseCollectionV1 {}
+
+    // Not used but needed for Anchor.
+    impl Discriminator for BaseCollectionV1 {
+        const DISCRIMINATOR: [u8; 8] = [0; 8];
+    }
+
+    impl Owner for BaseCollectionV1 {
+        fn owner() -> Pubkey {
+            crate::ID
+        }
+    }
 }
 
 impl DataBlob for BaseAssetV1 {
@@ -196,6 +252,35 @@ impl From<&ExternalPluginAdapterKey> for ExternalPluginAdapterType {
             ExternalPluginAdapterKey::AppData(_) => ExternalPluginAdapterType::AppData,
             ExternalPluginAdapterKey::LinkedAppData(_) => ExternalPluginAdapterType::LinkedAppData,
             ExternalPluginAdapterKey::DataSection(_) => ExternalPluginAdapterType::DataSection,
+        }
+    }
+}
+
+/// Use `ExternalPluginAdapterSchema` to convert data to string.  If schema is binary or there is
+/// an error, then use Base64 encoding.
+pub fn convert_external_plugin_adapter_data_to_string(
+    schema: &ExternalPluginAdapterSchema,
+    data_slice: &[u8],
+) -> String {
+    match schema {
+        ExternalPluginAdapterSchema::Binary => {
+            // Encode the binary data as a base64 string.
+            BASE64_STANDARD.encode(data_slice)
+        }
+        ExternalPluginAdapterSchema::Json => {
+            // Convert the byte slice to a UTF-8 string, replacing invalid characterse.
+            String::from_utf8_lossy(data_slice).to_string()
+        }
+        ExternalPluginAdapterSchema::MsgPack => {
+            // Attempt to decode `MsgPack` to serde_json::Value and serialize to JSON string.
+            match rmp_serde::decode::from_slice::<serde_json::Value>(data_slice) {
+                Ok(json_val) => serde_json::to_string(&json_val)
+                    .unwrap_or_else(|_| BASE64_STANDARD.encode(data_slice)),
+                Err(_) => {
+                    // Failed to decode `MsgPack`, fallback to base64.
+                    BASE64_STANDARD.encode(data_slice)
+                }
+            }
         }
     }
 }

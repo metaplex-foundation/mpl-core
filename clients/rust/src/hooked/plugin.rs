@@ -7,6 +7,7 @@ use solana_program::{account_info::AccountInfo, pubkey::Pubkey};
 
 use crate::{
     accounts::{BaseAssetV1, PluginHeaderV1},
+    convert_external_plugin_adapter_data_to_string,
     errors::MplCoreError,
     types::{
         ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalPluginAdapterType, LinkedDataKey,
@@ -108,6 +109,94 @@ pub fn fetch_plugins(account_data: &[u8]) -> Result<Vec<RegistryRecord>, std::io
     Ok(filtered_plugin_registry)
 }
 
+/// Fetch the external plugin adapter from the registry.
+pub fn fetch_external_plugin_adapter<T: DataBlob + SolanaAccount, U: CrateDeserialize>(
+    account: &AccountInfo,
+    core: Option<&T>,
+    plugin_key: &ExternalPluginAdapterKey,
+) -> Result<(PluginAuthority, U, usize), std::io::Error> {
+    let registry_record = fetch_external_registry_record(account, core, plugin_key)?;
+
+    let inner = U::deserialize(
+        &mut &(*account.data).borrow()[registry_record.offset.checked_add(1).ok_or(
+            std::io::Error::new(
+                std::io::ErrorKind::Other,
+                MplCoreError::NumericalOverflow.to_string(),
+            ),
+        )? as usize..],
+    )?;
+
+    // Return the plugin and its authority.
+    Ok((
+        registry_record.authority.clone(),
+        inner,
+        registry_record.offset as usize,
+    ))
+}
+
+/// Fetch the external plugin adapter from the registry.
+pub fn fetch_wrapped_external_plugin_adapter<T: DataBlob + SolanaAccount>(
+    account: &AccountInfo,
+    core: Option<&T>,
+    plugin_key: &ExternalPluginAdapterKey,
+) -> Result<(ExternalRegistryRecordSafe, ExternalPluginAdapter), std::io::Error> {
+    let registry_record = fetch_external_registry_record(account, core, plugin_key)?;
+
+    // Deserialize the plugin.
+    let plugin = ExternalPluginAdapter::deserialize(
+        &mut &(*account.data).borrow()[registry_record.offset as usize..],
+    )?;
+
+    // Return the plugin and its authority.
+    Ok((registry_record, plugin))
+}
+
+/// Fetch the external_plugin_adapter data from the registry.
+pub fn fetch_external_plugin_adapter_data<T: DataBlob + SolanaAccount>(
+    account: &AccountInfo,
+    core: Option<&T>,
+    plugin_key: &ExternalPluginAdapterKey,
+) -> Result<(String, usize, usize), std::io::Error> {
+    let (registry_record, external_plugin) =
+        fetch_wrapped_external_plugin_adapter(account, core, plugin_key)?;
+
+    let schema = match external_plugin {
+        ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => lifecycle_hook.schema,
+        ExternalPluginAdapter::AppData(app_data) => app_data.schema,
+        ExternalPluginAdapter::DataSection(data_section) => data_section.schema,
+        _ => {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                MplCoreError::UnsupportedOperation.to_string(),
+            ));
+        }
+    };
+
+    let data_offset = registry_record.data_offset.ok_or(std::io::Error::new(
+        std::io::ErrorKind::Other,
+        MplCoreError::InvalidPlugin.to_string(),
+    ))?;
+
+    let data_len = registry_record.data_len.ok_or(std::io::Error::new(
+        std::io::ErrorKind::Other,
+        MplCoreError::InvalidPlugin.to_string(),
+    ))?;
+
+    let end = data_offset
+        .checked_add(data_len)
+        .ok_or(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            MplCoreError::NumericalOverflow.to_string(),
+        ))?;
+
+    let data_slice = &(*account.data).borrow()[data_offset as usize..end as usize];
+    let data_string = convert_external_plugin_adapter_data_to_string(&schema, data_slice);
+
+    // Return the data and its offset.
+    Ok((data_string, data_offset as usize, data_len as usize))
+}
+
+// Internal helper to fetch just the external registry record for the external plugin key.
 fn fetch_external_registry_record<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
     core: Option<&T>,
@@ -134,42 +223,14 @@ fn fetch_external_registry_record<T: DataBlob + SolanaAccount>(
         &(*account.data).borrow()[header.plugin_registry_offset as usize..],
     )?;
 
-    // Find the plugin in the registry.
+    // Find and return the registry record.
     let result = find_external_plugin_adapter(&plugin_registry, plugin_key, account)?;
-
-    if let (_, Some(record)) = result {
-        Ok(record.clone())
-    } else {
-        Err(std::io::Error::new(
+    result.1.cloned().ok_or_else(|| {
+        std::io::Error::new(
             std::io::ErrorKind::Other,
             MplCoreError::ExternalPluginAdapterNotFound.to_string(),
-        ))
-    }
-}
-
-/// Fetch the plugin from the registry.
-pub fn fetch_external_plugin_adapter<T: DataBlob + SolanaAccount, U: CrateDeserialize>(
-    account: &AccountInfo,
-    core: Option<&T>,
-    plugin_key: &ExternalPluginAdapterKey,
-) -> Result<(PluginAuthority, U, usize), std::io::Error> {
-    let registry_record = fetch_external_registry_record(account, core, plugin_key)?;
-
-    let inner = U::deserialize(
-        &mut &(*account.data).borrow()[registry_record.offset.checked_add(1).ok_or(
-            std::io::Error::new(
-                std::io::ErrorKind::Other,
-                MplCoreError::NumericalOverflow.to_string(),
-            ),
-        )? as usize..],
-    )?;
-
-    // Return the plugin and its authority.
-    Ok((
-        registry_record.authority.clone(),
-        inner,
-        registry_record.offset as usize,
-    ))
+        )
+    })
 }
 
 /// List all plugins in an account, dropping any unknown plugins (i.e. `PluginType`s that are too

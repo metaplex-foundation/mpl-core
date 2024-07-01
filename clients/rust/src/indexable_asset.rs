@@ -9,6 +9,7 @@ use std::{cmp::Ordering, collections::HashMap, io::ErrorKind};
 
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
+    convert_external_plugin_adapter_data_to_string,
     types::{
         ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterSchema,
         ExternalPluginAdapterType, HookableLifecycleEvent, Key, Plugin, PluginAuthority,
@@ -237,7 +238,10 @@ impl ProcessedExternalPlugin {
                     (
                         Some(data_info.data_offset),
                         Some(data_info.data_len),
-                        Some(Self::convert_data_to_string(schema, data_info.data_slice)),
+                        Some(convert_external_plugin_adapter_data_to_string(
+                            schema,
+                            data_info.data_slice,
+                        )),
                     )
                 }
                 None => (None, None, None),
@@ -284,30 +288,6 @@ impl ProcessedExternalPlugin {
         };
 
         Ok(processed_plugin)
-    }
-
-    fn convert_data_to_string(schema: &ExternalPluginAdapterSchema, data_slice: &[u8]) -> String {
-        match schema {
-            ExternalPluginAdapterSchema::Binary => {
-                // Encode the binary data as a base64 string.
-                BASE64_STANDARD.encode(data_slice)
-            }
-            ExternalPluginAdapterSchema::Json => {
-                // Convert the byte slice to a UTF-8 string, replacing invalid characterse.
-                String::from_utf8_lossy(data_slice).to_string()
-            }
-            ExternalPluginAdapterSchema::MsgPack => {
-                // Attempt to decode `MsgPack` to serde_json::Value and serialize to JSON string.
-                match rmp_serde::decode::from_slice::<serde_json::Value>(data_slice) {
-                    Ok(json_val) => serde_json::to_string(&json_val)
-                        .unwrap_or_else(|_| BASE64_STANDARD.encode(data_slice)),
-                    Err(_) => {
-                        // Failed to decode `MsgPack`, fallback to base64.
-                        BASE64_STANDARD.encode(data_slice)
-                    }
-                }
-            }
-        }
     }
 }
 
