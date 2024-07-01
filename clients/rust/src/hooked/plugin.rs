@@ -9,13 +9,15 @@ use crate::{
     accounts::{BaseAssetV1, PluginHeaderV1},
     convert_external_plugin_adapter_data_to_string,
     errors::MplCoreError,
+    slice_data,
     types::{
         ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalPluginAdapterType, LinkedDataKey,
         Plugin, PluginAuthority, PluginType, RegistryRecord,
     },
-    AddBlockerPlugin, AttributesPlugin, AutographPlugin, BaseAuthority, BasePlugin,
-    BurnDelegatePlugin, DataBlob, EditionPlugin, ExternalPluginAdaptersList,
-    ExternalRegistryRecordSafe, FreezeDelegatePlugin, ImmutableMetadataPlugin, MasterEditionPlugin,
+    AddBlockerPlugin, AppDataWithData, AttributesPlugin, AutographPlugin, BaseAuthority,
+    BasePlugin, BurnDelegatePlugin, DataBlob, DataSectionWithData, EditionPlugin,
+    ExternalPluginAdaptersList, ExternalRegistryRecordSafe, FreezeDelegatePlugin,
+    ImmutableMetadataPlugin, LifecycleHookWithData, MasterEditionPlugin,
     PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin,
     PluginRegistryV1Safe, PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount,
     TransferDelegatePlugin, UpdateDelegatePlugin, VerifiedCreatorsPlugin,
@@ -172,28 +174,16 @@ pub fn fetch_external_plugin_adapter_data<T: DataBlob + SolanaAccount>(
         }
     };
 
-    let data_offset = registry_record.data_offset.ok_or(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        MplCoreError::InvalidPlugin.to_string(),
-    ))?;
-
-    let data_len = registry_record.data_len.ok_or(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        MplCoreError::InvalidPlugin.to_string(),
-    ))?;
-
-    let end = data_offset
-        .checked_add(data_len)
-        .ok_or(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            MplCoreError::NumericalOverflow.to_string(),
-        ))?;
-
-    let data_slice = &(*account.data).borrow()[data_offset as usize..end as usize];
+    let account_data = &(*account.data).borrow()[..];
+    let (data_slice, data_offset, data_len) = slice_data(
+        registry_record.data_offset,
+        registry_record.data_len,
+        account_data,
+    )?;
     let data_string = convert_external_plugin_adapter_data_to_string(&schema, data_slice);
 
-    // Return the data and its offset.
-    Ok((data_string, data_offset as usize, data_len as usize))
+    // Return the data, its offset, and length.
+    Ok((data_string, data_offset, data_len))
 }
 
 // Internal helper to fetch just the external registry record for the external plugin key.
@@ -365,18 +355,56 @@ pub(crate) fn registry_records_to_external_plugin_adapter_list(
 
                 match plugin {
                     ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
-                        acc.lifecycle_hooks.push(lifecycle_hook)
+                        let (data_slice, data_offset, data_len) =
+                            slice_data(record.data_offset, record.data_len, account_data)?;
+                        let data_string = convert_external_plugin_adapter_data_to_string(
+                            &lifecycle_hook.schema,
+                            data_slice,
+                        );
+
+                        acc.lifecycle_hooks.push(LifecycleHookWithData {
+                            base: lifecycle_hook,
+                            data_string,
+                            data_offset,
+                            data_len,
+                        })
                     }
                     ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
                         acc.linked_lifecycle_hooks.push(lifecycle_hook)
                     }
                     ExternalPluginAdapter::Oracle(oracle) => acc.oracles.push(oracle),
-                    ExternalPluginAdapter::AppData(app_data) => acc.app_data.push(app_data),
+                    ExternalPluginAdapter::AppData(app_data) => {
+                        let (data_slice, data_offset, data_len) =
+                            slice_data(record.data_offset, record.data_len, account_data)?;
+                        let data_string = convert_external_plugin_adapter_data_to_string(
+                            &app_data.schema,
+                            data_slice,
+                        );
+
+                        acc.app_data.push(AppDataWithData {
+                            base: app_data,
+                            data_string,
+                            data_offset,
+                            data_len,
+                        })
+                    }
                     ExternalPluginAdapter::LinkedAppData(app_data) => {
                         acc.linked_app_data.push(app_data)
                     }
                     ExternalPluginAdapter::DataSection(data_section) => {
-                        acc.data_sections.push(data_section)
+                        let (data_slice, data_offset, data_len) =
+                            slice_data(record.data_offset, record.data_len, account_data)?;
+                        let data_string = convert_external_plugin_adapter_data_to_string(
+                            &data_section.schema,
+                            data_slice,
+                        );
+
+                        acc.data_sections.push(DataSectionWithData {
+                            base: data_section,
+                            data_string,
+                            data_offset,
+                            data_len,
+                        })
                     }
                 }
             }
