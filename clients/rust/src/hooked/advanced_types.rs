@@ -181,12 +181,33 @@ pub struct PluginsList {
 
 #[derive(Debug, Default)]
 pub struct ExternalPluginAdaptersList {
-    pub lifecycle_hooks: Vec<LifecycleHook>,
+    pub lifecycle_hooks: Vec<LifecycleHookWithData>,
     pub linked_lifecycle_hooks: Vec<LinkedLifecycleHook>,
     pub oracles: Vec<Oracle>,
-    pub app_data: Vec<AppData>,
+    pub app_data: Vec<AppDataWithData>,
     pub linked_app_data: Vec<LinkedAppData>,
-    pub data_sections: Vec<DataSection>,
+    pub data_sections: Vec<DataSectionWithData>,
+}
+
+#[derive(Debug)]
+pub struct LifecycleHookWithData {
+    pub base: LifecycleHook,
+    pub data_offset: usize,
+    pub data_len: usize,
+}
+
+#[derive(Debug)]
+pub struct AppDataWithData {
+    pub base: AppData,
+    pub data_offset: usize,
+    pub data_len: usize,
+}
+
+#[derive(Debug)]
+pub struct DataSectionWithData {
+    pub base: DataSection,
+    pub data_offset: usize,
+    pub data_len: usize,
 }
 
 #[derive(Debug)]
