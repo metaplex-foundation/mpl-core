@@ -198,6 +198,7 @@ pub struct Asset {
 pub struct Collection {
     pub base: BaseCollectionV1,
     pub plugin_list: PluginsList,
+    pub external_plugin_adapter_list: ExternalPluginAdaptersList,
     pub plugin_header: Option<PluginHeaderV1>,
 }
 
