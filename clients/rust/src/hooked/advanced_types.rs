@@ -192,7 +192,6 @@ pub struct ExternalPluginAdaptersList {
 #[derive(Debug)]
 pub struct LifecycleHookWithData {
     pub base: LifecycleHook,
-    pub data_string: String,
     pub data_offset: usize,
     pub data_len: usize,
 }
@@ -200,7 +199,6 @@ pub struct LifecycleHookWithData {
 #[derive(Debug)]
 pub struct AppDataWithData {
     pub base: AppData,
-    pub data_string: String,
     pub data_offset: usize,
     pub data_len: usize,
 }
@@ -208,7 +206,6 @@ pub struct AppDataWithData {
 #[derive(Debug)]
 pub struct DataSectionWithData {
     pub base: DataSection,
-    pub data_string: String,
     pub data_offset: usize,
     pub data_len: usize,
 }

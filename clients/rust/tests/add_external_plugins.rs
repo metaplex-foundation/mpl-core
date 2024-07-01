@@ -320,6 +320,7 @@ async fn test_temporarily_cannot_add_lifecycle_hook_on_collection() {
             num_minted: 0,
             current_size: 0,
             plugins: vec![],
+            external_plugin_adapters: vec![],
         },
     )
     .await;
