@@ -144,7 +144,8 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
                 assert!(asset
                     .external_plugin_adapter_list
                     .lifecycle_hooks
-                    .contains(&hook))
+                    .iter()
+                    .any(|lifecyle_hook_with_data| lifecyle_hook_with_data.base == hook))
             }
             ExternalPluginAdapter::Oracle(oracle) => {
                 assert!(asset.external_plugin_adapter_list.oracles.contains(&oracle))
@@ -153,7 +154,8 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
                 assert!(asset
                     .external_plugin_adapter_list
                     .app_data
-                    .contains(&app_data))
+                    .iter()
+                    .any(|app_data_with_data| app_data_with_data.base == app_data))
             }
             ExternalPluginAdapter::LinkedLifecycleHook(hook) => {
                 assert!(asset
@@ -171,7 +173,8 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
                 assert!(asset
                     .external_plugin_adapter_list
                     .data_sections
-                    .contains(&data))
+                    .iter()
+                    .any(|data_sections_with_data| data_sections_with_data.base == data))
             }
         }
     }

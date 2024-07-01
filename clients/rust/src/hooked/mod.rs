@@ -256,6 +256,36 @@ impl From<&ExternalPluginAdapterKey> for ExternalPluginAdapterType {
     }
 }
 
+// Create a data slice of the account based on the offset and length passed in.
+pub(crate) fn slice_data<'a>(
+    data_offset: Option<u64>,
+    data_len: Option<u64>,
+    account_data: &'a [u8],
+) -> Result<(&'a [u8], usize, usize), std::io::Error> {
+    let data_offset = data_offset.ok_or(std::io::Error::new(
+        std::io::ErrorKind::Other,
+        MplCoreError::InvalidPlugin.to_string(),
+    ))?;
+
+    let data_len = data_len.ok_or(std::io::Error::new(
+        std::io::ErrorKind::Other,
+        MplCoreError::InvalidPlugin.to_string(),
+    ))?;
+
+    let end = data_offset
+        .checked_add(data_len)
+        .ok_or(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            MplCoreError::NumericalOverflow.to_string(),
+        ))?;
+
+    Ok((
+        &account_data[data_offset as usize..end as usize],
+        data_offset as usize,
+        data_len as usize,
+    ))
+}
+
 /// Use `ExternalPluginAdapterSchema` to convert data to string.  If schema is binary or there is
 /// an error, then use Base64 encoding.
 pub fn convert_external_plugin_adapter_data_to_string(
