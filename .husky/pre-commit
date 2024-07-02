@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Exit if a merge is in progress
+if [ -f .git/MERGE_HEAD ]; then
+    exit 0
+fi
+
 set +e
 
 # Stash un-staged changes
