@@ -5,9 +5,10 @@ use std::borrow::BorrowMut;
 
 use mpl_core::{
     accounts::{BaseAssetV1, BaseCollectionV1},
+    convert_external_plugin_adapter_data_to_string,
     errors::MplCoreError,
-    fetch_external_plugin_adapter, fetch_external_plugin_adapter_data_as_string,
-    fetch_external_plugin_adapter_data_info,
+    fetch_external_plugin_adapter, fetch_external_plugin_adapter_data_info,
+    fetch_wrapped_external_plugin_adapter,
     instructions::{
         WriteCollectionExternalPluginAdapterDataV1Builder, WriteExternalPluginAdapterDataV1Builder,
     },
@@ -448,6 +449,22 @@ async fn test_create_and_fetch_app_data() {
         false,
         0,
     );
+
+    // Fetch external plugin adapter two ways.
+    // First, get the external plugin adapter in its enum.
+    let (registry_record, external_plugin) = fetch_wrapped_external_plugin_adapter::<BaseAssetV1>(
+        &account_info,
+        None,
+        &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
+    )
+    .unwrap();
+
+    let inner_app_data = match external_plugin {
+        ExternalPluginAdapter::AppData(app_data) => app_data,
+        _ => panic!("Unexpected external plugin adapter"),
+    };
+
+    // Second, get the inner `AppData` object directly.
     let (auth, app_data, offset) = fetch_external_plugin_adapter::<BaseAssetV1, AppData>(
         &account_info,
         None,
@@ -455,48 +472,44 @@ async fn test_create_and_fetch_app_data() {
     )
     .unwrap();
 
+    // Validate the data matches between the two fetches.
+    assert_eq!(registry_record.authority, auth);
+    assert_eq!(inner_app_data, app_data);
+
     println!("App data: {:#?}", app_data);
     println!("Auth: {:#?}", auth);
     println!("Offset: {:#?}", offset);
 
     // Fetch the actual app data.  Validate multiple methods.
 
-    // First, get app data data offset and length.
-    let (data_offset_1, data_len_1) = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
+    // First, get app data data offset and length directly.
+    let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
         &account_info,
         None,
         &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
     )
     .unwrap();
 
-    // Second, get app data as a String.
-    let (data_string, data_offset_2, data_len_2) =
-        fetch_external_plugin_adapter_data_as_string::<BaseAssetV1>(
-            &account_info,
-            None,
-            &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
-        )
-        .unwrap();
-
-    // Validate app data.
-    assert_eq!(data_string, test_json_str);
-    assert_eq!(data_len_1, 36);
-
-    // Validate data matches.
-    assert_eq!(data_offset_1, data_offset_2);
-    assert_eq!(data_len_1, data_len_2);
-
-    // Third, get app data offset and length from a full `Asset` deserialization.
+    // Second, get app data offset and length from a full `Asset` deserialization.
     let asset = Asset::from_bytes(&account.data).unwrap();
     let app_data_with_data = asset.external_plugin_adapter_list.app_data.first().unwrap();
 
-    // Validate data matches.
-    assert_eq!(data_offset_1, app_data_with_data.data_offset);
-    assert_eq!(data_len_1, app_data_with_data.data_len);
+    // Validate data matches between two methods.
+    assert_eq!(data_offset, app_data_with_data.data_offset);
+    assert_eq!(data_len, app_data_with_data.data_len);
+
+    // Convert data to string.
+    let data_end = data_offset.checked_add(data_len).unwrap();
+    let data_slice = &account.data[data_offset..data_end];
+    let data_string = convert_external_plugin_adapter_data_to_string(&app_data.schema, data_slice);
+
+    // Validate app data.
+    assert_eq!(data_string, test_json_str);
+    assert_eq!(data_len, 36);
 
     println!("Data string: {:#?}", data_string);
-    println!("Data offset: {:#?}", data_offset_1);
-    println!("Data len: {:#?}", data_len_1);
+    println!("Data offset: {:#?}", data_offset);
+    println!("Data len: {:#?}", data_len);
 }
 
 #[tokio::test]
@@ -590,6 +603,23 @@ async fn test_collection_create_and_fetch_app_data() {
         false,
         0,
     );
+
+    // Fetch external plugin adapter two ways.
+    // First, get the external plugin adapter in its enum.
+    let (registry_record, external_plugin) =
+        fetch_wrapped_external_plugin_adapter::<BaseCollectionV1>(
+            &account_info,
+            None,
+            &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
+        )
+        .unwrap();
+
+    let inner_app_data = match external_plugin {
+        ExternalPluginAdapter::AppData(app_data) => app_data,
+        _ => panic!("Unexpected external plugin adapter"),
+    };
+
+    // Second, get the inner `AppData` object directly.
     let (auth, app_data, offset) = fetch_external_plugin_adapter::<BaseCollectionV1, AppData>(
         &account_info,
         None,
@@ -597,38 +627,25 @@ async fn test_collection_create_and_fetch_app_data() {
     )
     .unwrap();
 
+    // Validate the data matches between the two fetches.
+    assert_eq!(registry_record.authority, auth);
+    assert_eq!(inner_app_data, app_data);
+
     println!("App data: {:#?}", app_data);
     println!("Auth: {:#?}", auth);
     println!("Offset: {:#?}", offset);
 
     // Fetch the actual app data.  Validate multiple methods.
 
-    // First, get app data data offset and length.
-    let (data_offset_1, data_len_1) = fetch_external_plugin_adapter_data_info::<BaseCollectionV1>(
+    // First, get app data data offset and length directly.
+    let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseCollectionV1>(
         &account_info,
         None,
         &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
     )
     .unwrap();
 
-    // Second, get app data as a String.
-    let (data_string, data_offset_2, data_len_2) =
-        fetch_external_plugin_adapter_data_as_string::<BaseCollectionV1>(
-            &account_info,
-            None,
-            &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
-        )
-        .unwrap();
-
-    // Validate app data.
-    assert_eq!(data_string, test_json_str);
-    assert_eq!(data_len_1, 36);
-
-    // Validate data matches.
-    assert_eq!(data_offset_1, data_offset_2);
-    assert_eq!(data_len_1, data_len_2);
-
-    // Third, get app data offset and length from a full `Asset` deserialization.
+    // Second, get app data offset and length from a full `Collection` deserialization.
     let collection = Collection::from_bytes(&account.data).unwrap();
     let app_data_with_data = collection
         .external_plugin_adapter_list
@@ -636,11 +653,20 @@ async fn test_collection_create_and_fetch_app_data() {
         .first()
         .unwrap();
 
-    // Validate data matches.
-    assert_eq!(data_offset_1, app_data_with_data.data_offset);
-    assert_eq!(data_len_1, app_data_with_data.data_len);
+    // Validate data matches between two methods.
+    assert_eq!(data_offset, app_data_with_data.data_offset);
+    assert_eq!(data_len, app_data_with_data.data_len);
+
+    // Convert data to string.
+    let data_end = data_offset.checked_add(data_len).unwrap();
+    let data_slice = &account.data[data_offset..data_end];
+    let data_string = convert_external_plugin_adapter_data_to_string(&app_data.schema, data_slice);
+
+    // Validate app data.
+    assert_eq!(data_string, test_json_str);
+    assert_eq!(data_len, 36);
 
     println!("Data string: {:#?}", data_string);
-    println!("Data offset: {:#?}", data_offset_1);
-    println!("Data len: {:#?}", data_len_1);
+    println!("Data offset: {:#?}", data_offset);
+    println!("Data len: {:#?}", data_len);
 }

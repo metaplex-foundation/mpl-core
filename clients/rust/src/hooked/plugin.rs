@@ -7,7 +7,6 @@ use solana_program::{account_info::AccountInfo, pubkey::Pubkey};
 
 use crate::{
     accounts::{BaseAssetV1, PluginHeaderV1},
-    convert_external_plugin_adapter_data_to_string,
     errors::MplCoreError,
     types::{
         ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalPluginAdapterType, LinkedDataKey,
@@ -170,47 +169,8 @@ fn unwrap_data_offset_and_data_len(
     Ok((data_offset as usize, data_len as usize))
 }
 
-/// Fetch the external_plugin_adapter data from the registry and convert to string.
-/// May not be suitable for larger amounts of data.
-pub fn fetch_external_plugin_adapter_data_as_string<T: DataBlob + SolanaAccount>(
-    account: &AccountInfo,
-    core: Option<&T>,
-    plugin_key: &ExternalPluginAdapterKey,
-) -> Result<(String, usize, usize), std::io::Error> {
-    let (registry_record, external_plugin) =
-        fetch_wrapped_external_plugin_adapter(account, core, plugin_key)?;
-
-    let schema = match external_plugin {
-        ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => lifecycle_hook.schema,
-        ExternalPluginAdapter::AppData(app_data) => app_data.schema,
-        ExternalPluginAdapter::DataSection(data_section) => data_section.schema,
-        _ => {
-            return Err(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                MplCoreError::UnsupportedOperation.to_string(),
-            ));
-        }
-    };
-
-    let (data_offset, data_len) =
-        unwrap_data_offset_and_data_len(registry_record.data_offset, registry_record.data_len)?;
-    let end = data_offset
-        .checked_add(data_len)
-        .ok_or(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            MplCoreError::NumericalOverflow.to_string(),
-        ))?;
-
-    let data_slice = &(*account.data).borrow()[data_offset..end];
-    let data_string = convert_external_plugin_adapter_data_to_string(&schema, data_slice);
-
-    // Return the data, its offset, and length.
-    Ok((data_string, data_offset, data_len))
-}
-
 /// Fetch the external plugin adapter data offset and length.  These can be used to
-/// directly slice the account data for use of the external plugin adapter data elsewhere.
-/// This function is more suitable for larger amounts of external plugin adapter data.
+/// directly slice the account data for use of the external plugin adapter data.
 pub fn fetch_external_plugin_adapter_data_info<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
     core: Option<&T>,
