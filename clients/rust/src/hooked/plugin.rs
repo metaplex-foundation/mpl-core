@@ -7,15 +7,15 @@ use solana_program::{account_info::AccountInfo, pubkey::Pubkey};
 
 use crate::{
     accounts::{BaseAssetV1, PluginHeaderV1},
-    convert_external_plugin_adapter_data_to_string,
     errors::MplCoreError,
     types::{
         ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalPluginAdapterType, LinkedDataKey,
         Plugin, PluginAuthority, PluginType, RegistryRecord,
     },
-    AddBlockerPlugin, AttributesPlugin, AutographPlugin, BaseAuthority, BasePlugin,
-    BurnDelegatePlugin, DataBlob, EditionPlugin, ExternalPluginAdaptersList,
-    ExternalRegistryRecordSafe, FreezeDelegatePlugin, ImmutableMetadataPlugin, MasterEditionPlugin,
+    AddBlockerPlugin, AppDataWithData, AttributesPlugin, AutographPlugin, BaseAuthority,
+    BasePlugin, BurnDelegatePlugin, DataBlob, DataSectionWithData, EditionPlugin,
+    ExternalPluginAdaptersList, ExternalRegistryRecordSafe, FreezeDelegatePlugin,
+    ImmutableMetadataPlugin, LifecycleHookWithData, MasterEditionPlugin,
     PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin,
     PluginRegistryV1Safe, PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount,
     TransferDelegatePlugin, UpdateDelegatePlugin, VerifiedCreatorsPlugin,
@@ -151,49 +151,37 @@ pub fn fetch_wrapped_external_plugin_adapter<T: DataBlob + SolanaAccount>(
     Ok((registry_record, plugin))
 }
 
-/// Fetch the external_plugin_adapter data from the registry.
-pub fn fetch_external_plugin_adapter_data<T: DataBlob + SolanaAccount>(
+// Helper to unwrap optional data offset and data length.
+fn unwrap_data_offset_and_data_len(
+    data_offset: Option<u64>,
+    data_len: Option<u64>,
+) -> Result<(usize, usize), std::io::Error> {
+    let data_offset = data_offset.ok_or(std::io::Error::new(
+        std::io::ErrorKind::Other,
+        MplCoreError::InvalidPlugin.to_string(),
+    ))?;
+
+    let data_len = data_len.ok_or(std::io::Error::new(
+        std::io::ErrorKind::Other,
+        MplCoreError::InvalidPlugin.to_string(),
+    ))?;
+
+    Ok((data_offset as usize, data_len as usize))
+}
+
+/// Fetch the external plugin adapter data offset and length.  These can be used to
+/// directly slice the account data for use of the external plugin adapter data.
+pub fn fetch_external_plugin_adapter_data_info<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
     core: Option<&T>,
     plugin_key: &ExternalPluginAdapterKey,
-) -> Result<(String, usize, usize), std::io::Error> {
-    let (registry_record, external_plugin) =
-        fetch_wrapped_external_plugin_adapter(account, core, plugin_key)?;
+) -> Result<(usize, usize), std::io::Error> {
+    let registry_record = fetch_external_registry_record(account, core, plugin_key)?;
+    let (data_offset, data_len) =
+        unwrap_data_offset_and_data_len(registry_record.data_offset, registry_record.data_len)?;
 
-    let schema = match external_plugin {
-        ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => lifecycle_hook.schema,
-        ExternalPluginAdapter::AppData(app_data) => app_data.schema,
-        ExternalPluginAdapter::DataSection(data_section) => data_section.schema,
-        _ => {
-            return Err(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                MplCoreError::UnsupportedOperation.to_string(),
-            ));
-        }
-    };
-
-    let data_offset = registry_record.data_offset.ok_or(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        MplCoreError::InvalidPlugin.to_string(),
-    ))?;
-
-    let data_len = registry_record.data_len.ok_or(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        MplCoreError::InvalidPlugin.to_string(),
-    ))?;
-
-    let end = data_offset
-        .checked_add(data_len)
-        .ok_or(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            MplCoreError::NumericalOverflow.to_string(),
-        ))?;
-
-    let data_slice = &(*account.data).borrow()[data_offset as usize..end as usize];
-    let data_string = convert_external_plugin_adapter_data_to_string(&schema, data_slice);
-
-    // Return the data and its offset.
-    Ok((data_string, data_offset as usize, data_len as usize))
+    // Return the data offset and length.
+    Ok((data_offset, data_len))
 }
 
 // Internal helper to fetch just the external registry record for the external plugin key.
@@ -365,18 +353,41 @@ pub(crate) fn registry_records_to_external_plugin_adapter_list(
 
                 match plugin {
                     ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
-                        acc.lifecycle_hooks.push(lifecycle_hook)
+                        let (data_offset, data_len) =
+                            unwrap_data_offset_and_data_len(record.data_offset, record.data_len)?;
+
+                        acc.lifecycle_hooks.push(LifecycleHookWithData {
+                            base: lifecycle_hook,
+                            data_offset,
+                            data_len,
+                        })
                     }
                     ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
                         acc.linked_lifecycle_hooks.push(lifecycle_hook)
                     }
                     ExternalPluginAdapter::Oracle(oracle) => acc.oracles.push(oracle),
-                    ExternalPluginAdapter::AppData(app_data) => acc.app_data.push(app_data),
+                    ExternalPluginAdapter::AppData(app_data) => {
+                        let (data_offset, data_len) =
+                            unwrap_data_offset_and_data_len(record.data_offset, record.data_len)?;
+
+                        acc.app_data.push(AppDataWithData {
+                            base: app_data,
+                            data_offset,
+                            data_len,
+                        })
+                    }
                     ExternalPluginAdapter::LinkedAppData(app_data) => {
                         acc.linked_app_data.push(app_data)
                     }
                     ExternalPluginAdapter::DataSection(data_section) => {
-                        acc.data_sections.push(data_section)
+                        let (data_offset, data_len) =
+                            unwrap_data_offset_and_data_len(record.data_offset, record.data_len)?;
+
+                        acc.data_sections.push(DataSectionWithData {
+                            base: data_section,
+                            data_offset,
+                            data_len,
+                        })
                     }
                 }
             }
