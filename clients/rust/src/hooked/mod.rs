@@ -59,6 +59,61 @@ impl BaseCollectionV1 {
     pub const BASE_LENGTH: usize = 1 + 32 + 4 + 4 + 4 + 4;
 }
 
+/// Anchor implementations that enable using `Account<BaseAssetV1>` and `Account<BaseCollectionV1>`
+/// in Anchor programs.
+#[cfg(feature = "anchor")]
+mod anchor_impl {
+    use super::*;
+    use anchor_lang::{
+        prelude::{Owner, Pubkey},
+        AccountDeserialize, AccountSerialize, Discriminator,
+    };
+
+    impl AccountDeserialize for BaseAssetV1 {
+        fn try_deserialize_unchecked(buf: &mut &[u8]) -> anchor_lang::Result<Self> {
+            let base_asset = Self::from_bytes(buf)?;
+            Ok(base_asset)
+        }
+    }
+
+    // Not used as an Anchor program using Account<BaseAssetV1> would not have permission to
+    // reserialize the account as it's owned by mpl-core.
+    impl AccountSerialize for BaseAssetV1 {}
+
+    // Not used but needed for Anchor.
+    impl Discriminator for BaseAssetV1 {
+        const DISCRIMINATOR: [u8; 8] = [0; 8];
+    }
+
+    impl Owner for BaseAssetV1 {
+        fn owner() -> Pubkey {
+            crate::ID
+        }
+    }
+
+    impl AccountDeserialize for BaseCollectionV1 {
+        fn try_deserialize_unchecked(buf: &mut &[u8]) -> anchor_lang::Result<Self> {
+            let base_asset = Self::from_bytes(buf)?;
+            Ok(base_asset)
+        }
+    }
+
+    // Not used as an Anchor program using Account<BaseCollectionV1> would not have permission to
+    // reserialize the account as it's owned by mpl-core.
+    impl AccountSerialize for BaseCollectionV1 {}
+
+    // Not used but needed for Anchor.
+    impl Discriminator for BaseCollectionV1 {
+        const DISCRIMINATOR: [u8; 8] = [0; 8];
+    }
+
+    impl Owner for BaseCollectionV1 {
+        fn owner() -> Pubkey {
+            crate::ID
+        }
+    }
+}
+
 impl DataBlob for BaseAssetV1 {
     fn get_initial_size() -> usize {
         BaseAssetV1::BASE_LENGTH
