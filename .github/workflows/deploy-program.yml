@@ -129,7 +129,7 @@ jobs:
           echo PROGRAM_VERSION="${PROGRAM_VERSION}" >> $GITHUB_ENV
 
       - name: Download program builds
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: program-builds
 
