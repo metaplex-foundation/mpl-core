@@ -10,16 +10,19 @@ use mpl_core::{
     fetch_external_plugin_adapter, fetch_external_plugin_adapter_data_info,
     fetch_wrapped_external_plugin_adapter,
     instructions::{
+        UpdateCollectionExternalPluginAdapterV1Builder, UpdateExternalPluginAdapterV1Builder,
         WriteCollectionExternalPluginAdapterDataV1Builder, WriteExternalPluginAdapterDataV1Builder,
     },
     types::{
-        AppData, AppDataInitInfo, ExternalCheckResult, ExternalPluginAdapter,
+        AppData, AppDataInitInfo, AppDataUpdateInfo, ExternalCheckResult, ExternalPluginAdapter,
         ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
-        HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle, OracleInitInfo,
-        PluginAuthority, UpdateAuthority, ValidationResultsOffset,
+        ExternalPluginAdapterUpdateInfo, HookableLifecycleEvent, LifecycleHook,
+        LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority, UpdateAuthority,
+        ValidationResultsOffset,
     },
     Asset, Collection,
 };
+
 pub use setup::*;
 
 use solana_program::pubkey;
@@ -491,8 +494,12 @@ async fn test_create_and_fetch_app_data() {
     .unwrap();
 
     // Second, get app data offset and length from a full `Asset` deserialization.
-    let asset = Asset::from_bytes(&account.data).unwrap();
-    let app_data_with_data = asset.external_plugin_adapter_list.app_data.first().unwrap();
+    let full_asset = Asset::from_bytes(&account.data).unwrap();
+    let app_data_with_data = full_asset
+        .external_plugin_adapter_list
+        .app_data
+        .first()
+        .unwrap();
 
     // Validate data matches between two methods.
     assert_eq!(data_offset, app_data_with_data.data_offset);
@@ -510,6 +517,47 @@ async fn test_create_and_fetch_app_data() {
     println!("Data string: {:#?}", data_string);
     println!("Data offset: {:#?}", data_offset);
     println!("Data len: {:#?}", data_len);
+
+    // Update AppData plugin.
+    let update_info = ExternalPluginAdapterUpdateInfo::AppData(AppDataUpdateInfo {
+        schema: Some(ExternalPluginAdapterSchema::Binary),
+    });
+
+    let ix = UpdateExternalPluginAdapterV1Builder::new()
+        .asset(asset.pubkey())
+        .payer(context.payer.pubkey())
+        .key(ExternalPluginAdapterKey::AppData(
+            PluginAuthority::UpdateAuthority,
+        ))
+        .update_info(update_info)
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    // Check asset was updated.
+    assert_asset(
+        &mut context,
+        AssertAssetHelperArgs {
+            asset: asset.pubkey(),
+            owner,
+            update_authority: Some(UpdateAuthority::Address(update_authority)),
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugin_adapters: vec![ExternalPluginAdapter::AppData(AppData {
+                data_authority: PluginAuthority::UpdateAuthority,
+                schema: ExternalPluginAdapterSchema::Binary,
+            })],
+        },
+    )
+    .await;
 }
 
 #[tokio::test]
@@ -646,8 +694,8 @@ async fn test_collection_create_and_fetch_app_data() {
     .unwrap();
 
     // Second, get app data offset and length from a full `Collection` deserialization.
-    let collection = Collection::from_bytes(&account.data).unwrap();
-    let app_data_with_data = collection
+    let full_collection = Collection::from_bytes(&account.data).unwrap();
+    let app_data_with_data = full_collection
         .external_plugin_adapter_list
         .app_data
         .first()
@@ -669,4 +717,46 @@ async fn test_collection_create_and_fetch_app_data() {
     println!("Data string: {:#?}", data_string);
     println!("Data offset: {:#?}", data_offset);
     println!("Data len: {:#?}", data_len);
+
+    // Update AppData plugin on collection.
+    let update_info = ExternalPluginAdapterUpdateInfo::AppData(AppDataUpdateInfo {
+        schema: Some(ExternalPluginAdapterSchema::Binary),
+    });
+
+    let ix = UpdateCollectionExternalPluginAdapterV1Builder::new()
+        .collection(collection.pubkey())
+        .payer(context.payer.pubkey())
+        .key(ExternalPluginAdapterKey::AppData(
+            PluginAuthority::UpdateAuthority,
+        ))
+        .update_info(update_info)
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    // Check collection was updated.
+    assert_collection(
+        &mut context,
+        AssertCollectionHelperArgs {
+            collection: collection.pubkey(),
+            update_authority,
+            name: None,
+            uri: None,
+            num_minted: 0,
+            current_size: 0,
+            plugins: vec![],
+            external_plugin_adapters: vec![ExternalPluginAdapter::AppData(AppData {
+                data_authority: PluginAuthority::UpdateAuthority,
+                schema: ExternalPluginAdapterSchema::Binary,
+            })],
+        },
+    )
+    .await;
 }
