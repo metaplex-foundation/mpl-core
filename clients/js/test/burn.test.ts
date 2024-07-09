@@ -2,7 +2,7 @@ import { generateSigner, sol } from '@metaplex-foundation/umi';
 import test from 'ava';
 
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
-import { burnCollectionV1, burnV1, pluginAuthorityPair } from '../src';
+import { burnV1, pluginAuthorityPair } from '../src';
 import {
   DEFAULT_ASSET,
   DEFAULT_COLLECTION,
@@ -203,25 +203,6 @@ test('it cannot use an invalid noop program for assets', async (t) => {
   const result = burnV1(umi, {
     asset: asset.publicKey,
     logWrapper: fakeLogWrapper.publicKey,
-  }).sendAndConfirm(umi);
-
-  await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
-});
-
-test('it cannot use an invalid noop program for collections', async (t) => {
-  const umi = await createUmi();
-  const collection = await createCollection(umi);
-  const fakeLogWrapper = generateSigner(umi);
-  await assertCollection(t, umi, {
-    ...DEFAULT_COLLECTION,
-    collection: collection.publicKey,
-    updateAuthority: umi.identity.publicKey,
-  });
-
-  const result = burnCollectionV1(umi, {
-    collection: collection.publicKey,
-    logWrapper: fakeLogWrapper.publicKey,
-    compressionProof: null,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });

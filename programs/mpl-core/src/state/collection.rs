@@ -80,7 +80,7 @@ impl CollectionV1 {
 
     /// Check permissions for the burn lifecycle event.
     pub fn check_burn() -> CheckResult {
-        CheckResult::None
+        CheckResult::CanApprove
     }
 
     /// Check permissions for the update lifecycle event.
@@ -220,11 +220,16 @@ impl CollectionV1 {
     /// Validate the burn lifecycle event.
     pub fn validate_burn(
         &self,
-        _authority_info: &AccountInfo,
+        authority_info: &AccountInfo,
         _: Option<&Plugin>,
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
-        abstain!()
+        // If the update authority is the one burning the collection, and the collection is empty, then it can be burned.
+        if authority_info.key == &self.update_authority && self.current_size == 0 {
+            approve!()
+        } else {
+            abstain!()
+        }
     }
 
     /// Validate the update lifecycle event.
