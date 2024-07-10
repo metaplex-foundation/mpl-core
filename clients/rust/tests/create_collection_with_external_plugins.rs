@@ -4,20 +4,22 @@ use serde_json::json;
 use std::borrow::BorrowMut;
 
 use mpl_core::{
-    accounts::BaseAssetV1,
+    accounts::BaseCollectionV1,
     convert_external_plugin_adapter_data_to_string,
     errors::MplCoreError,
     fetch_external_plugin_adapter, fetch_external_plugin_adapter_data_info,
     fetch_wrapped_external_plugin_adapter,
-    instructions::{UpdateExternalPluginAdapterV1Builder, WriteExternalPluginAdapterDataV1Builder},
+    instructions::{
+        UpdateCollectionExternalPluginAdapterV1Builder,
+        WriteCollectionExternalPluginAdapterDataV1Builder,
+    },
     types::{
         AppData, AppDataInitInfo, AppDataUpdateInfo, ExternalCheckResult, ExternalPluginAdapter,
         ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
-        ExternalPluginAdapterUpdateInfo, HookableLifecycleEvent, LifecycleHook,
-        LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority, UpdateAuthority,
-        ValidationResultsOffset,
+        ExternalPluginAdapterUpdateInfo, HookableLifecycleEvent, LifecycleHookInitInfo, Oracle,
+        OracleInitInfo, PluginAuthority, ValidationResultsOffset,
     },
-    Asset,
+    Collection,
 };
 
 pub use setup::*;
@@ -30,127 +32,18 @@ use solana_sdk::{
 };
 
 #[tokio::test]
-#[ignore]
-async fn test_create_lifecycle_hook() {
+async fn test_temporarily_cannot_create_lifecycle_hook_on_collection() {
     let mut context = program_test().start_with_context().await;
 
-    let asset = Keypair::new();
-    create_asset(
+    let collection = Keypair::new();
+    let error = create_collection(
         &mut context,
-        CreateAssetHelperArgs {
-            owner: None,
-            payer: None,
-            asset: &asset,
-            data_state: None,
-            name: None,
-            uri: None,
-            authority: None,
+        CreateCollectionHelperArgs {
+            collection: &collection,
             update_authority: None,
-            collection: None,
-            plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::LifecycleHook(
-                LifecycleHookInitInfo {
-                    hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-                    init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-                    lifecycle_checks: vec![(
-                        HookableLifecycleEvent::Transfer,
-                        ExternalCheckResult { flags: 1 },
-                    )],
-                    extra_accounts: None,
-                    data_authority: Some(PluginAuthority::UpdateAuthority),
-                    schema: None,
-                },
-            )],
-        },
-    )
-    .await
-    .unwrap();
-
-    let owner = context.payer.pubkey();
-    let update_authority = context.payer.pubkey();
-    assert_asset(
-        &mut context,
-        AssertAssetHelperArgs {
-            asset: asset.pubkey(),
-            owner,
-            update_authority: Some(UpdateAuthority::Address(update_authority)),
-            name: None,
-            uri: None,
-            plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapter::LifecycleHook(LifecycleHook {
-                hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-                extra_accounts: None,
-                data_authority: Some(PluginAuthority::UpdateAuthority),
-                schema: ExternalPluginAdapterSchema::Binary,
-            })],
-        },
-    )
-    .await;
-}
-
-#[tokio::test]
-#[ignore]
-async fn test_cannot_create_lifecycle_hook_with_duplicate_lifecycle_checks() {
-    let mut context = program_test().start_with_context().await;
-
-    let asset = Keypair::new();
-    let error = create_asset(
-        &mut context,
-        CreateAssetHelperArgs {
-            owner: None,
             payer: None,
-            asset: &asset,
-            data_state: None,
             name: None,
             uri: None,
-            authority: None,
-            update_authority: None,
-            collection: None,
-            plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::LifecycleHook(
-                LifecycleHookInitInfo {
-                    hooked_program: pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-                    init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
-                    lifecycle_checks: vec![
-                        (
-                            HookableLifecycleEvent::Transfer,
-                            ExternalCheckResult { flags: 1 },
-                        ),
-                        (
-                            HookableLifecycleEvent::Transfer,
-                            ExternalCheckResult { flags: 1 },
-                        ),
-                    ],
-                    extra_accounts: None,
-                    data_authority: Some(PluginAuthority::UpdateAuthority),
-                    schema: None,
-                },
-            )],
-        },
-    )
-    .await
-    .unwrap_err();
-
-    assert_custom_instruction_error!(0, error, MplCoreError::DuplicateLifecycleChecks);
-}
-
-#[tokio::test]
-async fn test_temporarily_cannot_create_lifecycle_hook() {
-    let mut context = program_test().start_with_context().await;
-
-    let asset = Keypair::new();
-    let error = create_asset(
-        &mut context,
-        CreateAssetHelperArgs {
-            owner: None,
-            payer: None,
-            asset: &asset,
-            data_state: None,
-            name: None,
-            uri: None,
-            authority: None,
-            update_authority: None,
-            collection: None,
             plugins: vec![],
             external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::LifecycleHook(
                 LifecycleHookInitInfo {
@@ -174,22 +67,18 @@ async fn test_temporarily_cannot_create_lifecycle_hook() {
 }
 
 #[tokio::test]
-async fn test_create_oracle() {
+async fn test_create_oracle_on_collection() {
     let mut context = program_test().start_with_context().await;
 
-    let asset = Keypair::new();
-    create_asset(
+    let collection = Keypair::new();
+    create_collection(
         &mut context,
-        CreateAssetHelperArgs {
-            owner: None,
+        CreateCollectionHelperArgs {
+            collection: &collection,
+            update_authority: None,
             payer: None,
-            asset: &asset,
-            data_state: None,
             name: None,
             uri: None,
-            authority: None,
-            update_authority: None,
-            collection: None,
             plugins: vec![],
             external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::Oracle(OracleInitInfo {
                 base_address: Pubkey::default(),
@@ -206,16 +95,16 @@ async fn test_create_oracle() {
     .await
     .unwrap();
 
-    let owner = context.payer.pubkey();
     let update_authority = context.payer.pubkey();
-    assert_asset(
+    assert_collection(
         &mut context,
-        AssertAssetHelperArgs {
-            asset: asset.pubkey(),
-            owner,
-            update_authority: Some(UpdateAuthority::Address(update_authority)),
+        AssertCollectionHelperArgs {
+            collection: collection.pubkey(),
+            update_authority,
             name: None,
             uri: None,
+            num_minted: 0,
+            current_size: 0,
             plugins: vec![],
             external_plugin_adapters: vec![ExternalPluginAdapter::Oracle(Oracle {
                 base_address: Pubkey::default(),
@@ -228,22 +117,18 @@ async fn test_create_oracle() {
 }
 
 #[tokio::test]
-async fn test_cannot_create_oracle_with_duplicate_lifecycle_checks() {
+async fn test_cannot_create_oracle_with_duplicate_lifecycle_checks_on_collection() {
     let mut context = program_test().start_with_context().await;
 
-    let asset = Keypair::new();
-    let error = create_asset(
+    let collection = Keypair::new();
+    let error = create_collection(
         &mut context,
-        CreateAssetHelperArgs {
-            owner: None,
+        CreateCollectionHelperArgs {
+            collection: &collection,
+            update_authority: None,
             payer: None,
-            asset: &asset,
-            data_state: None,
             name: None,
             uri: None,
-            authority: None,
-            update_authority: None,
-            collection: None,
             plugins: vec![],
             external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::Oracle(OracleInitInfo {
                 base_address: Pubkey::default(),
@@ -270,22 +155,18 @@ async fn test_cannot_create_oracle_with_duplicate_lifecycle_checks() {
 }
 
 #[tokio::test]
-async fn test_create_app_data() {
+async fn test_create_app_data_on_collection() {
     let mut context = program_test().start_with_context().await;
 
-    let asset = Keypair::new();
-    create_asset(
+    let collection = Keypair::new();
+    create_collection(
         &mut context,
-        CreateAssetHelperArgs {
-            owner: None,
+        CreateCollectionHelperArgs {
+            collection: &collection,
+            update_authority: None,
             payer: None,
-            asset: &asset,
-            data_state: None,
             name: None,
             uri: None,
-            authority: None,
-            update_authority: None,
-            collection: None,
             plugins: vec![],
             external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::AppData(
                 AppDataInitInfo {
@@ -299,16 +180,16 @@ async fn test_create_app_data() {
     .await
     .unwrap();
 
-    let owner = context.payer.pubkey();
     let update_authority = context.payer.pubkey();
-    assert_asset(
+    assert_collection(
         &mut context,
-        AssertAssetHelperArgs {
-            asset: asset.pubkey(),
-            owner,
-            update_authority: Some(UpdateAuthority::Address(update_authority)),
+        AssertCollectionHelperArgs {
+            collection: collection.pubkey(),
+            update_authority,
             name: None,
             uri: None,
+            num_minted: 0,
+            current_size: 0,
             plugins: vec![],
             external_plugin_adapters: vec![ExternalPluginAdapter::AppData(AppData {
                 data_authority: PluginAuthority::UpdateAuthority,
@@ -320,22 +201,18 @@ async fn test_create_app_data() {
 }
 
 #[tokio::test]
-async fn test_create_and_fetch_app_data() {
+async fn test_collection_create_and_fetch_app_data() {
     let mut context = program_test().start_with_context().await;
 
-    let asset = Keypair::new();
-    create_asset(
+    let collection = Keypair::new();
+    create_collection(
         &mut context,
-        CreateAssetHelperArgs {
-            owner: None,
+        CreateCollectionHelperArgs {
+            collection: &collection,
+            update_authority: None,
             payer: None,
-            asset: &asset,
-            data_state: None,
             name: None,
             uri: None,
-            authority: None,
-            update_authority: None,
-            collection: None,
             plugins: vec![],
             external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::AppData(
                 AppDataInitInfo {
@@ -349,16 +226,16 @@ async fn test_create_and_fetch_app_data() {
     .await
     .unwrap();
 
-    let owner = context.payer.pubkey();
     let update_authority = context.payer.pubkey();
-    assert_asset(
+    assert_collection(
         &mut context,
-        AssertAssetHelperArgs {
-            asset: asset.pubkey(),
-            owner,
-            update_authority: Some(UpdateAuthority::Address(update_authority)),
+        AssertCollectionHelperArgs {
+            collection: collection.pubkey(),
+            update_authority,
             name: None,
             uri: None,
+            num_minted: 0,
+            current_size: 0,
             plugins: vec![],
             external_plugin_adapters: vec![ExternalPluginAdapter::AppData(AppData {
                 data_authority: PluginAuthority::UpdateAuthority,
@@ -377,8 +254,8 @@ async fn test_create_and_fetch_app_data() {
     let test_json_vec = test_json_str.as_bytes().to_vec();
 
     // Write data.
-    let ix = WriteExternalPluginAdapterDataV1Builder::new()
-        .asset(asset.pubkey())
+    let ix = WriteCollectionExternalPluginAdapterDataV1Builder::new()
+        .collection(collection.pubkey())
         .payer(context.payer.pubkey())
         .key(ExternalPluginAdapterKey::AppData(
             PluginAuthority::UpdateAuthority,
@@ -398,12 +275,12 @@ async fn test_create_and_fetch_app_data() {
     // Get account.
     let mut account = context
         .banks_client
-        .get_account(asset.pubkey())
+        .get_account(collection.pubkey())
         .await
         .unwrap()
         .unwrap();
 
-    let binding = asset.pubkey();
+    let binding = collection.pubkey();
     let account_info = AccountInfo::new(
         &binding,
         false,
@@ -417,12 +294,13 @@ async fn test_create_and_fetch_app_data() {
 
     // Fetch external plugin adapter two ways.
     // First, get the external plugin adapter in its enum.
-    let (registry_record, external_plugin) = fetch_wrapped_external_plugin_adapter::<BaseAssetV1>(
-        &account_info,
-        None,
-        &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
-    )
-    .unwrap();
+    let (registry_record, external_plugin) =
+        fetch_wrapped_external_plugin_adapter::<BaseCollectionV1>(
+            &account_info,
+            None,
+            &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
+        )
+        .unwrap();
 
     let inner_app_data = match external_plugin {
         ExternalPluginAdapter::AppData(app_data) => app_data,
@@ -430,7 +308,7 @@ async fn test_create_and_fetch_app_data() {
     };
 
     // Second, get the inner `AppData` object directly.
-    let (auth, app_data, offset) = fetch_external_plugin_adapter::<BaseAssetV1, AppData>(
+    let (auth, app_data, offset) = fetch_external_plugin_adapter::<BaseCollectionV1, AppData>(
         &account_info,
         None,
         &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
@@ -448,16 +326,16 @@ async fn test_create_and_fetch_app_data() {
     // Fetch the actual app data.  Validate multiple methods.
 
     // First, get app data data offset and length directly.
-    let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
+    let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseCollectionV1>(
         &account_info,
         None,
         &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
     )
     .unwrap();
 
-    // Second, get app data offset and length from a full `Asset` deserialization.
-    let full_asset = Asset::from_bytes(&account.data).unwrap();
-    let app_data_with_data = full_asset
+    // Second, get app data offset and length from a full `Collection` deserialization.
+    let full_collection = Collection::from_bytes(&account.data).unwrap();
+    let app_data_with_data = full_collection
         .external_plugin_adapter_list
         .app_data
         .first()
@@ -480,13 +358,13 @@ async fn test_create_and_fetch_app_data() {
     println!("Data offset: {:#?}", data_offset);
     println!("Data len: {:#?}", data_len);
 
-    // Update AppData plugin.
+    // Update AppData plugin on collection.
     let update_info = ExternalPluginAdapterUpdateInfo::AppData(AppDataUpdateInfo {
         schema: Some(ExternalPluginAdapterSchema::Binary),
     });
 
-    let ix = UpdateExternalPluginAdapterV1Builder::new()
-        .asset(asset.pubkey())
+    let ix = UpdateCollectionExternalPluginAdapterV1Builder::new()
+        .collection(collection.pubkey())
         .payer(context.payer.pubkey())
         .key(ExternalPluginAdapterKey::AppData(
             PluginAuthority::UpdateAuthority,
@@ -503,15 +381,16 @@ async fn test_create_and_fetch_app_data() {
 
     context.banks_client.process_transaction(tx).await.unwrap();
 
-    // Check asset was updated.
-    assert_asset(
+    // Check collection was updated.
+    assert_collection(
         &mut context,
-        AssertAssetHelperArgs {
-            asset: asset.pubkey(),
-            owner,
-            update_authority: Some(UpdateAuthority::Address(update_authority)),
+        AssertCollectionHelperArgs {
+            collection: collection.pubkey(),
+            update_authority,
             name: None,
             uri: None,
+            num_minted: 0,
+            current_size: 0,
             plugins: vec![],
             external_plugin_adapters: vec![ExternalPluginAdapter::AppData(AppData {
                 data_authority: PluginAuthority::UpdateAuthority,
