@@ -32,6 +32,20 @@ use solana_sdk::{
 };
 
 #[tokio::test]
+#[ignore]
+async fn test_create_lifecycle_hook_on_collection() {
+    // Note we can reference the asset version of this test when ready to implement.
+    todo!()
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_cannot_create_lifecycle_hook_with_duplicate_lifecycle_checks_on_collection() {
+    // Note we can reference the asset version of this test when ready to implement.
+    todo!()
+}
+
+#[tokio::test]
 async fn test_temporarily_cannot_create_lifecycle_hook_on_collection() {
     let mut context = program_test().start_with_context().await;
 
@@ -201,7 +215,7 @@ async fn test_create_app_data_on_collection() {
 }
 
 #[tokio::test]
-async fn test_collection_create_and_fetch_app_data() {
+async fn test_create_and_fetch_app_data_on_collection() {
     let mut context = program_test().start_with_context().await;
 
     let collection = Keypair::new();
