@@ -176,6 +176,10 @@ pub enum MplCoreError {
     /// 41 - Invalid plugin operation
     #[error("Invalid plugin operation")]
     InvalidPluginOperation,
+
+    /// 42 - Collection must be empty to be burned
+    #[error("Collection must be empty to be burned")]
+    CollectionMustBeEmpty,
 }
 
 impl PrintProgramError for MplCoreError {

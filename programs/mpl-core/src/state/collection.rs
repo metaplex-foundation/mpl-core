@@ -80,6 +80,11 @@ impl CollectionV1 {
 
     /// Check permissions for the burn lifecycle event.
     pub fn check_burn() -> CheckResult {
+        CheckResult::None
+    }
+
+    /// Check permissions for the burn collection lifecycle event.
+    pub fn check_burn_collection() -> CheckResult {
         CheckResult::CanApprove
     }
 
@@ -220,12 +225,26 @@ impl CollectionV1 {
     /// Validate the burn lifecycle event.
     pub fn validate_burn(
         &self,
+        _: &AccountInfo,
+        _: Option<&Plugin>,
+        _: Option<&ExternalPluginAdapter>,
+    ) -> Result<ValidationResult, ProgramError> {
+        abstain!()
+    }
+
+    /// Validate the burn lifecycle event.
+    pub fn validate_burn_collection(
+        &self,
         authority_info: &AccountInfo,
         _: Option<&Plugin>,
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
+        if self.current_size > 0 {
+            return Err(MplCoreError::CollectionMustBeEmpty.into());
+        }
+
         // If the update authority is the one burning the collection, and the collection is empty, then it can be burned.
-        if authority_info.key == &self.update_authority && self.current_size == 0 {
+        if authority_info.key == &self.update_authority {
             approve!()
         } else {
             abstain!()

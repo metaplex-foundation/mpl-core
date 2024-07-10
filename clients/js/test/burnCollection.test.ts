@@ -72,7 +72,7 @@ test('it cannot burn a collection if it has Assets in it', async (t) => {
     compressionProof: null,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(result, { name: 'CollectionMustBeEmpty' });
   await assertCollection(t, umi, {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,

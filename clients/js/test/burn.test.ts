@@ -60,6 +60,32 @@ test('it cannot burn an asset if not the owner', async (t) => {
   });
 });
 
+test('it cannot burn an asset as the authority', async (t) => {
+  const umi = await createUmi();
+  const authority = generateSigner(umi);
+
+  const asset = await createAsset(umi, { updateAuthority: authority });
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: authority.publicKey },
+  });
+
+  const result = burnV1(umi, {
+    asset: asset.publicKey,
+    authority,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: authority.publicKey },
+  });
+});
+
 test('it cannot burn an asset if it is frozen', async (t) => {
   const umi = await createUmi();
 

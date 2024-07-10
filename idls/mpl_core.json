@@ -4325,6 +4325,11 @@
       "code": 41,
       "name": "InvalidPluginOperation",
       "msg": "Invalid plugin operation"
+    },
+    {
+      "code": 42,
+      "name": "CollectionMustBeEmpty",
+      "msg": "Collection must be empty to be burned"
     }
   ],
   "metadata": {
