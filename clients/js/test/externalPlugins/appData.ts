@@ -1,6 +1,7 @@
 import test from 'ava';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import { Signer, Umi } from '@metaplex-foundation/umi';
+import * as msgpack from '@msgpack/msgpack';
 import { assertAsset, createUmi, DEFAULT_ASSET } from '../_setupRaw';
 import { createAsset } from '../_setupSdk';
 import {
@@ -18,7 +19,8 @@ const DATA_AUTHORITIES: PluginAuthorityType[] = [
 ];
 const SCHEMAS: ExternalPluginAdapterSchema[] = [
   ExternalPluginAdapterSchema.Binary,
-  ExternalPluginAdapterSchema.Json /* , ExternalPluginAdapterSchema.MsgPack */,
+  ExternalPluginAdapterSchema.Json,
+  ExternalPluginAdapterSchema.MsgPack,
 ];
 
 type TestContext = {
@@ -85,6 +87,8 @@ async function generateTestContext(
       message: 'Hello hello',
       target: 'big wide world',
     });
+  } else if (schema === ExternalPluginAdapterSchema.MsgPack) {
+    data = msgpack.encode({ message: 'Hello', target: 'msgpack' }).toString();
   }
 
   if (!dataAuthoritySigner) {
@@ -182,7 +186,10 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       }).sendAndConfirm(umi);
 
       let assertData = null;
-      if (schema === ExternalPluginAdapterSchema.Binary) {
+      if (
+        schema === ExternalPluginAdapterSchema.Binary ||
+        schema === ExternalPluginAdapterSchema.MsgPack
+      ) {
         assertData = Uint8Array.from(Buffer.from(data));
       } else if (schema === ExternalPluginAdapterSchema.Json) {
         assertData = JSON.parse(data);
@@ -251,7 +258,10 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       }).sendAndConfirm(umi);
 
       let assertData = null;
-      if (schema === ExternalPluginAdapterSchema.Binary) {
+      if (
+        schema === ExternalPluginAdapterSchema.Binary ||
+        schema === ExternalPluginAdapterSchema.MsgPack
+      ) {
         assertData = Uint8Array.from(Buffer.from(data));
       } else if (schema === ExternalPluginAdapterSchema.Json) {
         assertData = JSON.parse(data);
@@ -282,7 +292,10 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
         asset: asset.publicKey,
       }).sendAndConfirm(umi);
 
-      if (schema === ExternalPluginAdapterSchema.Binary) {
+      if (
+        schema === ExternalPluginAdapterSchema.Binary ||
+        schema === ExternalPluginAdapterSchema.MsgPack
+      ) {
         assertData = Uint8Array.from(Buffer.from(otherData));
       } else if (schema === ExternalPluginAdapterSchema.Json) {
         assertData = JSON.parse(otherData);

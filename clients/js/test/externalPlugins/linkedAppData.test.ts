@@ -24,7 +24,8 @@ const DATA_AUTHORITIES: PluginAuthorityType[] = [
 ];
 const SCHEMAS: ExternalPluginAdapterSchema[] = [
   ExternalPluginAdapterSchema.Binary,
-  ExternalPluginAdapterSchema.Json /* , ExternalPluginAdapterSchema.MsgPack */,
+  ExternalPluginAdapterSchema.Json,
+  ExternalPluginAdapterSchema.MsgPack,
 ];
 
 type TestContext = {
@@ -197,7 +198,10 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       }).sendAndConfirm(umi);
 
       let assertData = null;
-      if (schema === ExternalPluginAdapterSchema.Binary) {
+      if (
+        schema === ExternalPluginAdapterSchema.Binary ||
+        schema === ExternalPluginAdapterSchema.MsgPack
+      ) {
         assertData = Uint8Array.from(Buffer.from(data));
       } else if (schema === ExternalPluginAdapterSchema.Json) {
         assertData = JSON.parse(data);
@@ -291,7 +295,10 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       }).sendAndConfirm(umi);
 
       let assertData = null;
-      if (schema === ExternalPluginAdapterSchema.Binary) {
+      if (
+        schema === ExternalPluginAdapterSchema.Binary ||
+        schema === ExternalPluginAdapterSchema.MsgPack
+      ) {
         assertData = Uint8Array.from(Buffer.from(data));
       } else if (schema === ExternalPluginAdapterSchema.Json) {
         assertData = JSON.parse(data);
