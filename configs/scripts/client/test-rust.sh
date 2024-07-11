@@ -16,7 +16,7 @@ export SBF_OUT_DIR="${WORKING_DIR}/${PROGRAMS_OUTPUT}"
 cd ${WORKING_DIR}/clients/rust
 
 if [ ! "$(command -v $SOLFMT)" = "" ]; then
-    CARGO_TERM_COLOR=always cargo test-sbf --sbf-out-dir ${WORKING_DIR}/${PROGRAMS_OUTPUT} ${ARGS} 2>&1 | ${SOLFMT}
+    CARGO_TERM_COLOR=always cargo test-sbf --sbf-out-dir ${WORKING_DIR}/${PROGRAMS_OUTPUT} ${ARGS} 2>&1 | ${SOLFMT} -- --nocapture
 else
-    cargo test-sbf --sbf-out-dir ${WORKING_DIR}/${PROGRAMS_OUTPUT} ${ARGS}
+    cargo test-sbf --sbf-out-dir ${WORKING_DIR}/${PROGRAMS_OUTPUT} ${ARGS} -- --nocapture
 fi
