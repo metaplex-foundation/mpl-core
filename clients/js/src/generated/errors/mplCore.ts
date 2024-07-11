@@ -604,69 +604,56 @@ export class InvalidPluginOperationError extends ProgramError {
 codeToErrorMap.set(0x29, InvalidPluginOperationError);
 nameToErrorMap.set('InvalidPluginOperation', InvalidPluginOperationError);
 
-/** CollectionMustBeEmpty: Collection must be empty to be burned */
-export class CollectionMustBeEmptyError extends ProgramError {
-  override readonly name: string = 'CollectionMustBeEmpty';
-
-  readonly code: number = 0x2a; // 42
-
-  constructor(program: Program, cause?: Error) {
-    super('Collection must be empty to be burned', program, cause);
-  }
-}
-codeToErrorMap.set(0x2a, CollectionMustBeEmptyError);
-nameToErrorMap.set('CollectionMustBeEmpty', CollectionMustBeEmptyError);
-
 /** TwoDataSources: Two data sources provided, only one is allowed */
 export class TwoDataSourcesError extends ProgramError {
   override readonly name: string = 'TwoDataSources';
 
-  readonly code: number = 0x2b; // 43
+  readonly code: number = 0x2a; // 42
 
   constructor(program: Program, cause?: Error) {
     super('Two data sources provided, only one is allowed', program, cause);
   }
 }
-codeToErrorMap.set(0x2b, TwoDataSourcesError);
+codeToErrorMap.set(0x2a, TwoDataSourcesError);
 nameToErrorMap.set('TwoDataSources', TwoDataSourcesError);
 
 /** UnsupportedOperation: External Plugin does not support this operation */
 export class UnsupportedOperationError extends ProgramError {
   override readonly name: string = 'UnsupportedOperation';
 
-  readonly code: number = 0x2c; // 44
+  readonly code: number = 0x2b; // 43
 
   constructor(program: Program, cause?: Error) {
     super('External Plugin does not support this operation', program, cause);
   }
 }
-codeToErrorMap.set(0x2c, UnsupportedOperationError);
+codeToErrorMap.set(0x2b, UnsupportedOperationError);
 nameToErrorMap.set('UnsupportedOperation', UnsupportedOperationError);
 
 /** NoDataSources: No data sources provided, one is required */
 export class NoDataSourcesError extends ProgramError {
   override readonly name: string = 'NoDataSources';
 
-  readonly code: number = 0x2d; // 45
+  readonly code: number = 0x2c; // 44
 
   constructor(program: Program, cause?: Error) {
     super('No data sources provided, one is required', program, cause);
   }
 }
-codeToErrorMap.set(0x2d, NoDataSourcesError);
+codeToErrorMap.set(0x2c, NoDataSourcesError);
 nameToErrorMap.set('NoDataSources', NoDataSourcesError);
 
 /** InvalidPluginAdapterTarget: This plugin adapter cannot be added to an Asset */
 export class InvalidPluginAdapterTargetError extends ProgramError {
   override readonly name: string = 'InvalidPluginAdapterTarget';
 
-  readonly code: number = 0x2e; // 46
+  readonly code: number = 0x2d; // 45
 
   constructor(program: Program, cause?: Error) {
     super('This plugin adapter cannot be added to an Asset', program, cause);
   }
 }
-codeToErrorMap.set(0x2e, InvalidPluginAdapterTargetError);
+codeToErrorMap.set(0x2d, InvalidPluginAdapterTargetError);
 nameToErrorMap.set(
   'InvalidPluginAdapterTarget',
   InvalidPluginAdapterTargetError
@@ -676,7 +663,7 @@ nameToErrorMap.set(
 export class CannotAddDataSectionError extends ProgramError {
   override readonly name: string = 'CannotAddDataSection';
 
-  readonly code: number = 0x2f; // 47
+  readonly code: number = 0x2e; // 46
 
   constructor(program: Program, cause?: Error) {
     super(
@@ -686,7 +673,7 @@ export class CannotAddDataSectionError extends ProgramError {
     );
   }
 }
-codeToErrorMap.set(0x2f, CannotAddDataSectionError);
+codeToErrorMap.set(0x2e, CannotAddDataSectionError);
 nameToErrorMap.set('CannotAddDataSection', CannotAddDataSectionError);
 
 /**

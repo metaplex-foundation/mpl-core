@@ -136,22 +136,19 @@ pub enum MplCoreError {
     /// 41 (0x29) - Invalid plugin operation
     #[error("Invalid plugin operation")]
     InvalidPluginOperation,
-    /// 42 (0x2A) - Collection must be empty to be burned
-    #[error("Collection must be empty to be burned")]
-    CollectionMustBeEmpty,
-    /// 43 (0x2B) - Two data sources provided, only one is allowed
+    /// 42 (0x2A) - Two data sources provided, only one is allowed
     #[error("Two data sources provided, only one is allowed")]
     TwoDataSources,
-    /// 44 (0x2C) - External Plugin does not support this operation
+    /// 43 (0x2B) - External Plugin does not support this operation
     #[error("External Plugin does not support this operation")]
     UnsupportedOperation,
-    /// 45 (0x2D) - No data sources provided, one is required
+    /// 44 (0x2C) - No data sources provided, one is required
     #[error("No data sources provided, one is required")]
     NoDataSources,
-    /// 46 (0x2E) - This plugin adapter cannot be added to an Asset
+    /// 45 (0x2D) - This plugin adapter cannot be added to an Asset
     #[error("This plugin adapter cannot be added to an Asset")]
     InvalidPluginAdapterTarget,
-    /// 47 (0x2F) - Cannot add a Data Section without a linked external plugin
+    /// 46 (0x2E) - Cannot add a Data Section without a linked external plugin
     #[error("Cannot add a Data Section without a linked external plugin")]
     CannotAddDataSection,
 }

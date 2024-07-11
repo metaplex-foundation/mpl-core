@@ -4825,31 +4825,26 @@
     },
     {
       "code": 42,
-      "name": "CollectionMustBeEmpty",
-      "msg": "Collection must be empty to be burned"
-    },
-    {
-      "code": 43,
       "name": "TwoDataSources",
       "msg": "Two data sources provided, only one is allowed"
     },
     {
-      "code": 44,
+      "code": 43,
       "name": "UnsupportedOperation",
       "msg": "External Plugin does not support this operation"
     },
     {
-      "code": 45,
+      "code": 44,
       "name": "NoDataSources",
       "msg": "No data sources provided, one is required"
     },
     {
-      "code": 46,
+      "code": 45,
       "name": "InvalidPluginAdapterTarget",
       "msg": "This plugin adapter cannot be added to an Asset"
     },
     {
-      "code": 47,
+      "code": 46,
       "name": "CannotAddDataSection",
       "msg": "Cannot add a Data Section without a linked external plugin"
     }

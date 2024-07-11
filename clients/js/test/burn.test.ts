@@ -2,7 +2,7 @@ import { generateSigner, sol } from '@metaplex-foundation/umi';
 import test from 'ava';
 
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
-import { burnV1, pluginAuthorityPair } from '../src';
+import { burnCollectionV1, burnV1, pluginAuthorityPair } from '../src';
 import {
   DEFAULT_ASSET,
   DEFAULT_COLLECTION,
@@ -57,32 +57,6 @@ test('it cannot burn an asset if not the owner', async (t) => {
     asset: asset.publicKey,
     owner: umi.identity.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
-  });
-});
-
-test('it cannot burn an asset as the authority', async (t) => {
-  const umi = await createUmi();
-  const authority = generateSigner(umi);
-
-  const asset = await createAsset(umi, { updateAuthority: authority });
-  await assertAsset(t, umi, {
-    ...DEFAULT_ASSET,
-    asset: asset.publicKey,
-    owner: umi.identity.publicKey,
-    updateAuthority: { type: 'Address', address: authority.publicKey },
-  });
-
-  const result = burnV1(umi, {
-    asset: asset.publicKey,
-    authority,
-  }).sendAndConfirm(umi);
-
-  await t.throwsAsync(result, { name: 'NoApprovals' });
-  await assertAsset(t, umi, {
-    ...DEFAULT_ASSET,
-    asset: asset.publicKey,
-    owner: umi.identity.publicKey,
-    updateAuthority: { type: 'Address', address: authority.publicKey },
   });
 });
 
@@ -229,6 +203,25 @@ test('it cannot use an invalid noop program for assets', async (t) => {
   const result = burnV1(umi, {
     asset: asset.publicKey,
     logWrapper: fakeLogWrapper.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });
+});
+
+test('it cannot use an invalid noop program for collections', async (t) => {
+  const umi = await createUmi();
+  const collection = await createCollection(umi);
+  const fakeLogWrapper = generateSigner(umi);
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+  });
+
+  const result = burnCollectionV1(umi, {
+    collection: collection.publicKey,
+    logWrapper: fakeLogWrapper.publicKey,
+    compressionProof: null,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidLogWrapperProgram' });

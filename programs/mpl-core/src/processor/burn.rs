@@ -9,7 +9,7 @@ use crate::{
     state::{AssetV1, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_authority,
-        validate_asset_permissions, verify_proof,
+        validate_asset_permissions, validate_collection_permissions, verify_proof,
     },
 };
 
@@ -132,15 +132,21 @@ pub(crate) fn burn_collection<'a>(
         }
     }
 
-    let collection = CollectionV1::load(ctx.accounts.collection, 0)?;
-    if collection.current_size > 0 {
-        return Err(MplCoreError::CollectionMustBeEmpty.into());
-    }
-
-    // If the update authority is the one burning the collection, and the collection is empty, then it can be burned.
-    if authority.key != &collection.update_authority {
-        return Err(MplCoreError::InvalidAuthority.into());
-    }
+    // Validate collection permissions.
+    let _ = validate_collection_permissions(
+        accounts,
+        authority,
+        ctx.accounts.collection,
+        None,
+        None,
+        None,
+        CollectionV1::check_burn,
+        PluginType::check_burn,
+        CollectionV1::validate_burn,
+        Plugin::validate_burn,
+        Some(ExternalPluginAdapter::validate_burn),
+        Some(HookableLifecycleEvent::Burn),
+    )?;
 
     process_burn(ctx.accounts.collection, ctx.accounts.payer)
 }

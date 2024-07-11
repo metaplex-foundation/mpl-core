@@ -11,7 +11,7 @@ A Umi-compatible JavaScript library for the project.
    ```
 3. Finally, register the library with your Umi instance like so.
    ```ts
-   import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
+   import { createUmi } from '@metaplex-foundation/umi';
    import { mplCore } from '@metaplex-foundation/mpl-core';
 
    const umi = createUmi('<your rpc endpoint>');
