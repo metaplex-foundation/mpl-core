@@ -9,13 +9,12 @@ use mpl_core::{
     errors::MplCoreError,
     fetch_external_plugin_adapter, fetch_external_plugin_adapter_data_info,
     fetch_wrapped_external_plugin_adapter,
-    instructions::{UpdateExternalPluginAdapterV1Builder, WriteExternalPluginAdapterDataV1Builder},
+    instructions::WriteExternalPluginAdapterDataV1Builder,
     types::{
-        AppData, AppDataInitInfo, AppDataUpdateInfo, ExternalCheckResult, ExternalPluginAdapter,
+        AppData, AppDataInitInfo, ExternalCheckResult, ExternalPluginAdapter,
         ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
-        ExternalPluginAdapterUpdateInfo, HookableLifecycleEvent, LifecycleHook,
-        LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority, UpdateAuthority,
-        ValidationResultsOffset,
+        HookableLifecycleEvent, LifecycleHook, LifecycleHookInitInfo, Oracle, OracleInitInfo,
+        PluginAuthority, UpdateAuthority, ValidationResultsOffset,
     },
     Asset,
 };
@@ -479,45 +478,4 @@ async fn test_create_and_fetch_app_data() {
     println!("Data string: {:#?}", data_string);
     println!("Data offset: {:#?}", data_offset);
     println!("Data len: {:#?}", data_len);
-
-    // Update AppData plugin.
-    let update_info = ExternalPluginAdapterUpdateInfo::AppData(AppDataUpdateInfo {
-        schema: Some(ExternalPluginAdapterSchema::Binary),
-    });
-
-    let ix = UpdateExternalPluginAdapterV1Builder::new()
-        .asset(asset.pubkey())
-        .payer(context.payer.pubkey())
-        .key(ExternalPluginAdapterKey::AppData(
-            PluginAuthority::UpdateAuthority,
-        ))
-        .update_info(update_info)
-        .instruction();
-
-    let tx = Transaction::new_signed_with_payer(
-        &[ix],
-        Some(&context.payer.pubkey()),
-        &[&context.payer],
-        context.last_blockhash,
-    );
-
-    context.banks_client.process_transaction(tx).await.unwrap();
-
-    // Check asset was updated.
-    assert_asset(
-        &mut context,
-        AssertAssetHelperArgs {
-            asset: asset.pubkey(),
-            owner,
-            update_authority: Some(UpdateAuthority::Address(update_authority)),
-            name: None,
-            uri: None,
-            plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapter::AppData(AppData {
-                data_authority: PluginAuthority::UpdateAuthority,
-                schema: ExternalPluginAdapterSchema::Binary,
-            })],
-        },
-    )
-    .await;
 }

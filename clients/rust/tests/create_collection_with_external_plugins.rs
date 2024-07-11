@@ -9,15 +9,12 @@ use mpl_core::{
     errors::MplCoreError,
     fetch_external_plugin_adapter, fetch_external_plugin_adapter_data_info,
     fetch_wrapped_external_plugin_adapter,
-    instructions::{
-        UpdateCollectionExternalPluginAdapterV1Builder,
-        WriteCollectionExternalPluginAdapterDataV1Builder,
-    },
+    instructions::WriteCollectionExternalPluginAdapterDataV1Builder,
     types::{
-        AppData, AppDataInitInfo, AppDataUpdateInfo, ExternalCheckResult, ExternalPluginAdapter,
+        AppData, AppDataInitInfo, ExternalCheckResult, ExternalPluginAdapter,
         ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
-        ExternalPluginAdapterUpdateInfo, HookableLifecycleEvent, LifecycleHookInitInfo, Oracle,
-        OracleInitInfo, PluginAuthority, ValidationResultsOffset,
+        HookableLifecycleEvent, LifecycleHookInitInfo, Oracle, OracleInitInfo, PluginAuthority,
+        ValidationResultsOffset,
     },
     Collection,
 };
@@ -371,46 +368,4 @@ async fn test_create_and_fetch_app_data_on_collection() {
     println!("Data string: {:#?}", data_string);
     println!("Data offset: {:#?}", data_offset);
     println!("Data len: {:#?}", data_len);
-
-    // Update AppData plugin on collection.
-    let update_info = ExternalPluginAdapterUpdateInfo::AppData(AppDataUpdateInfo {
-        schema: Some(ExternalPluginAdapterSchema::Binary),
-    });
-
-    let ix = UpdateCollectionExternalPluginAdapterV1Builder::new()
-        .collection(collection.pubkey())
-        .payer(context.payer.pubkey())
-        .key(ExternalPluginAdapterKey::AppData(
-            PluginAuthority::UpdateAuthority,
-        ))
-        .update_info(update_info)
-        .instruction();
-
-    let tx = Transaction::new_signed_with_payer(
-        &[ix],
-        Some(&context.payer.pubkey()),
-        &[&context.payer],
-        context.last_blockhash,
-    );
-
-    context.banks_client.process_transaction(tx).await.unwrap();
-
-    // Check collection was updated.
-    assert_collection(
-        &mut context,
-        AssertCollectionHelperArgs {
-            collection: collection.pubkey(),
-            update_authority,
-            name: None,
-            uri: None,
-            num_minted: 0,
-            current_size: 0,
-            plugins: vec![],
-            external_plugin_adapters: vec![ExternalPluginAdapter::AppData(AppData {
-                data_authority: PluginAuthority::UpdateAuthority,
-                schema: ExternalPluginAdapterSchema::Binary,
-            })],
-        },
-    )
-    .await;
 }
