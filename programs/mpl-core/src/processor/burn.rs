@@ -131,20 +131,15 @@ pub(crate) fn burn_collection<'a>(
         }
     }
 
-    // Validate collection permissions.
-    let _ = validate_collection_permissions(
-        accounts,
-        authority,
-        ctx.accounts.collection,
-        None,
-        None,
-        CollectionV1::check_burn_collection,
-        PluginType::check_burn,
-        CollectionV1::validate_burn_collection,
-        Plugin::validate_burn,
-        Some(ExternalPluginAdapter::validate_burn),
-        Some(HookableLifecycleEvent::Burn),
-    )?;
+    let collection = CollectionV1::load(ctx.accounts.collection, 0)?;
+    if collection.current_size > 0 {
+        return Err(MplCoreError::CollectionMustBeEmpty.into());
+    }
+
+    // If the update authority is the one burning the collection, and the collection is empty, then it can be burned.
+    if authority.key != &collection.update_authority {
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
 
     process_burn(ctx.accounts.collection, ctx.accounts.payer)
 }
