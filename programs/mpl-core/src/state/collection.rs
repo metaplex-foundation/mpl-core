@@ -220,7 +220,7 @@ impl CollectionV1 {
     /// Validate the burn lifecycle event.
     pub fn validate_burn(
         &self,
-        _authority_info: &AccountInfo,
+        _: &AccountInfo,
         _: Option<&Plugin>,
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
