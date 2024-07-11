@@ -136,6 +136,9 @@ pub enum MplCoreError {
     /// 41 (0x29) - Invalid plugin operation
     #[error("Invalid plugin operation")]
     InvalidPluginOperation,
+    /// 42 (0x2A) - Collection must be empty to be burned
+    #[error("Collection must be empty to be burned")]
+    CollectionMustBeEmpty,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

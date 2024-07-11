@@ -608,6 +608,19 @@ export class InvalidPluginOperationError extends ProgramError {
 codeToErrorMap.set(0x29, InvalidPluginOperationError);
 nameToErrorMap.set('InvalidPluginOperation', InvalidPluginOperationError);
 
+/** CollectionMustBeEmpty: Collection must be empty to be burned */
+export class CollectionMustBeEmptyError extends ProgramError {
+  override readonly name: string = 'CollectionMustBeEmpty';
+
+  readonly code: number = 0x2a; // 42
+
+  constructor(program: Program, cause?: Error) {
+    super('Collection must be empty to be burned', program, cause);
+  }
+}
+codeToErrorMap.set(0x2a, CollectionMustBeEmptyError);
+nameToErrorMap.set('CollectionMustBeEmpty', CollectionMustBeEmptyError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
