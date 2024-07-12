@@ -1,10 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::{
-    plugins::PluginType,
-    state::{Authority, DataBlob},
-};
+use crate::state::{Authority, DataBlob};
 
 use super::{abstain, approve, PluginValidation, PluginValidationContext, ValidationResult};
 
@@ -74,23 +71,5 @@ impl PluginValidation for TransferDelegate {
             _ => {}
         }
         abstain!()
-    }
-
-    /// Validate the revoke plugin authority lifecycle action.
-    fn validate_revoke_plugin_authority(
-        &self,
-        ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority
-            == &(Authority::Address {
-                address: *ctx.authority_info.key,
-            })
-            && ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::TransferDelegate
-        {
-            approve!()
-        } else {
-            abstain!()
-        }
     }
 }

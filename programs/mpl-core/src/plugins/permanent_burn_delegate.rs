@@ -4,7 +4,7 @@ use solana_program::program_error::ProgramError;
 use crate::state::DataBlob;
 
 use super::{
-    abstain, approve, force_approve, reject, PluginType, PluginValidation, PluginValidationContext,
+    abstain, force_approve, reject, PluginType, PluginValidation, PluginValidationContext,
     ValidationResult,
 };
 
@@ -38,13 +38,6 @@ impl PluginValidation for PermanentBurnDelegate {
         } else {
             abstain!()
         }
-    }
-
-    fn validate_revoke_plugin_authority(
-        &self,
-        _ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        approve!()
     }
 
     fn validate_burn(

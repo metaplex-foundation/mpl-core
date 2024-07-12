@@ -2,7 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
-    plugins::{abstain, approve, PluginType},
+    plugins::{abstain, approve},
     state::{Authority, DataBlob},
 };
 
@@ -46,24 +46,6 @@ impl PluginValidation for BurnDelegate {
             == (&Authority::Address {
                 address: *ctx.authority_info.key,
             })
-        {
-            approve!()
-        } else {
-            abstain!()
-        }
-    }
-
-    /// Validate the revoke plugin authority lifecycle action.
-    fn validate_revoke_plugin_authority(
-        &self,
-        ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority
-            == &(Authority::Address {
-                address: *ctx.authority_info.key,
-            })
-            && ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::BurnDelegate
         {
             approve!()
         } else {

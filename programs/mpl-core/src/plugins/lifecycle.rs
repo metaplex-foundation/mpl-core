@@ -342,15 +342,28 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        let target_plugin = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
+
         // If the plugin being checked is Authority::None then it can't be revoked.
         if ctx.self_authority == &Authority::None
-            && ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::from(plugin)
+            && PluginType::from(target_plugin) == PluginType::from(plugin)
         {
             return reject!();
         }
 
-        match plugin {
+        let base_result = if ctx.self_authority
+            == &(Authority::Address {
+                address: *ctx.authority_info.key,
+            })
+            && PluginType::from(target_plugin) == PluginType::from(plugin)
+        {
+            solana_program::msg!("Base: Approved");
+            ValidationResult::Approved
+        } else {
+            ValidationResult::Pass
+        };
+
+        let result = match plugin {
             Plugin::Royalties(royalties) => royalties.validate_revoke_plugin_authority(ctx),
             Plugin::FreezeDelegate(freeze) => freeze.validate_revoke_plugin_authority(ctx),
             Plugin::BurnDelegate(burn) => burn.validate_revoke_plugin_authority(ctx),
@@ -380,6 +393,12 @@ impl Plugin {
                 verified_creators.validate_revoke_plugin_authority(ctx)
             }
             Plugin::Autograph(autograph) => autograph.validate_revoke_plugin_authority(ctx),
+        }?;
+
+        if result == ValidationResult::Pass {
+            Ok(base_result)
+        } else {
+            Ok(result)
         }
     }
 
