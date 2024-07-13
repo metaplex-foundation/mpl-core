@@ -3,7 +3,6 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
     error::MplCoreError,
-    plugins::PluginType,
     state::{Authority, DataBlob},
 };
 
@@ -99,24 +98,6 @@ impl PluginValidation for UpdateDelegate {
             }
         } else {
             Err(MplCoreError::InvalidPlugin.into())
-        }
-    }
-
-    /// Validate the revoke plugin authority lifecycle action.
-    fn validate_revoke_plugin_authority(
-        &self,
-        ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority
-            == &(Authority::Address {
-                address: *ctx.authority_info.key,
-            })
-            && ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::UpdateDelegate
-        {
-            approve!()
-        } else {
-            abstain!()
         }
     }
 
