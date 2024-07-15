@@ -11,13 +11,13 @@ use crate::{
     },
     plugins::{
         fetch_wrapped_external_plugin_adapter, find_external_plugin_adapter, ExternalPluginAdapter,
-        ExternalPluginAdapterKey, ExternalPluginAdapterUpdateInfo, Plugin, PluginHeaderV1,
-        PluginRegistryV1, PluginType,
+        ExternalPluginAdapterKey, ExternalPluginAdapterUpdateInfo, PluginHeaderV1,
+        PluginRegistryV1, PluginValidationContext, ValidationResult,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
-        load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
-        validate_collection_permissions,
+        fetch_core_data, load_key, resize_or_reallocate_account, resolve_authority,
+        resolve_pubkey_to_authorities, resolve_pubkey_to_authorities_collection,
     },
 };
 
@@ -56,33 +56,38 @@ pub(crate) fn update_external_plugin_adapter<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    let (_, plugin) =
+    let (mut asset, plugin_header, plugin_registry) =
+        fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
+    let resolved_authorities =
+        resolve_pubkey_to_authorities(authority, ctx.accounts.collection, &asset)?;
+    let (external_registry_record_authority, external_plugin_adapter) =
         fetch_wrapped_external_plugin_adapter::<AssetV1>(ctx.accounts.asset, None, &args.key)?;
 
-    let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
+    let validation_ctx = PluginValidationContext {
         accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        None,
-        Some(&plugin),
-        AssetV1::check_update_external_plugin_adapter,
-        CollectionV1::check_update_external_plugin_adapter,
-        PluginType::check_update_external_plugin_adapter,
-        AssetV1::validate_update_external_plugin_adapter,
-        CollectionV1::validate_update_external_plugin_adapter,
-        Plugin::validate_update_external_plugin_adapter,
-        None,
-        None,
-    )?;
+        asset_info: Some(ctx.accounts.asset),
+        collection_info: ctx.accounts.collection,
+        self_authority: &external_registry_record_authority,
+        authority_info: authority,
+        resolved_authorities: Some(&resolved_authorities),
+        new_owner: None,
+        target_plugin: None,
+    };
+
+    if ExternalPluginAdapter::validate_update_external_plugin_adapter(
+        &external_plugin_adapter,
+        &validation_ctx,
+    )? != ValidationResult::Approved
+    {
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
 
     // Increment sequence number and save only if it is `Some(_)`.
     asset.increment_seq_and_save(ctx.accounts.asset)?;
 
     process_update_external_plugin_adapter(
         asset,
-        plugin,
+        external_plugin_adapter,
         args.key,
         args.update_info,
         plugin_header,
@@ -123,30 +128,39 @@ pub(crate) fn update_collection_external_plugin_adapter<'a>(
         }
     }
 
-    let (_, plugin) = fetch_wrapped_external_plugin_adapter::<CollectionV1>(
-        ctx.accounts.collection,
-        None,
-        &args.key,
-    )?;
+    let (collection, plugin_header, plugin_registry) =
+        fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;
+    let resolved_authorities =
+        resolve_pubkey_to_authorities_collection(authority, ctx.accounts.collection)?;
+    let (external_registry_record_authority, external_plugin_adapter) =
+        fetch_wrapped_external_plugin_adapter::<CollectionV1>(
+            ctx.accounts.collection,
+            None,
+            &args.key,
+        )?;
 
-    // Validate collection permissions.
-    let (collection, plugin_header, plugin_registry) = validate_collection_permissions(
+    let validation_ctx = PluginValidationContext {
         accounts,
-        authority,
-        ctx.accounts.collection,
-        None,
-        Some(&plugin),
-        CollectionV1::check_update_external_plugin_adapter,
-        PluginType::check_update_external_plugin_adapter,
-        CollectionV1::validate_update_external_plugin_adapter,
-        Plugin::validate_update_external_plugin_adapter,
-        None,
-        None,
-    )?;
+        asset_info: None,
+        collection_info: Some(ctx.accounts.collection),
+        self_authority: &external_registry_record_authority,
+        authority_info: authority,
+        resolved_authorities: Some(&resolved_authorities),
+        new_owner: None,
+        target_plugin: None,
+    };
+
+    if ExternalPluginAdapter::validate_update_external_plugin_adapter(
+        &external_plugin_adapter,
+        &validation_ctx,
+    )? != ValidationResult::Approved
+    {
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
 
     process_update_external_plugin_adapter(
         collection,
-        plugin,
+        external_plugin_adapter,
         args.key,
         args.update_info,
         plugin_header,
