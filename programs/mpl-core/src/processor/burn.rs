@@ -9,7 +9,7 @@ use crate::{
     state::{AssetV1, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_authority,
-        validate_asset_permissions, validate_collection_permissions, verify_proof,
+        validate_asset_permissions, verify_proof,
     },
 };
 
