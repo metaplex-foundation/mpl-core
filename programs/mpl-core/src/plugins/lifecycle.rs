@@ -49,7 +49,7 @@ impl ExternalCheckResult {
 
 /// Bitfield representation of lifecycle permissions for external plugin adapter, third party plugins.
 #[bitfield(bits = 32)]
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, Default)]
 pub struct ExternalCheckResultBits {
     pub can_listen: bool,
     pub can_approve: bool,
@@ -936,22 +936,6 @@ pub(crate) trait PluginValidation {
 
     /// Validate the decompress lifecycle action.
     fn validate_decompress(
-        &self,
-        _ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        abstain!()
-    }
-
-    /// Validate the add_authority lifecycle action.
-    fn validate_add_authority(
-        &self,
-        _ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        abstain!()
-    }
-
-    /// Validate the add_authority lifecycle action.
-    fn validate_remove_authority(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {

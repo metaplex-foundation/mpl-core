@@ -413,7 +413,7 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
 }
 
 pub(crate) fn validate_lifecycle_checks(
-    lifecycle_checks: &Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
+    lifecycle_checks: &[(HookableLifecycleEvent, ExternalCheckResult)],
     can_reject_only: bool,
 ) -> ProgramResult {
     if lifecycle_checks.is_empty() {
