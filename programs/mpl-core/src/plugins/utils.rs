@@ -683,42 +683,67 @@ pub(crate) fn find_external_plugin_adapter<'b>(
     plugin_key: &ExternalPluginAdapterKey,
     account: &AccountInfo<'_>,
 ) -> Result<(Option<usize>, Option<&'b ExternalRegistryRecord>), ProgramError> {
-    let mut result = (None, None);
     for (i, record) in plugin_registry.external_registry.iter().enumerate() {
-        if record.plugin_type == ExternalPluginAdapterType::from(plugin_key)
-            && (match plugin_key {
-                ExternalPluginAdapterKey::LifecycleHook(address)
-                | ExternalPluginAdapterKey::Oracle(address) => {
-                    let pubkey_offset = record
-                        .offset
-                        .checked_add(1)
-                        .ok_or(MplCoreError::NumericalOverflow)?;
-                    address
-                        == &match Pubkey::deserialize(&mut &account.data.borrow()[pubkey_offset..])
-                        {
-                            Ok(address) => address,
-                            Err(_) => return Err(MplCoreError::DeserializationError.into()),
-                        }
-                }
-                ExternalPluginAdapterKey::DataStore(authority) => {
-                    let authority_offset = record
-                        .offset
-                        .checked_add(1)
-                        .ok_or(MplCoreError::NumericalOverflow)?;
-                    authority
-                        == &match Authority::deserialize(
-                            &mut &account.data.borrow()[authority_offset..],
-                        ) {
-                            Ok(authority) => authority,
-                            Err(_) => return Err(MplCoreError::DeserializationError.into()),
-                        }
-                }
-            })
-        {
-            result = (Some(i), Some(record));
-            break;
+        if check_plugin_key(record, plugin_key, account)? {
+            return Ok((Some(i), Some(record)));
         }
     }
 
-    Ok(result)
+    Ok((None, None))
+}
+
+pub(crate) fn find_external_plugin_adapter_mut<'b>(
+    plugin_registry: &'b mut PluginRegistryV1,
+    plugin_key: &ExternalPluginAdapterKey,
+    account: &AccountInfo<'_>,
+) -> Result<(Option<usize>, Option<&'b mut ExternalRegistryRecord>), ProgramError> {
+    for (i, record) in plugin_registry.external_registry.iter_mut().enumerate() {
+        let record_ref = &*record;
+
+        if check_plugin_key(record_ref, plugin_key, account)? {
+            return Ok((Some(i), Some(record)));
+        }
+    }
+
+    Ok((None, None))
+}
+
+fn check_plugin_key(
+    record_ref: &ExternalRegistryRecord,
+    plugin_key: &ExternalPluginAdapterKey,
+    account: &AccountInfo,
+) -> Result<bool, ProgramError> {
+    if record_ref.plugin_type == ExternalPluginAdapterType::from(plugin_key)
+        && (match plugin_key {
+            ExternalPluginAdapterKey::LifecycleHook(address)
+            | ExternalPluginAdapterKey::Oracle(address) => {
+                let pubkey_offset = record_ref
+                    .offset
+                    .checked_add(1)
+                    .ok_or(MplCoreError::NumericalOverflow)?;
+                address
+                    == &match Pubkey::deserialize(&mut &account.data.borrow()[pubkey_offset..]) {
+                        Ok(address) => address,
+                        Err(_) => return Err(MplCoreError::DeserializationError.into()),
+                    }
+            }
+            ExternalPluginAdapterKey::DataStore(authority) => {
+                let authority_offset = record_ref
+                    .offset
+                    .checked_add(1)
+                    .ok_or(MplCoreError::NumericalOverflow)?;
+                authority
+                    == &match Authority::deserialize(
+                        &mut &account.data.borrow()[authority_offset..],
+                    ) {
+                        Ok(authority) => authority,
+                        Err(_) => return Err(MplCoreError::DeserializationError.into()),
+                    }
+            }
+        })
+    {
+        Ok(true)
+    } else {
+        Ok(false)
+    }
 }

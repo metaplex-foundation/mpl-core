@@ -10,9 +10,9 @@ use crate::{
         UpdateCollectionExternalPluginAdapterV1Accounts, UpdateExternalPluginAdapterV1Accounts,
     },
     plugins::{
-        fetch_wrapped_external_plugin_adapter, find_external_plugin_adapter, ExternalPluginAdapter,
-        ExternalPluginAdapterKey, ExternalPluginAdapterUpdateInfo, PluginHeaderV1,
-        PluginRegistryV1, PluginValidationContext, ValidationResult,
+        fetch_wrapped_external_plugin_adapter, find_external_plugin_adapter_mut,
+        ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalPluginAdapterUpdateInfo,
+        PluginHeaderV1, PluginRegistryV1, PluginValidationContext, ValidationResult,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -186,10 +186,19 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     let mut plugin_registry = plugin_registry.ok_or(MplCoreError::PluginsNotInitialized)?;
     let mut plugin_header = plugin_header.ok_or(MplCoreError::PluginsNotInitialized)?;
 
-    let plugin_registry_clone = plugin_registry.clone();
-    let (_, record) = find_external_plugin_adapter(&plugin_registry_clone, &key, account)?;
-    let mut registry_record = record.ok_or(MplCoreError::PluginNotFound)?.clone();
+    // Update the registry record using a mutable reference that ties back to `plugin_registry`.
+    let (_, record) = find_external_plugin_adapter_mut(&mut plugin_registry, &key, account)?;
+    let registry_record = record.ok_or(MplCoreError::PluginNotFound)?;
+    let old_registry_record_size = registry_record.try_to_vec()?.len() as isize;
+
     registry_record.update(&update_info)?;
+    let new_registry_record_size = registry_record.try_to_vec()?.len() as isize;
+    let registry_record_size_diff = new_registry_record_size
+        .checked_sub(old_registry_record_size)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
+    // Clone into a new copy, dropping the mutable reference so that `plugin_registry` can be mutably borrowed again later.
+    let registry_record = registry_record.clone();
 
     let mut new_plugin = plugin.clone();
     new_plugin.update(&update_info);
@@ -199,19 +208,21 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
 
     // The difference in size between the new and old account which is used to calculate the new size of the account.
     let plugin_size = plugin_data.len() as isize;
-    let size_diff = (new_plugin_data.len() as isize)
+    let plugin_size_diff = (new_plugin_data.len() as isize)
         .checked_sub(plugin_size)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     // The new size of the account.
     let new_size = (account.data_len() as isize)
-        .checked_add(size_diff)
+        .checked_add(plugin_size_diff)
+        .ok_or(MplCoreError::NumericalOverflow)?
+        .checked_add(registry_record_size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     // The new offset of the plugin registry is the old offset plus the size difference.
     let registry_offset = plugin_header.plugin_registry_offset;
     let new_registry_offset = (registry_offset as isize)
-        .checked_add(size_diff)
+        .checked_add(plugin_size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
     plugin_header.plugin_registry_offset = new_registry_offset as usize;
 
@@ -221,7 +232,7 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     let new_next_plugin_offset = next_plugin_offset
-        .checked_add(size_diff)
+        .checked_add(plugin_size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     // //TODO: This is memory intensive, we should use memmove instead probably.
@@ -241,7 +252,7 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     for record in &mut plugin_registry.external_registry {
         if registry_record.offset < record.offset {
             let new_offset = (record.offset as isize)
-                .checked_add(size_diff)
+                .checked_add(plugin_size_diff)
                 .ok_or(MplCoreError::NumericalOverflow)?;
 
             record.offset = new_offset as usize;
@@ -251,7 +262,7 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     for record in &mut plugin_registry.registry {
         if registry_record.offset < record.offset {
             let new_offset = (record.offset as isize)
-                .checked_add(size_diff)
+                .checked_add(plugin_size_diff)
                 .ok_or(MplCoreError::NumericalOverflow)?;
 
             record.offset = new_offset as usize;
