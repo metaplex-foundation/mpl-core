@@ -351,11 +351,12 @@ impl Plugin {
             return reject!();
         }
 
-        let base_result = if ctx.self_authority
-            == &(Authority::Address {
-                address: *ctx.authority_info.key,
-            })
-            && PluginType::from(target_plugin) == PluginType::from(plugin)
+        let base_result = if PluginType::from(target_plugin) == PluginType::from(plugin)
+            && ctx.resolved_authorities.is_some()
+            && ctx
+                .resolved_authorities
+                .unwrap()
+                .contains(ctx.self_authority)
         {
             solana_program::msg!("Base: Approved");
             ValidationResult::Approved
