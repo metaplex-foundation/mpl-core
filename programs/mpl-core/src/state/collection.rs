@@ -110,7 +110,7 @@ impl CollectionV1 {
 
     /// Check permissions for the update external plugin adapter lifecycle event.
     pub fn check_update_external_plugin_adapter() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::None
     }
 
     /// Validate the add plugin lifecycle event.
@@ -293,15 +293,11 @@ impl CollectionV1 {
     /// Validate the update external plugin adapter lifecycle event.
     pub fn validate_update_external_plugin_adapter(
         &self,
-        authority_info: &AccountInfo,
+        _authority_info: &AccountInfo,
         _: Option<&Plugin>,
         _plugin: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
-        if self.update_authority == *authority_info.key {
-            approve!()
-        } else {
-            abstain!()
-        }
+        abstain!()
     }
 
     /// Increment size of the Collection
