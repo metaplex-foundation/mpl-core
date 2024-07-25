@@ -63,6 +63,11 @@ impl AssetV1 {
     /// The base length of the asset account with an empty name and uri and no seq.
     pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4 + 1;
 
+    /// Check permissions for the create lifecycle event.
+    pub fn check_create() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
     /// Check permissions for the add plugin lifecycle event.
     pub fn check_add_plugin() -> CheckResult {
         CheckResult::CanApprove
@@ -126,6 +131,20 @@ impl AssetV1 {
     /// Check permissions for the update external plugin adapter lifecycle event.
     pub fn check_update_external_plugin_adapter() -> CheckResult {
         CheckResult::None
+    }
+
+    /// Validate the create lifecycle event.
+    pub fn validate_create(
+        &self,
+        _authority_info: &AccountInfo,
+        _new_plugin: Option<&Plugin>,
+        _: Option<&ExternalPluginAdapter>,
+    ) -> Result<ValidationResult, ProgramError> {
+        // If the asset is part of a collection, the collection must approve the create.
+        match self.update_authority {
+            UpdateAuthority::Collection(_) => abstain!(),
+            _ => approve!(),
+        }
     }
 
     /// Validate the add plugin lifecycle event.
