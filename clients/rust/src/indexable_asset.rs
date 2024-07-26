@@ -40,6 +40,40 @@ pub struct IndexableUnknownPluginSchemaV1 {
     pub data: String,
 }
 
+#[cfg(feature = "serde")]
+mod custom_serde {
+    use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
+    use serde_json::Value as JsonValue;
+
+    pub fn serialize<S>(data: &Option<String>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match data {
+            Some(s) => {
+                if let Ok(json_value) = serde_json::from_str::<JsonValue>(s) {
+                    json_value.serialize(serializer)
+                } else {
+                    serializer.serialize_str(s)
+                }
+            }
+            None => serializer.serialize_none(),
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let json_value: Option<JsonValue> = Option::deserialize(deserializer)?;
+        match json_value {
+            Some(JsonValue::String(s)) => Ok(Some(s)),
+            Some(json_value) => Ok(Some(json_value.to_string())),
+            None => Ok(None),
+        }
+    }
+}
+
 /// Schema used for indexing known external plugin types.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -57,7 +91,10 @@ pub struct IndexableExternalPluginSchemaV1 {
     pub data_offset: Option<u64>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub data_len: Option<u64>,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(
+        feature = "serde",
+        serde(skip_serializing_if = "Option::is_none", with = "custom_serde")
+    )]
     pub data: Option<String>,
 }
 
@@ -228,11 +265,13 @@ impl ProcessedExternalPlugin {
             let (data_offset, data_len, data) = match external_plugin_data_info {
                 Some(data_info) => {
                     let schema = match &adapter_config {
-                        ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
-                            &lifecycle_hook.schema
-                        }
+                        ExternalPluginAdapter::LifecycleHook(lc_hook) => &lc_hook.schema,
                         ExternalPluginAdapter::AppData(app_data) => &app_data.schema,
-                        _ => &ExternalPluginAdapterSchema::Binary, // is this possible
+                        ExternalPluginAdapter::LinkedLifecycleHook(l_lc_hook) => &l_lc_hook.schema,
+                        ExternalPluginAdapter::LinkedAppData(l_app_data) => &l_app_data.schema,
+                        ExternalPluginAdapter::DataSection(data_section) => &data_section.schema,
+                        // Assume binary for `Oracle`, but this should never happen.
+                        ExternalPluginAdapter::Oracle(_) => &ExternalPluginAdapterSchema::Binary,
                     };
 
                     (
