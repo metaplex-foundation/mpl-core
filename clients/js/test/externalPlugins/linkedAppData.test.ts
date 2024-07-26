@@ -355,7 +355,10 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
         asset: asset.publicKey,
       }).sendAndConfirm(umi);
 
-      if (schema === ExternalPluginAdapterSchema.Binary) {
+      if (
+        schema === ExternalPluginAdapterSchema.Binary ||
+        schema === ExternalPluginAdapterSchema.MsgPack
+      ) {
         assertData = otherData;
       } else if (schema === ExternalPluginAdapterSchema.Json) {
         assertData = JSON.parse(Buffer.from(otherData).toString());
