@@ -1,6 +1,7 @@
 import test from 'ava';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import { Signer, Umi } from '@metaplex-foundation/umi';
+import * as msgpack from '@msgpack/msgpack';
 import {
   assertAsset,
   assertCollection,
@@ -35,8 +36,8 @@ type TestContext = {
   dataAuthority: PluginAuthority;
   wrongDataAuthoritySigner?: Signer;
   wrongDataAuthority?: PluginAuthority;
-  data: string;
-  otherData: string;
+  data: Uint8Array;
+  otherData: Uint8Array;
 };
 
 async function generateTestContext(
@@ -81,17 +82,21 @@ async function generateTestContext(
     }
   }
 
-  let data = '';
-  let otherData = '';
+  let data = new Uint8Array();
+  let otherData = new Uint8Array();
+
   if (schema === ExternalPluginAdapterSchema.Binary) {
-    data = 'Hello, world!';
-    otherData = 'Hello, world! Hello, world!';
+    const binaryData = 'Hello, world!';
+    const binaryOtherData = 'Hello, world! Hello, world!';
+    data = Uint8Array.from(Buffer.from(binaryData));
+    otherData = Uint8Array.from(Buffer.from(binaryOtherData));
   } else if (schema === ExternalPluginAdapterSchema.Json) {
-    data = JSON.stringify({ message: 'Hello', target: 'world' });
-    otherData = JSON.stringify({
-      message: 'Hello hello',
-      target: 'big wide world',
-    });
+    const dataJson = { message: 'Hello', target: 'world' };
+    const otherDataJson = { message: 'Hello hello', target: 'big wide world' };
+    data = Uint8Array.from(Buffer.from(JSON.stringify(dataJson)));
+    otherData = Uint8Array.from(Buffer.from(JSON.stringify(otherDataJson)));
+  } else if (schema === ExternalPluginAdapterSchema.MsgPack) {
+    data = msgpack.encode({ message: 'Hello', target: 'msgpack' });
   }
 
   if (!dataAuthoritySigner) {
@@ -202,9 +207,9 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
         schema === ExternalPluginAdapterSchema.Binary ||
         schema === ExternalPluginAdapterSchema.MsgPack
       ) {
-        assertData = Uint8Array.from(Buffer.from(data));
+        assertData = data;
       } else if (schema === ExternalPluginAdapterSchema.Json) {
-        assertData = JSON.parse(data);
+        assertData = JSON.parse(Buffer.from(data).toString());
       }
 
       // check the derived asset sdk correctly injects the data
@@ -299,9 +304,9 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
         schema === ExternalPluginAdapterSchema.Binary ||
         schema === ExternalPluginAdapterSchema.MsgPack
       ) {
-        assertData = Uint8Array.from(Buffer.from(data));
+        assertData = data;
       } else if (schema === ExternalPluginAdapterSchema.Json) {
-        assertData = JSON.parse(data);
+        assertData = JSON.parse(Buffer.from(data).toString());
       }
 
       // check the derived asset sdk correctly injects the data
@@ -350,10 +355,13 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
         asset: asset.publicKey,
       }).sendAndConfirm(umi);
 
-      if (schema === ExternalPluginAdapterSchema.Binary) {
-        assertData = Uint8Array.from(Buffer.from(otherData));
+      if (
+        schema === ExternalPluginAdapterSchema.Binary ||
+        schema === ExternalPluginAdapterSchema.MsgPack
+      ) {
+        assertData = otherData;
       } else if (schema === ExternalPluginAdapterSchema.Json) {
-        assertData = JSON.parse(otherData);
+        assertData = JSON.parse(Buffer.from(otherData).toString());
       }
 
       // check the derived asset sdk correctly injects the data
@@ -559,7 +567,7 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
     ],
   });
 
-  const assertData = Uint8Array.from(Buffer.from(data));
+  const assertData = data;
 
   // check the derived asset sdk correctly injects the data
   await assertAsset(
