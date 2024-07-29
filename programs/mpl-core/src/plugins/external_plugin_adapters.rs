@@ -294,9 +294,17 @@ impl ExternalPluginAdapter {
             ExternalPluginAdapter::Oracle(oracle) => {
                 oracle.validate_update_external_plugin_adapter(ctx)
             }
-            ExternalPluginAdapter::DataStore(app_data) => {
+            ExternalPluginAdapter::AppData(app_data) => {
                 app_data.validate_update_external_plugin_adapter(ctx)
             }
+            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
+                lifecycle_hook.validate_update_external_plugin_adapter(ctx)
+            }
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
+                app_data.validate_update_external_plugin_adapter(ctx)
+            }
+            // Here we block the update of a DataSection plugin because this is only done internally.
+            ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
         }?;
 
         match (&base_result, &result) {

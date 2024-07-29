@@ -855,20 +855,8 @@ fn check_plugin_key(
                         Err(_) => return Err(MplCoreError::DeserializationError.into()),
                     }
             }
-            ExternalPluginAdapterKey::AppData(authority) => {
-                let authority_offset = record_ref
-                    .offset
-                    .checked_add(1)
-                    .ok_or(MplCoreError::NumericalOverflow)?;
-                authority
-                    == &match Authority::deserialize(
-                        &mut &account.data.borrow()[authority_offset..],
-                    ) {
-                        Ok(authority) => authority,
-                        Err(_) => return Err(MplCoreError::DeserializationError.into()),
-                    }
-            }
-            ExternalPluginAdapterKey::LinkedAppData(authority) => {
+            ExternalPluginAdapterKey::AppData(authority)
+            | ExternalPluginAdapterKey::LinkedAppData(authority) => {
                 let authority_offset = record_ref
                     .offset
                     .checked_add(1)
