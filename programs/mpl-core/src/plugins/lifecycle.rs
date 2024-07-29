@@ -49,7 +49,7 @@ impl ExternalCheckResult {
 
 /// Bitfield representation of lifecycle permissions for external plugin adapter, third party plugins.
 #[bitfield(bits = 32)]
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, Default)]
 pub struct ExternalCheckResultBits {
     pub can_listen: bool,
     pub can_approve: bool,
@@ -342,15 +342,29 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        let target_plugin = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
+
         // If the plugin being checked is Authority::None then it can't be revoked.
         if ctx.self_authority == &Authority::None
-            && ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::from(plugin)
+            && PluginType::from(target_plugin) == PluginType::from(plugin)
         {
             return reject!();
         }
 
-        match plugin {
+        let base_result = if PluginType::from(target_plugin) == PluginType::from(plugin)
+            && ctx.resolved_authorities.is_some()
+            && ctx
+                .resolved_authorities
+                .unwrap()
+                .contains(ctx.self_authority)
+        {
+            solana_program::msg!("Base: Approved");
+            ValidationResult::Approved
+        } else {
+            ValidationResult::Pass
+        };
+
+        let result = match plugin {
             Plugin::Royalties(royalties) => royalties.validate_revoke_plugin_authority(ctx),
             Plugin::FreezeDelegate(freeze) => freeze.validate_revoke_plugin_authority(ctx),
             Plugin::BurnDelegate(burn) => burn.validate_revoke_plugin_authority(ctx),
@@ -380,6 +394,12 @@ impl Plugin {
                 verified_creators.validate_revoke_plugin_authority(ctx)
             }
             Plugin::Autograph(autograph) => autograph.validate_revoke_plugin_authority(ctx),
+        }?;
+
+        if result == ValidationResult::Pass {
+            Ok(base_result)
+        } else {
+            Ok(result)
         }
     }
 
@@ -714,80 +734,6 @@ impl Plugin {
             Plugin::Autograph(autograph) => autograph.validate_remove_external_plugin_adapter(ctx),
         }
     }
-
-    /// Route the validation of the update_plugin action to the appropriate plugin.
-    /// There is no check for updating a plugin because the plugin itself MUST validate the change.
-    pub(crate) fn validate_update_external_plugin_adapter(
-        plugin: &Plugin,
-        ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        let resolved_authorities = ctx
-            .resolved_authorities
-            .ok_or(MplCoreError::InvalidAuthority)?;
-        let base_result = if resolved_authorities.contains(ctx.self_authority) {
-            solana_program::msg!("Base: Approved");
-            ValidationResult::Approved
-        } else {
-            ValidationResult::Pass
-        };
-
-        let result = match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_update_external_plugin_adapter(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_update_external_plugin_adapter(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_update_external_plugin_adapter(ctx),
-            Plugin::TransferDelegate(transfer) => {
-                transfer.validate_update_external_plugin_adapter(ctx)
-            }
-            Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_update_external_plugin_adapter(ctx)
-            }
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_update_external_plugin_adapter(ctx)
-            }
-            Plugin::Attributes(attributes) => {
-                attributes.validate_update_external_plugin_adapter(ctx)
-            }
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_update_external_plugin_adapter(ctx)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_update_external_plugin_adapter(ctx)
-            }
-            Plugin::Edition(edition) => edition.validate_update_external_plugin_adapter(ctx),
-            Plugin::MasterEdition(master_edition) => {
-                master_edition.validate_update_external_plugin_adapter(ctx)
-            }
-            Plugin::AddBlocker(add_blocker) => {
-                add_blocker.validate_update_external_plugin_adapter(ctx)
-            }
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_update_external_plugin_adapter(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => {
-                verified_creators.validate_update_external_plugin_adapter(ctx)
-            }
-            Plugin::Autograph(autograph) => autograph.validate_update_external_plugin_adapter(ctx),
-        }?;
-
-        match (&base_result, &result) {
-            (ValidationResult::Approved, ValidationResult::Approved) => {
-                approve!()
-            }
-            (ValidationResult::Approved, ValidationResult::Rejected) => {
-                reject!()
-            }
-            (ValidationResult::Rejected, ValidationResult::Approved) => {
-                reject!()
-            }
-            (ValidationResult::Rejected, ValidationResult::Rejected) => {
-                reject!()
-            }
-            (ValidationResult::Pass, _) => Ok(result),
-            (ValidationResult::ForceApproved, _) => force_approve!(),
-            (_, ValidationResult::Pass) => Ok(base_result),
-            (_, ValidationResult::ForceApproved) => force_approve!(),
-        }
-    }
 }
 
 /// Lifecycle validations
@@ -995,22 +941,6 @@ pub(crate) trait PluginValidation {
 
     /// Validate the decompress lifecycle action.
     fn validate_decompress(
-        &self,
-        _ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        abstain!()
-    }
-
-    /// Validate the add_authority lifecycle action.
-    fn validate_add_authority(
-        &self,
-        _ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        abstain!()
-    }
-
-    /// Validate the add_authority lifecycle action.
-    fn validate_remove_authority(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
