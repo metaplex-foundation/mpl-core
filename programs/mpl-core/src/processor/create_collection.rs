@@ -10,9 +10,8 @@ use crate::{
     instruction::accounts::CreateCollectionV2Accounts,
     plugins::{
         create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
-        initialize_plugin, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
-        ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair, PluginType,
-        PluginValidationContext, ValidationResult,
+        initialize_plugin, CheckResult, ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair,
+        PluginType, PluginValidationContext, ValidationResult,
     },
     state::{Authority, CollectionV1, Key},
 };
@@ -170,30 +169,6 @@ pub(crate) fn process_create_collection<'a>(
                 ctx.accounts.system_program,
             )?;
             for plugin_init_info in &plugins {
-                let external_check_result_bits = ExternalCheckResultBits::from(
-                    ExternalPluginAdapter::check_create(plugin_init_info),
-                );
-
-                if external_check_result_bits.can_reject() {
-                    let validation_ctx = PluginValidationContext {
-                        accounts,
-                        asset_info: None,
-                        collection_info: Some(ctx.accounts.collection),
-                        // External plugin adapters are always managed by the update authority.
-                        self_authority: &Authority::UpdateAuthority,
-                        authority_info: authority,
-                        resolved_authorities: None,
-                        new_owner: None,
-                        target_plugin: None,
-                    };
-                    if ExternalPluginAdapter::validate_create(
-                        &ExternalPluginAdapter::from(plugin_init_info),
-                        &validation_ctx,
-                    )? == ValidationResult::Rejected
-                    {
-                        approved = false;
-                    };
-                }
                 initialize_external_plugin_adapter::<CollectionV1>(
                     plugin_init_info,
                     &mut plugin_header,
