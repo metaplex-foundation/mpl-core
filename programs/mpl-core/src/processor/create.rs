@@ -156,6 +156,7 @@ pub(crate) fn process_create<'a>(
             None,
             None,
             None,
+            None,
             AssetV1::check_create,
             CollectionV1::check_create,
             PluginType::check_create,
