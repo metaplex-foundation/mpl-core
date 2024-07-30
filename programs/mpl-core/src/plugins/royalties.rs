@@ -3,11 +3,9 @@ use std::collections::HashSet;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{error::MplCoreError, plugins::PluginType, state::Authority};
+use crate::error::MplCoreError;
 
-use super::{
-    abstain, approve, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
-};
+use super::{abstain, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
@@ -128,24 +126,6 @@ impl PluginValidation for Royalties {
             } else {
                 abstain!()
             }
-        } else {
-            abstain!()
-        }
-    }
-
-    /// Validate the revoke plugin authority lifecycle action.
-    fn validate_revoke_plugin_authority(
-        &self,
-        ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority
-            == &(Authority::Address {
-                address: *ctx.authority_info.key,
-            })
-            && ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Royalties
-        {
-            approve!()
         } else {
             abstain!()
         }

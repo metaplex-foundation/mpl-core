@@ -10,14 +10,14 @@ use crate::{
         UpdateCollectionExternalPluginAdapterV1Accounts, UpdateExternalPluginAdapterV1Accounts,
     },
     plugins::{
-        fetch_wrapped_external_plugin_adapter, find_external_plugin_adapter, ExternalPluginAdapter,
-        ExternalPluginAdapterKey, ExternalPluginAdapterUpdateInfo, Plugin, PluginHeaderV1,
-        PluginRegistryV1, PluginType,
+        fetch_wrapped_external_plugin_adapter, find_external_plugin_adapter_mut,
+        ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalPluginAdapterUpdateInfo,
+        PluginHeaderV1, PluginRegistryV1, PluginValidationContext, ValidationResult,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
-        load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
-        validate_collection_permissions,
+        fetch_core_data, load_key, resize_or_reallocate_account, resolve_authority,
+        resolve_pubkey_to_authorities, resolve_pubkey_to_authorities_collection,
     },
 };
 
@@ -56,34 +56,40 @@ pub(crate) fn update_external_plugin_adapter<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    let (_, plugin) =
+    let (mut asset, plugin_header, plugin_registry) =
+        fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
+    let resolved_authorities =
+        resolve_pubkey_to_authorities(authority, ctx.accounts.collection, &asset)?;
+    let (external_registry_record, external_plugin_adapter) =
         fetch_wrapped_external_plugin_adapter::<AssetV1>(ctx.accounts.asset, None, &args.key)?;
 
-    let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
+    let validation_ctx = PluginValidationContext {
         accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        None,
-        None,
-        Some(&plugin),
-        AssetV1::check_update_external_plugin_adapter,
-        CollectionV1::check_update_external_plugin_adapter,
-        PluginType::check_update_external_plugin_adapter,
-        AssetV1::validate_update_external_plugin_adapter,
-        CollectionV1::validate_update_external_plugin_adapter,
-        Plugin::validate_update_external_plugin_adapter,
-        None,
-        None,
-    )?;
+        asset_info: Some(ctx.accounts.asset),
+        collection_info: ctx.accounts.collection,
+        self_authority: &external_registry_record.authority,
+        authority_info: authority,
+        resolved_authorities: Some(&resolved_authorities),
+        new_owner: None,
+        new_asset_authority: None,
+        new_collection_authority: None,
+        target_plugin: None,
+    };
+
+    if ExternalPluginAdapter::validate_update_external_plugin_adapter(
+        &external_plugin_adapter,
+        &validation_ctx,
+    )? != ValidationResult::Approved
+    {
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
 
     // Increment sequence number and save only if it is `Some(_)`.
     asset.increment_seq_and_save(ctx.accounts.asset)?;
 
     process_update_external_plugin_adapter(
         asset,
-        plugin,
+        external_plugin_adapter,
         args.key,
         args.update_info,
         plugin_header,
@@ -124,31 +130,41 @@ pub(crate) fn update_collection_external_plugin_adapter<'a>(
         }
     }
 
-    let (_, plugin) = fetch_wrapped_external_plugin_adapter::<CollectionV1>(
-        ctx.accounts.collection,
-        None,
-        &args.key,
-    )?;
+    let (collection, plugin_header, plugin_registry) =
+        fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;
+    let resolved_authorities =
+        resolve_pubkey_to_authorities_collection(authority, ctx.accounts.collection)?;
+    let (external_registry_record, external_plugin_adapter) =
+        fetch_wrapped_external_plugin_adapter::<CollectionV1>(
+            ctx.accounts.collection,
+            None,
+            &args.key,
+        )?;
 
-    // Validate collection permissions.
-    let (collection, plugin_header, plugin_registry) = validate_collection_permissions(
+    let validation_ctx = PluginValidationContext {
         accounts,
-        authority,
-        ctx.accounts.collection,
-        None,
-        None,
-        Some(&plugin),
-        CollectionV1::check_update_external_plugin_adapter,
-        PluginType::check_update_external_plugin_adapter,
-        CollectionV1::validate_update_external_plugin_adapter,
-        Plugin::validate_update_external_plugin_adapter,
-        None,
-        None,
-    )?;
+        asset_info: None,
+        collection_info: Some(ctx.accounts.collection),
+        self_authority: &external_registry_record.authority,
+        authority_info: authority,
+        resolved_authorities: Some(&resolved_authorities),
+        new_owner: None,
+        new_asset_authority: None,
+        new_collection_authority: None,
+        target_plugin: None,
+    };
+
+    if ExternalPluginAdapter::validate_update_external_plugin_adapter(
+        &external_plugin_adapter,
+        &validation_ctx,
+    )? != ValidationResult::Approved
+    {
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
 
     process_update_external_plugin_adapter(
         collection,
-        plugin,
+        external_plugin_adapter,
         args.key,
         args.update_info,
         plugin_header,
@@ -174,10 +190,19 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     let mut plugin_registry = plugin_registry.ok_or(MplCoreError::PluginsNotInitialized)?;
     let mut plugin_header = plugin_header.ok_or(MplCoreError::PluginsNotInitialized)?;
 
-    let plugin_registry_clone = plugin_registry.clone();
-    let (_, record) = find_external_plugin_adapter(&plugin_registry_clone, &key, account)?;
-    let mut registry_record = record.ok_or(MplCoreError::PluginNotFound)?.clone();
+    // Update the registry record using a mutable reference that ties back to `plugin_registry`.
+    let (_, record) = find_external_plugin_adapter_mut(&mut plugin_registry, &key, account)?;
+    let registry_record = record.ok_or(MplCoreError::PluginNotFound)?;
+    let old_registry_record_size = registry_record.try_to_vec()?.len() as isize;
+
     registry_record.update(&update_info)?;
+    let new_registry_record_size = registry_record.try_to_vec()?.len() as isize;
+    let registry_record_size_diff = new_registry_record_size
+        .checked_sub(old_registry_record_size)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
+    // Clone into a new copy, dropping the mutable reference so that `plugin_registry` can be mutably borrowed again later.
+    let registry_record = registry_record.clone();
 
     let mut new_plugin = plugin.clone();
     new_plugin.update(&update_info);
@@ -187,19 +212,21 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
 
     // The difference in size between the new and old account which is used to calculate the new size of the account.
     let plugin_size = plugin_data.len() as isize;
-    let size_diff = (new_plugin_data.len() as isize)
+    let plugin_size_diff = (new_plugin_data.len() as isize)
         .checked_sub(plugin_size)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     // The new size of the account.
     let new_size = (account.data_len() as isize)
-        .checked_add(size_diff)
+        .checked_add(plugin_size_diff)
+        .ok_or(MplCoreError::NumericalOverflow)?
+        .checked_add(registry_record_size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     // The new offset of the plugin registry is the old offset plus the size difference.
     let registry_offset = plugin_header.plugin_registry_offset;
     let new_registry_offset = (registry_offset as isize)
-        .checked_add(size_diff)
+        .checked_add(plugin_size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
     plugin_header.plugin_registry_offset = new_registry_offset as usize;
 
@@ -209,7 +236,7 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     let new_next_plugin_offset = next_plugin_offset
-        .checked_add(size_diff)
+        .checked_add(plugin_size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     // //TODO: This is memory intensive, we should use memmove instead probably.
@@ -226,7 +253,7 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     plugin_header.save(account, core.get_size())?;
 
     // Move offsets for existing registry records.
-    plugin_registry.bump_offsets(registry_record.offset, size_diff)?;
+    plugin_registry.bump_offsets(registry_record.offset, plugin_size_diff)?;
 
     plugin_registry.save(account, new_registry_offset as usize)?;
     new_plugin.save(account, registry_record.offset)?;

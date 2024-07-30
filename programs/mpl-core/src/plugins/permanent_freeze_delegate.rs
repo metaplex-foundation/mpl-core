@@ -3,10 +3,10 @@ use solana_program::program_error::ProgramError;
 
 use crate::{
     plugins::{reject, PluginType},
-    state::{Authority, DataBlob},
+    state::DataBlob,
 };
 
-use super::{abstain, approve, PluginValidation, PluginValidationContext, ValidationResult};
+use super::{abstain, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The permanent freeze plugin allows any authority to lock the asset so it's no longer transferable.
 /// The default authority for this plugin is the update authority.
@@ -73,24 +73,6 @@ impl PluginValidation for PermanentFreezeDelegate {
             && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentFreezeDelegate
         {
             reject!()
-        } else {
-            abstain!()
-        }
-    }
-
-    /// Validate the revoke plugin authority lifecycle action.
-    fn validate_revoke_plugin_authority(
-        &self,
-        ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority
-            == &(Authority::Address {
-                address: *ctx.authority_info.key,
-            })
-            && ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentFreezeDelegate
-        {
-            approve!()
         } else {
             abstain!()
         }

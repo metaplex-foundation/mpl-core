@@ -21,7 +21,11 @@ import {
   preconfiguredAssetPdaCustomOffsetSet,
   close,
 } from '@metaplex-foundation/mpl-core-oracle-example';
-import { generateSigner, sol } from '@metaplex-foundation/umi';
+import {
+  generateSigner,
+  sol,
+  assertAccountExists,
+} from '@metaplex-foundation/umi';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import { createAccount } from '@metaplex-foundation/mpl-toolbox';
 import {
@@ -37,6 +41,8 @@ import {
   burn,
   CheckResult,
   create,
+  createCollection,
+  updateCollectionPlugin,
   findOracleAccount,
   OracleInitInfoArgs,
   transfer,
@@ -266,7 +272,7 @@ test('it can add multiple oracles and internal plugins to asset', async (t) => {
   });
 });
 
-test.skip('add oracle to asset with no offset', async (t) => {
+test('add oracle to asset with no offset', async (t) => {
   const umi = await createUmi();
   const account = generateSigner(umi);
 
@@ -2734,7 +2740,7 @@ test('it can update asset to different size name with oracle', async (t) => {
   });
 });
 
-test('it can update oracle to different size external plugin adapter', async (t) => {
+test('it can update oracle to smaller registry record', async (t) => {
   const umi = await createUmi();
   const oracleSigner = generateSigner(umi);
   await fixedAccountInit(umi, {
@@ -2763,8 +2769,6 @@ test('it can update oracle to different size external plugin adapter', async (t)
           type: 'Anchor',
         },
         lifecycleChecks: {
-          create: [CheckResult.CAN_REJECT],
-          update: [CheckResult.CAN_REJECT],
           transfer: [CheckResult.CAN_REJECT],
           burn: [CheckResult.CAN_REJECT],
         },
@@ -2788,8 +2792,6 @@ test('it can update oracle to different size external plugin adapter', async (t)
           type: 'Anchor',
         },
         lifecycleChecks: {
-          create: [CheckResult.CAN_REJECT],
-          update: [CheckResult.CAN_REJECT],
           transfer: [CheckResult.CAN_REJECT],
           burn: [CheckResult.CAN_REJECT],
         },
@@ -2799,9 +2801,13 @@ test('it can update oracle to different size external plugin adapter', async (t)
     ],
   });
 
+  const accountBefore = await umi.rpc.getAccount(asset.publicKey);
+  t.true(accountBefore.exists);
+  assertAccountExists(accountBefore);
+  const beforeLength = accountBefore.data.length;
+
   await updatePlugin(umi, {
     asset: asset.publicKey,
-
     plugin: {
       key: {
         type: 'Oracle',
@@ -2832,6 +2838,76 @@ test('it can update oracle to different size external plugin adapter', async (t)
           type: 'Anchor',
         },
         lifecycleChecks: {
+          create: undefined,
+          update: undefined,
+          transfer: [CheckResult.CAN_REJECT],
+          burn: undefined,
+        },
+        baseAddress: oracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+
+  // Validate that account got smaller by specific amount.
+  const accountAfter = await umi.rpc.getAccount(asset.publicKey);
+  t.true(accountAfter.exists);
+  assertAccountExists(accountAfter);
+  const afterLength = accountAfter.data.length;
+  t.is(afterLength - beforeLength, -5);
+});
+
+test('it can update oracle to larger registry record', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: oracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Rejected,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const asset = generateSigner(umi);
+  await create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
           transfer: [CheckResult.CAN_REJECT],
         },
         baseAddress: oracleSigner.publicKey,
@@ -2839,6 +2915,64 @@ test('it can update oracle to different size external plugin adapter', async (t)
       },
     ],
   });
+
+  const accountBefore = await umi.rpc.getAccount(asset.publicKey);
+  t.true(accountBefore.exists);
+  assertAccountExists(accountBefore);
+  const beforeLength = accountBefore.data.length;
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: oracleSigner.publicKey,
+      },
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
+      },
+      lifecycleChecks: {
+        create: [CheckResult.CAN_REJECT],
+        update: [CheckResult.CAN_REJECT],
+        transfer: [CheckResult.CAN_REJECT],
+        burn: [CheckResult.CAN_REJECT],
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+          update: [CheckResult.CAN_REJECT],
+          transfer: [CheckResult.CAN_REJECT],
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+
+  // Validate that account got larger by specific amount.
+  const accountAfter = await umi.rpc.getAccount(asset.publicKey);
+  t.true(accountAfter.exists);
+  assertAccountExists(accountAfter);
+  const afterLength = accountAfter.data.length;
+  t.is(afterLength - beforeLength, 15);
 });
 
 test('it create fails but does not panic when oracle account does not exist', async (t) => {
@@ -3034,4 +3168,450 @@ test('it empty account does not default to valid oracle', async (t) => {
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'UninitializedOracleAccount' });
+});
+
+test('it can update oracle with external plugin authority different than asset update authority', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: oracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const asset = generateSigner(umi);
+  const oracleUpdateAuthority = generateSigner(umi);
+  await create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        initPluginAuthority: {
+          type: 'Address',
+          address: oracleUpdateAuthority.publicKey,
+        },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    oracles: [
+      {
+        authority: {
+          type: 'Address',
+          address: oracleUpdateAuthority.publicKey,
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+    authority: oracleUpdateAuthority,
+    plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: oracleSigner.publicKey,
+      },
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'NoOffset',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_REJECT],
+        burn: [CheckResult.CAN_REJECT],
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    oracles: [
+      {
+        authority: {
+          type: 'Address',
+          address: oracleUpdateAuthority.publicKey,
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'NoOffset',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+});
+
+test('it cannot update oracle using update authority when different from external plugin authority', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: oracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const asset = generateSigner(umi);
+  const oracleUpdateAuthority = generateSigner(umi);
+  await create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        initPluginAuthority: {
+          type: 'Address',
+          address: oracleUpdateAuthority.publicKey,
+        },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    oracles: [
+      {
+        authority: {
+          type: 'Address',
+          address: oracleUpdateAuthority.publicKey,
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+
+  const result = updatePlugin(umi, {
+    asset: asset.publicKey,
+    authority: umi.identity,
+    plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: oracleSigner.publicKey,
+      },
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'NoOffset',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_REJECT],
+        burn: [CheckResult.CAN_REJECT],
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    oracles: [
+      {
+        authority: {
+          type: 'Address',
+          address: oracleUpdateAuthority.publicKey,
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+});
+
+test('it can update oracle on collection with external plugin authority different than asset update authority', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: oracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const collection = generateSigner(umi);
+  const oracleUpdateAuthority = generateSigner(umi);
+  await createCollection(umi, {
+    collection,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        initPluginAuthority: {
+          type: 'Address',
+          address: oracleUpdateAuthority.publicKey,
+        },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'Address',
+          address: oracleUpdateAuthority.publicKey,
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+
+  await updateCollectionPlugin(umi, {
+    collection: collection.publicKey,
+    authority: oracleUpdateAuthority,
+    plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: oracleSigner.publicKey,
+      },
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'NoOffset',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_REJECT],
+        burn: [CheckResult.CAN_REJECT],
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'Address',
+          address: oracleUpdateAuthority.publicKey,
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'NoOffset',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+});
+
+test('it cannot update oracle on collection using update authority when different from external plugin authority', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: oracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const collection = generateSigner(umi);
+  const oracleUpdateAuthority = generateSigner(umi);
+  await createCollection(umi, {
+    collection,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        initPluginAuthority: {
+          type: 'Address',
+          address: oracleUpdateAuthority.publicKey,
+        },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'Address',
+          address: oracleUpdateAuthority.publicKey,
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+
+  const result = updateCollectionPlugin(umi, {
+    collection: collection.publicKey,
+    authority: umi.identity,
+    plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: oracleSigner.publicKey,
+      },
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'NoOffset',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_REJECT],
+        burn: [CheckResult.CAN_REJECT],
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'Address',
+          address: oracleUpdateAuthority.publicKey,
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
 });

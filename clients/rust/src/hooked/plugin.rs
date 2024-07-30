@@ -6,7 +6,7 @@ use num_traits::FromPrimitive;
 use solana_program::{account_info::AccountInfo, pubkey::Pubkey};
 
 use crate::{
-    accounts::{BaseAssetV1, PluginHeaderV1},
+    accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     errors::MplCoreError,
     types::{
         ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalPluginAdapterType, LinkedDataKey,
@@ -82,6 +82,22 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: CrateDeserialize>(
         inner,
         registry_record.offset as usize,
     ))
+}
+
+/// Fetch the plugin on an asset.
+pub fn fetch_asset_plugin<U: CrateDeserialize>(
+    account: &AccountInfo,
+    plugin_type: PluginType,
+) -> Result<(PluginAuthority, U, usize), std::io::Error> {
+    fetch_plugin::<BaseAssetV1, U>(account, plugin_type)
+}
+
+/// Fetch the plugin on a collection.
+pub fn fetch_collection_plugin<U: CrateDeserialize>(
+    account: &AccountInfo,
+    plugin_type: PluginType,
+) -> Result<(PluginAuthority, U, usize), std::io::Error> {
+    fetch_plugin::<BaseCollectionV1, U>(account, plugin_type)
 }
 
 /// Fetch the plugin registry, dropping any unknown plugins (i.e. `PluginType`s that are too new

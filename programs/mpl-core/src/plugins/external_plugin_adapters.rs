@@ -7,6 +7,7 @@ use strum::EnumCount;
 
 use crate::{
     error::MplCoreError,
+    plugins::lifecycle::{approve, reject},
     state::{AssetV1, SolanaAccount},
 };
 
@@ -268,6 +269,61 @@ impl ExternalPluginAdapter {
             }
             // Here we block the creation of a DataSection plugin because this is only done internally.
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
+        }
+    }
+
+    /// Validate the add external plugin adapter lifecycle event.
+    pub(crate) fn validate_update_external_plugin_adapter(
+        external_plugin_adapter: &ExternalPluginAdapter,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        let resolved_authorities = ctx
+            .resolved_authorities
+            .ok_or(MplCoreError::InvalidAuthority)?;
+        let base_result = if resolved_authorities.contains(ctx.self_authority) {
+            solana_program::msg!("Base: Approved");
+            ValidationResult::Approved
+        } else {
+            ValidationResult::Pass
+        };
+
+        let result = match external_plugin_adapter {
+            ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
+                lifecycle_hook.validate_update_external_plugin_adapter(ctx)
+            }
+            ExternalPluginAdapter::Oracle(oracle) => {
+                oracle.validate_update_external_plugin_adapter(ctx)
+            }
+            ExternalPluginAdapter::AppData(app_data) => {
+                app_data.validate_update_external_plugin_adapter(ctx)
+            }
+            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
+                lifecycle_hook.validate_update_external_plugin_adapter(ctx)
+            }
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
+                app_data.validate_update_external_plugin_adapter(ctx)
+            }
+            // Here we block the update of a DataSection plugin because this is only done internally.
+            ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
+        }?;
+
+        match (&base_result, &result) {
+            (ValidationResult::Approved, ValidationResult::Approved) => {
+                approve!()
+            }
+            (ValidationResult::Approved, ValidationResult::Rejected) => {
+                reject!()
+            }
+            (ValidationResult::Rejected, ValidationResult::Approved) => {
+                reject!()
+            }
+            (ValidationResult::Rejected, ValidationResult::Rejected) => {
+                reject!()
+            }
+            (ValidationResult::Pass, _) => Ok(result),
+            (ValidationResult::ForceApproved, _) => unreachable!(),
+            (_, ValidationResult::Pass) => Ok(base_result),
+            (_, ValidationResult::ForceApproved) => unreachable!(),
         }
     }
 

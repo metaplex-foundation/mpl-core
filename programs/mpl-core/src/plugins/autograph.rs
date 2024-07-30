@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, HashSet};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{error::MplCoreError, plugins::PluginType, state::Authority};
+use crate::error::MplCoreError;
 
 use super::{
     abstain, approve, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
@@ -118,24 +118,6 @@ impl PluginValidation for Autograph {
                 approve!()
             }
             _ => abstain!(),
-        }
-    }
-
-    /// Validate the revoke plugin authority lifecycle action.
-    fn validate_revoke_plugin_authority(
-        &self,
-        ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority
-            == &(Authority::Address {
-                address: *ctx.authority_info.key,
-            })
-            && ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::Autograph
-        {
-            approve!()
-        } else {
-            abstain!()
         }
     }
 }

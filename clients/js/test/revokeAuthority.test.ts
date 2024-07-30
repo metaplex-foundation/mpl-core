@@ -10,6 +10,8 @@ import {
   pluginAuthorityPair,
   approveCollectionPluginAuthorityV1,
   revokeCollectionPluginAuthorityV1,
+  updatePluginAuthority,
+  ownerPluginAuthority,
 } from '../src';
 import {
   assertAsset,
@@ -95,7 +97,7 @@ test('it can remove the default authority from a plugin to make it immutable', a
   });
 });
 
-test('it can remove a pubkey authority from a plugin if that pubkey is the signer authority', async (t) => {
+test('it can remove a pubkey authority from an owner-managed plugin if that pubkey is the signer authority', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const pubkeyAuth = await generateSignerWithSol(umi);
@@ -143,6 +145,157 @@ test('it can remove a pubkey authority from a plugin if that pubkey is the signe
         type: 'Owner',
       },
       frozen: false,
+    },
+  });
+});
+
+test('it can remove an update authority from an owner-managed plugin if that pubkey is the signer authority', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner: owner.publicKey,
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
+  });
+
+  await approvePluginAuthorityV1(umi, {
+    asset: asset.publicKey,
+    authority: owner,
+    pluginType: PluginType.FreezeDelegate,
+    newAuthority: updatePluginAuthority(),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: { type: 'UpdateAuthority' },
+      frozen: false,
+    },
+  });
+
+  await revokePluginAuthorityV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.FreezeDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: false,
+    },
+  });
+});
+
+test('it can remove a pubkey authority from an authority-managed plugin if that pubkey is the signer authority', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const pubkeyAuth = await generateSignerWithSol(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({ type: 'Attributes', data: { attributeList: [] } }),
+    ],
+  });
+
+  await approvePluginAuthorityV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.Attributes,
+    newAuthority: addressPluginAuthority(pubkeyAuth.publicKey),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    attributes: {
+      authority: {
+        type: 'Address',
+        address: pubkeyAuth.publicKey,
+      },
+      attributeList: [],
+    },
+  });
+
+  const umi2 = await createUmi();
+
+  await revokePluginAuthorityV1(umi2, {
+    payer: umi2.identity,
+    asset: asset.publicKey,
+    authority: pubkeyAuth,
+    pluginType: PluginType.Attributes,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    attributes: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      attributeList: [],
+    },
+  });
+});
+
+test('it can remove an owner authority from an authority-managed plugin if that pubkey is the signer authority', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner: owner.publicKey,
+    plugins: [
+      pluginAuthorityPair({ type: 'Attributes', data: { attributeList: [] } }),
+    ],
+  });
+
+  await approvePluginAuthorityV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.Attributes,
+    newAuthority: ownerPluginAuthority(),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    attributes: {
+      authority: {
+        type: 'Owner',
+      },
+      attributeList: [],
+    },
+  });
+
+  const umi2 = await createUmi();
+
+  await revokePluginAuthorityV1(umi2, {
+    payer: umi2.identity,
+    asset: asset.publicKey,
+    authority: owner,
+    pluginType: PluginType.Attributes,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    attributes: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      attributeList: [],
     },
   });
 });
