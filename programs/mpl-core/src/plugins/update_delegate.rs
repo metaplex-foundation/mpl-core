@@ -58,6 +58,10 @@ impl PluginValidation for UpdateDelegate {
             }
         }
 
+        if self.additional_delegates.contains(ctx.authority_info.key) {
+            return approve!();
+        }
+
         abstain!()
     }
 
