@@ -145,7 +145,7 @@ test('it cannot create a new asset with a collection if it is not the collection
     collection: collection.publicKey,
   });
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(result, { name: 'NoApprovals' });
 });
 
 test('it cannot create a collection with an owner managed plugin', async (t) => {

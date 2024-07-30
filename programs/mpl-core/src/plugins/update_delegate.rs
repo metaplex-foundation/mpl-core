@@ -48,6 +48,23 @@ impl DataBlob for UpdateDelegate {
 }
 
 impl PluginValidation for UpdateDelegate {
+    fn validate_create(
+        &self,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        if !self.additional_delegates.is_empty() {
+            return Err(MplCoreError::NotAvailable.into());
+        }
+
+        if let Some(resolved_authorities) = ctx.resolved_authorities {
+            if resolved_authorities.contains(ctx.self_authority) {
+                return approve!();
+            }
+        }
+
+        abstain!()
+    }
+
     fn validate_add_plugin(
         &self,
         ctx: &PluginValidationContext,

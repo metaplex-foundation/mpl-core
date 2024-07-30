@@ -48,6 +48,11 @@ impl CollectionV1 {
         }
     }
 
+    /// Check permissions for the create lifecycle event.
+    pub fn check_create() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
     /// Check permissions for the add plugin lifecycle event.
     pub fn check_add_plugin() -> CheckResult {
         CheckResult::CanApprove
@@ -111,6 +116,20 @@ impl CollectionV1 {
     /// Check permissions for the update external plugin adapter lifecycle event.
     pub fn check_update_external_plugin_adapter() -> CheckResult {
         CheckResult::None
+    }
+
+    /// Validate the create lifecycle event.
+    pub fn validate_create(
+        &self,
+        authority_info: &AccountInfo,
+        _new_plugin: Option<&Plugin>,
+        _: Option<&ExternalPluginAdapter>,
+    ) -> Result<ValidationResult, ProgramError> {
+        if authority_info.key == &self.update_authority {
+            approve!()
+        } else {
+            abstain!()
+        }
     }
 
     /// Validate the add plugin lifecycle event.

@@ -11,13 +11,13 @@ use crate::{
     plugins::{
         create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
         initialize_plugin, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
-        ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair, PluginType,
-        PluginValidationContext, ValidationResult,
+        ExternalPluginAdapterInitInfo, HookableLifecycleEvent, Plugin, PluginAuthorityPair,
+        PluginType, PluginValidationContext, ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT,
     },
-    utils::resolve_authority,
+    utils::{resolve_authority, validate_asset_permissions},
 };
 
 #[repr(C)]
@@ -101,10 +101,6 @@ pub(crate) fn process_create<'a>(
         ),
     };
 
-    if update_authority.validate_create(&ctx.accounts, &args)? == ValidationResult::Rejected {
-        return Err(MplCoreError::InvalidAuthority.into());
-    }
-
     let new_asset = AssetV1::new(
         *ctx.accounts
             .owner
@@ -151,6 +147,26 @@ pub(crate) fn process_create<'a>(
     );
 
     if args.data_state == DataState::AccountState {
+        // Validate asset permissions.
+        let _ = validate_asset_permissions(
+            accounts,
+            authority,
+            ctx.accounts.asset,
+            ctx.accounts.collection,
+            None,
+            None,
+            None,
+            AssetV1::check_create,
+            CollectionV1::check_create,
+            PluginType::check_create,
+            AssetV1::validate_create,
+            CollectionV1::validate_create,
+            Plugin::validate_create,
+            Some(ExternalPluginAdapter::validate_create),
+            Some(HookableLifecycleEvent::Create),
+        )?;
+
+        // Validate permissions for the created asset.
         let mut approved = true;
         let mut force_approved = false;
 
