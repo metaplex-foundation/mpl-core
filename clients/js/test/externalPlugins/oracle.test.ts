@@ -52,6 +52,7 @@ import {
   fetchAssetV1,
   ExternalValidationResult,
   ruleSet,
+  fetchCollection,
 } from '../../src';
 
 const createUmi = async () =>
@@ -3613,5 +3614,165 @@ test('it cannot update oracle on collection using update authority when differen
         baseAddressConfig: undefined,
       },
     ],
+  });
+});
+
+test('it can create an oracle on a collection with create set to reject', async (t) => {
+  const umi = await createUmi();
+  const oracleSigner = generateSigner(umi);
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: oracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Rejected,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const collection = generateSigner(umi);
+  await createCollection(umi, {
+    collection,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: oracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+});
+
+test('it can use fixed address oracle on a collection to deny create', async (t) => {
+  const umi = await createUmi();
+  const account = generateSigner(umi);
+
+  // write to example program oracle account
+  await fixedAccountInit(umi, {
+    account,
+    signer: umi.identity,
+    payer: umi.identity,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Rejected,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const collectionSigner = generateSigner(umi);
+  await createCollection(umi, {
+    collection: collectionSigner,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: account.publicKey,
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collectionSigner.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          create: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: account.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+
+  const collection = await fetchCollection(umi, collectionSigner.publicKey);
+
+  // create asset referencing the oracle account
+  const assetSigner = generateSigner(umi);
+  const result = create(umi, {
+    ...DEFAULT_ASSET,
+    asset: assetSigner,
+    collection,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await fixedAccountSet(umi, {
+    account: account.publicKey,
+    signer: umi.identity,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await create(umi, {
+    ...DEFAULT_ASSET,
+    asset: assetSigner,
+    collection,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: assetSigner.publicKey,
+    owner: umi.identity.publicKey,
   });
 });
