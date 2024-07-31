@@ -11,11 +11,13 @@ import {
   createPlugin,
   ownerPluginAuthority,
   removePluginV1,
+  updatePluginAuthority,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
   assertAsset,
   createAsset,
+  createCollection,
   createUmi,
 } from '../../_setupRaw';
 
@@ -341,6 +343,108 @@ test('it update authority cannot unfreeze frozen asset', async (t) => {
       authority: {
         type: 'Address',
         address: delegateAddress.publicKey,
+      },
+      frozen: true,
+    },
+  });
+});
+
+test('a freezeDelegate can freeze using update authority', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const updateAuthority = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    updateAuthority: updateAuthority.publicKey,
+    owner: owner.publicKey,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: false },
+        authority: updatePluginAuthority(),
+      }),
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: updateAuthority.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: false,
+    },
+  });
+
+  await updatePluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: true } }),
+    authority: updateAuthority,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: updateAuthority.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: true,
+    },
+  });
+});
+
+test('a freezeDelegate can freeze using delegated update authority from collection', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const updateAuthority = generateSigner(umi);
+
+  const collection = await createCollection(umi, {
+    updateAuthority: updateAuthority.publicKey,
+  });
+
+  const asset = await createAsset(umi, {
+    owner: owner.publicKey,
+    collection: collection.publicKey,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: false },
+        authority: updatePluginAuthority(),
+      }),
+    ],
+    authority: updateAuthority,
+  });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: false,
+    },
+  });
+
+  await updatePluginV1(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: true } }),
+    authority: updateAuthority,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
       },
       frozen: true,
     },
