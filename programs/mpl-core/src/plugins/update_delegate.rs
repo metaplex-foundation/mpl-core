@@ -70,10 +70,11 @@ impl PluginValidation for UpdateDelegate {
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(new_plugin) = ctx.target_plugin {
-            if (ctx.self_authority
-                == (&Authority::Address {
-                    address: *ctx.authority_info.key,
-                })
+            if ((ctx.resolved_authorities.is_some()
+                && ctx
+                    .resolved_authorities
+                    .unwrap()
+                    .contains(ctx.self_authority))
                 || self.additional_delegates.contains(ctx.authority_info.key))
                 && new_plugin.manager() == Authority::UpdateAuthority
             {
@@ -91,10 +92,11 @@ impl PluginValidation for UpdateDelegate {
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if let Some(plugin_to_remove) = ctx.target_plugin {
-            if (ctx.self_authority
-                == (&Authority::Address {
-                    address: *ctx.authority_info.key,
-                })
+            if ((ctx.resolved_authorities.is_some()
+                && ctx
+                    .resolved_authorities
+                    .unwrap()
+                    .contains(ctx.self_authority))
                 || self.additional_delegates.contains(ctx.authority_info.key))
                 && plugin_to_remove.manager() == Authority::UpdateAuthority
             {
@@ -115,10 +117,11 @@ impl PluginValidation for UpdateDelegate {
         let plugin = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
 
         // If the plugin authority is the authority signing.
-        if (ctx.self_authority
-            == &(Authority::Address {
-                address: *ctx.authority_info.key,
-            })
+        if ((ctx.resolved_authorities.is_some()
+        && ctx
+            .resolved_authorities
+            .unwrap()
+            .contains(ctx.self_authority))
             // Or the authority is one of the additional delegates.
             || self.additional_delegates.contains(ctx.authority_info.key))
             // And it's an authority-managed plugin.
@@ -141,10 +144,11 @@ impl PluginValidation for UpdateDelegate {
         let plugin = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
 
         // If the plugin authority is the authority signing.
-        if ctx.self_authority
-            == &(Authority::Address {
-                address: *ctx.authority_info.key,
-            })
+        if (ctx.resolved_authorities.is_some()
+        && ctx
+            .resolved_authorities
+            .unwrap()
+            .contains(ctx.self_authority))
             // Or the authority is one of the additional delegates.
             || (self.additional_delegates.contains(ctx.authority_info.key) && PluginType::from(plugin) != PluginType::UpdateDelegate)
             // And it's an authority-managed plugin.
@@ -160,10 +164,11 @@ impl PluginValidation for UpdateDelegate {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if (ctx.self_authority
-            == (&Authority::Address {
-                address: *ctx.authority_info.key,
-            })
+        if ((ctx.resolved_authorities.is_some()
+        && ctx
+            .resolved_authorities
+            .unwrap()
+            .contains(ctx.self_authority))
             || self.additional_delegates.contains(ctx.authority_info.key))
             // We do not allow the root authority (either Collection or Address) to be changed by this delegate.
             && ctx.new_collection_authority.is_none() && ctx.new_asset_authority.is_none()
@@ -181,10 +186,11 @@ impl PluginValidation for UpdateDelegate {
         let plugin = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
 
         // If the plugin itself is being updated.
-        if ctx.self_authority
-            == (&Authority::Address {
-                address: *ctx.authority_info.key,
-            })
+        if (ctx.resolved_authorities.is_some()
+            && ctx
+                .resolved_authorities
+                .unwrap()
+                .contains(ctx.self_authority))
             || self.additional_delegates.contains(ctx.authority_info.key)
         {
             if let Plugin::UpdateDelegate(update_delegate) = plugin {

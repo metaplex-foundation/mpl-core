@@ -163,6 +163,58 @@ test('it cannot transfer after delegate authority has been revoked', async (t) =
   });
 });
 
+test('it can transfer using delegated update authority', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const newOwner = generateSigner(umi);
+  const updateAuthority = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner: owner.publicKey,
+    updateAuthority: updateAuthority.publicKey,
+    plugins: [
+      {
+        type: 'TransferDelegate',
+        authority: {
+          type: 'UpdateAuthority',
+        },
+      },
+    ],
+    authority: updateAuthority,
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: updateAuthority.publicKey },
+    transferDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+    },
+  });
+
+  await transfer(umi, {
+    asset,
+    newOwner: newOwner.publicKey,
+    authority: updateAuthority,
+  }).sendAndConfirm(umi);
+
+  // Resets to `Owner` after the transfer.
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: newOwner.publicKey,
+    updateAuthority: { type: 'Address', address: updateAuthority.publicKey },
+    transferDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+    },
+  });
+});
+
 test('it can transfer using delegated update authority from collection', async (t) => {
   const umi = await createUmi();
   const owner = generateSigner(umi);
@@ -187,6 +239,18 @@ test('it can transfer using delegated update authority from collection', async (
     authority: updateAuthority,
   });
 
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Collection' },
+    transferDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+    },
+  });
+
   await transfer(umi, {
     asset,
     collection,
@@ -194,6 +258,7 @@ test('it can transfer using delegated update authority from collection', async (
     authority: updateAuthority,
   }).sendAndConfirm(umi);
 
+  // Resets to `Owner` after the transfer.
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
