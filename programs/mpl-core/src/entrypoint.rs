@@ -1,10 +1,14 @@
 use solana_program::{
-    account_info::AccountInfo, entrypoint, entrypoint::ProgramResult,
-    program_error::PrintProgramError, pubkey::Pubkey,
+    account_info::AccountInfo, entrypoint::ProgramResult, program_error::PrintProgramError,
+    pubkey::Pubkey,
 };
 
 use crate::{error::MplCoreError, processor};
 
+#[cfg(not(feature = "no-entrypoint"))]
+use solana_program::entrypoint;
+
+#[cfg(not(feature = "no-entrypoint"))]
 entrypoint!(process_instruction);
 
 /// Entrypoint function
