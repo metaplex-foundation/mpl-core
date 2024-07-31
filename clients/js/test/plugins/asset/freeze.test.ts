@@ -349,7 +349,7 @@ test('it update authority cannot unfreeze frozen asset', async (t) => {
   });
 });
 
-test('a freezeDelegate can freeze using update authority', async (t) => {
+test('a freezeDelegate can freeze using delegated update authority', async (t) => {
   const umi = await createUmi();
   const owner = generateSigner(umi);
   const updateAuthority = generateSigner(umi);
