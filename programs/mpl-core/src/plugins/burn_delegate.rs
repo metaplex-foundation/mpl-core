@@ -3,7 +3,7 @@ use solana_program::program_error::ProgramError;
 
 use crate::{
     plugins::{abstain, approve},
-    state::{Authority, DataBlob},
+    state::DataBlob,
 };
 
 use super::{PluginValidation, PluginValidationContext, ValidationResult};
@@ -42,10 +42,11 @@ impl PluginValidation for BurnDelegate {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority
-            == (&Authority::Address {
-                address: *ctx.authority_info.key,
-            })
+        if ctx.resolved_authorities.is_some()
+            && ctx
+                .resolved_authorities
+                .unwrap()
+                .contains(ctx.self_authority)
         {
             approve!()
         } else {

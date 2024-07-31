@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::state::{Authority, DataBlob};
+use crate::state::DataBlob;
 
 use super::{abstain, approve, PluginValidation, PluginValidationContext, ValidationResult};
 
@@ -35,41 +35,19 @@ impl DataBlob for TransferDelegate {
 }
 
 impl PluginValidation for TransferDelegate {
-    fn validate_burn(
-        &self,
-        ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError> {
-        if ctx.self_authority
-            == (&Authority::Address {
-                address: *ctx.authority_info.key,
-            })
-        {
-            approve!()
-        } else {
-            abstain!()
-        }
-    }
-
     fn validate_transfer(
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match ctx.self_authority {
-            Authority::Address { address } if address == ctx.authority_info.key => {
-                return approve!();
-            }
-
-            Authority::UpdateAuthority => {
-                if ctx
-                    .resolved_authorities
-                    .map_or(false, |auths| auths.contains(&Authority::UpdateAuthority))
-                {
-                    return approve!();
-                }
-            }
-
-            _ => {}
+        if ctx.resolved_authorities.is_some()
+            && ctx
+                .resolved_authorities
+                .unwrap()
+                .contains(ctx.self_authority)
+        {
+            return approve!();
         }
+
         abstain!()
     }
 }
