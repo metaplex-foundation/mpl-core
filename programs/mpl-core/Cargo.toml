@@ -24,4 +24,4 @@ podded = "0.5.1"
 strum = { version = "0.26.1", features = ["derive"] }
 
 [features]
-no-entypoint = []
+no-entrypoint = []
