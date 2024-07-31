@@ -171,6 +171,43 @@ test('an burnDelegate cannot burn an asset after delegate authority revoked', as
   });
 });
 
+test('a burnDelegate can burn using update authority', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const updateAuthority = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    updateAuthority: updateAuthority.publicKey,
+    owner: owner.publicKey,
+    plugins: [
+      {
+        type: 'BurnDelegate',
+        authority: {
+          type: 'UpdateAuthority',
+        },
+      },
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: updateAuthority.publicKey },
+    burnDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+    },
+  });
+
+  await burn(umi, {
+    asset,
+    authority: updateAuthority,
+  }).sendAndConfirm(umi);
+
+  await assertBurned(t, umi, asset.publicKey);
+});
+
 test('a burnDelegate can burn using delegated update authority from collection', async (t) => {
   const umi = await createUmi();
   const owner = generateSigner(umi);
@@ -208,43 +245,6 @@ test('a burnDelegate can burn using delegated update authority from collection',
   await burn(umi, {
     asset,
     collection,
-    authority: updateAuthority,
-  }).sendAndConfirm(umi);
-
-  await assertBurned(t, umi, asset.publicKey);
-});
-
-test('a burnDelegate can burn using update authority', async (t) => {
-  const umi = await createUmi();
-  const owner = generateSigner(umi);
-  const updateAuthority = generateSigner(umi);
-
-  const asset = await createAsset(umi, {
-    updateAuthority: updateAuthority.publicKey,
-    owner: owner.publicKey,
-    plugins: [
-      {
-        type: 'BurnDelegate',
-        authority: {
-          type: 'UpdateAuthority',
-        },
-      },
-    ],
-  });
-
-  await assertAsset(t, umi, {
-    asset: asset.publicKey,
-    owner: owner.publicKey,
-    updateAuthority: { type: 'Address', address: updateAuthority.publicKey },
-    burnDelegate: {
-      authority: {
-        type: 'UpdateAuthority',
-      },
-    },
-  });
-
-  await burn(umi, {
-    asset,
     authority: updateAuthority,
   }).sendAndConfirm(umi);
 
