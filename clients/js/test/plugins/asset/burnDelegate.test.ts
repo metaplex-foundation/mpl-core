@@ -171,7 +171,7 @@ test('an burnDelegate cannot burn an asset after delegate authority revoked', as
   });
 });
 
-test('a burnDelegate can burn using update authority', async (t) => {
+test('a burnDelegate can burn using delegated update authority', async (t) => {
   const umi = await createUmi();
   const owner = generateSigner(umi);
   const updateAuthority = generateSigner(umi);
