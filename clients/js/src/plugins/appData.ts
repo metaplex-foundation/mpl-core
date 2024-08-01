@@ -54,7 +54,7 @@ export function appDataInitInfoArgsToBase(
     initPluginAuthority: d.initPluginAuthority
       ? pluginAuthorityToBase(d.initPluginAuthority)
       : null,
-    schema: d.schema !== undefined && d.schema !== null ? d.schema : null,
+    schema: d.schema ?? null,
   };
 }
 
@@ -62,7 +62,7 @@ export function appDataUpdateInfoArgsToBase(
   d: AppDataUpdateInfoArgs
 ): BaseAppDataUpdateInfoArgs {
   return {
-    schema: d.schema !== undefined && d.schema !== null ? d.schema : null,
+    schema: d.schema ?? null,
   };
 }
 

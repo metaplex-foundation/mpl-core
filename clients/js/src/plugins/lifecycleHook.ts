@@ -75,7 +75,7 @@ export function lifecycleHookInitInfoArgsToBase(
       ? pluginAuthorityToBase(l.initPluginAuthority)
       : null,
     lifecycleChecks: lifecycleChecksToBase(l.lifecycleChecks),
-    schema: l.schema ? l.schema : null,
+    schema: l.schema ?? null,
     dataAuthority: l.dataAuthority
       ? pluginAuthorityToBase(l.dataAuthority)
       : null,
@@ -92,7 +92,7 @@ export function lifecycleHookUpdateInfoArgsToBase(
     extraAccounts: l.extraAccounts
       ? l.extraAccounts.map(extraAccountToBase)
       : null,
-    schema: l.schema ? l.schema : null,
+    schema: l.schema ?? null,
     // TODO update dataAuthority?
   };
 }
