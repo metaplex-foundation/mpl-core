@@ -53,7 +53,7 @@ export function linkedAppDataInitInfoArgsToBase(
     initPluginAuthority: d.initPluginAuthority
       ? pluginAuthorityToBase(d.initPluginAuthority)
       : null,
-    schema: d.schema ? d.schema : null,
+    schema: d.schema !== undefined && d.schema !== null ? d.schema : null,
   };
 }
 
@@ -61,7 +61,7 @@ export function linkedAppDataUpdateInfoArgsToBase(
   d: LinkedAppDataUpdateInfoArgs
 ): BaseLinkedAppDataUpdateInfoArgs {
   return {
-    schema: d.schema ? d.schema : null,
+    schema: d.schema !== undefined && d.schema !== null ? d.schema : null,
   };
 }
 
