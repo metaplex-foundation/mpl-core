@@ -84,7 +84,7 @@ test('it cannot add a DataSection to an asset', async (t) => {
     },
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(result, { name: 'CannotAddDataSection' });
 });
 
 test('it cannot add a DataSection to a collection', async (t) => {
@@ -108,5 +108,5 @@ test('it cannot add a DataSection to a collection', async (t) => {
     },
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await t.throwsAsync(result, { name: 'CannotAddDataSection' });
 });
