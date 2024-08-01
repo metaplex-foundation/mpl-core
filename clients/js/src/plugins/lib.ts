@@ -1,5 +1,6 @@
 import { isSome, none, Option, some } from '@metaplex-foundation/umi';
 
+import { decode } from '@msgpack/msgpack';
 import {
   Key,
   PluginHeaderV1,
@@ -234,11 +235,11 @@ export function parseExternalPluginAdapterData(
         }
       }
     } else if (plugin.schema === ExternalPluginAdapterSchema.MsgPack) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        'MsgPack schema currently not supported, falling back to binary'
-      );
-      data = dataSlice;
+      if (dataSlice.length === 0) {
+        data = null;
+      } else {
+        data = decode(dataSlice);
+      }
     }
     return data;
   }
