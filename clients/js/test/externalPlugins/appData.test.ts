@@ -99,6 +99,7 @@ async function generateTestContext(
     otherData = Uint8Array.from(Buffer.from(JSON.stringify(otherDataJson)));
   } else if (schema === ExternalPluginAdapterSchema.MsgPack) {
     data = msgpack.encode({ message: 'Hello', target: 'msgpack' });
+    otherData = msgpack.encode({ message: 'Hello hello', target: 'msgpack' });
   }
 
   if (!dataAuthoritySigner) {
@@ -196,11 +197,10 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       }).sendAndConfirm(umi);
 
       let assertData = null;
-      if (
-        schema === ExternalPluginAdapterSchema.Binary ||
-        schema === ExternalPluginAdapterSchema.MsgPack
-      ) {
+      if (schema === ExternalPluginAdapterSchema.Binary) {
         assertData = data;
+      } else if (schema === ExternalPluginAdapterSchema.MsgPack) {
+        assertData = msgpack.decode(data);
       } else if (schema === ExternalPluginAdapterSchema.Json) {
         assertData = JSON.parse(Buffer.from(data).toString());
       }
@@ -268,11 +268,10 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
       }).sendAndConfirm(umi);
 
       let assertData = null;
-      if (
-        schema === ExternalPluginAdapterSchema.Binary ||
-        schema === ExternalPluginAdapterSchema.MsgPack
-      ) {
+      if (schema === ExternalPluginAdapterSchema.Binary) {
         assertData = data;
+      } else if (schema === ExternalPluginAdapterSchema.MsgPack) {
+        assertData = msgpack.decode(data);
       } else if (schema === ExternalPluginAdapterSchema.Json) {
         assertData = JSON.parse(Buffer.from(data).toString());
       }
@@ -302,11 +301,10 @@ DATA_AUTHORITIES.forEach((dataAuthorityType) => {
         asset: asset.publicKey,
       }).sendAndConfirm(umi);
 
-      if (
-        schema === ExternalPluginAdapterSchema.Binary ||
-        schema === ExternalPluginAdapterSchema.MsgPack
-      ) {
+      if (schema === ExternalPluginAdapterSchema.Binary) {
         assertData = otherData;
+      } else if (schema === ExternalPluginAdapterSchema.MsgPack) {
+        assertData = msgpack.decode(otherData);
       } else if (schema === ExternalPluginAdapterSchema.Json) {
         assertData = JSON.parse(Buffer.from(otherData).toString());
       }
