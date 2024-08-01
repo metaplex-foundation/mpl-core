@@ -1,6 +1,6 @@
 import test from 'ava';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
-import { Signer, Umi } from '@metaplex-foundation/umi';
+import { Signer, Umi, generateSigner } from '@metaplex-foundation/umi';
 import * as msgpack from '@msgpack/msgpack';
 import {
   assertAsset,
@@ -16,6 +16,10 @@ import {
   PluginAuthorityType,
   updatePlugin,
   writeData,
+  create,
+  createCollection,
+  updateCollectionPlugin,
+  addPlugin,
 } from '../../src';
 
 const DATA_AUTHORITIES: PluginAuthorityType[] = [
@@ -700,4 +704,225 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
       derivePlugins: true,
     }
   );
+});
+
+test('it cannot create an asset with linked app data', async (t) => {
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const dataAuthority = generateSigner(umi);
+  const appDataUpdateAuthority = generateSigner(umi);
+
+  const result = create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'LinkedAppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+        initPluginAuthority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidPluginAdapterTarget' });
+});
+
+test('it cannot add linked app data to an asset', async (t) => {
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+
+  await create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    linkedAppDatas: undefined,
+  });
+
+  const dataAuthority = generateSigner(umi);
+  const appDataUpdateAuthority = generateSigner(umi);
+
+  const result = addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'LinkedAppData',
+      dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+      schema: ExternalPluginAdapterSchema.Json,
+      initPluginAuthority: {
+        type: 'Address',
+        address: appDataUpdateAuthority.publicKey,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidPluginAdapterTarget' });
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    linkedAppDatas: undefined,
+  });
+});
+
+test('it can update linked app data on collection with external plugin authority different than asset update authority', async (t) => {
+  const umi = await createUmi();
+  const collection = generateSigner(umi);
+  const dataAuthority = generateSigner(umi);
+  const appDataUpdateAuthority = generateSigner(umi);
+
+  await createCollection(umi, {
+    collection,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'LinkedAppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+        initPluginAuthority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    linkedAppDatas: [
+      {
+        authority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+        type: 'LinkedAppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+      },
+    ],
+  });
+
+  await updateCollectionPlugin(umi, {
+    collection: collection.publicKey,
+    authority: appDataUpdateAuthority,
+    plugin: {
+      key: {
+        type: 'LinkedAppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+      },
+      type: 'LinkedAppData',
+      schema: ExternalPluginAdapterSchema.Binary,
+    },
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    linkedAppDatas: [
+      {
+        authority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+        type: 'LinkedAppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Binary,
+      },
+    ],
+  });
+});
+
+test('it cannot update linked app data on collection using update authority when different from external plugin authority', async (t) => {
+  const umi = await createUmi();
+  const collection = generateSigner(umi);
+  const dataAuthority = generateSigner(umi);
+  const appDataUpdateAuthority = generateSigner(umi);
+
+  await createCollection(umi, {
+    collection,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'LinkedAppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+        initPluginAuthority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    linkedAppDatas: [
+      {
+        authority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+        type: 'LinkedAppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+      },
+    ],
+  });
+
+  const result = updateCollectionPlugin(umi, {
+    collection: collection.publicKey,
+    authority: umi.identity,
+    plugin: {
+      key: {
+        type: 'LinkedAppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+      },
+      type: 'LinkedAppData',
+      schema: ExternalPluginAdapterSchema.Binary,
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    linkedAppDatas: [
+      {
+        authority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+        type: 'LinkedAppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+      },
+    ],
+  });
 });

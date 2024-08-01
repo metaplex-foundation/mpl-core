@@ -610,7 +610,7 @@ test('it can update app data with external plugin authority different than asset
   });
 });
 
-test('it cannot update oracle using update authority when different from external plugin authority', async (t) => {
+test('it cannot update app data using update authority when different from external plugin authority', async (t) => {
   const umi = await createUmi();
   const asset = generateSigner(umi);
   const dataAuthority = generateSigner(umi);
@@ -687,7 +687,7 @@ test('it cannot update oracle using update authority when different from externa
   });
 });
 
-test('it can update oracle on collection with external plugin authority different than asset update authority', async (t) => {
+test('it can update app data on collection with external plugin authority different than asset update authority', async (t) => {
   const umi = await createUmi();
   const collection = generateSigner(umi);
   const dataAuthority = generateSigner(umi);
@@ -760,7 +760,7 @@ test('it can update oracle on collection with external plugin authority differen
   });
 });
 
-test('it cannot update oracle on collection using update authority when different from external plugin authority', async (t) => {
+test('it cannot update app data on collection using update authority when different from external plugin authority', async (t) => {
   const umi = await createUmi();
   const collection = generateSigner(umi);
   const dataAuthority = generateSigner(umi);
