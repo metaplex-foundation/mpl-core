@@ -122,6 +122,18 @@ impl ExternalPluginAdapter {
             ) => {
                 app_data.update(update_info);
             }
+            (
+                ExternalPluginAdapter::LinkedLifecycleHook(linked_lifecycle_hook),
+                ExternalPluginAdapterUpdateInfo::LinkedLifecycleHook(update_info),
+            ) => {
+                linked_lifecycle_hook.update(update_info);
+            }
+            (
+                ExternalPluginAdapter::LinkedAppData(linked_app_data),
+                ExternalPluginAdapterUpdateInfo::LinkedAppData(update_info),
+            ) => {
+                linked_app_data.update(update_info);
+            }
             _ => unreachable!(),
         }
     }
