@@ -17,7 +17,7 @@ use crate::{
     state::{
         AssetV1, Authority, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT,
     },
-    utils::{resolve_authority, validate_asset_permissions},
+    utils::{resolve_authority, resolve_pubkey_to_authorities, validate_asset_permissions},
 };
 
 #[repr(C)]
@@ -148,7 +148,7 @@ pub(crate) fn process_create<'a>(
 
     if args.data_state == DataState::AccountState {
         // Validate asset permissions.
-        let _ = validate_asset_permissions(
+        let (asset, _, _) = validate_asset_permissions(
             accounts,
             authority,
             ctx.accounts.asset,
@@ -188,13 +188,19 @@ pub(crate) fn process_create<'a>(
                     if PluginType::check_create(&PluginType::from(&plugin.plugin))
                         != CheckResult::None
                     {
+                        let resolved_authorities = resolve_pubkey_to_authorities(
+                            authority,
+                            ctx.accounts.collection,
+                            &asset,
+                        )?;
+
                         let validation_ctx = PluginValidationContext {
                             accounts,
                             asset_info: Some(ctx.accounts.asset),
                             collection_info: ctx.accounts.collection,
                             self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
                             authority_info: authority,
-                            resolved_authorities: None,
+                            resolved_authorities: Some(&resolved_authorities),
                             new_owner: None,
                             new_asset_authority: None,
                             new_collection_authority: None,
