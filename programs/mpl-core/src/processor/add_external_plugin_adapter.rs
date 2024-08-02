@@ -50,6 +50,18 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
+    // TODO: This should be handled in the validate call.
+    match args.init_info {
+        ExternalPluginAdapterInitInfo::LinkedLifecycleHook(_)
+        | ExternalPluginAdapterInitInfo::LinkedAppData(_) => {
+            return Err(MplCoreError::InvalidPluginAdapterTarget.into())
+        }
+        ExternalPluginAdapterInitInfo::DataSection(_) => {
+            return Err(MplCoreError::CannotAddDataSection.into())
+        }
+        _ => (),
+    }
+
     let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: Some(ctx.accounts.asset),
@@ -130,6 +142,10 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         if log_wrapper.key != &spl_noop::ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
+    }
+
+    if let ExternalPluginAdapterInitInfo::DataSection(_) = args.init_info {
+        return Err(MplCoreError::CannotAddDataSection.into());
     }
 
     let validation_ctx = PluginValidationContext {

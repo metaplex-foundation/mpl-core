@@ -1,8 +1,13 @@
 import test from 'ava';
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
-import { Signer, Umi } from '@metaplex-foundation/umi';
+import { Signer, Umi, generateSigner } from '@metaplex-foundation/umi';
 import * as msgpack from '@msgpack/msgpack';
-import { assertAsset, createUmi, DEFAULT_ASSET } from '../_setupRaw';
+import {
+  assertAsset,
+  createUmi,
+  DEFAULT_ASSET,
+  assertCollection,
+} from '../_setupRaw';
 import { createAsset } from '../_setupSdk';
 import {
   ExternalPluginAdapterSchema,
@@ -10,6 +15,9 @@ import {
   PluginAuthorityType,
   updatePlugin,
   writeData,
+  create,
+  createCollection,
+  updateCollectionPlugin,
 } from '../../src';
 
 const DATA_AUTHORITIES: PluginAuthorityType[] = [
@@ -520,6 +528,306 @@ test(`updating a plugin before a secure app data does not corrupt the data`, asy
         dataAuthority,
         schema: ExternalPluginAdapterSchema.Json,
         data: assertData,
+      },
+    ],
+  });
+});
+
+test('it can update app data with external plugin authority different than asset update authority', async (t) => {
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const dataAuthority = generateSigner(umi);
+  const appDataUpdateAuthority = generateSigner(umi);
+
+  await create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+        initPluginAuthority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    appDatas: [
+      {
+        authority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+      },
+    ],
+  });
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+    authority: appDataUpdateAuthority,
+    plugin: {
+      key: {
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+      },
+      type: 'AppData',
+      schema: ExternalPluginAdapterSchema.Binary,
+    },
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    appDatas: [
+      {
+        authority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Binary,
+      },
+    ],
+  });
+});
+
+test('it cannot update app data using update authority when different from external plugin authority', async (t) => {
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const dataAuthority = generateSigner(umi);
+  const appDataUpdateAuthority = generateSigner(umi);
+
+  await create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+        initPluginAuthority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    appDatas: [
+      {
+        authority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+      },
+    ],
+  });
+
+  const result = updatePlugin(umi, {
+    asset: asset.publicKey,
+    authority: umi.identity,
+    plugin: {
+      key: {
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+      },
+      type: 'AppData',
+      schema: ExternalPluginAdapterSchema.Binary,
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    appDatas: [
+      {
+        authority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+      },
+    ],
+  });
+});
+
+test('it can update app data on collection with external plugin authority different than asset update authority', async (t) => {
+  const umi = await createUmi();
+  const collection = generateSigner(umi);
+  const dataAuthority = generateSigner(umi);
+  const appDataUpdateAuthority = generateSigner(umi);
+
+  await createCollection(umi, {
+    collection,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+        initPluginAuthority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    appDatas: [
+      {
+        authority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+      },
+    ],
+  });
+
+  await updateCollectionPlugin(umi, {
+    collection: collection.publicKey,
+    authority: appDataUpdateAuthority,
+    plugin: {
+      key: {
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+      },
+      type: 'AppData',
+      schema: ExternalPluginAdapterSchema.Binary,
+    },
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    appDatas: [
+      {
+        authority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Binary,
+      },
+    ],
+  });
+});
+
+test('it cannot update app data on collection using update authority when different from external plugin authority', async (t) => {
+  const umi = await createUmi();
+  const collection = generateSigner(umi);
+  const dataAuthority = generateSigner(umi);
+  const appDataUpdateAuthority = generateSigner(umi);
+
+  await createCollection(umi, {
+    collection,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+        initPluginAuthority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    appDatas: [
+      {
+        authority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
+      },
+    ],
+  });
+
+  const result = updateCollectionPlugin(umi, {
+    collection: collection.publicKey,
+    authority: umi.identity,
+    plugin: {
+      key: {
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+      },
+      type: 'AppData',
+      schema: ExternalPluginAdapterSchema.Binary,
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+
+  await assertCollection(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    appDatas: [
+      {
+        authority: {
+          type: 'Address',
+          address: appDataUpdateAuthority.publicKey,
+        },
+        type: 'AppData',
+        dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
+        schema: ExternalPluginAdapterSchema.Json,
       },
     ],
   });

@@ -92,7 +92,7 @@ export function linkedLifecycleHookUpdateInfoArgsToBase(
     extraAccounts: l.extraAccounts
       ? l.extraAccounts.map(extraAccountToBase)
       : null,
-    schema: l.schema ? l.schema : null,
+    schema: l.schema ?? null,
   };
 }
 
