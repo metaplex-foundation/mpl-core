@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1722293769161,
+  "lastUpdate": 1722976975361,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -5009,6 +5009,120 @@ window.BENCHMARK_DATA = {
           {
             "name": "CU: transfer an asset with plugins and empty collection",
             "value": 15423,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "56533526+danenbm@users.noreply.github.com",
+            "name": "Michael Danenberg",
+            "username": "danenbm"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8a53809d3f353fce0fdad3e5364188c63d1e52f2",
+          "message": "Jun 2024 feature staging to main (#157)\n\n* Adding support for additional delegates in Update Delegate plugin.\r\n\r\n* add more tests, migtrate to sdk usage\r\n\r\n* more collection tests\r\n\r\n* Updating to fit new requirements.\r\n\r\n* add test\r\n\r\n* Addressing feedback.\r\n\r\n* Adding two tests to check for root authority permissions.\r\n\r\n* Resetting index.\r\n\r\n* Addressing feedback and regenerating.\r\n\r\n* Fixing Rust tests.\r\n\r\n* Rename to App Data\r\n\r\n* Renaming Asset Linked to just Linked.\r\n\r\n* Addressing feedback.\r\n\r\n* Fixing based on feedback and fixing a loophole that allowed data sections to be added on create.\r\n\r\n* New lockfile.\r\n\r\n* New lockfile.\r\n\r\n* Fixing lockfile.\r\n\r\n* Fixing lock files.\r\n\r\n* Add `updateV2` which allows adding/removing an asset from collection (#142)\r\n\r\n* Add ability to add/remove an asset from a collection\r\n\r\n* Regenerate clients\r\n\r\n* Add back check for V1 removing from collection\r\n\r\n* Validate permission to add to new collection\r\n\r\n* Update comments\r\n\r\n* Simplify condition\r\n\r\n* Kinobi default for updateV2 and initial tests\r\n\r\n* Add test changing collection using delegate\r\n\r\n* Add wrong collection tests and collection size checks\r\n\r\n* Additional change collection tests\r\n\r\n* More checks\r\n\r\n* Update JS SDK V1 to use updateV2\r\n\r\n* Update updateV2 test to use SDK\r\n\r\n* Use SDK test helpers\r\n\r\n* Only increment num_minted on create\r\n\r\n* Add negative test cases\r\n\r\n* Reorder tests\r\n\r\n* Add more update delegate tests, rename tests, add asserts\r\n\r\n* Separate increment into two methods\r\n\r\n* chore: Release mpl-core version 0.8.0-alpha.1\r\n\r\n* Deploy JS client v1.1.0-alpha.0\r\n\r\n* filter out collection fields not applicable on asset on derivation (#149)\r\n\r\n* Deploy JS client v1.1.0-alpha.1\r\n\r\n* Adding helpers to fetch external plugins. (#154)\r\n\r\n* Adding helpers to fetch external plugins.\r\n\r\n* Convert to helper and remove extra deserialize\r\n\r\n---------\r\n\r\nCo-authored-by: Michael Danenberg <56533526+danenbm@users.noreply.github.com>\r\n\r\n* Rust client improvements (#155)\r\n\r\n* Add anchor trait implementations for BaseAssetV1 and BaseCollectionV1\r\n\r\n* Box Asset deserialization and use helper\r\n\r\n* Box Collection deserialization, use helper, add ext plugins\r\n\r\n* Add code and test for fetching external plugin adapter data\r\n\r\n* Do not run pre-commit during merge\r\n\r\n* Add external plugin data to Asset and Collection in Rust client\r\n\r\n* Add method that only returns data offset and len, remove data_string from Asset and Collection\r\n\r\n* Update comment\r\n\r\n* Remove fetch_external_plugin_adapter_data_as_string and test wrapped\r\n\r\n* chore: Release mpl-core version 0.8.0-alpha.2\r\n\r\n* Adding tests to msgpack since apparantly it's not disabled.\r\n\r\n* Fix updating external plugin adapters on collection (#161)\r\n\r\n* Add tests for updating AppData on asset and collection\r\n\r\n* Fix function pointers for updating collection external plugin adapters\r\n\r\n* Add more tests to create collections with external plugins\r\n\r\n* Add todo functions and rename test\r\n\r\n* Add collection update tests\r\n\r\n* Add tests for removing external plugin adapters from collection\r\n\r\n* Changes for `AppData`, `LinkedAppData`, and `DataSection` DAS indexing and updates to related js tests (#174)\r\n\r\n* Serialize external JSON data as JSON object rather than String\r\n\r\n* Do not convert MsgPack encoded data to String in tests\r\n\r\nAlso add MsgPack to LinkedAppData tests\r\n\r\n* Fix test for MsgPack case\r\n\r\n* chore: Release mpl-core version 0.8.0-beta.1\r\n\r\n* Add missing external plugin adapters to validation\r\n\r\n* Add missing parameter\r\n\r\n* Remove feature gate\r\n\r\n* Allow update delegate to validate create\r\n\r\n* Fixing incorrect test name\r\n\r\n* Allow for all plugin `Authority` types to approve lifecycle events, remove unused functions (#177)\r\n\r\n* Allow for other update_delegate authority types and remove unused functions\r\n\r\n* Make other plugin validations consistent\r\n\r\n* Add some burnDelegate tests\r\n\r\n* Switch test order\r\n\r\n* Add some freezeDelegate tests\r\n\r\n* Adding another transfer delegate test\r\n\r\n* Add more update delegate tests\r\n\r\n* Minor rename test\r\n\r\n* Adding automatic msgpack decoding.\r\n\r\n* Add AppData auth tests (#180)\r\n\r\n* Add AppData auth tests\r\n\r\n* Update js to convert schema of 0 to 0 instead of null\r\n\r\n* Use nullish coalescing operator on schema\r\n\r\n* Block adding certain external plugin adapters, add more tests\r\n\r\n* Update data section test result\r\n\r\n* Fix updating for linked lifecycle hook and app data\r\n\r\n---------\r\n\r\nCo-authored-by: Blockiosaurus <blockiosaurus@gmail.com>\r\nCo-authored-by: Nhan Phan <nhan.phan@gmail.com>\r\nCo-authored-by: Nhan Phan <nhan@metaplex.com>\r\nCo-authored-by: blockiosaurus <90809591+blockiosaurus@users.noreply.github.com>\r\nCo-authored-by: danenbm <danenbm@users.noreply.github.com>",
+          "timestamp": "2024-08-06T13:37:55-07:00",
+          "tree_id": "f4f1a400675cff4fbe1bee1127957132049519a9",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/8a53809d3f353fce0fdad3e5364188c63d1e52f2"
+        },
+        "date": 1722976974863,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 10577,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 22051,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 39618,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 45640,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 30237,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 38670,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 37795,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 50967,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 38499,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 55886,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 6320,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 8918,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 14532,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 17130,
             "unit": "Compute Units"
           }
         ]
