@@ -1,14 +1,10 @@
 use solana_program::{rent::Rent, system_program, sysvar::Sysvar};
 
 use super::*;
-use crate::state::{DataBlob, COLLECT_RECIPIENT1, COLLECT_RECIPIENT2};
+use crate::state::{COLLECT_RECIPIENT1, COLLECT_RECIPIENT2};
 
 use crate::{
-    error::MplCoreError,
-    instruction::accounts::CollectAccounts,
-    state::{AssetV1, HashedAssetV1, Key},
-    utils::{fetch_core_data, load_key},
-    ID,
+    error::MplCoreError, instruction::accounts::CollectAccounts, state::Key, utils::load_key, ID,
 };
 
 pub(crate) fn collect<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResult {
@@ -55,42 +51,14 @@ fn collect_from_account(
                 .ok_or(MplCoreError::NumericalOverflowError)?;
             (fee_amount, uninitialized_rent)
         }
-        Key::AssetV1 => {
-            let (asset, header, registry) = fetch_core_data::<AssetV1>(account_info)?;
-            let header_size = match header {
-                Some(header) => header.get_size(),
-                None => 0,
-            };
-
-            let registry_size = match registry {
-                Some(registry) => registry.get_size(),
-                None => 0,
-            };
-
-            let asset_rent = rent.minimum_balance(
-                asset
-                    .get_size()
-                    .checked_add(header_size)
-                    .ok_or(MplCoreError::NumericalOverflowError)?
-                    .checked_add(registry_size)
-                    .ok_or(MplCoreError::NumericalOverflowError)?,
-            );
+        Key::AssetV1 | Key::HashedAssetV1 => {
+            let asset_rent = rent.minimum_balance(account_info.data_len());
             let fee_amount = account_info
                 .lamports()
                 .checked_sub(asset_rent)
                 .ok_or(MplCoreError::NumericalOverflowError)?;
 
             (fee_amount, asset_rent)
-        }
-        Key::HashedAssetV1 => {
-            // TODO use DataBlob trait instead?
-            let hashed_rent = rent.minimum_balance(HashedAssetV1::LENGTH);
-            let fee_amount = account_info
-                .lamports()
-                .checked_sub(hashed_rent)
-                .ok_or(MplCoreError::NumericalOverflowError)?;
-
-            (fee_amount, hashed_rent)
         }
         _ => return Err(MplCoreError::IncorrectAccount.into()),
     };
