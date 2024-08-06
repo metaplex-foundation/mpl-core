@@ -319,13 +319,18 @@ impl CollectionV1 {
         abstain!()
     }
 
-    /// Increment size of the Collection
-    pub fn increment(&mut self) -> Result<(), ProgramError> {
+    /// Increment number of minted items of the Collection
+    pub fn increment_minted(&mut self) -> Result<(), ProgramError> {
         self.num_minted = self
             .num_minted
             .checked_add(1)
             .ok_or(MplCoreError::NumericalOverflowError)?;
 
+        Ok(())
+    }
+
+    /// Increment current size of the Collection
+    pub fn increment_size(&mut self) -> Result<(), ProgramError> {
         self.current_size = self
             .current_size
             .checked_add(1)
@@ -334,8 +339,8 @@ impl CollectionV1 {
         Ok(())
     }
 
-    /// Decrements size of the Collection
-    pub fn decrement(&mut self) -> Result<(), ProgramError> {
+    /// Decrement current size of the Collection
+    pub fn decrement_size(&mut self) -> Result<(), ProgramError> {
         self.current_size = self
             .current_size
             .checked_sub(1)

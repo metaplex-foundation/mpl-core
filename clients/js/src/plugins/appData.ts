@@ -1,7 +1,7 @@
 import {
-  BaseDataStore,
-  BaseDataStoreInitInfoArgs,
-  BaseDataStoreUpdateInfoArgs,
+  BaseAppData,
+  BaseAppDataInitInfoArgs,
+  BaseAppDataUpdateInfoArgs,
   ExternalPluginAdapterSchema,
   ExternalRegistryRecord,
 } from '../generated';
@@ -16,61 +16,61 @@ import {
   pluginAuthorityToBase,
 } from './pluginAuthority';
 
-export type DataStore = Omit<BaseDataStore, 'dataAuthority'> & {
+export type AppData = Omit<BaseAppData, 'dataAuthority'> & {
   dataAuthority: PluginAuthority;
   data?: any;
 };
 
-export type DataStorePlugin = BaseExternalPluginAdapter &
-  DataStore & {
-    type: 'DataStore';
+export type AppDataPlugin = BaseExternalPluginAdapter &
+  AppData & {
+    type: 'AppData';
     dataAuthority: PluginAuthority;
   };
 
-export type DataStoreInitInfoArgs = Omit<
-  BaseDataStoreInitInfoArgs,
+export type AppDataInitInfoArgs = Omit<
+  BaseAppDataInitInfoArgs,
   'initPluginAuthority' | 'lifecycleChecks' | 'dataAuthority'
 > & {
-  type: 'DataStore';
+  type: 'AppData';
   initPluginAuthority?: PluginAuthority;
   lifecycleChecks?: LifecycleChecks;
   schema?: ExternalPluginAdapterSchema;
   dataAuthority: PluginAuthority;
 };
 
-export type DataStoreUpdateInfoArgs = Omit<
-  BaseDataStoreUpdateInfoArgs,
+export type AppDataUpdateInfoArgs = Omit<
+  BaseAppDataUpdateInfoArgs,
   'schema'
 > & {
   key: ExternalPluginAdapterKey;
   schema?: ExternalPluginAdapterSchema;
 };
 
-export function dataStoreInitInfoArgsToBase(
-  d: DataStoreInitInfoArgs
-): BaseDataStoreInitInfoArgs {
+export function appDataInitInfoArgsToBase(
+  d: AppDataInitInfoArgs
+): BaseAppDataInitInfoArgs {
   return {
     dataAuthority: pluginAuthorityToBase(d.dataAuthority),
     initPluginAuthority: d.initPluginAuthority
       ? pluginAuthorityToBase(d.initPluginAuthority)
       : null,
-    schema: d.schema ? d.schema : null,
+    schema: d.schema ?? null,
   };
 }
 
-export function dataStoreUpdateInfoArgsToBase(
-  d: DataStoreUpdateInfoArgs
-): BaseDataStoreUpdateInfoArgs {
+export function appDataUpdateInfoArgsToBase(
+  d: AppDataUpdateInfoArgs
+): BaseAppDataUpdateInfoArgs {
   return {
-    schema: d.schema ? d.schema : null,
+    schema: d.schema ?? null,
   };
 }
 
-export function dataStoreFromBase(
-  s: BaseDataStore,
+export function appDataFromBase(
+  s: BaseAppData,
   r: ExternalRegistryRecord,
   account: Uint8Array
-): DataStore {
+): AppData {
   return {
     ...s,
     dataAuthority: pluginAuthorityFromBase(s.dataAuthority),
@@ -78,16 +78,16 @@ export function dataStoreFromBase(
   };
 }
 
-export const dataStoreManifest: ExternalPluginAdapterManifest<
-  DataStore,
-  BaseDataStore,
-  DataStoreInitInfoArgs,
-  BaseDataStoreInitInfoArgs,
-  DataStoreUpdateInfoArgs,
-  BaseDataStoreUpdateInfoArgs
+export const appDataManifest: ExternalPluginAdapterManifest<
+  AppData,
+  BaseAppData,
+  AppDataInitInfoArgs,
+  BaseAppDataInitInfoArgs,
+  AppDataUpdateInfoArgs,
+  BaseAppDataUpdateInfoArgs
 > = {
-  type: 'DataStore',
-  fromBase: dataStoreFromBase,
-  initToBase: dataStoreInitInfoArgsToBase,
-  updateToBase: dataStoreUpdateInfoArgsToBase,
+  type: 'AppData',
+  fromBase: appDataFromBase,
+  initToBase: appDataInitInfoArgsToBase,
+  updateToBase: appDataUpdateInfoArgsToBase,
 };

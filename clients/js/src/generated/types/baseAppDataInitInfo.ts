@@ -21,28 +21,28 @@ import {
   getExternalPluginAdapterSchemaSerializer,
 } from '.';
 
-export type BaseDataStoreInitInfo = {
+export type BaseAppDataInitInfo = {
   dataAuthority: BasePluginAuthority;
   initPluginAuthority: Option<BasePluginAuthority>;
   schema: Option<ExternalPluginAdapterSchema>;
 };
 
-export type BaseDataStoreInitInfoArgs = {
+export type BaseAppDataInitInfoArgs = {
   dataAuthority: BasePluginAuthorityArgs;
   initPluginAuthority: OptionOrNullable<BasePluginAuthorityArgs>;
   schema: OptionOrNullable<ExternalPluginAdapterSchemaArgs>;
 };
 
-export function getBaseDataStoreInitInfoSerializer(): Serializer<
-  BaseDataStoreInitInfoArgs,
-  BaseDataStoreInitInfo
+export function getBaseAppDataInitInfoSerializer(): Serializer<
+  BaseAppDataInitInfoArgs,
+  BaseAppDataInitInfo
 > {
-  return struct<BaseDataStoreInitInfo>(
+  return struct<BaseAppDataInitInfo>(
     [
       ['dataAuthority', getBasePluginAuthoritySerializer()],
       ['initPluginAuthority', option(getBasePluginAuthoritySerializer())],
       ['schema', option(getExternalPluginAdapterSchemaSerializer())],
     ],
-    { description: 'BaseDataStoreInitInfo' }
-  ) as Serializer<BaseDataStoreInitInfoArgs, BaseDataStoreInitInfo>;
+    { description: 'BaseAppDataInitInfo' }
+  ) as Serializer<BaseAppDataInitInfoArgs, BaseAppDataInitInfo>;
 }

@@ -103,11 +103,11 @@ pub enum MplCoreError {
     /// 30 (0x1E) - Invalid Log Wrapper Program
     #[error("Invalid Log Wrapper Program")]
     InvalidLogWrapperProgram,
-    /// 31 (0x1F) - External PluginExternalPluginAdapter not found
-    #[error("External PluginExternalPluginAdapter not found")]
+    /// 31 (0x1F) - External Plugin Adapter not found
+    #[error("External Plugin Adapter not found")]
     ExternalPluginAdapterNotFound,
-    /// 32 (0x20) - External PluginExternalPluginAdapter already exists
-    #[error("External PluginExternalPluginAdapter already exists")]
+    /// 32 (0x20) - External Plugin Adapter already exists
+    #[error("External Plugin Adapter already exists")]
     ExternalPluginAdapterAlreadyExists,
     /// 33 (0x21) - Missing asset needed for extra account PDA derivation
     #[error("Missing asset needed for extra account PDA derivation")]
@@ -139,6 +139,21 @@ pub enum MplCoreError {
     /// 42 (0x2A) - Collection must be empty to be burned
     #[error("Collection must be empty to be burned")]
     CollectionMustBeEmpty,
+    /// 43 (0x2B) - Two data sources provided, only one is allowed
+    #[error("Two data sources provided, only one is allowed")]
+    TwoDataSources,
+    /// 44 (0x2C) - External Plugin does not support this operation
+    #[error("External Plugin does not support this operation")]
+    UnsupportedOperation,
+    /// 45 (0x2D) - No data sources provided, one is required
+    #[error("No data sources provided, one is required")]
+    NoDataSources,
+    /// 46 (0x2E) - This plugin adapter cannot be added to an Asset
+    #[error("This plugin adapter cannot be added to an Asset")]
+    InvalidPluginAdapterTarget,
+    /// 47 (0x2F) - Cannot add a Data Section without a linked external plugin
+    #[error("Cannot add a Data Section without a linked external plugin")]
+    CannotAddDataSection,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

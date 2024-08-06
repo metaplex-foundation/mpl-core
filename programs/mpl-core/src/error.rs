@@ -133,12 +133,12 @@ pub enum MplCoreError {
     #[error("Invalid Log Wrapper Program")]
     InvalidLogWrapperProgram,
 
-    /// 31 - External PluginExternalPluginAdapter not found
-    #[error("External PluginExternalPluginAdapter not found")]
+    /// 31 - External Plugin Adapter not found
+    #[error("External Plugin Adapter not found")]
     ExternalPluginAdapterNotFound,
 
-    /// 32 - External PluginExternalPluginAdapter already exists
-    #[error("External PluginExternalPluginAdapter already exists")]
+    /// 32 - External Plugin Adapter already exists
+    #[error("External Plugin Adapter already exists")]
     ExternalPluginAdapterAlreadyExists,
 
     /// 33 - Missing asset needed for extra account PDA derivation
@@ -180,6 +180,26 @@ pub enum MplCoreError {
     /// 42 - Collection must be empty to be burned
     #[error("Collection must be empty to be burned")]
     CollectionMustBeEmpty,
+
+    /// 43 - Two data sources provided, only one is allowed
+    #[error("Two data sources provided, only one is allowed")]
+    TwoDataSources,
+
+    /// 44 - External Plugin does not support this operation
+    #[error("External Plugin does not support this operation")]
+    UnsupportedOperation,
+
+    /// 45 - No data sources provided, one is required
+    #[error("No data sources provided, one is required")]
+    NoDataSources,
+
+    /// 46 - This plugin adapter cannot be added to an Asset
+    #[error("This plugin adapter cannot be added to an Asset")]
+    InvalidPluginAdapterTarget,
+
+    /// 47 - Cannot add a Data Section without a linked external plugin
+    #[error("Cannot add a Data Section without a linked external plugin")]
+    CannotAddDataSection,
 }
 
 impl PrintProgramError for MplCoreError {

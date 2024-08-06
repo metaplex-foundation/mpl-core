@@ -5,8 +5,11 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::DataStoreInitInfo;
+use crate::generated::types::AppDataInitInfo;
+use crate::generated::types::DataSectionInitInfo;
 use crate::generated::types::LifecycleHookInitInfo;
+use crate::generated::types::LinkedAppDataInitInfo;
+use crate::generated::types::LinkedLifecycleHookInitInfo;
 use crate::generated::types::OracleInitInfo;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
@@ -20,5 +23,8 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub enum ExternalPluginAdapterInitInfo {
     LifecycleHook(LifecycleHookInitInfo),
     Oracle(OracleInitInfo),
-    DataStore(DataStoreInitInfo),
+    AppData(AppDataInitInfo),
+    LinkedLifecycleHook(LinkedLifecycleHookInitInfo),
+    LinkedAppData(LinkedAppDataInitInfo),
+    DataSection(DataSectionInitInfo),
 }

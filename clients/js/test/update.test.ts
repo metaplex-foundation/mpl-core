@@ -181,7 +181,7 @@ test('it can update an asset update authority', async (t) => {
   });
 });
 
-test('it cannot update an asset update authority to be part of a collection (right now)', async (t) => {
+test('it cannot update an asset update authority to be part of a collection using updateV1', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = await createAsset(umi);
@@ -199,7 +199,7 @@ test('it cannot update an asset update authority to be part of a collection (rig
   await t.throwsAsync(result, { name: 'NotAvailable' });
 });
 
-test('it cannot remove an asset from a collection (right now)', async (t) => {
+test('it cannot remove an asset from a collection using updateV1', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const { asset, collection } = await createAssetWithCollection(umi, {}, {});

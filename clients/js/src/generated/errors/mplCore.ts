@@ -433,14 +433,14 @@ export class InvalidLogWrapperProgramError extends ProgramError {
 codeToErrorMap.set(0x1e, InvalidLogWrapperProgramError);
 nameToErrorMap.set('InvalidLogWrapperProgram', InvalidLogWrapperProgramError);
 
-/** ExternalPluginAdapterNotFound: External PluginExternalPluginAdapter not found */
+/** ExternalPluginAdapterNotFound: External Plugin Adapter not found */
 export class ExternalPluginAdapterNotFoundError extends ProgramError {
   override readonly name: string = 'ExternalPluginAdapterNotFound';
 
   readonly code: number = 0x1f; // 31
 
   constructor(program: Program, cause?: Error) {
-    super('External PluginExternalPluginAdapter not found', program, cause);
+    super('External Plugin Adapter not found', program, cause);
   }
 }
 codeToErrorMap.set(0x1f, ExternalPluginAdapterNotFoundError);
@@ -449,18 +449,14 @@ nameToErrorMap.set(
   ExternalPluginAdapterNotFoundError
 );
 
-/** ExternalPluginAdapterAlreadyExists: External PluginExternalPluginAdapter already exists */
+/** ExternalPluginAdapterAlreadyExists: External Plugin Adapter already exists */
 export class ExternalPluginAdapterAlreadyExistsError extends ProgramError {
   override readonly name: string = 'ExternalPluginAdapterAlreadyExists';
 
   readonly code: number = 0x20; // 32
 
   constructor(program: Program, cause?: Error) {
-    super(
-      'External PluginExternalPluginAdapter already exists',
-      program,
-      cause
-    );
+    super('External Plugin Adapter already exists', program, cause);
   }
 }
 codeToErrorMap.set(0x20, ExternalPluginAdapterAlreadyExistsError);
@@ -620,6 +616,78 @@ export class CollectionMustBeEmptyError extends ProgramError {
 }
 codeToErrorMap.set(0x2a, CollectionMustBeEmptyError);
 nameToErrorMap.set('CollectionMustBeEmpty', CollectionMustBeEmptyError);
+
+/** TwoDataSources: Two data sources provided, only one is allowed */
+export class TwoDataSourcesError extends ProgramError {
+  override readonly name: string = 'TwoDataSources';
+
+  readonly code: number = 0x2b; // 43
+
+  constructor(program: Program, cause?: Error) {
+    super('Two data sources provided, only one is allowed', program, cause);
+  }
+}
+codeToErrorMap.set(0x2b, TwoDataSourcesError);
+nameToErrorMap.set('TwoDataSources', TwoDataSourcesError);
+
+/** UnsupportedOperation: External Plugin does not support this operation */
+export class UnsupportedOperationError extends ProgramError {
+  override readonly name: string = 'UnsupportedOperation';
+
+  readonly code: number = 0x2c; // 44
+
+  constructor(program: Program, cause?: Error) {
+    super('External Plugin does not support this operation', program, cause);
+  }
+}
+codeToErrorMap.set(0x2c, UnsupportedOperationError);
+nameToErrorMap.set('UnsupportedOperation', UnsupportedOperationError);
+
+/** NoDataSources: No data sources provided, one is required */
+export class NoDataSourcesError extends ProgramError {
+  override readonly name: string = 'NoDataSources';
+
+  readonly code: number = 0x2d; // 45
+
+  constructor(program: Program, cause?: Error) {
+    super('No data sources provided, one is required', program, cause);
+  }
+}
+codeToErrorMap.set(0x2d, NoDataSourcesError);
+nameToErrorMap.set('NoDataSources', NoDataSourcesError);
+
+/** InvalidPluginAdapterTarget: This plugin adapter cannot be added to an Asset */
+export class InvalidPluginAdapterTargetError extends ProgramError {
+  override readonly name: string = 'InvalidPluginAdapterTarget';
+
+  readonly code: number = 0x2e; // 46
+
+  constructor(program: Program, cause?: Error) {
+    super('This plugin adapter cannot be added to an Asset', program, cause);
+  }
+}
+codeToErrorMap.set(0x2e, InvalidPluginAdapterTargetError);
+nameToErrorMap.set(
+  'InvalidPluginAdapterTarget',
+  InvalidPluginAdapterTargetError
+);
+
+/** CannotAddDataSection: Cannot add a Data Section without a linked external plugin */
+export class CannotAddDataSectionError extends ProgramError {
+  override readonly name: string = 'CannotAddDataSection';
+
+  readonly code: number = 0x2f; // 47
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Cannot add a Data Section without a linked external plugin',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x2f, CannotAddDataSectionError);
+nameToErrorMap.set('CannotAddDataSection', CannotAddDataSectionError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

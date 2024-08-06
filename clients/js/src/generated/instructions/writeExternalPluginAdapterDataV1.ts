@@ -8,6 +8,8 @@
 
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -18,6 +20,7 @@ import {
   Serializer,
   bytes,
   mapSerializer,
+  option,
   struct,
   u32,
   u8,
@@ -41,8 +44,10 @@ export type WriteExternalPluginAdapterDataV1InstructionAccounts = {
   collection?: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The Data Authority of the External PluginExternalPluginAdapter */
+  /** The Data Authority of the External Plugin Adapter */
   authority?: Signer;
+  /** The buffer to write to the external plugin */
+  buffer?: PublicKey | Pda;
   /** The system program */
   systemProgram?: PublicKey | Pda;
   /** The SPL Noop Program */
@@ -53,12 +58,12 @@ export type WriteExternalPluginAdapterDataV1InstructionAccounts = {
 export type WriteExternalPluginAdapterDataV1InstructionData = {
   discriminator: number;
   key: BaseExternalPluginAdapterKey;
-  data: Uint8Array;
+  data: Option<Uint8Array>;
 };
 
 export type WriteExternalPluginAdapterDataV1InstructionDataArgs = {
   key: BaseExternalPluginAdapterKeyArgs;
-  data: Uint8Array;
+  data: OptionOrNullable<Uint8Array>;
 };
 
 export function getWriteExternalPluginAdapterDataV1InstructionDataSerializer(): Serializer<
@@ -74,7 +79,7 @@ export function getWriteExternalPluginAdapterDataV1InstructionDataSerializer(): 
       [
         ['discriminator', u8()],
         ['key', getBaseExternalPluginAdapterKeySerializer()],
-        ['data', bytes({ size: u32() })],
+        ['data', option(bytes({ size: u32() }))],
       ],
       { description: 'WriteExternalPluginAdapterDataV1InstructionData' }
     ),
@@ -123,13 +128,18 @@ export function writeExternalPluginAdapterDataV1(
       isWritable: false as boolean,
       value: input.authority ?? null,
     },
-    systemProgram: {
+    buffer: {
       index: 4,
+      isWritable: false as boolean,
+      value: input.buffer ?? null,
+    },
+    systemProgram: {
+      index: 5,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
     logWrapper: {
-      index: 5,
+      index: 6,
       isWritable: false as boolean,
       value: input.logWrapper ?? null,
     },

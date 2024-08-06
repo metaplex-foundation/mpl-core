@@ -59,8 +59,8 @@ export const create = (
             type: 'Oracle',
           });
           break;
-        case 'DataStore':
-          // Do nothing, datastore has no extra accounts
+        case 'AppData':
+          // Do nothing, App Data has no extra accounts
           break;
         case 'LifecycleHook':
           assetExternalPluginAdapters.lifecycleHooks?.push({

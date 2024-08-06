@@ -34,5 +34,6 @@ export * from './updateCollectionV1';
 export * from './updateExternalPluginAdapterV1';
 export * from './updatePluginV1';
 export * from './updateV1';
+export * from './updateV2';
 export * from './writeCollectionExternalPluginAdapterDataV1';
 export * from './writeExternalPluginAdapterDataV1';

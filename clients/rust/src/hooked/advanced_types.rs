@@ -8,11 +8,11 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, Attributes, Autograph, BurnDelegate, DataStore, Edition, ExternalCheckResult,
-        ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate, ImmutableMetadata, Key,
-        LifecycleHook, MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
-        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
-        VerifiedCreators,
+        AddBlocker, AppData, Attributes, Autograph, BurnDelegate, DataSection, Edition,
+        ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate,
+        ImmutableMetadata, Key, LifecycleHook, LinkedAppData, LinkedLifecycleHook, MasterEdition,
+        Oracle, PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate,
+        PluginAuthority, Royalties, TransferDelegate, UpdateDelegate, VerifiedCreators,
     },
 };
 
@@ -181,9 +181,33 @@ pub struct PluginsList {
 
 #[derive(Debug, Default)]
 pub struct ExternalPluginAdaptersList {
-    pub lifecycle_hooks: Vec<LifecycleHook>,
+    pub lifecycle_hooks: Vec<LifecycleHookWithData>,
+    pub linked_lifecycle_hooks: Vec<LinkedLifecycleHook>,
     pub oracles: Vec<Oracle>,
-    pub data_stores: Vec<DataStore>,
+    pub app_data: Vec<AppDataWithData>,
+    pub linked_app_data: Vec<LinkedAppData>,
+    pub data_sections: Vec<DataSectionWithData>,
+}
+
+#[derive(Debug)]
+pub struct LifecycleHookWithData {
+    pub base: LifecycleHook,
+    pub data_offset: usize,
+    pub data_len: usize,
+}
+
+#[derive(Debug)]
+pub struct AppDataWithData {
+    pub base: AppData,
+    pub data_offset: usize,
+    pub data_len: usize,
+}
+
+#[derive(Debug)]
+pub struct DataSectionWithData {
+    pub base: DataSection,
+    pub data_offset: usize,
+    pub data_len: usize,
 }
 
 #[derive(Debug)]
@@ -219,6 +243,7 @@ impl RegistryRecordSafe {
 
 ///ExternalPluginAdapter Registry record that can be used when the plugin type is not known (i.e. a `ExternalPluginAdapterType` that
 /// is too new for this client to know about).
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ExternalRegistryRecordSafe {
     pub plugin_type: u8,
     pub authority: PluginAuthority,
@@ -304,15 +329,22 @@ impl PluginRegistryV1Safe {
 impl From<&ExternalPluginAdapter> for ExternalPluginAdapterKey {
     fn from(plugin: &ExternalPluginAdapter) -> Self {
         match plugin {
-            ExternalPluginAdapter::DataStore(data_store) => {
-                ExternalPluginAdapterKey::DataStore(data_store.data_authority.clone())
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
+                ExternalPluginAdapterKey::AppData(app_data.data_authority.clone())
+            }
+            ExternalPluginAdapter::AppData(app_data) => {
+                ExternalPluginAdapterKey::AppData(app_data.data_authority.clone())
             }
             ExternalPluginAdapter::Oracle(oracle) => {
                 ExternalPluginAdapterKey::Oracle(oracle.base_address)
             }
+            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
+                ExternalPluginAdapterKey::LifecycleHook(lifecycle_hook.hooked_program)
+            }
             ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
                 ExternalPluginAdapterKey::LifecycleHook(lifecycle_hook.hooked_program)
             }
+            ExternalPluginAdapter::DataSection(_) => todo!(),
         }
     }
 }

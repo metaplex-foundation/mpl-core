@@ -136,7 +136,7 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
         input.external_plugin_adapters.len(),
         asset.external_plugin_adapter_list.lifecycle_hooks.len()
             + asset.external_plugin_adapter_list.oracles.len()
-            + asset.external_plugin_adapter_list.data_stores.len()
+            + asset.external_plugin_adapter_list.app_data.len()
     );
     for plugin in input.external_plugin_adapters {
         match plugin {
@@ -144,16 +144,37 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
                 assert!(asset
                     .external_plugin_adapter_list
                     .lifecycle_hooks
-                    .contains(&hook))
+                    .iter()
+                    .any(|lifecyle_hook_with_data| lifecyle_hook_with_data.base == hook))
             }
             ExternalPluginAdapter::Oracle(oracle) => {
                 assert!(asset.external_plugin_adapter_list.oracles.contains(&oracle))
             }
-            ExternalPluginAdapter::DataStore(data_store) => {
+            ExternalPluginAdapter::AppData(app_data) => {
                 assert!(asset
                     .external_plugin_adapter_list
-                    .data_stores
-                    .contains(&data_store))
+                    .app_data
+                    .iter()
+                    .any(|app_data_with_data| app_data_with_data.base == app_data))
+            }
+            ExternalPluginAdapter::LinkedLifecycleHook(hook) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .linked_lifecycle_hooks
+                    .contains(&hook))
+            }
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .linked_app_data
+                    .contains(&app_data))
+            }
+            ExternalPluginAdapter::DataSection(data) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .data_sections
+                    .iter()
+                    .any(|data_sections_with_data| data_sections_with_data.base == data))
             }
         }
     }
@@ -211,6 +232,7 @@ pub struct AssertCollectionHelperArgs {
     pub current_size: u32,
     // TODO use PluginList type here
     pub plugins: Vec<PluginAuthorityPair>,
+    pub external_plugin_adapters: Vec<ExternalPluginAdapter>,
 }
 
 pub async fn assert_collection(
@@ -264,7 +286,58 @@ pub async fn assert_collection(
         }
     }
 
-    // TODO validate external plugin adapters here.
+    assert_eq!(
+        input.external_plugin_adapters.len(),
+        collection
+            .external_plugin_adapter_list
+            .lifecycle_hooks
+            .len()
+            + collection.external_plugin_adapter_list.oracles.len()
+            + collection.external_plugin_adapter_list.app_data.len()
+    );
+    for plugin in input.external_plugin_adapters {
+        match plugin {
+            ExternalPluginAdapter::LifecycleHook(hook) => {
+                assert!(collection
+                    .external_plugin_adapter_list
+                    .lifecycle_hooks
+                    .iter()
+                    .any(|lifecyle_hook_with_data| lifecyle_hook_with_data.base == hook))
+            }
+            ExternalPluginAdapter::Oracle(oracle) => {
+                assert!(collection
+                    .external_plugin_adapter_list
+                    .oracles
+                    .contains(&oracle))
+            }
+            ExternalPluginAdapter::AppData(app_data) => {
+                assert!(collection
+                    .external_plugin_adapter_list
+                    .app_data
+                    .iter()
+                    .any(|app_data_with_data| app_data_with_data.base == app_data))
+            }
+            ExternalPluginAdapter::LinkedLifecycleHook(hook) => {
+                assert!(collection
+                    .external_plugin_adapter_list
+                    .linked_lifecycle_hooks
+                    .contains(&hook))
+            }
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
+                assert!(collection
+                    .external_plugin_adapter_list
+                    .linked_app_data
+                    .contains(&app_data))
+            }
+            ExternalPluginAdapter::DataSection(data) => {
+                assert!(collection
+                    .external_plugin_adapter_list
+                    .data_sections
+                    .iter()
+                    .any(|data_sections_with_data| data_sections_with_data.base == data))
+            }
+        }
+    }
 }
 
 pub async fn airdrop(

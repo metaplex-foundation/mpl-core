@@ -14,6 +14,7 @@ pub use collection::*;
 use anchor_lang::prelude::{
     AnchorDeserialize as CrateDeserialize, AnchorSerialize as CrateSerialize,
 };
+use base64::prelude::*;
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize as CrateDeserialize, BorshSerialize as CrateSerialize};
 use modular_bitfield::{bitfield, specifiers::B29};
@@ -23,7 +24,10 @@ use std::{cmp::Ordering, mem::size_of};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1, PluginRegistryV1},
     errors::MplCoreError,
-    types::{ExternalCheckResult, Key, Plugin, PluginType, RegistryRecord},
+    types::{
+        ExternalCheckResult, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
+        ExternalPluginAdapterType, Key, Plugin, PluginType, RegistryRecord,
+    },
 };
 use solana_program::account_info::AccountInfo;
 
@@ -215,7 +219,7 @@ impl RegistryRecord {
 
 /// Bitfield representation of lifecycle permissions for external plugin adapter, third party plugins.
 #[bitfield(bits = 32)]
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, Default)]
 pub struct ExternalCheckResultBits {
     pub can_listen: bool,
     pub can_approve: bool,
@@ -233,6 +237,50 @@ impl From<ExternalCheckResultBits> for ExternalCheckResult {
     fn from(bits: ExternalCheckResultBits) -> Self {
         ExternalCheckResult {
             flags: u32::from_le_bytes(bits.into_bytes()),
+        }
+    }
+}
+
+impl From<&ExternalPluginAdapterKey> for ExternalPluginAdapterType {
+    fn from(key: &ExternalPluginAdapterKey) -> Self {
+        match key {
+            ExternalPluginAdapterKey::LifecycleHook(_) => ExternalPluginAdapterType::LifecycleHook,
+            ExternalPluginAdapterKey::LinkedLifecycleHook(_) => {
+                ExternalPluginAdapterType::LinkedLifecycleHook
+            }
+            ExternalPluginAdapterKey::Oracle(_) => ExternalPluginAdapterType::Oracle,
+            ExternalPluginAdapterKey::AppData(_) => ExternalPluginAdapterType::AppData,
+            ExternalPluginAdapterKey::LinkedAppData(_) => ExternalPluginAdapterType::LinkedAppData,
+            ExternalPluginAdapterKey::DataSection(_) => ExternalPluginAdapterType::DataSection,
+        }
+    }
+}
+
+/// Use `ExternalPluginAdapterSchema` to convert data to string.  If schema is binary or there is
+/// an error, then use Base64 encoding.
+pub fn convert_external_plugin_adapter_data_to_string(
+    schema: &ExternalPluginAdapterSchema,
+    data_slice: &[u8],
+) -> String {
+    match schema {
+        ExternalPluginAdapterSchema::Binary => {
+            // Encode the binary data as a base64 string.
+            BASE64_STANDARD.encode(data_slice)
+        }
+        ExternalPluginAdapterSchema::Json => {
+            // Convert the byte slice to a UTF-8 string, replacing invalid characterse.
+            String::from_utf8_lossy(data_slice).to_string()
+        }
+        ExternalPluginAdapterSchema::MsgPack => {
+            // Attempt to decode `MsgPack` to serde_json::Value and serialize to JSON string.
+            match rmp_serde::decode::from_slice::<serde_json::Value>(data_slice) {
+                Ok(json_val) => serde_json::to_string(&json_val)
+                    .unwrap_or_else(|_| BASE64_STANDARD.encode(data_slice)),
+                Err(_) => {
+                    // Failed to decode `MsgPack`, fallback to base64.
+                    BASE64_STANDARD.encode(data_slice)
+                }
+            }
         }
     }
 }

@@ -2,7 +2,7 @@
 name = "mpl-core"
 description = "A flexible digital asset standard for Solana"
 repository = "https://github.com/metaplex-foundation/mpl-core"
-version = "0.7.2"
+version = "0.8.0-beta.1"
 edition = "2021"
 readme = "README.md"
 license-file = "../../LICENSE"

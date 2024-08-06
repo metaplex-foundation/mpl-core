@@ -16,12 +16,12 @@ import {
 } from '../generated';
 
 import {
-  dataStoreFromBase,
-  DataStoreInitInfoArgs,
-  dataStoreManifest,
-  DataStorePlugin,
-  DataStoreUpdateInfoArgs,
-} from './dataStore';
+  appDataFromBase,
+  AppDataInitInfoArgs,
+  appDataManifest,
+  AppDataPlugin,
+  AppDataUpdateInfoArgs,
+} from './appData';
 import {
   LifecycleChecksContainer,
   lifecycleChecksFromBase,
@@ -36,44 +36,92 @@ import {
 } from './oracle';
 import { BasePlugin } from './types';
 import { extraAccountToAccountMeta } from './extraAccount';
+import {
+  linkedAppDataFromBase,
+  LinkedAppDataInitInfoArgs,
+  linkedAppDataManifest,
+  LinkedAppDataPlugin,
+  LinkedAppDataUpdateInfoArgs,
+} from './linkedAppData';
+import {
+  dataSectionFromBase,
+  dataSectionManifest,
+  DataSectionPlugin,
+} from './dataSection';
+import {
+  LinkedLifecycleHookInitInfoArgs,
+  LinkedLifecycleHookPlugin,
+  LinkedLifecycleHookUpdateInfoArgs,
+  linkedLifecycleHookFromBase,
+  linkedLifecycleHookManifest,
+} from './linkedLifecycleHook';
 
 export type ExternalPluginAdapterTypeString =
   BaseExternalPluginAdapterKey['__kind'];
 
 export type BaseExternalPluginAdapter = BasePlugin & LifecycleChecksContainer;
 
+export type ExternalPluginAdapters =
+  | LifecycleHookPlugin
+  | OraclePlugin
+  | AppDataPlugin
+  | LinkedLifecycleHookPlugin
+  | LinkedAppDataPlugin
+  | DataSectionPlugin;
+
 export type ExternalPluginAdaptersList = {
-  oracles?: OraclePlugin[];
-  dataStores?: DataStorePlugin[];
   lifecycleHooks?: LifecycleHookPlugin[];
+  oracles?: OraclePlugin[];
+  appDatas?: AppDataPlugin[];
+  linkedLifecycleHooks?: LinkedLifecycleHookPlugin[];
+  linkedAppDatas?: LinkedAppDataPlugin[];
+  dataSections?: DataSectionPlugin[];
 };
 
 export type ExternalPluginAdapterInitInfoArgs =
   | ({
-      type: 'Oracle';
-    } & OracleInitInfoArgs)
-  | ({
       type: 'LifecycleHook';
     } & LifecycleHookInitInfoArgs)
   | ({
-      type: 'DataStore';
-    } & DataStoreInitInfoArgs);
+      type: 'Oracle';
+    } & OracleInitInfoArgs)
+  | ({
+      type: 'AppData';
+    } & AppDataInitInfoArgs)
+  | ({
+      type: 'LinkedLifecycleHook';
+    } & LinkedLifecycleHookInitInfoArgs)
+  | ({
+      type: 'LinkedAppData';
+    } & LinkedAppDataInitInfoArgs)
+  | ({
+      type: 'DataSection';
+    } & AppDataInitInfoArgs);
 
 export type ExternalPluginAdapterUpdateInfoArgs =
-  | ({
-      type: 'Oracle';
-    } & OracleUpdateInfoArgs)
   | ({
       type: 'LifecycleHook';
     } & LifecycleHookUpdateInfoArgs)
   | ({
-      type: 'DataStore';
-    } & DataStoreUpdateInfoArgs);
+      type: 'Oracle';
+    } & OracleUpdateInfoArgs)
+  | ({
+      type: 'AppData';
+    } & AppDataUpdateInfoArgs)
+  | ({
+      type: 'LinkedLifecycleHook';
+    } & LinkedLifecycleHookUpdateInfoArgs)
+  | ({
+      type: 'LinkedAppData';
+    } & LinkedAppDataUpdateInfoArgs);
 
 export const externalPluginAdapterManifests = {
-  Oracle: oracleManifest,
-  DataStore: dataStoreManifest,
   LifecycleHook: lifecycleHookManifest,
+  Oracle: oracleManifest,
+  AppData: appDataManifest,
+  LinkedLifecycleHook: linkedLifecycleHookManifest,
+  LinkedAppData: linkedAppDataManifest,
+  DataSection: dataSectionManifest,
 };
 
 export type ExternalPluginAdapterData = {
@@ -102,7 +150,29 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
       offset: record.offset,
     };
 
-    if (deserializedPlugin.__kind === 'Oracle') {
+    if (deserializedPlugin.__kind === 'LifecycleHook') {
+      if (!result.lifecycleHooks) {
+        result.lifecycleHooks = [];
+      }
+      result.lifecycleHooks.push({
+        type: 'LifecycleHook',
+        ...mappedPlugin,
+        ...lifecycleHookFromBase(
+          deserializedPlugin.fields[0],
+          record,
+          accountData
+        ),
+      });
+    } else if (deserializedPlugin.__kind === 'AppData') {
+      if (!result.appDatas) {
+        result.appDatas = [];
+      }
+      result.appDatas.push({
+        type: 'AppData',
+        ...mappedPlugin,
+        ...appDataFromBase(deserializedPlugin.fields[0], record, accountData),
+      });
+    } else if (deserializedPlugin.__kind === 'Oracle') {
       if (!result.oracles) {
         result.oracles = [];
       }
@@ -112,23 +182,40 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
         ...mappedPlugin,
         ...oracleFromBase(deserializedPlugin.fields[0], record, accountData),
       });
-    } else if (deserializedPlugin.__kind === 'DataStore') {
-      if (!result.dataStores) {
-        result.dataStores = [];
+    } else if (deserializedPlugin.__kind === 'LinkedLifecycleHook') {
+      if (!result.linkedLifecycleHooks) {
+        result.linkedLifecycleHooks = [];
       }
-      result.dataStores.push({
-        type: 'DataStore',
+      result.linkedLifecycleHooks.push({
+        type: 'LinkedLifecycleHook',
         ...mappedPlugin,
-        ...dataStoreFromBase(deserializedPlugin.fields[0], record, accountData),
+        ...linkedLifecycleHookFromBase(
+          deserializedPlugin.fields[0],
+          record,
+          accountData
+        ),
       });
-    } else if (deserializedPlugin.__kind === 'LifecycleHook') {
-      if (!result.lifecycleHooks) {
-        result.lifecycleHooks = [];
+    } else if (deserializedPlugin.__kind === 'LinkedAppData') {
+      if (!result.linkedAppDatas) {
+        result.linkedAppDatas = [];
       }
-      result.lifecycleHooks.push({
-        type: 'LifecycleHook',
+      result.linkedAppDatas.push({
+        type: 'LinkedAppData',
         ...mappedPlugin,
-        ...lifecycleHookFromBase(
+        ...linkedAppDataFromBase(
+          deserializedPlugin.fields[0],
+          record,
+          accountData
+        ),
+      });
+    } else if (deserializedPlugin.__kind === 'DataSection') {
+      if (!result.dataSections) {
+        result.dataSections = [];
+      }
+      result.dataSections.push({
+        type: 'DataSection',
+        ...mappedPlugin,
+        ...dataSectionFromBase(
           deserializedPlugin.fields[0],
           record,
           accountData
@@ -142,9 +229,12 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
 
 export const isExternalPluginAdapterType = (plugin: { type: string }) => {
   if (
-    plugin.type === 'Oracle' ||
     plugin.type === 'LifecycleHook' ||
-    plugin.type === 'DataStore'
+    plugin.type === 'Oracle' ||
+    plugin.type === 'AppData' ||
+    plugin.type === 'LinkedLifecycleHook' ||
+    plugin.type === 'DataSection' ||
+    plugin.type === 'LinkedAppData'
   ) {
     return true;
   }
@@ -206,6 +296,25 @@ export const findExtraAccounts = (
   });
 
   externalPluginAdapters.lifecycleHooks?.forEach((hook) => {
+    if (hook.lifecycleChecks?.[lifecycle]) {
+      accounts.push({
+        pubkey: hook.hookedProgram,
+        isSigner: false,
+        isWritable: false,
+      });
+
+      hook.extraAccounts?.forEach((extra) => {
+        accounts.push(
+          extraAccountToAccountMeta(context, extra, {
+            ...inputs,
+            program: hook.hookedProgram,
+          })
+        );
+      });
+    }
+  });
+
+  externalPluginAdapters.linkedLifecycleHooks?.forEach((hook) => {
     if (hook.lifecycleChecks?.[lifecycle]) {
       accounts.push({
         pubkey: hook.hookedProgram,

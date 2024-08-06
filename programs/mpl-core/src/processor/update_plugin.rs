@@ -53,6 +53,7 @@ pub(crate) fn update_plugin<'a>(
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
+        None,
         Some(&args.plugin),
         None,
         AssetV1::check_update_plugin,
@@ -111,6 +112,7 @@ pub(crate) fn update_collection_plugin<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
+        None,
         Some(&args.plugin),
         None,
         CollectionV1::check_update_plugin,
@@ -196,26 +198,7 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
 
     plugin_header.save(account, core.get_size())?;
 
-    // Move offsets for existing registry records.
-    for record in &mut plugin_registry.external_registry {
-        if registry_record.offset < record.offset {
-            let new_offset = (record.offset as isize)
-                .checked_add(size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-
-            record.offset = new_offset as usize;
-        }
-    }
-
-    for record in &mut plugin_registry.registry {
-        if registry_record.offset < record.offset {
-            let new_offset = (record.offset as isize)
-                .checked_add(size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-
-            record.offset = new_offset as usize;
-        }
-    }
+    plugin_registry.bump_offsets(registry_record.offset, size_diff)?;
 
     plugin_registry.save(account, new_registry_offset as usize)?;
     new_plugin.save(account, registry_record.offset)?;

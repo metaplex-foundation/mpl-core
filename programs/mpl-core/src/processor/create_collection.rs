@@ -140,6 +140,8 @@ pub(crate) fn process_create_collection<'a>(
                         authority_info: ctx.accounts.payer,
                         resolved_authorities: None,
                         new_owner: None,
+                        new_asset_authority: None,
+                        new_collection_authority: None,
                         target_plugin: None,
                     };
                     match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
@@ -169,13 +171,19 @@ pub(crate) fn process_create_collection<'a>(
                 ctx.accounts.system_program,
             )?;
             for plugin_init_info in &plugins {
+                if let ExternalPluginAdapterInitInfo::DataSection(_) = plugin_init_info {
+                    return Err(MplCoreError::CannotAddDataSection.into());
+                }
+
                 initialize_external_plugin_adapter::<CollectionV1>(
                     plugin_init_info,
+                    Some(&new_collection),
                     &mut plugin_header,
                     &mut plugin_registry,
                     ctx.accounts.collection,
                     ctx.accounts.payer,
                     ctx.accounts.system_program,
+                    None,
                 )?;
             }
         }

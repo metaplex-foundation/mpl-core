@@ -15,26 +15,44 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  BaseDataStoreInitInfo,
-  BaseDataStoreInitInfoArgs,
+  BaseAppDataInitInfo,
+  BaseAppDataInitInfoArgs,
+  BaseDataSectionInitInfo,
+  BaseDataSectionInitInfoArgs,
   BaseLifecycleHookInitInfo,
   BaseLifecycleHookInitInfoArgs,
+  BaseLinkedAppDataInitInfo,
+  BaseLinkedAppDataInitInfoArgs,
+  BaseLinkedLifecycleHookInitInfo,
+  BaseLinkedLifecycleHookInitInfoArgs,
   BaseOracleInitInfo,
   BaseOracleInitInfoArgs,
-  getBaseDataStoreInitInfoSerializer,
+  getBaseAppDataInitInfoSerializer,
+  getBaseDataSectionInitInfoSerializer,
   getBaseLifecycleHookInitInfoSerializer,
+  getBaseLinkedAppDataInitInfoSerializer,
+  getBaseLinkedLifecycleHookInitInfoSerializer,
   getBaseOracleInitInfoSerializer,
 } from '.';
 
 export type BaseExternalPluginAdapterInitInfo =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookInitInfo] }
   | { __kind: 'Oracle'; fields: [BaseOracleInitInfo] }
-  | { __kind: 'DataStore'; fields: [BaseDataStoreInitInfo] };
+  | { __kind: 'AppData'; fields: [BaseAppDataInitInfo] }
+  | { __kind: 'LinkedLifecycleHook'; fields: [BaseLinkedLifecycleHookInitInfo] }
+  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataInitInfo] }
+  | { __kind: 'DataSection'; fields: [BaseDataSectionInitInfo] };
 
 export type BaseExternalPluginAdapterInitInfoArgs =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookInitInfoArgs] }
   | { __kind: 'Oracle'; fields: [BaseOracleInitInfoArgs] }
-  | { __kind: 'DataStore'; fields: [BaseDataStoreInitInfoArgs] };
+  | { __kind: 'AppData'; fields: [BaseAppDataInitInfoArgs] }
+  | {
+      __kind: 'LinkedLifecycleHook';
+      fields: [BaseLinkedLifecycleHookInitInfoArgs];
+    }
+  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataInitInfoArgs] }
+  | { __kind: 'DataSection'; fields: [BaseDataSectionInitInfoArgs] };
 
 export function getBaseExternalPluginAdapterInitInfoSerializer(): Serializer<
   BaseExternalPluginAdapterInitInfoArgs,
@@ -58,10 +76,39 @@ export function getBaseExternalPluginAdapterInitInfoSerializer(): Serializer<
         >([['fields', tuple([getBaseOracleInitInfoSerializer()])]]),
       ],
       [
-        'DataStore',
+        'AppData',
         struct<
-          GetDataEnumKindContent<BaseExternalPluginAdapterInitInfo, 'DataStore'>
-        >([['fields', tuple([getBaseDataStoreInitInfoSerializer()])]]),
+          GetDataEnumKindContent<BaseExternalPluginAdapterInitInfo, 'AppData'>
+        >([['fields', tuple([getBaseAppDataInitInfoSerializer()])]]),
+      ],
+      [
+        'LinkedLifecycleHook',
+        struct<
+          GetDataEnumKindContent<
+            BaseExternalPluginAdapterInitInfo,
+            'LinkedLifecycleHook'
+          >
+        >([
+          ['fields', tuple([getBaseLinkedLifecycleHookInitInfoSerializer()])],
+        ]),
+      ],
+      [
+        'LinkedAppData',
+        struct<
+          GetDataEnumKindContent<
+            BaseExternalPluginAdapterInitInfo,
+            'LinkedAppData'
+          >
+        >([['fields', tuple([getBaseLinkedAppDataInitInfoSerializer()])]]),
+      ],
+      [
+        'DataSection',
+        struct<
+          GetDataEnumKindContent<
+            BaseExternalPluginAdapterInitInfo,
+            'DataSection'
+          >
+        >([['fields', tuple([getBaseDataSectionInitInfoSerializer()])]]),
       ],
     ],
     { description: 'BaseExternalPluginAdapterInitInfo' }
@@ -87,12 +134,36 @@ export function baseExternalPluginAdapterInitInfo(
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'Oracle'>;
 export function baseExternalPluginAdapterInitInfo(
-  kind: 'DataStore',
+  kind: 'AppData',
   data: GetDataEnumKindContent<
     BaseExternalPluginAdapterInitInfoArgs,
-    'DataStore'
+    'AppData'
   >['fields']
-): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'DataStore'>;
+): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'AppData'>;
+export function baseExternalPluginAdapterInitInfo(
+  kind: 'LinkedLifecycleHook',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterInitInfoArgs,
+    'LinkedLifecycleHook'
+  >['fields']
+): GetDataEnumKind<
+  BaseExternalPluginAdapterInitInfoArgs,
+  'LinkedLifecycleHook'
+>;
+export function baseExternalPluginAdapterInitInfo(
+  kind: 'LinkedAppData',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterInitInfoArgs,
+    'LinkedAppData'
+  >['fields']
+): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'LinkedAppData'>;
+export function baseExternalPluginAdapterInitInfo(
+  kind: 'DataSection',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterInitInfoArgs,
+    'DataSection'
+  >['fields']
+): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'DataSection'>;
 export function baseExternalPluginAdapterInitInfo<
   K extends BaseExternalPluginAdapterInitInfoArgs['__kind'],
 >(

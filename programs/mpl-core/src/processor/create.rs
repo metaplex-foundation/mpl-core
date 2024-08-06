@@ -156,6 +156,7 @@ pub(crate) fn process_create<'a>(
             None,
             None,
             None,
+            None,
             AssetV1::check_create,
             CollectionV1::check_create,
             PluginType::check_create,
@@ -195,6 +196,8 @@ pub(crate) fn process_create<'a>(
                             authority_info: authority,
                             resolved_authorities: None,
                             new_owner: None,
+                            new_asset_authority: None,
+                            new_collection_authority: None,
                             target_plugin: None,
                         };
                         match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
@@ -228,6 +231,18 @@ pub(crate) fn process_create<'a>(
                         ExternalPluginAdapter::check_create(plugin_init_info),
                     );
 
+                    // TODO: This should be handled in the validate call.
+                    match plugin_init_info {
+                        ExternalPluginAdapterInitInfo::LinkedLifecycleHook(_)
+                        | ExternalPluginAdapterInitInfo::LinkedAppData(_) => {
+                            return Err(MplCoreError::InvalidPluginAdapterTarget.into())
+                        }
+                        ExternalPluginAdapterInitInfo::DataSection(_) => {
+                            return Err(MplCoreError::CannotAddDataSection.into())
+                        }
+                        _ => (),
+                    }
+
                     if external_check_result_bits.can_reject() {
                         let validation_ctx = PluginValidationContext {
                             accounts,
@@ -238,6 +253,8 @@ pub(crate) fn process_create<'a>(
                             authority_info: authority,
                             resolved_authorities: None,
                             new_owner: None,
+                            new_asset_authority: None,
+                            new_collection_authority: None,
                             target_plugin: None,
                         };
                         if ExternalPluginAdapter::validate_create(
@@ -250,11 +267,13 @@ pub(crate) fn process_create<'a>(
                     }
                     initialize_external_plugin_adapter::<AssetV1>(
                         plugin_init_info,
+                        Some(&new_asset),
                         &mut plugin_header,
                         &mut plugin_registry,
                         ctx.accounts.asset,
                         ctx.accounts.payer,
                         ctx.accounts.system_program,
+                        None,
                     )?;
                 }
             }
@@ -266,7 +285,8 @@ pub(crate) fn process_create<'a>(
     }
 
     if let Some(mut collection) = collection {
-        collection.increment()?;
+        collection.increment_minted()?;
+        collection.increment_size()?;
         collection.save(ctx.accounts.collection.unwrap(), 0)?;
     };
 

@@ -1,12 +1,17 @@
 import { PublicKey, publicKey } from '@metaplex-foundation/umi';
+import { LinkedLifecycleHookPlugin } from '../plugins/linkedLifecycleHook';
 import { AssetV1, CollectionV1 } from '../generated';
-import { ExternalPluginAdaptersList } from '../plugins';
-import { OracleInitInfoArgs, OraclePlugin } from '../plugins/oracle';
-import { DataStoreInitInfoArgs, DataStorePlugin } from '../plugins/dataStore';
 import {
-  LifecycleHookInitInfoArgs,
-  LifecycleHookPlugin,
-} from '../plugins/lifecycleHook';
+  comparePluginAuthorities,
+  ExternalPluginAdapters,
+  ExternalPluginAdaptersList,
+  PluginAuthority,
+} from '../plugins';
+import { OraclePlugin } from '../plugins/oracle';
+import { AppDataPlugin } from '../plugins/appData';
+import { LifecycleHookPlugin } from '../plugins/lifecycleHook';
+import { DataSectionPlugin } from '../plugins/dataSection';
+import { LinkedAppDataPlugin } from '../plugins/linkedAppData';
 
 /**
  * Find the collection address for the given asset if it is part of a collection.
@@ -23,28 +28,37 @@ export function collectionAddress(asset: AssetV1): PublicKey | undefined {
 
 const externalPluginAdapterKeys: (keyof ExternalPluginAdaptersList)[] = [
   'oracles',
-  'dataStores',
+  'appDatas',
   'lifecycleHooks',
+  'dataSections',
+  'linkedAppDatas',
 ];
 export const getExternalPluginAdapterKeyAsString = (
   plugin:
-    | OraclePlugin
-    | DataStorePlugin
-    | LifecycleHookPlugin
-    | OracleInitInfoArgs
-    | LifecycleHookInitInfoArgs
-    | DataStoreInitInfoArgs
-) => {
+    | Pick<OraclePlugin, 'type' | 'baseAddress'>
+    | Pick<AppDataPlugin, 'type' | 'dataAuthority'>
+    | Pick<LifecycleHookPlugin, 'type' | 'hookedProgram'>
+    | Pick<LinkedAppDataPlugin, 'type' | 'dataAuthority'>
+    | Pick<LinkedLifecycleHookPlugin, 'type' | 'hookedProgram'>
+    | Pick<DataSectionPlugin, 'type' | 'parentKey'>
+): string => {
   switch (plugin.type) {
     case 'Oracle':
       return `${plugin.type}-${plugin.baseAddress}`;
-    case 'DataStore':
+    case 'AppData':
       return `${plugin.type}-${plugin.dataAuthority.type}${
         plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
       }`;
     case 'LifecycleHook':
-    default:
       return `${plugin.type}-${plugin.hookedProgram}`;
+    case 'LinkedAppData':
+      return `${plugin.type}-${plugin.dataAuthority.type}${
+        plugin.dataAuthority.address ? `-${plugin.dataAuthority.address}` : ''
+      }`;
+    case 'DataSection':
+      return `${plugin.type}-${getExternalPluginAdapterKeyAsString(plugin.parentKey)}`;
+    default:
+      throw new Error('Unknown ExternalPluginAdapter type');
   }
 };
 
@@ -61,20 +75,16 @@ export const deriveExternalPluginAdapters = (
     if (asset[key] || collection[key]) {
       externalPluginAdapters[key] = [];
     }
-    asset[key]?.forEach(
-      (plugin: OraclePlugin | DataStorePlugin | LifecycleHookPlugin) => {
-        set.add(getExternalPluginAdapterKeyAsString(plugin));
+    asset[key]?.forEach((plugin: ExternalPluginAdapters) => {
+      set.add(getExternalPluginAdapterKeyAsString(plugin));
+      externalPluginAdapters[key]?.push(plugin as any);
+    });
+
+    collection[key]?.forEach((plugin: ExternalPluginAdapters) => {
+      if (!set.has(getExternalPluginAdapterKeyAsString(plugin))) {
         externalPluginAdapters[key]?.push(plugin as any);
       }
-    );
-
-    collection[key]?.forEach(
-      (plugin: OraclePlugin | DataStorePlugin | LifecycleHookPlugin) => {
-        if (!set.has(getExternalPluginAdapterKeyAsString(plugin))) {
-          externalPluginAdapters[key]?.push(plugin as any);
-        }
-      }
-    );
+    });
   });
 
   return externalPluginAdapters;
@@ -96,6 +106,26 @@ export function deriveAssetPlugins(
     asset,
     collection
   );
+
+  // for every data section, find a matching linked plugin and inject the data for convenience
+  externalPluginAdapters.dataSections?.forEach((dataSection) => {
+    let appData;
+    let dataAuth: PluginAuthority;
+    switch (dataSection.parentKey.type) {
+      case 'LinkedAppData':
+        dataAuth = dataSection.parentKey.dataAuthority;
+        appData = externalPluginAdapters.linkedAppDatas?.find((plugin) =>
+          comparePluginAuthorities(dataAuth, plugin.dataAuthority)
+        );
+        if (appData) {
+          appData.data = dataSection.data;
+        }
+        break;
+      case 'LinkedLifecycleHook':
+      default:
+        throw new Error('LinkedLifecycleHook currently unsupported');
+    }
+  });
 
   const { numMinted, currentSize, masterEdition, ...colRest } = collection; // remove collection only fields
 

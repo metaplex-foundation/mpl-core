@@ -60,17 +60,19 @@ pub(crate) fn update_external_plugin_adapter<'a>(
         fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
     let resolved_authorities =
         resolve_pubkey_to_authorities(authority, ctx.accounts.collection, &asset)?;
-    let (external_registry_record_authority, external_plugin_adapter) =
+    let (external_registry_record, external_plugin_adapter) =
         fetch_wrapped_external_plugin_adapter::<AssetV1>(ctx.accounts.asset, None, &args.key)?;
 
     let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: Some(ctx.accounts.asset),
         collection_info: ctx.accounts.collection,
-        self_authority: &external_registry_record_authority,
+        self_authority: &external_registry_record.authority,
         authority_info: authority,
         resolved_authorities: Some(&resolved_authorities),
         new_owner: None,
+        new_asset_authority: None,
+        new_collection_authority: None,
         target_plugin: None,
     };
 
@@ -132,7 +134,7 @@ pub(crate) fn update_collection_external_plugin_adapter<'a>(
         fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;
     let resolved_authorities =
         resolve_pubkey_to_authorities_collection(authority, ctx.accounts.collection)?;
-    let (external_registry_record_authority, external_plugin_adapter) =
+    let (external_registry_record, external_plugin_adapter) =
         fetch_wrapped_external_plugin_adapter::<CollectionV1>(
             ctx.accounts.collection,
             None,
@@ -143,10 +145,12 @@ pub(crate) fn update_collection_external_plugin_adapter<'a>(
         accounts,
         asset_info: None,
         collection_info: Some(ctx.accounts.collection),
-        self_authority: &external_registry_record_authority,
+        self_authority: &external_registry_record.authority,
         authority_info: authority,
         resolved_authorities: Some(&resolved_authorities),
         new_owner: None,
+        new_asset_authority: None,
+        new_collection_authority: None,
         target_plugin: None,
     };
 
@@ -249,25 +253,7 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     plugin_header.save(account, core.get_size())?;
 
     // Move offsets for existing registry records.
-    for record in &mut plugin_registry.external_registry {
-        if registry_record.offset < record.offset {
-            let new_offset = (record.offset as isize)
-                .checked_add(plugin_size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-
-            record.offset = new_offset as usize;
-        }
-    }
-
-    for record in &mut plugin_registry.registry {
-        if registry_record.offset < record.offset {
-            let new_offset = (record.offset as isize)
-                .checked_add(plugin_size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-
-            record.offset = new_offset as usize;
-        }
-    }
+    plugin_registry.bump_offsets(registry_record.offset, plugin_size_diff)?;
 
     plugin_registry.save(account, new_registry_offset as usize)?;
     new_plugin.save(account, registry_record.offset)?;

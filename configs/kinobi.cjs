@@ -130,6 +130,19 @@ kinobi.update(
         },
       }
     },
+    updateV2: {
+      arguments: {
+        newUpdateAuthority: {
+          defaultValue: k.noneValueNode()
+        },
+        newName: {
+          defaultValue: k.noneValueNode()
+        },
+        newUri: {
+          defaultValue: k.noneValueNode()
+        },
+      }
+    },
     updateCollectionV1: {
       arguments: {
         newName: {
@@ -198,6 +211,9 @@ kinobi.update(
     externalPluginAdapterKey: {
       name: "baseExternalPluginAdapterKey"
     },
+    linkedDataKey: {
+      name: 'baseLinkedDataKey'
+    },
     externalPluginAdapterInitInfo: {
       name: "baseExternalPluginAdapterInitInfo"
     },
@@ -222,14 +238,41 @@ kinobi.update(
     lifecycleHookUpdateInfo: {
       name: "baseLifecycleHookUpdateInfo"
     },
-    dataStore: {
-      name: "baseDataStore"
+    linkedLifecycleHook: {
+      name: "baseLinkedLifecycleHook"
     },
-    dataStoreInitInfo: {
-      name: "baseDataStoreInitInfo"
+    linkedLifecycleHookInitInfo: {
+      name: "baseLinkedLifecycleHookInitInfo"
     },
-    dataStoreUpdateInfo: {
-      name: "baseDataStoreUpdateInfo"
+    linkedLifecycleHookUpdateInfo: {
+      name: "baseLinkedLifecycleHookUpdateInfo"
+    },
+    appData: {
+      name: "baseAppData"
+    },
+    appDataInitInfo: {
+      name: "baseAppDataInitInfo"
+    },
+    appDataUpdateInfo: {
+      name: "baseAppDataUpdateInfo"
+    },
+    linkedAppData: {
+      name: "baseLinkedAppData"
+    },
+    linkedAppDataInitInfo: {
+      name: "baseLinkedAppDataInitInfo"
+    },
+    linkedAppDataUpdateInfo: {
+      name: "baseLinkedAppDataUpdateInfo"
+    },
+    dataSection: {
+      name: "baseDataSection"
+    },
+    dataSectionInitInfo: {
+      name: "baseDataSectionInitInfo"
+    },
+    dataSectionUpdateInfo: {
+      name: "baseDataSectionUpdateInfo"
     },
     validationResultsOffset: {
       name: "baseValidationResultsOffset"

@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::state::{Authority, DataBlob};
+use crate::state::DataBlob;
 
 use super::{
     abstain, approve, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
@@ -82,10 +82,11 @@ impl PluginValidation for FreezeDelegate {
         if let Some(Plugin::FreezeDelegate(freeze)) = ctx.target_plugin {
             if freeze.frozen {
                 return reject!();
-            } else if ctx.self_authority
-                == &(Authority::Address {
-                    address: *ctx.authority_info.key,
-                })
+            } else if ctx.resolved_authorities.is_some()
+                && ctx
+                    .resolved_authorities
+                    .unwrap()
+                    .contains(ctx.self_authority)
             {
                 return approve!();
             }
