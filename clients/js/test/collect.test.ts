@@ -11,12 +11,15 @@ import test from 'ava';
 import { fixedAccountInit } from '@metaplex-foundation/mpl-core-oracle-example';
 import {
   CheckResult,
+  ExternalPluginAdapterSchema,
   ExternalValidationResult,
   PluginType,
+  addPlugin,
   addPluginV1,
   burnV1,
   collect,
   createPlugin,
+  removePlugin,
   removePluginV1,
   transfer,
 } from '../src';
@@ -38,6 +41,15 @@ const hasCollectAmount = async (umi: Umi, address: PublicKey) => {
     const rent = await umi.rpc.getRent(account.data.length);
     const diff = account.lamports.basisPoints - rent.basisPoints;
     return diff === sol(0.0015).basisPoints;
+  }
+  return false;
+};
+
+const assertNoExcessRent = async (umi: Umi, address: PublicKey) => {
+  const account = await umi.rpc.getAccount(address);
+  if (account.exists) {
+    const rent = await umi.rpc.getRent(account.data.length);
+    return account.lamports.basisPoints === rent.basisPoints;
   }
   return false;
 };
@@ -68,7 +80,26 @@ test('it can add asset plugin with collect amount', async (t) => {
   );
 });
 
-test('it can add remove asset plugin with collect amount', async (t) => {
+test('it can add asset external plugin with collect amount', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi);
+
+  await addPlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'AppData',
+      dataAuthority: { type: 'UpdateAuthority' },
+      schema: ExternalPluginAdapterSchema.Json,
+    },
+  }).sendAndConfirm(umi);
+
+  t.assert(
+    await hasCollectAmount(umi, asset.publicKey),
+    'Collect amount not found'
+  );
+});
+
+test('it can remove asset plugin with collect amount', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi, {
     plugins: [
@@ -87,6 +118,33 @@ test('it can add remove asset plugin with collect amount', async (t) => {
   await removePluginV1(umi, {
     asset: asset.publicKey,
     pluginType: PluginType.FreezeDelegate,
+  }).sendAndConfirm(umi);
+  t.assert(
+    await hasCollectAmount(umi, asset.publicKey),
+    'Collect amount not found'
+  );
+});
+
+test('it can remove asset external plugin with collect amount', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Json,
+      },
+    ],
+  });
+
+  t.assert(
+    await hasCollectAmount(umi, asset.publicKey),
+    'Collect amount not found'
+  );
+
+  await removePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: { type: 'AppData', dataAuthority: { type: 'UpdateAuthority' } },
   }).sendAndConfirm(umi);
   t.assert(
     await hasCollectAmount(umi, asset.publicKey),
@@ -146,6 +204,8 @@ test.serial('it can collect from an asset with plugins', async (t) => {
   t.is(await hasCollectAmount(umi, asset.publicKey), false);
   t.deepEqual(subtractAmounts(balEnd1, balStart1), sol(0.0015 / 2));
   t.deepEqual(subtractAmounts(balEnd2, balStart2), sol(0.0015 / 2));
+
+  t.assert(await assertNoExcessRent(umi, asset.publicKey), 'Excess rent found');
 });
 
 test.serial('it can collect from an asset with external plugins', async (t) => {
@@ -210,6 +270,8 @@ test.serial('it can collect from an asset with external plugins', async (t) => {
   t.is(await hasCollectAmount(umi, asset.publicKey), false);
   t.deepEqual(subtractAmounts(balEnd1, balStart1), sol(0.0015 / 2));
   t.deepEqual(subtractAmounts(balEnd2, balStart2), sol(0.0015 / 2));
+
+  t.assert(await assertNoExcessRent(umi, asset.publicKey), 'Excess rent found');
 });
 
 test.serial(
@@ -253,6 +315,11 @@ test.serial(
     t.is(await hasCollectAmount(umi, asset.publicKey), false);
     t.deepEqual(subtractAmounts(balEnd1, balStart1), sol(0.0015 / 2));
     t.deepEqual(subtractAmounts(balEnd2, balStart2), sol(0.0015 / 2));
+
+    t.assert(
+      await assertNoExcessRent(umi, asset.publicKey),
+      'Excess rent found'
+    );
   }
 );
 
@@ -326,6 +393,11 @@ test.serial(
     t.is(await hasCollectAmount(umi, asset.publicKey), false);
     t.deepEqual(subtractAmounts(balEnd1, balStart1), sol(0.0015 / 2));
     t.deepEqual(subtractAmounts(balEnd2, balStart2), sol(0.0015 / 2));
+
+    t.assert(
+      await assertNoExcessRent(umi, asset.publicKey),
+      'Excess rent found'
+    );
   }
 );
 
@@ -351,6 +423,8 @@ test.serial('it can collect burned asset', async (t) => {
   t.is(await hasCollectAmount(umi, asset.publicKey), false);
   t.deepEqual(subtractAmounts(balEnd1, balStart1), sol(0.0015 / 2));
   t.deepEqual(subtractAmounts(balEnd2, balStart2), sol(0.0015 / 2));
+
+  t.assert(await assertNoExcessRent(umi, asset.publicKey), 'Excess rent found');
 });
 
 test.serial(
@@ -384,6 +458,11 @@ test.serial(
     t.is(await hasCollectAmount(umi, asset.publicKey), false);
     t.deepEqual(subtractAmounts(balEnd1, balStart1), sol(0.0015 / 2));
     t.deepEqual(subtractAmounts(balEnd2, balStart2), sol(0.0015 / 2));
+
+    t.assert(
+      await assertNoExcessRent(umi, asset.publicKey),
+      'Excess rent found'
+    );
   }
 );
 
@@ -420,6 +499,8 @@ test.serial('it can collect multiple assets at once', async (t) => {
   t.is(await hasCollectAmount(umi, asset3.publicKey), false);
   t.deepEqual(subtractAmounts(balEnd1, balStart1), sol((0.0015 / 2) * 3));
   t.deepEqual(subtractAmounts(balEnd2, balStart2), sol((0.0015 / 2) * 3));
+
+  t.assert(await assertNoExcessRent(umi, asset.publicKey), 'Excess rent found');
 });
 
 test('it can transfer after collecting', async (t) => {
@@ -445,4 +526,6 @@ test('it can transfer after collecting', async (t) => {
     owner: newOwner.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
   });
+
+  t.assert(await assertNoExcessRent(umi, asset.publicKey), 'Excess rent found');
 });
