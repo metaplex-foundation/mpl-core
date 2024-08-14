@@ -1,4 +1,4 @@
-import { ExternalRegistryRecord } from 'src/generated';
+import { ExternalRegistryRecord } from '../generated';
 import { ExternalPluginAdapterTypeString } from './externalPluginAdapters';
 
 export type ExternalPluginAdapterManifest<
