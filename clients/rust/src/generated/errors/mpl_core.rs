@@ -154,6 +154,12 @@ pub enum MplCoreError {
     /// 47 (0x2F) - Cannot add a Data Section without a linked external plugin
     #[error("Cannot add a Data Section without a linked external plugin")]
     CannotAddDataSection,
+    /// 48 (0x30) - Plugin is not allowed to be added to an Asset
+    #[error("Plugin is not allowed to be added to an Asset")]
+    PluginNotAllowedOnAsset,
+    /// 49 (0x31) - Plugin is not allowed to be added to a Collection
+    #[error("Plugin is not allowed to be added to a Collection")]
+    PluginNotAllowedOnCollection,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

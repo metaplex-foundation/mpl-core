@@ -142,7 +142,7 @@ pub(crate) fn process_create_collection<'a>(
                         new_owner: None,
                         new_asset_authority: None,
                         new_collection_authority: None,
-                        target_plugin: None,
+                        target_plugin: Some(&plugin.plugin),
                     };
                     match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
                         ValidationResult::Rejected => approved = false,

@@ -200,6 +200,14 @@ pub enum MplCoreError {
     /// 47 - Cannot add a Data Section without a linked external plugin
     #[error("Cannot add a Data Section without a linked external plugin")]
     CannotAddDataSection,
+
+    /// 48 - Plugin is not allowed to be added to an Asset
+    #[error("Plugin is not allowed to be added to an Asset")]
+    PluginNotAllowedOnAsset,
+
+    /// 49 - Plugin is not allowed to be added to a Collection
+    #[error("Plugin is not allowed to be added to a Collection")]
+    PluginNotAllowedOnCollection,
 }
 
 impl PrintProgramError for MplCoreError {

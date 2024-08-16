@@ -4852,6 +4852,16 @@
       "code": 47,
       "name": "CannotAddDataSection",
       "msg": "Cannot add a Data Section without a linked external plugin"
+    },
+    {
+      "code": 48,
+      "name": "PluginNotAllowedOnAsset",
+      "msg": "Plugin is not allowed to be added to an Asset"
+    },
+    {
+      "code": 49,
+      "name": "PluginNotAllowedOnCollection",
+      "msg": "Plugin is not allowed to be added to a Collection"
     }
   ],
   "metadata": {

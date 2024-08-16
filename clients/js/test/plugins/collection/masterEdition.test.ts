@@ -128,7 +128,7 @@ test('it cannot add masterEdition to asset', async (t) => {
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
-    name: 'InvalidPlugin',
+    name: 'PluginNotAllowedOnAsset',
   });
 });
 
@@ -150,6 +150,6 @@ test('it cannot create asset with masterEdition', async (t) => {
   });
 
   await t.throwsAsync(result, {
-    name: 'InvalidPlugin',
+    name: 'PluginNotAllowedOnAsset',
   });
 });
