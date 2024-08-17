@@ -297,6 +297,54 @@ test('it can withdraw SOL from treasury', async (t) => {
   });
 });
 
+test('it cannot withdraw SOL from treasury if not the authority', async (t) => {
+  const umi = await createUmi();
+  const authority = generateSigner(umi);
+
+  const collection = await createCollection(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'Treasury',
+        data: {
+          withdrawn: 0,
+        },
+        authority: updatePluginAuthority(),
+      }),
+    ],
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    treasury: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      withdrawn: 0,
+    },
+  });
+
+  await updateCollectionPlugin(umi, {
+    collection: collection.publicKey,
+    plugin: {
+      type: 'Treasury',
+      withdrawn: -1_000_000,
+    },
+  }).sendAndConfirm(umi);
+
+  const result = updateCollectionPlugin(umi, {
+    collection: collection.publicKey,
+    authority,
+    plugin: {
+      type: 'Treasury',
+      withdrawn: 0,
+    },
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+});
+
 test('it cannot withdraw more than excess rent from treasury', async (t) => {
   const umi = await createUmi();
 
