@@ -55,6 +55,7 @@ pub(crate) fn add_plugin<'a>(
         collection_info: ctx.accounts.collection,
         self_authority: &args.init_authority.unwrap_or(args.plugin.manager()),
         authority_info: authority,
+        payer: ctx.accounts.payer,
         resolved_authorities: None,
         new_owner: None,
         new_asset_authority: None,
@@ -69,6 +70,7 @@ pub(crate) fn add_plugin<'a>(
     let (mut asset, _, _) = validate_asset_permissions(
         accounts,
         authority,
+        ctx.accounts.payer,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
@@ -130,6 +132,7 @@ pub(crate) fn add_collection_plugin<'a>(
         collection_info: Some(ctx.accounts.collection),
         self_authority: &args.init_authority.unwrap_or(args.plugin.manager()),
         authority_info: authority,
+        payer: ctx.accounts.payer,
         resolved_authorities: None,
         new_owner: None,
         new_asset_authority: None,
@@ -149,6 +152,7 @@ pub(crate) fn add_collection_plugin<'a>(
     let _ = validate_collection_permissions(
         accounts,
         authority,
+        ctx.accounts.payer,
         ctx.accounts.collection,
         None,
         Some(&args.plugin),

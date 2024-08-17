@@ -3053,6 +3053,18 @@
       }
     },
     {
+      "name": "Treasury",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "withdrawn",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
       "name": "UpdateDelegate",
       "type": {
         "kind": "struct",
@@ -3897,6 +3909,14 @@
                 "defined": "Autograph"
               }
             ]
+          },
+          {
+            "name": "Treasury",
+            "fields": [
+              {
+                "defined": "Treasury"
+              }
+            ]
           }
         ]
       }
@@ -3950,6 +3970,9 @@
           },
           {
             "name": "Autograph"
+          },
+          {
+            "name": "Treasury"
           }
         ]
       }
@@ -4862,6 +4885,16 @@
       "code": 49,
       "name": "PluginNotAllowedOnCollection",
       "msg": "Plugin is not allowed to be added to a Collection"
+    },
+    {
+      "code": 50,
+      "name": "InvalidTreasuryWithdrawn",
+      "msg": "Cannot add a treasury plugin with nonzero withdrawn amount"
+    },
+    {
+      "code": 51,
+      "name": "CannotOverdraw",
+      "msg": "Cannot withdraw more than excess rent from treasury"
     }
   ],
   "metadata": {

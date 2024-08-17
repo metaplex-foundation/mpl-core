@@ -151,6 +151,7 @@ pub(crate) fn process_create<'a>(
         let _ = validate_asset_permissions(
             accounts,
             authority,
+            ctx.accounts.payer,
             ctx.accounts.asset,
             ctx.accounts.collection,
             None,
@@ -189,6 +190,7 @@ pub(crate) fn process_create<'a>(
                             collection_info: ctx.accounts.collection,
                             self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
                             authority_info: authority,
+                            payer: ctx.accounts.payer,
                             resolved_authorities: None,
                             new_owner: None,
                             new_asset_authority: None,
@@ -246,6 +248,7 @@ pub(crate) fn process_create<'a>(
                             // External plugin adapters are always managed by the update authority.
                             self_authority: &Authority::UpdateAuthority,
                             authority_info: authority,
+                            payer: ctx.accounts.payer,
                             resolved_authorities: None,
                             new_owner: None,
                             new_asset_authority: None,

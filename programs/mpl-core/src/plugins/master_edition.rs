@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::{error::MplCoreError, utils::load_key};
+use crate::error::MplCoreError;
 
 use super::{PluginType, PluginValidation, PluginValidationContext, ValidationResult};
 

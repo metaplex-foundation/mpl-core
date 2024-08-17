@@ -18,6 +18,7 @@ use crate::generated::types::PermanentFreezeDelegate;
 use crate::generated::types::PermanentTransferDelegate;
 use crate::generated::types::Royalties;
 use crate::generated::types::TransferDelegate;
+use crate::generated::types::Treasury;
 use crate::generated::types::UpdateDelegate;
 use crate::generated::types::VerifiedCreators;
 #[cfg(feature = "anchor")]
@@ -45,4 +46,5 @@ pub enum Plugin {
     ImmutableMetadata(ImmutableMetadata),
     VerifiedCreators(VerifiedCreators),
     Autograph(Autograph),
+    Treasury(Treasury),
 }

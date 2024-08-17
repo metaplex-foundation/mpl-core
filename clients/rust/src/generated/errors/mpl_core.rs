@@ -160,6 +160,12 @@ pub enum MplCoreError {
     /// 49 (0x31) - Plugin is not allowed to be added to a Collection
     #[error("Plugin is not allowed to be added to a Collection")]
     PluginNotAllowedOnCollection,
+    /// 50 (0x32) - Cannot add a treasury plugin with nonzero withdrawn amount
+    #[error("Cannot add a treasury plugin with nonzero withdrawn amount")]
+    InvalidTreasuryWithdrawn,
+    /// 51 (0x33) - Cannot withdraw more than excess rent from treasury
+    #[error("Cannot withdraw more than excess rent from treasury")]
+    CannotOverdraw,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

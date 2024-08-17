@@ -25,10 +25,12 @@ import {
   VerifiedCreatorsArgs,
   Autograph,
   VerifiedCreators,
+  BaseTreasuryArgs,
 } from '../generated';
 import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
 import { PluginAuthority } from './pluginAuthority';
 import { MasterEdition, MasterEditionArgs } from './masterEdition';
+import { Treasury, TreasuryArgs } from './treasury';
 
 // for backwards compatibility
 export { pluginAuthority, updateAuthority, ruleSet };
@@ -88,6 +90,10 @@ export type CreatePluginArgs =
     }
   | {
       type: 'AddBlocker';
+    }
+  | {
+      type: 'Treasury';
+      data: BaseTreasuryArgs;
     };
 
 export type AuthorityArgsV2 = {
@@ -143,7 +149,10 @@ export type AuthorityManagedPluginArgsV2 =
     }
   | ({
       type: 'VerifiedCreators';
-    } & VerifiedCreatorsArgs);
+    } & VerifiedCreatorsArgs)
+  | ({
+      type: 'Treasury';
+    } & TreasuryArgs);
 
 export type AssetAddablePluginArgsV2 =
   | OwnerManagedPluginArgsV2
@@ -181,6 +190,7 @@ export type AddBlockerPlugin = BasePlugin & AddBlocker;
 export type ImmutableMetadataPlugin = BasePlugin & ImmutableMetadata;
 export type VerifiedCreatorsPlugin = BasePlugin & VerifiedCreators;
 export type AutographPlugin = BasePlugin & Autograph;
+export type TreasuryPlugin = BasePlugin & Treasury;
 
 export type CommonPluginsList = {
   attributes?: AttributesPlugin;
@@ -204,6 +214,7 @@ export type AssetPluginsList = {
 
 export type CollectionPluginsList = {
   masterEdition?: MasterEditionPlugin;
+  treasury?: TreasuryPlugin;
 } & CommonPluginsList;
 
 export type PluginsList = AssetPluginsList & CollectionPluginsList;

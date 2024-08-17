@@ -718,6 +718,40 @@ nameToErrorMap.set(
   PluginNotAllowedOnCollectionError
 );
 
+/** InvalidTreasuryWithdrawn: Cannot add a treasury plugin with nonzero withdrawn amount */
+export class InvalidTreasuryWithdrawnError extends ProgramError {
+  override readonly name: string = 'InvalidTreasuryWithdrawn';
+
+  readonly code: number = 0x32; // 50
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Cannot add a treasury plugin with nonzero withdrawn amount',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x32, InvalidTreasuryWithdrawnError);
+nameToErrorMap.set('InvalidTreasuryWithdrawn', InvalidTreasuryWithdrawnError);
+
+/** CannotOverdraw: Cannot withdraw more than excess rent from treasury */
+export class CannotOverdrawError extends ProgramError {
+  override readonly name: string = 'CannotOverdraw';
+
+  readonly code: number = 0x33; // 51
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Cannot withdraw more than excess rent from treasury',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x33, CannotOverdrawError);
+nameToErrorMap.set('CannotOverdraw', CannotOverdrawError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

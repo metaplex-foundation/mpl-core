@@ -21,6 +21,7 @@ mod plugin_header;
 mod plugin_registry;
 mod royalties;
 mod transfer;
+mod treasury;
 mod update_delegate;
 mod utils;
 mod verified_creators;
@@ -48,6 +49,7 @@ pub use plugin_header::*;
 pub use plugin_registry::*;
 pub use royalties::*;
 pub use transfer::*;
+pub use treasury::*;
 pub use update_delegate::*;
 pub use utils::*;
 pub use verified_creators::*;
@@ -98,6 +100,8 @@ pub enum Plugin {
     VerifiedCreators(VerifiedCreators),
     /// Autograph plugin allows anybody to add their signature to the asset with an optional message
     Autograph(Autograph),
+    /// Treasury plugin allows for the Collection to contain a SOL treasury
+    Treasury(Treasury),
 }
 
 impl Plugin {
@@ -172,6 +176,8 @@ pub enum PluginType {
     VerifiedCreators,
     /// Autograph plugin.
     Autograph,
+    /// Treasury plugin.
+    Treasury,
 }
 
 impl DataBlob for PluginType {
@@ -202,6 +208,7 @@ impl From<&Plugin> for PluginType {
             Plugin::MasterEdition(_) => PluginType::MasterEdition,
             Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
             Plugin::Autograph(_) => PluginType::Autograph,
+            Plugin::Treasury(_) => PluginType::Treasury,
         }
     }
 }
@@ -225,6 +232,7 @@ impl PluginType {
             PluginType::MasterEdition => Authority::UpdateAuthority,
             PluginType::VerifiedCreators => Authority::UpdateAuthority,
             PluginType::Autograph => Authority::Owner,
+            PluginType::Treasury => Authority::UpdateAuthority,
         }
     }
 }
