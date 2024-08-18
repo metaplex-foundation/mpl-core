@@ -6,7 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Serializer, i64, struct } from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct, u64 } from '@metaplex-foundation/umi/serializers';
 
 export type BaseTreasury = { withdrawn: bigint };
 
@@ -16,7 +16,7 @@ export function getBaseTreasurySerializer(): Serializer<
   BaseTreasuryArgs,
   BaseTreasury
 > {
-  return struct<BaseTreasury>([['withdrawn', i64()]], {
+  return struct<BaseTreasury>([['withdrawn', u64()]], {
     description: 'BaseTreasury',
   }) as Serializer<BaseTreasuryArgs, BaseTreasury>;
 }

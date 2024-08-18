@@ -3059,7 +3059,7 @@
         "fields": [
           {
             "name": "withdrawn",
-            "type": "i64"
+            "type": "u64"
           }
         ]
       }

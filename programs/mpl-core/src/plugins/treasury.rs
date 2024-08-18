@@ -12,7 +12,7 @@ use super::{
 #[derive(Clone, BorshSerialize, BorshDeserialize, Default, Debug, PartialEq, Eq)]
 pub struct Treasury {
     /// How much SOL has been withdrawn from the treasury, in lamports
-    pub withdrawn: i64,
+    pub withdrawn: u64,
 }
 
 impl PluginValidation for Treasury {
@@ -77,9 +77,7 @@ impl PluginValidation for Treasury {
                         let diff: u64 = treasury
                             .withdrawn
                             .checked_sub(self.withdrawn)
-                            .ok_or(MplCoreError::NumericalOverflow)?
-                            .try_into()
-                            .map_err(|_| MplCoreError::NumericalOverflow)?;
+                            .ok_or(MplCoreError::NumericalOverflow)?;
 
                         if diff > excess_rent {
                             return Err(MplCoreError::CannotOverdraw.into());
