@@ -154,6 +154,21 @@ pub enum MplCoreError {
     /// 47 (0x2F) - Cannot add a Data Section without a linked external plugin
     #[error("Cannot add a Data Section without a linked external plugin")]
     CannotAddDataSection,
+    /// 48 (0x30) - Plugin is not allowed to be added to an Asset
+    #[error("Plugin is not allowed to be added to an Asset")]
+    PluginNotAllowedOnAsset,
+    /// 49 (0x31) - Plugin is not allowed to be added to a Collection
+    #[error("Plugin is not allowed to be added to a Collection")]
+    PluginNotAllowedOnCollection,
+    /// 50 (0x32) - Cannot add a treasury plugin with nonzero withdrawn amount
+    #[error("Cannot add a treasury plugin with nonzero withdrawn amount")]
+    InvalidTreasuryWithdrawn,
+    /// 51 (0x33) - Cannot withdraw more than excess rent from treasury
+    #[error("Cannot withdraw more than excess rent from treasury")]
+    CannotOverdraw,
+    /// 52 (0x34) - Plugin requires a collection
+    #[error("Plugin requires a collection")]
+    PluginRequiresCollection,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

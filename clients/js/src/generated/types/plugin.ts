@@ -25,6 +25,10 @@ import {
   BaseMasterEditionArgs,
   BaseRoyalties,
   BaseRoyaltiesArgs,
+  BaseSolTransferFee,
+  BaseSolTransferFeeArgs,
+  BaseTreasury,
+  BaseTreasuryArgs,
   BurnDelegate,
   BurnDelegateArgs,
   Edition,
@@ -50,6 +54,8 @@ import {
   getAutographSerializer,
   getBaseMasterEditionSerializer,
   getBaseRoyaltiesSerializer,
+  getBaseSolTransferFeeSerializer,
+  getBaseTreasurySerializer,
   getBurnDelegateSerializer,
   getEditionSerializer,
   getFreezeDelegateSerializer,
@@ -77,7 +83,9 @@ export type Plugin =
   | { __kind: 'AddBlocker'; fields: [AddBlocker] }
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadata] }
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreators] }
-  | { __kind: 'Autograph'; fields: [Autograph] };
+  | { __kind: 'Autograph'; fields: [Autograph] }
+  | { __kind: 'Treasury'; fields: [BaseTreasury] }
+  | { __kind: 'SolTransferFee'; fields: [BaseSolTransferFee] };
 
 export type PluginArgs =
   | { __kind: 'Royalties'; fields: [BaseRoyaltiesArgs] }
@@ -97,7 +105,9 @@ export type PluginArgs =
   | { __kind: 'AddBlocker'; fields: [AddBlockerArgs] }
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadataArgs] }
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreatorsArgs] }
-  | { __kind: 'Autograph'; fields: [AutographArgs] };
+  | { __kind: 'Autograph'; fields: [AutographArgs] }
+  | { __kind: 'Treasury'; fields: [BaseTreasuryArgs] }
+  | { __kind: 'SolTransferFee'; fields: [BaseSolTransferFeeArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -192,6 +202,18 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
           ['fields', tuple([getAutographSerializer()])],
         ]),
       ],
+      [
+        'Treasury',
+        struct<GetDataEnumKindContent<Plugin, 'Treasury'>>([
+          ['fields', tuple([getBaseTreasurySerializer()])],
+        ]),
+      ],
+      [
+        'SolTransferFee',
+        struct<GetDataEnumKindContent<Plugin, 'SolTransferFee'>>([
+          ['fields', tuple([getBaseSolTransferFeeSerializer()])],
+        ]),
+      ],
     ],
     { description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
@@ -261,6 +283,14 @@ export function plugin(
   kind: 'Autograph',
   data: GetDataEnumKindContent<PluginArgs, 'Autograph'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Autograph'>;
+export function plugin(
+  kind: 'Treasury',
+  data: GetDataEnumKindContent<PluginArgs, 'Treasury'>['fields']
+): GetDataEnumKind<PluginArgs, 'Treasury'>;
+export function plugin(
+  kind: 'SolTransferFee',
+  data: GetDataEnumKindContent<PluginArgs, 'SolTransferFee'>['fields']
+): GetDataEnumKind<PluginArgs, 'SolTransferFee'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any

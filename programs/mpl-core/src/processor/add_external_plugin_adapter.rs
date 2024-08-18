@@ -68,6 +68,7 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         collection_info: ctx.accounts.collection,
         self_authority: &Authority::UpdateAuthority,
         authority_info: authority,
+        payer: ctx.accounts.payer,
         resolved_authorities: None,
         new_owner: None,
         new_asset_authority: None,
@@ -89,6 +90,7 @@ pub(crate) fn add_external_plugin_adapter<'a>(
     let (mut asset, _, _) = validate_asset_permissions(
         accounts,
         authority,
+        ctx.accounts.payer,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
@@ -154,6 +156,7 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         collection_info: Some(ctx.accounts.collection),
         self_authority: &Authority::UpdateAuthority,
         authority_info: authority,
+        payer: ctx.accounts.payer,
         resolved_authorities: None,
         new_owner: None,
         new_asset_authority: None,
@@ -175,6 +178,7 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
     let (core, _, _) = validate_collection_permissions(
         accounts,
         authority,
+        ctx.accounts.payer,
         ctx.accounts.collection,
         None,
         None,

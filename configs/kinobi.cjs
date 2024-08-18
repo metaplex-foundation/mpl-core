@@ -279,7 +279,13 @@ kinobi.update(
     },
     masterEdition: {
       name: "baseMasterEdition"
-    }
+    },
+    treasury: {
+      name: "baseTreasury"
+    },
+    solTransferFee: {
+      name: "baseSolTransferFee"
+    },
   })
 )
 

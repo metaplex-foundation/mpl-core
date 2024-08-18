@@ -200,6 +200,26 @@ pub enum MplCoreError {
     /// 47 - Cannot add a Data Section without a linked external plugin
     #[error("Cannot add a Data Section without a linked external plugin")]
     CannotAddDataSection,
+
+    /// 48 - Plugin is not allowed to be added to an Asset
+    #[error("Plugin is not allowed to be added to an Asset")]
+    PluginNotAllowedOnAsset,
+
+    /// 49 - Plugin is not allowed to be added to a Collection
+    #[error("Plugin is not allowed to be added to a Collection")]
+    PluginNotAllowedOnCollection,
+
+    /// 50 - Cannot add a treasury plugin with nonzero withdrawn amount
+    #[error("Cannot add a treasury plugin with nonzero withdrawn amount")]
+    InvalidTreasuryWithdrawn,
+
+    /// 51 - Cannot withdraw more than excess rent from treasury
+    #[error("Cannot withdraw more than excess rent from treasury")]
+    CannotOverdraw,
+
+    /// 52 - Plugin requires a collection
+    #[error("Plugin requires a collection")]
+    PluginRequiresCollection,
 }
 
 impl PrintProgramError for MplCoreError {

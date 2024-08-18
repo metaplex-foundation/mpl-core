@@ -27,6 +27,8 @@ import {
 } from './pluginAuthority';
 import { royaltiesFromBase, royaltiesToBase } from './royalties';
 import { masterEditionFromBase, masterEditionToBase } from './masterEdition';
+import { treasuryFromBase, treasuryToBase } from './treasury';
+import { solTransferFeeFromBase, solTransferFeeToBase } from './solTransferFee';
 
 export function formPluginHeaderV1(
   pluginRegistryOffset: bigint
@@ -103,6 +105,19 @@ export function createPluginV2(args: AssetAllPluginArgsV2): BasePlugin {
       fields: [masterEditionToBase(args)],
     };
   }
+  if (type === 'Treasury') {
+    return {
+      __kind: type,
+      fields: [treasuryToBase(args)],
+    };
+  }
+
+  if (type === 'SolTransferFee') {
+    return {
+      __kind: type,
+      fields: [solTransferFeeToBase(args)],
+    };
+  }
 
   return {
     __kind: type,
@@ -163,6 +178,26 @@ export function mapPlugin({
         authority,
         offset,
         ...masterEditionFromBase(plug.fields[0]),
+      },
+    };
+  }
+
+  if (plug.__kind === 'Treasury') {
+    return {
+      [pluginKey]: {
+        authority,
+        offset,
+        ...treasuryFromBase(plug.fields[0]),
+      },
+    };
+  }
+
+  if (plug.__kind === 'SolTransferFee') {
+    return {
+      [pluginKey]: {
+        authority,
+        offset,
+        ...solTransferFeeFromBase(plug.fields[0]),
       },
     };
   }

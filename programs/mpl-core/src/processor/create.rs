@@ -151,6 +151,7 @@ pub(crate) fn process_create<'a>(
         let _ = validate_asset_permissions(
             accounts,
             authority,
+            ctx.accounts.payer,
             ctx.accounts.asset,
             ctx.accounts.collection,
             None,
@@ -180,11 +181,6 @@ pub(crate) fn process_create<'a>(
                     ctx.accounts.system_program,
                 )?;
                 for plugin in &plugins {
-                    // TODO move into plugin validation when asset/collection is part of validation context
-                    let plugin_type = PluginType::from(&plugin.plugin);
-                    if plugin_type == PluginType::MasterEdition {
-                        return Err(MplCoreError::InvalidPlugin.into());
-                    }
                     if PluginType::check_create(&PluginType::from(&plugin.plugin))
                         != CheckResult::None
                     {
@@ -194,11 +190,12 @@ pub(crate) fn process_create<'a>(
                             collection_info: ctx.accounts.collection,
                             self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
                             authority_info: authority,
+                            payer: ctx.accounts.payer,
                             resolved_authorities: None,
                             new_owner: None,
                             new_asset_authority: None,
                             new_collection_authority: None,
-                            target_plugin: None,
+                            target_plugin: Some(&plugin.plugin),
                         };
                         match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
                             ValidationResult::Rejected => approved = false,
@@ -251,6 +248,7 @@ pub(crate) fn process_create<'a>(
                             // External plugin adapters are always managed by the update authority.
                             self_authority: &Authority::UpdateAuthority,
                             authority_info: authority,
+                            payer: ctx.accounts.payer,
                             resolved_authorities: None,
                             new_owner: None,
                             new_asset_authority: None,

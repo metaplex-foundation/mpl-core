@@ -3046,10 +3046,34 @@
       }
     },
     {
+      "name": "SolTransferFee",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "feeAmount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "TransferDelegate",
       "type": {
         "kind": "struct",
         "fields": []
+      }
+    },
+    {
+      "name": "Treasury",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "withdrawn",
+            "type": "u64"
+          }
+        ]
       }
     },
     {
@@ -3897,6 +3921,22 @@
                 "defined": "Autograph"
               }
             ]
+          },
+          {
+            "name": "Treasury",
+            "fields": [
+              {
+                "defined": "Treasury"
+              }
+            ]
+          },
+          {
+            "name": "SolTransferFee",
+            "fields": [
+              {
+                "defined": "SolTransferFee"
+              }
+            ]
           }
         ]
       }
@@ -3950,6 +3990,12 @@
           },
           {
             "name": "Autograph"
+          },
+          {
+            "name": "Treasury"
+          },
+          {
+            "name": "SolTransferFee"
           }
         ]
       }
@@ -4852,6 +4898,31 @@
       "code": 47,
       "name": "CannotAddDataSection",
       "msg": "Cannot add a Data Section without a linked external plugin"
+    },
+    {
+      "code": 48,
+      "name": "PluginNotAllowedOnAsset",
+      "msg": "Plugin is not allowed to be added to an Asset"
+    },
+    {
+      "code": 49,
+      "name": "PluginNotAllowedOnCollection",
+      "msg": "Plugin is not allowed to be added to a Collection"
+    },
+    {
+      "code": 50,
+      "name": "InvalidTreasuryWithdrawn",
+      "msg": "Cannot add a treasury plugin with nonzero withdrawn amount"
+    },
+    {
+      "code": 51,
+      "name": "CannotOverdraw",
+      "msg": "Cannot withdraw more than excess rent from treasury"
+    },
+    {
+      "code": 52,
+      "name": "PluginRequiresCollection",
+      "msg": "Plugin requires a collection"
     }
   ],
   "metadata": {
