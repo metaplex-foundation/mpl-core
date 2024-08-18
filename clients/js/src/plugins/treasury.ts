@@ -1,19 +1,20 @@
+import { lamports, SolAmount } from '@metaplex-foundation/umi';
 import { BaseTreasury } from '../generated';
 
 export type Treasury = {
-  withdrawn: number;
+  withdrawn: SolAmount;
 };
 
 export type TreasuryArgs = Treasury;
 
 export function treasuryToBase(s: Treasury): BaseTreasury {
   return {
-    withdrawn: BigInt(s.withdrawn),
+    withdrawn: s.withdrawn.basisPoints,
   };
 }
 
 export function treasuryFromBase(s: BaseTreasury): Treasury {
   return {
-    withdrawn: Number(s.withdrawn),
+    withdrawn: lamports(s.withdrawn),
   };
 }

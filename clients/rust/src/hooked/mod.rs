@@ -49,6 +49,7 @@ impl From<&Plugin> for PluginType {
             Plugin::ImmutableMetadata(_) => PluginType::ImmutableMetadata,
             Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
             Plugin::Autograph(_) => PluginType::Autograph,
+            Plugin::Treasury(_) => PluginType::Treasury,
         }
     }
 }

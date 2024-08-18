@@ -12,7 +12,7 @@ use crate::{
         ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate,
         ImmutableMetadata, Key, LifecycleHook, LinkedAppData, LinkedLifecycleHook, MasterEdition,
         Oracle, PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate,
-        PluginAuthority, Royalties, TransferDelegate, UpdateDelegate, VerifiedCreators,
+        PluginAuthority, Royalties, TransferDelegate, Treasury, UpdateDelegate, VerifiedCreators,
     },
 };
 
@@ -160,6 +160,12 @@ pub struct AutographPlugin {
     pub autograph: Autograph,
 }
 
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct TreasuryPlugin {
+    pub base: BasePlugin,
+    pub treasury: Treasury,
+}
+
 #[derive(Debug, Default)]
 pub struct PluginsList {
     pub royalties: Option<RoyaltiesPlugin>,
@@ -177,6 +183,7 @@ pub struct PluginsList {
     pub immutable_metadata: Option<ImmutableMetadataPlugin>,
     pub verified_creators: Option<VerifiedCreatorsPlugin>,
     pub autograph: Option<AutographPlugin>,
+    pub treasury: Option<TreasuryPlugin>,
 }
 
 #[derive(Debug, Default)]

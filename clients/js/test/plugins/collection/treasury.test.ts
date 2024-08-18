@@ -41,7 +41,7 @@ test('it can add treasury to collection', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      withdrawn: 0,
+      withdrawn: lamports(0),
     },
   });
 });
@@ -69,7 +69,7 @@ test('it can create collection with treasury', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      withdrawn: 0,
+      withdrawn: lamports(0),
     },
   });
 });
@@ -84,7 +84,7 @@ test('it cannot create treasury with nonzero withdrawn', async (t) => {
     plugins: [
       pluginAuthorityPairV2({
         type: 'Treasury',
-        withdrawn: 10,
+        withdrawn: lamports(10),
       }),
     ],
   }).sendAndConfirm(umi);
@@ -176,7 +176,7 @@ test('it can withdraw SOL from treasury', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      withdrawn: 0,
+      withdrawn: lamports(0),
     },
   });
 
@@ -193,7 +193,7 @@ test('it can withdraw SOL from treasury', async (t) => {
     collection: collection.publicKey,
     plugin: {
       type: 'Treasury',
-      withdrawn: 1_000_000,
+      withdrawn: lamports(1_000_000),
     },
   }).sendAndConfirm(umi);
 
@@ -218,7 +218,7 @@ test('it can withdraw SOL from treasury', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      withdrawn: 1_000_000,
+      withdrawn: lamports(1_000_000),
     },
   });
 });
@@ -247,7 +247,7 @@ test('it cannot withdraw SOL from treasury if not the authority', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      withdrawn: 0,
+      withdrawn: lamports(0),
     },
   });
 
@@ -258,7 +258,7 @@ test('it cannot withdraw SOL from treasury if not the authority', async (t) => {
     authority,
     plugin: {
       type: 'Treasury',
-      withdrawn: 1_000_000,
+      withdrawn: lamports(1_000_000),
     },
   }).sendAndConfirm(umi);
 
@@ -288,7 +288,7 @@ test('it cannot withdraw more than excess rent from treasury', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      withdrawn: 0,
+      withdrawn: lamports(0),
     },
   });
 
@@ -298,7 +298,7 @@ test('it cannot withdraw more than excess rent from treasury', async (t) => {
     collection: collection.publicKey,
     plugin: {
       type: 'Treasury',
-      withdrawn: 1_000_001,
+      withdrawn: lamports(1_000_001),
     },
   }).sendAndConfirm(umi);
 
@@ -326,7 +326,7 @@ test('it cannot withdraw entire balance from treasury', async (t) => {
     collection: collection.publicKey,
     plugin: {
       type: 'Treasury',
-      withdrawn: Number(collection.header.lamports.basisPoints),
+      withdrawn: collection.header.lamports,
     },
   }).sendAndConfirm(umi);
 
@@ -342,7 +342,7 @@ test('it cannot withdraw entire balance from treasury', async (t) => {
       authority: {
         type: 'UpdateAuthority',
       },
-      withdrawn: 0,
+      withdrawn: lamports(0),
     },
   });
 });
