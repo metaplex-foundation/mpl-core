@@ -32,7 +32,7 @@ impl PluginValidation for Treasury {
             else if target_plugin.withdrawn > 0 {
                 Err(MplCoreError::InvalidTreasuryWithdrawn.into())
             } else {
-                Ok(ValidationResult::Pass)
+                abstain!()
             }
         } else {
             abstain!()
@@ -70,56 +70,38 @@ impl PluginValidation for Treasury {
             if PluginType::from(target_plugin) == PluginType::Treasury {
                 if let Plugin::Treasury(treasury) = target_plugin {
                     let collection = ctx.collection_info.ok_or(MplCoreError::MissingCollection)?;
-                    solana_program::msg!("Current Withdrawn: {:?}", treasury.withdrawn);
-                    solana_program::msg!("New Withdrawn: {:?}", self.withdrawn);
-                    match treasury.withdrawn.cmp(&self.withdrawn) {
-                        // Depositing SOL into the treasury
-                        std::cmp::Ordering::Less => {
-                            solana_program::msg!("Treasury: Depositing SOL into the treasury");
-                            let diff: u64 = self
-                                .withdrawn
-                                .checked_sub(treasury.withdrawn)
-                                .ok_or(MplCoreError::NumericalOverflow)?
-                                .try_into()
-                                .map_err(|_| MplCoreError::NumericalOverflow)?;
-                            invoke(
-                                &system_instruction::transfer(ctx.payer.key, collection.key, diff),
-                                &[ctx.payer.clone(), collection.clone()],
-                            )?;
-                        }
-                        // Withdrawing SOL from the treasury
-                        std::cmp::Ordering::Greater => {
-                            solana_program::msg!("Treasury: Withdrawing SOL from the treasury");
-                            let excess_rent = collection
-                                .lamports()
-                                .checked_sub(Rent::get()?.minimum_balance(collection.data_len()))
-                                .ok_or(MplCoreError::NumericalOverflow)?;
-                            let diff: u64 = treasury
-                                .withdrawn
-                                .checked_sub(self.withdrawn)
-                                .ok_or(MplCoreError::NumericalOverflow)?
-                                .try_into()
-                                .map_err(|_| MplCoreError::NumericalOverflow)?;
+                    // Withdrawing SOL from the treasury
+                    if treasury.withdrawn > self.withdrawn {
+                        let excess_rent = collection
+                            .lamports()
+                            .checked_sub(Rent::get()?.minimum_balance(collection.data_len()))
+                            .ok_or(MplCoreError::NumericalOverflow)?;
+                        let diff: u64 = treasury
+                            .withdrawn
+                            .checked_sub(self.withdrawn)
+                            .ok_or(MplCoreError::NumericalOverflow)?
+                            .try_into()
+                            .map_err(|_| MplCoreError::NumericalOverflow)?;
 
-                            if diff > excess_rent {
-                                return Err(MplCoreError::CannotOverdraw.into());
-                            }
-
-                            let auth_starting_lamports = ctx.payer.lamports();
-                            **ctx.payer.lamports.borrow_mut() =
-                                auth_starting_lamports.checked_add(diff).unwrap();
-                            **collection.lamports.borrow_mut() = collection
-                                .lamports()
-                                .checked_sub(diff)
-                                .ok_or(MplCoreError::NumericalOverflow)?;
+                        if diff > excess_rent {
+                            return Err(MplCoreError::CannotOverdraw.into());
                         }
-                        std::cmp::Ordering::Equal => {}
+
+                        let auth_starting_lamports = ctx.payer.lamports();
+                        **ctx.payer.lamports.borrow_mut() =
+                            auth_starting_lamports.checked_add(diff).unwrap();
+                        **collection.lamports.borrow_mut() = collection
+                            .lamports()
+                            .checked_sub(diff)
+                            .ok_or(MplCoreError::NumericalOverflow)?;
+                    } else {
+                        return Err(MplCoreError::InvalidPluginOperation.into());
                     }
                 } else {
                     return Err(MplCoreError::InvalidPlugin.into());
                 }
             }
         }
-        Ok(ValidationResult::Pass)
+        abstain!()
     }
 }
