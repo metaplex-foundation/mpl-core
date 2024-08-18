@@ -39,6 +39,7 @@ export * from './basePluginAuthority';
 export * from './baseRoyalties';
 export * from './baseRuleSet';
 export * from './baseSeed';
+export * from './baseSolTransferFee';
 export * from './baseTreasury';
 export * from './baseUpdateAuthority';
 export * from './baseValidationResultsOffset';

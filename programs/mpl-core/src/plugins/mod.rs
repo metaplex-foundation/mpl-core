@@ -20,6 +20,7 @@ mod permanent_transfer_delegate;
 mod plugin_header;
 mod plugin_registry;
 mod royalties;
+mod sol_transfer_fee;
 mod transfer;
 mod treasury;
 mod update_delegate;
@@ -48,6 +49,7 @@ pub use permanent_transfer_delegate::*;
 pub use plugin_header::*;
 pub use plugin_registry::*;
 pub use royalties::*;
+pub use sol_transfer_fee::*;
 pub use transfer::*;
 pub use treasury::*;
 pub use update_delegate::*;
@@ -102,6 +104,8 @@ pub enum Plugin {
     Autograph(Autograph),
     /// Treasury plugin allows for the Collection to contain a SOL treasury
     Treasury(Treasury),
+    /// SOL transfer fee plugin charges a fee for every transfer of the asset and stores it on the collection.
+    SolTransferFee(SolTransferFee),
 }
 
 impl Plugin {
@@ -178,6 +182,8 @@ pub enum PluginType {
     Autograph,
     /// Treasury plugin.
     Treasury,
+    /// SOL transfer fee plugin.
+    SolTransferFee,
 }
 
 impl DataBlob for PluginType {
@@ -209,6 +215,7 @@ impl From<&Plugin> for PluginType {
             Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
             Plugin::Autograph(_) => PluginType::Autograph,
             Plugin::Treasury(_) => PluginType::Treasury,
+            Plugin::SolTransferFee(_) => PluginType::SolTransferFee,
         }
     }
 }
@@ -233,6 +240,7 @@ impl PluginType {
             PluginType::VerifiedCreators => Authority::UpdateAuthority,
             PluginType::Autograph => Authority::Owner,
             PluginType::Treasury => Authority::UpdateAuthority,
+            PluginType::SolTransferFee => Authority::UpdateAuthority,
         }
     }
 }

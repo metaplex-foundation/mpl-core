@@ -25,6 +25,8 @@ import {
   BaseMasterEditionArgs,
   BaseRoyalties,
   BaseRoyaltiesArgs,
+  BaseSolTransferFee,
+  BaseSolTransferFeeArgs,
   BaseTreasury,
   BaseTreasuryArgs,
   BurnDelegate,
@@ -52,6 +54,7 @@ import {
   getAutographSerializer,
   getBaseMasterEditionSerializer,
   getBaseRoyaltiesSerializer,
+  getBaseSolTransferFeeSerializer,
   getBaseTreasurySerializer,
   getBurnDelegateSerializer,
   getEditionSerializer,
@@ -81,7 +84,8 @@ export type Plugin =
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadata] }
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreators] }
   | { __kind: 'Autograph'; fields: [Autograph] }
-  | { __kind: 'Treasury'; fields: [BaseTreasury] };
+  | { __kind: 'Treasury'; fields: [BaseTreasury] }
+  | { __kind: 'SolTransferFee'; fields: [BaseSolTransferFee] };
 
 export type PluginArgs =
   | { __kind: 'Royalties'; fields: [BaseRoyaltiesArgs] }
@@ -102,7 +106,8 @@ export type PluginArgs =
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadataArgs] }
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreatorsArgs] }
   | { __kind: 'Autograph'; fields: [AutographArgs] }
-  | { __kind: 'Treasury'; fields: [BaseTreasuryArgs] };
+  | { __kind: 'Treasury'; fields: [BaseTreasuryArgs] }
+  | { __kind: 'SolTransferFee'; fields: [BaseSolTransferFeeArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -203,6 +208,12 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
           ['fields', tuple([getBaseTreasurySerializer()])],
         ]),
       ],
+      [
+        'SolTransferFee',
+        struct<GetDataEnumKindContent<Plugin, 'SolTransferFee'>>([
+          ['fields', tuple([getBaseSolTransferFeeSerializer()])],
+        ]),
+      ],
     ],
     { description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
@@ -276,6 +287,10 @@ export function plugin(
   kind: 'Treasury',
   data: GetDataEnumKindContent<PluginArgs, 'Treasury'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Treasury'>;
+export function plugin(
+  kind: 'SolTransferFee',
+  data: GetDataEnumKindContent<PluginArgs, 'SolTransferFee'>['fields']
+): GetDataEnumKind<PluginArgs, 'SolTransferFee'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any

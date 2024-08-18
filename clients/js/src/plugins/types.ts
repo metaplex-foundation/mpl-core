@@ -26,11 +26,13 @@ import {
   Autograph,
   VerifiedCreators,
   BaseTreasuryArgs,
+  BaseSolTransferFeeArgs,
 } from '../generated';
 import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
 import { PluginAuthority } from './pluginAuthority';
 import { MasterEdition, MasterEditionArgs } from './masterEdition';
 import { Treasury, TreasuryArgs } from './treasury';
+import { SolTransferFee, SolTransferFeeArgs } from './solTransferFee';
 
 // for backwards compatibility
 export { pluginAuthority, updateAuthority, ruleSet };
@@ -94,6 +96,10 @@ export type CreatePluginArgs =
   | {
       type: 'Treasury';
       data: BaseTreasuryArgs;
+    }
+  | {
+      type: 'SolTransferFee';
+      data: BaseSolTransferFeeArgs;
     };
 
 export type AuthorityArgsV2 = {
@@ -152,7 +158,10 @@ export type AuthorityManagedPluginArgsV2 =
     } & VerifiedCreatorsArgs)
   | ({
       type: 'Treasury';
-    } & TreasuryArgs);
+    } & TreasuryArgs)
+  | ({
+      type: 'SolTransferFee';
+    } & SolTransferFeeArgs);
 
 export type AssetAddablePluginArgsV2 =
   | OwnerManagedPluginArgsV2
@@ -191,6 +200,7 @@ export type ImmutableMetadataPlugin = BasePlugin & ImmutableMetadata;
 export type VerifiedCreatorsPlugin = BasePlugin & VerifiedCreators;
 export type AutographPlugin = BasePlugin & Autograph;
 export type TreasuryPlugin = BasePlugin & Treasury;
+export type SolTransferFeePlugin = BasePlugin & SolTransferFee;
 
 export type CommonPluginsList = {
   attributes?: AttributesPlugin;
@@ -210,6 +220,7 @@ export type AssetPluginsList = {
   burnDelegate?: BurnDelegatePlugin;
   transferDelegate?: TransferDelegatePlugin;
   edition?: EditionPlugin;
+  solTransferFee?: SolTransferFeePlugin;
 } & CommonPluginsList;
 
 export type CollectionPluginsList = {

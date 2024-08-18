@@ -25,6 +25,7 @@ export enum PluginType {
   VerifiedCreators,
   Autograph,
   Treasury,
+  SolTransferFee,
 }
 
 export type PluginTypeArgs = PluginType;

@@ -216,6 +216,10 @@ pub enum MplCoreError {
     /// 51 - Cannot withdraw more than excess rent from treasury
     #[error("Cannot withdraw more than excess rent from treasury")]
     CannotOverdraw,
+
+    /// 52 - Plugin requires a collection
+    #[error("Plugin requires a collection")]
+    PluginRequiresCollection,
 }
 
 impl PrintProgramError for MplCoreError {

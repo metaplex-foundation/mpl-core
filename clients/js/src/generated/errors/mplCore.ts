@@ -752,6 +752,19 @@ export class CannotOverdrawError extends ProgramError {
 codeToErrorMap.set(0x33, CannotOverdrawError);
 nameToErrorMap.set('CannotOverdraw', CannotOverdrawError);
 
+/** PluginRequiresCollection: Plugin requires a collection */
+export class PluginRequiresCollectionError extends ProgramError {
+  override readonly name: string = 'PluginRequiresCollection';
+
+  readonly code: number = 0x34; // 52
+
+  constructor(program: Program, cause?: Error) {
+    super('Plugin requires a collection', program, cause);
+  }
+}
+codeToErrorMap.set(0x34, PluginRequiresCollectionError);
+nameToErrorMap.set('PluginRequiresCollection', PluginRequiresCollectionError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

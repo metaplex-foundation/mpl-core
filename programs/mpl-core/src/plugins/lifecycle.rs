@@ -137,6 +137,7 @@ impl PluginType {
             PluginType::VerifiedCreators => CheckResult::CanReject,
             PluginType::MasterEdition => CheckResult::CanReject,
             PluginType::Treasury => CheckResult::CanReject,
+            PluginType::SolTransferFee => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -170,6 +171,7 @@ impl PluginType {
             PluginType::TransferDelegate => CheckResult::CanApprove,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentTransferDelegate => CheckResult::CanApprove,
+            PluginType::SolTransferFee => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -248,6 +250,7 @@ impl Plugin {
             }
             Plugin::Autograph(autograph) => autograph.validate_add_plugin(ctx),
             Plugin::Treasury(treasury) => treasury.validate_add_plugin(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => sol_transfer_fee.validate_add_plugin(ctx),
         }
     }
 
@@ -290,6 +293,9 @@ impl Plugin {
             }
             Plugin::Autograph(autograph) => autograph.validate_remove_plugin(ctx),
             Plugin::Treasury(treasury) => treasury.validate_remove_plugin(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => {
+                sol_transfer_fee.validate_remove_plugin(ctx)
+            }
         }
     }
 
@@ -339,6 +345,9 @@ impl Plugin {
             }
             Plugin::Autograph(autograph) => autograph.validate_approve_plugin_authority(ctx),
             Plugin::Treasury(treasury) => treasury.validate_approve_plugin_authority(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => {
+                sol_transfer_fee.validate_approve_plugin_authority(ctx)
+            }
         }
     }
 
@@ -400,6 +409,9 @@ impl Plugin {
             }
             Plugin::Autograph(autograph) => autograph.validate_revoke_plugin_authority(ctx),
             Plugin::Treasury(treasury) => treasury.validate_revoke_plugin_authority(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => {
+                sol_transfer_fee.validate_revoke_plugin_authority(ctx)
+            }
         }?;
 
         if result == ValidationResult::Pass {
@@ -437,6 +449,7 @@ impl Plugin {
             Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_create(ctx),
             Plugin::Autograph(autograph) => autograph.validate_create(ctx),
             Plugin::Treasury(treasury) => treasury.validate_create(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => sol_transfer_fee.validate_create(ctx),
         }
     }
 
@@ -468,6 +481,7 @@ impl Plugin {
             Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_update(ctx),
             Plugin::Autograph(autograph) => autograph.validate_update(ctx),
             Plugin::Treasury(treasury) => treasury.validate_update(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => sol_transfer_fee.validate_update(ctx),
         }
     }
 
@@ -514,6 +528,9 @@ impl Plugin {
             }
             Plugin::Autograph(autograph) => autograph.validate_update_plugin(ctx),
             Plugin::Treasury(treasury) => treasury.validate_update_plugin(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => {
+                sol_transfer_fee.validate_update_plugin(ctx)
+            }
         }?;
 
         match (&base_result, &result) {
@@ -562,6 +579,7 @@ impl Plugin {
             Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_burn(ctx),
             Plugin::Autograph(autograph) => autograph.validate_burn(ctx),
             Plugin::Treasury(treasury) => treasury.validate_burn(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => sol_transfer_fee.validate_burn(ctx),
         }
     }
 
@@ -593,6 +611,7 @@ impl Plugin {
             Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_transfer(ctx),
             Plugin::Autograph(autograph) => autograph.validate_transfer(ctx),
             Plugin::Treasury(treasury) => treasury.validate_transfer(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => sol_transfer_fee.validate_transfer(ctx),
         }
     }
 
@@ -624,6 +643,7 @@ impl Plugin {
             Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_compress(ctx),
             Plugin::Autograph(autograph) => autograph.validate_compress(ctx),
             Plugin::Treasury(treasury) => treasury.validate_compress(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => sol_transfer_fee.validate_compress(ctx),
         }
     }
 
@@ -659,6 +679,7 @@ impl Plugin {
             }
             Plugin::Autograph(autograph) => autograph.validate_decompress(ctx),
             Plugin::Treasury(treasury) => treasury.validate_decompress(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => sol_transfer_fee.validate_decompress(ctx),
         }
     }
 
@@ -702,6 +723,9 @@ impl Plugin {
             }
             Plugin::Autograph(autograph) => autograph.validate_add_external_plugin_adapter(ctx),
             Plugin::Treasury(treasury) => treasury.validate_add_external_plugin_adapter(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => {
+                sol_transfer_fee.validate_add_external_plugin_adapter(ctx)
+            }
         }
     }
 
@@ -747,6 +771,9 @@ impl Plugin {
             }
             Plugin::Autograph(autograph) => autograph.validate_remove_external_plugin_adapter(ctx),
             Plugin::Treasury(treasury) => treasury.validate_remove_external_plugin_adapter(ctx),
+            Plugin::SolTransferFee(sol_transfer_fee) => {
+                sol_transfer_fee.validate_remove_external_plugin_adapter(ctx)
+            }
         }
     }
 }

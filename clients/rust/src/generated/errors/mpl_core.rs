@@ -166,6 +166,9 @@ pub enum MplCoreError {
     /// 51 (0x33) - Cannot withdraw more than excess rent from treasury
     #[error("Cannot withdraw more than excess rent from treasury")]
     CannotOverdraw,
+    /// 52 (0x34) - Plugin requires a collection
+    #[error("Plugin requires a collection")]
+    PluginRequiresCollection,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

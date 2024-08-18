@@ -283,6 +283,9 @@ kinobi.update(
     treasury: {
       name: "baseTreasury"
     },
+    solTransferFee: {
+      name: "baseSolTransferFee"
+    },
   })
 )
 

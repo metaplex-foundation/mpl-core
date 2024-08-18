@@ -3046,6 +3046,18 @@
       }
     },
     {
+      "name": "SolTransferFee",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "feeAmount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "TransferDelegate",
       "type": {
         "kind": "struct",
@@ -3917,6 +3929,14 @@
                 "defined": "Treasury"
               }
             ]
+          },
+          {
+            "name": "SolTransferFee",
+            "fields": [
+              {
+                "defined": "SolTransferFee"
+              }
+            ]
           }
         ]
       }
@@ -3973,6 +3993,9 @@
           },
           {
             "name": "Treasury"
+          },
+          {
+            "name": "SolTransferFee"
           }
         ]
       }
@@ -4895,6 +4918,11 @@
       "code": 51,
       "name": "CannotOverdraw",
       "msg": "Cannot withdraw more than excess rent from treasury"
+    },
+    {
+      "code": 52,
+      "name": "PluginRequiresCollection",
+      "msg": "Plugin requires a collection"
     }
   ],
   "metadata": {

@@ -28,6 +28,7 @@ import {
 import { royaltiesFromBase, royaltiesToBase } from './royalties';
 import { masterEditionFromBase, masterEditionToBase } from './masterEdition';
 import { treasuryFromBase, treasuryToBase } from './treasury';
+import { solTransferFeeFromBase, solTransferFeeToBase } from './solTransferFee';
 
 export function formPluginHeaderV1(
   pluginRegistryOffset: bigint
@@ -111,6 +112,13 @@ export function createPluginV2(args: AssetAllPluginArgsV2): BasePlugin {
     };
   }
 
+  if (type === 'SolTransferFee') {
+    return {
+      __kind: type,
+      fields: [solTransferFeeToBase(args)],
+    };
+  }
+
   return {
     __kind: type,
     fields: [(args as any) || {}],
@@ -180,6 +188,16 @@ export function mapPlugin({
         authority,
         offset,
         ...treasuryFromBase(plug.fields[0]),
+      },
+    };
+  }
+
+  if (plug.__kind === 'SolTransferFee') {
+    return {
+      [pluginKey]: {
+        authority,
+        offset,
+        ...solTransferFeeFromBase(plug.fields[0]),
       },
     };
   }
