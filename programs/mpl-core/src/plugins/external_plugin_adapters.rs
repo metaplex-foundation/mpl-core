@@ -7,7 +7,7 @@ use strum::EnumCount;
 
 use crate::{
     error::MplCoreError,
-    plugins::lifecycle::{approve, reject},
+    plugins::{approve, reject},
     state::{AssetV1, SolanaAccount},
 };
 

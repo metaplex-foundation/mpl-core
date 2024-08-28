@@ -1,6 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use solana_program::program_error::ProgramError;
 
-use super::{
+use crate::plugins::abstain;
+
+use crate::plugins::{
     Authority, ExternalPluginAdapterSchema, PluginValidation, PluginValidationContext,
     ValidationResult,
 };
@@ -11,7 +14,7 @@ use super::{
 /// plugin.  The data is stored at the plugin's data offset (which in the account is immediately
 /// after this header).
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct LinkedAppData {
+pub struct AppData {
     /// Data authority who can update the app data.  Cannot be changed after plugin is
     /// added.
     pub data_authority: Authority,
@@ -19,31 +22,33 @@ pub struct LinkedAppData {
     pub schema: ExternalPluginAdapterSchema,
 }
 
-impl LinkedAppData {
+impl AppData {
     /// Updates the app data with the new info.
-    pub fn update(&mut self, info: &LinkedAppDataUpdateInfo) {
+    pub fn update(&mut self, info: &AppDataUpdateInfo) {
         if let Some(schema) = &info.schema {
             self.schema = *schema;
         }
     }
 }
 
-impl PluginValidation for LinkedAppData {
-    fn validate_create(
+impl PluginValidation for AppData {
+    fn validate_add_external_plugin_adapter(
         &self,
-        ctx: &PluginValidationContext,
-    ) -> Result<ValidationResult, solana_program::program_error::ProgramError> {
-        solana_program::msg!("LinkedAppData::validate_create");
-        if ctx.asset_info.is_some() {
-            Ok(ValidationResult::Rejected)
-        } else {
-            Ok(ValidationResult::Pass)
-        }
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        abstain!()
+    }
+
+    fn validate_transfer(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        abstain!()
     }
 }
 
-impl From<&LinkedAppDataInitInfo> for LinkedAppData {
-    fn from(init_info: &LinkedAppDataInitInfo) -> Self {
+impl From<&AppDataInitInfo> for AppData {
+    fn from(init_info: &AppDataInitInfo) -> Self {
         Self {
             data_authority: init_info.data_authority,
             schema: init_info.schema.unwrap_or_default(),
@@ -53,7 +58,7 @@ impl From<&LinkedAppDataInitInfo> for LinkedAppData {
 
 /// App data initialization info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct LinkedAppDataInitInfo {
+pub struct AppDataInitInfo {
     /// Data authority who can update the app data.  This field cannot be
     /// changed after the plugin is added.
     pub data_authority: Authority,
@@ -65,7 +70,7 @@ pub struct LinkedAppDataInitInfo {
 
 /// App data update info.
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq)]
-pub struct LinkedAppDataUpdateInfo {
+pub struct AppDataUpdateInfo {
     /// Schema for the data used by the plugin.
     pub schema: Option<ExternalPluginAdapterSchema>,
 }
