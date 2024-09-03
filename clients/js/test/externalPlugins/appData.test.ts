@@ -901,6 +901,33 @@ test('Data offsets are correctly bumped when removing other plugins', async (t) 
       },
     ],
   });
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'UpdateAuthority' },
+    },
+    data: new Uint8Array([5, 6, 7, 8]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: undefined,
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 119n,
+      },
+    ],
+  });
 });
 
 test('Data offsets are correctly bumped when moving other external plugins', async (t) => {
