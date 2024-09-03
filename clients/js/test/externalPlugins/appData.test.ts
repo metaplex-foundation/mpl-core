@@ -835,7 +835,7 @@ test('it cannot update app data on collection using update authority when differ
   });
 });
 
-test('Data offsets are correctly bumped when moving other plugins', async (t) => {
+test('Data offsets are correctly bumped when removing other plugins', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi, {
     plugins: [
