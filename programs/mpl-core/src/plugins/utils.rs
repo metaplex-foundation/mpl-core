@@ -490,7 +490,7 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     // Update any offsets that will change.
-    plugin_registry.bump_offsets(data_offset, size_diff)?;
+    plugin_registry.bump_offsets(record.offset, size_diff)?;
 
     let new_registry_offset = (plugin_header.plugin_registry_offset as isize)
         .checked_add(size_diff)
@@ -633,17 +633,7 @@ pub fn delete_plugin<'a, T: DataBlob>(
         header.save(account, asset.get_size())?;
 
         // Move offsets for existing registry records.
-        for record in &mut plugin_registry.registry {
-            if plugin_offset < record.offset {
-                record.offset -= serialized_plugin.len()
-            }
-        }
-
-        for record in &mut plugin_registry.external_registry {
-            if plugin_offset < record.offset {
-                record.offset -= serialized_plugin.len()
-            }
-        }
+        plugin_registry.bump_offsets(plugin_offset, -(serialized_plugin.len() as isize))?;
 
         plugin_registry.save(account, new_registry_offset)?;
 
@@ -681,10 +671,14 @@ pub fn delete_external_plugin_adapter<'a, T: DataBlob>(
         let plugin_offset = registry_record.offset;
         let plugin = ExternalPluginAdapter::load(account, plugin_offset)?;
         let serialized_plugin = plugin.try_to_vec()?;
+        let serialized_plugin_len = serialized_plugin
+            .len()
+            .checked_add(registry_record.data_len.unwrap_or(0))
+            .ok_or(MplCoreError::NumericalOverflow)?;
 
         // Get the offset of the plugin after the one being removed.
         let next_plugin_offset = plugin_offset
-            .checked_add(serialized_plugin.len())
+            .checked_add(serialized_plugin_len)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
         // Calculate the new size of the account.
@@ -692,12 +686,12 @@ pub fn delete_external_plugin_adapter<'a, T: DataBlob>(
             .data_len()
             .checked_sub(serialized_registry_record.len())
             .ok_or(MplCoreError::NumericalOverflow)?
-            .checked_sub(serialized_plugin.len())
+            .checked_sub(serialized_plugin_len)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
         let new_registry_offset = header
             .plugin_registry_offset
-            .checked_sub(serialized_plugin.len())
+            .checked_sub(serialized_plugin_len)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
         let data_to_move = header
@@ -717,17 +711,7 @@ pub fn delete_external_plugin_adapter<'a, T: DataBlob>(
         header.save(account, asset.get_size())?;
 
         // Move offsets for existing registry records.
-        for record in &mut plugin_registry.external_registry {
-            if plugin_offset < record.offset {
-                record.offset -= serialized_plugin.len()
-            }
-        }
-
-        for record in &mut plugin_registry.registry {
-            if plugin_offset < record.offset {
-                record.offset -= serialized_plugin.len()
-            }
-        }
+        plugin_registry.bump_offsets(plugin_offset, -(serialized_plugin_len as isize))?;
 
         plugin_registry.save(account, new_registry_offset)?;
 

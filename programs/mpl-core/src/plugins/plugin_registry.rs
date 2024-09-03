@@ -87,20 +87,22 @@ impl PluginRegistryV1 {
 
         for record in &mut self.external_registry {
             if record.offset > offset {
+                solana_program::msg!("Bumping Record: {:?}", record);
                 record.offset = (record.offset as isize)
                     .checked_add(size_diff)
                     .ok_or(MplCoreError::NumericalOverflow)?
                     as usize;
-            }
 
-            if let Some(data_offset) = record.data_offset {
-                if data_offset > offset {
-                    record.data_offset = Some(
-                        (data_offset as isize)
-                            .checked_add(size_diff)
-                            .ok_or(MplCoreError::NumericalOverflow)?
-                            as usize,
-                    );
+                if let Some(data_offset) = record.data_offset {
+                    if data_offset > offset {
+                        solana_program::msg!("Bumping Data: {:?}", record);
+                        record.data_offset = Some(
+                            (data_offset as isize)
+                                .checked_add(size_diff)
+                                .ok_or(MplCoreError::NumericalOverflow)?
+                                as usize,
+                        );
+                    }
                 }
             }
         }
