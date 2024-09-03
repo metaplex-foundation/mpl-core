@@ -20,6 +20,8 @@ import {
   createCollection,
   updateCollectionPlugin,
   addPlugin,
+  addExternalPluginAdapterV1,
+  removeExternalPluginAdapterV1,
 } from '../../src';
 
 const DATA_AUTHORITIES: PluginAuthorityType[] = [
@@ -920,6 +922,350 @@ test('it cannot update linked app data on collection using update authority when
         type: 'LinkedAppData',
         dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
         schema: ExternalPluginAdapterSchema.Json,
+      },
+    ],
+  });
+});
+
+test('Data offsets are correctly bumped when removing Data Section with data', async (t) => {
+  const umi = await createUmi();
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        {
+          type: 'LinkedAppData',
+          dataAuthority: { type: 'Owner' },
+          schema: ExternalPluginAdapterSchema.Binary,
+        },
+      ],
+    }
+  );
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    key: {
+      type: 'LinkedAppData',
+      dataAuthority: { type: 'Owner' },
+    },
+    data: new Uint8Array([1, 2, 3, 4]),
+  }).sendAndConfirm(umi);
+
+  await addExternalPluginAdapterV1(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    initInfo: {
+      __kind: 'AppData',
+      fields: [
+        {
+          dataAuthority: { __kind: 'UpdateAuthority' },
+          initPluginAuthority: null,
+          schema: ExternalPluginAdapterSchema.Binary,
+        },
+      ],
+    },
+  }).sendAndConfirm(umi);
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'UpdateAuthority' },
+    },
+    data: new Uint8Array([5, 6, 7, 8]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    dataSections: [
+      {
+        type: 'DataSection',
+        parentKey: { type: 'LinkedAppData', dataAuthority: { type: 'Owner' } },
+        authority: { type: 'None' },
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2, 3, 4]),
+        offset: 119n,
+      },
+    ],
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 127n,
+      },
+    ],
+  });
+
+  await removeExternalPluginAdapterV1(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    key: {
+      __kind: 'DataSection',
+      fields: [{ __kind: 'LinkedAppData', fields: [{ __kind: 'Owner' }] }],
+    },
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    freezeDelegate: undefined,
+    dataSections: undefined,
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 119n,
+      },
+    ],
+  });
+});
+
+test('Data offsets are correctly bumped when rewriting Data Section to be smaller', async (t) => {
+  const umi = await createUmi();
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        {
+          type: 'LinkedAppData',
+          dataAuthority: { type: 'Owner' },
+          schema: ExternalPluginAdapterSchema.Binary,
+        },
+      ],
+    }
+  );
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    key: {
+      type: 'LinkedAppData',
+      dataAuthority: { type: 'Owner' },
+    },
+    data: new Uint8Array([1, 2, 3, 4]),
+  }).sendAndConfirm(umi);
+
+  await addExternalPluginAdapterV1(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    initInfo: {
+      __kind: 'AppData',
+      fields: [
+        {
+          dataAuthority: { __kind: 'UpdateAuthority' },
+          initPluginAuthority: null,
+          schema: ExternalPluginAdapterSchema.Binary,
+        },
+      ],
+    },
+  }).sendAndConfirm(umi);
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'UpdateAuthority' },
+    },
+    data: new Uint8Array([5, 6, 7, 8]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    dataSections: [
+      {
+        type: 'DataSection',
+        parentKey: { type: 'LinkedAppData', dataAuthority: { type: 'Owner' } },
+        authority: { type: 'None' },
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2, 3, 4]),
+        offset: 119n,
+      },
+    ],
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 127n,
+      },
+    ],
+  });
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    key: {
+      type: 'LinkedAppData',
+      dataAuthority: { type: 'Owner' },
+    },
+    data: new Uint8Array([1, 2]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    dataSections: [
+      {
+        type: 'DataSection',
+        parentKey: { type: 'LinkedAppData', dataAuthority: { type: 'Owner' } },
+        authority: { type: 'None' },
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2]),
+        offset: 119n,
+      },
+    ],
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 125n,
+      },
+    ],
+  });
+});
+
+test('Data offsets are correctly bumped when rewriting other Data Section to be larger', async (t) => {
+  const umi = await createUmi();
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        {
+          type: 'LinkedAppData',
+          dataAuthority: { type: 'Owner' },
+          schema: ExternalPluginAdapterSchema.Binary,
+        },
+      ],
+    }
+  );
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    key: {
+      type: 'LinkedAppData',
+      dataAuthority: { type: 'Owner' },
+    },
+    data: new Uint8Array([1, 2, 3, 4]),
+  }).sendAndConfirm(umi);
+
+  await addExternalPluginAdapterV1(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    initInfo: {
+      __kind: 'AppData',
+      fields: [
+        {
+          dataAuthority: { __kind: 'UpdateAuthority' },
+          initPluginAuthority: null,
+          schema: ExternalPluginAdapterSchema.Binary,
+        },
+      ],
+    },
+  }).sendAndConfirm(umi);
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'UpdateAuthority' },
+    },
+    data: new Uint8Array([5, 6, 7, 8]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    dataSections: [
+      {
+        type: 'DataSection',
+        parentKey: { type: 'LinkedAppData', dataAuthority: { type: 'Owner' } },
+        authority: { type: 'None' },
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2, 3, 4]),
+        offset: 119n,
+      },
+    ],
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 127n,
+      },
+    ],
+  });
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    key: {
+      type: 'LinkedAppData',
+      dataAuthority: { type: 'Owner' },
+    },
+    data: new Uint8Array([1, 2, 3, 4, 1, 2]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    dataSections: [
+      {
+        type: 'DataSection',
+        parentKey: { type: 'LinkedAppData', dataAuthority: { type: 'Owner' } },
+        authority: { type: 'None' },
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2, 3, 4, 1, 2]),
+        offset: 119n,
+      },
+    ],
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 129n,
       },
     ],
   });
