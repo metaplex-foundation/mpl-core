@@ -368,21 +368,7 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
         plugin_header.save(account, new_core_size as usize)?;
 
         // Move offsets for existing registry records.
-        for record in &mut plugin_registry.external_registry {
-            let new_offset = (record.offset as isize)
-                .checked_add(size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-
-            record.offset = new_offset as usize;
-        }
-
-        for record in &mut plugin_registry.registry {
-            let new_offset = (record.offset as isize)
-                .checked_add(size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-
-            record.offset = new_offset as usize;
-        }
+        plugin_registry.bump_offsets(new_core_size as usize, size_diff)?;
 
         plugin_registry.save(account, new_registry_offset as usize)?;
     } else {

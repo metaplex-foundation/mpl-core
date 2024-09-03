@@ -18,6 +18,8 @@ import {
   create,
   createCollection,
   updateCollectionPlugin,
+  removePlugin,
+  removeExternalPluginAdapterV1,
 } from '../../src';
 
 const DATA_AUTHORITIES: PluginAuthorityType[] = [
@@ -828,6 +830,430 @@ test('it cannot update app data on collection using update authority when differ
         type: 'AppData',
         dataAuthority: { type: 'Address', address: dataAuthority.publicKey },
         schema: ExternalPluginAdapterSchema.Json,
+      },
+    ],
+  });
+});
+
+test('Data offsets are correctly bumped when moving other plugins', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi, {
+    plugins: [
+      { type: 'FreezeDelegate', frozen: false },
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+      },
+    ],
+  });
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'UpdateAuthority' },
+    },
+    data: new Uint8Array([1, 2, 3, 4]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      frozen: false,
+      authority: { type: 'Owner' },
+      offset: 119n,
+    },
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2, 3, 4]),
+        offset: 121n,
+      },
+    ],
+  });
+
+  await removePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: { type: 'FreezeDelegate' },
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: undefined,
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2, 3, 4]),
+        offset: 119n,
+      },
+    ],
+  });
+});
+
+test('Data offsets are correctly bumped when moving other external plugins', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+      },
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+      },
+    ],
+  });
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'UpdateAuthority' },
+    },
+    data: new Uint8Array([1, 2, 3, 4]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        offset: 119n,
+      },
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2, 3, 4]),
+        offset: 122n,
+      },
+    ],
+  });
+
+  await removeExternalPluginAdapterV1(umi, {
+    asset: asset.publicKey,
+    key: {
+      __kind: 'AppData',
+      fields: [{ __kind: 'Owner' }],
+    },
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: undefined,
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2, 3, 4]),
+        offset: 119n,
+      },
+    ],
+  });
+});
+
+test('Data offsets are correctly bumped when removing other external plugins with data', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+      },
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+      },
+    ],
+  });
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'Owner' },
+    },
+    data: new Uint8Array([1, 2, 3, 4]),
+  }).sendAndConfirm(umi);
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'UpdateAuthority' },
+    },
+    data: new Uint8Array([5, 6, 7, 8]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2, 3, 4]),
+        offset: 119n,
+      },
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 126n,
+      },
+    ],
+  });
+
+  await removeExternalPluginAdapterV1(umi, {
+    asset: asset.publicKey,
+    key: {
+      __kind: 'AppData',
+      fields: [{ __kind: 'Owner' }],
+    },
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: undefined,
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 119n,
+      },
+    ],
+  });
+});
+
+test('Data offsets are correctly bumped when rewriting other external plugins to be smaller', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+      },
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+      },
+    ],
+  });
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'Owner' },
+    },
+    data: new Uint8Array([1, 2, 3, 4]),
+  }).sendAndConfirm(umi);
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'UpdateAuthority' },
+    },
+    data: new Uint8Array([5, 6, 7, 8]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2, 3, 4]),
+        offset: 119n,
+      },
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 126n,
+      },
+    ],
+  });
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'Owner' },
+    },
+    data: new Uint8Array([1, 2]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: undefined,
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2]),
+        offset: 119n,
+      },
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 124n,
+      },
+    ],
+  });
+});
+
+test('Data offsets are correctly bumped when rewriting other external plugins to be larger', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+      },
+      {
+        type: 'AppData',
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+      },
+    ],
+  });
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'Owner' },
+    },
+    data: new Uint8Array([1, 2, 3, 4]),
+  }).sendAndConfirm(umi);
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'UpdateAuthority' },
+    },
+    data: new Uint8Array([5, 6, 7, 8]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2, 3, 4]),
+        offset: 119n,
+      },
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 126n,
+      },
+    ],
+  });
+
+  await writeData(umi, {
+    asset: asset.publicKey,
+    key: {
+      type: 'AppData',
+      dataAuthority: { type: 'Owner' },
+    },
+    data: new Uint8Array([1, 2, 3, 4, 1, 2]),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: undefined,
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'Owner' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([1, 2, 3, 4, 1, 2]),
+        offset: 119n,
+      },
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([5, 6, 7, 8]),
+        offset: 128n,
       },
     ],
   });
