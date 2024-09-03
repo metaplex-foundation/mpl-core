@@ -875,6 +875,8 @@ test('Data offsets are correctly bumped when removing other plugins', async (t) 
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2, 3, 4]),
         offset: 121n,
+        dataOffset: 124n,
+        dataLen: 4n,
       },
     ],
   });
@@ -898,6 +900,8 @@ test('Data offsets are correctly bumped when removing other plugins', async (t) 
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2, 3, 4]),
         offset: 119n,
+        dataOffset: 122n,
+        dataLen: 4n,
       },
     ],
   });
@@ -925,6 +929,8 @@ test('Data offsets are correctly bumped when removing other plugins', async (t) 
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 119n,
+        dataOffset: 122n,
+        dataLen: 4n,
       },
     ],
   });
@@ -967,7 +973,10 @@ test('Data offsets are correctly bumped when moving other external plugins', asy
         authority: { type: 'UpdateAuthority' },
         dataAuthority: { type: 'Owner' },
         schema: ExternalPluginAdapterSchema.Binary,
+        data: new Uint8Array([]),
         offset: 119n,
+        dataOffset: 122n,
+        dataLen: 0n,
       },
       {
         type: 'AppData',
@@ -976,6 +985,8 @@ test('Data offsets are correctly bumped when moving other external plugins', asy
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2, 3, 4]),
         offset: 122n,
+        dataOffset: 125n,
+        dataLen: 4n,
       },
     ],
   });
@@ -1002,6 +1013,8 @@ test('Data offsets are correctly bumped when moving other external plugins', asy
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2, 3, 4]),
         offset: 119n,
+        dataOffset: 122n,
+        dataLen: 4n,
       },
     ],
   });
@@ -1055,6 +1068,8 @@ test('Data offsets are correctly bumped when removing other external plugins wit
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2, 3, 4]),
         offset: 119n,
+        dataOffset: 122n,
+        dataLen: 4n,
       },
       {
         type: 'AppData',
@@ -1063,6 +1078,8 @@ test('Data offsets are correctly bumped when removing other external plugins wit
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 126n,
+        dataOffset: 129n,
+        dataLen: 4n,
       },
     ],
   });
@@ -1089,6 +1106,8 @@ test('Data offsets are correctly bumped when removing other external plugins wit
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 119n,
+        dataOffset: 122n,
+        dataLen: 4n,
       },
     ],
   });
@@ -1142,6 +1161,8 @@ test('Data offsets are correctly bumped when rewriting other external plugins to
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2, 3, 4]),
         offset: 119n,
+        dataOffset: 122n,
+        dataLen: 4n,
       },
       {
         type: 'AppData',
@@ -1150,6 +1171,8 @@ test('Data offsets are correctly bumped when rewriting other external plugins to
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 126n,
+        dataOffset: 129n,
+        dataLen: 4n,
       },
     ],
   });
@@ -1177,6 +1200,8 @@ test('Data offsets are correctly bumped when rewriting other external plugins to
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2]),
         offset: 119n,
+        dataOffset: 122n,
+        dataLen: 2n,
       },
       {
         type: 'AppData',
@@ -1185,6 +1210,8 @@ test('Data offsets are correctly bumped when rewriting other external plugins to
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 124n,
+        dataOffset: 127n,
+        dataLen: 4n,
       },
     ],
   });
@@ -1238,6 +1265,8 @@ test('Data offsets are correctly bumped when rewriting other external plugins to
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2, 3, 4]),
         offset: 119n,
+        dataOffset: 122n,
+        dataLen: 4n,
       },
       {
         type: 'AppData',
@@ -1246,6 +1275,8 @@ test('Data offsets are correctly bumped when rewriting other external plugins to
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 126n,
+        dataOffset: 129n,
+        dataLen: 4n,
       },
     ],
   });
@@ -1273,6 +1304,8 @@ test('Data offsets are correctly bumped when rewriting other external plugins to
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2, 3, 4, 1, 2]),
         offset: 119n,
+        dataOffset: 122n,
+        dataLen: 6n,
       },
       {
         type: 'AppData',
@@ -1281,6 +1314,8 @@ test('Data offsets are correctly bumped when rewriting other external plugins to
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 128n,
+        dataOffset: 131n,
+        dataLen: 4n,
       },
     ],
   });

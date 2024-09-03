@@ -992,6 +992,8 @@ test('Data offsets are correctly bumped when removing Data Section with data', a
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2, 3, 4]),
         offset: 119n,
+        dataOffset: 123n,
+        dataLen: 4n,
       },
     ],
     appDatas: [
@@ -1002,6 +1004,8 @@ test('Data offsets are correctly bumped when removing Data Section with data', a
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 127n,
+        dataOffset: 130n,
+        dataLen: 4n,
       },
     ],
   });
@@ -1030,6 +1034,8 @@ test('Data offsets are correctly bumped when removing Data Section with data', a
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 119n,
+        dataOffset: 122n,
+        dataLen: 4n,
       },
     ],
   });
@@ -1100,6 +1106,8 @@ test('Data offsets are correctly bumped when rewriting Data Section to be smalle
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2, 3, 4]),
         offset: 119n,
+        dataOffset: 123n,
+        dataLen: 4n,
       },
     ],
     appDatas: [
@@ -1110,6 +1118,8 @@ test('Data offsets are correctly bumped when rewriting Data Section to be smalle
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 127n,
+        dataOffset: 130n,
+        dataLen: 4n,
       },
     ],
   });
@@ -1138,6 +1148,8 @@ test('Data offsets are correctly bumped when rewriting Data Section to be smalle
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2]),
         offset: 119n,
+        dataOffset: 123n,
+        dataLen: 2n,
       },
     ],
     appDatas: [
@@ -1148,6 +1160,8 @@ test('Data offsets are correctly bumped when rewriting Data Section to be smalle
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 125n,
+        dataOffset: 128n,
+        dataLen: 4n,
       },
     ],
   });
@@ -1218,6 +1232,8 @@ test('Data offsets are correctly bumped when rewriting other Data Section to be 
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2, 3, 4]),
         offset: 119n,
+        dataOffset: 123n,
+        dataLen: 4n,
       },
     ],
     appDatas: [
@@ -1228,6 +1244,8 @@ test('Data offsets are correctly bumped when rewriting other Data Section to be 
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 127n,
+        dataOffset: 130n,
+        dataLen: 4n,
       },
     ],
   });
@@ -1256,6 +1274,8 @@ test('Data offsets are correctly bumped when rewriting other Data Section to be 
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([1, 2, 3, 4, 1, 2]),
         offset: 119n,
+        dataOffset: 123n,
+        dataLen: 6n,
       },
     ],
     appDatas: [
@@ -1266,6 +1286,8 @@ test('Data offsets are correctly bumped when rewriting other Data Section to be 
         schema: ExternalPluginAdapterSchema.Binary,
         data: new Uint8Array([5, 6, 7, 8]),
         offset: 129n,
+        dataOffset: 132n,
+        dataLen: 4n,
       },
     ],
   });
