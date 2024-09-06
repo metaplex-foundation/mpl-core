@@ -1,4 +1,9 @@
-import { AccountMeta, Context, PublicKey } from '@metaplex-foundation/umi';
+import {
+  AccountMeta,
+  Context,
+  isSome,
+  PublicKey,
+} from '@metaplex-foundation/umi';
 import {
   lifecycleHookFromBase,
   LifecycleHookInitInfoArgs,
@@ -59,7 +64,9 @@ import {
 export type ExternalPluginAdapterTypeString =
   BaseExternalPluginAdapterKey['__kind'];
 
-export type BaseExternalPluginAdapter = BasePlugin & LifecycleChecksContainer;
+export type BaseExternalPluginAdapter = BasePlugin &
+  ExternalPluginAdapterData &
+  LifecycleChecksContainer;
 
 export type ExternalPluginAdapters =
   | LifecycleHookPlugin
@@ -125,8 +132,8 @@ export const externalPluginAdapterManifests = {
 };
 
 export type ExternalPluginAdapterData = {
-  dataLen: bigint;
-  dataOffset: bigint;
+  dataLen?: bigint;
+  dataOffset?: bigint;
 };
 
 export function externalRegistryRecordsToExternalPluginAdapterList(
@@ -156,6 +163,10 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
       }
       result.lifecycleHooks.push({
         type: 'LifecycleHook',
+        dataOffset: isSome(record.dataOffset)
+          ? record.dataOffset.value
+          : undefined,
+        dataLen: isSome(record.dataLen) ? record.dataLen.value : undefined,
         ...mappedPlugin,
         ...lifecycleHookFromBase(
           deserializedPlugin.fields[0],
@@ -169,6 +180,10 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
       }
       result.appDatas.push({
         type: 'AppData',
+        dataOffset: isSome(record.dataOffset)
+          ? record.dataOffset.value
+          : undefined,
+        dataLen: isSome(record.dataLen) ? record.dataLen.value : undefined,
         ...mappedPlugin,
         ...appDataFromBase(deserializedPlugin.fields[0], record, accountData),
       });
@@ -214,6 +229,10 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
       }
       result.dataSections.push({
         type: 'DataSection',
+        dataOffset: isSome(record.dataOffset)
+          ? record.dataOffset.value
+          : undefined,
+        dataLen: isSome(record.dataLen) ? record.dataLen.value : undefined,
         ...mappedPlugin,
         ...dataSectionFromBase(
           deserializedPlugin.fields[0],
