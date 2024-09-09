@@ -1,3 +1,4 @@
+#![warn(clippy::indexing_slicing)]
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::AnchorDeserialize;
 use base64::prelude::*;
@@ -440,7 +441,9 @@ impl IndexableAsset {
             let end = data_offset
                 .checked_add(data_len)
                 .ok_or(ErrorKind::InvalidData)?;
-            let data_slice = &account[data_offset..end];
+            let data_slice = account
+                .get(data_offset..end)
+                .ok_or(ErrorKind::InvalidData)?;
 
             Ok(Some(ExternalPluginDataInfo {
                 data_offset: data_offset as u64,
@@ -512,9 +515,13 @@ impl IndexableAsset {
         };
 
         if base_size != account.len() {
-            let header = PluginHeaderV1::from_bytes(&account[base_size..])?;
+            let header = PluginHeaderV1::from_bytes(
+                account.get(base_size..).ok_or(ErrorKind::InvalidData)?,
+            )?;
             let plugin_registry = PluginRegistryV1Safe::from_bytes(
-                &account[(header.plugin_registry_offset as usize)..],
+                account
+                    .get((header.plugin_registry_offset as usize)..)
+                    .ok_or(ErrorKind::InvalidData)?,
             )?;
 
             // Combine internal and external plugin registry records.
@@ -547,12 +554,21 @@ impl IndexableAsset {
                 // For internal plugins, the end of the slice is the start of the next plugin.  For
                 // external plugins, the end of the adapter is either the start of the data (if
                 // present) or the start of the next plugin.
-                let end = records[0].data_offset.unwrap_or(records[1].offset);
-                let mut plugin_slice = &account[records[0].offset as usize..end as usize];
+                let end = records
+                    .first()
+                    .ok_or(ErrorKind::InvalidData)?
+                    .data_offset
+                    .unwrap_or(records.get(1).ok_or(ErrorKind::InvalidData)?.offset);
+                let mut plugin_slice = account
+                    .get(
+                        records.first().ok_or(ErrorKind::InvalidData)?.offset as usize
+                            ..end as usize,
+                    )
+                    .ok_or(ErrorKind::InvalidData)?;
 
                 Self::process_combined_record(
                     i as u64,
-                    &records[0].record,
+                    &records.first().ok_or(ErrorKind::InvalidData)?.record,
                     &mut plugin_slice,
                     account,
                     &mut indexable_asset,
@@ -561,11 +577,13 @@ impl IndexableAsset {
 
             // Process the last combined registry record.
             if let Some(record) = combined_records.last() {
-                // For the last plugin, if it is an internal pluging, the slice ends at the plugin
+                // For the last plugin, if it is an internal plugin, the slice ends at the plugin
                 // registry offset.  If it is an external plugin, the end of the adapter is either
                 // the start of the data (if present) or the plugin registry offset.
                 let end = record.data_offset.unwrap_or(header.plugin_registry_offset);
-                let mut plugin_slice = &account[record.offset as usize..end as usize];
+                let mut plugin_slice = account
+                    .get(record.offset as usize..end as usize)
+                    .ok_or(ErrorKind::InvalidData)?;
 
                 Self::process_combined_record(
                     combined_records.len() as u64 - 1,
