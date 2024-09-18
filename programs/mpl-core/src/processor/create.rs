@@ -180,11 +180,6 @@ pub(crate) fn process_create<'a>(
                     ctx.accounts.system_program,
                 )?;
                 for plugin in &plugins {
-                    // TODO move into plugin validation when asset/collection is part of validation context
-                    let plugin_type = PluginType::from(&plugin.plugin);
-                    if plugin_type == PluginType::MasterEdition {
-                        return Err(MplCoreError::InvalidPlugin.into());
-                    }
                     if PluginType::check_create(&PluginType::from(&plugin.plugin))
                         != CheckResult::None
                     {
@@ -198,7 +193,7 @@ pub(crate) fn process_create<'a>(
                             new_owner: None,
                             new_asset_authority: None,
                             new_collection_authority: None,
-                            target_plugin: None,
+                            target_plugin: Some(&plugin.plugin),
                         };
                         match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
                             ValidationResult::Rejected => approved = false,
