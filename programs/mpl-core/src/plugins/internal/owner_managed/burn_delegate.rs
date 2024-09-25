@@ -2,11 +2,9 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
-    plugins::{abstain, approve},
+    plugins::{abstain, approve, PluginValidation, PluginValidationContext, ValidationResult},
     state::DataBlob,
 };
-
-use super::{PluginValidation, PluginValidationContext, ValidationResult};
 
 /// This plugin manages additional permissions to burn.
 /// Any authorities approved are given permission to burn the asset on behalf of the owner.

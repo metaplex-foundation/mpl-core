@@ -1,29 +1,28 @@
-use std::collections::BTreeMap;
+mod account;
+mod compression;
 
-use borsh::{BorshDeserialize, BorshSerialize};
-use mpl_utils::assert_signer;
-use num_traits::{FromPrimitive, ToPrimitive};
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
-    program_error::ProgramError, program_memory::sol_memcpy, pubkey::Pubkey, rent::Rent,
-    system_instruction, sysvar::Sysvar,
-};
+pub(crate) use account::*;
+pub(crate) use compression::*;
 
 use crate::{
     error::MplCoreError,
     plugins::{
-        create_meta_idempotent, initialize_plugin, validate_external_plugin_adapter_checks,
-        validate_plugin_checks, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
-        ExternalPluginAdapterKey, ExternalRegistryRecord, HookableLifecycleEvent, Plugin,
-        PluginHeaderV1, PluginRegistryV1, PluginType, PluginValidationContext, RegistryRecord,
-        ValidationResult,
+        validate_external_plugin_adapter_checks, validate_plugin_checks, CheckResult,
+        ExternalCheckResultBits, ExternalPluginAdapter, ExternalPluginAdapterKey,
+        ExternalRegistryRecord, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
+        PluginType, PluginValidationContext, RegistryRecord, ValidationResult,
     },
     state::{
-        AssetV1, Authority, CollectionV1, Compressible, CompressionProof, CoreAsset, DataBlob,
-        HashablePluginSchema, HashedAssetSchema, HashedAssetV1, Key, SolanaAccount,
-        UpdateAuthority,
+        AssetV1, Authority, CollectionV1, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority,
     },
 };
+use mpl_utils::assert_signer;
+use num_traits::FromPrimitive;
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+    pubkey::Pubkey,
+};
+use std::collections::BTreeMap;
 
 /// Load the one byte key from the account data at the given offset.
 pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, ProgramError> {
@@ -99,104 +98,6 @@ pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
     } else {
         Ok((asset, None, None))
     }
-}
-
-/// Check that a compression proof results in same on-chain hash.
-pub fn verify_proof(
-    hashed_asset: &AccountInfo,
-    compression_proof: &CompressionProof,
-) -> Result<(AssetV1, Vec<HashablePluginSchema>), ProgramError> {
-    let asset = AssetV1::from(compression_proof.clone());
-    let asset_hash = asset.hash()?;
-
-    let mut sorted_plugins = compression_proof.plugins.clone();
-    sorted_plugins.sort_by(HashablePluginSchema::compare_indeces);
-
-    let plugin_hashes = sorted_plugins
-        .iter()
-        .map(|plugin| plugin.hash())
-        .collect::<Result<Vec<[u8; 32]>, ProgramError>>()?;
-
-    let hashed_asset_schema = HashedAssetSchema {
-        asset_hash,
-        plugin_hashes,
-    };
-
-    let hashed_asset_schema_hash = hashed_asset_schema.hash()?;
-
-    let current_account_hash = HashedAssetV1::load(hashed_asset, 0)?.hash;
-    if hashed_asset_schema_hash != current_account_hash {
-        return Err(MplCoreError::IncorrectAssetHash.into());
-    }
-
-    Ok((asset, sorted_plugins))
-}
-
-pub(crate) fn close_program_account<'a>(
-    account_to_close_info: &AccountInfo<'a>,
-    funds_dest_account_info: &AccountInfo<'a>,
-) -> ProgramResult {
-    let rent = Rent::get()?;
-
-    let account_size = account_to_close_info.data_len();
-    let account_rent = rent.minimum_balance(account_size);
-    let one_byte_rent = rent.minimum_balance(1);
-
-    let amount_to_return = account_rent
-        .checked_sub(one_byte_rent)
-        .ok_or(MplCoreError::NumericalOverflowError)?;
-
-    // Transfer lamports from the account to the destination account.
-    let dest_starting_lamports = funds_dest_account_info.lamports();
-    **funds_dest_account_info.lamports.borrow_mut() = dest_starting_lamports
-        .checked_add(amount_to_return)
-        .ok_or(MplCoreError::NumericalOverflowError)?;
-    **account_to_close_info.try_borrow_mut_lamports()? -= amount_to_return;
-
-    account_to_close_info.realloc(1, false)?;
-    account_to_close_info.data.borrow_mut()[0] = Key::Uninitialized.to_u8().unwrap();
-
-    Ok(())
-}
-
-/// Resize an account using realloc and retain any lamport overages, modified from Solana Cookbook
-pub(crate) fn resize_or_reallocate_account<'a>(
-    target_account: &AccountInfo<'a>,
-    funding_account: &AccountInfo<'a>,
-    system_program: &AccountInfo<'a>,
-    new_size: usize,
-) -> ProgramResult {
-    // If the account is already the correct size, return.
-    if new_size == target_account.data_len() {
-        return Ok(());
-    }
-
-    let rent = Rent::get()?;
-    let new_minimum_balance = rent.minimum_balance(new_size);
-    let current_minimum_balance = rent.minimum_balance(target_account.data_len());
-    let account_infos = &[
-        funding_account.clone(),
-        target_account.clone(),
-        system_program.clone(),
-    ];
-
-    if new_minimum_balance >= current_minimum_balance {
-        let lamports_diff = new_minimum_balance.saturating_sub(current_minimum_balance);
-        invoke(
-            &system_instruction::transfer(funding_account.key, target_account.key, lamports_diff),
-            account_infos,
-        )?;
-    } else {
-        // return lamports to the compressor
-        let lamports_diff = current_minimum_balance.saturating_sub(new_minimum_balance);
-
-        **funding_account.try_borrow_mut_lamports()? += lamports_diff;
-        **target_account.try_borrow_mut_lamports()? -= lamports_diff
-    }
-
-    target_account.realloc(new_size, false)?;
-
-    Ok(())
 }
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
@@ -582,100 +483,6 @@ pub(crate) fn validate_collection_permissions<'a>(
     }
 
     Ok((deserialized_collection, plugin_header, plugin_registry))
-}
-
-/// Take an `Asset` and Vec of `HashablePluginSchema` and rebuild the asset in account space.
-pub fn rebuild_account_state_from_proof_data<'a>(
-    asset: AssetV1,
-    plugins: Vec<HashablePluginSchema>,
-    asset_info: &AccountInfo<'a>,
-    payer: &AccountInfo<'a>,
-    system_program: &AccountInfo<'a>,
-) -> ProgramResult {
-    let serialized_data = asset.try_to_vec()?;
-    resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
-
-    sol_memcpy(
-        &mut asset_info.try_borrow_mut_data()?,
-        &serialized_data,
-        serialized_data.len(),
-    );
-
-    // Add the plugins.
-    if !plugins.is_empty() {
-        let (_, mut plugin_header, mut plugin_registry) =
-            create_meta_idempotent::<AssetV1>(asset_info, payer, system_program)?;
-
-        for plugin in plugins {
-            initialize_plugin::<AssetV1>(
-                &plugin.plugin,
-                &plugin.authority,
-                &mut plugin_header,
-                &mut plugin_registry,
-                asset_info,
-                payer,
-                system_program,
-            )?;
-        }
-    }
-
-    Ok(())
-}
-
-/// Take `Asset` and `PluginRegistry` for a decompressed asset, and compress into account space.
-pub fn compress_into_account_space<'a>(
-    mut asset: AssetV1,
-    plugin_registry: Option<PluginRegistryV1>,
-    asset_info: &AccountInfo<'a>,
-    payer: &AccountInfo<'a>,
-    system_program: &AccountInfo<'a>,
-) -> Result<CompressionProof, ProgramError> {
-    // Initialize or increment the sequence number when compressing.
-    let seq = asset.seq.unwrap_or(0).saturating_add(1);
-    asset.seq = Some(seq);
-
-    let asset_hash = asset.hash()?;
-    let mut compression_proof = CompressionProof::new(asset, seq, vec![]);
-    let mut plugin_hashes = vec![];
-    if let Some(plugin_registry) = plugin_registry {
-        let mut registry_records = plugin_registry.registry;
-
-        // It should already be sorted but we just want to make sure.
-        registry_records.sort_by(RegistryRecord::compare_offsets);
-
-        for (i, record) in registry_records.into_iter().enumerate() {
-            let plugin = Plugin::deserialize(&mut &(*asset_info.data).borrow()[record.offset..])?;
-
-            let hashable_plugin_schema = HashablePluginSchema {
-                index: i,
-                authority: record.authority,
-                plugin,
-            };
-
-            let plugin_hash = hashable_plugin_schema.hash()?;
-            plugin_hashes.push(plugin_hash);
-
-            compression_proof.plugins.push(hashable_plugin_schema);
-        }
-    }
-
-    let hashed_asset_schema = HashedAssetSchema {
-        asset_hash,
-        plugin_hashes,
-    };
-
-    let hashed_asset = HashedAssetV1::new(hashed_asset_schema.hash()?);
-    let serialized_data = hashed_asset.try_to_vec()?;
-
-    resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
-
-    sol_memcpy(
-        &mut asset_info.try_borrow_mut_data()?,
-        &serialized_data,
-        serialized_data.len(),
-    );
-
-    Ok(compression_proof)
 }
 
 pub(crate) fn resolve_pubkey_to_authorities(

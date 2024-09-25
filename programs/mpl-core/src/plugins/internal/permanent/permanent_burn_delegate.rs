@@ -1,11 +1,12 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::state::DataBlob;
-
-use super::{
-    abstain, force_approve, reject, PluginType, PluginValidation, PluginValidationContext,
-    ValidationResult,
+use crate::{
+    plugins::{
+        abstain, force_approve, reject, PluginType, PluginValidation, PluginValidationContext,
+        ValidationResult,
+    },
+    state::DataBlob,
 };
 
 /// The permanent burn plugin allows any authority to burn the asset.

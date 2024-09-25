@@ -3,7 +3,7 @@ use solana_program::program_error::ProgramError;
 
 use crate::state::DataBlob;
 
-use super::{
+use crate::plugins::{
     abstain, force_approve, reject, PluginType, PluginValidation, PluginValidationContext,
     ValidationResult,
 };

@@ -3,7 +3,7 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::error::MplCoreError;
 
-use super::{
+use crate::plugins::{
     abstain, Authority, ExternalCheckResult, ExternalValidationResult, ExtraAccount,
     HookableLifecycleEvent, PluginValidation, PluginValidationContext, ValidationResult,
 };
@@ -180,11 +180,11 @@ pub enum ValidationResultsOffset {
 
 impl ValidationResultsOffset {
     /// Convert the `ValidationResultsOffset` to the correct offset value as a `usize`.
-    pub fn to_offset_usize(&self) -> usize {
+    pub fn to_offset_usize(self) -> usize {
         match self {
             Self::NoOffset => 0,
             Self::Anchor => 8,
-            Self::Custom(offset) => *offset,
+            Self::Custom(offset) => offset,
         }
     }
 }

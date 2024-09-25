@@ -1,9 +1,10 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::state::DataBlob;
-
-use super::{reject, PluginValidation, PluginValidationContext, ValidationResult};
+use crate::{
+    plugins::{reject, PluginValidation, PluginValidationContext, ValidationResult},
+    state::DataBlob,
+};
 
 /// The immutable metadata plugin allows its authority to prevent plugin's meta from changing.
 /// The default authority for this plugin is None.

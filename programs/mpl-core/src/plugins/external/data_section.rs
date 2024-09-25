@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 
-use super::{ExternalPluginAdapterSchema, LinkedDataKey, PluginValidation};
+use crate::plugins::{ExternalPluginAdapterSchema, LinkedDataKey, PluginValidation};
 
 /// The data section plugin is a third party plugin that is _always_ managed by another plugin.
 /// Currently these are used for the `LinkedAppData`, and `LinkedLifecycleHook` plugins.

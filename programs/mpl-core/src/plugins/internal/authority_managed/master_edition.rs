@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 
-use super::PluginValidation;
+use crate::plugins::PluginValidation;
 
 /// The master edition plugin allows the creator to specify details on the master edition including max supply, name, and uri.
 /// The default authority for this plugin is the creator.

@@ -1,7 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use super::{abstain, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult};
+use crate::plugins::{
+    abstain, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+};
 
 /// The edition plugin allows the creator to set an edition number on the asset
 /// The default authority for this plugin is the creator.

@@ -1,10 +1,12 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::state::DataBlob;
-
-use super::{
-    abstain, approve, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+use crate::{
+    plugins::{
+        abstain, approve, reject, Plugin, PluginValidation, PluginValidationContext,
+        ValidationResult,
+    },
+    state::DataBlob,
 };
 
 /// The freeze delegate plugin allows any authority to lock the asset so it's no longer transferable.

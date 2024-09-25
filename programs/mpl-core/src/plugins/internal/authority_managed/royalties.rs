@@ -5,7 +5,9 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::error::MplCoreError;
 
-use super::{abstain, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult};
+use crate::plugins::{
+    abstain, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+};
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]

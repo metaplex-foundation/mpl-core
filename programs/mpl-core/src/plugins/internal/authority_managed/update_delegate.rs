@@ -9,7 +9,7 @@ use crate::{
     state::{Authority, DataBlob},
 };
 
-use super::{
+use crate::plugins::{
     abstain, approve, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
