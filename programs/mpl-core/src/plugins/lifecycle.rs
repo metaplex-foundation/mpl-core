@@ -135,6 +135,8 @@ impl PluginType {
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::Autograph => CheckResult::CanReject,
             PluginType::VerifiedCreators => CheckResult::CanReject,
+            PluginType::MasterEdition => CheckResult::CanReject,
+            PluginType::Treasury => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -245,6 +247,7 @@ impl Plugin {
                 verified_creators.validate_add_plugin(ctx)
             }
             Plugin::Autograph(autograph) => autograph.validate_add_plugin(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_add_plugin(ctx),
         }
     }
 
@@ -286,6 +289,7 @@ impl Plugin {
                 verified_creators.validate_remove_plugin(ctx)
             }
             Plugin::Autograph(autograph) => autograph.validate_remove_plugin(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_remove_plugin(ctx),
         }
     }
 
@@ -334,6 +338,7 @@ impl Plugin {
                 verified_creators.validate_approve_plugin_authority(ctx)
             }
             Plugin::Autograph(autograph) => autograph.validate_approve_plugin_authority(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_approve_plugin_authority(ctx),
         }
     }
 
@@ -394,6 +399,7 @@ impl Plugin {
                 verified_creators.validate_revoke_plugin_authority(ctx)
             }
             Plugin::Autograph(autograph) => autograph.validate_revoke_plugin_authority(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_revoke_plugin_authority(ctx),
         }?;
 
         if result == ValidationResult::Pass {
@@ -430,6 +436,7 @@ impl Plugin {
             }
             Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_create(ctx),
             Plugin::Autograph(autograph) => autograph.validate_create(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_create(ctx),
         }
     }
 
@@ -460,6 +467,7 @@ impl Plugin {
             }
             Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_update(ctx),
             Plugin::Autograph(autograph) => autograph.validate_update(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_update(ctx),
         }
     }
 
@@ -505,6 +513,7 @@ impl Plugin {
                 verified_creators.validate_update_plugin(ctx)
             }
             Plugin::Autograph(autograph) => autograph.validate_update_plugin(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_update_plugin(ctx),
         }?;
 
         match (&base_result, &result) {
@@ -552,6 +561,7 @@ impl Plugin {
             Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.validate_burn(ctx),
             Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_burn(ctx),
             Plugin::Autograph(autograph) => autograph.validate_burn(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_burn(ctx),
         }
     }
 
@@ -582,6 +592,7 @@ impl Plugin {
             }
             Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_transfer(ctx),
             Plugin::Autograph(autograph) => autograph.validate_transfer(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_transfer(ctx),
         }
     }
 
@@ -612,6 +623,7 @@ impl Plugin {
             }
             Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_compress(ctx),
             Plugin::Autograph(autograph) => autograph.validate_compress(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_compress(ctx),
         }
     }
 
@@ -646,6 +658,7 @@ impl Plugin {
                 verified_creators.validate_decompress(ctx)
             }
             Plugin::Autograph(autograph) => autograph.validate_decompress(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_decompress(ctx),
         }
     }
 
@@ -688,6 +701,7 @@ impl Plugin {
                 verified_creators.validate_add_external_plugin_adapter(ctx)
             }
             Plugin::Autograph(autograph) => autograph.validate_add_external_plugin_adapter(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_add_external_plugin_adapter(ctx),
         }
     }
 
@@ -732,6 +746,7 @@ impl Plugin {
                 verified_creators.validate_remove_external_plugin_adapter(ctx)
             }
             Plugin::Autograph(autograph) => autograph.validate_remove_external_plugin_adapter(ctx),
+            Plugin::Treasury(treasury) => treasury.validate_remove_external_plugin_adapter(ctx),
         }
     }
 }
@@ -809,6 +824,7 @@ impl From<ExternalValidationResult> for ValidationResult {
 
 /// The required context for a plugin validation.
 #[allow(dead_code)]
+#[derive(Debug)]
 pub(crate) struct PluginValidationContext<'a, 'b> {
     /// This list of all the accounts passed into the instruction.
     pub accounts: &'a [AccountInfo<'a>],
@@ -820,6 +836,8 @@ pub(crate) struct PluginValidationContext<'a, 'b> {
     pub self_authority: &'b Authority,
     /// The authority account info of ix `authority` signer
     pub authority_info: &'a AccountInfo<'a>,
+    /// The payer account of the ix
+    pub payer: &'a AccountInfo<'a>,
     /// The authorities types which match the authority signer
     pub resolved_authorities: Option<&'b [Authority]>,
     /// The new owner account for transfers
@@ -828,7 +846,7 @@ pub(crate) struct PluginValidationContext<'a, 'b> {
     pub new_asset_authority: Option<&'b UpdateAuthority>,
     /// The new collection authority address.
     pub new_collection_authority: Option<&'b Pubkey>,
-    /// The plugin being acted upon with new data from the ix if any. This None for create.
+    /// The plugin being acted upon with new data from the ix if any. This is None for create.
     pub target_plugin: Option<&'b Plugin>,
 }
 
@@ -965,10 +983,11 @@ pub(crate) fn validate_plugin_checks<'a>(
     accounts: &'a [AccountInfo<'a>],
     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &'a AccountInfo<'a>,
+    payer: &'a AccountInfo<'a>,
     new_owner: Option<&'a AccountInfo<'a>>,
     new_asset_authority: Option<&UpdateAuthority>,
     new_collection_authority: Option<&Pubkey>,
-    new_plugin: Option<&Plugin>,
+    target_plugin: Option<&Plugin>,
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
@@ -998,11 +1017,12 @@ pub(crate) fn validate_plugin_checks<'a>(
                 collection_info: collection,
                 self_authority: &registry_record.authority,
                 authority_info: authority,
+                payer,
                 resolved_authorities: Some(resolved_authorities),
                 new_owner,
                 new_asset_authority,
                 new_collection_authority,
-                target_plugin: new_plugin,
+                target_plugin,
             };
 
             let result = plugin_validate_fp(
@@ -1039,10 +1059,11 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
         (Key, ExternalCheckResultBits, ExternalRegistryRecord),
     >,
     authority: &'a AccountInfo<'a>,
+    payer: &'a AccountInfo<'a>,
     new_owner: Option<&'a AccountInfo<'a>>,
     new_asset_authority: Option<&UpdateAuthority>,
     new_collection_authority: Option<&Pubkey>,
-    new_plugin: Option<&Plugin>,
+    target_plugin: Option<&Plugin>,
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
@@ -1070,11 +1091,12 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
                 collection_info: collection,
                 self_authority: &external_registry_record.authority,
                 authority_info: authority,
+                payer,
                 resolved_authorities: Some(resolved_authorities),
                 new_owner,
                 new_asset_authority,
                 new_collection_authority,
-                target_plugin: new_plugin,
+                target_plugin,
             };
 
             let result = external_plugin_adapter_validate_fp(

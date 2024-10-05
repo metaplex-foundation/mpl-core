@@ -689,6 +689,69 @@ export class CannotAddDataSectionError extends ProgramError {
 codeToErrorMap.set(0x2f, CannotAddDataSectionError);
 nameToErrorMap.set('CannotAddDataSection', CannotAddDataSectionError);
 
+/** PluginNotAllowedOnAsset: Plugin is not allowed to be added to an Asset */
+export class PluginNotAllowedOnAssetError extends ProgramError {
+  override readonly name: string = 'PluginNotAllowedOnAsset';
+
+  readonly code: number = 0x30; // 48
+
+  constructor(program: Program, cause?: Error) {
+    super('Plugin is not allowed to be added to an Asset', program, cause);
+  }
+}
+codeToErrorMap.set(0x30, PluginNotAllowedOnAssetError);
+nameToErrorMap.set('PluginNotAllowedOnAsset', PluginNotAllowedOnAssetError);
+
+/** PluginNotAllowedOnCollection: Plugin is not allowed to be added to a Collection */
+export class PluginNotAllowedOnCollectionError extends ProgramError {
+  override readonly name: string = 'PluginNotAllowedOnCollection';
+
+  readonly code: number = 0x31; // 49
+
+  constructor(program: Program, cause?: Error) {
+    super('Plugin is not allowed to be added to a Collection', program, cause);
+  }
+}
+codeToErrorMap.set(0x31, PluginNotAllowedOnCollectionError);
+nameToErrorMap.set(
+  'PluginNotAllowedOnCollection',
+  PluginNotAllowedOnCollectionError
+);
+
+/** InvalidTreasuryWithdrawn: Cannot add a treasury plugin with nonzero withdrawn amount */
+export class InvalidTreasuryWithdrawnError extends ProgramError {
+  override readonly name: string = 'InvalidTreasuryWithdrawn';
+
+  readonly code: number = 0x32; // 50
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Cannot add a treasury plugin with nonzero withdrawn amount',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x32, InvalidTreasuryWithdrawnError);
+nameToErrorMap.set('InvalidTreasuryWithdrawn', InvalidTreasuryWithdrawnError);
+
+/** CannotOverdraw: Cannot withdraw more than excess rent from treasury */
+export class CannotOverdrawError extends ProgramError {
+  override readonly name: string = 'CannotOverdraw';
+
+  readonly code: number = 0x33; // 51
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Cannot withdraw more than excess rent from treasury',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x33, CannotOverdrawError);
+nameToErrorMap.set('CannotOverdraw', CannotOverdrawError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

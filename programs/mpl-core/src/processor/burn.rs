@@ -86,6 +86,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
     let _ = validate_asset_permissions(
         accounts,
         authority,
+        ctx.accounts.payer,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,

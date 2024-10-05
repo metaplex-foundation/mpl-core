@@ -53,6 +53,7 @@ pub(crate) fn approve_plugin_authority<'a>(
     let (mut asset, _, _) = validate_asset_permissions(
         accounts,
         authority,
+        ctx.accounts.payer,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
@@ -115,6 +116,7 @@ pub(crate) fn approve_collection_plugin_authority<'a>(
     let _ = validate_collection_permissions(
         accounts,
         authority,
+        ctx.accounts.payer,
         ctx.accounts.collection,
         None,
         Some(&plugin),

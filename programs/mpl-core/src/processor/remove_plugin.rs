@@ -59,6 +59,7 @@ pub(crate) fn remove_plugin<'a>(
     let _ = validate_asset_permissions(
         accounts,
         authority,
+        ctx.accounts.payer,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
@@ -131,6 +132,7 @@ pub(crate) fn remove_collection_plugin<'a>(
     let _ = validate_collection_permissions(
         accounts,
         authority,
+        ctx.accounts.payer,
         ctx.accounts.collection,
         None,
         Some(&plugin_to_remove),

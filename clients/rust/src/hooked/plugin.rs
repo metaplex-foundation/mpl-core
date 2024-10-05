@@ -21,6 +21,8 @@ use crate::{
     TransferDelegatePlugin, UpdateDelegatePlugin, VerifiedCreatorsPlugin,
 };
 
+use super::TreasuryPlugin;
+
 /// Fetch the plugin from the registry.
 pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: CrateDeserialize>(
     account: &AccountInfo,
@@ -344,6 +346,9 @@ pub(crate) fn registry_records_to_plugin_list(
                     }
                     Plugin::Autograph(autograph) => {
                         acc.autograph = Some(AutographPlugin { base, autograph })
+                    }
+                    Plugin::Treasury(treasury) => {
+                        acc.treasury = Some(TreasuryPlugin { base, treasury })
                     }
                 }
             }

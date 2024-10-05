@@ -50,6 +50,7 @@ pub(crate) fn update_plugin<'a>(
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
         accounts,
         authority,
+        ctx.accounts.payer,
         ctx.accounts.asset,
         ctx.accounts.collection,
         None,
@@ -111,6 +112,7 @@ pub(crate) fn update_collection_plugin<'a>(
     let (collection, plugin_header, plugin_registry) = validate_collection_permissions(
         accounts,
         authority,
+        ctx.accounts.payer,
         ctx.accounts.collection,
         None,
         Some(&args.plugin),
