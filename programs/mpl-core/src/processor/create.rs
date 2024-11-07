@@ -15,7 +15,7 @@ use crate::{
         PluginType, PluginValidationContext, ValidationResult,
     },
     state::{
-        AssetV1, Authority, CollectionV1, DataState, SolanaAccount, UpdateAuthority, COLLECT_AMOUNT,
+        get_create_fee, AssetV1, Authority, CollectionV1, DataState, SolanaAccount, UpdateAuthority,
     },
     utils::{resolve_authority, validate_asset_permissions},
 };
@@ -122,7 +122,7 @@ pub(crate) fn process_create<'a>(
         }
     };
 
-    let lamports = rent.minimum_balance(serialized_data.len()) + COLLECT_AMOUNT;
+    let lamports = rent.minimum_balance(serialized_data.len()) + get_create_fee()?;
 
     // CPI to the System Program.
     invoke(
