@@ -3,10 +3,11 @@ use std::collections::{BTreeMap, HashSet};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
-use crate::error::MplCoreError;
-
-use super::{
-    abstain, approve, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+use crate::{
+    error::MplCoreError,
+    plugins::{
+        abstain, approve, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+    },
 };
 
 /// The creator on an asset and whether or not they are verified.

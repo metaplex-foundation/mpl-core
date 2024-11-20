@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
-use super::{
+use crate::plugins::{
     Authority, ExternalCheckResult, ExternalPluginAdapterSchema, ExtraAccount,
     HookableLifecycleEvent, PluginValidation, PluginValidationContext, ValidationResult,
 };

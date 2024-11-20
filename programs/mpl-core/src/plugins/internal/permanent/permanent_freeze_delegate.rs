@@ -6,7 +6,7 @@ use crate::{
     state::DataBlob,
 };
 
-use super::{abstain, PluginValidation, PluginValidationContext, ValidationResult};
+use crate::plugins::{abstain, PluginValidation, PluginValidationContext, ValidationResult};
 
 /// The permanent freeze plugin allows any authority to lock the asset so it's no longer transferable.
 /// The default authority for this plugin is the update authority.
