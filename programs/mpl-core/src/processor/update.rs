@@ -3,6 +3,7 @@ use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_memory::sol_memcpy,
 };
+use std::collections::HashSet;
 
 use crate::{
     error::MplCoreError,
@@ -10,8 +11,8 @@ use crate::{
         Context, UpdateCollectionV1Accounts, UpdateV1Accounts, UpdateV2Accounts,
     },
     plugins::{
-        fetch_plugin, ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginHeaderV1,
-        PluginRegistryV1, PluginType, UpdateDelegate,
+        fetch_plugin, list_plugins, ExternalPluginAdapter, HookableLifecycleEvent, Plugin,
+        PluginHeaderV1, PluginRegistryV1, PluginType, UpdateDelegate, PERMANENT_DELEGATES,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
@@ -184,14 +185,28 @@ fn update<'a>(
                     // Deserialize the collection.
                     let mut new_collection = CollectionV1::load(new_collection_account, 0)?;
 
-                    // See if there is an update delegate on the new collection.
-                    let maybe_update_delegate = fetch_plugin::<CollectionV1, UpdateDelegate>(
-                        new_collection_account,
-                        PluginType::UpdateDelegate,
-                    );
+                    // Get a set of all the plugins on the collection (if any).
+                    let plugin_set: HashSet<_> =
+                        if new_collection_account.data_len() > new_collection.get_size() {
+                            let plugin_list = list_plugins::<CollectionV1>(new_collection_account)?;
+                            plugin_list.into_iter().collect()
+                        } else {
+                            HashSet::new()
+                        };
+
+                    // Cannot move to a collection with permanent delegates.
+                    if PERMANENT_DELEGATES.iter().any(|p| plugin_set.contains(p)) {
+                        return Err(MplCoreError::PermanentDelegatesPreventMove.into());
+                    }
 
                     // Make sure the authority has authority to add the asset to the new collection.
-                    if let Ok((plugin_authority, _, _)) = maybe_update_delegate {
+                    if plugin_set.contains(&PluginType::UpdateDelegate) {
+                        // Fetch the update delegate on the new collection.
+                        let (plugin_authority, _, _) = fetch_plugin::<CollectionV1, UpdateDelegate>(
+                            new_collection_account,
+                            PluginType::UpdateDelegate,
+                        )?;
+
                         if assert_collection_authority(
                             &new_collection,
                             authority,

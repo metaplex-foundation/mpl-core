@@ -689,6 +689,26 @@ export class CannotAddDataSectionError extends ProgramError {
 codeToErrorMap.set(0x2f, CannotAddDataSectionError);
 nameToErrorMap.set('CannotAddDataSection', CannotAddDataSectionError);
 
+/** PermanentDelegatesPreventMove: Cannot move asset to collection with permanent delegates */
+export class PermanentDelegatesPreventMoveError extends ProgramError {
+  override readonly name: string = 'PermanentDelegatesPreventMove';
+
+  readonly code: number = 0x30; // 48
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Cannot move asset to collection with permanent delegates',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x30, PermanentDelegatesPreventMoveError);
+nameToErrorMap.set(
+  'PermanentDelegatesPreventMove',
+  PermanentDelegatesPreventMoveError
+);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
