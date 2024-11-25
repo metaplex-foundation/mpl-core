@@ -8,19 +8,40 @@ use crate::error::MplCoreError;
 use crate::plugins::{
     abstain, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
 };
+use crate::state::DataBlob;
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Hash)]
 pub struct VerifiedCreatorsSignature {
-    address: Pubkey,
-    verified: bool,
+    address: Pubkey, // 32
+    verified: bool,  // 1
+}
+
+impl DataBlob for VerifiedCreatorsSignature {
+    fn get_initial_size() -> usize {
+        32 + 1
+    }
+
+    fn get_size(&self) -> usize {
+        32 + 1
+    }
 }
 
 /// Structure for storing verified creators, often used in conjunction with the Royalties plugin
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct VerifiedCreators {
     /// A list of signatures
-    signatures: Vec<VerifiedCreatorsSignature>,
+    signatures: Vec<VerifiedCreatorsSignature>, // 4 + len * VerifiedCreatorsSignature
+}
+
+impl DataBlob for VerifiedCreators {
+    fn get_initial_size() -> usize {
+        4
+    }
+
+    fn get_size(&self) -> usize {
+        4 + self.signatures.len() * VerifiedCreatorsSignature::get_initial_size()
+    }
 }
 
 struct SignatureChangeIndices {

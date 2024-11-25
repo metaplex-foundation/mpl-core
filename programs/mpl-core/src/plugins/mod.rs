@@ -88,6 +88,38 @@ impl Plugin {
 
 impl Compressible for Plugin {}
 
+impl DataBlob for Plugin {
+    fn get_initial_size() -> usize {
+        1
+    }
+
+    fn get_size(&self) -> usize {
+        1 + match self {
+            Plugin::Royalties(royalties) => royalties.get_size(),
+            Plugin::FreezeDelegate(freeze_delegate) => freeze_delegate.get_size(),
+            Plugin::BurnDelegate(burn_delegate) => burn_delegate.get_size(),
+            Plugin::TransferDelegate(transfer_delegate) => transfer_delegate.get_size(),
+            Plugin::UpdateDelegate(update_delegate) => update_delegate.get_size(),
+            Plugin::PermanentFreezeDelegate(permanent_freeze_delegate) => {
+                permanent_freeze_delegate.get_size()
+            }
+            Plugin::Attributes(attributes) => attributes.get_size(),
+            Plugin::PermanentTransferDelegate(permanent_transfer_delegate) => {
+                permanent_transfer_delegate.get_size()
+            }
+            Plugin::PermanentBurnDelegate(permanent_burn_delegate) => {
+                permanent_burn_delegate.get_size()
+            }
+            Plugin::Edition(edition) => edition.get_size(),
+            Plugin::MasterEdition(master_edition) => master_edition.get_size(),
+            Plugin::AddBlocker(add_blocker) => add_blocker.get_size(),
+            Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.get_size(),
+            Plugin::VerifiedCreators(verified_creators) => verified_creators.get_size(),
+            Plugin::Autograph(autograph) => autograph.get_size(),
+        }
+    }
+}
+
 /// List of first party plugin types.
 #[repr(C)]
 #[derive(
@@ -138,11 +170,11 @@ pub enum PluginType {
 
 impl DataBlob for PluginType {
     fn get_initial_size() -> usize {
-        2
+        1
     }
 
     fn get_size(&self) -> usize {
-        2
+        1
     }
 }
 
@@ -197,4 +229,10 @@ impl PluginType {
 pub(crate) struct PluginAuthorityPair {
     pub(crate) plugin: Plugin,
     pub(crate) authority: Option<Authority>,
+}
+
+impl From<PluginType> for usize {
+    fn from(plugin_type: PluginType) -> Self {
+        plugin_type as usize
+    }
 }

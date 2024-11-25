@@ -8,20 +8,31 @@ use crate::{
     plugins::{
         abstain, approve, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
     },
+    state::DataBlob,
 };
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Hash)]
 pub struct AutographSignature {
-    address: Pubkey,
-    message: String,
+    address: Pubkey, // 32
+    message: String, // 4 + len
+}
+
+impl DataBlob for AutographSignature {
+    fn get_initial_size() -> usize {
+        32 + 4
+    }
+
+    fn get_size(&self) -> usize {
+        32 + 4 + self.message.len()
+    }
 }
 
 /// Structure for an autograph book, often used in conjunction with the Royalties plugin for verified creators
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct Autograph {
     /// A list of signatures with option message
-    signatures: Vec<AutographSignature>,
+    signatures: Vec<AutographSignature>, // 4 + len * Autograph len
 }
 
 fn validate_autograph(
@@ -120,5 +131,18 @@ impl PluginValidation for Autograph {
             }
             _ => abstain!(),
         }
+    }
+}
+
+impl DataBlob for Autograph {
+    fn get_initial_size() -> usize {
+        4
+    }
+
+    fn get_size(&self) -> usize {
+        4 + self
+            .signatures
+            .iter()
+            .fold(0, |acc, sig| acc + sig.get_size())
     }
 }

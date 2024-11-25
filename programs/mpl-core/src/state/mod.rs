@@ -56,6 +56,20 @@ pub enum Authority {
     },
 }
 
+impl DataBlob for Authority {
+    fn get_initial_size() -> usize {
+        1
+    }
+
+    fn get_size(&self) -> usize {
+        1 + if let Authority::Address { .. } = self {
+            32
+        } else {
+            0
+        }
+    }
+}
+
 /// An enum representing account discriminators.
 #[derive(
     Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, ToPrimitive, FromPrimitive,

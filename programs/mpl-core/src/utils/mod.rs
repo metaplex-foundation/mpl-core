@@ -1,5 +1,6 @@
 mod account;
 mod compression;
+mod dynamic_account_info;
 
 pub(crate) use account::*;
 pub(crate) use compression::*;

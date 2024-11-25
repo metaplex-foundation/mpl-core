@@ -27,7 +27,7 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
-) -> Result<(T, PluginHeaderV1, PluginRegistryV1), ProgramError> {
+) -> Result<(T, usize, PluginHeaderV1, PluginRegistryV1), ProgramError> {
     let core = T::load(account, 0)?;
     let header_offset = core.get_size();
 
@@ -54,13 +54,13 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
         header.save(account, header_offset)?;
         registry.save(account, header.plugin_registry_offset)?;
 
-        Ok((core, header, registry))
+        Ok((core, header_offset, header, registry))
     } else {
         // They exist, so load them.
         let header = PluginHeaderV1::load(account, header_offset)?;
         let registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
-        Ok((core, header, registry))
+        Ok((core, header_offset, header, registry))
     }
 }
 
@@ -70,7 +70,7 @@ pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
-) -> Result<(PluginHeaderV1, PluginRegistryV1), ProgramError> {
+) -> Result<(usize, PluginHeaderV1, PluginRegistryV1), ProgramError> {
     let header_offset = asset.get_size();
 
     // They don't exist, so create them.
@@ -94,7 +94,7 @@ pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
     header.save(account, header_offset)?;
     registry.save(account, header.plugin_registry_offset)?;
 
-    Ok((header, registry))
+    Ok((header_offset, header, registry))
 }
 
 /// Assert that the Plugin metadata has been initialized.
@@ -255,20 +255,19 @@ pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramErr
 }
 
 /// Add a plugin to the registry and initialize it.
+#[allow(clippy::too_many_arguments)]
 pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     plugin: &Plugin,
     authority: &Authority,
+    header_offset: usize,
     plugin_header: &mut PluginHeaderV1,
     plugin_registry: &mut PluginRegistryV1,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
-    let core = T::load(account, 0)?;
-    let header_offset = core.get_size();
     let plugin_type = plugin.into();
-    let plugin_data = plugin.try_to_vec()?;
-    let plugin_size = plugin_data.len();
+    let plugin_size = plugin.get_size();
 
     // You cannot add a duplicate plugin.
     if plugin_registry
@@ -288,7 +287,7 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     };
 
     let size_increase = plugin_size
-        .checked_add(new_registry_record.try_to_vec()?.len())
+        .checked_add(new_registry_record.get_size())
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     let new_registry_offset = plugin_header
@@ -317,7 +316,7 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
 #[allow(clippy::too_many_arguments)]
 pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     init_info: &ExternalPluginAdapterInitInfo,
-    core: Option<&T>,
+    header_offset: usize,
     plugin_header: &mut PluginHeaderV1,
     plugin_registry: &mut PluginRegistryV1,
     account: &AccountInfo<'a>,
@@ -325,18 +324,6 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     system_program: &AccountInfo<'a>,
     appended_data: Option<&[u8]>,
 ) -> ProgramResult {
-    let header_offset = match core {
-        Some(core) => core.get_size(),
-        None => {
-            let asset = T::load(account, 0)?;
-
-            if asset.get_size() == account.data_len() {
-                return Err(MplCoreError::ExternalPluginAdapterNotFound.into());
-            }
-
-            asset.get_size()
-        }
-    };
     let plugin_type = init_info.into();
 
     // Note currently we are blocking adding LifecycleHook and LinkedLifecycleHook external plugin adapters as they
