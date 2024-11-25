@@ -36,13 +36,14 @@ pub(crate) fn rebuild_account_state_from_proof_data<'a>(
 
     // Add the plugins.
     if !plugins.is_empty() {
-        let (_, mut plugin_header, mut plugin_registry) =
+        let (_, header_offset, mut plugin_header, mut plugin_registry) =
             create_meta_idempotent::<AssetV1>(asset_info, payer, system_program)?;
 
         for plugin in plugins {
             initialize_plugin::<AssetV1>(
                 &plugin.plugin,
                 &plugin.authority,
+                header_offset,
                 &mut plugin_header,
                 &mut plugin_registry,
                 asset_info,

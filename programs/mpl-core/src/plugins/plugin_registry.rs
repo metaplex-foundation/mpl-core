@@ -146,6 +146,16 @@ impl RegistryRecord {
     }
 }
 
+impl DataBlob for RegistryRecord {
+    fn get_initial_size() -> usize {
+        2 + 1 + 8
+    }
+
+    fn get_size(&self) -> usize {
+        2 + self.authority.get_size() + 8
+    }
+}
+
 /// A type to store the mapping of third party plugin type to third party plugin header and data.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]

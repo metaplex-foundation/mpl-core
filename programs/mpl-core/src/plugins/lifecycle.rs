@@ -8,7 +8,7 @@ use crate::{
     state::{Authority, Key, UpdateAuthority},
 };
 
-use crate::plugins::{
+use super::{
     ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalRegistryRecord, Plugin, PluginType,
     RegistryRecord,
 };

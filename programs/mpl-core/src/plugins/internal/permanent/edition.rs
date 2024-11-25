@@ -1,8 +1,11 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::plugins::{
-    abstain, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+use crate::{
+    plugins::{
+        abstain, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+    },
+    state::DataBlob,
 };
 
 /// The edition plugin allows the creator to set an edition number on the asset
@@ -41,5 +44,15 @@ impl PluginValidation for Edition {
             }
             _ => abstain!(),
         }
+    }
+}
+
+impl DataBlob for Edition {
+    fn get_initial_size() -> usize {
+        4
+    }
+
+    fn get_size(&self) -> usize {
+        4
     }
 }
