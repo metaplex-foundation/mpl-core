@@ -2177,13 +2177,6 @@
       }
     },
     {
-      "name": "AddBlocker",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
       "name": "AppData",
       "type": {
         "kind": "struct",
@@ -2250,77 +2243,6 @@
       }
     },
     {
-      "name": "Attribute",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": "string"
-          },
-          {
-            "name": "value",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Attributes",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "attributeList",
-            "type": {
-              "vec": {
-                "defined": "Attribute"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "AutographSignature",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "address",
-            "type": "publicKey"
-          },
-          {
-            "name": "message",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Autograph",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "signatures",
-            "type": {
-              "vec": {
-                "defined": "AutographSignature"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "BurnDelegate",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
       "name": "DataSection",
       "type": {
         "kind": "struct",
@@ -2365,49 +2287,6 @@
       "type": {
         "kind": "struct",
         "fields": []
-      }
-    },
-    {
-      "name": "Edition",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "number",
-            "type": "u32"
-          }
-        ]
-      }
-    },
-    {
-      "name": "FreezeDelegate",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "frozen",
-            "type": "bool"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ImmutableMetadata",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
-      "name": "ExternalCheckResult",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "flags",
-            "type": "u32"
-          }
-        ]
       }
     },
     {
@@ -2757,32 +2636,6 @@
       }
     },
     {
-      "name": "MasterEdition",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "maxSupply",
-            "type": {
-              "option": "u32"
-            }
-          },
-          {
-            "name": "name",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "uri",
-            "type": {
-              "option": "string"
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "Oracle",
       "type": {
         "kind": "struct",
@@ -2901,6 +2754,236 @@
       }
     },
     {
+      "name": "AddBlocker",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "Attribute",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": "string"
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Attributes",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "attributeList",
+            "type": {
+              "vec": {
+                "defined": "Attribute"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ImmutableMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "MasterEdition",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "maxSupply",
+            "type": {
+              "option": "u32"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Creator",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": "publicKey"
+          },
+          {
+            "name": "percentage",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Royalties",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "basisPoints",
+            "type": "u16"
+          },
+          {
+            "name": "creators",
+            "type": {
+              "vec": {
+                "defined": "Creator"
+              }
+            }
+          },
+          {
+            "name": "ruleSet",
+            "type": {
+              "defined": "RuleSet"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateDelegate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "additionalDelegates",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "VerifiedCreatorsSignature",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": "publicKey"
+          },
+          {
+            "name": "verified",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VerifiedCreators",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "signatures",
+            "type": {
+              "vec": {
+                "defined": "VerifiedCreatorsSignature"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AutographSignature",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": "publicKey"
+          },
+          {
+            "name": "message",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Autograph",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "signatures",
+            "type": {
+              "vec": {
+                "defined": "AutographSignature"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "BurnDelegate",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "FreezeDelegate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "frozen",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TransferDelegate",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "Edition",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "number",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
       "name": "PermanentBurnDelegate",
       "type": {
         "kind": "struct",
@@ -2924,6 +3007,18 @@
       "type": {
         "kind": "struct",
         "fields": []
+      }
+    },
+    {
+      "name": "ExternalCheckResult",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "flags",
+            "type": "u32"
+          }
+        ]
       }
     },
     {
@@ -2998,101 +3093,6 @@
             "name": "dataLen",
             "type": {
               "option": "u64"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "Creator",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "address",
-            "type": "publicKey"
-          },
-          {
-            "name": "percentage",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Royalties",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "basisPoints",
-            "type": "u16"
-          },
-          {
-            "name": "creators",
-            "type": {
-              "vec": {
-                "defined": "Creator"
-              }
-            }
-          },
-          {
-            "name": "ruleSet",
-            "type": {
-              "defined": "RuleSet"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "TransferDelegate",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
-    {
-      "name": "UpdateDelegate",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "additionalDelegates",
-            "type": {
-              "vec": "publicKey"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "VerifiedCreatorsSignature",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "address",
-            "type": "publicKey"
-          },
-          {
-            "name": "verified",
-            "type": "bool"
-          }
-        ]
-      }
-    },
-    {
-      "name": "VerifiedCreators",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "signatures",
-            "type": {
-              "vec": {
-                "defined": "VerifiedCreatorsSignature"
-              }
             }
           }
         ]
@@ -3955,6 +3955,66 @@
       }
     },
     {
+      "name": "ValidationResultsOffset",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoOffset"
+          },
+          {
+            "name": "Anchor"
+          },
+          {
+            "name": "Custom",
+            "fields": [
+              "u64"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleValidation",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Uninitialized"
+          },
+          {
+            "name": "V1",
+            "fields": [
+              {
+                "name": "create",
+                "type": {
+                  "defined": "ExternalValidationResult"
+                }
+              },
+              {
+                "name": "transfer",
+                "type": {
+                  "defined": "ExternalValidationResult"
+                }
+              },
+              {
+                "name": "burn",
+                "type": {
+                  "defined": "ExternalValidationResult"
+                }
+              },
+              {
+                "name": "update",
+                "type": {
+                  "defined": "ExternalValidationResult"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "name": "ExternalPluginAdapterType",
       "type": {
         "kind": "enum",
@@ -4399,6 +4459,33 @@
       }
     },
     {
+      "name": "RuleSet",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "None"
+          },
+          {
+            "name": "ProgramAllowList",
+            "fields": [
+              {
+                "vec": "publicKey"
+              }
+            ]
+          },
+          {
+            "name": "ProgramDenyList",
+            "fields": [
+              {
+                "vec": "publicKey"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "name": "ValidationResult",
       "type": {
         "kind": "enum",
@@ -4431,93 +4518,6 @@
           },
           {
             "name": "Pass"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ValidationResultsOffset",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "NoOffset"
-          },
-          {
-            "name": "Anchor"
-          },
-          {
-            "name": "Custom",
-            "fields": [
-              "u64"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "OracleValidation",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Uninitialized"
-          },
-          {
-            "name": "V1",
-            "fields": [
-              {
-                "name": "create",
-                "type": {
-                  "defined": "ExternalValidationResult"
-                }
-              },
-              {
-                "name": "transfer",
-                "type": {
-                  "defined": "ExternalValidationResult"
-                }
-              },
-              {
-                "name": "burn",
-                "type": {
-                  "defined": "ExternalValidationResult"
-                }
-              },
-              {
-                "name": "update",
-                "type": {
-                  "defined": "ExternalValidationResult"
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "RuleSet",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "None"
-          },
-          {
-            "name": "ProgramAllowList",
-            "fields": [
-              {
-                "vec": "publicKey"
-              }
-            ]
-          },
-          {
-            "name": "ProgramDenyList",
-            "fields": [
-              {
-                "vec": "publicKey"
-              }
-            ]
           }
         ]
       }
@@ -4852,6 +4852,11 @@
       "code": 47,
       "name": "CannotAddDataSection",
       "msg": "Cannot add a Data Section without a linked external plugin"
+    },
+    {
+      "code": 48,
+      "name": "PermanentDelegatesPreventMove",
+      "msg": "Cannot move asset to collection with permanent delegates"
     }
   ],
   "metadata": {

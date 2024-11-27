@@ -3,7 +3,9 @@ use solana_program::program_error::ProgramError;
 
 use crate::state::DataBlob;
 
-use super::{abstain, approve, PluginValidation, PluginValidationContext, ValidationResult};
+use crate::plugins::{
+    abstain, approve, PluginValidation, PluginValidationContext, ValidationResult,
+};
 
 /// This plugin manages the ability to transfer an asset and any authorities
 /// approved are permitted to transfer the asset on behalf of the owner.

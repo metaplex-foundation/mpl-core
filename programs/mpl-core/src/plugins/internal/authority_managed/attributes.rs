@@ -1,5 +1,4 @@
-use super::PluginValidation;
-use crate::state::DataBlob;
+use crate::{plugins::PluginValidation, state::DataBlob};
 use borsh::{BorshDeserialize, BorshSerialize};
 
 /// The Attribute type which represent a Key Value pair.
