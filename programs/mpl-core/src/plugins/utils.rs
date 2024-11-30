@@ -621,13 +621,14 @@ pub fn delete_plugin<'a, T: DataBlob>(
             .checked_sub(next_plugin_offset)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
-        //TODO: This is memory intensive, we should use memmove instead probably.
-        let src = account.data.borrow()[next_plugin_offset..].to_vec();
-        sol_memcpy(
-            &mut account.data.borrow_mut()[plugin_offset..],
-            &src,
-            data_to_move,
-        );
+        unsafe {
+            let base = account.data.borrow_mut().as_mut_ptr();
+            sol_memmove(
+                base.add(plugin_offset),
+                base.add(next_plugin_offset),
+                data_to_move,
+            );
+        }
 
         header.plugin_registry_offset = new_registry_offset;
         header.save(account, asset.get_size())?;
@@ -699,13 +700,14 @@ pub fn delete_external_plugin_adapter<'a, T: DataBlob>(
             .checked_sub(next_plugin_offset)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
-        //TODO: This is memory intensive, we should use memmove instead probably.
-        let src = account.data.borrow()[next_plugin_offset..].to_vec();
-        sol_memcpy(
-            &mut account.data.borrow_mut()[plugin_offset..],
-            &src,
-            data_to_move,
-        );
+        unsafe {
+            let base = account.data.borrow_mut().as_mut_ptr();
+            sol_memmove(
+                base.add(plugin_offset),
+                base.add(next_plugin_offset),
+                data_to_move,
+            );
+        }
 
         header.plugin_registry_offset = new_registry_offset;
         header.save(account, asset.get_size())?;
