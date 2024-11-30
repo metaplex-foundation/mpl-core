@@ -1,7 +1,10 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_memory::sol_memcpy,
+    account_info::AccountInfo,
+    entrypoint::ProgramResult,
+    msg,
+    program_memory::{sol_memcpy, sol_memmove},
 };
 
 use crate::{
@@ -354,16 +357,16 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
             .checked_add(size_diff)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
-        // //TODO: This is memory intensive, we should use memmove instead probably.
-        let src = account.data.borrow()[(plugin_offset as usize)..registry_offset].to_vec();
-
         resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
 
-        sol_memcpy(
-            &mut account.data.borrow_mut()[(new_plugin_offset as usize)..],
-            &src,
-            src.len(),
-        );
+        unsafe {
+            let base = account.data.borrow_mut().as_mut_ptr();
+            sol_memmove(
+                base.add(new_plugin_offset as usize),
+                base.add(plugin_offset as usize),
+                registry_offset - plugin_offset as usize,
+            );
+        }
 
         plugin_header.save(account, new_core_size as usize)?;
 
