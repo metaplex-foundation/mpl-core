@@ -2,7 +2,10 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
-    plugins::{abstain, approve, PluginValidation, PluginValidationContext, ValidationResult},
+    plugins::{
+        abstain, approve, AssetValidationCommon, AssetValidationContext, PluginValidation,
+        PluginValidationContext, ValidationResult,
+    },
     state::DataBlob,
 };
 
@@ -38,13 +41,15 @@ impl DataBlob for BurnDelegate {
 impl PluginValidation for BurnDelegate {
     fn validate_burn(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if ctx.resolved_authorities.is_some()
-            && ctx
+        if plugin_ctx.resolved_authorities.is_some()
+            && plugin_ctx
                 .resolved_authorities
                 .unwrap()
-                .contains(ctx.self_authority)
+                .contains(plugin_ctx.self_authority)
         {
             approve!()
         } else {

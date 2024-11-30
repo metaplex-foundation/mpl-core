@@ -7,10 +7,11 @@ pub(crate) use compression::*;
 use crate::{
     error::MplCoreError,
     plugins::{
-        validate_external_plugin_adapter_checks, validate_plugin_checks, CheckResult,
-        ExternalCheckResultBits, ExternalPluginAdapter, ExternalPluginAdapterKey,
-        ExternalRegistryRecord, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
-        PluginType, PluginValidationContext, RegistryRecord, ValidationResult,
+        validate_external_plugin_adapter_checks, validate_plugin_checks, AssetValidationCommon,
+        AssetValidationContext, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
+        ExternalPluginAdapterKey, ExternalRegistryRecord, HookableLifecycleEvent, Plugin,
+        PluginHeaderV1, PluginRegistryV1, PluginType, PluginValidationContext, RegistryRecord,
+        ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority,
@@ -20,7 +21,6 @@ use mpl_utils::assert_signer;
 use num_traits::FromPrimitive;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
-    pubkey::Pubkey,
 };
 use std::collections::BTreeMap;
 
@@ -102,38 +102,48 @@ pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 /// Validate asset permissions using lifecycle validations for asset, collection, and plugins.
-pub(crate) fn validate_asset_permissions<'a>(
-    accounts: &'a [AccountInfo<'a>],
-    authority_info: &'a AccountInfo<'a>,
-    asset: &'a AccountInfo<'a>,
-    collection: Option<&'a AccountInfo<'a>>,
-    new_owner: Option<&'a AccountInfo<'a>>,
-    new_authority: Option<&UpdateAuthority>,
-    new_plugin: Option<&Plugin>,
-    new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
+pub(crate) fn validate_asset_permissions<'a, 'b>(
+    // accounts: &'a [AccountInfo<'a>],
+    // authority_info: &'a AccountInfo<'a>,
+    // asset: &'a AccountInfo<'a>,
+    // collection: Option<&'a AccountInfo<'a>>,
+    // new_owner: Option<&'a AccountInfo<'a>>,
+    // new_authority: Option<&UpdateAuthority>,
+    // new_plugin: Option<&Plugin>,
+    // new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
+    common: &'b AssetValidationCommon<'a>,
+    ctx: &'b AssetValidationContext<'a>,
     asset_check_fp: fn() -> CheckResult,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
     asset_validate_fp: fn(
         &AssetV1,
-        &AccountInfo,
-        Option<&Plugin>,
-        Option<&ExternalPluginAdapter>,
+        // &AccountInfo,
+        // Option<&Plugin>,
+        // Option<&ExternalPluginAdapter>,
+        &AssetValidationCommon,
+        &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
     collection_validate_fp: fn(
         &CollectionV1,
-        &AccountInfo,
-        Option<&Plugin>,
-        Option<&ExternalPluginAdapter>,
+        // &AccountInfo,
+        // Option<&Plugin>,
+        // Option<&ExternalPluginAdapter>,
+        &AssetValidationCommon,
+        &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
         &PluginValidationContext,
+        &AssetValidationCommon,
+        &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
     external_plugin_adapter_validate_fp: Option<
         fn(
             &ExternalPluginAdapter,
             &PluginValidationContext,
+            &AssetValidationCommon,
+            &AssetValidationContext,
         ) -> Result<ValidationResult, ProgramError>,
     >,
     hookable_lifecycle_event: Option<HookableLifecycleEvent>,
@@ -144,18 +154,22 @@ pub(crate) fn validate_asset_permissions<'a>(
         panic!("Missing function parameters to validate_asset_permissions");
     }
 
-    let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<AssetV1>(asset)?;
-    let resolved_authorities =
-        resolve_pubkey_to_authorities(authority_info, collection, &deserialized_asset)?;
+    let (deserialized_asset, plugin_header, plugin_registry) =
+        fetch_core_data::<AssetV1>(common.asset_info)?;
+    let resolved_authorities = resolve_pubkey_to_authorities(
+        common.authority_info,
+        common.collection_info,
+        &deserialized_asset,
+    )?;
 
     // If the asset is part of a collection, the collection must be passed in and it must be correct.
     if let UpdateAuthority::Collection(collection_address) = deserialized_asset.update_authority {
-        if collection.is_none() {
+        if common.collection_info.is_none() {
             return Err(MplCoreError::MissingCollection.into());
-        } else if collection.unwrap().key != &collection_address {
+        } else if common.collection_info.unwrap().key != &collection_address {
             return Err(MplCoreError::InvalidCollection.into());
         }
-    } else if collection.is_some() {
+    } else if common.collection_info.is_some() {
         return Err(MplCoreError::InvalidCollection.into());
     }
 
@@ -167,14 +181,14 @@ pub(crate) fn validate_asset_permissions<'a>(
 
     // The asset approval overrides the collection approval.
     let asset_check = asset_check_fp();
-    let collection_check = if collection.is_some() {
+    let collection_check = if common.collection_info.is_some() {
         collection_check_fp()
     } else {
         CheckResult::None
     };
 
     // Check the collection plugins first.
-    if let Some(collection_info) = collection {
+    if let Some(collection_info) = common.collection_info {
         let (_, _, registry) = fetch_core_data::<CollectionV1>(collection_info)?;
 
         if let Some(r) = registry {
@@ -197,7 +211,7 @@ pub(crate) fn validate_asset_permissions<'a>(
         registry.check_registry(Key::AssetV1, plugin_check_fp, &mut checks);
         if let Some(lifecycle_event) = &hookable_lifecycle_event {
             registry.check_adapter_registry(
-                asset,
+                common.asset_info,
                 Key::AssetV1,
                 lifecycle_event,
                 &mut external_checks,
@@ -211,9 +225,11 @@ pub(crate) fn validate_asset_permissions<'a>(
     if asset_check != CheckResult::None {
         match asset_validate_fp(
             &deserialized_asset,
-            authority_info,
-            new_plugin,
-            new_external_plugin_adapter,
+            // common.authority_info,
+            // new_plugin,
+            // new_external_plugin_adapter,
+            common,
+            ctx,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
@@ -226,10 +242,12 @@ pub(crate) fn validate_asset_permissions<'a>(
 
     if collection_check != CheckResult::None {
         match collection_validate_fp(
-            &CollectionV1::load(collection.ok_or(MplCoreError::MissingCollection)?, 0)?,
-            authority_info,
-            new_plugin,
-            new_external_plugin_adapter,
+            &CollectionV1::load(common.collection_info.unwrap(), 0)?,
+            // common.authority_info,
+            // new_plugin,
+            // new_external_plugin_adapter,
+            common,
+            ctx,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
@@ -242,15 +260,18 @@ pub(crate) fn validate_asset_permissions<'a>(
 
     match validate_plugin_checks(
         Key::CollectionV1,
-        accounts,
+        // common.accounts,
         &checks,
-        authority_info,
-        new_owner,
-        new_authority,
-        None,
-        new_plugin,
-        Some(asset),
-        collection,
+        // common.authority_info,
+        // new_owner,
+        // new_authority,
+        // None,
+        // new_plugin,
+        // Some(common.asset_info),
+        // common.collection_info,
+        // Some(common.asset_info),
+        common,
+        ctx,
         &resolved_authorities,
         plugin_validate_fp,
     )? {
@@ -264,15 +285,18 @@ pub(crate) fn validate_asset_permissions<'a>(
 
     match validate_plugin_checks(
         Key::AssetV1,
-        accounts,
+        // common.accounts,
         &checks,
-        authority_info,
-        new_owner,
-        new_authority,
-        None,
-        new_plugin,
-        Some(asset),
-        collection,
+        // common.authority_info,
+        // new_owner,
+        // new_authority,
+        // None,
+        // new_plugin,
+        // Some(common.asset_info),
+        // common.collection_info,
+        // Some(common.asset_info),
+        common,
+        ctx,
         &resolved_authorities,
         plugin_validate_fp,
     )? {
@@ -287,15 +311,17 @@ pub(crate) fn validate_asset_permissions<'a>(
     if let Some(external_plugin_adapter_validate_fp) = external_plugin_adapter_validate_fp {
         match validate_external_plugin_adapter_checks(
             Key::CollectionV1,
-            accounts,
+            // common.accounts,
             &external_checks,
-            authority_info,
-            new_owner,
-            new_authority,
-            None,
-            new_plugin,
-            Some(asset),
-            collection,
+            // common.authority_info,
+            // new_owner,
+            // new_authority,
+            // None,
+            // new_plugin,
+            // Some(common.asset_info),
+            // common.collection_info,
+            common,
+            ctx,
             &resolved_authorities,
             external_plugin_adapter_validate_fp,
         )? {
@@ -308,15 +334,17 @@ pub(crate) fn validate_asset_permissions<'a>(
 
         match validate_external_plugin_adapter_checks(
             Key::AssetV1,
-            accounts,
+            // common.accounts,
             &external_checks,
-            authority_info,
-            new_owner,
-            new_authority,
-            None,
-            new_plugin,
-            Some(asset),
-            collection,
+            // common.authority_info,
+            // new_owner,
+            // new_authority,
+            // None,
+            // new_plugin,
+            // Some(common.asset_info),
+            // common.collection_info,
+            common,
+            ctx,
             &resolved_authorities,
             external_plugin_adapter_validate_fp,
         )? {
@@ -340,28 +368,36 @@ pub(crate) fn validate_asset_permissions<'a>(
 /// Validate collection permissions using lifecycle validations for collection and plugins.
 #[allow(clippy::type_complexity, clippy::too_many_arguments)]
 pub(crate) fn validate_collection_permissions<'a>(
-    accounts: &'a [AccountInfo<'a>],
-    authority_info: &'a AccountInfo<'a>,
-    collection: &'a AccountInfo<'a>,
-    new_authority: Option<&Pubkey>,
-    new_plugin: Option<&Plugin>,
-    new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
+    // accounts: &'a [AccountInfo<'a>],
+    // authority_info: &'a AccountInfo<'a>,
+    // collection: &'a AccountInfo<'a>,
+    // new_authority: Option<&Pubkey>,
+    // new_plugin: Option<&Plugin>,
+    // new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
+    common: &AssetValidationCommon<'a>,
+    ctx: &AssetValidationContext<'a>,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
     collection_validate_fp: fn(
         &CollectionV1,
-        &AccountInfo,
-        Option<&Plugin>,
-        Option<&ExternalPluginAdapter>,
+        // &AccountInfo,
+        // Option<&Plugin>,
+        // Option<&ExternalPluginAdapter>,
+        common: &AssetValidationCommon,
+        ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
     plugin_validate_fp: fn(
         &Plugin,
         &PluginValidationContext,
+        &AssetValidationCommon,
+        &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
     external_plugin_adapter_validate_fp: Option<
         fn(
             &ExternalPluginAdapter,
             &PluginValidationContext,
+            &AssetValidationCommon,
+            &AssetValidationContext,
         ) -> Result<ValidationResult, ProgramError>,
     >,
     hookable_lifecycle_event: Option<HookableLifecycleEvent>,
@@ -380,9 +416,9 @@ pub(crate) fn validate_collection_permissions<'a>(
     }
 
     let (deserialized_collection, plugin_header, plugin_registry) =
-        fetch_core_data::<CollectionV1>(collection)?;
+        fetch_core_data::<CollectionV1>(common.asset_info)?;
     let resolved_authorities =
-        resolve_pubkey_to_authorities_collection(authority_info, collection)?;
+        resolve_pubkey_to_authorities_collection(common.authority_info, common.asset_info)?;
     let mut checks: BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)> = BTreeMap::new();
     let mut external_checks: BTreeMap<
         ExternalPluginAdapterKey,
@@ -396,7 +432,7 @@ pub(crate) fn validate_collection_permissions<'a>(
         registry.check_registry(Key::CollectionV1, plugin_check_fp, &mut checks);
         if let Some(lifecycle_event) = hookable_lifecycle_event {
             registry.check_adapter_registry(
-                collection,
+                common.asset_info,
                 Key::CollectionV1,
                 &lifecycle_event,
                 &mut external_checks,
@@ -417,9 +453,11 @@ pub(crate) fn validate_collection_permissions<'a>(
         let result = match core_check.0 {
             Key::CollectionV1 => collection_validate_fp(
                 &deserialized_collection,
-                authority_info,
-                new_plugin,
-                new_external_plugin_adapter,
+                // common.authority_info,
+                // ctx.new_plugin,
+                // ctx.new_external_plugin_adapter,
+                common,
+                ctx,
             )?,
             _ => return Err(MplCoreError::IncorrectAccount.into()),
         };
@@ -435,15 +473,18 @@ pub(crate) fn validate_collection_permissions<'a>(
 
     match validate_plugin_checks(
         Key::CollectionV1,
-        accounts,
+        // accounts,
         &checks,
-        authority_info,
-        None,
-        None,
-        new_authority,
-        new_plugin,
-        None,
-        Some(collection),
+        // authority_info,
+        // None,
+        // None,
+        // new_authority,
+        // new_plugin,
+        // None,
+        // Some(collection),
+        // Some(common.asset_info),
+        common,
+        ctx,
         &resolved_authorities,
         plugin_validate_fp,
     )? {
@@ -458,15 +499,17 @@ pub(crate) fn validate_collection_permissions<'a>(
     if let Some(external_plugin_adapter_validate_fp) = external_plugin_adapter_validate_fp {
         match validate_external_plugin_adapter_checks(
             Key::CollectionV1,
-            accounts,
+            // accounts,
             &external_checks,
-            authority_info,
-            None,
-            None,
-            new_authority,
-            new_plugin,
-            None,
-            Some(collection),
+            // authority_info,
+            // None,
+            // None,
+            // new_authority,
+            // new_plugin,
+            // None,
+            // Some(collection),
+            common,
+            ctx,
             &resolved_authorities,
             external_plugin_adapter_validate_fp,
         )? {

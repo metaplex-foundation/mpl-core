@@ -10,8 +10,9 @@ use crate::{
         Context, UpdateCollectionV1Accounts, UpdateV1Accounts, UpdateV2Accounts,
     },
     plugins::{
-        fetch_plugin, ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginHeaderV1,
-        PluginRegistryV1, PluginType, UpdateDelegate,
+        fetch_plugin, AssetValidationCommon, AssetValidationContext, ExternalPluginAdapter,
+        HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType,
+        UpdateDelegate,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
@@ -107,14 +108,24 @@ fn update<'a>(
     }
 
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
-        accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        args.new_update_authority.as_ref(),
-        None,
-        None,
+        // accounts,
+        // authority,
+        // ctx.accounts.asset,
+        // ctx.accounts.collection,
+        // None,
+        // args.new_update_authority.as_ref(),
+        // None,
+        // None,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.asset,
+            collection_info: ctx.accounts.collection,
+        },
+        &AssetValidationContext::Update {
+            accounts,
+            new_update_authority: args.new_update_authority.clone(),
+        },
         AssetV1::check_update,
         CollectionV1::check_update,
         PluginType::check_update,
@@ -269,12 +280,25 @@ pub(crate) fn update_collection<'a>(
     }
 
     let (mut collection, plugin_header, plugin_registry) = validate_collection_permissions(
-        accounts,
-        authority,
-        ctx.accounts.collection,
-        ctx.accounts.new_update_authority.map(|a| a.key),
-        None,
-        None,
+        // accounts,
+        // authority,
+        // ctx.accounts.collection,
+        // ctx.accounts.new_update_authority.map(|a| a.key),
+        // None,
+        // None,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.collection,
+            collection_info: None,
+        },
+        &AssetValidationContext::Update {
+            accounts,
+            new_update_authority: ctx
+                .accounts
+                .new_update_authority
+                .map(|a| UpdateAuthority::Address(*a.key)),
+        },
         CollectionV1::check_update,
         PluginType::check_update,
         CollectionV1::validate_update,

@@ -7,7 +7,10 @@ use crate::{
     instruction::accounts::{
         ApproveCollectionPluginAuthorityV1Accounts, ApprovePluginAuthorityV1Accounts,
     },
-    plugins::{approve_authority_on_plugin, fetch_wrapped_plugin, Plugin, PluginType},
+    plugins::{
+        approve_authority_on_plugin, fetch_wrapped_plugin, AssetValidationCommon,
+        AssetValidationContext, Plugin, PluginType,
+    },
     state::{AssetV1, Authority, CollectionV1, CoreAsset, DataBlob, Key, SolanaAccount},
     utils::{
         fetch_core_data, load_key, resolve_authority, validate_asset_permissions,
@@ -49,16 +52,27 @@ pub(crate) fn approve_plugin_authority<'a>(
 
     let (_, plugin) = fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, None, args.plugin_type)?;
 
+    let common = AssetValidationCommon {
+        // accounts,
+        authority_info: authority,
+        asset_info: ctx.accounts.asset,
+        collection_info: ctx.accounts.collection,
+    };
+
+    let asset_ctx = AssetValidationContext::ApprovePluginAuthority { plugin };
+
     // Validate asset permissions.
     let (mut asset, _, _) = validate_asset_permissions(
-        accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        None,
-        Some(&plugin),
-        None,
+        // accounts,
+        // authority,
+        // ctx.accounts.asset,
+        // ctx.accounts.collection,
+        // None,
+        // None,
+        // Some(&plugin),
+        // None,
+        &common,
+        &asset_ctx,
         AssetV1::check_approve_plugin_authority,
         CollectionV1::check_approve_plugin_authority,
         PluginType::check_approve_plugin_authority,
@@ -113,12 +127,19 @@ pub(crate) fn approve_collection_plugin_authority<'a>(
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
-        accounts,
-        authority,
-        ctx.accounts.collection,
-        None,
-        Some(&plugin),
-        None,
+        // accounts,
+        // authority,
+        // ctx.accounts.collection,
+        // None,
+        // Some(&plugin),
+        // None,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.collection,
+            collection_info: None,
+        },
+        &AssetValidationContext::ApprovePluginAuthority { plugin },
         CollectionV1::check_approve_plugin_authority,
         PluginType::check_approve_plugin_authority,
         CollectionV1::validate_approve_plugin_authority,

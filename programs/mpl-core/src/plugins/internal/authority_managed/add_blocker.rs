@@ -2,8 +2,10 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
+    error::MplCoreError,
     plugins::{
-        abstain, reject, PluginType, PluginValidation, PluginValidationContext, ValidationResult,
+        abstain, reject, AssetValidationCommon, AssetValidationContext, PluginType,
+        PluginValidation, PluginValidationContext, ValidationResult,
     },
     state::{Authority, DataBlob},
 };
@@ -28,16 +30,20 @@ impl DataBlob for AddBlocker {
 impl PluginValidation for AddBlocker {
     fn validate_add_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(plugin) = ctx.target_plugin {
-            if plugin.manager() == Authority::Owner
-                || PluginType::from(plugin) == PluginType::AddBlocker
+        if let AssetValidationContext::AddPlugin { new_plugin } = asset_ctx {
+            if new_plugin.manager() == Authority::Owner
+                || PluginType::from(new_plugin) == PluginType::AddBlocker
             {
                 return abstain!();
             }
-        }
 
-        reject!()
+            reject!()
+        } else {
+            Err(MplCoreError::InvalidPlugin.into())
+        }
     }
 }

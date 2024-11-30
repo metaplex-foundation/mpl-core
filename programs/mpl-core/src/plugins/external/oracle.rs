@@ -4,8 +4,9 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use crate::error::MplCoreError;
 
 use crate::plugins::{
-    abstain, Authority, ExternalCheckResult, ExternalValidationResult, ExtraAccount,
-    HookableLifecycleEvent, PluginValidation, PluginValidationContext, ValidationResult,
+    abstain, AssetValidationCommon, AssetValidationContext, Authority, ExternalCheckResult,
+    ExternalValidationResult, ExtraAccount, HookableLifecycleEvent, PluginValidation,
+    PluginValidationContext, ValidationResult,
 };
 
 /// Oracle plugin that allows getting a `ValidationResult` for a lifecycle event from an arbitrary
@@ -39,56 +40,92 @@ impl Oracle {
 impl PluginValidation for Oracle {
     fn validate_add_external_plugin_adapter(
         &self,
-        _ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
     }
 
     fn validate_create(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        self.validate_helper(ctx, HookableLifecycleEvent::Create)
+        self.validate_helper(
+            plugin_ctx,
+            common,
+            asset_ctx,
+            HookableLifecycleEvent::Create,
+        )
     }
 
     fn validate_transfer(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        self.validate_helper(ctx, HookableLifecycleEvent::Transfer)
+        self.validate_helper(
+            plugin_ctx,
+            common,
+            asset_ctx,
+            HookableLifecycleEvent::Transfer,
+        )
     }
 
     fn validate_burn(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        self.validate_helper(ctx, HookableLifecycleEvent::Burn)
+        self.validate_helper(plugin_ctx, common, asset_ctx, HookableLifecycleEvent::Burn)
     }
 
     fn validate_update(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        self.validate_helper(ctx, HookableLifecycleEvent::Update)
+        self.validate_helper(
+            plugin_ctx,
+            common,
+            asset_ctx,
+            HookableLifecycleEvent::Update,
+        )
     }
 }
 
 impl Oracle {
     fn validate_helper(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
         event: HookableLifecycleEvent,
     ) -> Result<ValidationResult, ProgramError> {
         let oracle_account = match &self.base_address_config {
             None => self.base_address,
-            Some(extra_account) => extra_account.derive(&self.base_address, ctx)?,
+            Some(extra_account) => {
+                extra_account.derive(&self.base_address, plugin_ctx, common, asset_ctx)?
+            }
         };
 
-        let oracle_account = ctx
-            .accounts
-            .iter()
-            .find(|account| *account.key == oracle_account)
-            .ok_or(MplCoreError::MissingExternalPluginAdapterAccount)?;
+        let oracle_account = if let AssetValidationContext::Create { accounts }
+        | AssetValidationContext::Transfer { accounts, .. }
+        | AssetValidationContext::Burn { accounts, .. }
+        | AssetValidationContext::Update { accounts, .. } = asset_ctx
+        {
+            accounts
+                .iter()
+                .find(|account| *account.key == oracle_account)
+                .ok_or(MplCoreError::MissingExternalPluginAdapterAccount)?
+        } else {
+            return Err(MplCoreError::InvalidPlugin.into());
+        };
 
         let offset = self.results_offset.to_offset_usize();
 

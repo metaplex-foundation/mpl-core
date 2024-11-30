@@ -7,7 +7,10 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionPluginV1Accounts, UpdatePluginV1Accounts},
-    plugins::{Plugin, PluginHeaderV1, PluginRegistryV1, PluginType},
+    plugins::{
+        AssetValidationCommon, AssetValidationContext, Plugin, PluginHeaderV1, PluginRegistryV1,
+        PluginType,
+    },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
         load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
@@ -48,14 +51,22 @@ pub(crate) fn update_plugin<'a>(
     }
 
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
-        accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        None,
-        Some(&args.plugin),
-        None,
+        // accounts,
+        // authority,
+        // ctx.accounts.asset,
+        // ctx.accounts.collection,
+        // None,
+        // None,
+        // Some(&args.plugin),
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.asset,
+            collection_info: ctx.accounts.collection,
+        },
+        &AssetValidationContext::UpdatePlugin {
+            new_plugin: args.plugin.clone(),
+        },
         AssetV1::check_update_plugin,
         CollectionV1::check_update_plugin,
         PluginType::check_update_plugin,
@@ -109,12 +120,21 @@ pub(crate) fn update_collection_plugin<'a>(
 
     // Validate collection permissions.
     let (collection, plugin_header, plugin_registry) = validate_collection_permissions(
-        accounts,
-        authority,
-        ctx.accounts.collection,
-        None,
-        Some(&args.plugin),
-        None,
+        // accounts,
+        // authority,
+        // ctx.accounts.collection,
+        // None,
+        // Some(&args.plugin),
+        // None,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.collection,
+            collection_info: None,
+        },
+        &AssetValidationContext::UpdatePlugin {
+            new_plugin: args.plugin.clone(),
+        },
         CollectionV1::check_update_plugin,
         PluginType::check_update_plugin,
         CollectionV1::validate_update_plugin,

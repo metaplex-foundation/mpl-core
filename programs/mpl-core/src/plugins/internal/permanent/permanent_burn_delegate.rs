@@ -2,9 +2,10 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
+    error::MplCoreError,
     plugins::{
-        abstain, force_approve, reject, PluginType, PluginValidation, PluginValidationContext,
-        ValidationResult,
+        abstain, force_approve, reject, AssetValidationCommon, AssetValidationContext, PluginType,
+        PluginValidation, PluginValidationContext, ValidationResult,
     },
     state::DataBlob,
 };
@@ -28,25 +29,31 @@ impl DataBlob for PermanentBurnDelegate {
 impl PluginValidation for PermanentBurnDelegate {
     fn validate_add_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
         // always reject it.
-        if ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentBurnDelegate
-        {
-            reject!()
+        if let AssetValidationContext::AddPlugin { new_plugin } = asset_ctx {
+            if PluginType::from(new_plugin) == PluginType::PermanentBurnDelegate {
+                reject!()
+            } else {
+                abstain!()
+            }
         } else {
-            abstain!()
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     fn validate_burn(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(resolved_authorities) = ctx.resolved_authorities {
-            if resolved_authorities.contains(ctx.self_authority) {
+        if let Some(resolved_authorities) = plugin_ctx.resolved_authorities {
+            if resolved_authorities.contains(plugin_ctx.self_authority) {
                 return force_approve!();
             }
         }

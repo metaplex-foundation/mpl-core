@@ -5,7 +5,10 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{RemoveCollectionPluginV1Accounts, RemovePluginV1Accounts},
-    plugins::{delete_plugin, fetch_wrapped_plugin, Plugin, PluginType},
+    plugins::{
+        delete_plugin, fetch_wrapped_plugin, AssetValidationCommon, AssetValidationContext, Plugin,
+        PluginType,
+    },
     state::{AssetV1, CollectionV1, DataBlob, Key},
     utils::{
         fetch_core_data, load_key, resolve_authority, validate_asset_permissions,
@@ -57,14 +60,20 @@ pub(crate) fn remove_plugin<'a>(
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
-        accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        None,
-        Some(&plugin_to_remove),
-        None,
+        // accounts,
+        // authority,
+        // ctx.accounts.asset,
+        // ctx.accounts.collection,
+        // None,
+        // None,
+        // Some(&plugin_to_remove),
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.asset,
+            collection_info: ctx.accounts.collection,
+        },
+        &AssetValidationContext::RemovePlugin { plugin_to_remove },
         AssetV1::check_remove_plugin,
         CollectionV1::check_remove_plugin,
         PluginType::check_remove_plugin,
@@ -129,12 +138,13 @@ pub(crate) fn remove_collection_plugin<'a>(
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
-        accounts,
-        authority,
-        ctx.accounts.collection,
-        None,
-        Some(&plugin_to_remove),
-        None,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.collection,
+            collection_info: None,
+        },
+        &AssetValidationContext::RemovePlugin { plugin_to_remove },
         CollectionV1::check_remove_plugin,
         PluginType::check_remove_plugin,
         CollectionV1::validate_remove_plugin,

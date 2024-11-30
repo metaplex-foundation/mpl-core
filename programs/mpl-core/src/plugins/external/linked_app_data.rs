@@ -1,8 +1,12 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 
-use crate::plugins::{
-    Authority, ExternalPluginAdapterSchema, PluginValidation, PluginValidationContext,
-    ValidationResult,
+use crate::{
+    plugins::{
+        AssetValidationCommon, AssetValidationContext, Authority, ExternalPluginAdapterSchema,
+        PluginValidation, PluginValidationContext, ValidationResult,
+    },
+    state::Key,
+    utils::load_key,
 };
 
 /// The app data third party plugin contains arbitrary data that can be written to by the
@@ -31,10 +35,12 @@ impl LinkedAppData {
 impl PluginValidation for LinkedAppData {
     fn validate_create(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, solana_program::program_error::ProgramError> {
         solana_program::msg!("LinkedAppData::validate_create");
-        if ctx.asset_info.is_some() {
+        if load_key(common.asset_info, 0)? == Key::AssetV1 {
             Ok(ValidationResult::Rejected)
         } else {
             Ok(ValidationResult::Pass)

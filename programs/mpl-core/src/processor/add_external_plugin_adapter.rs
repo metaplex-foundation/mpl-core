@@ -8,9 +8,9 @@ use crate::{
         AddCollectionExternalPluginAdapterV1Accounts, AddExternalPluginAdapterV1Accounts,
     },
     plugins::{
-        create_meta_idempotent, initialize_external_plugin_adapter, ExternalPluginAdapter,
-        ExternalPluginAdapterInitInfo, Plugin, PluginType, PluginValidationContext,
-        ValidationResult,
+        create_meta_idempotent, initialize_external_plugin_adapter, AssetValidationCommon,
+        AssetValidationContext, ExternalPluginAdapter, ExternalPluginAdapterInitInfo, Plugin,
+        PluginType, PluginValidationContext, ValidationResult,
     },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -63,21 +63,32 @@ pub(crate) fn add_external_plugin_adapter<'a>(
     }
 
     let validation_ctx = PluginValidationContext {
-        accounts,
-        asset_info: Some(ctx.accounts.asset),
-        collection_info: ctx.accounts.collection,
+        // accounts,
+        // asset_info: Some(ctx.accounts.asset),
+        // collection_info: ctx.accounts.collection,
         self_authority: &Authority::UpdateAuthority,
-        authority_info: authority,
+        // authority_info: authority,
         resolved_authorities: None,
-        new_owner: None,
-        new_asset_authority: None,
-        new_collection_authority: None,
-        target_plugin: None,
+        // new_owner: None,
+        // new_asset_authority: None,
+        // new_collection_authority: None,
+        // target_plugin: None,
     };
+
+    let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
 
     if ExternalPluginAdapter::validate_add_external_plugin_adapter(
         &ExternalPluginAdapter::from(&args.init_info),
         &validation_ctx,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.asset,
+            collection_info: ctx.accounts.collection,
+        },
+        &AssetValidationContext::AddExternalPluginAdapter {
+            new_external_plugin_adapter: external_plugin_adapter,
+        },
     )? == ValidationResult::Rejected
     {
         return Err(MplCoreError::InvalidAuthority.into());
@@ -85,16 +96,29 @@ pub(crate) fn add_external_plugin_adapter<'a>(
 
     let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
 
+    let common = AssetValidationCommon {
+        // accounts,
+        authority_info: authority,
+        asset_info: ctx.accounts.asset,
+        collection_info: ctx.accounts.collection,
+    };
+
+    let asset_ctx = AssetValidationContext::AddExternalPluginAdapter {
+        new_external_plugin_adapter: external_plugin_adapter,
+    };
+
     // Validate asset permissions.
     let (mut asset, _, _) = validate_asset_permissions(
-        accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        None,
-        None,
-        Some(&external_plugin_adapter),
+        // accounts,
+        // authority,
+        // ctx.accounts.asset,
+        // ctx.accounts.collection,
+        // None,
+        // None,
+        // None,
+        // Some(&external_plugin_adapter),
+        &common,
+        &asset_ctx,
         AssetV1::check_add_external_plugin_adapter,
         CollectionV1::check_add_external_plugin_adapter,
         PluginType::check_add_external_plugin_adapter,
@@ -148,36 +172,58 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
     }
 
     let validation_ctx = PluginValidationContext {
-        accounts,
-        asset_info: None,
-        collection_info: Some(ctx.accounts.collection),
+        // accounts,
+        // asset_info: None,
+        // collection_info: Some(ctx.accounts.collection),
         self_authority: &Authority::UpdateAuthority,
-        authority_info: authority,
+        // authority_info: authority,
         resolved_authorities: None,
-        new_owner: None,
-        new_asset_authority: None,
-        new_collection_authority: None,
-        target_plugin: None,
+        // new_owner: None,
+        // new_asset_authority: None,
+        // new_collection_authority: None,
+        // target_plugin: None,
     };
+
+    let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
 
     if ExternalPluginAdapter::validate_add_external_plugin_adapter(
         &ExternalPluginAdapter::from(&args.init_info),
         &validation_ctx,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.collection,
+            collection_info: None,
+        },
+        &AssetValidationContext::AddExternalPluginAdapter {
+            new_external_plugin_adapter: external_plugin_adapter.clone(),
+        },
     )? == ValidationResult::Rejected
     {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
-    let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
+    let common = AssetValidationCommon {
+        // accounts,
+        authority_info: authority,
+        asset_info: ctx.accounts.collection,
+        collection_info: None,
+    };
+
+    let asset_ctx = AssetValidationContext::AddExternalPluginAdapter {
+        new_external_plugin_adapter: external_plugin_adapter,
+    };
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
-        accounts,
-        authority,
-        ctx.accounts.collection,
-        None,
-        None,
-        Some(&external_plugin_adapter),
+        // accounts,
+        // authority,
+        // ctx.accounts.collection,
+        // None,
+        // None,
+        // Some(&external_plugin_adapter),
+        &common,
+        &asset_ctx,
         CollectionV1::check_add_external_plugin_adapter,
         PluginType::check_add_external_plugin_adapter,
         CollectionV1::validate_add_external_plugin_adapter,

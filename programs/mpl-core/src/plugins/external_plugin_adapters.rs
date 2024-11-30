@@ -12,11 +12,12 @@ use crate::{
 };
 
 use super::{
-    AppData, AppDataInitInfo, AppDataUpdateInfo, Authority, DataSection, DataSectionInitInfo,
-    ExternalCheckResult, ExternalRegistryRecord, LifecycleHook, LifecycleHookInitInfo,
-    LifecycleHookUpdateInfo, LinkedAppData, LinkedAppDataInitInfo, LinkedAppDataUpdateInfo,
-    LinkedLifecycleHook, LinkedLifecycleHookInitInfo, LinkedLifecycleHookUpdateInfo, Oracle,
-    OracleInitInfo, OracleUpdateInfo, PluginValidation, PluginValidationContext, ValidationResult,
+    AppData, AppDataInitInfo, AppDataUpdateInfo, AssetValidationCommon, AssetValidationContext,
+    Authority, DataSection, DataSectionInitInfo, ExternalCheckResult, ExternalRegistryRecord,
+    LifecycleHook, LifecycleHookInitInfo, LifecycleHookUpdateInfo, LinkedAppData,
+    LinkedAppDataInitInfo, LinkedAppDataUpdateInfo, LinkedLifecycleHook,
+    LinkedLifecycleHookInitInfo, LinkedLifecycleHookUpdateInfo, Oracle, OracleInitInfo,
+    OracleUpdateInfo, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// List of third party plugin types.
@@ -183,19 +184,27 @@ impl ExternalPluginAdapter {
     /// Validate the add external plugin adapter lifecycle event.
     pub(crate) fn validate_create(
         external_plugin_adapter: &ExternalPluginAdapter,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         solana_program::msg!("ExternalPluginAdapter::validate_create");
         match external_plugin_adapter {
             ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
-                lifecycle_hook.validate_create(ctx)
+                lifecycle_hook.validate_create(plugin_ctx, common, ctx)
             }
-            ExternalPluginAdapter::Oracle(oracle) => oracle.validate_create(ctx),
-            ExternalPluginAdapter::AppData(app_data) => app_data.validate_create(ctx),
+            ExternalPluginAdapter::Oracle(oracle) => {
+                oracle.validate_create(plugin_ctx, common, ctx)
+            }
+            ExternalPluginAdapter::AppData(app_data) => {
+                app_data.validate_create(plugin_ctx, common, ctx)
+            }
             ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
-                lifecycle_hook.validate_create(ctx)
+                lifecycle_hook.validate_create(plugin_ctx, common, ctx)
             }
-            ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_create(ctx),
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
+                app_data.validate_create(plugin_ctx, common, ctx)
+            }
             // Here we block the creation of a DataSection plugin because this is only done internally.
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
         }
@@ -204,18 +213,26 @@ impl ExternalPluginAdapter {
     /// Route the validation of the update action to the appropriate plugin.
     pub(crate) fn validate_update(
         external_plugin_adapter: &ExternalPluginAdapter,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         match external_plugin_adapter {
             ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
-                lifecycle_hook.validate_update(ctx)
+                lifecycle_hook.validate_update(plugin_ctx, common, ctx)
             }
-            ExternalPluginAdapter::Oracle(oracle) => oracle.validate_update(ctx),
-            ExternalPluginAdapter::AppData(app_data) => app_data.validate_update(ctx),
+            ExternalPluginAdapter::Oracle(oracle) => {
+                oracle.validate_update(plugin_ctx, common, ctx)
+            }
+            ExternalPluginAdapter::AppData(app_data) => {
+                app_data.validate_update(plugin_ctx, common, ctx)
+            }
             ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
-                lifecycle_hook.validate_update(ctx)
+                lifecycle_hook.validate_update(plugin_ctx, common, ctx)
             }
-            ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_update(ctx),
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
+                app_data.validate_update(plugin_ctx, common, ctx)
+            }
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Pass),
         }
     }
@@ -223,18 +240,26 @@ impl ExternalPluginAdapter {
     /// Route the validation of the burn action to the appropriate plugin.
     pub(crate) fn validate_burn(
         external_plugin_adapter: &ExternalPluginAdapter,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         match external_plugin_adapter {
             ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
-                lifecycle_hook.validate_burn(ctx)
+                lifecycle_hook.validate_burn(plugin_ctx, common, asset_ctx)
             }
-            ExternalPluginAdapter::Oracle(oracle) => oracle.validate_burn(ctx),
-            ExternalPluginAdapter::AppData(app_data) => app_data.validate_burn(ctx),
+            ExternalPluginAdapter::Oracle(oracle) => {
+                oracle.validate_burn(plugin_ctx, common, asset_ctx)
+            }
+            ExternalPluginAdapter::AppData(app_data) => {
+                app_data.validate_burn(plugin_ctx, common, asset_ctx)
+            }
             ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
-                lifecycle_hook.validate_burn(ctx)
+                lifecycle_hook.validate_burn(plugin_ctx, common, asset_ctx)
             }
-            ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_burn(ctx),
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
+                app_data.validate_burn(plugin_ctx, common, asset_ctx)
+            }
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Pass),
         }
     }
@@ -242,18 +267,26 @@ impl ExternalPluginAdapter {
     /// Route the validation of the transfer action to the appropriate external plugin adapter.
     pub(crate) fn validate_transfer(
         external_plugin_adapter: &ExternalPluginAdapter,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         match external_plugin_adapter {
             ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
-                lifecycle_hook.validate_transfer(ctx)
+                lifecycle_hook.validate_transfer(plugin_ctx, common, asset_ctx)
             }
-            ExternalPluginAdapter::Oracle(oracle) => oracle.validate_transfer(ctx),
-            ExternalPluginAdapter::AppData(app_data) => app_data.validate_transfer(ctx),
+            ExternalPluginAdapter::Oracle(oracle) => {
+                oracle.validate_transfer(plugin_ctx, common, asset_ctx)
+            }
+            ExternalPluginAdapter::AppData(app_data) => {
+                app_data.validate_transfer(plugin_ctx, common, asset_ctx)
+            }
             ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
-                lifecycle_hook.validate_transfer(ctx)
+                lifecycle_hook.validate_transfer(plugin_ctx, common, asset_ctx)
             }
-            ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_transfer(ctx),
+            ExternalPluginAdapter::LinkedAppData(app_data) => {
+                app_data.validate_transfer(plugin_ctx, common, asset_ctx)
+            }
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Pass),
         }
     }
@@ -261,23 +294,25 @@ impl ExternalPluginAdapter {
     /// Validate the add external plugin adapter lifecycle event.
     pub(crate) fn validate_add_external_plugin_adapter(
         external_plugin_adapter: &ExternalPluginAdapter,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         match external_plugin_adapter {
             ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
-                lifecycle_hook.validate_add_external_plugin_adapter(ctx)
+                lifecycle_hook.validate_add_external_plugin_adapter(plugin_ctx, common, asset_ctx)
             }
             ExternalPluginAdapter::Oracle(oracle) => {
-                oracle.validate_add_external_plugin_adapter(ctx)
+                oracle.validate_add_external_plugin_adapter(plugin_ctx, common, asset_ctx)
             }
             ExternalPluginAdapter::AppData(app_data) => {
-                app_data.validate_add_external_plugin_adapter(ctx)
+                app_data.validate_add_external_plugin_adapter(plugin_ctx, common, asset_ctx)
             }
             ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
-                lifecycle_hook.validate_add_external_plugin_adapter(ctx)
+                lifecycle_hook.validate_add_external_plugin_adapter(plugin_ctx, common, asset_ctx)
             }
             ExternalPluginAdapter::LinkedAppData(app_data) => {
-                app_data.validate_add_external_plugin_adapter(ctx)
+                app_data.validate_add_external_plugin_adapter(plugin_ctx, common, asset_ctx)
             }
             // Here we block the creation of a DataSection plugin because this is only done internally.
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
@@ -287,12 +322,14 @@ impl ExternalPluginAdapter {
     /// Validate the add external plugin adapter lifecycle event.
     pub(crate) fn validate_update_external_plugin_adapter(
         external_plugin_adapter: &ExternalPluginAdapter,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let resolved_authorities = ctx
+        let resolved_authorities = plugin_ctx
             .resolved_authorities
             .ok_or(MplCoreError::InvalidAuthority)?;
-        let base_result = if resolved_authorities.contains(ctx.self_authority) {
+        let base_result = if resolved_authorities.contains(plugin_ctx.self_authority) {
             solana_program::msg!("Base: Approved");
             ValidationResult::Approved
         } else {
@@ -300,20 +337,18 @@ impl ExternalPluginAdapter {
         };
 
         let result = match external_plugin_adapter {
-            ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
-                lifecycle_hook.validate_update_external_plugin_adapter(ctx)
-            }
+            ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => lifecycle_hook
+                .validate_update_external_plugin_adapter(plugin_ctx, common, asset_ctx),
             ExternalPluginAdapter::Oracle(oracle) => {
-                oracle.validate_update_external_plugin_adapter(ctx)
+                oracle.validate_update_external_plugin_adapter(plugin_ctx, common, asset_ctx)
             }
             ExternalPluginAdapter::AppData(app_data) => {
-                app_data.validate_update_external_plugin_adapter(ctx)
+                app_data.validate_update_external_plugin_adapter(plugin_ctx, common, asset_ctx)
             }
-            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
-                lifecycle_hook.validate_update_external_plugin_adapter(ctx)
-            }
+            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => lifecycle_hook
+                .validate_update_external_plugin_adapter(plugin_ctx, common, asset_ctx),
             ExternalPluginAdapter::LinkedAppData(app_data) => {
-                app_data.validate_update_external_plugin_adapter(ctx)
+                app_data.validate_update_external_plugin_adapter(plugin_ctx, common, asset_ctx)
             }
             // Here we block the update of a DataSection plugin because this is only done internally.
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
@@ -467,7 +502,9 @@ impl ExtraAccount {
     pub(crate) fn derive(
         &self,
         program_id: &Pubkey,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<Pubkey, ProgramError> {
         match self {
             ExtraAccount::PreconfiguredProgram { .. } => {
@@ -476,7 +513,7 @@ impl ExtraAccount {
                 Ok(pubkey)
             }
             ExtraAccount::PreconfiguredCollection { .. } => {
-                let collection = ctx
+                let collection = common
                     .collection_info
                     .ok_or(MplCoreError::MissingCollection)?
                     .key;
@@ -485,21 +522,22 @@ impl ExtraAccount {
                 Ok(pubkey)
             }
             ExtraAccount::PreconfiguredOwner { .. } => {
-                let asset_info = ctx.asset_info.ok_or(MplCoreError::MissingAsset)?;
-                let owner = AssetV1::load(asset_info, 0)?.owner;
+                let owner = AssetV1::load(common.asset_info, 0)?.owner;
                 let seeds = &[MPL_CORE_PREFIX.as_bytes(), owner.as_ref()];
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)
             }
             ExtraAccount::PreconfiguredRecipient { .. } => {
-                let recipient = ctx.new_owner.ok_or(MplCoreError::MissingNewOwner)?.key;
-                let seeds = &[MPL_CORE_PREFIX.as_bytes(), recipient.as_ref()];
-                let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
-                Ok(pubkey)
+                if let AssetValidationContext::Transfer { new_owner, .. } = asset_ctx {
+                    let seeds = &[MPL_CORE_PREFIX.as_bytes(), new_owner.key.as_ref()];
+                    let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
+                    Ok(pubkey)
+                } else {
+                    Err(MplCoreError::MissingNewOwner.into())
+                }
             }
             ExtraAccount::PreconfiguredAsset { .. } => {
-                let asset = ctx.asset_info.ok_or(MplCoreError::MissingAsset)?.key;
-                let seeds = &[MPL_CORE_PREFIX.as_bytes(), asset.as_ref()];
+                let seeds = &[MPL_CORE_PREFIX.as_bytes(), common.asset_info.key.as_ref()];
                 let (pubkey, _bump) = Pubkey::find_program_address(seeds, program_id);
                 Ok(pubkey)
             }
@@ -508,7 +546,7 @@ impl ExtraAccount {
                 custom_program_id,
                 ..
             } => {
-                let seeds = transform_seeds(seeds, ctx)?;
+                let seeds = transform_seeds(seeds, plugin_ctx, common, asset_ctx)?;
 
                 // Convert the Vec of Vec into Vec of u8 slices.
                 let vec_of_slices: Vec<&[u8]> = seeds.iter().map(Vec::as_slice).collect();
@@ -527,14 +565,16 @@ impl ExtraAccount {
 // Transform seeds from their tokens into actual seeds based on passed-in context values.
 fn transform_seeds(
     seeds: &Vec<Seed>,
-    ctx: &PluginValidationContext,
+    _plugin_ctx: &PluginValidationContext,
+    common: &AssetValidationCommon,
+    asset_ctx: &AssetValidationContext,
 ) -> Result<Vec<Vec<u8>>, ProgramError> {
     let mut transformed_seeds = Vec::<Vec<u8>>::new();
 
     for seed in seeds {
         match seed {
             Seed::Collection => {
-                let collection = ctx
+                let collection = common
                     .collection_info
                     .ok_or(MplCoreError::MissingCollection)?
                     .key
@@ -543,26 +583,19 @@ fn transform_seeds(
                 transformed_seeds.push(collection);
             }
             Seed::Owner => {
-                let asset_info = ctx.asset_info.ok_or(MplCoreError::MissingAsset)?;
-                let owner = AssetV1::load(asset_info, 0)?.owner.as_ref().to_vec();
+                let owner = AssetV1::load(common.asset_info, 0)?.owner.as_ref().to_vec();
                 transformed_seeds.push(owner);
             }
             Seed::Recipient => {
-                let recipient = ctx
-                    .new_owner
-                    .ok_or(MplCoreError::MissingNewOwner)?
-                    .key
-                    .as_ref()
-                    .to_vec();
-                transformed_seeds.push(recipient);
+                if let AssetValidationContext::Transfer { new_owner, .. } = asset_ctx {
+                    let recipient = new_owner.key.as_ref().to_vec();
+                    transformed_seeds.push(recipient);
+                } else {
+                    return Err(MplCoreError::MissingNewOwner.into());
+                }
             }
             Seed::Asset => {
-                let asset = ctx
-                    .asset_info
-                    .ok_or(MplCoreError::MissingAsset)?
-                    .key
-                    .as_ref()
-                    .to_vec();
+                let asset = common.asset_info.key.as_ref().to_vec();
                 transformed_seeds.push(asset);
             }
             Seed::Address(pubkey) => {

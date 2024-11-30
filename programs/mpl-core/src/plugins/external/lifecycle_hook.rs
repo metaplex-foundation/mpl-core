@@ -2,8 +2,9 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::plugins::{
-    abstain, Authority, ExternalCheckResult, ExternalPluginAdapterSchema, ExtraAccount,
-    HookableLifecycleEvent, PluginValidation, PluginValidationContext, ValidationResult,
+    abstain, AssetValidationCommon, AssetValidationContext, Authority, ExternalCheckResult,
+    ExternalPluginAdapterSchema, ExtraAccount, HookableLifecycleEvent, PluginValidation,
+    PluginValidationContext, ValidationResult,
 };
 
 /// Lifecycle hook that CPIs into the `hooked_program`.  This hook is used for any lifecycle events
@@ -41,14 +42,18 @@ impl LifecycleHook {
 impl PluginValidation for LifecycleHook {
     fn validate_add_external_plugin_adapter(
         &self,
-        _ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
     }
 
     fn validate_transfer(
         &self,
-        _ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
     }

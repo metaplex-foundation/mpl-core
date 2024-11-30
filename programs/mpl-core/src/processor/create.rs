@@ -10,9 +10,10 @@ use crate::{
     instruction::accounts::CreateV2Accounts,
     plugins::{
         create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
-        initialize_plugin, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
-        ExternalPluginAdapterInitInfo, HookableLifecycleEvent, Plugin, PluginAuthorityPair,
-        PluginType, PluginValidationContext, ValidationResult,
+        initialize_plugin, AssetValidationCommon, AssetValidationContext, CheckResult,
+        ExternalCheckResultBits, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
+        HookableLifecycleEvent, Plugin, PluginAuthorityPair, PluginType, PluginValidationContext,
+        ValidationResult,
     },
     state::{
         get_create_fee, AssetV1, Authority, CollectionV1, DataState, SolanaAccount, UpdateAuthority,
@@ -149,14 +150,21 @@ pub(crate) fn process_create<'a>(
     if args.data_state == DataState::AccountState {
         // Validate asset permissions.
         let _ = validate_asset_permissions(
-            accounts,
-            authority,
-            ctx.accounts.asset,
-            ctx.accounts.collection,
-            None,
-            None,
-            None,
-            None,
+            // accounts,
+            // authority,
+            // ctx.accounts.asset,
+            // ctx.accounts.collection,
+            // None,
+            // None,
+            // None,
+            // None,
+            &AssetValidationCommon {
+                // accounts,
+                authority_info: authority,
+                asset_info: ctx.accounts.asset,
+                collection_info: ctx.accounts.collection,
+            },
+            &AssetValidationContext::Create { accounts },
             AssetV1::check_create,
             CollectionV1::check_create,
             PluginType::check_create,
@@ -190,18 +198,28 @@ pub(crate) fn process_create<'a>(
                         != CheckResult::None
                     {
                         let validation_ctx = PluginValidationContext {
-                            accounts,
-                            asset_info: Some(ctx.accounts.asset),
-                            collection_info: ctx.accounts.collection,
+                            //     // accounts,
+                            //     // asset_info: Some(ctx.accounts.asset),
+                            //     // collection_info: ctx.accounts.collection,
                             self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
-                            authority_info: authority,
+                            //     // authority_info: authority,
                             resolved_authorities: None,
-                            new_owner: None,
-                            new_asset_authority: None,
-                            new_collection_authority: None,
-                            target_plugin: None,
+                            //     // new_owner: None,
+                            //     // new_asset_authority: None,
+                            //     new_collection_authority: None,
+                            //     target_plugin: None,
                         };
-                        match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
+                        match Plugin::validate_create(
+                            &plugin.plugin,
+                            &validation_ctx,
+                            &AssetValidationCommon {
+                                // accounts,
+                                authority_info: authority,
+                                asset_info: ctx.accounts.asset,
+                                collection_info: ctx.accounts.collection,
+                            },
+                            &AssetValidationContext::Create { accounts },
+                        )? {
                             ValidationResult::Rejected => approved = false,
                             ValidationResult::ForceApproved => force_approved = true,
                             _ => (),
@@ -247,22 +265,32 @@ pub(crate) fn process_create<'a>(
                     }
 
                     if external_check_result_bits.can_reject() {
-                        let validation_ctx = PluginValidationContext {
-                            accounts,
-                            asset_info: Some(ctx.accounts.asset),
-                            collection_info: ctx.accounts.collection,
-                            // External plugin adapters are always managed by the update authority.
-                            self_authority: &Authority::UpdateAuthority,
-                            authority_info: authority,
-                            resolved_authorities: None,
-                            new_owner: None,
-                            new_asset_authority: None,
-                            new_collection_authority: None,
-                            target_plugin: None,
-                        };
+                        // let validation_ctx = PluginValidationContext {
+                        //     accounts,
+                        //     asset_info: Some(ctx.accounts.asset),
+                        //     collection_info: ctx.accounts.collection,
+                        //     // External plugin adapters are always managed by the update authority.
+                        //     self_authority: &Authority::UpdateAuthority,
+                        //     authority_info: authority,
+                        //     resolved_authorities: None,
+                        //     new_owner: None,
+                        //     new_asset_authority: None,
+                        //     new_collection_authority: None,
+                        //     target_plugin: None,
+                        // };
                         if ExternalPluginAdapter::validate_create(
                             &ExternalPluginAdapter::from(plugin_init_info),
-                            &validation_ctx,
+                            &PluginValidationContext {
+                                self_authority: &Authority::UpdateAuthority,
+                                resolved_authorities: None,
+                            },
+                            &AssetValidationCommon {
+                                // accounts,
+                                authority_info: authority,
+                                asset_info: ctx.accounts.asset,
+                                collection_info: ctx.accounts.collection,
+                            },
+                            &AssetValidationContext::Create { accounts },
                         )? == ValidationResult::Rejected
                         {
                             approved = false;

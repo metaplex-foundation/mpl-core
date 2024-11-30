@@ -2,9 +2,10 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
+    error::MplCoreError,
     plugins::{
-        abstain, approve, reject, Plugin, PluginValidation, PluginValidationContext,
-        ValidationResult,
+        abstain, approve, reject, AssetValidationCommon, AssetValidationContext, Plugin,
+        PluginValidation, PluginValidationContext, ValidationResult,
     },
     state::DataBlob,
 };
@@ -44,7 +45,9 @@ impl DataBlob for FreezeDelegate {
 impl PluginValidation for FreezeDelegate {
     fn validate_burn(
         &self,
-        _ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
             reject!()
@@ -55,7 +58,9 @@ impl PluginValidation for FreezeDelegate {
 
     fn validate_transfer(
         &self,
-        _ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
             reject!()
@@ -66,46 +71,64 @@ impl PluginValidation for FreezeDelegate {
 
     fn validate_approve_plugin_authority(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(Plugin::FreezeDelegate(freeze)) = ctx.target_plugin {
-            if freeze.frozen {
-                return reject!();
+        if let AssetValidationContext::ApprovePluginAuthority { plugin } = asset_ctx {
+            if let Plugin::FreezeDelegate(freeze) = plugin {
+                if freeze.frozen {
+                    return reject!();
+                }
             }
+            abstain!()
+        } else {
+            Err(MplCoreError::InvalidPlugin.into())
         }
-        abstain!()
     }
 
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(Plugin::FreezeDelegate(freeze)) = ctx.target_plugin {
-            if freeze.frozen {
-                return reject!();
-            } else if ctx.resolved_authorities.is_some()
-                && ctx
-                    .resolved_authorities
-                    .unwrap()
-                    .contains(ctx.self_authority)
-            {
-                return approve!();
+        if let AssetValidationContext::RevokePluginAuthority { plugin } = asset_ctx {
+            if let Plugin::FreezeDelegate(freeze) = plugin {
+                if freeze.frozen {
+                    return reject!();
+                } else if plugin_ctx.resolved_authorities.is_some()
+                    && plugin_ctx
+                        .resolved_authorities
+                        .unwrap()
+                        .contains(plugin_ctx.self_authority)
+                {
+                    return approve!();
+                }
             }
-        }
 
-        abstain!()
+            abstain!()
+        } else {
+            Err(MplCoreError::InvalidPlugin.into())
+        }
     }
 
     /// Validate the remove plugin lifecycle action.
     fn validate_remove_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if ctx.target_plugin.is_some() && self.frozen {
-            reject!()
+        if let AssetValidationContext::RemovePlugin { .. } = asset_ctx {
+            if self.frozen {
+                reject!()
+            } else {
+                abstain!()
+            }
         } else {
-            abstain!()
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 }

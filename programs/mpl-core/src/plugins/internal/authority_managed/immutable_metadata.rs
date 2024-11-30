@@ -2,7 +2,10 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
-    plugins::{reject, PluginValidation, PluginValidationContext, ValidationResult},
+    plugins::{
+        reject, AssetValidationCommon, AssetValidationContext, PluginValidation,
+        PluginValidationContext, ValidationResult,
+    },
     state::DataBlob,
 };
 
@@ -27,7 +30,9 @@ impl PluginValidation for ImmutableMetadata {
     /// Validate the update lifecycle action.
     fn validate_update(
         &self,
-        _ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         reject!()
     }

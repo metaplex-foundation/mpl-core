@@ -5,7 +5,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::CompressV1Accounts,
-    plugins::{Plugin, PluginType},
+    plugins::{AssetValidationCommon, AssetValidationContext, Plugin, PluginType},
     state::{AssetV1, CollectionV1, Key, Wrappable},
     utils::{
         compress_into_account_space, fetch_core_data, load_key, resolve_authority,
@@ -44,14 +44,23 @@ pub(crate) fn compress<'a>(
 
             // Validate asset permissions.
             let _ = validate_asset_permissions(
-                accounts,
-                authority,
-                ctx.accounts.asset,
-                ctx.accounts.collection,
-                None,
-                None,
-                None,
-                None,
+                // accounts,
+                // authority,
+                // ctx.accounts.asset,
+                // ctx.accounts.collection,
+                // None,
+                // None,
+                // None,
+                // None,
+                // None,
+                // None,
+                &AssetValidationCommon {
+                    // accounts,
+                    authority_info: authority,
+                    asset_info: ctx.accounts.asset,
+                    collection_info: ctx.accounts.collection,
+                },
+                &AssetValidationContext::Compress,
                 AssetV1::check_compress,
                 CollectionV1::check_compress,
                 PluginType::check_compress,

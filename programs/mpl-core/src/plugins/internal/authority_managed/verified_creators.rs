@@ -6,7 +6,8 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use crate::error::MplCoreError;
 
 use crate::plugins::{
-    abstain, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+    abstain, AssetValidationCommon, AssetValidationContext, Plugin, PluginValidation,
+    PluginValidationContext, ValidationResult,
 };
 use crate::state::DataBlob;
 
@@ -174,49 +175,67 @@ fn validate_verified_creators_as_plugin_authority(
 impl PluginValidation for VerifiedCreators {
     fn validate_create(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        validate_verified_creators_as_plugin_authority(self, None, ctx.authority_info.key)
+        validate_verified_creators_as_plugin_authority(self, None, common.authority_info.key)
     }
 
     fn validate_add_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match ctx.target_plugin {
-            Some(Plugin::VerifiedCreators(_verified_creators)) => {
-                validate_verified_creators_as_plugin_authority(self, None, ctx.authority_info.key)
+        if let AssetValidationContext::AddPlugin { new_plugin } = asset_ctx {
+            match new_plugin {
+                Plugin::VerifiedCreators(_verified_creators) => {
+                    validate_verified_creators_as_plugin_authority(
+                        self,
+                        None,
+                        common.authority_info.key,
+                    )
+                }
+                _ => abstain!(),
             }
-            _ => abstain!(),
+        } else {
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     fn validate_update_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let resolved_authorities = ctx
-            .resolved_authorities
-            .ok_or(MplCoreError::InvalidAuthority)?;
-        match ctx.target_plugin {
-            Some(Plugin::VerifiedCreators(verified_creators)) => {
-                if resolved_authorities.contains(ctx.self_authority) {
-                    validate_verified_creators_as_plugin_authority(
-                        verified_creators,
-                        Some(self),
-                        ctx.authority_info.key,
-                    )?;
-                    Ok(ValidationResult::Approved)
-                } else {
-                    validate_verified_creators_as_creator(
-                        verified_creators,
-                        self,
-                        ctx.authority_info.key,
-                    )?;
-                    Ok(ValidationResult::Approved)
+        if let AssetValidationContext::UpdatePlugin { new_plugin } = asset_ctx {
+            let resolved_authorities = plugin_ctx
+                .resolved_authorities
+                .ok_or(MplCoreError::InvalidAuthority)?;
+            match new_plugin {
+                Plugin::VerifiedCreators(verified_creators) => {
+                    if resolved_authorities.contains(plugin_ctx.self_authority) {
+                        validate_verified_creators_as_plugin_authority(
+                            verified_creators,
+                            Some(self),
+                            common.authority_info.key,
+                        )?;
+                        Ok(ValidationResult::Approved)
+                    } else {
+                        validate_verified_creators_as_creator(
+                            verified_creators,
+                            self,
+                            common.authority_info.key,
+                        )?;
+                        Ok(ValidationResult::Approved)
+                    }
                 }
+                _ => abstain!(),
             }
-            _ => abstain!(),
+        } else {
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 }

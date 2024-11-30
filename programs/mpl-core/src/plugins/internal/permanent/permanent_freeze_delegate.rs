@@ -2,7 +2,8 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
-    plugins::{reject, PluginType},
+    error::MplCoreError,
+    plugins::{reject, AssetValidationCommon, AssetValidationContext, PluginType},
     state::DataBlob,
 };
 
@@ -43,7 +44,9 @@ impl DataBlob for PermanentFreezeDelegate {
 impl PluginValidation for PermanentFreezeDelegate {
     fn validate_burn(
         &self,
-        _ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
             reject!()
@@ -54,7 +57,9 @@ impl PluginValidation for PermanentFreezeDelegate {
 
     fn validate_transfer(
         &self,
-        _ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         if self.frozen {
             reject!()
@@ -65,25 +70,31 @@ impl PluginValidation for PermanentFreezeDelegate {
 
     fn validate_add_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
         // always reject it.
-        if ctx.target_plugin.is_some()
-            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::PermanentFreezeDelegate
-        {
-            reject!()
+        if let AssetValidationContext::AddPlugin { new_plugin } = asset_ctx {
+            if PluginType::from(new_plugin) == PluginType::PermanentFreezeDelegate {
+                reject!()
+            } else {
+                abstain!()
+            }
         } else {
-            abstain!()
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     /// Validate the remove plugin lifecycle action.
     fn validate_remove_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if ctx.target_plugin.is_some() && self.frozen {
+        if self.frozen {
             reject!()
         } else {
             abstain!()

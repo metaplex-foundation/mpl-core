@@ -2,8 +2,10 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
+    error::MplCoreError,
     plugins::{
-        abstain, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+        abstain, reject, AssetValidationCommon, AssetValidationContext, Plugin, PluginValidation,
+        PluginValidationContext, ValidationResult,
     },
     state::DataBlob,
 };
@@ -20,29 +22,41 @@ pub struct Edition {
 impl PluginValidation for Edition {
     fn validate_add_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin can only be added at creation time, so we
         // always reject it.
-        match ctx.target_plugin {
-            Some(Plugin::Edition(_edition)) => {
-                reject!()
+        if let AssetValidationContext::AddPlugin { new_plugin } = asset_ctx {
+            match new_plugin {
+                Plugin::Edition(_edition) => {
+                    reject!()
+                }
+                _ => abstain!(),
             }
-            _ => abstain!(),
+        } else {
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     fn validate_remove_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin cannot be removed
         // always reject it.
-        match ctx.target_plugin {
-            Some(Plugin::Edition(_edition)) => {
-                reject!()
+        if let AssetValidationContext::RemovePlugin { plugin_to_remove } = asset_ctx {
+            match plugin_to_remove {
+                Plugin::Edition(_edition) => {
+                    reject!()
+                }
+                _ => abstain!(),
             }
-            _ => abstain!(),
+        } else {
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 }

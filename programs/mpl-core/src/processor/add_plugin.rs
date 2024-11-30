@@ -6,8 +6,8 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{AddCollectionPluginV1Accounts, AddPluginV1Accounts},
     plugins::{
-        create_meta_idempotent, initialize_plugin, Plugin, PluginType, PluginValidationContext,
-        ValidationResult,
+        create_meta_idempotent, initialize_plugin, AssetValidationCommon, AssetValidationContext,
+        Plugin, PluginType, PluginValidationContext, ValidationResult,
     },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -56,31 +56,53 @@ pub(crate) fn add_plugin<'a>(
     // TODO: Seed with Rejected
     // TODO: refactor to allow add_plugin to approve additions
     let validation_ctx = PluginValidationContext {
-        accounts,
-        asset_info: Some(ctx.accounts.asset),
-        collection_info: ctx.accounts.collection,
+        //     accounts,
+        //     asset_info: Some(ctx.accounts.asset),
+        //     collection_info: ctx.accounts.collection,
         self_authority: &args.init_authority.unwrap_or(args.plugin.manager()),
-        authority_info: authority,
+        //     authority_info: authority,
         resolved_authorities: None,
-        new_owner: None,
-        new_asset_authority: None,
-        new_collection_authority: None,
-        target_plugin: Some(&args.plugin),
+        //     new_owner: None,
+        //     new_asset_authority: None,
+        //     new_collection_authority: None,
+        //     target_plugin: Some(&args.plugin),
     };
-    if Plugin::validate_add_plugin(&args.plugin, &validation_ctx)? == ValidationResult::Rejected {
+    if Plugin::validate_add_plugin(
+        &args.plugin,
+        &validation_ctx,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.asset,
+            collection_info: ctx.accounts.collection,
+        },
+        &AssetValidationContext::AddPlugin {
+            new_plugin: args.plugin.clone(),
+        },
+    )? == ValidationResult::Rejected
+    {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
     // Validate asset permissions.
     let (mut asset, _, _) = validate_asset_permissions(
-        accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        None,
-        Some(&args.plugin),
-        None,
+        // accounts,
+        // authority,
+        // ctx.accounts.asset,
+        // ctx.accounts.collection,
+        // None,
+        // None,
+        // Some(&args.plugin),
+        // None,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.asset,
+            collection_info: ctx.accounts.collection,
+        },
+        &AssetValidationContext::AddPlugin {
+            new_plugin: args.plugin.clone(),
+        },
         AssetV1::check_add_plugin,
         CollectionV1::check_add_plugin,
         PluginType::check_add_plugin,
@@ -131,18 +153,31 @@ pub(crate) fn add_collection_plugin<'a>(
     }
 
     let validation_ctx = PluginValidationContext {
-        accounts,
-        asset_info: None,
-        collection_info: Some(ctx.accounts.collection),
+        //     // accounts,
+        //     // asset_info: None,
+        //     // collection_info: Some(ctx.accounts.collection),
         self_authority: &args.init_authority.unwrap_or(args.plugin.manager()),
-        authority_info: authority,
+        //     // authority_info: authority,
         resolved_authorities: None,
-        new_owner: None,
-        new_asset_authority: None,
-        new_collection_authority: None,
-        target_plugin: Some(&args.plugin),
+        //     // new_owner: None,
+        //     // new_asset_authority: None,
+        //     // new_collection_authority: None,
+        //     // target_plugin: Some(&args.plugin),
     };
-    if Plugin::validate_add_plugin(&args.plugin, &validation_ctx)? == ValidationResult::Rejected {
+    if Plugin::validate_add_plugin(
+        &args.plugin,
+        &validation_ctx,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.collection,
+            collection_info: None,
+        },
+        &AssetValidationContext::AddPlugin {
+            new_plugin: args.plugin.clone(),
+        },
+    )? == ValidationResult::Rejected
+    {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
@@ -153,12 +188,21 @@ pub(crate) fn add_collection_plugin<'a>(
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
-        accounts,
-        authority,
-        ctx.accounts.collection,
-        None,
-        Some(&args.plugin),
-        None,
+        // accounts,
+        // authority,
+        // ctx.accounts.collection,
+        // None,
+        // Some(&args.plugin),
+        // None,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.collection,
+            collection_info: None,
+        },
+        &AssetValidationContext::AddPlugin {
+            new_plugin: args.plugin.clone(),
+        },
         CollectionV1::check_add_plugin,
         PluginType::check_add_plugin,
         CollectionV1::validate_add_plugin,

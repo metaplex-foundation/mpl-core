@@ -1,10 +1,13 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
-use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
     error::MplCoreError,
-    plugins::{abstain, approve, CheckResult, ExternalPluginAdapter, Plugin, ValidationResult},
+    plugins::{
+        abstain, approve, AssetValidationCommon, AssetValidationContext, CheckResult,
+        ValidationResult,
+    },
 };
 
 use super::{Authority, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
@@ -119,13 +122,15 @@ impl CollectionV1 {
     }
 
     /// Validate the create lifecycle event.
-    pub fn validate_create(
+    pub(crate) fn validate_create(
         &self,
-        authority_info: &AccountInfo,
-        _new_plugin: Option<&Plugin>,
-        _: Option<&ExternalPluginAdapter>,
+        // authority_info: &AccountInfo,
+        // _new_plugin: Option<&Plugin>,
+        // _: Option<&ExternalPluginAdapter>,
+        common: &AssetValidationCommon,
+        _ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if authority_info.key == &self.update_authority {
+        if common.authority_info.key == &self.update_authority {
             approve!()
         } else {
             abstain!()
@@ -133,127 +138,139 @@ impl CollectionV1 {
     }
 
     /// Validate the add plugin lifecycle event.
-    pub fn validate_add_plugin(
+    pub(crate) fn validate_add_plugin(
         &self,
-        authority_info: &AccountInfo,
-        new_plugin: Option<&Plugin>,
-        _: Option<&ExternalPluginAdapter>,
+        // authority_info: &AccountInfo,
+        // new_plugin: Option<&Plugin>,
+        // _: Option<&ExternalPluginAdapter>,
+        common: &AssetValidationCommon,
+        ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let new_plugin = match new_plugin {
-            Some(plugin) => plugin,
-            None => return Err(MplCoreError::InvalidPlugin.into()),
-        };
-
-        if *authority_info.key == self.update_authority
-            && new_plugin.manager() == Authority::UpdateAuthority
-        {
-            approve!()
+        if let AssetValidationContext::AddPlugin { new_plugin } = ctx {
+            if *common.authority_info.key == self.update_authority
+                && new_plugin.manager() == Authority::UpdateAuthority
+            {
+                approve!()
+            } else {
+                abstain!()
+            }
         } else {
-            abstain!()
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     /// Validate the remove plugin lifecycle event.
-    pub fn validate_remove_plugin(
+    pub(crate) fn validate_remove_plugin(
         &self,
-        authority_info: &AccountInfo,
-        plugin_to_remove: Option<&Plugin>,
-        _: Option<&ExternalPluginAdapter>,
+        // authority_info: &AccountInfo,
+        // plugin_to_remove: Option<&Plugin>,
+        // _: Option<&ExternalPluginAdapter>,
+        common: &AssetValidationCommon,
+        ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let plugin_to_remove = match plugin_to_remove {
-            Some(plugin) => plugin,
-            None => return Err(MplCoreError::InvalidPlugin.into()),
-        };
-
-        if *authority_info.key == self.update_authority
-            && plugin_to_remove.manager() == Authority::UpdateAuthority
-        {
-            approve!()
+        if let AssetValidationContext::RemovePlugin { plugin_to_remove } = ctx {
+            if *common.authority_info.key == self.update_authority
+                && plugin_to_remove.manager() == Authority::UpdateAuthority
+            {
+                approve!()
+            } else {
+                abstain!()
+            }
         } else {
-            abstain!()
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     /// Validate the update plugin lifecycle event.
-    pub fn validate_update_plugin(
+    pub(crate) fn validate_update_plugin(
         &self,
-        _authority_info: &AccountInfo,
-        _plugin: Option<&Plugin>,
-        _: Option<&ExternalPluginAdapter>,
+        // _authority_info: &AccountInfo,
+        // _plugin: Option<&Plugin>,
+        // _: Option<&ExternalPluginAdapter>,
+        _common: &AssetValidationCommon,
+        _ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
     }
 
     /// Validate the approve plugin authority lifecycle event.
-    pub fn validate_approve_plugin_authority(
+    pub(crate) fn validate_approve_plugin_authority(
         &self,
-        authority_info: &AccountInfo,
-        plugin: Option<&Plugin>,
-        _: Option<&ExternalPluginAdapter>,
+        // authority_info: &AccountInfo,
+        // plugin: Option<&Plugin>,
+        // _: Option<&ExternalPluginAdapter>,
+        common: &AssetValidationCommon,
+        ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let plugin = match plugin {
-            Some(plugin) => plugin,
-            None => return Err(MplCoreError::InvalidPlugin.into()),
-        };
-
-        if *authority_info.key == self.update_authority
-            && plugin.manager() == Authority::UpdateAuthority
-        {
-            approve!()
+        if let AssetValidationContext::ApprovePluginAuthority { plugin } = ctx {
+            if *common.authority_info.key == self.update_authority
+                && plugin.manager() == Authority::UpdateAuthority
+            {
+                approve!()
+            } else {
+                abstain!()
+            }
         } else {
-            abstain!()
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     /// Validate the revoke plugin authority lifecycle event.
-    pub fn validate_revoke_plugin_authority(
+    pub(crate) fn validate_revoke_plugin_authority(
         &self,
-        authority_info: &AccountInfo,
-        plugin: Option<&Plugin>,
-        _: Option<&ExternalPluginAdapter>,
+        // authority_info: &AccountInfo,
+        // plugin: Option<&Plugin>,
+        // _: Option<&ExternalPluginAdapter>,
+        common: &AssetValidationCommon,
+        ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let plugin = match plugin {
-            Some(plugin) => plugin,
-            None => return Err(MplCoreError::InvalidPlugin.into()),
-        };
-
-        if *authority_info.key == self.update_authority
-            && plugin.manager() == Authority::UpdateAuthority
-        {
-            approve!()
+        if let AssetValidationContext::RevokePluginAuthority { plugin } = ctx {
+            if *common.authority_info.key == self.update_authority
+                && plugin.manager() == Authority::UpdateAuthority
+            {
+                approve!()
+            } else {
+                abstain!()
+            }
         } else {
-            abstain!()
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     /// Validate the transfer lifecycle event.
-    pub fn validate_transfer(
+    pub(crate) fn validate_transfer(
         &self,
-        _authority_info: &AccountInfo,
-        _: Option<&Plugin>,
-        _: Option<&ExternalPluginAdapter>,
+        // _authority_info: &AccountInfo,
+        // _: Option<&Plugin>,
+        // _: Option<&ExternalPluginAdapter>,
+        _common: &AssetValidationCommon,
+        _ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
     }
 
     /// Validate the burn lifecycle event.
-    pub fn validate_burn(
+    pub(crate) fn validate_burn(
         &self,
-        _: &AccountInfo,
-        _: Option<&Plugin>,
-        _: Option<&ExternalPluginAdapter>,
+        // _: &AccountInfo,
+        // _: Option<&Plugin>,
+        // _: Option<&ExternalPluginAdapter>,
+        _common: &AssetValidationCommon,
+        _ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
     }
 
     /// Validate the update lifecycle event.
-    pub fn validate_update(
+    pub(crate) fn validate_update(
         &self,
-        authority_info: &AccountInfo,
-        _: Option<&Plugin>,
-        _: Option<&ExternalPluginAdapter>,
+        // authority_info: &AccountInfo,
+        // _: Option<&Plugin>,
+        // _: Option<&ExternalPluginAdapter>,
+        common: &AssetValidationCommon,
+        _ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if authority_info.key == &self.update_authority {
+        if common.authority_info.key == &self.update_authority {
             approve!()
         } else {
             abstain!()
@@ -261,34 +278,40 @@ impl CollectionV1 {
     }
 
     /// Validate the compress lifecycle event.
-    pub fn validate_compress(
+    pub(crate) fn validate_compress(
         &self,
-        _authority_info: &AccountInfo,
-        _: Option<&Plugin>,
-        _: Option<&ExternalPluginAdapter>,
+        // _authority_info: &AccountInfo,
+        // _: Option<&Plugin>,
+        // _: Option<&ExternalPluginAdapter>,
+        _common: &AssetValidationCommon,
+        _ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
     }
 
     /// Validate the decompress lifecycle event.
-    pub fn validate_decompress(
+    pub(crate) fn validate_decompress(
         &self,
-        _authority_info: &AccountInfo,
-        _: Option<&Plugin>,
-        _: Option<&ExternalPluginAdapter>,
+        // _authority_info: &AccountInfo,
+        // _: Option<&Plugin>,
+        // _: Option<&ExternalPluginAdapter>,
+        _common: &AssetValidationCommon,
+        _ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
     }
 
     /// Validate the add external plugin adapter lifecycle event.
-    pub fn validate_add_external_plugin_adapter(
+    pub(crate) fn validate_add_external_plugin_adapter(
         &self,
-        authority_info: &AccountInfo,
-        _: Option<&Plugin>,
-        _new_plugin: Option<&ExternalPluginAdapter>,
+        // authority_info: &AccountInfo,
+        // _: Option<&Plugin>,
+        // _new_plugin: Option<&ExternalPluginAdapter>,
+        common: &AssetValidationCommon,
+        _ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         // Approve if the update authority matches the authority.
-        if *authority_info.key == self.update_authority {
+        if *common.authority_info.key == self.update_authority {
             approve!()
         } else {
             abstain!()
@@ -296,13 +319,15 @@ impl CollectionV1 {
     }
 
     /// Validate the remove external plugin adapter lifecycle event.
-    pub fn validate_remove_external_plugin_adapter(
+    pub(crate) fn validate_remove_external_plugin_adapter(
         &self,
-        authority_info: &AccountInfo,
-        _: Option<&Plugin>,
-        _plugin_to_remove: Option<&ExternalPluginAdapter>,
+        // authority_info: &AccountInfo,
+        // _: Option<&Plugin>,
+        // _plugin_to_remove: Option<&ExternalPluginAdapter>,
+        common: &AssetValidationCommon,
+        _ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if self.update_authority == *authority_info.key {
+        if common.authority_info.key == &self.update_authority {
             approve!()
         } else {
             abstain!()
@@ -310,11 +335,13 @@ impl CollectionV1 {
     }
 
     /// Validate the update external plugin adapter lifecycle event.
-    pub fn validate_update_external_plugin_adapter(
+    pub(crate) fn validate_update_external_plugin_adapter(
         &self,
-        _authority_info: &AccountInfo,
-        _: Option<&Plugin>,
-        _plugin: Option<&ExternalPluginAdapter>,
+        // _authority_info: &AccountInfo,
+        // _: Option<&Plugin>,
+        // _plugin: Option<&ExternalPluginAdapter>,
+        _common: &AssetValidationCommon,
+        _ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
     }

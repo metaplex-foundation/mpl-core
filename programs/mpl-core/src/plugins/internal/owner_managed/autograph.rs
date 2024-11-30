@@ -6,7 +6,8 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use crate::{
     error::MplCoreError,
     plugins::{
-        abstain, approve, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+        abstain, approve, AssetValidationCommon, AssetValidationContext, Plugin, PluginValidation,
+        PluginValidationContext, ValidationResult,
     },
     state::DataBlob,
 };
@@ -94,42 +95,57 @@ fn validate_autograph(
 impl PluginValidation for Autograph {
     fn validate_create(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        validate_autograph(self, None, ctx.authority_info.key, true)
+        validate_autograph(self, None, common.authority_info.key, true)
     }
 
     fn validate_add_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match ctx.target_plugin {
-            Some(Plugin::Autograph(_autograph)) => {
-                validate_autograph(self, None, ctx.authority_info.key, true)?;
-                approve!()
+        if let AssetValidationContext::AddPlugin { new_plugin } = asset_ctx {
+            match new_plugin {
+                Plugin::Autograph(_autograph) => {
+                    validate_autograph(self, None, common.authority_info.key, true)?;
+                    approve!()
+                }
+                _ => abstain!(),
             }
-            _ => abstain!(),
+        } else {
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     fn validate_update_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let resolved_authorities = ctx
+        let resolved_authorities = plugin_ctx
             .resolved_authorities
             .ok_or(MplCoreError::InvalidAuthority)?;
-        match ctx.target_plugin {
-            Some(Plugin::Autograph(autograph)) => {
-                validate_autograph(
-                    autograph,
-                    Some(self),
-                    ctx.authority_info.key,
-                    resolved_authorities.contains(ctx.self_authority),
-                )?;
-                approve!()
+
+        if let AssetValidationContext::UpdatePlugin { new_plugin } = asset_ctx {
+            match new_plugin {
+                Plugin::Autograph(autograph) => {
+                    validate_autograph(
+                        autograph,
+                        Some(self),
+                        common.authority_info.key,
+                        resolved_authorities.contains(plugin_ctx.self_authority),
+                    )?;
+                    approve!()
+                }
+                _ => abstain!(),
             }
-            _ => abstain!(),
+        } else {
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 }

@@ -5,7 +5,7 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
     error::MplCoreError,
-    plugins::PluginType,
+    plugins::{AssetValidationCommon, AssetValidationContext, PluginType},
     state::{Authority, DataBlob},
 };
 
@@ -50,15 +50,20 @@ impl DataBlob for UpdateDelegate {
 impl PluginValidation for UpdateDelegate {
     fn validate_create(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(resolved_authorities) = ctx.resolved_authorities {
-            if resolved_authorities.contains(ctx.self_authority) {
+        if let Some(resolved_authorities) = plugin_ctx.resolved_authorities {
+            if resolved_authorities.contains(plugin_ctx.self_authority) {
                 return approve!();
             }
         }
 
-        if self.additional_delegates.contains(ctx.authority_info.key) {
+        if self
+            .additional_delegates
+            .contains(common.authority_info.key)
+        {
             return approve!();
         }
 
@@ -67,15 +72,19 @@ impl PluginValidation for UpdateDelegate {
 
     fn validate_add_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(new_plugin) = ctx.target_plugin {
-            if ((ctx.resolved_authorities.is_some()
-                && ctx
+        if let AssetValidationContext::AddPlugin { new_plugin } = asset_ctx {
+            if ((plugin_ctx.resolved_authorities.is_some()
+                && plugin_ctx
                     .resolved_authorities
                     .unwrap()
-                    .contains(ctx.self_authority))
-                || self.additional_delegates.contains(ctx.authority_info.key))
+                    .contains(plugin_ctx.self_authority))
+                || self
+                    .additional_delegates
+                    .contains(common.authority_info.key))
                 && new_plugin.manager() == Authority::UpdateAuthority
             {
                 approve!()
@@ -89,15 +98,19 @@ impl PluginValidation for UpdateDelegate {
 
     fn validate_remove_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(plugin_to_remove) = ctx.target_plugin {
-            if ((ctx.resolved_authorities.is_some()
-                && ctx
+        if let AssetValidationContext::RemovePlugin { plugin_to_remove } = asset_ctx {
+            if ((plugin_ctx.resolved_authorities.is_some()
+                && plugin_ctx
                     .resolved_authorities
                     .unwrap()
-                    .contains(ctx.self_authority))
-                || self.additional_delegates.contains(ctx.authority_info.key))
+                    .contains(plugin_ctx.self_authority))
+                || self
+                    .additional_delegates
+                    .contains(common.authority_info.key))
                 && plugin_to_remove.manager() == Authority::UpdateAuthority
             {
                 approve!()
@@ -112,102 +125,127 @@ impl PluginValidation for UpdateDelegate {
     // Validate the approve plugin authority lifecycle action.
     fn validate_approve_plugin_authority(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let plugin = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
-
-        // If the plugin authority is the authority signing.
-        if ((ctx.resolved_authorities.is_some()
-        && ctx
-            .resolved_authorities
-            .unwrap()
-            .contains(ctx.self_authority))
-            // Or the authority is one of the additional delegates.
-            || self.additional_delegates.contains(ctx.authority_info.key))
-            // And it's an authority-managed plugin.
-            && plugin.manager() == Authority::UpdateAuthority
-            // And the plugin is not an UpdateDelegate plugin, because we cannot change the authority of the UpdateDelegate plugin.
-            && PluginType::from(plugin) != PluginType::UpdateDelegate
-        {
-            solana_program::msg!("UpdateDelegate: Approved");
-            Ok(ValidationResult::Approved)
+        if let AssetValidationContext::ApprovePluginAuthority { plugin } = asset_ctx {
+            // If the plugin authority is the authority signing.
+            if ((plugin_ctx.resolved_authorities.is_some()
+                && plugin_ctx
+                    .resolved_authorities
+                    .unwrap()
+                    .contains(plugin_ctx.self_authority))
+                // Or the authority is one of the additional delegates.
+                || self.additional_delegates.contains(common.authority_info.key))
+                // And it's an authority-managed plugin.
+                && plugin.manager() == Authority::UpdateAuthority
+                // And the plugin is not an UpdateDelegate plugin, because we cannot change the authority of the UpdateDelegate plugin.
+                && PluginType::from(plugin) != PluginType::UpdateDelegate
+            {
+                solana_program::msg!("UpdateDelegate: Approved");
+                Ok(ValidationResult::Approved)
+            } else {
+                Ok(ValidationResult::Pass)
+            }
         } else {
-            Ok(ValidationResult::Pass)
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     /// Validate the revoke plugin authority lifecycle action.
     fn validate_revoke_plugin_authority(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let plugin = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
-
-        // If the plugin authority is the authority signing.
-        if (ctx.resolved_authorities.is_some()
-        && ctx
-            .resolved_authorities
-            .unwrap()
-            .contains(ctx.self_authority))
-            // Or the authority is one of the additional delegates.
-            || (self.additional_delegates.contains(ctx.authority_info.key) && PluginType::from(plugin) != PluginType::UpdateDelegate)
-            // And it's an authority-managed plugin.
-            && plugin.manager() == Authority::UpdateAuthority
-        {
-            approve!()
+        if let AssetValidationContext::RevokePluginAuthority { plugin } = asset_ctx {
+            // If the plugin authority is the authority signing.
+            if (plugin_ctx.resolved_authorities.is_some()
+                && plugin_ctx
+                    .resolved_authorities
+                    .unwrap()
+                    .contains(plugin_ctx.self_authority))
+                // Or the authority is one of the additional delegates.
+                || (self.additional_delegates.contains(common.authority_info.key) && PluginType::from(plugin) != PluginType::UpdateDelegate)
+                // And it's an authority-managed plugin.
+                && plugin.manager() == Authority::UpdateAuthority
+            {
+                approve!()
+            } else {
+                abstain!()
+            }
         } else {
-            abstain!()
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     fn validate_update(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if ((ctx.resolved_authorities.is_some()
-        && ctx
-            .resolved_authorities
-            .unwrap()
-            .contains(ctx.self_authority))
-            || self.additional_delegates.contains(ctx.authority_info.key))
-            // We do not allow the root authority (either Collection or Address) to be changed by this delegate.
-            && ctx.new_collection_authority.is_none() && ctx.new_asset_authority.is_none()
+        if let AssetValidationContext::Update {
+            new_update_authority,
+            ..
+        } = asset_ctx
         {
-            approve!()
+            if ((plugin_ctx.resolved_authorities.is_some()
+            && plugin_ctx
+                .resolved_authorities
+            .unwrap()
+                .contains(plugin_ctx.self_authority))
+                // Or the authority is one of the additional delegates.
+                || self.additional_delegates.contains(common.authority_info.key))
+                // We do not allow the root authority (either Collection or Address) to be changed by this delegate.
+                && new_update_authority.is_none()
+            {
+                approve!()
+            } else {
+                abstain!()
+            }
         } else {
-            abstain!()
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     fn validate_update_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let plugin = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
+        if let AssetValidationContext::UpdatePlugin { new_plugin } = asset_ctx {
+            // If the plugin itself is being updated.
+            if (plugin_ctx.resolved_authorities.is_some()
+                && plugin_ctx
+                    .resolved_authorities
+                    .unwrap()
+                    .contains(plugin_ctx.self_authority))
+                // Or the authority is one of the additional delegates.
+                || self.additional_delegates.contains(common.authority_info.key)
+            {
+                if let Plugin::UpdateDelegate(update_delegate) = new_plugin {
+                    let existing: BTreeSet<_> = self.additional_delegates.iter().collect();
+                    let new: BTreeSet<_> = update_delegate.additional_delegates.iter().collect();
 
-        // If the plugin itself is being updated.
-        if (ctx.resolved_authorities.is_some()
-            && ctx
-                .resolved_authorities
-                .unwrap()
-                .contains(ctx.self_authority))
-            || self.additional_delegates.contains(ctx.authority_info.key)
-        {
-            if let Plugin::UpdateDelegate(update_delegate) = plugin {
-                let existing: BTreeSet<_> = self.additional_delegates.iter().collect();
-                let new: BTreeSet<_> = update_delegate.additional_delegates.iter().collect();
-
-                if existing.difference(&new).collect::<Vec<_>>() == vec![&ctx.authority_info.key]
-                    && new.difference(&existing).collect::<Vec<_>>().is_empty()
-                {
-                    solana_program::msg!("UpdateDelegate: Approved");
+                    if existing.difference(&new).collect::<Vec<_>>()
+                        == vec![&common.authority_info.key]
+                        && new.difference(&existing).collect::<Vec<_>>().is_empty()
+                    {
+                        solana_program::msg!("UpdateDelegate: Approved");
+                        return Ok(ValidationResult::Approved);
+                    }
+                } else {
                     return Ok(ValidationResult::Approved);
                 }
-            } else {
-                return Ok(ValidationResult::Approved);
             }
-        }
 
-        abstain!()
+            abstain!()
+        } else {
+            Err(MplCoreError::InvalidPlugin.into())
+        }
     }
 }

@@ -1,0 +1,92 @@
+[
+  {
+    "name": "CU: create a new, empty asset",
+    "unit": "Compute Units",
+    "value": 9805
+  },
+  {
+    "name": "Space: create a new, empty asset",
+    "unit": "Bytes",
+    "value": 91
+  },
+  {
+    "name": "CU: create a new, empty asset with empty collection",
+    "unit": "Compute Units",
+    "value": 21421
+  },
+  {
+    "name": "Space: create a new, empty asset with empty collection",
+    "unit": "Bytes",
+    "value": 91
+  },
+  {
+    "name": "CU: create a new asset with plugins",
+    "unit": "Compute Units",
+    "value": 32680
+  },
+  {
+    "name": "Space: create a new asset with plugins",
+    "unit": "Bytes",
+    "value": 198
+  },
+  {
+    "name": "CU: create a new asset with plugins and empty collection",
+    "unit": "Compute Units",
+    "value": 38466
+  },
+  {
+    "name": "Space: create a new asset with plugins and empty collection",
+    "unit": "Bytes",
+    "value": 198
+  },
+  {
+    "name": "CU: list an asset",
+    "unit": "Compute Units",
+    "value": 27622
+  },
+  {
+    "name": "CU: sell an asset",
+    "unit": "Compute Units",
+    "value": 37792
+  },
+  {
+    "name": "CU: list an asset with empty collection",
+    "unit": "Compute Units",
+    "value": 35791
+  },
+  {
+    "name": "CU: sell an asset with empty collection",
+    "unit": "Compute Units",
+    "value": 51043
+  },
+  {
+    "name": "CU: list an asset with collection royalties",
+    "unit": "Compute Units",
+    "value": 37047
+  },
+  {
+    "name": "CU: sell an asset with collection royalties",
+    "unit": "Compute Units",
+    "value": 56560
+  },
+  {
+    "name": "CU: transfer an empty asset",
+    "unit": "Compute Units",
+    "value": 5261
+  },
+  {
+    "name": "CU: transfer an empty asset with empty collection",
+    "unit": "Compute Units",
+    "value": 8035
+  },
+  {
+    "name": "CU: transfer an asset with plugins",
+    "unit": "Compute Units",
+    "value": 11386
+  },
+  {
+    "name": "CU: transfer an asset with plugins and empty collection",
+    "unit": "Compute Units",
+    "value": 14160
+  }
+]

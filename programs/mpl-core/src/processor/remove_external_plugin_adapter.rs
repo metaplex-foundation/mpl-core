@@ -9,7 +9,8 @@ use crate::{
     },
     plugins::{
         delete_external_plugin_adapter, fetch_wrapped_external_plugin_adapter,
-        ExternalPluginAdapterKey, Plugin, PluginType,
+        AssetValidationCommon, AssetValidationContext, ExternalPluginAdapterKey, Plugin,
+        PluginType,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key},
     utils::{
@@ -65,14 +66,21 @@ pub(crate) fn remove_external_plugin_adapter<'a>(
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
-        accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        None,
-        None,
-        Some(&plugin_to_remove),
+        // accounts,
+        // authority,
+        // ctx.accounts.asset,
+        // ctx.accounts.collection,
+        // None,
+        // None,
+        // None,
+        // Some(&plugin_to_remove),
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.asset,
+            collection_info: ctx.accounts.collection,
+        },
+        &AssetValidationContext::RemoveExternalPluginAdapter { plugin_to_remove },
         AssetV1::check_remove_external_plugin_adapter,
         CollectionV1::check_remove_external_plugin_adapter,
         PluginType::check_remove_external_plugin_adapter,
@@ -135,12 +143,13 @@ pub(crate) fn remove_collection_external_plugin_adapter<'a>(
 
     // Validate asset permissions.
     let _ = validate_collection_permissions(
-        accounts,
-        authority,
-        ctx.accounts.collection,
-        None,
-        None,
-        Some(&plugin_to_remove),
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.collection,
+            collection_info: None,
+        },
+        &AssetValidationContext::RemoveExternalPluginAdapter { plugin_to_remove },
         CollectionV1::check_remove_external_plugin_adapter,
         PluginType::check_remove_external_plugin_adapter,
         CollectionV1::validate_remove_external_plugin_adapter,

@@ -5,7 +5,10 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{BurnCollectionV1Accounts, BurnV1Accounts},
-    plugins::{ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginType},
+    plugins::{
+        AssetValidationCommon, AssetValidationContext, ExternalPluginAdapter,
+        HookableLifecycleEvent, Plugin, PluginType,
+    },
     state::{AssetV1, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_authority,
@@ -84,14 +87,23 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
-        accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        None,
-        None,
-        None,
+        // accounts,
+        // authority,
+        // ctx.accounts.asset,
+        // ctx.accounts.collection,
+        // None,
+        // None,
+        // None,
+        // None,
+        // None,
+        // None,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.asset,
+            collection_info: ctx.accounts.collection,
+        },
+        &AssetValidationContext::Burn { accounts },
         AssetV1::check_burn,
         CollectionV1::check_burn,
         PluginType::check_burn,

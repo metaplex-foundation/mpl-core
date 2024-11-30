@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-use crate::plugins::abstain;
+use crate::plugins::{abstain, AssetValidationCommon, AssetValidationContext};
 
 use crate::plugins::{
     Authority, ExternalPluginAdapterSchema, PluginValidation, PluginValidationContext,
@@ -34,14 +34,18 @@ impl AppData {
 impl PluginValidation for AppData {
     fn validate_add_external_plugin_adapter(
         &self,
-        _ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
     }
 
     fn validate_transfer(
         &self,
-        _ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
     }

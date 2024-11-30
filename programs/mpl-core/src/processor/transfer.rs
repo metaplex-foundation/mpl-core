@@ -5,7 +5,10 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::TransferV1Accounts,
-    plugins::{ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginType},
+    plugins::{
+        AssetValidationCommon, AssetValidationContext, ExternalPluginAdapter,
+        HookableLifecycleEvent, Plugin, PluginType,
+    },
     state::{AssetV1, Authority, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         compress_into_account_space, load_key, rebuild_account_state_from_proof_data,
@@ -77,14 +80,24 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
 
     // Validate asset permissions.
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
-        accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        Some(ctx.accounts.new_owner),
-        None,
-        None,
-        None,
+        // accounts,
+        // authority,
+        // ctx.accounts.asset,
+        // ctx.accounts.collection,
+        // Some(ctx.accounts.new_owner),
+        // None,
+        // None,
+        // None,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.asset,
+            collection_info: ctx.accounts.collection,
+        },
+        &AssetValidationContext::Transfer {
+            accounts,
+            new_owner: ctx.accounts.new_owner,
+        },
         AssetV1::check_transfer,
         CollectionV1::check_transfer,
         PluginType::check_transfer,

@@ -8,8 +8,8 @@ use crate::{
         RevokeCollectionPluginAuthorityV1Accounts, RevokePluginAuthorityV1Accounts,
     },
     plugins::{
-        fetch_wrapped_plugin, revoke_authority_on_plugin, Plugin, PluginHeaderV1, PluginRegistryV1,
-        PluginType,
+        fetch_wrapped_plugin, revoke_authority_on_plugin, AssetValidationCommon,
+        AssetValidationContext, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType,
     },
     state::{AssetV1, CollectionV1, Key},
     utils::{
@@ -58,14 +58,22 @@ pub(crate) fn revoke_plugin_authority<'a>(
 
     // Validate asset permissions.
     let _ = validate_asset_permissions(
-        accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        None,
-        Some(&plugin),
-        None,
+        // accounts,
+        // authority,
+        // ctx.accounts.asset,
+        // ctx.accounts.collection,
+        // None,
+        // None,
+        // Some(&plugin),
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.asset,
+            collection_info: ctx.accounts.collection,
+        },
+        &AssetValidationContext::RevokePluginAuthority {
+            plugin: plugin.clone(),
+        },
         AssetV1::check_revoke_plugin_authority,
         CollectionV1::check_revoke_plugin_authority,
         PluginType::check_revoke_plugin_authority,
@@ -134,12 +142,15 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
 
     // Validate collection permissions.
     let _ = validate_collection_permissions(
-        accounts,
-        authority,
-        ctx.accounts.collection,
-        None,
-        Some(&plugin),
-        None,
+        &AssetValidationCommon {
+            // accounts,
+            authority_info: authority,
+            asset_info: ctx.accounts.collection,
+            collection_info: None,
+        },
+        &AssetValidationContext::RevokePluginAuthority {
+            plugin: plugin.clone(),
+        },
         CollectionV1::check_revoke_plugin_authority,
         PluginType::check_revoke_plugin_authority,
         CollectionV1::validate_revoke_plugin_authority,

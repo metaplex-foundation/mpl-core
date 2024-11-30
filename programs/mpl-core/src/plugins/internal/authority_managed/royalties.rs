@@ -6,7 +6,8 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use crate::error::MplCoreError;
 
 use crate::plugins::{
-    abstain, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
+    abstain, reject, AssetValidationCommon, AssetValidationContext, Plugin, PluginValidation,
+    PluginValidationContext, ValidationResult,
 };
 use crate::state::DataBlob;
 
@@ -106,67 +107,85 @@ fn validate_royalties(royalties: &Royalties) -> Result<ValidationResult, Program
 impl PluginValidation for Royalties {
     fn validate_create(
         &self,
-        _ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        _asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         validate_royalties(self)
     }
 
     fn validate_transfer(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let new_owner = ctx.new_owner.ok_or(MplCoreError::MissingNewOwner)?;
-        match &self.rule_set {
-            RuleSet::None => abstain!(),
-            RuleSet::ProgramAllowList(allow_list) => {
-                if allow_list.contains(ctx.authority_info.owner)
-                    && allow_list.contains(new_owner.owner)
-                {
-                    abstain!()
-                } else {
-                    reject!()
+        if let AssetValidationContext::Transfer { new_owner, .. } = asset_ctx {
+            match &self.rule_set {
+                RuleSet::None => abstain!(),
+                RuleSet::ProgramAllowList(allow_list) => {
+                    if allow_list.contains(common.authority_info.owner)
+                        && allow_list.contains(new_owner.owner)
+                    {
+                        abstain!()
+                    } else {
+                        reject!()
+                    }
+                }
+                RuleSet::ProgramDenyList(deny_list) => {
+                    if deny_list.contains(common.authority_info.owner)
+                        || deny_list.contains(new_owner.owner)
+                    {
+                        reject!()
+                    } else {
+                        abstain!()
+                    }
                 }
             }
-            RuleSet::ProgramDenyList(deny_list) => {
-                if deny_list.contains(ctx.authority_info.owner)
-                    || deny_list.contains(new_owner.owner)
-                {
-                    reject!()
-                } else {
-                    abstain!()
-                }
-            }
+        } else {
+            Err(MplCoreError::MissingNewOwner.into())
         }
     }
 
     fn validate_add_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        _plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match ctx.target_plugin {
-            Some(Plugin::Royalties(_royalties)) => validate_royalties(self),
-            _ => abstain!(),
+        if let AssetValidationContext::AddPlugin { new_plugin } = asset_ctx {
+            match new_plugin {
+                Plugin::Royalties(_royalties) => validate_royalties(self),
+                _ => abstain!(),
+            }
+        } else {
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 
     fn validate_update_plugin(
         &self,
-        ctx: &PluginValidationContext,
+        plugin_ctx: &PluginValidationContext,
+        _common: &AssetValidationCommon,
+        asset_ctx: &AssetValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let plugin_to_update = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
-        let resolved_authorities = ctx
-            .resolved_authorities
-            .ok_or(MplCoreError::InvalidAuthority)?;
+        if let AssetValidationContext::UpdatePlugin { new_plugin } = asset_ctx {
+            let resolved_authorities = plugin_ctx
+                .resolved_authorities
+                .ok_or(MplCoreError::InvalidAuthority)?;
 
-        // Perform validation on the new royalties plugin data.
-        if let Plugin::Royalties(royalties) = plugin_to_update {
-            if resolved_authorities.contains(ctx.self_authority) {
-                validate_royalties(royalties)
+            // Perform validation on the new royalties plugin data.
+            if let Plugin::Royalties(royalties) = new_plugin {
+                if resolved_authorities.contains(plugin_ctx.self_authority) {
+                    validate_royalties(royalties)
+                } else {
+                    abstain!()
+                }
             } else {
                 abstain!()
             }
         } else {
-            abstain!()
+            Err(MplCoreError::InvalidPlugin.into())
         }
     }
 }

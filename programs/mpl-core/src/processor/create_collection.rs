@@ -10,8 +10,9 @@ use crate::{
     instruction::accounts::CreateCollectionV2Accounts,
     plugins::{
         create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
-        initialize_plugin, CheckResult, ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair,
-        PluginType, PluginValidationContext, ValidationResult,
+        initialize_plugin, AssetValidationCommon, AssetValidationContext, CheckResult,
+        ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair, PluginType,
+        PluginValidationContext, ValidationResult,
     },
     state::{Authority, CollectionV1, Key},
 };
@@ -134,18 +135,28 @@ pub(crate) fn process_create_collection<'a>(
 
                 if PluginType::check_create(&plugin_type) != CheckResult::None {
                     let validation_ctx = PluginValidationContext {
-                        accounts,
-                        asset_info: None,
-                        collection_info: Some(ctx.accounts.collection),
+                        //     // accounts,
+                        //     // asset_info: None,
+                        //     // collection_info: Some(ctx.accounts.collection),
                         self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
-                        authority_info: ctx.accounts.payer,
+                        //     // authority_info: ctx.accounts.payer,
                         resolved_authorities: None,
-                        new_owner: None,
-                        new_asset_authority: None,
-                        new_collection_authority: None,
-                        target_plugin: None,
+                        //     // new_owner: None,
+                        //     // new_asset_authority: None,
+                        //     // new_collection_authority: None,
+                        //     // target_plugin: None,
                     };
-                    match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
+                    match Plugin::validate_create(
+                        &plugin.plugin,
+                        &validation_ctx,
+                        &AssetValidationCommon {
+                            // accounts,
+                            authority_info: ctx.accounts.payer,
+                            asset_info: ctx.accounts.collection,
+                            collection_info: None,
+                        },
+                        &AssetValidationContext::Create { accounts },
+                    )? {
                         ValidationResult::Rejected => approved = false,
                         ValidationResult::ForceApproved => force_approved = true,
                         _ => (),
