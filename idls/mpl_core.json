@@ -2006,6 +2006,32 @@
         "type": "u8",
         "value": 30
       }
+    },
+    {
+      "name": "BatchV1",
+      "accounts": [
+        {
+          "name": "dummy",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Dummy account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "batchV1Args",
+          "type": {
+            "defined": "BatchV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 31
+      }
     }
   ],
   "accounts": [
@@ -3206,6 +3232,22 @@
             "type": {
               "defined": "Authority"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "BatchV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "numAccounts",
+            "type": "bytes"
+          },
+          {
+            "name": "instructions",
+            "type": "bytes"
           }
         ]
       }
