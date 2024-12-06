@@ -15,7 +15,7 @@ env:
 
 jobs:
   benchmark_summary:
-    name: Performance regression check
+    name: Performance regression summary
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
@@ -62,7 +62,7 @@ jobs:
           # Where the output from the benchmark tool is stored
           output-file-path: ./clients/js/output.json
           # Where the previous data file is stored
-          external-data-json-path: ./cache/benchmark-data.json
+          # external-data-json-path: ./cache/benchmark-data.json
           # Enable Job Summary for PRs
           summary-always: true
           # Always comment on the PR
