@@ -121,7 +121,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }}
     name: Benchmark Summary
     needs: generate_clients
-    uses: ./.github/workflows/benchmark.yml
+    uses: ./.github/workflows/benchmark-summary.yml
     secrets: inherit
 
   build_rust_client:

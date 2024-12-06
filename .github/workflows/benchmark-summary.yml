@@ -7,12 +7,14 @@ permissions:
   deployments: write
   # contents permission to update benchmark contents in gh-pages branch
   contents: write
+  # allow posting comments to pull request
+  pull-requests: write
 
 env:
   CACHE: true
 
 jobs:
-  benchmark:
+  benchmark_summary:
     name: Performance regression check
     runs-on: ubuntu-latest
     steps:
@@ -60,10 +62,14 @@ jobs:
           # Where the output from the benchmark tool is stored
           output-file-path: ./clients/js/output.json
           # Where the previous data file is stored
-          # external-data-json-path: ./cache/benchmark-data.json
+          external-data-json-path: ./cache/benchmark-data.json
+          # Enable Job Summary for PRs
+          summary-always: true
+          # Always comment on the PR
+          comment-always: true
+          # Don't save the benchmark data to the cache
+          save-data-file: false
           # Workflow will fail when an alert happens
           fail-on-alert: true
           # Access token to deploy GitHub Pages branch
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          # Push and deploy GitHub pages branch automatically
-          auto-push: true
