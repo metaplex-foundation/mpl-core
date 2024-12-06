@@ -13,9 +13,6 @@ pub struct HashedAssetV1 {
 }
 
 impl HashedAssetV1 {
-    /// The length of the hashed asset account.
-    pub const LENGTH: usize = 1 + 32;
-
     /// Create a new hashed asset.
     pub fn new(hash: [u8; 32]) -> Self {
         Self {
@@ -26,12 +23,11 @@ impl HashedAssetV1 {
 }
 
 impl DataBlob for HashedAssetV1 {
-    fn get_initial_size() -> usize {
-        HashedAssetV1::LENGTH
-    }
+    const BASE_LEN: usize = 1 // The Key
+    + 32; // The hash
 
-    fn get_size(&self) -> usize {
-        HashedAssetV1::LENGTH
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 

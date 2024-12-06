@@ -18,12 +18,11 @@ pub struct Creator {
 }
 
 impl DataBlob for Creator {
-    fn get_initial_size() -> usize {
-        33
-    }
+    const BASE_LEN: usize = 32 // The address
+    + 1; // The percentage
 
-    fn get_size(&self) -> usize {
-        33
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 
@@ -39,16 +38,15 @@ pub enum RuleSet {
 }
 
 impl DataBlob for RuleSet {
-    fn get_initial_size() -> usize {
-        1
-    }
+    const BASE_LEN: usize = 1; // The rule set discriminator
 
-    fn get_size(&self) -> usize {
-        1 + match self {
-            RuleSet::ProgramAllowList(allow_list) => 4 + allow_list.len() * 32,
-            RuleSet::ProgramDenyList(deny_list) => 4 + deny_list.len() * 32,
-            RuleSet::None => 0,
-        }
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+            + match self {
+                RuleSet::ProgramAllowList(allow_list) => 4 + allow_list.len() * 32,
+                RuleSet::ProgramDenyList(deny_list) => 4 + deny_list.len() * 32,
+                RuleSet::None => 0,
+            }
     }
 }
 
@@ -64,14 +62,15 @@ pub struct Royalties {
 }
 
 impl DataBlob for Royalties {
-    fn get_initial_size() -> usize {
-        1
-    }
+    const BASE_LEN: usize = 2 // basis_points
+    + 4 // creators length
+    + RuleSet::BASE_LEN; // rule_set
 
-    fn get_size(&self) -> usize {
+    fn len(&self) -> usize {
         2 // basis_points
-        + (4 + self.creators.len() * Creator::get_initial_size()) // creators
-        + self.rule_set.get_size() // rule_set
+        + 4 // creators length
+        + self.creators.iter().map(|creator| creator.len()).sum::<usize>()
+        + self.rule_set.len() // rule_set
     }
 }
 

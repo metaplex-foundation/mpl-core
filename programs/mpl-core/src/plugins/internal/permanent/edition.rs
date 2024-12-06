@@ -48,11 +48,9 @@ impl PluginValidation for Edition {
 }
 
 impl DataBlob for Edition {
-    fn get_initial_size() -> usize {
-        4
-    }
+    const BASE_LEN: usize = 4; // The edition number
 
-    fn get_size(&self) -> usize {
-        4
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }

@@ -57,16 +57,15 @@ pub enum Authority {
 }
 
 impl DataBlob for Authority {
-    fn get_initial_size() -> usize {
-        1
-    }
+    const BASE_LEN: usize = 1; // 1 byte for the discriminator
 
-    fn get_size(&self) -> usize {
-        1 + if let Authority::Address { .. } = self {
-            32
-        } else {
-            0
-        }
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+            + if let Authority::Address { .. } = self {
+                32
+            } else {
+                0
+            }
     }
 }
 
@@ -89,9 +88,17 @@ pub enum Key {
     CollectionV1,
 }
 
-impl Key {
-    /// Get the size of the Key.
-    pub fn get_initial_size() -> usize {
-        1
+impl DataBlob for Key {
+    const BASE_LEN: usize = 1; // 1 byte for the discriminator
+
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
+
+// impl Key {
+//     /// Get the size of the Key.
+//     pub fn get_initial_size() -> usize {
+//         1
+//     }
+// }

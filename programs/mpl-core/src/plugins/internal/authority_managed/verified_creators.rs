@@ -18,12 +18,11 @@ pub struct VerifiedCreatorsSignature {
 }
 
 impl DataBlob for VerifiedCreatorsSignature {
-    fn get_initial_size() -> usize {
-        32 + 1
-    }
+    const BASE_LEN: usize = 32 // The address
+    + 1; // The verified boolean
 
-    fn get_size(&self) -> usize {
-        32 + 1
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 
@@ -35,12 +34,10 @@ pub struct VerifiedCreators {
 }
 
 impl DataBlob for VerifiedCreators {
-    fn get_initial_size() -> usize {
-        4
-    }
+    const BASE_LEN: usize = 4; // The signatures length
 
-    fn get_size(&self) -> usize {
-        4 + self.signatures.len() * VerifiedCreatorsSignature::get_initial_size()
+    fn len(&self) -> usize {
+        Self::BASE_LEN + self.signatures.iter().map(|sig| sig.len()).sum::<usize>()
     }
 }
 

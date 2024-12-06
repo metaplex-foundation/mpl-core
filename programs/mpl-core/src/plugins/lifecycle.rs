@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 
 use crate::{
     error::MplCoreError,
-    state::{Authority, Key, UpdateAuthority},
+    state::{Authority, DataBlob, Key, UpdateAuthority},
 };
 
 use super::{
@@ -35,6 +35,14 @@ pub enum CheckResult {
 pub struct ExternalCheckResult {
     /// Bitfield for external plugin adapter check results.
     pub flags: u32,
+}
+
+impl DataBlob for ExternalCheckResult {
+    const BASE_LEN: usize = 4; // u32 flags
+
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+    }
 }
 
 impl ExternalCheckResult {

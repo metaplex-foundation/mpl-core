@@ -18,15 +18,14 @@ pub struct MasterEdition {
 impl PluginValidation for MasterEdition {}
 
 impl DataBlob for MasterEdition {
-    fn get_initial_size() -> usize {
-        1 + 1 + 1
-    }
+    const BASE_LEN: usize = 1 // The max_supply option
+    + 1 // The name option
+    + 1; // The uri option
 
-    fn get_size(&self) -> usize {
-        1 + self.max_supply.map_or(0, |_| 4)
-            + 1
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+            + self.max_supply.map_or(0, |_| 4)
             + self.name.as_ref().map_or(0, |name| 4 + name.len())
-            + 1
             + self.uri.as_ref().map_or(0, |uri| 4 + uri.len())
     }
 }

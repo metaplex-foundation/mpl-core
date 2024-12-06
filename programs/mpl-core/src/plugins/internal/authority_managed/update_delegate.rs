@@ -38,12 +38,10 @@ impl Default for UpdateDelegate {
 }
 
 impl DataBlob for UpdateDelegate {
-    fn get_initial_size() -> usize {
-        4
-    }
+    const BASE_LEN: usize = 4; // The additional delegates length
 
-    fn get_size(&self) -> usize {
-        4 + self.additional_delegates.len() * 32
+    fn len(&self) -> usize {
+        Self::BASE_LEN + self.additional_delegates.len() * 32
     }
 }
 

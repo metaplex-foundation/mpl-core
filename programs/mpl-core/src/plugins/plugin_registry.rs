@@ -112,12 +112,22 @@ impl PluginRegistryV1 {
 }
 
 impl DataBlob for PluginRegistryV1 {
-    fn get_initial_size() -> usize {
-        9
-    }
+    const BASE_LEN: usize = 1 // Key
+     + 4 // Registry Length
+     + 4; // External Registry Length
 
-    fn get_size(&self) -> usize {
-        9 //TODO: Fix this
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+            + self
+                .registry
+                .iter()
+                .map(|record| record.len())
+                .sum::<usize>()
+            + self
+                .external_registry
+                .iter()
+                .map(|record| record.len())
+                .sum::<usize>()
     }
 }
 
@@ -132,7 +142,7 @@ impl SolanaAccount for PluginRegistryV1 {
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct RegistryRecord {
     /// The type of plugin.
-    pub plugin_type: PluginType, // 2
+    pub plugin_type: PluginType, // 1
     /// The authority who has permission to utilize a plugin.
     pub authority: Authority, // Variable
     /// The offset to the plugin in the account.
@@ -147,12 +157,12 @@ impl RegistryRecord {
 }
 
 impl DataBlob for RegistryRecord {
-    fn get_initial_size() -> usize {
-        2 + 1 + 8
-    }
+    const BASE_LEN: usize = PluginType::BASE_LEN
+     + Authority::BASE_LEN // Authority Discriminator
+      + 8; // Offset
 
-    fn get_size(&self) -> usize {
-        2 + self.authority.get_size() + 8
+    fn len(&self) -> usize {
+        self.plugin_type.len() + self.authority.len() + 8
     }
 }
 
@@ -196,5 +206,34 @@ impl ExternalRegistryRecord {
         }
 
         Ok(())
+    }
+}
+
+impl DataBlob for ExternalRegistryRecord {
+    const BASE_LEN: usize = ExternalPluginAdapterType::BASE_LEN
+     + Authority::BASE_LEN // Authority Discriminator
+      + 1 // Lifecycle checks option
+      + 8 // Offset
+      + 1 // Data offset option
+      + 1; // Data len option
+
+    fn len(&self) -> usize {
+        let mut len = self.plugin_type.len() + self.authority.len() + 1 + 8 + 1 + 1;
+
+        if let Some(checks) = &self.lifecycle_checks {
+            len += 4 // 4 bytes for the length of the checks vector
+                + checks.len()
+                * (HookableLifecycleEvent::BASE_LEN + ExternalCheckResult::BASE_LEN);
+        }
+
+        if self.data_offset.is_some() {
+            len += 8;
+        }
+
+        if self.data_len.is_some() {
+            len += 8;
+        }
+
+        len
     }
 }

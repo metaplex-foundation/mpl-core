@@ -19,12 +19,11 @@ pub struct AutographSignature {
 }
 
 impl DataBlob for AutographSignature {
-    fn get_initial_size() -> usize {
-        32 + 4
-    }
+    const BASE_LEN: usize = 32 // The address
+    + 4; // The message length
 
-    fn get_size(&self) -> usize {
-        32 + 4 + self.message.len()
+    fn len(&self) -> usize {
+        Self::BASE_LEN + self.message.len()
     }
 }
 
@@ -135,14 +134,9 @@ impl PluginValidation for Autograph {
 }
 
 impl DataBlob for Autograph {
-    fn get_initial_size() -> usize {
-        4
-    }
+    const BASE_LEN: usize = 4; // The signatures length
 
-    fn get_size(&self) -> usize {
-        4 + self
-            .signatures
-            .iter()
-            .fold(0, |acc, sig| acc + sig.get_size())
+    fn len(&self) -> usize {
+        Self::BASE_LEN + self.signatures.iter().map(|sig| sig.len()).sum::<usize>()
     }
 }

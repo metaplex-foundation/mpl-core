@@ -12,12 +12,11 @@ pub struct Attribute {
 }
 
 impl DataBlob for Attribute {
-    fn get_initial_size() -> usize {
-        4 + 4
-    }
+    const BASE_LEN: usize = 4 // The length of the Key string
+    + 4; // The length of the Value string
 
-    fn get_size(&self) -> usize {
-        4 + self.key.len() + 4 + self.value.len()
+    fn len(&self) -> usize {
+        Self::BASE_LEN + self.key.len() + self.value.len()
     }
 }
 
@@ -37,15 +36,15 @@ impl Attributes {
 }
 
 impl DataBlob for Attributes {
-    fn get_initial_size() -> usize {
-        4
-    }
+    const BASE_LEN: usize = 4; // The length of the attribute list
 
-    fn get_size(&self) -> usize {
-        4 + self
-            .attribute_list
-            .iter()
-            .fold(0, |acc, attr| acc + attr.get_size())
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+            + self
+                .attribute_list
+                .iter()
+                .map(|attr| attr.len())
+                .sum::<usize>()
     }
 }
 

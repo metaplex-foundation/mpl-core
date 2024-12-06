@@ -16,12 +16,10 @@ use crate::{
 pub struct PermanentBurnDelegate {}
 
 impl DataBlob for PermanentBurnDelegate {
-    fn get_initial_size() -> usize {
-        0
-    }
+    const BASE_LEN: usize = 0;
 
-    fn get_size(&self) -> usize {
-        0
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 
