@@ -21,7 +21,6 @@ pub struct AssetV1 {
     pub key: Key, //1
     /// The owner of the asset.
     pub owner: Pubkey, //32
-    //TODO: Fix this for dynamic size
     /// The update authority of the asset.
     pub update_authority: UpdateAuthority, //33
     /// The name of the asset.
@@ -59,9 +58,6 @@ impl AssetV1 {
 
         Ok(())
     }
-
-    /// The base length of the asset account with an empty name and uri and no seq.
-    pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4 + 1;
 
     /// Check permissions for the create lifecycle event.
     pub fn check_create() -> CheckResult {
@@ -358,12 +354,22 @@ impl AssetV1 {
 impl Compressible for AssetV1 {}
 
 impl DataBlob for AssetV1 {
-    fn get_initial_size() -> usize {
-        AssetV1::BASE_LENGTH
-    }
+    /// The base length of the asset account with an empty name and uri and no seq.
+    const BASE_LEN: usize = 1 // Key
+                            + 32 // Owner
+                            + 1 // Update Authority discriminator
+                            + 4 // Name length
+                            + 4 // URI length
+                            + 1; // Seq option
 
-    fn get_size(&self) -> usize {
-        let mut size = AssetV1::BASE_LENGTH + self.name.len() + self.uri.len();
+    fn len(&self) -> usize {
+        let mut size = AssetV1::BASE_LEN + self.name.len() + self.uri.len();
+
+        if let UpdateAuthority::Address(_) | UpdateAuthority::Collection(_) = self.update_authority
+        {
+            size += 32;
+        }
+
         if self.seq.is_some() {
             size += size_of::<u64>();
         }

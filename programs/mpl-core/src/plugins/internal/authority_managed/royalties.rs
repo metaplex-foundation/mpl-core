@@ -8,34 +8,70 @@ use crate::error::MplCoreError;
 use crate::plugins::{
     abstain, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
 };
+use crate::state::DataBlob;
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct Creator {
-    address: Pubkey,
-    percentage: u8,
+    address: Pubkey, // 32
+    percentage: u8,  // 1
+}
+
+impl DataBlob for Creator {
+    const BASE_LEN: usize = 32 // The address
+    + 1; // The percentage
+
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+    }
 }
 
 /// The rule set for an asset indicating where it is allowed to be transferred.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub enum RuleSet {
     /// No rules are enforced.
-    None,
+    None, // 1
     /// Allow list of programs that are allowed to transfer, receive, or send the asset.
-    ProgramAllowList(Vec<Pubkey>),
+    ProgramAllowList(Vec<Pubkey>), // 4
     /// Deny list of programs that are not allowed to transfer, receive, or send the asset.
-    ProgramDenyList(Vec<Pubkey>),
+    ProgramDenyList(Vec<Pubkey>), // 4
+}
+
+impl DataBlob for RuleSet {
+    const BASE_LEN: usize = 1; // The rule set discriminator
+
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+            + match self {
+                RuleSet::ProgramAllowList(allow_list) => 4 + allow_list.len() * 32,
+                RuleSet::ProgramDenyList(deny_list) => 4 + deny_list.len() * 32,
+                RuleSet::None => 0,
+            }
+    }
 }
 
 /// Traditional royalties structure for an asset.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct Royalties {
     /// The percentage of royalties to be paid to the creators.
-    basis_points: u16,
+    basis_points: u16, // 2
     /// A list of creators to receive royalties.
-    creators: Vec<Creator>,
+    creators: Vec<Creator>, // 4
     /// The rule set for the asset to enforce royalties.
-    rule_set: RuleSet,
+    rule_set: RuleSet, // 1
+}
+
+impl DataBlob for Royalties {
+    const BASE_LEN: usize = 2 // basis_points
+    + 4 // creators length
+    + RuleSet::BASE_LEN; // rule_set
+
+    fn len(&self) -> usize {
+        2 // basis_points
+        + 4 // creators length
+        + self.creators.iter().map(|creator| creator.len()).sum::<usize>()
+        + self.rule_set.len() // rule_set
+    }
 }
 
 fn validate_royalties(royalties: &Royalties) -> Result<ValidationResult, ProgramError> {

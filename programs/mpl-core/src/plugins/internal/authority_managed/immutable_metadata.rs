@@ -14,11 +14,9 @@ use crate::{
 pub struct ImmutableMetadata {}
 
 impl DataBlob for ImmutableMetadata {
-    fn get_initial_size() -> usize {
-        0
-    }
+    const BASE_LEN: usize = 0;
 
-    fn get_size(&self) -> usize {
+    fn len(&self) -> usize {
         0
     }
 }

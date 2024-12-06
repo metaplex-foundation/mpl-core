@@ -15,12 +15,11 @@ pub struct PluginHeaderV1 {
 }
 
 impl DataBlob for PluginHeaderV1 {
-    fn get_initial_size() -> usize {
-        1 + 8
-    }
+    const BASE_LEN: usize = 1 // Key
+    + 8; // Offset
 
-    fn get_size(&self) -> usize {
-        1 + 8
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 

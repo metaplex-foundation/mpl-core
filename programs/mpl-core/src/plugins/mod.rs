@@ -88,6 +88,37 @@ impl Plugin {
 
 impl Compressible for Plugin {}
 
+impl DataBlob for Plugin {
+    const BASE_LEN: usize = 1;
+
+    fn len(&self) -> usize {
+        Self::BASE_LEN // The discriminator
+            + match self {
+                Plugin::Royalties(royalties) => royalties.len(),
+                Plugin::FreezeDelegate(freeze_delegate) => freeze_delegate.len(),
+                Plugin::BurnDelegate(burn_delegate) => burn_delegate.len(),
+                Plugin::TransferDelegate(transfer_delegate) => transfer_delegate.len(),
+                Plugin::UpdateDelegate(update_delegate) => update_delegate.len(),
+                Plugin::PermanentFreezeDelegate(permanent_freeze_delegate) => {
+                    permanent_freeze_delegate.len()
+                }
+                Plugin::Attributes(attributes) => attributes.len(),
+                Plugin::PermanentTransferDelegate(permanent_transfer_delegate) => {
+                    permanent_transfer_delegate.len()
+                }
+                Plugin::PermanentBurnDelegate(permanent_burn_delegate) => {
+                    permanent_burn_delegate.len()
+                }
+                Plugin::Edition(edition) => edition.len(),
+                Plugin::MasterEdition(master_edition) => master_edition.len(),
+                Plugin::AddBlocker(add_blocker) => add_blocker.len(),
+                Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.len(),
+                Plugin::VerifiedCreators(verified_creators) => verified_creators.len(),
+                Plugin::Autograph(autograph) => autograph.len(),
+            }
+    }
+}
+
 /// List of first party plugin types.
 #[repr(C)]
 #[derive(
@@ -145,12 +176,10 @@ pub const PERMANENT_DELEGATES: [PluginType; 3] = [
 ];
 
 impl DataBlob for PluginType {
-    fn get_initial_size() -> usize {
-        2
-    }
+    const BASE_LEN: usize = 1;
 
-    fn get_size(&self) -> usize {
-        2
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 
@@ -205,4 +234,10 @@ impl PluginType {
 pub(crate) struct PluginAuthorityPair {
     pub(crate) plugin: Plugin,
     pub(crate) authority: Option<Authority>,
+}
+
+impl From<PluginType> for usize {
+    fn from(plugin_type: PluginType) -> Self {
+        plugin_type as usize
+    }
 }

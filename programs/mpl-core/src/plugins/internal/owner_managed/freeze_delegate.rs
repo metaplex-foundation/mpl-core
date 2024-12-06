@@ -32,12 +32,10 @@ impl Default for FreezeDelegate {
 }
 
 impl DataBlob for FreezeDelegate {
-    fn get_initial_size() -> usize {
-        1
-    }
+    const BASE_LEN: usize = 1; // The frozen boolean
 
-    fn get_size(&self) -> usize {
-        1
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 

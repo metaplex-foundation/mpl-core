@@ -8,7 +8,7 @@ use strum::EnumCount;
 use crate::{
     error::MplCoreError,
     plugins::{approve, reject},
-    state::{AssetV1, SolanaAccount},
+    state::{AssetV1, DataBlob, SolanaAccount},
 };
 
 use super::{
@@ -37,6 +37,14 @@ pub enum ExternalPluginAdapterType {
     LinkedAppData,
     /// Data Section.
     DataSection,
+}
+
+impl DataBlob for ExternalPluginAdapterType {
+    const BASE_LEN: usize = 1;
+
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+    }
 }
 
 impl From<&ExternalPluginAdapterKey> for ExternalPluginAdapterType {
@@ -396,6 +404,14 @@ pub enum HookableLifecycleEvent {
     Burn,
     /// Update an Asset or a Collection.
     Update,
+}
+
+impl DataBlob for HookableLifecycleEvent {
+    const BASE_LEN: usize = 1;
+
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+    }
 }
 
 /// Prefix used with some of the `ExtraAccounts` that are PDAs.

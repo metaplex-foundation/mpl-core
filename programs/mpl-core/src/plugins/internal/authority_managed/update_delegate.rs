@@ -19,7 +19,7 @@ use crate::plugins::{
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct UpdateDelegate {
     /// Additional update delegates.  Not currently available to be used.
-    pub additional_delegates: Vec<Pubkey>, // 4
+    pub additional_delegates: Vec<Pubkey>, // 4 + len * 32
 }
 
 impl UpdateDelegate {
@@ -38,12 +38,10 @@ impl Default for UpdateDelegate {
 }
 
 impl DataBlob for UpdateDelegate {
-    fn get_initial_size() -> usize {
-        0
-    }
+    const BASE_LEN: usize = 4; // The additional delegates length
 
-    fn get_size(&self) -> usize {
-        0
+    fn len(&self) -> usize {
+        Self::BASE_LEN + self.additional_delegates.len() * 32
     }
 }
 
