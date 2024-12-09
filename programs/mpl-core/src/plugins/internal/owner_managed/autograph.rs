@@ -14,8 +14,10 @@ use crate::{
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Hash)]
 pub struct AutographSignature {
-    address: Pubkey, // 32
-    message: String, // 4 + len
+    /// The address of the creator.
+    pub address: Pubkey, // 32
+    /// The message of the creator.
+    pub message: String, // 4 + len
 }
 
 impl DataBlob for AutographSignature {
@@ -31,7 +33,7 @@ impl DataBlob for AutographSignature {
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct Autograph {
     /// A list of signatures with option message
-    signatures: Vec<AutographSignature>, // 4 + len * Autograph len
+    pub signatures: Vec<AutographSignature>, // 4 + len * Autograph len
 }
 
 fn validate_autograph(
@@ -138,5 +140,45 @@ impl DataBlob for Autograph {
 
     fn len(&self) -> usize {
         Self::BASE_LEN + self.signatures.iter().map(|sig| sig.len()).sum::<usize>()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_autograph_signature_len() {
+        let autograph_signature = AutographSignature {
+            address: Pubkey::default(),
+            message: "test".to_string(),
+        };
+        let serialized = autograph_signature.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), autograph_signature.len());
+    }
+
+    #[test]
+    fn test_autograph_default_len() {
+        let autograph = Autograph { signatures: vec![] };
+        let serialized = autograph.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), autograph.len());
+    }
+
+    #[test]
+    fn test_autograph_len() {
+        let autograph = Autograph {
+            signatures: vec![
+                AutographSignature {
+                    address: Pubkey::default(),
+                    message: "test".to_string(),
+                },
+                AutographSignature {
+                    address: Pubkey::default(),
+                    message: "test2".to_string(),
+                },
+            ],
+        };
+        let serialized = autograph.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), autograph.len());
     }
 }

@@ -29,3 +29,26 @@ impl DataBlob for MasterEdition {
             + self.uri.as_ref().map_or(0, |uri| 4 + uri.len())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_master_edition_default_len() {
+        let master_edition = MasterEdition::default();
+        let serialized = master_edition.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), master_edition.len());
+    }
+
+    #[test]
+    fn test_master_edition_len() {
+        let master_edition = MasterEdition {
+            max_supply: Some(100),
+            name: Some("test".to_string()),
+            uri: Some("test".to_string()),
+        };
+        let serialized = master_edition.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), master_edition.len());
+    }
+}

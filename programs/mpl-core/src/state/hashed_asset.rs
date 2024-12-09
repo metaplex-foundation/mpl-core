@@ -36,3 +36,15 @@ impl SolanaAccount for HashedAssetV1 {
         Key::HashedAssetV1
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_hashed_asset_len() {
+        let hashed_asset = HashedAssetV1::new([0; 32]);
+        let serialized = hashed_asset.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), hashed_asset.len());
+    }
+}

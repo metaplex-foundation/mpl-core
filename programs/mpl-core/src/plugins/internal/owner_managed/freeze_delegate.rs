@@ -107,3 +107,15 @@ impl PluginValidation for FreezeDelegate {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_freeze_delegate_len() {
+        let freeze_delegate = FreezeDelegate::default();
+        let serialized = freeze_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), freeze_delegate.len());
+    }
+}

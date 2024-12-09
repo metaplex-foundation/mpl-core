@@ -13,8 +13,10 @@ use crate::state::DataBlob;
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Hash)]
 pub struct VerifiedCreatorsSignature {
-    address: Pubkey, // 32
-    verified: bool,  // 1
+    /// The address of the creator.
+    pub address: Pubkey, // 32
+    /// Whether or not the creator is verified.
+    pub verified: bool, // 1
 }
 
 impl DataBlob for VerifiedCreatorsSignature {
@@ -30,7 +32,7 @@ impl DataBlob for VerifiedCreatorsSignature {
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct VerifiedCreators {
     /// A list of signatures
-    signatures: Vec<VerifiedCreatorsSignature>, // 4 + len * VerifiedCreatorsSignature
+    pub signatures: Vec<VerifiedCreatorsSignature>, // 4 + len * VerifiedCreatorsSignature
 }
 
 impl DataBlob for VerifiedCreators {
@@ -215,5 +217,45 @@ impl PluginValidation for VerifiedCreators {
             }
             _ => abstain!(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_verified_creators_signature_len() {
+        let verified_creators_signature = VerifiedCreatorsSignature {
+            address: Pubkey::default(),
+            verified: false,
+        };
+        let serialized = verified_creators_signature.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), verified_creators_signature.len());
+    }
+
+    #[test]
+    fn test_verified_creators_default_len() {
+        let verified_creators = VerifiedCreators { signatures: vec![] };
+        let serialized = verified_creators.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), verified_creators.len());
+    }
+
+    #[test]
+    fn test_verified_creators_len() {
+        let verified_creators = VerifiedCreators {
+            signatures: vec![
+                VerifiedCreatorsSignature {
+                    address: Pubkey::default(),
+                    verified: false,
+                },
+                VerifiedCreatorsSignature {
+                    address: Pubkey::default(),
+                    verified: true,
+                },
+            ],
+        };
+        let serialized = verified_creators.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), verified_creators.len());
     }
 }

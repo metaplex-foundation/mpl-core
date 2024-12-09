@@ -49,3 +49,43 @@ impl DataBlob for Attributes {
 }
 
 impl PluginValidation for Attributes {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_attribute_len() {
+        let attribute = Attribute {
+            key: "test".to_string(),
+            value: "test".to_string(),
+        };
+        let serialized = attribute.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), attribute.len());
+    }
+
+    #[test]
+    fn test_attributes_default_len() {
+        let attributes = Attributes::new();
+        let serialized = attributes.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), attributes.len());
+    }
+
+    #[test]
+    fn test_attributes_len() {
+        let attributes = Attributes {
+            attribute_list: vec![
+                Attribute {
+                    key: "test".to_string(),
+                    value: "test".to_string(),
+                },
+                Attribute {
+                    key: "test2".to_string(),
+                    value: "test2".to_string(),
+                },
+            ],
+        };
+        let serialized = attributes.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), attributes.len());
+    }
+}

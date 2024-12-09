@@ -405,3 +405,42 @@ impl CoreAsset for AssetV1 {
         &self.owner
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_asset_len() {
+        let assets = vec![
+            AssetV1 {
+                key: Key::AssetV1,
+                owner: Pubkey::default(),
+                update_authority: UpdateAuthority::None,
+                name: "".to_string(),
+                uri: "".to_string(),
+                seq: None,
+            },
+            AssetV1 {
+                key: Key::AssetV1,
+                owner: Pubkey::default(),
+                update_authority: UpdateAuthority::Address(Pubkey::default()),
+                name: "test".to_string(),
+                uri: "test".to_string(),
+                seq: None,
+            },
+            AssetV1 {
+                key: Key::AssetV1,
+                owner: Pubkey::default(),
+                update_authority: UpdateAuthority::Collection(Pubkey::default()),
+                name: "test2".to_string(),
+                uri: "test2".to_string(),
+                seq: Some(1),
+            },
+        ];
+        for asset in assets {
+            let serialized = asset.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), asset.len());
+        }
+    }
+}

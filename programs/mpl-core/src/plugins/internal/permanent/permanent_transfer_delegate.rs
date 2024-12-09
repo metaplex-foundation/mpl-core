@@ -51,3 +51,15 @@ impl PluginValidation for PermanentTransferDelegate {
         abstain!()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_permanent_transfer_delegate_len() {
+        let permanent_transfer_delegate = PermanentTransferDelegate::default();
+        let serialized = permanent_transfer_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), permanent_transfer_delegate.len());
+    }
+}

@@ -209,3 +209,31 @@ impl PluginValidation for UpdateDelegate {
         abstain!()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_update_delegate_default_len() {
+        let update_delegate = UpdateDelegate::default();
+        let serialized = update_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), update_delegate.len());
+    }
+
+    #[test]
+    fn test_update_delegate_len() {
+        let update_delegates = vec![
+            UpdateDelegate {
+                additional_delegates: vec![Pubkey::default()],
+            },
+            UpdateDelegate {
+                additional_delegates: vec![Pubkey::default(), Pubkey::default()],
+            },
+        ];
+        for update_delegate in update_delegates {
+            let serialized = update_delegate.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), update_delegate.len());
+        }
+    }
+}

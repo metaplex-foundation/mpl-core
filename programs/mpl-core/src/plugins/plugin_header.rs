@@ -28,3 +28,18 @@ impl SolanaAccount for PluginHeaderV1 {
         Key::PluginHeaderV1
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_plugin_header_v1_len() {
+        let header = PluginHeaderV1 {
+            key: Key::PluginHeaderV1,
+            plugin_registry_offset: 0,
+        };
+        let serialized = header.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), header.len());
+    }
+}

@@ -50,3 +50,15 @@ impl PluginValidation for BurnDelegate {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_burn_delegate_len() {
+        let burn_delegate = BurnDelegate::default();
+        let serialized = burn_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), burn_delegate.len());
+    }
+}

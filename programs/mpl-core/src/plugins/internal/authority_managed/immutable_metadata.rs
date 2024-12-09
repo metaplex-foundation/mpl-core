@@ -30,3 +30,15 @@ impl PluginValidation for ImmutableMetadata {
         reject!()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_immutable_metadata_len() {
+        let immutable_metadata = ImmutableMetadata {};
+        let serialized = immutable_metadata.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), immutable_metadata.len());
+    }
+}

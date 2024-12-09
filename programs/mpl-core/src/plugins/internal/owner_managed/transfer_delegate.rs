@@ -51,3 +51,15 @@ impl PluginValidation for TransferDelegate {
         abstain!()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_transfer_delegate_len() {
+        let transfer_delegate = TransferDelegate::default();
+        let serialized = transfer_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), transfer_delegate.len());
+    }
+}

@@ -13,8 +13,10 @@ use crate::state::DataBlob;
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct Creator {
-    address: Pubkey, // 32
-    percentage: u8,  // 1
+    /// The address of the creator.
+    pub address: Pubkey, // 32
+    /// The percentage of royalties to be paid to the creator.
+    pub percentage: u8, // 1
 }
 
 impl DataBlob for Creator {
@@ -54,11 +56,11 @@ impl DataBlob for RuleSet {
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct Royalties {
     /// The percentage of royalties to be paid to the creators.
-    basis_points: u16, // 2
+    pub basis_points: u16, // 2
     /// A list of creators to receive royalties.
-    creators: Vec<Creator>, // 4
+    pub creators: Vec<Creator>, // 4
     /// The rule set for the asset to enforce royalties.
-    rule_set: RuleSet, // 1
+    pub rule_set: RuleSet, // 1
 }
 
 impl DataBlob for Royalties {
@@ -166,6 +168,95 @@ impl PluginValidation for Royalties {
             }
         } else {
             abstain!()
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_creator_len() {
+        let creator = Creator {
+            address: Pubkey::default(),
+            percentage: 100,
+        };
+        let serialized = creator.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), creator.len());
+    }
+
+    #[test]
+    fn test_rule_set_default_len() {
+        let rule_set = RuleSet::None;
+        let serialized = rule_set.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), rule_set.len());
+    }
+
+    #[test]
+    fn test_rule_set_len() {
+        let rule_sets = vec![
+            RuleSet::ProgramAllowList(vec![Pubkey::default()]),
+            RuleSet::ProgramDenyList(vec![Pubkey::default(), Pubkey::default()]),
+        ];
+        for rule_set in rule_sets {
+            let serialized = rule_set.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), rule_set.len());
+        }
+    }
+
+    #[test]
+    fn test_royalties_len() {
+        let royalties = vec![
+            Royalties {
+                basis_points: 0,
+                creators: vec![],
+                rule_set: RuleSet::None,
+            },
+            Royalties {
+                basis_points: 1,
+                creators: vec![Creator {
+                    address: Pubkey::default(),
+                    percentage: 1,
+                }],
+                rule_set: RuleSet::ProgramAllowList(vec![]),
+            },
+            Royalties {
+                basis_points: 2,
+                creators: vec![
+                    Creator {
+                        address: Pubkey::default(),
+                        percentage: 2,
+                    },
+                    Creator {
+                        address: Pubkey::default(),
+                        percentage: 3,
+                    },
+                ],
+                rule_set: RuleSet::ProgramDenyList(vec![Pubkey::default()]),
+            },
+            Royalties {
+                basis_points: 3,
+                creators: vec![
+                    Creator {
+                        address: Pubkey::default(),
+                        percentage: 3,
+                    },
+                    Creator {
+                        address: Pubkey::default(),
+                        percentage: 4,
+                    },
+                    Creator {
+                        address: Pubkey::default(),
+                        percentage: 5,
+                    },
+                ],
+                rule_set: RuleSet::ProgramDenyList(vec![Pubkey::default(), Pubkey::default()]),
+            },
+        ];
+        for royalty in royalties {
+            let serialized = royalty.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), royalty.len());
         }
     }
 }

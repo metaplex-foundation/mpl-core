@@ -5,12 +5,11 @@ use std::collections::BTreeMap;
 
 use crate::{
     error::MplCoreError,
+    plugins::{
+        ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalRegistryRecord, Plugin,
+        PluginType, RegistryRecord,
+    },
     state::{Authority, DataBlob, Key, UpdateAuthority},
-};
-
-use super::{
-    ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalRegistryRecord, Plugin, PluginType,
-    RegistryRecord,
 };
 
 /// Lifecycle permissions
@@ -1111,5 +1110,22 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
         approve!()
     } else {
         abstain!()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_external_check_result_size() {
+        let fixture = ExternalCheckResult { flags: 0 };
+        let serialized = fixture.try_to_vec().unwrap();
+        assert_eq!(
+            serialized.len(),
+            fixture.len(),
+            "Serialized {:?} should match size returned by len()",
+            fixture
+        );
     }
 }

@@ -376,3 +376,34 @@ impl CoreAsset for CollectionV1 {
         &self.update_authority
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_collection_len() {
+        let collections = vec![
+            CollectionV1 {
+                key: Key::CollectionV1,
+                update_authority: Pubkey::default(),
+                name: "".to_string(),
+                uri: "".to_string(),
+                num_minted: 0,
+                current_size: 0,
+            },
+            CollectionV1 {
+                key: Key::CollectionV1,
+                update_authority: Pubkey::default(),
+                name: "test".to_string(),
+                uri: "test".to_string(),
+                num_minted: 1,
+                current_size: 1,
+            },
+        ];
+        for collection in collections {
+            let serialized = collection.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), collection.len());
+        }
+    }
+}

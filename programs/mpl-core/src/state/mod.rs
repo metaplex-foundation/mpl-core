@@ -20,6 +20,7 @@ mod hashed_asset;
 pub use hashed_asset::*;
 
 mod traits;
+use strum::{EnumCount, EnumIter};
 pub use traits::*;
 
 mod update_authority;
@@ -41,7 +42,9 @@ pub enum DataState {
 
 /// Variants representing the different types of authority that can have permissions over plugins.
 #[repr(u8)]
-#[derive(Copy, Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(
+    Copy, Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq, PartialOrd, Ord, EnumCount,
+)]
 pub enum Authority {
     /// No authority, used for immutability.
     None,
@@ -71,7 +74,16 @@ impl DataBlob for Authority {
 
 /// An enum representing account discriminators.
 #[derive(
-    Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, ToPrimitive, FromPrimitive,
+    Clone,
+    Copy,
+    BorshSerialize,
+    BorshDeserialize,
+    Debug,
+    PartialEq,
+    Eq,
+    ToPrimitive,
+    FromPrimitive,
+    EnumIter,
 )]
 pub enum Key {
     /// Uninitialized or invalid account.
@@ -96,9 +108,38 @@ impl DataBlob for Key {
     }
 }
 
-// impl Key {
-//     /// Get the size of the Key.
-//     pub fn get_initial_size() -> usize {
-//         1
-//     }
-// }
+#[cfg(test)]
+mod tests {
+    use strum::IntoEnumIterator;
+
+    use super::*;
+
+    #[test]
+    fn test_authority_len() {
+        let authorities = vec![
+            Authority::None,
+            Authority::Owner,
+            Authority::UpdateAuthority,
+            Authority::Address {
+                address: Pubkey::default(),
+            },
+        ];
+        assert_eq!(
+            authorities.len(),
+            Authority::COUNT,
+            "Must test all Authority variants"
+        );
+        for authority in authorities {
+            let serialized = authority.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), authority.len());
+        }
+    }
+
+    #[test]
+    fn test_key_len() {
+        for key in Key::iter() {
+            let serialized = key.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), key.len());
+        }
+    }
+}

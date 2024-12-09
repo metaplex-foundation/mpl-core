@@ -88,3 +88,15 @@ impl PluginValidation for PermanentFreezeDelegate {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_permanent_freeze_delegate_len() {
+        let permanent_freeze_delegate = PermanentFreezeDelegate::default();
+        let serialized = permanent_freeze_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), permanent_freeze_delegate.len());
+    }
+}

@@ -52,3 +52,15 @@ impl PluginValidation for PermanentBurnDelegate {
         abstain!()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_permanent_burn_delegate_len() {
+        let permanent_burn_delegate = PermanentBurnDelegate::default();
+        let serialized = permanent_burn_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), permanent_burn_delegate.len());
+    }
+}

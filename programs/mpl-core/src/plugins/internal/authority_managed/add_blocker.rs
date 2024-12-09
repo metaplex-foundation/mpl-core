@@ -39,3 +39,15 @@ impl PluginValidation for AddBlocker {
         reject!()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_add_blocker_len() {
+        let add_blocker = AddBlocker {};
+        let serialized = add_blocker.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), add_blocker.len());
+    }
+}
