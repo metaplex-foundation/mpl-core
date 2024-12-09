@@ -112,12 +112,22 @@ impl PluginRegistryV1 {
 }
 
 impl DataBlob for PluginRegistryV1 {
-    fn get_initial_size() -> usize {
-        9
-    }
+    const BASE_LEN: usize = 1 // Key
+     + 4 // Registry Length
+     + 4; // External Registry Length
 
-    fn get_size(&self) -> usize {
-        9 //TODO: Fix this
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+            + self
+                .registry
+                .iter()
+                .map(|record| record.len())
+                .sum::<usize>()
+            + self
+                .external_registry
+                .iter()
+                .map(|record| record.len())
+                .sum::<usize>()
     }
 }
 
@@ -132,7 +142,7 @@ impl SolanaAccount for PluginRegistryV1 {
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub struct RegistryRecord {
     /// The type of plugin.
-    pub plugin_type: PluginType, // 2
+    pub plugin_type: PluginType, // 1
     /// The authority who has permission to utilize a plugin.
     pub authority: Authority, // Variable
     /// The offset to the plugin in the account.
@@ -143,6 +153,16 @@ impl RegistryRecord {
     /// Associated function for sorting `RegistryRecords` by offset.
     pub fn compare_offsets(a: &RegistryRecord, b: &RegistryRecord) -> Ordering {
         a.offset.cmp(&b.offset)
+    }
+}
+
+impl DataBlob for RegistryRecord {
+    const BASE_LEN: usize = PluginType::BASE_LEN
+     + Authority::BASE_LEN // Authority Discriminator
+      + 8; // Offset
+
+    fn len(&self) -> usize {
+        self.plugin_type.len() + self.authority.len() + 8
     }
 }
 
@@ -186,5 +206,179 @@ impl ExternalRegistryRecord {
         }
 
         Ok(())
+    }
+}
+
+impl DataBlob for ExternalRegistryRecord {
+    const BASE_LEN: usize = ExternalPluginAdapterType::BASE_LEN
+     + Authority::BASE_LEN // Authority Discriminator
+      + 1 // Lifecycle checks option
+      + 8 // Offset
+      + 1 // Data offset option
+      + 1; // Data len option
+
+    fn len(&self) -> usize {
+        let mut len = self.plugin_type.len() + self.authority.len() + 1 + 8 + 1 + 1;
+
+        if let Some(checks) = &self.lifecycle_checks {
+            len += 4 // 4 bytes for the length of the checks vector
+                + checks.len()
+                * (HookableLifecycleEvent::BASE_LEN + ExternalCheckResult::BASE_LEN);
+        }
+
+        if self.data_offset.is_some() {
+            len += 8;
+        }
+
+        if self.data_len.is_some() {
+            len += 8;
+        }
+
+        len
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use solana_program::pubkey::Pubkey;
+
+    use super::*;
+
+    #[test]
+    fn test_plugin_registry_v1_default_len() {
+        let registry = PluginRegistryV1 {
+            key: Key::PluginRegistryV1,
+            registry: vec![],
+            external_registry: vec![],
+        };
+        let serialized = registry.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), registry.len());
+    }
+
+    #[test]
+    fn test_plugin_registry_v1_different_len() {
+        let registry = PluginRegistryV1 {
+            key: Key::PluginRegistryV1,
+            registry: vec![
+                RegistryRecord {
+                    plugin_type: PluginType::TransferDelegate,
+                    authority: Authority::UpdateAuthority,
+                    offset: 0,
+                },
+                RegistryRecord {
+                    plugin_type: PluginType::FreezeDelegate,
+                    authority: Authority::Owner,
+                    offset: 1,
+                },
+                RegistryRecord {
+                    plugin_type: PluginType::PermanentBurnDelegate,
+                    authority: Authority::Address {
+                        address: Pubkey::default(),
+                    },
+                    offset: 2,
+                },
+            ],
+            external_registry: vec![
+                ExternalRegistryRecord {
+                    plugin_type: ExternalPluginAdapterType::LifecycleHook,
+                    authority: Authority::UpdateAuthority,
+                    lifecycle_checks: None,
+                    offset: 3,
+                    data_offset: None,
+                    data_len: None,
+                },
+                ExternalRegistryRecord {
+                    plugin_type: ExternalPluginAdapterType::Oracle,
+                    authority: Authority::Owner,
+                    lifecycle_checks: Some(vec![]),
+                    offset: 3,
+                    data_offset: Some(4),
+                    data_len: None,
+                },
+                ExternalRegistryRecord {
+                    plugin_type: ExternalPluginAdapterType::AppData,
+                    authority: Authority::Address {
+                        address: Pubkey::default(),
+                    },
+                    lifecycle_checks: Some(vec![(
+                        HookableLifecycleEvent::Create,
+                        ExternalCheckResult { flags: 5 },
+                    )]),
+                    offset: 6,
+                    data_offset: Some(7),
+                    data_len: Some(8),
+                },
+            ],
+        };
+        let serialized = registry.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), registry.len());
+    }
+
+    #[test]
+    fn test_registry_record_len() {
+        let records = vec![
+            RegistryRecord {
+                plugin_type: PluginType::TransferDelegate,
+                authority: Authority::UpdateAuthority,
+                offset: 0,
+            },
+            RegistryRecord {
+                plugin_type: PluginType::FreezeDelegate,
+                authority: Authority::Owner,
+                offset: 1,
+            },
+            RegistryRecord {
+                plugin_type: PluginType::PermanentBurnDelegate,
+                authority: Authority::Address {
+                    address: Pubkey::default(),
+                },
+                offset: 2,
+            },
+        ];
+
+        for record in records {
+            let serialized = record.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), record.len());
+        }
+    }
+
+    #[test]
+    fn test_external_registry_record_len() {
+        let records = vec![
+            ExternalRegistryRecord {
+                plugin_type: ExternalPluginAdapterType::LifecycleHook,
+                authority: Authority::UpdateAuthority,
+                lifecycle_checks: None,
+                offset: 3,
+                data_offset: None,
+                data_len: None,
+            },
+            ExternalRegistryRecord {
+                plugin_type: ExternalPluginAdapterType::Oracle,
+                authority: Authority::Owner,
+                lifecycle_checks: Some(vec![]),
+                offset: 3,
+                data_offset: Some(4),
+                data_len: None,
+            },
+            ExternalRegistryRecord {
+                plugin_type: ExternalPluginAdapterType::AppData,
+                authority: Authority::Address {
+                    address: Pubkey::default(),
+                },
+                lifecycle_checks: Some(vec![(
+                    HookableLifecycleEvent::Create,
+                    ExternalCheckResult { flags: 5 },
+                )]),
+                offset: 6,
+                data_offset: Some(7),
+                data_len: Some(8),
+            },
+        ];
+
+        for record in records {
+            let serialized = record.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), record.len());
+        }
     }
 }

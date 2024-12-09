@@ -26,11 +26,9 @@ impl Default for BurnDelegate {
 }
 
 impl DataBlob for BurnDelegate {
-    fn get_initial_size() -> usize {
-        0
-    }
+    const BASE_LEN: usize = 0;
 
-    fn get_size(&self) -> usize {
+    fn len(&self) -> usize {
         0
     }
 }
@@ -50,5 +48,17 @@ impl PluginValidation for BurnDelegate {
         } else {
             abstain!()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_burn_delegate_len() {
+        let burn_delegate = BurnDelegate::default();
+        let serialized = burn_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), burn_delegate.len());
     }
 }
