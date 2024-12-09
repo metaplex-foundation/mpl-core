@@ -54,3 +54,15 @@ impl DataBlob for Edition {
         Self::BASE_LEN
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_edition_len() {
+        let edition = Edition { number: 1 };
+        let serialized = edition.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), edition.len());
+    }
+}
