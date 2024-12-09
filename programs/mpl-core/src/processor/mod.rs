@@ -1,6 +1,7 @@
 mod add_external_plugin_adapter;
 mod add_plugin;
 mod approve_plugin_authority;
+mod batch;
 mod burn;
 mod collect;
 mod compress;
@@ -19,6 +20,7 @@ mod write_external_plugin_adapter_data;
 pub(crate) use add_external_plugin_adapter::*;
 pub(crate) use add_plugin::*;
 pub(crate) use approve_plugin_authority::*;
+pub(crate) use batch::*;
 pub(crate) use burn::*;
 pub(crate) use collect::*;
 pub(crate) use compress::*;
@@ -167,6 +169,10 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::UpdateV2(args) => {
             msg!("Instruction: UpdateV2");
             update_v2(accounts, args)
+        }
+        MplAssetInstruction::BatchV1(args) => {
+            msg!("Instruction: BatchV1");
+            batch_v1(accounts, args)
         }
     }
 }

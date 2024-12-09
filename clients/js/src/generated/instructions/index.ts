@@ -12,6 +12,7 @@ export * from './addExternalPluginAdapterV1';
 export * from './addPluginV1';
 export * from './approveCollectionPluginAuthorityV1';
 export * from './approvePluginAuthorityV1';
+export * from './batchV1';
 export * from './burnCollectionV1';
 export * from './burnV1';
 export * from './collect';
