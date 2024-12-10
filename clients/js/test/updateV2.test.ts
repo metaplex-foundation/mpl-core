@@ -1215,3 +1215,192 @@ test('it cannot add asset to collection using additional update delegate on new 
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
 });
+
+test('it cannot add asset to collection if new collection contains permanent freeze delegate', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi);
+  const collection = await createCollection(umi, {
+    plugins: [
+      {
+        type: 'PermanentFreezeDelegate',
+        frozen: false,
+      },
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    currentSize: 0,
+    numMinted: 0,
+    permanentFreezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: false,
+    },
+  });
+
+  const result = update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
+    newUpdateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    newCollection: collection.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'PermanentDelegatesPreventMove' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    currentSize: 0,
+    numMinted: 0,
+    permanentFreezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: false,
+    },
+  });
+});
+
+test('it cannot add asset to collection if new collection contains permanent transfer delegate', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi);
+  const collection = await createCollection(umi, {
+    plugins: [
+      {
+        type: 'PermanentTransferDelegate',
+      },
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    currentSize: 0,
+    numMinted: 0,
+    permanentTransferDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+    },
+  });
+
+  const result = update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
+    newUpdateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    newCollection: collection.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'PermanentDelegatesPreventMove' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    currentSize: 0,
+    numMinted: 0,
+    permanentTransferDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+    },
+  });
+});
+
+test('it cannot add asset to collection if new collection contains permanent burn delegate', async (t) => {
+  const umi = await createUmi();
+  const asset = await createAsset(umi);
+  const collection = await createCollection(umi, {
+    plugins: [
+      {
+        type: 'PermanentBurnDelegate',
+      },
+    ],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    currentSize: 0,
+    numMinted: 0,
+    permanentBurnDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+    },
+  });
+
+  const result = update(umi, {
+    asset,
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
+    newUpdateAuthority: updateAuthority('Collection', [collection.publicKey]),
+    newCollection: collection.publicKey,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'PermanentDelegatesPreventMove' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    currentSize: 0,
+    numMinted: 0,
+    permanentBurnDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+    },
+  });
+});

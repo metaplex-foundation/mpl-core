@@ -154,6 +154,9 @@ pub enum MplCoreError {
     /// 47 (0x2F) - Cannot add a Data Section without a linked external plugin
     #[error("Cannot add a Data Section without a linked external plugin")]
     CannotAddDataSection,
+    /// 48 (0x30) - Cannot move asset to collection with permanent delegates
+    #[error("Cannot move asset to collection with permanent delegates")]
+    PermanentDelegatesPreventMove,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

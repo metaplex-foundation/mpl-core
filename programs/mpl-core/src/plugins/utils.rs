@@ -237,8 +237,10 @@ pub fn fetch_plugins(account: &AccountInfo) -> Result<Vec<RegistryRecord>, Progr
 }
 
 /// List all plugins in an account.
-pub fn list_plugins(account: &AccountInfo) -> Result<Vec<PluginType>, ProgramError> {
-    let asset = AssetV1::load(account, 0)?;
+pub fn list_plugins<T: DataBlob + SolanaAccount>(
+    account: &AccountInfo,
+) -> Result<Vec<PluginType>, ProgramError> {
+    let asset = T::load(account, 0)?;
 
     if asset.len() == account.data_len() {
         return Err(MplCoreError::PluginNotFound.into());

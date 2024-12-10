@@ -4852,6 +4852,11 @@
       "code": 47,
       "name": "CannotAddDataSection",
       "msg": "Cannot add a Data Section without a linked external plugin"
+    },
+    {
+      "code": 48,
+      "name": "PermanentDelegatesPreventMove",
+      "msg": "Cannot move asset to collection with permanent delegates"
     }
   ],
   "metadata": {

@@ -128,6 +128,7 @@ impl DataBlob for Plugin {
     BorshSerialize,
     BorshDeserialize,
     Eq,
+    Hash,
     PartialEq,
     ToPrimitive,
     EnumCount,
@@ -167,6 +168,13 @@ pub enum PluginType {
     /// Autograph plugin.
     Autograph,
 }
+
+/// The list of permanent delegate types.
+pub const PERMANENT_DELEGATES: [PluginType; 3] = [
+    PluginType::PermanentFreezeDelegate,
+    PluginType::PermanentTransferDelegate,
+    PluginType::PermanentBurnDelegate,
+];
 
 impl DataBlob for PluginType {
     const BASE_LEN: usize = 1;
