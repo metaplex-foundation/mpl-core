@@ -187,7 +187,7 @@ fn update<'a>(
 
                     // Get a set of all the plugins on the collection (if any).
                     let plugin_set: HashSet<_> =
-                        if new_collection_account.data_len() > new_collection.get_size() {
+                        if new_collection_account.data_len() > new_collection.len() {
                             let plugin_list = list_plugins::<CollectionV1>(new_collection_account)?;
                             plugin_list.into_iter().collect()
                         } else {
