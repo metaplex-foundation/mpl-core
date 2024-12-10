@@ -237,12 +237,6 @@ pub(crate) struct PluginAuthorityPair {
     pub(crate) authority: Option<Authority>,
 }
 
-impl From<PluginType> for usize {
-    fn from(plugin_type: PluginType) -> Self {
-        plugin_type as usize
-    }
-}
-
 #[cfg(test)]
 mod test {
     use solana_program::pubkey::Pubkey;
