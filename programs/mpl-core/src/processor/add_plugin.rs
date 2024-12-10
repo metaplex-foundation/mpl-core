@@ -183,11 +183,12 @@ fn process_add_plugin<'a, T: DataBlob + SolanaAccount>(
     plugin: &Plugin,
     authority: &Authority,
 ) -> ProgramResult {
-    let (_, mut plugin_header, mut plugin_registry) =
+    let (_, header_offset, mut plugin_header, mut plugin_registry) =
         create_meta_idempotent::<T>(account, payer, system_program)?;
     initialize_plugin::<T>(
         plugin,
         authority,
+        header_offset,
         &mut plugin_header,
         &mut plugin_registry,
         account,

@@ -250,7 +250,7 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         src.len(),
     );
 
-    plugin_header.save(account, core.get_size())?;
+    plugin_header.save(account, core.len())?;
 
     // Move offsets for existing registry records.
     plugin_registry.bump_offsets(registry_record.offset, plugin_size_diff)?;

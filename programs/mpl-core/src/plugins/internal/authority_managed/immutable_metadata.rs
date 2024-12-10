@@ -14,11 +14,9 @@ use crate::{
 pub struct ImmutableMetadata {}
 
 impl DataBlob for ImmutableMetadata {
-    fn get_initial_size() -> usize {
-        0
-    }
+    const BASE_LEN: usize = 0;
 
-    fn get_size(&self) -> usize {
+    fn len(&self) -> usize {
         0
     }
 }
@@ -30,5 +28,17 @@ impl PluginValidation for ImmutableMetadata {
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         reject!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_immutable_metadata_len() {
+        let immutable_metadata = ImmutableMetadata {};
+        let serialized = immutable_metadata.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), immutable_metadata.len());
     }
 }

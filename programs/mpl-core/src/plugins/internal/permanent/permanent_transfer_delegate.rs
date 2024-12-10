@@ -15,12 +15,10 @@ use crate::plugins::{
 pub struct PermanentTransferDelegate {}
 
 impl DataBlob for PermanentTransferDelegate {
-    fn get_initial_size() -> usize {
-        0
-    }
+    const BASE_LEN: usize = 0;
 
-    fn get_size(&self) -> usize {
-        0
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 
@@ -51,5 +49,17 @@ impl PluginValidation for PermanentTransferDelegate {
         }
 
         abstain!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_permanent_transfer_delegate_len() {
+        let permanent_transfer_delegate = PermanentTransferDelegate::default();
+        let serialized = permanent_transfer_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), permanent_transfer_delegate.len());
     }
 }
