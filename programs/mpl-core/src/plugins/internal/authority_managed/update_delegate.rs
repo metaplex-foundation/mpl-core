@@ -164,14 +164,12 @@ impl PluginValidation for UpdateDelegate {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if ((ctx.resolved_authorities.is_some()
-        && ctx
-            .resolved_authorities
-            .unwrap()
-            .contains(ctx.self_authority))
-            || self.additional_delegates.contains(ctx.authority_info.key))
-            // We do not allow the root authority (either Collection or Address) to be changed by this delegate.
-            && ctx.new_collection_authority.is_none() && ctx.new_asset_authority.is_none()
+        if (ctx.resolved_authorities.is_some()
+            && ctx
+                .resolved_authorities
+                .unwrap()
+                .contains(ctx.self_authority))
+            || self.additional_delegates.contains(ctx.authority_info.key)
         {
             approve!()
         } else {

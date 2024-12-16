@@ -1046,7 +1046,7 @@ test('it can change an asset collection using same update authority (delegate ex
   });
 });
 
-test('it cannot remove an asset from collection using update delegate', async (t) => {
+test('it can remove an asset from collection using update delegate', async (t) => {
   const umi = await createUmi();
   const collectionAuthority = generateSigner(umi);
   const { asset, collection } = await createAssetWithCollection(
@@ -1107,17 +1107,22 @@ test('it cannot remove an asset from collection using update delegate', async (t
     numMinted: 1,
   });
 
-  const result = update(umi, {
+  await update(umi, {
     asset,
     collection,
     newUpdateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     authority: updateDelegate,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'NoApprovals' });
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
 });
 
-test('it cannot remove an asset from collection using additional update delegate', async (t) => {
+test('it can remove an asset from collection using additional update delegate', async (t) => {
   const umi = await createUmi();
   const collectionAuthority = generateSigner(umi);
   const { asset, collection } = await createAssetWithCollection(
@@ -1157,14 +1162,19 @@ test('it cannot remove an asset from collection using additional update delegate
     numMinted: 1,
   });
 
-  const result = update(umi, {
+  await update(umi, {
     asset,
     collection,
     newUpdateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
     authority: additionalDelegate,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'NoApprovals' });
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+  });
 });
 
 test('it cannot add asset to collection using additional update delegate on new collection', async (t) => {
