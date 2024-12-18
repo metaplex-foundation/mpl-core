@@ -510,6 +510,10 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         .checked_add(size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
+    // SAFETY: `borrow_mut` will always return a valid pointer.
+    // new_next_plugin_offset is derived from next_plugin_offset and size_diff using
+    // checked arithmetic, so it will always be less than or equal to account.data_len().
+    // This will fail and revert state if there is a memory violation.
     unsafe {
         let base = account.data.borrow_mut().as_mut_ptr();
         sol_memmove(
@@ -621,6 +625,10 @@ pub fn delete_plugin<'a, T: DataBlob>(
             .checked_sub(next_plugin_offset)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
+        // SAFETY: `borrow_mut` will always return a valid pointer.
+        // plugin_offset is derived from next_plugin_offset and size_diff using
+        // checked arithmetic, so it will always be less than or equal to account.data_len().
+        // This will fail and revert state if there is a memory violation.
         unsafe {
             let base = account.data.borrow_mut().as_mut_ptr();
             sol_memmove(
@@ -700,6 +708,10 @@ pub fn delete_external_plugin_adapter<'a, T: DataBlob>(
             .checked_sub(next_plugin_offset)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
+        // SAFETY: `borrow_mut` will always return a valid pointer.
+        // plugin_offset is derived from next_plugin_offset and size_diff using
+        // checked arithmetic, so it will always be less than or equal to account.data_len().
+        // This will fail and revert state if there is a memory violation.
         unsafe {
             let base = account.data.borrow_mut().as_mut_ptr();
             sol_memmove(

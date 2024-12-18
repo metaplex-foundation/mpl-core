@@ -1,10 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo,
-    entrypoint::ProgramResult,
-    msg,
-    program_memory::{sol_memcpy, sol_memmove},
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_memory::sol_memmove,
 };
 
 use crate::{
@@ -359,6 +356,10 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
 
         resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
 
+        // SAFETY: `borrow_mut` will always return a valid pointer.
+        // new_plugin_offset is derived from plugin_offset and size_diff using
+        // checked arithmetic, so it will always be less than or equal to account.data_len().
+        // This will fail and revert state if there is a memory violation.
         unsafe {
             let base = account.data.borrow_mut().as_mut_ptr();
             sol_memmove(
