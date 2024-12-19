@@ -31,12 +31,10 @@ impl Default for PermanentFreezeDelegate {
 }
 
 impl DataBlob for PermanentFreezeDelegate {
-    fn get_initial_size() -> usize {
-        1
-    }
+    const BASE_LEN: usize = 1; // The frozen boolean
 
-    fn get_size(&self) -> usize {
-        1
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 
@@ -88,5 +86,17 @@ impl PluginValidation for PermanentFreezeDelegate {
         } else {
             abstain!()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_permanent_freeze_delegate_len() {
+        let permanent_freeze_delegate = PermanentFreezeDelegate::default();
+        let serialized = permanent_freeze_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), permanent_freeze_delegate.len());
     }
 }

@@ -27,12 +27,10 @@ impl Default for TransferDelegate {
 }
 
 impl DataBlob for TransferDelegate {
-    fn get_initial_size() -> usize {
-        0
-    }
+    const BASE_LEN: usize = 0;
 
-    fn get_size(&self) -> usize {
-        0
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 
@@ -51,5 +49,17 @@ impl PluginValidation for TransferDelegate {
         }
 
         abstain!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_transfer_delegate_len() {
+        let transfer_delegate = TransferDelegate::default();
+        let serialized = transfer_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), transfer_delegate.len());
     }
 }
