@@ -148,6 +148,22 @@ export const fetchAsset = async (
 };
 
 /**
+ * Helper function to fetch multiple assets and derive plugins from their collections if applicable.
+ *
+ * @param umi Context
+ * @param assets Array of asset addresses to fetch
+ * @param options Options, `skipDerivePlugins` plugins from collection is false by default
+ * @returns Promise of a list of `AssetV1`
+ */
+export const fetchAllAssets = async (
+  umi: Context,
+  assets: Array<PublicKey | string>,
+  options: { skipDerivePlugins?: boolean } & RpcGetAccountOptions = {}
+): Promise<AssetV1[]> => {
+  return Promise.all(assets.map((asset) => fetchAsset(umi, asset, options)));
+};
+
+/**
  * Helper function to fetch a collection.
  *
  * @param umi
