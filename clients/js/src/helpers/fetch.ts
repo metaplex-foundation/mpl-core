@@ -160,7 +160,31 @@ export const fetchAllAssets = async (
   assets: Array<PublicKey | string>,
   options: { skipDerivePlugins?: boolean } & RpcGetAccountOptions = {}
 ): Promise<AssetV1[]> => {
-  return Promise.all(assets.map((asset) => fetchAsset(umi, asset, options)));
+  const assetV1s = await Promise.all(
+    assets.map((asset) => fetchAssetV1(umi, publicKey(asset)))
+  );
+
+  if (options.skipDerivePlugins) {
+    return assetV1s;
+  }
+
+  const collectionKeys = Array.from(
+    new Set(assetV1s.map((asset) => collectionAddress(asset)))
+  ).filter((collection): collection is PublicKey => !!collection);
+
+  const collections = await fetchAllCollectionV1(umi, collectionKeys);
+
+  return assetV1s.map((assetV1) => {
+    const collection = collectionAddress(assetV1);
+    if (!collection) {
+      return assetV1;
+    }
+
+    const matchingCollection = collections.find(
+      (c) => c.publicKey === collection
+    );
+    return deriveAssetPlugins(assetV1, matchingCollection);
+  });
 };
 
 /**
