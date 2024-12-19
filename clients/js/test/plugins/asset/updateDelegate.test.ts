@@ -689,7 +689,7 @@ test('it cannot add updateDelegate plugin with additional delegate as additional
   await t.throwsAsync(result, { name: 'NoApprovals' });
 });
 
-test('it cannot update the update authority of the asset as an updateDelegate additional delegate', async (t) => {
+test('it can update the update authority of the asset as an updateDelegate additional delegate', async (t) => {
   const umi = await createUmi();
   const updateDelegate = generateSigner(umi);
   const updateDelegate2 = generateSigner(umi);
@@ -703,16 +703,21 @@ test('it cannot update the update authority of the asset as an updateDelegate ad
     ],
   });
 
-  const result = update(umi, {
+  await update(umi, {
     asset,
     authority: updateDelegate,
     newUpdateAuthority: updateAuthority('Address', [updateDelegate2.publicKey]),
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'NoApprovals' });
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: updateDelegate2.publicKey },
+  });
 });
 
-test('it cannot update the update authority of the asset as an updateDelegate root authority', async (t) => {
+test('it can update the update authority of the asset as an updateDelegate root authority', async (t) => {
   const umi = await createUmi();
   const updateDelegate = generateSigner(umi);
   const updateDelegate2 = generateSigner(umi);
@@ -727,13 +732,18 @@ test('it cannot update the update authority of the asset as an updateDelegate ro
     ],
   });
 
-  const result = update(umi, {
+  await update(umi, {
     asset,
     authority: updateDelegate,
     newUpdateAuthority: updateAuthority('Address', [updateDelegate2.publicKey]),
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'NoApprovals' });
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: updateDelegate2.publicKey },
+  });
 });
 
 test('an updateDelegate can add a plugin to an asset', async (t) => {

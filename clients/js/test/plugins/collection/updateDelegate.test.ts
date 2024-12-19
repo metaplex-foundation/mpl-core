@@ -654,7 +654,7 @@ test('it can approve/revoke non-updateDelegate plugin on an asset as collection 
   });
 });
 
-test('it cannot update the update authority of the collection as an updateDelegate additional delegate', async (t) => {
+test('it can update the update authority of the collection as an updateDelegate additional delegate', async (t) => {
   const umi = await createUmi();
   const updateDelegate = generateSigner(umi);
   const updateDelegate2 = generateSigner(umi);
@@ -668,16 +668,20 @@ test('it cannot update the update authority of the collection as an updateDelega
     ],
   });
 
-  const result = updateCollection(umi, {
+  await updateCollection(umi, {
     collection: collection.publicKey,
     authority: updateDelegate,
     newUpdateAuthority: updateDelegate2.publicKey,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: updateDelegate2.publicKey,
+  });
 });
 
-test('it cannot update the update authority of the collection as an updateDelegate root authority', async (t) => {
+test('it can update the update authority of the collection as an updateDelegate root authority', async (t) => {
   const umi = await createUmi();
   const updateDelegate = generateSigner(umi);
   const updateDelegate2 = generateSigner(umi);
@@ -692,13 +696,17 @@ test('it cannot update the update authority of the collection as an updateDelega
     ],
   });
 
-  const result = updateCollection(umi, {
+  await updateCollection(umi, {
     collection: collection.publicKey,
     authority: updateDelegate,
     newUpdateAuthority: updateDelegate2.publicKey,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: updateDelegate2.publicKey,
+  });
 });
 
 test('it can update collection details as an updateDelegate additional delegate', async (t) => {
