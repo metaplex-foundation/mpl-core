@@ -8,6 +8,7 @@ import {
 import {
   AssetV1,
   CollectionV1,
+  fetchAllAssetV1,
   fetchAllCollectionV1,
   fetchAssetV1,
   fetchCollectionV1,
@@ -152,17 +153,33 @@ export const fetchAsset = async (
  *
  * @param umi Context
  * @param assets Array of asset addresses to fetch
- * @param options Options, `skipDerivePlugins` plugins from collection is false by default
+ * @param options Options, `skipDerivePlugins` plugins from collection is false by default; `chunksize` how many assets to fetch in a single rpc call.
  * @returns Promise of a list of `AssetV1`
  */
 export const fetchAllAssets = async (
   umi: Context,
   assets: Array<PublicKey | string>,
-  options: { skipDerivePlugins?: boolean } & RpcGetAccountOptions = {}
+  options: {
+    skipDerivePlugins?: boolean;
+    chunkSize?: number;
+  } & RpcGetAccountOptions = {}
 ): Promise<AssetV1[]> => {
-  const assetV1s = await Promise.all(
-    assets.map((asset) => fetchAssetV1(umi, publicKey(asset)))
-  );
+  const chunkSize = options.chunkSize ?? 1000;
+  const assetChunks = [];
+  for (let i = 0; i < assets.length; i += chunkSize) {
+    assetChunks.push(assets.slice(i, i + chunkSize));
+  }
+
+  const assetV1s = (
+    await Promise.all(
+      assetChunks.map((chunk) =>
+        fetchAllAssetV1(
+          umi,
+          chunk.map((asset) => publicKey(asset))
+        )
+      )
+    )
+  ).flat();
 
   if (options.skipDerivePlugins) {
     return assetV1s;
@@ -173,17 +190,20 @@ export const fetchAllAssets = async (
   ).filter((collection): collection is PublicKey => !!collection);
 
   const collections = await fetchAllCollectionV1(umi, collectionKeys);
+  const collectionMap = collections.reduce(
+    (map, collection) => {
+      map[collection.publicKey] = collection;
+      return map;
+    },
+    {} as { [key: string]: CollectionV1 }
+  );
 
   return assetV1s.map((assetV1) => {
     const collection = collectionAddress(assetV1);
     if (!collection) {
       return assetV1;
     }
-
-    const matchingCollection = collections.find(
-      (c) => c.publicKey === collection
-    );
-    return deriveAssetPlugins(assetV1, matchingCollection);
+    return deriveAssetPlugins(assetV1, collectionMap[collection]);
   });
 };
 
