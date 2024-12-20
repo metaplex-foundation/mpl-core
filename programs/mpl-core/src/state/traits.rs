@@ -9,10 +9,16 @@ use super::UpdateAuthority;
 
 /// A trait for generic blobs of data that have size.
 pub trait DataBlob: BorshSerialize + BorshDeserialize {
-    /// Get the size of an empty instance of the data blob.
-    fn get_initial_size() -> usize;
-    /// Get the current size of the data blob.
-    fn get_size(&self) -> usize;
+    /// The base length of the data blob.
+    const BASE_LEN: usize;
+
+    /// Get the current length of the data blob.
+    fn len(&self) -> usize;
+
+    /// Check if the data blob is empty.
+    fn is_empty(&self) -> bool {
+        self.len() == Self::BASE_LEN
+    }
 }
 
 /// A trait for Solana accounts.

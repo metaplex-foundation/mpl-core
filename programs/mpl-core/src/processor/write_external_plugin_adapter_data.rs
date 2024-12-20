@@ -215,7 +215,7 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
             }
         }
         ExternalPluginAdapter::LinkedAppData(app_data) => {
-            let (_, mut header, mut registry) =
+            let (_, header_offset, mut header, mut registry) =
                 create_meta_idempotent::<T>(account, payer, system_program)?;
 
             match fetch_wrapped_external_plugin_adapter(
@@ -261,7 +261,7 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                                 parent_key: LinkedDataKey::LinkedAppData(app_data.data_authority),
                                 schema: app_data.schema,
                             }),
-                            Some(core),
+                            header_offset,
                             &mut header,
                             &mut registry,
                             account,
@@ -274,7 +274,7 @@ fn process_write_external_plugin_data<'a, T: DataBlob + SolanaAccount>(
                                 parent_key: LinkedDataKey::LinkedAppData(app_data.data_authority),
                                 schema: app_data.schema,
                             }),
-                            Some(core),
+                            header_offset,
                             &mut header,
                             &mut registry,
                             account,
