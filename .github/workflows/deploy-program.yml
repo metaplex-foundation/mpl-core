@@ -3,6 +3,11 @@ name: Deploy Program
 on:
   workflow_dispatch:
     inputs:
+      git_ref:
+        description: Release tag (release/core@0.2.2) or commit to deploy
+        required: true
+        type: string
+        default: release/core@0.2.2
       program:
         description: Program
         required: true
@@ -18,29 +23,44 @@ on:
         options:
           - devnet
           - mainnet-beta
-      version_program:
-        description: Version program
-        required: true
-        default: false
+          - sonic-devnet
+          - sonic-testnet
+          - eclipse-mainnet
+          - eclipse-devnet
+      dry_run:
+        description: Dry run
+        required: false
         type: boolean
-      level:
-        description: Level
-        required: true
-        default: patch
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
+        default: false
 
 env:
   CACHE: true
 
 jobs:
+  check_tag:
+    name: 'Check tag'
+    runs-on: ubuntu-latest
+    outputs:
+      program: ${{ steps.set_program.outputs.program }}
+      type: ${{ steps.set_program.outputs.type }}
+    steps:
+    - name: Check tag
+      id: set_program
+      run: |
+        echo program="core" >> $GITHUB_OUTPUT
+        if [[ "${{ inputs.git_ref }}" =~ ^release/core@* ]]; then
+          echo type="release" >> $GITHUB_OUTPUT
+        else
+          echo type="ref" >> $GITHUB_OUTPUT
+        fi
   build_programs:
     name: Programs
     uses: ./.github/workflows/build-programs.yml
     secrets: inherit
+    needs: check_tag
+    if: needs.check_tag.outputs.type == 'ref'
+    with:
+      git_ref: ${{ inputs.git_ref }}
 
   test_programs:
     name: Programs
@@ -54,24 +74,29 @@ jobs:
     needs: build_programs
     uses: ./.github/workflows/test-js-client.yml
     secrets: inherit
+    with:
+      git_ref: ${{ inputs.git_ref }}
 
   test_rust:
     name: Rust client
     needs: build_programs
     uses: ./.github/workflows/test-rust-client.yml
     secrets: inherit
+    with:
+      git_ref: ${{ inputs.git_ref }}
 
   deploy_program:
     name: Program / Deploy
     runs-on: ubuntu-latest-16-cores
-    needs: [test_programs, test_js, test_rust]
+    needs: [test_js, test_programs, test_rust, check_tag]
     permissions:
       contents: write
     steps:
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.SVC_TOKEN }}
+          ref: ${{ inputs.git_ref }}
 
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV
@@ -95,52 +120,97 @@ jobs:
 
       - name: Set RPC
         run: |
+          # We do this if waterfall because github actions does not allow dynamic access to secrets
           if [ "${{ inputs.cluster }}" == "devnet" ]; then
             echo RPC=${{ secrets.DEVNET_RPC }} >> $GITHUB_ENV
-          else
+          elif [ "${{ inputs.cluster }}" == "mainnet-beta" ]; then
             echo RPC=${{ secrets.MAINNET_RPC }} >> $GITHUB_ENV
+          elif [ "${{ inputs.cluster }}" == "sonic-devnet" ]; then
+            echo RPC=${{ secrets.SONIC_DEVNET_RPC }} >> $GITHUB_ENV
+          elif [ "${{ inputs.cluster }}" == "sonic-testnet" ]; then
+            echo RPC=${{ secrets.SONIC_TESTNET_RPC }} >> $GITHUB_ENV
+          elif [ "${{ inputs.cluster }}" == "eclipse-devnet" ]; then
+            echo RPC=${{ secrets.ECLIPSE_DEVNET_RPC }} >> $GITHUB_ENV
+          elif [ "${{ inputs.cluster }}" == "eclipse-testnet" ]; then
+            echo RPC=${{ secrets.ECLIPSE_TESTNET_RPC }} >> $GITHUB_ENV
+          elif [ "${{ inputs.cluster }}" == "eclipse-mainnet" ]; then
+            echo RPC=${{ secrets.ECLIPSE_MAINNET_RPC }} >> $GITHUB_ENV
           fi
 
-      - name: Determine program version
+      - name: Identify Program
         run: |
-          IDL_NAME="mpl_${{ inputs.program }}"
-          VERSION=`jq '.version' ./idls/${IDL_NAME}.json | sed 's/"//g'`
-          MAJOR=`echo ${VERSION} | cut -d. -f1`
-          MINOR=`echo ${VERSION} | cut -d. -f2`
-          PATCH=`echo ${VERSION} | cut -d. -f3`
-
-          if [ "${{ inputs.level }}" == "major" ]; then
-             MAJOR=$((MAJOR + 1))E
-             MINOR=0
-             PATCH=0
-          elif [ "${{ inputs.level }}" == "minor" ]; then
-             MINOR=$((MINOR + 1))
-             PATCH=0
+          echo PROGRAM_NAME="mpl_core" >> $GITHUB_ENV
+          echo ${{ secrets.CORE_ID }} > ./program-id.json
+          
+          if [[ "${{ inputs.cluster }}" == "sonic"* ]]; then
+            echo ${{ secrets.CORE_SONIC_DEPLOY_KEY }} > ./deploy-key.json
+            echo DEPLOY_TYPE="direct" >> $GITHUB_ENV
+          elif [[ "${{ inputs.cluster }}" == "eclipse"* ]]; then
+            echo ${{ secrets.CORE_ECLIPSE_DEPLOY_KEY }} > ./deploy-key.json
+            echo DEPLOY_TYPE="direct" >> $GITHUB_ENV
+          elif [[ "${{ inputs.cluster }}" == "devnet" ]]; then
+            echo ${{ secrets.CORE_DEPLOYER_KEY }} > ./deployer-key.json 
+            echo DEPLOY_TYPE="squads" >> $GITHUB_ENV
+            echo SQUADS_MULTISIG="Gs6jZWxXFvmZtBcyYr6fBXX5ikwRTemBDS4f6kFuB31U" >> $GITHUB_ENV
+            echo SQUADS_VAULT="Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59" >> $GITHUB_ENV
+          elif [[ "${{ inputs.cluster }}" == "mainnet-beta" ]]; then
+            echo ${{ secrets.CORE_DEPLOYER_KEY }} > ./deployer-key.json 
+            echo DEPLOY_TYPE="squads" >> $GITHUB_ENV
+            echo SQUADS_MULTISIG="Gs6jZWxXFvmZtBcyYr6fBXX5ikwRTemBDS4f6kFuB31U" >> $GITHUB_ENV
+            echo SQUADS_VAULT="Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59" >> $GITHUB_ENV
           else
-             PATCH=$((PATCH + 1))
-          fi
-
-          PROGRAM_VERSION="${MAJOR}.${MINOR}.${PATCH}"
-
-          cp ./idls/${IDL_NAME}.json ./idls/${IDL_NAME}-previous.json
-          jq ".version = \"${PROGRAM_VERSION}\"" ./idls/${IDL_NAME}-previous.json > ./idls/${IDL_NAME}.json
-          rm ./idls/${IDL_NAME}-previous.json
-
-          echo PROGRAM_VERSION="${PROGRAM_VERSION}" >> $GITHUB_ENV
+            echo "Invalid cluster: ${{ inputs.cluster }}"
+            exit 1
+          fi          
 
       - name: Download program builds
         uses: actions/download-artifact@v4
+        if: needs.check_tag.outputs.type == 'ref'
         with:
-          name: program-builds
+          name: program-builds-${{ inputs.git_ref }}
+      
+      - name: Download release asset
+        uses: actions/github-script@v5
+        id: get_release
+        if: needs.check_tag.outputs.type == 'release'
+        with:
+          script: |
+            const tag = "${{ inputs.git_ref }}";
+            const assetName = "${{ env.PROGRAM_NAME }}.so";
+
+            // Fetch the release associated with the tag
+            const release = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: tag
+            });
+            
+            if (release.status !== 200) {
+              throw new Error(`Failed to fetch release for tag ${tag}`);
+            }
+            
+            const asset = release.data.assets.find(asset => asset.name === assetName);
+            if (!asset) {
+              throw new Error(`Asset ${assetName} not found in release tagged ${tag}`);
+            }
+
+            core.setOutput("url", asset.url);
+
+      - name: Download the Selected Asset
+        if: needs.check_tag.outputs.type == 'release'
+        run: |
+          mkdir -p ${{ github.workspace }}/programs/.bin
+          curl -L -o ${{ github.workspace }}/programs/.bin/${{ env.PROGRAM_NAME }}.so \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/octet-stream" \
+            "${{ steps.get_release.outputs.url }}"
 
       - name: Deploy Program
+        if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'direct'
         run: |
-          echo "Deploying ${{ inputs.program }} to ${{ inputs.cluster }}"
+          echo "Deploying ${{ needs.check_tag.outputs.program }} to ${{ inputs.cluster }}"
 
-          echo ${{ secrets.CORE_DEPLOYER_KEY }} > ./deployer-key.json 
-          echo ${{ secrets.CORE_ID }} > ./program-id.json
-
-          solana -v program deploy ./programs/.bin/mpl_${{ inputs.program }}_program.so \
+          solana -v program deploy ./programs/.bin/mpl_${{ env.PROGRAM_NAME }}_program.so \
             -u ${{ env.RPC }} \
             --program-id ./program-id.json \
             -k ./deployer-key.json \
@@ -150,23 +220,54 @@ jobs:
           rm ./deployer-key.json
           rm ./program-id.json
 
-      - name: Version program
-        working-directory: ./programs/mpl-${{ inputs.program }}/program
-        if: github.event.inputs.version_program == 'true'
+      - name: Deploy squads buffer
+        if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'squads'
         run: |
-          git stash
-          git config user.name "${{ env.COMMIT_USER_NAME }}"
-          git config user.email "${{ env.COMMIT_USER_EMAIL }}"
+          echo "Deploying buffer for ${{ inputs.program }} on ${{ inputs.cluster }}"
+          echo ${{ secrets.SQUADS_BOT_KEY }} > ./submitter-key.json
 
-          cargo login ${{ secrets.CRATES_TOKEN }}
-          cargo release ${{ env.PROGRAM_VERSION }} --no-confirm --no-push --no-tag --no-publish --execute
+          BUFFER=$(solana program write-buffer -u ${{ env.RPC }} -k ./submitter-key.json --max-sign-attempts 100 --use-rpc ./programs/.bin/mpl_${{ env.PROGRAM_NAME }}_program.so | awk '{print $2}')
+          echo "Buffer: $BUFFER"
 
-          git reset --soft HEAD~1
-          git stash pop
+          solana program set-buffer-authority $BUFFER \
+            --new-buffer-authority ${{ env.SQUADS_VAULT }} \
+            -k ./submitter-key.json \
+            -u ${{ env.RPC }}
 
-      - name: Commit and tag new version
-        uses: stefanzweifel/git-auto-commit-action@v4
-        if: github.event.inputs.version_program == 'true' && github.event.inputs.cluster == 'mainnet-beta'
+          rm ./submitter-key.json
+
+          echo "BUFFER=$BUFFER" >> $GITHUB_ENV
+    
+
+      - name: Create Squads proposal
+        if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'squads'
+        uses: metaplex-foundation/squads-program-upgrade
         with:
-          commit_message: Deploy mpl-${{ inputs.program }} program v${{ env.PROGRAM_VERSION }}
-          tagging_message: mpl-${{ inputs.program }}@v${{ env.PROGRAM_VERSION }}
+          network-url: ${{ env.RPC }}
+          program-multisig: ${{ env.SQUADS_MULTISIG }}
+          program-id: 'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d'
+          program-index: '1'
+          buffer: ${{ env.BUFFER }}
+          spill-address: 'botTxAkJhuCtNNn9xsH8fHJjzTkcN6XD4dR3R5hkzV2'
+          authority: 'botTxAkJhuCtNNn9xsH8fHJjzTkcN6XD4dR3R5hkzV2'
+          name: 'Deploy ${{ inputs.git_ref }}}'
+          keypair: ${{ env.SQUADS_BOT_KEY }}
+
+      - name: Create env tag
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const refData = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'tags/${{ inputs.git_ref }}'
+            });
+            if (refData.status !== 200) {
+              throw new Error('Failed to fetch existing tag');
+            }
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ needs.check_tag.outputs.program }}-${{ inputs.cluster }}',
+              sha: refData.data.object.sha
+            });
