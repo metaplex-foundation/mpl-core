@@ -241,7 +241,7 @@ jobs:
 
       - name: Create Squads proposal
         if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'squads'
-        uses: metaplex-foundation/squads-program-upgrade
+        uses: metaplex-foundation/squads-program-upgrade@main
         with:
           network-url: ${{ env.RPC }}
           program-multisig: ${{ env.SQUADS_MULTISIG }}
