@@ -1,6 +1,9 @@
 name: Benchmark
 on:
   workflow_call:
+    inputs:
+      git_ref:
+        type: string
 
 permissions:
   # deployments permission to deploy GitHub pages website
@@ -28,6 +31,7 @@ jobs:
           node: 18.x
           solana: ${{ env.SOLANA_VERSION }}
           cache: ${{ env.CACHE }}
+          artifacts: program-builds-${{ inputs.git_ref }}
 
       - name: Install dependencies
         uses: metaplex-foundation/actions/install-node-dependencies@v1

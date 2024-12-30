@@ -1,6 +1,9 @@
 name: Benchmark
 on:
   workflow_call:
+    inputs:
+      git_ref:
+        type: string
 
 permissions:
   # deployments permission to deploy GitHub pages website
@@ -20,6 +23,8 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.git_ref }}
 
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV
@@ -30,6 +35,7 @@ jobs:
           node: 18.x
           solana: ${{ env.SOLANA_VERSION }}
           cache: ${{ env.CACHE }}
+          artifacts: program-builds-${{ inputs.git_ref }}
 
       - name: Install dependencies
         uses: metaplex-foundation/actions/install-node-dependencies@v1
