@@ -247,7 +247,6 @@ jobs:
           program-id: 'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d'
           program-index: '1'
           buffer: ${{ env.BUFFER }}
-          # idl-buffer: '3eoQzgrBcpVCRUksfTYRh7xJUcq1XwwgycT5AXUQmu1f'
           spill-address: 'botTxAkJhuCtNNn9xsH8fHJjzTkcN6XD4dR3R5hkzV2'
           authority: 'botTxAkJhuCtNNn9xsH8fHJjzTkcN6XD4dR3R5hkzV2'
           name: 'Deploy ${{ inputs.git_ref }}}'
