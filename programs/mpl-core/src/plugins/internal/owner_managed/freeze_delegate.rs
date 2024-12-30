@@ -19,6 +19,8 @@ pub struct FreezeDelegate {
 }
 
 impl FreezeDelegate {
+    const BASE_LEN: usize = 1; // The frozen boolean
+
     /// Initialize the Freeze plugin, unfrozen by default.
     pub fn new() -> Self {
         Self { frozen: false }
@@ -32,12 +34,8 @@ impl Default for FreezeDelegate {
 }
 
 impl DataBlob for FreezeDelegate {
-    fn get_initial_size() -> usize {
-        1
-    }
-
-    fn get_size(&self) -> usize {
-        1
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 
@@ -107,5 +105,17 @@ impl PluginValidation for FreezeDelegate {
         } else {
             abstain!()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_freeze_delegate_len() {
+        let freeze_delegate = FreezeDelegate::default();
+        let serialized = freeze_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), freeze_delegate.len());
     }
 }

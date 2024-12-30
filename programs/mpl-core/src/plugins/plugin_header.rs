@@ -14,18 +14,34 @@ pub struct PluginHeaderV1 {
     pub plugin_registry_offset: usize, // 8
 }
 
-impl DataBlob for PluginHeaderV1 {
-    fn get_initial_size() -> usize {
-        1 + 8
-    }
+impl PluginHeaderV1 {
+    const BASE_LEN: usize = 1 // Key
+    + 8; // Offset
+}
 
-    fn get_size(&self) -> usize {
-        1 + 8
+impl DataBlob for PluginHeaderV1 {
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 
 impl SolanaAccount for PluginHeaderV1 {
     fn key() -> Key {
         Key::PluginHeaderV1
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_plugin_header_v1_len() {
+        let header = PluginHeaderV1 {
+            key: Key::PluginHeaderV1,
+            plugin_registry_offset: 0,
+        };
+        let serialized = header.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), header.len());
     }
 }

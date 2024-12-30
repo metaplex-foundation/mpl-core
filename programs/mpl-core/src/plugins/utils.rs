@@ -27,16 +27,18 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
-) -> Result<(T, PluginHeaderV1, PluginRegistryV1), ProgramError> {
+) -> Result<(T, usize, PluginHeaderV1, PluginRegistryV1), ProgramError> {
     let core = T::load(account, 0)?;
-    let header_offset = core.get_size();
+    let header_offset = core.len();
 
     // Check if the plugin header and registry exist.
     if header_offset == account.data_len() {
         // They don't exist, so create them.
         let header = PluginHeaderV1 {
             key: Key::PluginHeaderV1,
-            plugin_registry_offset: header_offset + PluginHeaderV1::get_initial_size(),
+            plugin_registry_offset: header_offset
+                + 1 // Plugin Header Key
+                + 8, // Plugin Registry Offset
         };
         let registry = PluginRegistryV1 {
             key: Key::PluginRegistryV1,
@@ -48,19 +50,19 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
             account,
             payer,
             system_program,
-            header.plugin_registry_offset + PluginRegistryV1::get_initial_size(),
+            header.plugin_registry_offset + registry.len(),
         )?;
 
         header.save(account, header_offset)?;
         registry.save(account, header.plugin_registry_offset)?;
 
-        Ok((core, header, registry))
+        Ok((core, header_offset, header, registry))
     } else {
         // They exist, so load them.
         let header = PluginHeaderV1::load(account, header_offset)?;
         let registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
-        Ok((core, header, registry))
+        Ok((core, header_offset, header, registry))
     }
 }
 
@@ -70,13 +72,15 @@ pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
-) -> Result<(PluginHeaderV1, PluginRegistryV1), ProgramError> {
-    let header_offset = asset.get_size();
+) -> Result<(usize, PluginHeaderV1, PluginRegistryV1), ProgramError> {
+    let header_offset = asset.len();
 
     // They don't exist, so create them.
     let header = PluginHeaderV1 {
         key: Key::PluginHeaderV1,
-        plugin_registry_offset: header_offset + PluginHeaderV1::get_initial_size(),
+        plugin_registry_offset: header_offset
+            + 1 // Plugin Header Key
+            + 8, // Plugin Registry Offset
     };
     let registry = PluginRegistryV1 {
         key: Key::PluginRegistryV1,
@@ -88,13 +92,13 @@ pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
         account,
         payer,
         system_program,
-        header.plugin_registry_offset + PluginRegistryV1::get_initial_size(),
+        header.plugin_registry_offset + registry.len(),
     )?;
 
     header.save(account, header_offset)?;
     registry.save(account, header.plugin_registry_offset)?;
 
-    Ok((header, registry))
+    Ok((header_offset, header, registry))
 }
 
 /// Assert that the Plugin metadata has been initialized.
@@ -102,7 +106,7 @@ pub fn assert_plugins_initialized(account: &AccountInfo) -> ProgramResult {
     let mut bytes: &[u8] = &(*account.data).borrow();
     let asset = AssetV1::deserialize(&mut bytes)?;
 
-    if asset.get_size() == account.data_len() {
+    if asset.len() == account.data_len() {
         return Err(MplCoreError::PluginsNotInitialized.into());
     }
 
@@ -116,11 +120,11 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: BorshDeserialize>(
 ) -> Result<(Authority, U, usize), ProgramError> {
     let asset = T::load(account, 0)?;
 
-    if asset.get_size() == account.data_len() {
+    if asset.len() == account.data_len() {
         return Err(MplCoreError::PluginNotFound.into());
     }
 
-    let header = PluginHeaderV1::load(account, asset.get_size())?;
+    let header = PluginHeaderV1::load(account, asset.len())?;
     let PluginRegistryV1 { registry, .. } =
         PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
@@ -155,15 +159,15 @@ pub fn fetch_wrapped_plugin<T: DataBlob + SolanaAccount>(
     plugin_type: PluginType,
 ) -> Result<(Authority, Plugin), ProgramError> {
     let size = match core {
-        Some(core) => core.get_size(),
+        Some(core) => core.len(),
         None => {
             let asset = T::load(account, 0)?;
 
-            if asset.get_size() == account.data_len() {
+            if asset.len() == account.data_len() {
                 return Err(MplCoreError::PluginNotFound.into());
             }
 
-            asset.get_size()
+            asset.len()
         }
     };
 
@@ -191,15 +195,15 @@ pub fn fetch_wrapped_external_plugin_adapter<T: DataBlob + SolanaAccount>(
     plugin_key: &ExternalPluginAdapterKey,
 ) -> Result<(ExternalRegistryRecord, ExternalPluginAdapter), ProgramError> {
     let size = match core {
-        Some(core) => core.get_size(),
+        Some(core) => core.len(),
         None => {
             let asset = T::load(account, 0)?;
 
-            if asset.get_size() == account.data_len() {
+            if asset.len() == account.data_len() {
                 return Err(MplCoreError::ExternalPluginAdapterNotFound.into());
             }
 
-            asset.get_size()
+            asset.len()
         }
     };
 
@@ -225,11 +229,11 @@ pub fn fetch_wrapped_external_plugin_adapter<T: DataBlob + SolanaAccount>(
 pub fn fetch_plugins(account: &AccountInfo) -> Result<Vec<RegistryRecord>, ProgramError> {
     let asset = AssetV1::load(account, 0)?;
 
-    if asset.get_size() == account.data_len() {
+    if asset.len() == account.data_len() {
         return Err(MplCoreError::PluginNotFound.into());
     }
 
-    let header = PluginHeaderV1::load(account, asset.get_size())?;
+    let header = PluginHeaderV1::load(account, asset.len())?;
     let PluginRegistryV1 { registry, .. } =
         PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
@@ -242,11 +246,11 @@ pub fn list_plugins<T: DataBlob + SolanaAccount>(
 ) -> Result<Vec<PluginType>, ProgramError> {
     let asset = T::load(account, 0)?;
 
-    if asset.get_size() == account.data_len() {
+    if asset.len() == account.data_len() {
         return Err(MplCoreError::PluginNotFound.into());
     }
 
-    let header = PluginHeaderV1::load(account, asset.get_size())?;
+    let header = PluginHeaderV1::load(account, asset.len())?;
     let PluginRegistryV1 { registry, .. } =
         PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
@@ -257,20 +261,19 @@ pub fn list_plugins<T: DataBlob + SolanaAccount>(
 }
 
 /// Add a plugin to the registry and initialize it.
+#[allow(clippy::too_many_arguments)]
 pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     plugin: &Plugin,
     authority: &Authority,
+    header_offset: usize,
     plugin_header: &mut PluginHeaderV1,
     plugin_registry: &mut PluginRegistryV1,
     account: &AccountInfo<'a>,
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
-    let core = T::load(account, 0)?;
-    let header_offset = core.get_size();
     let plugin_type = plugin.into();
-    let plugin_data = plugin.try_to_vec()?;
-    let plugin_size = plugin_data.len();
+    let plugin_size = plugin.len();
 
     // You cannot add a duplicate plugin.
     if plugin_registry
@@ -290,7 +293,7 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     };
 
     let size_increase = plugin_size
-        .checked_add(new_registry_record.try_to_vec()?.len())
+        .checked_add(new_registry_record.len())
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     let new_registry_offset = plugin_header
@@ -319,7 +322,7 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
 #[allow(clippy::too_many_arguments)]
 pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     init_info: &ExternalPluginAdapterInitInfo,
-    core: Option<&T>,
+    header_offset: usize,
     plugin_header: &mut PluginHeaderV1,
     plugin_registry: &mut PluginRegistryV1,
     account: &AccountInfo<'a>,
@@ -327,18 +330,6 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     system_program: &AccountInfo<'a>,
     appended_data: Option<&[u8]>,
 ) -> ProgramResult {
-    let header_offset = match core {
-        Some(core) => core.get_size(),
-        None => {
-            let asset = T::load(account, 0)?;
-
-            if asset.get_size() == account.data_len() {
-                return Err(MplCoreError::ExternalPluginAdapterNotFound.into());
-            }
-
-            asset.get_size()
-        }
-    };
     let plugin_type = init_info.into();
 
     // Note currently we are blocking adding LifecycleHook and LinkedLifecycleHook external plugin adapters as they
@@ -540,7 +531,7 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
     plugin_registry.external_registry[record_index].data_len = Some(new_data_len);
 
     plugin_registry.save(account, new_registry_offset as usize)?;
-    plugin_header.save(account, core.map_or(0, |core| core.get_size()))?;
+    plugin_header.save(account, core.map_or(0, |core| core.len()))?;
 
     Ok(())
 }
@@ -583,12 +574,12 @@ pub fn delete_plugin<'a, T: DataBlob>(
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
-    if asset.get_size() == account.data_len() {
+    if asset.len() == account.data_len() {
         return Err(MplCoreError::PluginNotFound.into());
     }
 
     //TODO: Bytemuck this.
-    let mut header = PluginHeaderV1::load(account, asset.get_size())?;
+    let mut header = PluginHeaderV1::load(account, asset.len())?;
     let mut plugin_registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
     if let Some(index) = plugin_registry
@@ -641,7 +632,7 @@ pub fn delete_plugin<'a, T: DataBlob>(
         }
 
         header.plugin_registry_offset = new_registry_offset;
-        header.save(account, asset.get_size())?;
+        header.save(account, asset.len())?;
 
         // Move offsets for existing registry records.
         plugin_registry.bump_offsets(plugin_offset, -(serialized_plugin.len() as isize))?;
@@ -664,12 +655,12 @@ pub fn delete_external_plugin_adapter<'a, T: DataBlob>(
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
-    if asset.get_size() == account.data_len() {
+    if asset.len() == account.data_len() {
         return Err(MplCoreError::ExternalPluginAdapterNotFound.into());
     }
 
     //TODO: Bytemuck this.
-    let mut header = PluginHeaderV1::load(account, asset.get_size())?;
+    let mut header = PluginHeaderV1::load(account, asset.len())?;
     let mut plugin_registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
     let result = find_external_plugin_adapter(&plugin_registry, plugin_key, account)?;
@@ -724,7 +715,7 @@ pub fn delete_external_plugin_adapter<'a, T: DataBlob>(
         }
 
         header.plugin_registry_offset = new_registry_offset;
-        header.save(account, asset.get_size())?;
+        header.save(account, asset.len())?;
 
         // Move offsets for existing registry records.
         plugin_registry.bump_offsets(plugin_offset, -(serialized_plugin_len as isize))?;

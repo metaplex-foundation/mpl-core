@@ -8,34 +8,72 @@ use crate::error::MplCoreError;
 use crate::plugins::{
     abstain, reject, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
 };
+use crate::state::DataBlob;
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct Creator {
-    address: Pubkey,
-    percentage: u8,
+    /// The address of the creator.
+    pub address: Pubkey, // 32
+    /// The percentage of royalties to be paid to the creator.
+    pub percentage: u8, // 1
+}
+
+impl Creator {
+    const BASE_LEN: usize = 32 // The address
+    + 1; // The percentage
+}
+
+impl DataBlob for Creator {
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+    }
 }
 
 /// The rule set for an asset indicating where it is allowed to be transferred.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub enum RuleSet {
     /// No rules are enforced.
-    None,
+    None, // 1
     /// Allow list of programs that are allowed to transfer, receive, or send the asset.
-    ProgramAllowList(Vec<Pubkey>),
+    ProgramAllowList(Vec<Pubkey>), // 4
     /// Deny list of programs that are not allowed to transfer, receive, or send the asset.
-    ProgramDenyList(Vec<Pubkey>),
+    ProgramDenyList(Vec<Pubkey>), // 4
+}
+
+impl RuleSet {
+    const BASE_LEN: usize = 1; // The rule set discriminator
+}
+
+impl DataBlob for RuleSet {
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+            + match self {
+                RuleSet::ProgramAllowList(allow_list) => 4 + allow_list.len() * 32,
+                RuleSet::ProgramDenyList(deny_list) => 4 + deny_list.len() * 32,
+                RuleSet::None => 0,
+            }
+    }
 }
 
 /// Traditional royalties structure for an asset.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct Royalties {
     /// The percentage of royalties to be paid to the creators.
-    basis_points: u16,
+    pub basis_points: u16, // 2
     /// A list of creators to receive royalties.
-    creators: Vec<Creator>,
+    pub creators: Vec<Creator>, // 4
     /// The rule set for the asset to enforce royalties.
-    rule_set: RuleSet,
+    pub rule_set: RuleSet, // 1
+}
+
+impl DataBlob for Royalties {
+    fn len(&self) -> usize {
+        2 // basis_points
+        + 4 // creators length
+        + self.creators.iter().map(|creator| creator.len()).sum::<usize>()
+        + self.rule_set.len() // rule_set
+    }
 }
 
 fn validate_royalties(royalties: &Royalties) -> Result<ValidationResult, ProgramError> {
@@ -130,6 +168,95 @@ impl PluginValidation for Royalties {
             }
         } else {
             abstain!()
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_creator_len() {
+        let creator = Creator {
+            address: Pubkey::default(),
+            percentage: 100,
+        };
+        let serialized = creator.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), creator.len());
+    }
+
+    #[test]
+    fn test_rule_set_default_len() {
+        let rule_set = RuleSet::None;
+        let serialized = rule_set.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), rule_set.len());
+    }
+
+    #[test]
+    fn test_rule_set_len() {
+        let rule_sets = vec![
+            RuleSet::ProgramAllowList(vec![Pubkey::default()]),
+            RuleSet::ProgramDenyList(vec![Pubkey::default(), Pubkey::default()]),
+        ];
+        for rule_set in rule_sets {
+            let serialized = rule_set.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), rule_set.len());
+        }
+    }
+
+    #[test]
+    fn test_royalties_len() {
+        let royalties = vec![
+            Royalties {
+                basis_points: 0,
+                creators: vec![],
+                rule_set: RuleSet::None,
+            },
+            Royalties {
+                basis_points: 1,
+                creators: vec![Creator {
+                    address: Pubkey::default(),
+                    percentage: 1,
+                }],
+                rule_set: RuleSet::ProgramAllowList(vec![]),
+            },
+            Royalties {
+                basis_points: 2,
+                creators: vec![
+                    Creator {
+                        address: Pubkey::default(),
+                        percentage: 2,
+                    },
+                    Creator {
+                        address: Pubkey::default(),
+                        percentage: 3,
+                    },
+                ],
+                rule_set: RuleSet::ProgramDenyList(vec![Pubkey::default()]),
+            },
+            Royalties {
+                basis_points: 3,
+                creators: vec![
+                    Creator {
+                        address: Pubkey::default(),
+                        percentage: 3,
+                    },
+                    Creator {
+                        address: Pubkey::default(),
+                        percentage: 4,
+                    },
+                    Creator {
+                        address: Pubkey::default(),
+                        percentage: 5,
+                    },
+                ],
+                rule_set: RuleSet::ProgramDenyList(vec![Pubkey::default(), Pubkey::default()]),
+            },
+        ];
+        for royalty in royalties {
+            let serialized = royalty.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), royalty.len());
         }
     }
 }

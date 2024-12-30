@@ -16,11 +16,8 @@ use crate::{
 pub struct AddBlocker {}
 
 impl DataBlob for AddBlocker {
-    fn get_initial_size() -> usize {
-        0
-    }
-
-    fn get_size(&self) -> usize {
+    fn len(&self) -> usize {
+        // Stateless data blob
         0
     }
 }
@@ -39,5 +36,17 @@ impl PluginValidation for AddBlocker {
         }
 
         reject!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_add_blocker_len() {
+        let add_blocker = AddBlocker {};
+        let serialized = add_blocker.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), add_blocker.len());
     }
 }
