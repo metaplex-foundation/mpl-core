@@ -20,10 +20,12 @@ pub struct AutographSignature {
     pub message: String, // 4 + len
 }
 
-impl DataBlob for AutographSignature {
+impl AutographSignature {
     const BASE_LEN: usize = 32 // The address
     + 4; // The message length
+}
 
+impl DataBlob for AutographSignature {
     fn len(&self) -> usize {
         Self::BASE_LEN + self.message.len()
     }
@@ -34,6 +36,10 @@ impl DataBlob for AutographSignature {
 pub struct Autograph {
     /// A list of signatures with option message
     pub signatures: Vec<AutographSignature>, // 4 + len * Autograph len
+}
+
+impl Autograph {
+    const BASE_LEN: usize = 4; // The signatures length
 }
 
 fn validate_autograph(
@@ -136,8 +142,6 @@ impl PluginValidation for Autograph {
 }
 
 impl DataBlob for Autograph {
-    const BASE_LEN: usize = 4; // The signatures length
-
     fn len(&self) -> usize {
         Self::BASE_LEN + self.signatures.iter().map(|sig| sig.len()).sum::<usize>()
     }

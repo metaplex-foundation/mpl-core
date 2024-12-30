@@ -26,9 +26,8 @@ impl Default for BurnDelegate {
 }
 
 impl DataBlob for BurnDelegate {
-    const BASE_LEN: usize = 0;
-
     fn len(&self) -> usize {
+        // Stateless data blob
         0
     }
 }

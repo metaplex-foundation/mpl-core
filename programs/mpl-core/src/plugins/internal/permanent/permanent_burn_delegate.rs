@@ -16,10 +16,9 @@ use crate::{
 pub struct PermanentBurnDelegate {}
 
 impl DataBlob for PermanentBurnDelegate {
-    const BASE_LEN: usize = 0;
-
     fn len(&self) -> usize {
-        Self::BASE_LEN
+        // Stateless data blob
+        0
     }
 }
 

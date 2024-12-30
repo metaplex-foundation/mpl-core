@@ -11,10 +11,12 @@ pub struct Attribute {
     pub value: String, // 4 + len
 }
 
-impl DataBlob for Attribute {
+impl Attribute {
     const BASE_LEN: usize = 4 // The length of the Key string
     + 4; // The length of the Value string
+}
 
+impl DataBlob for Attribute {
     fn len(&self) -> usize {
         Self::BASE_LEN + self.key.len() + self.value.len()
     }
@@ -29,6 +31,8 @@ pub struct Attributes {
 }
 
 impl Attributes {
+    const BASE_LEN: usize = 4; // The length of the attribute list
+
     /// Initialize the Attributes plugin, unfrozen by default.
     pub fn new() -> Self {
         Self::default()
@@ -36,8 +40,6 @@ impl Attributes {
 }
 
 impl DataBlob for Attributes {
-    const BASE_LEN: usize = 4; // The length of the attribute list
-
     fn len(&self) -> usize {
         Self::BASE_LEN
             + self

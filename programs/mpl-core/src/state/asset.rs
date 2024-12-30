@@ -32,6 +32,14 @@ pub struct AssetV1 {
 }
 
 impl AssetV1 {
+    /// The base length of the asset account with an empty name and uri and no seq.
+    const BASE_LEN: usize = 1 // Key
+                            + 32 // Owner
+                            + 1 // Update Authority discriminator
+                            + 4 // Name length
+                            + 4 // URI length
+                            + 1; // Seq option
+
     /// Create a new `Asset` with correct `Key` and `seq` of None.
     pub fn new(
         owner: Pubkey,
@@ -354,14 +362,6 @@ impl AssetV1 {
 impl Compressible for AssetV1 {}
 
 impl DataBlob for AssetV1 {
-    /// The base length of the asset account with an empty name and uri and no seq.
-    const BASE_LEN: usize = 1 // Key
-                            + 32 // Owner
-                            + 1 // Update Authority discriminator
-                            + 4 // Name length
-                            + 4 // URI length
-                            + 1; // Seq option
-
     fn len(&self) -> usize {
         let mut size = AssetV1::BASE_LEN + self.name.len() + self.uri.len();
 

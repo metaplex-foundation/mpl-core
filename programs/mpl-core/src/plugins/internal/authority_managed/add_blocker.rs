@@ -16,10 +16,9 @@ use crate::{
 pub struct AddBlocker {}
 
 impl DataBlob for AddBlocker {
-    const BASE_LEN: usize = 0;
-
     fn len(&self) -> usize {
-        Self::BASE_LEN
+        // Stateless data blob
+        0
     }
 }
 

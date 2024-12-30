@@ -14,10 +14,12 @@ pub struct PluginHeaderV1 {
     pub plugin_registry_offset: usize, // 8
 }
 
-impl DataBlob for PluginHeaderV1 {
+impl PluginHeaderV1 {
     const BASE_LEN: usize = 1 // Key
     + 8; // Offset
+}
 
+impl DataBlob for PluginHeaderV1 {
     fn len(&self) -> usize {
         Self::BASE_LEN
     }

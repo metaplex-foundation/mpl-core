@@ -59,9 +59,11 @@ pub enum Authority {
     },
 }
 
-impl DataBlob for Authority {
+impl Authority {
     const BASE_LEN: usize = 1; // 1 byte for the discriminator
+}
 
+impl DataBlob for Authority {
     fn len(&self) -> usize {
         Self::BASE_LEN
             + if let Authority::Address { .. } = self {
@@ -100,9 +102,11 @@ pub enum Key {
     CollectionV1,
 }
 
-impl DataBlob for Key {
+impl Key {
     const BASE_LEN: usize = 1; // 1 byte for the discriminator
+}
 
+impl DataBlob for Key {
     fn len(&self) -> usize {
         Self::BASE_LEN
     }

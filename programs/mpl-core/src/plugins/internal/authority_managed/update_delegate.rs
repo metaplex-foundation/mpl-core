@@ -23,6 +23,8 @@ pub struct UpdateDelegate {
 }
 
 impl UpdateDelegate {
+    const BASE_LEN: usize = 4; // The additional delegates length
+
     /// Initialize the UpdateDelegate plugin.
     pub fn new() -> Self {
         Self {
@@ -38,8 +40,6 @@ impl Default for UpdateDelegate {
 }
 
 impl DataBlob for UpdateDelegate {
-    const BASE_LEN: usize = 4; // The additional delegates length
-
     fn len(&self) -> usize {
         Self::BASE_LEN + self.additional_delegates.len() * 32
     }

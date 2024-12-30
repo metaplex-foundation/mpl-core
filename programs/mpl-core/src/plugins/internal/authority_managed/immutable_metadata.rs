@@ -14,9 +14,8 @@ use crate::{
 pub struct ImmutableMetadata {}
 
 impl DataBlob for ImmutableMetadata {
-    const BASE_LEN: usize = 0;
-
     fn len(&self) -> usize {
+        // Stateless data blob
         0
     }
 }

@@ -19,10 +19,12 @@ pub struct Creator {
     pub percentage: u8, // 1
 }
 
-impl DataBlob for Creator {
+impl Creator {
     const BASE_LEN: usize = 32 // The address
     + 1; // The percentage
+}
 
+impl DataBlob for Creator {
     fn len(&self) -> usize {
         Self::BASE_LEN
     }
@@ -39,9 +41,11 @@ pub enum RuleSet {
     ProgramDenyList(Vec<Pubkey>), // 4
 }
 
-impl DataBlob for RuleSet {
+impl RuleSet {
     const BASE_LEN: usize = 1; // The rule set discriminator
+}
 
+impl DataBlob for RuleSet {
     fn len(&self) -> usize {
         Self::BASE_LEN
             + match self {
@@ -64,10 +68,6 @@ pub struct Royalties {
 }
 
 impl DataBlob for Royalties {
-    const BASE_LEN: usize = 2 // basis_points
-    + 4 // creators length
-    + RuleSet::BASE_LEN; // rule_set
-
     fn len(&self) -> usize {
         2 // basis_points
         + 4 // creators length

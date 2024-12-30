@@ -36,7 +36,9 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
         // They don't exist, so create them.
         let header = PluginHeaderV1 {
             key: Key::PluginHeaderV1,
-            plugin_registry_offset: header_offset + PluginHeaderV1::BASE_LEN,
+            plugin_registry_offset: header_offset
+                + 1 // Plugin Header Key
+                + 8, // Plugin Registry Offset
         };
         let registry = PluginRegistryV1 {
             key: Key::PluginRegistryV1,
@@ -48,7 +50,7 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
             account,
             payer,
             system_program,
-            header.plugin_registry_offset + PluginRegistryV1::BASE_LEN,
+            header.plugin_registry_offset + registry.len(),
         )?;
 
         header.save(account, header_offset)?;
@@ -76,7 +78,9 @@ pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
     // They don't exist, so create them.
     let header = PluginHeaderV1 {
         key: Key::PluginHeaderV1,
-        plugin_registry_offset: header_offset + PluginHeaderV1::BASE_LEN,
+        plugin_registry_offset: header_offset
+            + 1 // Plugin Header Key
+            + 8, // Plugin Registry Offset
     };
     let registry = PluginRegistryV1 {
         key: Key::PluginRegistryV1,
@@ -88,7 +92,7 @@ pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
         account,
         payer,
         system_program,
-        header.plugin_registry_offset + PluginRegistryV1::BASE_LEN,
+        header.plugin_registry_offset + registry.len(),
     )?;
 
     header.save(account, header_offset)?;

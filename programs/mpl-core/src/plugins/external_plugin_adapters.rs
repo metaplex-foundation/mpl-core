@@ -49,9 +49,12 @@ pub enum ExternalPluginAdapterType {
     DataSection,
 }
 
-impl DataBlob for ExternalPluginAdapterType {
+impl ExternalPluginAdapterType {
+    /// A u8 enum.
     const BASE_LEN: usize = 1;
+}
 
+impl DataBlob for ExternalPluginAdapterType {
     fn len(&self) -> usize {
         Self::BASE_LEN
     }
@@ -418,9 +421,12 @@ pub enum HookableLifecycleEvent {
     Update,
 }
 
-impl DataBlob for HookableLifecycleEvent {
+impl HookableLifecycleEvent {
+    /// A u8 enum.
     const BASE_LEN: usize = 1;
+}
 
+impl DataBlob for HookableLifecycleEvent {
     fn len(&self) -> usize {
         Self::BASE_LEN
     }

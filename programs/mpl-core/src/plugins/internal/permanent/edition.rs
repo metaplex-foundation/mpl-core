@@ -17,6 +17,10 @@ pub struct Edition {
     pub number: u32,
 }
 
+impl Edition {
+    const BASE_LEN: usize = 4; // The edition number
+}
+
 impl PluginValidation for Edition {
     fn validate_add_plugin(
         &self,
@@ -48,8 +52,6 @@ impl PluginValidation for Edition {
 }
 
 impl DataBlob for Edition {
-    const BASE_LEN: usize = 4; // The edition number
-
     fn len(&self) -> usize {
         Self::BASE_LEN
     }

@@ -18,6 +18,8 @@ pub struct PermanentFreezeDelegate {
 }
 
 impl PermanentFreezeDelegate {
+    const BASE_LEN: usize = 1; // The frozen boolean
+
     /// Initialize the PermanentFreezeDelegate plugin, unfrozen by default.
     pub fn new() -> Self {
         Self { frozen: false }
@@ -31,8 +33,6 @@ impl Default for PermanentFreezeDelegate {
 }
 
 impl DataBlob for PermanentFreezeDelegate {
-    const BASE_LEN: usize = 1; // The frozen boolean
-
     fn len(&self) -> usize {
         Self::BASE_LEN
     }

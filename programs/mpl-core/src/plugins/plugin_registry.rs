@@ -27,6 +27,10 @@ pub struct PluginRegistryV1 {
 }
 
 impl PluginRegistryV1 {
+    const BASE_LEN: usize = 1 // Key
+     + 4 // Registry Length
+     + 4; // External Registry Length
+
     /// Evaluate checks for all plugins in the registry.
     pub(crate) fn check_registry(
         &self,
@@ -112,10 +116,6 @@ impl PluginRegistryV1 {
 }
 
 impl DataBlob for PluginRegistryV1 {
-    const BASE_LEN: usize = 1 // Key
-     + 4 // Registry Length
-     + 4; // External Registry Length
-
     fn len(&self) -> usize {
         Self::BASE_LEN
             + self
@@ -157,10 +157,6 @@ impl RegistryRecord {
 }
 
 impl DataBlob for RegistryRecord {
-    const BASE_LEN: usize = PluginType::BASE_LEN
-     + Authority::BASE_LEN // Authority Discriminator
-      + 8; // Offset
-
     fn len(&self) -> usize {
         self.plugin_type.len() + self.authority.len() + 8
     }
@@ -210,20 +206,18 @@ impl ExternalRegistryRecord {
 }
 
 impl DataBlob for ExternalRegistryRecord {
-    const BASE_LEN: usize = ExternalPluginAdapterType::BASE_LEN
-     + Authority::BASE_LEN // Authority Discriminator
-      + 1 // Lifecycle checks option
-      + 8 // Offset
-      + 1 // Data offset option
-      + 1; // Data len option
-
     fn len(&self) -> usize {
-        let mut len = self.plugin_type.len() + self.authority.len() + 1 + 8 + 1 + 1;
+        let mut len = self.plugin_type.len() + self.authority.len()
+            + 1 // Lifecycle checks option
+            + 8 // Offset
+            + 1 // Data offset option
+            + 1; // Data len option
 
         if let Some(checks) = &self.lifecycle_checks {
             len += 4 // 4 bytes for the length of the checks vector
                 + checks.len()
-                * (HookableLifecycleEvent::BASE_LEN + ExternalCheckResult::BASE_LEN);
+                * (1 // HookableLifecycleEvent is a u8 enum
+                    + 4); // ExternalCheckResult is a u32 flags
         }
 
         if self.data_offset.is_some() {

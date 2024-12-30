@@ -15,13 +15,15 @@ pub struct MasterEdition {
     pub uri: Option<String>, // 1 + optional 4
 }
 
-impl PluginValidation for MasterEdition {}
-
-impl DataBlob for MasterEdition {
+impl MasterEdition {
     const BASE_LEN: usize = 1 // The max_supply option
     + 1 // The name option
     + 1; // The uri option
+}
 
+impl PluginValidation for MasterEdition {}
+
+impl DataBlob for MasterEdition {
     fn len(&self) -> usize {
         Self::BASE_LEN
             + self.max_supply.map_or(0, |_| 4)

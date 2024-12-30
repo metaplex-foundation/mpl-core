@@ -37,14 +37,14 @@ pub struct ExternalCheckResult {
 }
 
 impl DataBlob for ExternalCheckResult {
-    const BASE_LEN: usize = 4; // u32 flags
-
     fn len(&self) -> usize {
         Self::BASE_LEN
     }
 }
 
 impl ExternalCheckResult {
+    const BASE_LEN: usize = 4; // u32 flags
+
     pub(crate) fn none() -> Self {
         Self { flags: 0 }
     }

@@ -19,10 +19,12 @@ pub struct VerifiedCreatorsSignature {
     pub verified: bool, // 1
 }
 
-impl DataBlob for VerifiedCreatorsSignature {
+impl VerifiedCreatorsSignature {
     const BASE_LEN: usize = 32 // The address
     + 1; // The verified boolean
+}
 
+impl DataBlob for VerifiedCreatorsSignature {
     fn len(&self) -> usize {
         Self::BASE_LEN
     }
@@ -35,9 +37,11 @@ pub struct VerifiedCreators {
     pub signatures: Vec<VerifiedCreatorsSignature>, // 4 + len * VerifiedCreatorsSignature
 }
 
-impl DataBlob for VerifiedCreators {
+impl VerifiedCreators {
     const BASE_LEN: usize = 4; // The signatures length
+}
 
+impl DataBlob for VerifiedCreators {
     fn len(&self) -> usize {
         Self::BASE_LEN + self.signatures.iter().map(|sig| sig.len()).sum::<usize>()
     }

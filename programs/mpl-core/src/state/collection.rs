@@ -27,6 +27,14 @@ pub struct CollectionV1 {
 }
 
 impl CollectionV1 {
+    /// The base length of the collection account with an empty name and uri.
+    const BASE_LEN: usize = 1 // Key
+                            + 32 // Update Authority
+                            + 4 // Name Length
+                            + 4 // URI Length
+                            + 4 // num_minted
+                            + 4; // current_size
+
     /// Create a new collection.
     pub fn new(
         update_authority: Pubkey,
@@ -348,14 +356,6 @@ impl CollectionV1 {
 }
 
 impl DataBlob for CollectionV1 {
-    /// The base length of the collection account with an empty name and uri.
-    const BASE_LEN: usize = 1 // Key
-                            + 32 // Update Authority
-                            + 4 // Name Length
-                            + 4 // URI Length
-                            + 4 // num_minted
-                            + 4; // current_size
-
     fn len(&self) -> usize {
         Self::BASE_LEN + self.name.len() + self.uri.len()
     }

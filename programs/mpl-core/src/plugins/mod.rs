@@ -89,10 +89,8 @@ impl Plugin {
 impl Compressible for Plugin {}
 
 impl DataBlob for Plugin {
-    const BASE_LEN: usize = 1;
-
     fn len(&self) -> usize {
-        Self::BASE_LEN // The discriminator
+        1 // The discriminator
             + match self {
                 Plugin::Royalties(royalties) => royalties.len(),
                 Plugin::FreezeDelegate(freeze_delegate) => freeze_delegate.len(),
@@ -169,6 +167,11 @@ pub enum PluginType {
     Autograph,
 }
 
+impl PluginType {
+    /// A u8 enum discriminator.
+    const BASE_LEN: usize = 1;
+}
+
 /// The list of permanent delegate types.
 pub const PERMANENT_DELEGATES: [PluginType; 3] = [
     PluginType::PermanentFreezeDelegate,
@@ -177,8 +180,6 @@ pub const PERMANENT_DELEGATES: [PluginType; 3] = [
 ];
 
 impl DataBlob for PluginType {
-    const BASE_LEN: usize = 1;
-
     fn len(&self) -> usize {
         Self::BASE_LEN
     }

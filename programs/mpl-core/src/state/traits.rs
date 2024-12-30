@@ -8,17 +8,10 @@ use solana_program::{
 use super::UpdateAuthority;
 
 /// A trait for generic blobs of data that have size.
+#[allow(clippy::len_without_is_empty)]
 pub trait DataBlob: BorshSerialize + BorshDeserialize {
-    /// The base length of the data blob.
-    const BASE_LEN: usize;
-
     /// Get the current length of the data blob.
     fn len(&self) -> usize;
-
-    /// Check if the data blob is empty.
-    fn is_empty(&self) -> bool {
-        self.len() == Self::BASE_LEN
-    }
 }
 
 /// A trait for Solana accounts.
