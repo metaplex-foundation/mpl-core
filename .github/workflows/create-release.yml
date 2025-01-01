@@ -107,7 +107,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./programs/.bin/${{ env.PROGRAM_NAME }}.so
+        asset_path: ./programs/.bin/${{ env.PROGRAM_NAME }}_program.so
         asset_name: ${{ env.PROGRAM_NAME }}.so
         asset_content_type: application/octet-stream
 
