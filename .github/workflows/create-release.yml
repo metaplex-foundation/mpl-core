@@ -86,7 +86,7 @@ jobs:
     
     - name: Identify Program
       run: |
-        PROGRAM_NAME="mpl_core" >> $GITHUB_ENV
+        echo PROGRAM_NAME="mpl_core" >> $GITHUB_ENV
 
     - name: Create Release
       id: create_release
