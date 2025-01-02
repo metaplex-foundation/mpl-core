@@ -153,18 +153,16 @@ jobs:
           echo ${{ secrets.CORE_ID }} > ./program-id.json
           
           if [[ "${{ inputs.cluster }}" == "sonic"* ]]; then
-            echo ${{ secrets.CORE_SONIC_DEPLOY_KEY }} > ./deploy-key.json
+            echo ${{ secrets.CORE_SONIC_DEPLOY_KEY }} > ./deployer-key.json
             echo DEPLOY_TYPE="direct" >> $GITHUB_ENV
           elif [[ "${{ inputs.cluster }}" == "eclipse"* ]]; then
-            echo ${{ secrets.CORE_ECLIPSE_DEPLOY_KEY }} > ./deploy-key.json
+            echo ${{ secrets.CORE_ECLIPSE_DEPLOY_KEY }} > ./deployer-key.json
             echo DEPLOY_TYPE="direct" >> $GITHUB_ENV
           elif [[ "${{ inputs.cluster }}" == "devnet" ]]; then
-            echo ${{ secrets.CORE_DEPLOYER_KEY }} > ./deployer-key.json 
             echo DEPLOY_TYPE="squads" >> $GITHUB_ENV
             echo SQUADS_MULTISIG="Gs6jZWxXFvmZtBcyYr6fBXX5ikwRTemBDS4f6kFuB31U" >> $GITHUB_ENV
             echo SQUADS_VAULT="Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59" >> $GITHUB_ENV
           elif [[ "${{ inputs.cluster }}" == "mainnet-beta" ]]; then
-            echo ${{ secrets.CORE_DEPLOYER_KEY }} > ./deployer-key.json 
             echo DEPLOY_TYPE="squads" >> $GITHUB_ENV
             echo SQUADS_MULTISIG="Gs6jZWxXFvmZtBcyYr6fBXX5ikwRTemBDS4f6kFuB31U" >> $GITHUB_ENV
             echo SQUADS_VAULT="Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59" >> $GITHUB_ENV
@@ -220,7 +218,7 @@ jobs:
         run: |
           echo "Deploying ${{ needs.check_tag.outputs.program }} to ${{ inputs.cluster }}"
 
-          solana -v program deploy ./programs/.bin/mpl_${{ env.PROGRAM_NAME }}_program.so \
+          solana -v program deploy ./programs/.bin/${{ env.PROGRAM_NAME }}_program.so \
             -u ${{ env.RPC }} \
             --program-id ./program-id.json \
             -k ./deployer-key.json \
@@ -236,7 +234,11 @@ jobs:
           echo "Deploying buffer for ${{ inputs.program }} on ${{ inputs.cluster }}"
           echo ${{ secrets.SQUADS_BOT_KEY }} > ./submitter-key.json
 
-          BUFFER=$(solana program write-buffer -u ${{ env.RPC }} -k ./submitter-key.json --max-sign-attempts 100 --use-rpc ./programs/.bin/mpl_${{ env.PROGRAM_NAME }}_program.so | awk '{print $2}')
+          if ! BUFFER_OUTPUT=$(solana program write-buffer -u ${{ env.RPC }} -k ./submitter-key.json --max-sign-attempts 100 --use-rpc ./programs/.bin/${{ env.PROGRAM_NAME }}_program.so 2>&1); then
+            echo "Error creating buffer: $BUFFER_OUTPUT"
+            exit 1
+          fi
+          BUFFER=$(echo "$BUFFER_OUTPUT" | awk '{print $2}')
           echo "Buffer: $BUFFER"
 
           solana program set-buffer-authority $BUFFER \
