@@ -5,7 +5,7 @@ use shank::{ShankContext, ShankInstruction};
 use crate::processor::{
     AddCollectionExternalPluginAdapterV1Args, AddCollectionPluginV1Args,
     AddExternalPluginAdapterV1Args, AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args,
-    ApprovePluginAuthorityV1Args, BurnCollectionV1Args, BurnV1Args, CompressV1Args,
+    ApprovePluginAuthorityV1Args, BatchV1Args, BurnCollectionV1Args, BurnV1Args, CompressV1Args,
     CreateCollectionV1Args, CreateCollectionV2Args, CreateV1Args, CreateV2Args, DecompressV1Args,
     RemoveCollectionExternalPluginAdapterV1Args, RemoveCollectionPluginV1Args,
     RemoveExternalPluginAdapterV1Args, RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args,
@@ -292,4 +292,8 @@ pub(crate) enum MplAssetInstruction {
     #[account(5, name="system_program", desc = "The system program")]
     #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     UpdateV2(UpdateV2Args),
+
+    /// Execute multiple instructions.
+    #[account(0, optional, name="dummy", desc = "Dummy account")]
+    BatchV1(BatchV1Args),
 }
