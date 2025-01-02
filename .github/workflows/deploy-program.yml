@@ -99,7 +99,6 @@ jobs:
       && (needs.test_js.result == 'success' || needs.test_js.result == 'skipped')
       && (needs.test_programs.result == 'success' || needs.test_programs.result == 'skipped')
       && (needs.test_rust.result == 'success' || needs.test_rust.result == 'skipped')
-      && (needs.check_tag.outputs.type == 'ref' || needs.check_tag.outputs.type == 'release')
     permissions:
       contents: write
     steps:
