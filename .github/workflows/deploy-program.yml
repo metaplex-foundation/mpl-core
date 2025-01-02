@@ -228,23 +228,23 @@ jobs:
           rm ./deployer-key.json
           rm ./program-id.json
 
-      - name: Deploy squads buffer
-        if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'squads'
-        run: |
-          echo "Deploying buffer for ${{ inputs.program }} on ${{ inputs.cluster }}"
-          echo ${{ secrets.SQUADS_BOT_KEY }} > ./submitter-key.json
+      # - name: Deploy squads buffer
+      #   if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'squads'
+      #   run: |
+      #     echo "Deploying buffer for ${{ inputs.program }} on ${{ inputs.cluster }}"
+      #     echo ${{ secrets.SQUADS_BOT_KEY }} > ./submitter-key.json
 
-          BUFFER=$(solana program write-buffer -u ${{ env.RPC }} -k ./submitter-key.json --max-sign-attempts 100 --use-rpc ./programs/.bin/${{ env.PROGRAM_NAME }}_program.so | awk '{print $2}')
-          echo "Buffer: $BUFFER"
+      #     BUFFER=$(solana program write-buffer -u ${{ env.RPC }} -k ./submitter-key.json --max-sign-attempts 100 --use-rpc ./programs/.bin/${{ env.PROGRAM_NAME }}_program.so | awk '{print $2}')
+      #     echo "Buffer: $BUFFER"
 
-          solana program set-buffer-authority $BUFFER \
-            --new-buffer-authority ${{ env.SQUADS_VAULT }} \
-            -k ./submitter-key.json \
-            -u ${{ env.RPC }}
+      #     solana program set-buffer-authority $BUFFER \
+      #       --new-buffer-authority ${{ env.SQUADS_VAULT }} \
+      #       -k ./submitter-key.json \
+      #       -u ${{ env.RPC }}
 
-          rm ./submitter-key.json
+      #     rm ./submitter-key.json
 
-          echo "BUFFER=$BUFFER" >> $GITHUB_ENV
+      #     echo "BUFFER=$BUFFER" >> $GITHUB_ENV
     
 
       - name: Create Squads proposal
@@ -255,11 +255,12 @@ jobs:
           program-multisig: ${{ env.SQUADS_MULTISIG }}
           program-id: 'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d'
           program-index: '1'
-          buffer: ${{ env.BUFFER }}
+          # buffer: ${{ env.BUFFER }}
+          buffer: '5U7vZWF9WdiRBJ8tqnWXLopU5yFZ7qnGJtusJHBuA5d6'
           spill-address: 'botTxAkJhuCtNNn9xsH8fHJjzTkcN6XD4dR3R5hkzV2'
           authority: 'botTxAkJhuCtNNn9xsH8fHJjzTkcN6XD4dR3R5hkzV2'
           name: 'Deploy ${{ inputs.git_ref }}}'
-          keypair: ${{ env.SQUADS_BOT_KEY }}
+          keypair: ${{ secrets.SQUADS_BOT_KEY }}
 
       - name: Create env tag
         uses: actions/github-script@v5
