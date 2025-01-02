@@ -37,10 +37,26 @@ jobs:
     with:
       git_ref: ${{ inputs.git_ref }}
 
+  test_programs:
+    name: Programs
+    uses: ./.github/workflows/test-programs.yml
+    secrets: inherit
+    with:
+      program_matrix: '["mpl-${{ inputs.program }}"]'
+      git_ref: ${{ inputs.git_ref }}
+
   test_js:
     name: JS client
     needs: build_programs
     uses: ./.github/workflows/test-js-client.yml
+    secrets: inherit
+    with:
+      git_ref: ${{ inputs.git_ref }}
+  
+  test_rust:
+    name: Rust client
+    needs: build_programs
+    uses: ./.github/workflows/test-rust-client.yml
     secrets: inherit
     with:
       git_ref: ${{ inputs.git_ref }}

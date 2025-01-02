@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       git_ref:
-        description: Release tag (release/core@0.2.2) or commit to deploy
+        description: Release tag (release/core@0.9.2) or commit to deploy
         required: true
         type: string
-        default: release/core@0.2.2
+        default: release/core@0.9.2
       program:
         description: Program
         required: true
@@ -66,22 +66,27 @@ jobs:
     name: Programs
     uses: ./.github/workflows/test-programs.yml
     secrets: inherit
+    needs: [build_programs, check_tag]
+    if: needs.check_tag.outputs.type == 'ref'
     with:
       program_matrix: '["mpl-${{ inputs.program }}"]'
+      git_ref: ${{ inputs.git_ref }}
 
   test_js:
     name: JS client
-    needs: build_programs
+    needs: [build_programs, check_tag]
     uses: ./.github/workflows/test-js-client.yml
     secrets: inherit
+    if: needs.check_tag.outputs.type == 'ref'
     with:
       git_ref: ${{ inputs.git_ref }}
 
   test_rust:
     name: Rust client
-    needs: build_programs
+    needs: [build_programs, check_tag]
     uses: ./.github/workflows/test-rust-client.yml
     secrets: inherit
+    if: needs.check_tag.outputs.type == 'ref'
     with:
       git_ref: ${{ inputs.git_ref }}
 
