@@ -234,11 +234,7 @@ jobs:
           echo "Deploying buffer for ${{ inputs.program }} on ${{ inputs.cluster }}"
           echo ${{ secrets.SQUADS_BOT_KEY }} > ./submitter-key.json
 
-          if ! BUFFER_OUTPUT=$(solana program write-buffer -u ${{ env.RPC }} -k ./submitter-key.json --max-sign-attempts 100 --use-rpc ./programs/.bin/${{ env.PROGRAM_NAME }}_program.so 2>&1); then
-            echo "Error creating buffer: $BUFFER_OUTPUT"
-            exit 1
-          fi
-          BUFFER=$(echo "$BUFFER_OUTPUT" | awk '{print $2}')
+          BUFFER=$(solana program write-buffer -u ${{ env.RPC }} -k ./submitter-key.json --max-sign-attempts 100 --use-rpc ./programs/.bin/${{ env.PROGRAM_NAME }}_program.so | awk '{print $2}')
           echo "Buffer: $BUFFER"
 
           solana program set-buffer-authority $BUFFER \
