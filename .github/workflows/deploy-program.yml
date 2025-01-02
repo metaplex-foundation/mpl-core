@@ -93,13 +93,13 @@ jobs:
   deploy_program:
     name: Program / Deploy
     runs-on: ubuntu-latest-16-cores
-    needs: check_tag
+    needs: [check_tag, test_js, test_programs, test_rust]
     if: |
-      (needs.check_tag.outputs.type == 'ref' && 
-       success('test_js') && 
-       success('test_programs') && 
-       success('test_rust')) ||
-      needs.check_tag.outputs.type == 'release'
+      always()
+      && (needs.test_js.result == 'success' || needs.test_js.result == 'skipped')
+      && (needs.test_programs.result == 'success' || needs.test_programs.result == 'skipped')
+      && (needs.test_rust.result == 'success' || needs.test_rust.result == 'skipped')
+      && (needs.check_tag.outputs.type == 'ref' || needs.check_tag.outputs.type == 'release')
     permissions:
       contents: write
     steps:
