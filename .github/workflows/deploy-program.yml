@@ -184,7 +184,7 @@ jobs:
         with:
           script: |
             const tag = "${{ inputs.git_ref }}";
-            const assetName = "${{ env.PROGRAM_NAME }}.so";
+            const assetName = "${{ env.PROGRAM_NAME }}_program.so";
 
             // Fetch the release associated with the tag
             const release = await github.rest.repos.getReleaseByTag({
@@ -208,7 +208,7 @@ jobs:
         if: needs.check_tag.outputs.type == 'release'
         run: |
           mkdir -p ${{ github.workspace }}/programs/.bin
-          curl -L -o ${{ github.workspace }}/programs/.bin/${{ env.PROGRAM_NAME }}.so \
+          curl -L -o ${{ github.workspace }}/programs/.bin/${{ env.PROGRAM_NAME }}_program.so \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/octet-stream" \
             "${{ steps.get_release.outputs.url }}"
