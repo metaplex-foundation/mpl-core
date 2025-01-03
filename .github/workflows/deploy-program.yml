@@ -266,7 +266,7 @@ jobs:
       - name: Create env tag
         uses: actions/github-script@v7
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TAGGER_TOKEN }}
         if: github.event.inputs.dry_run == 'false'
         with:
           script: |
