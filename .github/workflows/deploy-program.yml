@@ -273,7 +273,7 @@ jobs:
               repo: context.repo.repo,
               ref: 'tags/${{ inputs.git_ref }}',
               headers: {
-                authorization: `token ${{ secrets.GH_TAGGER_TOKEN }}`
+                authorization: 'token ${{ secrets.GH_TAGGER_TOKEN }}'
               }
             });
             if (refData.status !== 200) {
@@ -285,7 +285,7 @@ jobs:
               ref: 'refs/tags/${{ needs.check_tag.outputs.program }}-${{ inputs.cluster }}',
               sha: refData.data.object.sha,
               headers: {
-                authorization: `token ${{ secrets.GH_TAGGER_TOKEN }}`
+                authorization: 'token ${{ secrets.GH_TAGGER_TOKEN }}'
               }
             }).catch(err => {
               if (err.status !== 422) throw err;
@@ -295,7 +295,7 @@ jobs:
                 ref: 'refs/tags/${{ needs.check_tag.outputs.program }}-${{ inputs.cluster }}',
                 sha: refData.data.object.sha,
                 headers: {
-                  authorization: `token ${{ secrets.GH_TAGGER_TOKEN }}`
+                  authorization: 'token ${{ secrets.GH_TAGGER_TOKEN }}'
                 }
               });
             })
