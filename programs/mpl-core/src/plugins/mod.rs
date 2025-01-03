@@ -84,6 +84,27 @@ impl Plugin {
             MplCoreError::SerializationError.into()
         })
     }
+
+    /// Extract the inner plugin value from the plugin.
+    pub(crate) fn inner(&self) -> &dyn PluginValidation {
+        match &self {
+            Plugin::Royalties(inner) => inner,
+            Plugin::FreezeDelegate(inner) => inner,
+            Plugin::BurnDelegate(inner) => inner,
+            Plugin::TransferDelegate(inner) => inner,
+            Plugin::UpdateDelegate(inner) => inner,
+            Plugin::PermanentFreezeDelegate(inner) => inner,
+            Plugin::Attributes(inner) => inner,
+            Plugin::PermanentTransferDelegate(inner) => inner,
+            Plugin::PermanentBurnDelegate(inner) => inner,
+            Plugin::Edition(inner) => inner,
+            Plugin::MasterEdition(inner) => inner,
+            Plugin::AddBlocker(inner) => inner,
+            Plugin::ImmutableMetadata(inner) => inner,
+            Plugin::VerifiedCreators(inner) => inner,
+            Plugin::Autograph(inner) => inner,
+        }
+    }
 }
 
 impl Compressible for Plugin {}
