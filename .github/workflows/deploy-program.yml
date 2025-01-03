@@ -268,34 +268,26 @@ jobs:
         if: github.event.inputs.dry_run == 'false'
         with:
           script: |
-            const refData = await github.rest.git.getRef({
+            const octokit = github.getOctokit('${{ secrets.GH_TAGGER_TOKEN }}');
+            const refData = await octokit.rest.git.getRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'tags/${{ inputs.git_ref }}',
-              headers: {
-                authorization: 'token ${{ secrets.GH_TAGGER_TOKEN }}'
-              }
+              ref: 'tags/${{ inputs.git_ref }}'
             });
             if (refData.status !== 200) {
               throw new Error('Failed to fetch existing tag');
             }
-            await github.rest.git.createRef({
+            await octokit.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: 'refs/tags/${{ needs.check_tag.outputs.program }}-${{ inputs.cluster }}',
-              sha: refData.data.object.sha,
-              headers: {
-                authorization: 'token ${{ secrets.GH_TAGGER_TOKEN }}'
-              }
+              sha: refData.data.object.sha
             }).catch(err => {
               if (err.status !== 422) throw err;
-              github.rest.git.updateRef({
+              octokit.rest.git.updateRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                ref: 'refs/tags/${{ needs.check_tag.outputs.program }}-${{ inputs.cluster }}',
-                sha: refData.data.object.sha,
-                headers: {
-                  authorization: 'token ${{ secrets.GH_TAGGER_TOKEN }}'
-                }
+                ref: 'tags/${{ needs.check_tag.outputs.program }}-${{ inputs.cluster }}',
+                sha: refData.data.object.sha
               });
             })
