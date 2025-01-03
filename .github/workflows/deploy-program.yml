@@ -162,10 +162,12 @@ jobs:
             echo DEPLOY_TYPE="squads" >> $GITHUB_ENV
             echo SQUADS_MULTISIG="Gs6jZWxXFvmZtBcyYr6fBXX5ikwRTemBDS4f6kFuB31U" >> $GITHUB_ENV
             echo SQUADS_VAULT="Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59" >> $GITHUB_ENV
+            echo SQUADS_PROGRAM_INDEX="1" >> $GITHUB_ENV
           elif [[ "${{ inputs.cluster }}" == "mainnet-beta" ]]; then
             echo DEPLOY_TYPE="squads" >> $GITHUB_ENV
             echo SQUADS_MULTISIG="Gs6jZWxXFvmZtBcyYr6fBXX5ikwRTemBDS4f6kFuB31U" >> $GITHUB_ENV
             echo SQUADS_VAULT="Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59" >> $GITHUB_ENV
+            echo SQUADS_PROGRAM_INDEX="1" >> $GITHUB_ENV
           else
             echo "Invalid cluster: ${{ inputs.cluster }}"
             exit 1
@@ -228,23 +230,23 @@ jobs:
           rm ./deployer-key.json
           rm ./program-id.json
 
-      # - name: Deploy squads buffer
-      #   if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'squads'
-      #   run: |
-      #     echo "Deploying buffer for ${{ inputs.program }} on ${{ inputs.cluster }}"
-      #     echo ${{ secrets.SQUADS_BOT_KEY }} > ./submitter-key.json
+      - name: Deploy squads buffer
+        if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'squads'
+        run: |
+          echo "Deploying buffer for ${{ inputs.program }} on ${{ inputs.cluster }}"
+          echo ${{ secrets.SQUADS_BOT_KEY }} > ./submitter-key.json
 
-      #     BUFFER=$(solana program write-buffer -u ${{ env.RPC }} -k ./submitter-key.json --max-sign-attempts 100 --use-rpc ./programs/.bin/${{ env.PROGRAM_NAME }}_program.so | awk '{print $2}')
-      #     echo "Buffer: $BUFFER"
+          BUFFER=$(solana program write-buffer -u ${{ env.RPC }} -k ./submitter-key.json --max-sign-attempts 100 --use-rpc ./programs/.bin/${{ env.PROGRAM_NAME }}_program.so | awk '{print $2}')
+          echo "Buffer: $BUFFER"
 
-      #     solana program set-buffer-authority $BUFFER \
-      #       --new-buffer-authority ${{ env.SQUADS_VAULT }} \
-      #       -k ./submitter-key.json \
-      #       -u ${{ env.RPC }}
+          solana program set-buffer-authority $BUFFER \
+            --new-buffer-authority ${{ env.SQUADS_VAULT }} \
+            -k ./submitter-key.json \
+            -u ${{ env.RPC }}
 
-      #     rm ./submitter-key.json
+          rm ./submitter-key.json
 
-      #     echo "BUFFER=$BUFFER" >> $GITHUB_ENV
+          echo "BUFFER=$BUFFER" >> $GITHUB_ENV
     
 
       - name: Create Squads proposal
@@ -254,16 +256,17 @@ jobs:
           network-url: ${{ env.RPC }}
           program-multisig: ${{ env.SQUADS_MULTISIG }}
           program-id: 'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d'
-          program-index: '1'
-          # buffer: ${{ env.BUFFER }}
-          buffer: '5U7vZWF9WdiRBJ8tqnWXLopU5yFZ7qnGJtusJHBuA5d6'
+          program-index: ${{ env.SQUADS_PROGRAM_INDEX }}
+          buffer: ${{ env.BUFFER }}
           spill-address: 'botTxAkJhuCtNNn9xsH8fHJjzTkcN6XD4dR3R5hkzV2'
-          authority: 'botTxAkJhuCtNNn9xsH8fHJjzTkcN6XD4dR3R5hkzV2'
-          name: 'Deploy ${{ inputs.git_ref }}}'
+          authority: ${{ env.SQUADS_VAULT }}
+          name: 'Deploy ${{ inputs.git_ref }}'
           keypair: ${{ secrets.SQUADS_BOT_KEY }}
 
       - name: Create env tag
-        uses: actions/github-script@v5
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: github.event.inputs.dry_run == 'false'
         with:
           script: |
@@ -275,9 +278,17 @@ jobs:
             if (refData.status !== 200) {
               throw new Error('Failed to fetch existing tag');
             }
-            github.rest.git.createRef({
+            await github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: 'refs/tags/${{ needs.check_tag.outputs.program }}-${{ inputs.cluster }}',
               sha: refData.data.object.sha
-            });
+            }).catch(err => {
+              if (err.status !== 422) throw err;
+              github.rest.git.updateRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'refs/tags/${{ needs.check_tag.outputs.program }}-${{ inputs.cluster }}',
+                sha: refData.data.object.sha
+              });
+            })
