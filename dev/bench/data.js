@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1735923037044,
+  "lastUpdate": 1736191146114,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -6625,6 +6625,120 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/metaplex-foundation/mpl-core/commit/b4502e85f77cc584bcb2260392725f79eba9a20b"
         },
         "date": 1735923036641,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 11082,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 22555,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 40127,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 46149,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 30245,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 38711,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 37803,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 51039,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 38517,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 56001,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 6320,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 8918,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 14599,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 17197,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "nhan.phan@gmail.com",
+            "name": "Nhan Phan",
+            "username": "nhanphan"
+          },
+          "committer": {
+            "email": "nhan.phan@gmail.com",
+            "name": "Nhan Phan",
+            "username": "nhanphan"
+          },
+          "distinct": true,
+          "id": "8ce95776eda6a0c5fa0e943fb8ecc1cb5560051d",
+          "message": "actually use the ref to build programs",
+          "timestamp": "2025-01-06T11:14:42-08:00",
+          "tree_id": "d0efe7537622c713c2f5714c8e047b7f240a0f84",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/8ce95776eda6a0c5fa0e943fb8ecc1cb5560051d"
+        },
+        "date": 1736191145058,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
