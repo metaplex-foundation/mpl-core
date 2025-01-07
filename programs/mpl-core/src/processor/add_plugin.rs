@@ -142,7 +142,7 @@ pub(crate) fn add_collection_plugin<'a>(
         accounts,
         asset_info: None,
         collection_info: Some(ctx.accounts.collection),
-        self_authority: &args.init_authority.unwrap_or(args.plugin.manager()),
+        self_authority: &target_plugin_authority,
         authority_info: authority,
         resolved_authorities: None,
         new_owner: None,

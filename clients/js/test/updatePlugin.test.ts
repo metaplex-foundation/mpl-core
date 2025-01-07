@@ -216,7 +216,7 @@ test('it cannot use an invalid collection to update a plugin on an asset', async
   });
 });
 
-test('it cannot update an owner-managed plugin on an Asset if an authority-managed plugin is present on a Collection', async (t) => {
+test('it cannot update a plugin with Owner authority on an Asset if a plugin with UpdateAuthority authority is present on a Collection', async (t) => {
   const umi = await createUmi();
 
   const collection = await createCollection(umi, {
@@ -257,7 +257,7 @@ test('it cannot update an owner-managed plugin on an Asset if an authority-manag
   await t.throwsAsync(res, { name: 'NoApprovals' });
 });
 
-test('it can update an owner-managed plugin with authority set to UpdateAuthority on an Asset if an authority-managed plugin is present on a Collection', async (t) => {
+test('it can update a plugin with Owner authority on an Asset if a plugin with UpdateAuthority authority is present on a Collection', async (t) => {
   const umi = await createUmi();
 
   const collection = await createCollection(umi, {
@@ -307,7 +307,7 @@ test('it can update an owner-managed plugin with authority set to UpdateAuthorit
   });
 });
 
-test('it cannot update an owner-managed plugin on an Asset if an authority-managed plugin is present', async (t) => {
+test('it cannot update a plugin with Owner authority on an Asset if a plugin with UpdateAuthority authority is present', async (t) => {
   const umi = await createUmi();
 
   const randomAuthority = generateSigner(umi);
@@ -340,7 +340,7 @@ test('it cannot update an owner-managed plugin on an Asset if an authority-manag
   await t.throwsAsync(res, { name: 'NoApprovals' });
 });
 
-test('it can update an owner-managed plugin with authority set to UpdateAuthority on an Asset if an authority-managed plugin is present', async (t) => {
+test('it can update a plugin with Owner authority on an Asset if a plugin with UpdateAuthority authority is present', async (t) => {
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
@@ -389,7 +389,7 @@ test('it can update an owner-managed plugin with authority set to UpdateAuthorit
   });
 });
 
-test('it cannot update an authority-managed plugin on an Asset if an owner-managed plugin is present', async (t) => {
+test('it cannot update a plugin with UpdateAuthority authority on an Asset if a plugin with Owner authority is present', async (t) => {
   const umi = await createUmi();
 
   const owner = generateSigner(umi);
@@ -422,7 +422,7 @@ test('it cannot update an authority-managed plugin on an Asset if an owner-manag
   await t.throwsAsync(res, { name: 'NoApprovals' });
 });
 
-test('it can update an authority-managed plugin with authority set to Owner on an Asset if an owner-managed plugin is present', async (t) => {
+test('it can update a plugin with UpdateAuthority authority on an Asset if a plugin with Owner authority is present', async (t) => {
   const umi = await createUmi();
 
   const owner = generateSigner(umi);

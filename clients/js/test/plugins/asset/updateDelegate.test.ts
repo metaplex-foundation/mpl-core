@@ -1473,7 +1473,7 @@ test('an updateDelegate can update a plugin on an asset using delegated owner', 
   });
 });
 
-test('it can update an authority-managed plugin on an asset as collection update additional delegate', async (t) => {
+test('it can update an authority-managed plugin on an asset as additional delegate', async (t) => {
   const umi = await createUmi();
   const updateDelegate = await generateSigner(umi);
 
@@ -1511,7 +1511,7 @@ test('it can update an authority-managed plugin on an asset as collection update
   });
 });
 
-test('it cannot update an authority-managed plugin on an asset as collection update additional delegate if the plugin authority is not UpdateAuthority', async (t) => {
+test('it cannot update an authority-managed plugin on an asset as additional delegate if the plugin authority is not UpdateAuthority', async (t) => {
   const umi = await createUmi();
   const updateDelegate = await generateSigner(umi);
 
