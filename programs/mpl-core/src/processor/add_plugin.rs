@@ -69,6 +69,8 @@ pub(crate) fn add_plugin<'a>(
         new_collection_authority: None,
         target_plugin: Some(&args.plugin),
         target_plugin_authority: Some(&target_plugin_authority),
+        target_external_plugin: None,
+        target_external_plugin_authority: None,
     };
     if Plugin::validate_add_plugin(&args.plugin, &validation_ctx)? == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());
@@ -84,6 +86,7 @@ pub(crate) fn add_plugin<'a>(
         None,
         Some(&args.plugin),
         Some(&target_plugin_authority),
+        None,
         None,
         AssetV1::check_add_plugin,
         CollectionV1::check_add_plugin,
@@ -147,6 +150,8 @@ pub(crate) fn add_collection_plugin<'a>(
         new_collection_authority: None,
         target_plugin: Some(&args.plugin),
         target_plugin_authority: Some(&target_plugin_authority),
+        target_external_plugin: None,
+        target_external_plugin_authority: None,
     };
     if Plugin::validate_add_plugin(&args.plugin, &validation_ctx)? == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());
@@ -165,6 +170,7 @@ pub(crate) fn add_collection_plugin<'a>(
         None,
         Some(&args.plugin),
         Some(&target_plugin_authority),
+        None,
         None,
         CollectionV1::check_add_plugin,
         PluginType::check_add_plugin,

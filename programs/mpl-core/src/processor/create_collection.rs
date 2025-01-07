@@ -144,6 +144,8 @@ pub(crate) fn process_create_collection<'a>(
                         new_collection_authority: None,
                         target_plugin: None,
                         target_plugin_authority: None,
+                        target_external_plugin: None,
+                        target_external_plugin_authority: None,
                     };
                     match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
                         ValidationResult::Rejected => approved = false,

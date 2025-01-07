@@ -215,7 +215,7 @@ test('it cannot use an invalid collection to update a plugin on an asset', async
   });
 });
 
-test('Collection authority managed pluging can not update other plugins on Asset', async (t) => {
+test('it cannot update an owner-managed plugin on an Asset if an authority-managed plugin is present on a Collection', async (t) => {
   const umi = await createUmi();
 
   const collection = await createCollection(umi, {
@@ -242,7 +242,7 @@ test('Collection authority managed pluging can not update other plugins on Asset
     ],
   });
 
-  const res = await updatePluginV1(umi, {
+  const res = updatePluginV1(umi, {
     asset: asset.asset.publicKey,
     collection: collection.publicKey,
     plugin: createPlugin({
@@ -253,16 +253,60 @@ test('Collection authority managed pluging can not update other plugins on Asset
     }),
   }).sendAndConfirm(umi);
 
-  console.log({ res });
-
-  t.true(
-    res.result.value.err
-      ?.toString()
-      .includes('Neither the asset or any plugins have approved this operation')
-  );
+  await t.throwsAsync(res, { name: 'NoApprovals' });
 });
 
-test('Asset with authority managed pluging can not update other plugins', async (t) => {
+test('it can update an owner-managed plugin with authority set to UpdateAuthority on an Asset if an authority-managed plugin is present on a Collection', async (t) => {
+  const umi = await createUmi();
+
+  const collection = await createCollection(umi, {
+    ...DEFAULT_COLLECTION,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: true },
+      }),
+    ],
+  });
+
+  const asset = await createAssetWithCollection(umi, {
+    ...DEFAULT_ASSET,
+    collection: collection.publicKey,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: false },
+        authority: updatePluginAuthority(),
+      }),
+    ],
+  });
+
+  await updatePluginV1(umi, {
+    asset: asset.asset.publicKey,
+    collection: collection.publicKey,
+    plugin: createPlugin({
+      type: 'FreezeDelegate',
+      data: {
+        frozen: false,
+      },
+    }),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: false,
+    },
+  });
+});
+
+test('it cannot update an owner-managed plugin on an Asset if an authority-managed plugin is present', async (t) => {
   const umi = await createUmi();
 
   const randomAuthority = generateSigner(umi);
@@ -282,7 +326,7 @@ test('Asset with authority managed pluging can not update other plugins', async 
     ],
   });
 
-  const res = await updatePluginV1(umi, {
+  const res = updatePluginV1(umi, {
     asset: asset.publicKey,
     plugin: createPlugin({
       type: 'FreezeDelegate',
@@ -292,11 +336,54 @@ test('Asset with authority managed pluging can not update other plugins', async 
     }),
   }).sendAndConfirm(umi);
 
-  console.log({ res });
+  await t.throwsAsync(res, { name: 'NoApprovals' });
+});
 
-  t.true(
-    res.result.value.err
-      ?.toString()
-      .includes('Neither the asset or any plugins have approved this operation')
-  );
+test('it can update an owner-managed plugin with authority set to UpdateAuthority on an Asset if an authority-managed plugin is present', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi, {
+    ...DEFAULT_ASSET,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: false },
+        authority: updatePluginAuthority(),
+      }),
+      pluginAuthorityPair({
+        type: 'Attributes',
+        data: { attributeList: [{ key: 'key', value: 'value' }] },
+        authority: updatePluginAuthority(),
+      }),
+    ],
+  });
+
+  await updatePluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'FreezeDelegate',
+      data: {
+        frozen: false,
+      },
+    }),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: false,
+    },
+    attributes: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      attributeList: [{ key: 'key', value: 'value' }],
+    },
+  });
 });
