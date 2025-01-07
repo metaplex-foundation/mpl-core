@@ -276,7 +276,7 @@ impl Plugin {
                 .unwrap()
                 .contains(ctx.self_authority)
         {
-            solana_program::msg!("Base: Approved");
+            solana_program::msg!("{}:{}:Base:Approved", std::file!(), std::line!());
             ValidationResult::Approved
         } else {
             ValidationResult::Pass

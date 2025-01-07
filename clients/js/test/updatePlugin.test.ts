@@ -5,6 +5,7 @@ import {
   addPluginV1,
   addressPluginAuthority,
   createPlugin,
+  ownerPluginAuthority,
   pluginAuthorityPair,
   updateCollectionPluginV1,
   updatePluginAuthority,
@@ -384,6 +385,90 @@ test('it can update an owner-managed plugin with authority set to UpdateAuthorit
         type: 'UpdateAuthority',
       },
       attributeList: [{ key: 'key', value: 'value' }],
+    },
+  });
+});
+
+test('it cannot update an authority-managed plugin on an Asset if an owner-managed plugin is present', async (t) => {
+  const umi = await createUmi();
+
+  const owner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    owner: owner.publicKey,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: false },
+        authority: ownerPluginAuthority(),
+      }),
+      pluginAuthorityPair({
+        type: 'Attributes',
+        data: { attributeList: [{ key: 'key', value: 'value' }] },
+        authority: updatePluginAuthority(),
+      }),
+    ],
+  });
+
+  const res = updatePluginV1(umi, {
+    asset: asset.publicKey,
+    authority: owner,
+    plugin: createPlugin({
+      type: 'Attributes',
+      data: { attributeList: [{ key: 'key2', value: 'value2' }] },
+    }),
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(res, { name: 'NoApprovals' });
+});
+
+test('it can update an authority-managed plugin with authority set to Owner on an Asset if an owner-managed plugin is present', async (t) => {
+  const umi = await createUmi();
+
+  const owner = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    ...DEFAULT_ASSET,
+    owner: owner.publicKey,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: false },
+        authority: ownerPluginAuthority(),
+      }),
+      pluginAuthorityPair({
+        type: 'Attributes',
+        data: { attributeList: [{ key: 'key', value: 'value' }] },
+        authority: ownerPluginAuthority(),
+      }),
+    ],
+  });
+
+  await updatePluginV1(umi, {
+    asset: asset.publicKey,
+    authority: owner,
+    plugin: createPlugin({
+      type: 'Attributes',
+      data: { attributeList: [{ key: 'key2', value: 'value2' }] },
+    }),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Owner',
+      },
+      frozen: false,
+    },
+    attributes: {
+      authority: {
+        type: 'Owner',
+      },
+      attributeList: [{ key: 'key2', value: 'value2' }],
     },
   });
 });
