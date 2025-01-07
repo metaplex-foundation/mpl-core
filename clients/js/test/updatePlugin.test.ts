@@ -1,12 +1,14 @@
-import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
+import test from 'ava';
 import {
   addCollectionPluginV1,
   addPluginV1,
+  addressPluginAuthority,
   createPlugin,
-  updateCollectionPluginV1,
-  updatePluginV1,
   pluginAuthorityPair,
+  updateCollectionPluginV1,
+  updatePluginAuthority,
+  updatePluginV1,
 } from '../src';
 import {
   DEFAULT_ASSET,
@@ -14,6 +16,7 @@ import {
   assertAsset,
   assertCollection,
   createAsset,
+  createAssetWithCollection,
   createCollection,
   createUmi,
 } from './_setupRaw';
@@ -210,4 +213,90 @@ test('it cannot use an invalid collection to update a plugin on an asset', async
       attributeList: [{ key: 'key', value: 'initial' }],
     },
   });
+});
+
+test('Collection authority managed pluging can not update other plugins on Asset', async (t) => {
+  const umi = await createUmi();
+
+  const collection = await createCollection(umi, {
+    name: 'test',
+    plugins: [
+      pluginAuthorityPair({
+        type: 'PermanentFreezeDelegate',
+        data: { frozen: true },
+      }),
+    ],
+  });
+
+  const randomAuthority = generateSigner(umi);
+
+  const asset = await createAssetWithCollection(umi, {
+    name: 'test',
+    collection: collection.publicKey,
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: false },
+        authority: addressPluginAuthority(randomAuthority.publicKey),
+      }),
+    ],
+  });
+
+  const res = await updatePluginV1(umi, {
+    asset: asset.asset.publicKey,
+    collection: collection.publicKey,
+    plugin: createPlugin({
+      type: 'FreezeDelegate',
+      data: {
+        frozen: false,
+      },
+    }),
+  }).sendAndConfirm(umi);
+
+  console.log({ res });
+
+  t.true(
+    res.result.value.err
+      ?.toString()
+      .includes('Neither the asset or any plugins have approved this operation')
+  );
+});
+
+test('Asset with authority managed pluging can not update other plugins', async (t) => {
+  const umi = await createUmi();
+
+  const randomAuthority = generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({
+        type: 'FreezeDelegate',
+        data: { frozen: false },
+        authority: addressPluginAuthority(randomAuthority.publicKey),
+      }),
+      pluginAuthorityPair({
+        type: 'Attributes',
+        data: { attributeList: [{ key: 'key', value: 'value' }] },
+        authority: updatePluginAuthority(),
+      }),
+    ],
+  });
+
+  const res = await updatePluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'FreezeDelegate',
+      data: {
+        frozen: false,
+      },
+    }),
+  }).sendAndConfirm(umi);
+
+  console.log({ res });
+
+  t.true(
+    res.result.value.err
+      ?.toString()
+      .includes('Neither the asset or any plugins have approved this operation')
+  );
 });
