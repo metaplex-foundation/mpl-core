@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_memory::sol_memcpy,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_memory::sol_memmove,
 };
 
 use crate::{
@@ -241,16 +241,20 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         .checked_add(plugin_size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
-    // //TODO: This is memory intensive, we should use memmove instead probably.
-    let src = account.data.borrow()[(next_plugin_offset as usize)..registry_offset].to_vec();
-
     resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
 
-    sol_memcpy(
-        &mut account.data.borrow_mut()[(new_next_plugin_offset as usize)..],
-        &src,
-        src.len(),
-    );
+    // SAFETY: `borrow_mut` will always return a valid pointer.
+    // new_next_plugin_offset is derived from next_plugin_offset and size_diff using
+    // checked arithmetic, so it will always be less than or equal to account.data_len().
+    // This will fail and revert state if there is a memory violation.
+    unsafe {
+        let base = account.data.borrow_mut().as_mut_ptr();
+        sol_memmove(
+            base.add(new_next_plugin_offset as usize),
+            base.add(next_plugin_offset as usize),
+            registry_offset - next_plugin_offset as usize,
+        );
+    }
 
     plugin_header.save(account, core.get_size())?;
 

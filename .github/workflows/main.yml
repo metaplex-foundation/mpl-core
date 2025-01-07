@@ -21,7 +21,7 @@ jobs:
       rust_client: ${{ steps.changes.outputs.rust_client }}
     steps:
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV
@@ -115,6 +115,13 @@ jobs:
     name: Benchmark
     needs: generate_clients
     uses: ./.github/workflows/benchmark.yml
+    secrets: inherit
+
+  benchmark_summary:
+    if: ${{ github.event_name == 'pull_request' }}
+    name: Benchmark Summary
+    needs: generate_clients
+    uses: ./.github/workflows/benchmark-summary.yml
     secrets: inherit
 
   build_rust_client:
