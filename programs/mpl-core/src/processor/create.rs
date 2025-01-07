@@ -157,6 +157,7 @@ pub(crate) fn process_create<'a>(
             None,
             None,
             None,
+            None,
             AssetV1::check_create,
             CollectionV1::check_create,
             PluginType::check_create,
@@ -199,6 +200,7 @@ pub(crate) fn process_create<'a>(
                             new_asset_authority: None,
                             new_collection_authority: None,
                             target_plugin: None,
+                            target_plugin_authority: None,
                         };
                         match Plugin::validate_create(&plugin.plugin, &validation_ctx)? {
                             ValidationResult::Rejected => approved = false,
@@ -256,6 +258,7 @@ pub(crate) fn process_create<'a>(
                             new_asset_authority: None,
                             new_collection_authority: None,
                             target_plugin: None,
+                            target_plugin_authority: None,
                         };
                         if ExternalPluginAdapter::validate_create(
                             &ExternalPluginAdapter::from(plugin_init_info),

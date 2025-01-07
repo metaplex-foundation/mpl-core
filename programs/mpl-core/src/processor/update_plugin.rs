@@ -7,7 +7,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionPluginV1Accounts, UpdatePluginV1Accounts},
-    plugins::{Plugin, PluginHeaderV1, PluginRegistryV1, PluginType},
+    plugins::{fetch_wrapped_plugin, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType},
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
         load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
@@ -47,6 +47,9 @@ pub(crate) fn update_plugin<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
+    let (target_plugin_authority, _) =
+        fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, None, PluginType::from(&args.plugin))?;
+
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
         accounts,
         authority,
@@ -55,6 +58,7 @@ pub(crate) fn update_plugin<'a>(
         None,
         None,
         Some(&args.plugin),
+        Some(&target_plugin_authority),
         None,
         AssetV1::check_update_plugin,
         CollectionV1::check_update_plugin,
@@ -107,6 +111,12 @@ pub(crate) fn update_collection_plugin<'a>(
         }
     }
 
+    let (target_plugin_authority, _) = fetch_wrapped_plugin::<CollectionV1>(
+        ctx.accounts.collection,
+        None,
+        PluginType::from(&args.plugin),
+    )?;
+
     // Validate collection permissions.
     let (collection, plugin_header, plugin_registry) = validate_collection_permissions(
         accounts,
@@ -114,6 +124,7 @@ pub(crate) fn update_collection_plugin<'a>(
         ctx.accounts.collection,
         None,
         Some(&args.plugin),
+        Some(&target_plugin_authority),
         None,
         CollectionV1::check_update_plugin,
         PluginType::check_update_plugin,

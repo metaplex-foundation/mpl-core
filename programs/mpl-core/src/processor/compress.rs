@@ -52,6 +52,7 @@ pub(crate) fn compress<'a>(
                 None,
                 None,
                 None,
+                None,
                 AssetV1::check_compress,
                 CollectionV1::check_compress,
                 PluginType::check_compress,

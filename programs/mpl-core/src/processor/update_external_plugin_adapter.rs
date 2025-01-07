@@ -74,6 +74,7 @@ pub(crate) fn update_external_plugin_adapter<'a>(
         new_asset_authority: None,
         new_collection_authority: None,
         target_plugin: None,
+        target_plugin_authority: None,
     };
 
     if ExternalPluginAdapter::validate_update_external_plugin_adapter(
@@ -152,6 +153,7 @@ pub(crate) fn update_collection_external_plugin_adapter<'a>(
         new_asset_authority: None,
         new_collection_authority: None,
         target_plugin: None,
+        target_plugin_authority: None,
     };
 
     if ExternalPluginAdapter::validate_update_external_plugin_adapter(

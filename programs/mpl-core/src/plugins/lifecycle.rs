@@ -472,8 +472,11 @@ impl Plugin {
         let resolved_authorities = ctx
             .resolved_authorities
             .ok_or(MplCoreError::InvalidAuthority)?;
-        let base_result = if resolved_authorities.contains(ctx.self_authority) {
-            solana_program::msg!("Base: Approved");
+        let base_result = if resolved_authorities.contains(ctx.self_authority)
+            && ctx.target_plugin.is_some()
+            && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::from(plugin)
+        {
+            solana_program::msg!("{}:{}:Base:Approved", std::file!(), std::line!());
             ValidationResult::Approved
         } else {
             ValidationResult::Pass
@@ -830,6 +833,8 @@ pub(crate) struct PluginValidationContext<'a, 'b> {
     pub new_collection_authority: Option<&'b Pubkey>,
     /// The plugin being acted upon with new data from the ix if any. This None for create.
     pub target_plugin: Option<&'b Plugin>,
+    /// The authority of the target plugin.
+    pub target_plugin_authority: Option<&'b Authority>,
 }
 
 /// Plugin validation trait which is implemented by each plugin.
@@ -969,6 +974,7 @@ pub(crate) fn validate_plugin_checks<'a>(
     new_asset_authority: Option<&UpdateAuthority>,
     new_collection_authority: Option<&Pubkey>,
     new_plugin: Option<&Plugin>,
+    new_plugin_authority: Option<&Authority>,
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
@@ -1003,6 +1009,7 @@ pub(crate) fn validate_plugin_checks<'a>(
                 new_asset_authority,
                 new_collection_authority,
                 target_plugin: new_plugin,
+                target_plugin_authority: new_plugin_authority,
             };
 
             let result = plugin_validate_fp(
@@ -1043,6 +1050,7 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
     new_asset_authority: Option<&UpdateAuthority>,
     new_collection_authority: Option<&Pubkey>,
     new_plugin: Option<&Plugin>,
+    new_plugin_authority: Option<&Authority>,
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
@@ -1075,6 +1083,7 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
                 new_asset_authority,
                 new_collection_authority,
                 target_plugin: new_plugin,
+                target_plugin_authority: new_plugin_authority,
             };
 
             let result = external_plugin_adapter_validate_fp(

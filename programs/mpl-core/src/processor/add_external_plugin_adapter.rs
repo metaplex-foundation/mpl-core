@@ -73,6 +73,7 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         new_asset_authority: None,
         new_collection_authority: None,
         target_plugin: None,
+        target_plugin_authority: None,
     };
 
     if ExternalPluginAdapter::validate_add_external_plugin_adapter(
@@ -91,6 +92,7 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
+        None,
         None,
         None,
         None,
@@ -159,6 +161,7 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         new_asset_authority: None,
         new_collection_authority: None,
         target_plugin: None,
+        target_plugin_authority: None,
     };
 
     if ExternalPluginAdapter::validate_add_external_plugin_adapter(
@@ -176,6 +179,7 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
+        None,
         None,
         None,
         Some(&external_plugin_adapter),
