@@ -26,6 +26,7 @@ on:
           - sonic-devnet
           - sonic-testnet
           - eclipse-mainnet
+          - eclipse-testnet
           - eclipse-devnet
       dry_run:
         description: Dry run
@@ -165,8 +166,8 @@ jobs:
             echo SQUADS_PROGRAM_INDEX="1" >> $GITHUB_ENV
           elif [[ "${{ inputs.cluster }}" == "mainnet-beta" ]]; then
             echo DEPLOY_TYPE="squads" >> $GITHUB_ENV
-            echo SQUADS_MULTISIG="Gs6jZWxXFvmZtBcyYr6fBXX5ikwRTemBDS4f6kFuB31U" >> $GITHUB_ENV
-            echo SQUADS_VAULT="Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59" >> $GITHUB_ENV
+            echo SQUADS_MULTISIG="EADFTJ9b6yPAqyRjhz1scirvWhggMSWTt1BgBjKgm5wT" >> $GITHUB_ENV
+            echo SQUADS_VAULT="bfQVv6niKVgEURYqQ1beJmiEQQN7MrvLRvk3mZGFubb" >> $GITHUB_ENV
             echo SQUADS_PROGRAM_INDEX="1" >> $GITHUB_ENV
           else
             echo "Invalid cluster: ${{ inputs.cluster }}"
