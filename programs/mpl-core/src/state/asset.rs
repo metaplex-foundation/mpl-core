@@ -61,7 +61,12 @@ impl AssetV1 {
     }
 
     /// The base length of the asset account with an empty name and uri and no seq.
-    pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4 + 1;
+    pub const BASE_LENGTH: usize = 1 // Key
+    + 32 // Owner
+    + 1 // Update Authority
+    + 4 // Name
+    + 4 // URI
+    + 1; // Seq
 
     /// Check permissions for the create lifecycle event.
     pub fn check_create() -> CheckResult {
@@ -364,6 +369,10 @@ impl DataBlob for AssetV1 {
 
     fn get_size(&self) -> usize {
         let mut size = AssetV1::BASE_LENGTH + self.name.len() + self.uri.len();
+        // If the update authority is not None, then we need to add the size of the address or collection.
+        if self.update_authority != UpdateAuthority::None {
+            size += 32;
+        }
         if self.seq.is_some() {
             size += size_of::<u64>();
         }
