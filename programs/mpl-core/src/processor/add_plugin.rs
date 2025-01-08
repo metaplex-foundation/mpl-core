@@ -53,19 +53,24 @@ pub(crate) fn add_plugin<'a>(
         return Err(MplCoreError::InvalidPlugin.into());
     }
 
+    let target_plugin_authority = args.init_authority.unwrap_or(args.plugin.manager());
+
     // TODO: Seed with Rejected
     // TODO: refactor to allow add_plugin to approve additions
     let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: Some(ctx.accounts.asset),
         collection_info: ctx.accounts.collection,
-        self_authority: &args.init_authority.unwrap_or(args.plugin.manager()),
+        self_authority: &target_plugin_authority,
         authority_info: authority,
         resolved_authorities: None,
         new_owner: None,
         new_asset_authority: None,
         new_collection_authority: None,
         target_plugin: Some(&args.plugin),
+        target_plugin_authority: Some(&target_plugin_authority),
+        target_external_plugin: None,
+        target_external_plugin_authority: None,
     };
     if Plugin::validate_add_plugin(&args.plugin, &validation_ctx)? == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());
@@ -80,6 +85,8 @@ pub(crate) fn add_plugin<'a>(
         None,
         None,
         Some(&args.plugin),
+        Some(&target_plugin_authority),
+        None,
         None,
         AssetV1::check_add_plugin,
         CollectionV1::check_add_plugin,
@@ -130,17 +137,21 @@ pub(crate) fn add_collection_plugin<'a>(
         }
     }
 
+    let target_plugin_authority = args.init_authority.unwrap_or(args.plugin.manager());
     let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: None,
         collection_info: Some(ctx.accounts.collection),
-        self_authority: &args.init_authority.unwrap_or(args.plugin.manager()),
+        self_authority: &target_plugin_authority,
         authority_info: authority,
         resolved_authorities: None,
         new_owner: None,
         new_asset_authority: None,
         new_collection_authority: None,
         target_plugin: Some(&args.plugin),
+        target_plugin_authority: Some(&target_plugin_authority),
+        target_external_plugin: None,
+        target_external_plugin_authority: None,
     };
     if Plugin::validate_add_plugin(&args.plugin, &validation_ctx)? == ValidationResult::Rejected {
         return Err(MplCoreError::InvalidAuthority.into());
@@ -158,6 +169,8 @@ pub(crate) fn add_collection_plugin<'a>(
         ctx.accounts.collection,
         None,
         Some(&args.plugin),
+        Some(&target_plugin_authority),
+        None,
         None,
         CollectionV1::check_add_plugin,
         PluginType::check_add_plugin,

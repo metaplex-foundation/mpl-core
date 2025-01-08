@@ -73,6 +73,21 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapterType {
     }
 }
 
+impl From<&ExternalPluginAdapter> for ExternalPluginAdapterType {
+    fn from(external_plugin_adapter: &ExternalPluginAdapter) -> Self {
+        match external_plugin_adapter {
+            ExternalPluginAdapter::LifecycleHook(_) => ExternalPluginAdapterType::LifecycleHook,
+            ExternalPluginAdapter::Oracle(_) => ExternalPluginAdapterType::Oracle,
+            ExternalPluginAdapter::AppData(_) => ExternalPluginAdapterType::AppData,
+            ExternalPluginAdapter::LinkedLifecycleHook(_) => {
+                ExternalPluginAdapterType::LinkedLifecycleHook
+            }
+            ExternalPluginAdapter::LinkedAppData(_) => ExternalPluginAdapterType::LinkedAppData,
+            ExternalPluginAdapter::DataSection(_) => ExternalPluginAdapterType::DataSection,
+        }
+    }
+}
+
 /// Definition of the external plugin adapter variants, each containing a link to the external plugin adapter
 /// struct.
 #[repr(C)]
@@ -292,8 +307,13 @@ impl ExternalPluginAdapter {
         let resolved_authorities = ctx
             .resolved_authorities
             .ok_or(MplCoreError::InvalidAuthority)?;
-        let base_result = if resolved_authorities.contains(ctx.self_authority) {
-            solana_program::msg!("Base: Approved");
+        // If the authority is right for the asset performing the validation.
+        let base_result = if resolved_authorities.contains(ctx.self_authority)
+        // And the target plugin is also the one being updated (i.e. self).
+        && ctx.target_external_plugin.is_some()
+        && ExternalPluginAdapterType::from(ctx.target_external_plugin.unwrap()) == ExternalPluginAdapterType::from(external_plugin_adapter)
+        {
+            solana_program::msg!("{}:{}:Base:Approved", std::file!(), std::line!());
             ValidationResult::Approved
         } else {
             ValidationResult::Pass

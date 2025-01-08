@@ -92,6 +92,8 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
         None,
         None,
         None,
+        None,
+        None,
         AssetV1::check_burn,
         CollectionV1::check_burn,
         PluginType::check_burn,
