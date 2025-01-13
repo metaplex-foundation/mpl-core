@@ -173,12 +173,13 @@ pub(crate) fn process_create<'a>(
 
         if let Some(plugins) = args.plugins {
             if !plugins.is_empty() {
-                let (mut plugin_header, mut plugin_registry) = create_plugin_meta::<AssetV1>(
-                    &new_asset,
-                    ctx.accounts.asset,
-                    ctx.accounts.payer,
-                    ctx.accounts.system_program,
-                )?;
+                let (header_offset, mut plugin_header, mut plugin_registry) =
+                    create_plugin_meta::<AssetV1>(
+                        &new_asset,
+                        ctx.accounts.asset,
+                        ctx.accounts.payer,
+                        ctx.accounts.system_program,
+                    )?;
                 for plugin in &plugins {
                     // TODO move into plugin validation when asset/collection is part of validation context
                     let plugin_type = PluginType::from(&plugin.plugin);
@@ -209,6 +210,7 @@ pub(crate) fn process_create<'a>(
                     initialize_plugin::<AssetV1>(
                         &plugin.plugin,
                         &plugin.authority.unwrap_or(plugin.plugin.manager()),
+                        header_offset,
                         &mut plugin_header,
                         &mut plugin_registry,
                         ctx.accounts.asset,
@@ -221,11 +223,12 @@ pub(crate) fn process_create<'a>(
 
         if let Some(plugins) = args.external_plugin_adapters {
             if !plugins.is_empty() {
-                let (_, mut plugin_header, mut plugin_registry) = create_meta_idempotent::<AssetV1>(
-                    ctx.accounts.asset,
-                    ctx.accounts.payer,
-                    ctx.accounts.system_program,
-                )?;
+                let (_, header_offset, mut plugin_header, mut plugin_registry) =
+                    create_meta_idempotent::<AssetV1>(
+                        ctx.accounts.asset,
+                        ctx.accounts.payer,
+                        ctx.accounts.system_program,
+                    )?;
                 for plugin_init_info in &plugins {
                     let external_check_result_bits = ExternalCheckResultBits::from(
                         ExternalPluginAdapter::check_create(plugin_init_info),
@@ -267,7 +270,7 @@ pub(crate) fn process_create<'a>(
                     }
                     initialize_external_plugin_adapter::<AssetV1>(
                         plugin_init_info,
-                        Some(&new_asset),
+                        header_offset,
                         &mut plugin_header,
                         &mut plugin_registry,
                         ctx.accounts.asset,

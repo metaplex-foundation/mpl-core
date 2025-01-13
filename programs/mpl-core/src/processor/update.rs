@@ -129,7 +129,7 @@ fn update<'a>(
     // Increment sequence number and save only if it is `Some(_)`.
     asset.increment_seq_and_save(ctx.accounts.asset)?;
 
-    let asset_size = asset.get_size() as isize;
+    let asset_size = asset.len() as isize;
 
     let mut dirty = false;
     if let Some(new_update_authority) = args.new_update_authority {
@@ -187,7 +187,7 @@ fn update<'a>(
 
                     // Get a set of all the plugins on the collection (if any).
                     let plugin_set: HashSet<_> =
-                        if new_collection_account.data_len() > new_collection.get_size() {
+                        if new_collection_account.data_len() > new_collection.len() {
                             let plugin_list = list_plugins::<CollectionV1>(new_collection_account)?;
                             plugin_list.into_iter().collect()
                         } else {
@@ -298,7 +298,7 @@ pub(crate) fn update_collection<'a>(
         Some(HookableLifecycleEvent::Update),
     )?;
 
-    let collection_size = collection.get_size() as isize;
+    let collection_size = collection.len() as isize;
 
     let mut dirty = false;
     if let Some(new_update_authority) = ctx.accounts.new_update_authority {
@@ -341,7 +341,7 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
         (plugin_header.clone(), plugin_registry.clone())
     {
         // The new size of the asset and new offset of the plugin header.
-        let new_core_size = core.get_size() as isize;
+        let new_core_size = core.len() as isize;
 
         // The difference in size between the new and old asset which is used to calculate the new size of the account.
         let size_diff = new_core_size
@@ -362,7 +362,7 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
 
         // The offset of the first plugin is the core size plus the size of the plugin header.
         let plugin_offset = core_size
-            .checked_add(plugin_header.get_size() as isize)
+            .checked_add(plugin_header.len() as isize)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
         let new_plugin_offset = plugin_offset
@@ -391,7 +391,7 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
 
         plugin_registry.save(account, new_registry_offset as usize)?;
     } else {
-        resize_or_reallocate_account(account, payer, system_program, core.get_size())?;
+        resize_or_reallocate_account(account, payer, system_program, core.len())?;
     }
 
     core.save(account, 0)?;
