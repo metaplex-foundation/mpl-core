@@ -1,7 +1,7 @@
 import { generateSigner, TransactionBuilder } from "@metaplex-foundation/umi";
 import test from "ava";
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { createCollectionV1, createV1, pluginAuthorityPair, ruleSet, transferV1 } from "../src";
+import { batch, createCollectionV1, createV1, pluginAuthorityPair, ruleSet, transferV1 } from "../src";
 import { createUmi } from "./_setup";
 
 test('transfer an empty asset', async (t) => {
@@ -187,6 +187,92 @@ test('transfer an asset with plugins and empty collection', async (t) => {
     }).sendAndConfirm(umi);
 
     const compute = Number((await umi.rpc.getTransaction(tx.signature))?.meta.computeUnitsConsumed);
+    const cuResult = {
+        name: `CU: ${t.title}`,
+        unit: "Compute Units",
+        value: compute,
+    }
+
+    // Read the results array from output.json
+    let output = [];
+    if (existsSync("./output.json")) {
+        output = JSON.parse(readFileSync("./output.json", 'utf-8'));
+    }
+
+    // Push the result to the array
+    output.push(cuResult);
+    // Write the array to output.json
+    writeFileSync("./output.json", JSON.stringify(output, null, 2));
+
+    t.pass();
+});
+
+test('transfer an empty asset 36 times separate instructions', async (t) => {
+    // Given an Umi instance and a new signer.
+    const umi = await createUmi();
+    const assetAddress = generateSigner(umi);
+    const newOwner = generateSigner(umi);
+
+    await createV1(umi, {
+        asset: assetAddress,
+        name: "Test",
+        uri: "www.test.com",
+    }).sendAndConfirm(umi);
+
+    let builder = new TransactionBuilder();
+
+    for (let i = 0; i < 18; i += 1) {
+        builder = builder.add(transferV1(umi, { asset: assetAddress.publicKey, newOwner: newOwner.publicKey }));
+        builder = builder.add(transferV1(umi, { asset: assetAddress.publicKey, newOwner: umi.identity.publicKey, authority: newOwner }));
+    }
+
+    const tx = await builder.sendAndConfirm(umi);
+
+    const compute = Number((await umi.rpc.getTransaction(tx.signature))?.meta.computeUnitsConsumed);
+
+    const cuResult = {
+        name: `CU: ${t.title}`,
+        unit: "Compute Units",
+        value: compute,
+    }
+
+    // Read the results array from output.json
+    let output = [];
+    if (existsSync("./output.json")) {
+        output = JSON.parse(readFileSync("./output.json", 'utf-8'));
+    }
+
+    // Push the result to the array
+    output.push(cuResult);
+    // Write the array to output.json
+    writeFileSync("./output.json", JSON.stringify(output, null, 2));
+
+    t.pass();
+});
+
+test('transfer an empty asset 36 times in a batch instruction', async (t) => {
+    // Given an Umi instance and a new signer.
+    const umi = await createUmi();
+    const assetAddress = generateSigner(umi);
+    const newOwner = generateSigner(umi);
+
+    await createV1(umi, {
+        asset: assetAddress,
+        name: "Test",
+        uri: "www.test.com",
+    }).sendAndConfirm(umi);
+
+    let builder = new TransactionBuilder();
+
+    for (let i = 0; i < 18; i += 1) {
+        builder = builder.add(transferV1(umi, { asset: assetAddress.publicKey, newOwner: newOwner.publicKey }));
+        builder = builder.add(transferV1(umi, { asset: assetAddress.publicKey, newOwner: umi.identity.publicKey, authority: newOwner }));
+    }
+
+    const tx = await batch(umi, builder).sendAndConfirm(umi);
+
+    const compute = Number((await umi.rpc.getTransaction(tx.signature))?.meta.computeUnitsConsumed);
+
     const cuResult = {
         name: `CU: ${t.title}`,
         unit: "Compute Units",
