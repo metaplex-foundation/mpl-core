@@ -123,6 +123,11 @@ impl CollectionV1 {
         CheckResult::None
     }
 
+    /// Check permissions for the execute lifecycle event.
+    pub fn check_execute() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
     /// Validate the create lifecycle event.
     pub fn validate_create(
         &self,
@@ -283,6 +288,20 @@ impl CollectionV1 {
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
+    }
+
+    /// Validate the execute lifecycle event.
+    pub fn validate_execute(
+        &self,
+        authority_info: &AccountInfo,
+        _: Option<&Plugin>,
+        _: Option<&ExternalPluginAdapter>,
+    ) -> Result<ValidationResult, ProgramError> {
+        if authority_info.key == &self.update_authority {
+            approve!()
+        } else {
+            abstain!()
+        }
     }
 
     /// Validate the add external plugin adapter lifecycle event.

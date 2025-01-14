@@ -2006,6 +2006,123 @@
         "type": "u8",
         "value": 30
       }
+    },
+    {
+      "name": "ExecuteV1",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The collection to which the asset belongs"
+          ]
+        },
+        {
+          "name": "assetSigner",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The signing PDA for the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The owner or delegate of the asset"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "executeV1Args",
+          "type": {
+            "defined": "ExecuteV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 31
+      }
+    },
+    {
+      "name": "ExecuteCollectionV1",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the collection"
+          ]
+        },
+        {
+          "name": "collectionSigner",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The signing PDA for the collection"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The authority of the collection"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "executeCollectionV1Args",
+          "type": {
+            "defined": "ExecuteCollectionV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 32
+      }
     }
   ],
   "accounts": [
@@ -3395,6 +3512,38 @@
             "type": {
               "defined": "CompressionProof"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExecuteV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "programId",
+            "type": "publicKey"
+          },
+          {
+            "name": "instructionData",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExecuteCollectionV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "programId",
+            "type": "publicKey"
+          },
+          {
+            "name": "instructionData",
+            "type": "bytes"
           }
         ]
       }
@@ -4857,6 +5006,11 @@
       "code": 48,
       "name": "PermanentDelegatesPreventMove",
       "msg": "Cannot move asset to collection with permanent delegates"
+    },
+    {
+      "code": 49,
+      "name": "InvalidExecutePda",
+      "msg": "Invalid Signing PDA for Asset or Collection Execute"
     }
   ],
   "metadata": {

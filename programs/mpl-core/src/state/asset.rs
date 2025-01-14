@@ -137,6 +137,11 @@ impl AssetV1 {
         CheckResult::None
     }
 
+    /// Check permissions for the execute lifecycle event.
+    pub fn check_execute() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
     /// Validate the create lifecycle event.
     pub fn validate_create(
         &self,
@@ -307,6 +312,20 @@ impl AssetV1 {
 
     /// Validate the decompress lifecycle event.
     pub fn validate_decompress(
+        &self,
+        authority_info: &AccountInfo,
+        _: Option<&Plugin>,
+        _: Option<&ExternalPluginAdapter>,
+    ) -> Result<ValidationResult, ProgramError> {
+        if authority_info.key == &self.owner {
+            approve!()
+        } else {
+            abstain!()
+        }
+    }
+
+    /// Validate the execute lifecycle event.
+    pub fn validate_execute(
         &self,
         authority_info: &AccountInfo,
         _: Option<&Plugin>,

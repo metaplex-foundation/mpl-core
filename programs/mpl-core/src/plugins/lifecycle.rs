@@ -195,6 +195,14 @@ impl PluginType {
         }
     }
 
+    /// Check permissions for the execute lifecycle event.
+    pub fn check_execute(plugin_type: &PluginType) -> CheckResult {
+        #[allow(clippy::match_single_binding)]
+        match plugin_type {
+            _ => CheckResult::None,
+        }
+    }
+
     /// Check permissions for the add external plugin adapter lifecycle event.
     pub fn check_add_external_plugin_adapter(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
@@ -382,6 +390,43 @@ impl Plugin {
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         plugin.inner().validate_decompress(ctx)
+    }
+
+    /// Validate the execute lifecycle event.
+    pub(crate) fn validate_execute(
+        plugin: &Plugin,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        let resolved_authorities = ctx
+            .resolved_authorities
+            .ok_or(MplCoreError::InvalidAuthority)?;
+        let base_result = if resolved_authorities.contains(ctx.self_authority) {
+            solana_program::msg!("Base: Approved");
+            ValidationResult::Approved
+        } else {
+            ValidationResult::Pass
+        };
+
+        let result = plugin.inner().validate_execute(ctx)?;
+
+        match (&base_result, &result) {
+            (ValidationResult::Approved, ValidationResult::Approved) => {
+                approve!()
+            }
+            (ValidationResult::Approved, ValidationResult::Rejected) => {
+                reject!()
+            }
+            (ValidationResult::Rejected, ValidationResult::Approved) => {
+                reject!()
+            }
+            (ValidationResult::Rejected, ValidationResult::Rejected) => {
+                reject!()
+            }
+            (ValidationResult::Pass, _) => Ok(result),
+            (ValidationResult::ForceApproved, _) => force_approve!(),
+            (_, ValidationResult::Pass) => Ok(base_result),
+            (_, ValidationResult::ForceApproved) => force_approve!(),
+        }
     }
 
     /// Validate the add external plugin adapter lifecycle event.
@@ -606,6 +651,14 @@ pub(crate) trait PluginValidation {
 
     /// Validate the decompress lifecycle action.
     fn validate_decompress(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        abstain!()
+    }
+
+    /// Validate the execute lifecycle action.
+    fn validate_execute(
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
