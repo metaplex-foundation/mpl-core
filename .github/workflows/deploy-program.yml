@@ -174,11 +174,22 @@ jobs:
             exit 1
           fi          
 
+      - name: Sanitize Ref
+        id: sanitize
+        shell: bash
+        run: |
+          REF="${{ inputs.git_ref }}"
+          if [ -z "$REF" ]; then
+            REF="default"
+          fi
+          SANITIZED=${REF//\//-}
+          echo "sanitized=$SANITIZED" >> "$GITHUB_OUTPUT"
+
       - name: Download program builds
         uses: actions/download-artifact@v4
         if: needs.check_tag.outputs.type == 'ref'
         with:
-          name: program-builds-${{ inputs.git_ref }}
+          name: program-builds-${{ steps.sanitize.outputs.sanitized }}
       
       - name: Download release asset
         uses: actions/github-script@v5
