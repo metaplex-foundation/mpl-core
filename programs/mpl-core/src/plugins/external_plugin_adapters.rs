@@ -3,12 +3,12 @@ use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey,
 };
-use strum::EnumCount;
+use strum::{EnumCount, EnumIter};
 
 use crate::{
     error::MplCoreError,
     plugins::{approve, reject},
-    state::{AssetV1, SolanaAccount},
+    state::{AssetV1, DataBlob, SolanaAccount},
 };
 
 use super::{
@@ -22,7 +22,17 @@ use super::{
 /// List of third party plugin types.
 #[repr(C)]
 #[derive(
-    Clone, Copy, Debug, BorshSerialize, BorshDeserialize, Eq, PartialEq, EnumCount, PartialOrd, Ord,
+    Clone,
+    Copy,
+    Debug,
+    BorshSerialize,
+    BorshDeserialize,
+    Eq,
+    PartialEq,
+    EnumCount,
+    PartialOrd,
+    Ord,
+    EnumIter,
 )]
 pub enum ExternalPluginAdapterType {
     /// Lifecycle Hook.
@@ -37,6 +47,17 @@ pub enum ExternalPluginAdapterType {
     LinkedAppData,
     /// Data Section.
     DataSection,
+}
+
+impl ExternalPluginAdapterType {
+    /// A u8 enum.
+    const BASE_LEN: usize = 1;
+}
+
+impl DataBlob for ExternalPluginAdapterType {
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+    }
 }
 
 impl From<&ExternalPluginAdapterKey> for ExternalPluginAdapterType {
@@ -403,7 +424,9 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapter {
 }
 
 #[repr(C)]
-#[derive(Eq, PartialEq, Clone, BorshSerialize, BorshDeserialize, Debug, PartialOrd, Ord, Hash)]
+#[derive(
+    Eq, PartialEq, Clone, BorshSerialize, BorshDeserialize, Debug, PartialOrd, Ord, Hash, EnumIter,
+)]
 /// An enum listing all the lifecyle events available for external plugin adapter hooks.  Note that some
 /// lifecycle events such as adding and removing plugins will be checked by default as they are
 /// inherently part of the external plugin adapter system.
@@ -416,6 +439,17 @@ pub enum HookableLifecycleEvent {
     Burn,
     /// Update an Asset or a Collection.
     Update,
+}
+
+impl HookableLifecycleEvent {
+    /// A u8 enum.
+    const BASE_LEN: usize = 1;
+}
+
+impl DataBlob for HookableLifecycleEvent {
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+    }
 }
 
 /// Prefix used with some of the `ExtraAccounts` that are PDAs.
@@ -764,6 +798,40 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapterKey {
             ExternalPluginAdapterInitInfo::DataSection(init_info) => {
                 ExternalPluginAdapterKey::DataSection(init_info.parent_key)
             }
+        }
+    }
+}
+
+/// Test DataBlob sizing
+#[cfg(test)]
+mod test {
+    use strum::IntoEnumIterator;
+
+    use super::*;
+
+    #[test]
+    fn test_external_plugin_adapter_type_size() {
+        for fixture in ExternalPluginAdapterType::iter() {
+            let serialized = fixture.try_to_vec().unwrap();
+            assert_eq!(
+                serialized.len(),
+                fixture.len(),
+                "Serialized {:?} should match size returned by len()",
+                fixture
+            );
+        }
+    }
+
+    #[test]
+    fn test_hookable_lifecycle_event_size() {
+        for fixture in HookableLifecycleEvent::iter() {
+            let serialized = fixture.try_to_vec().unwrap();
+            assert_eq!(
+                serialized.len(),
+                fixture.len(),
+                "Serialized {:?} should match size returned by len()",
+                fixture
+            );
         }
     }
 }

@@ -113,12 +113,13 @@ pub(crate) fn process_create_collection<'a>(
     let mut force_approved = false;
     if let Some(plugins) = args.plugins {
         if !plugins.is_empty() {
-            let (mut plugin_header, mut plugin_registry) = create_plugin_meta::<CollectionV1>(
-                &new_collection,
-                ctx.accounts.collection,
-                ctx.accounts.payer,
-                ctx.accounts.system_program,
-            )?;
+            let (header_offset, mut plugin_header, mut plugin_registry) =
+                create_plugin_meta::<CollectionV1>(
+                    &new_collection,
+                    ctx.accounts.collection,
+                    ctx.accounts.payer,
+                    ctx.accounts.system_program,
+                )?;
             for plugin in &plugins {
                 // Cannot have owner-managed plugins on collection.
                 if plugin.plugin.manager() == Authority::Owner {
@@ -156,6 +157,7 @@ pub(crate) fn process_create_collection<'a>(
                 initialize_plugin::<CollectionV1>(
                     &plugin.plugin,
                     &plugin.authority.unwrap_or(plugin.plugin.manager()),
+                    header_offset,
                     &mut plugin_header,
                     &mut plugin_registry,
                     ctx.accounts.collection,
@@ -168,11 +170,12 @@ pub(crate) fn process_create_collection<'a>(
 
     if let Some(plugins) = args.external_plugin_adapters {
         if !plugins.is_empty() {
-            let (_, mut plugin_header, mut plugin_registry) = create_meta_idempotent::<CollectionV1>(
-                ctx.accounts.collection,
-                ctx.accounts.payer,
-                ctx.accounts.system_program,
-            )?;
+            let (_, header_offset, mut plugin_header, mut plugin_registry) =
+                create_meta_idempotent::<CollectionV1>(
+                    ctx.accounts.collection,
+                    ctx.accounts.payer,
+                    ctx.accounts.system_program,
+                )?;
             for plugin_init_info in &plugins {
                 if let ExternalPluginAdapterInitInfo::DataSection(_) = plugin_init_info {
                     return Err(MplCoreError::CannotAddDataSection.into());
@@ -180,7 +183,7 @@ pub(crate) fn process_create_collection<'a>(
 
                 initialize_external_plugin_adapter::<CollectionV1>(
                     plugin_init_info,
-                    Some(&new_collection),
+                    header_offset,
                     &mut plugin_header,
                     &mut plugin_registry,
                     ctx.accounts.collection,

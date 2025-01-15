@@ -213,7 +213,7 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
         );
     }
 
-    plugin_header.save(account, core.get_size())?;
+    plugin_header.save(account, core.len())?;
 
     plugin_registry.bump_offsets(registry_record.offset, size_diff)?;
 
