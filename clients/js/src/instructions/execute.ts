@@ -1,21 +1,26 @@
 import {
   Context,
   Instruction,
-  publicKey,
   Signer,
   TransactionBuilder,
 } from '@metaplex-foundation/umi';
-import { executeV1, findAssetSignerPda } from '../generated';
 
-export type ExecuteInput = TransactionBuilder | Instruction;
+import {
+  AssetV1,
+  CollectionV1,
+  executeV1,
+  findAssetSignerPda,
+} from '../generated';
+
+export type ExecuteInput = TransactionBuilder | Instruction[];
 
 export type ExecuteArgs = Omit<
   Parameters<typeof executeV1>[1],
-  'programId' | 'instructionData'
+  'programId' | 'instructionData' | 'asset' | 'collection'
 > & {
-  builder?: TransactionBuilder;
-  instruction?: Instruction;
-  instructions?: Instruction[];
+  asset: Pick<AssetV1, 'publicKey'>;
+  collection?: Pick<CollectionV1, 'publicKey'>;
+  instructions: ExecuteInput;
   signers?: Signer[];
 };
 
@@ -34,14 +39,8 @@ const executeCommon = (
   const signers: Signer[] = [];
 
   let builder: TransactionBuilder = new TransactionBuilder();
-  if (args.builder) {
-    builder = args.builder;
-  } else if (args.instruction) {
-    builder = new TransactionBuilder().add({
-      instruction: args.instruction,
-      signers: args.signers ?? [],
-      bytesCreatedOnChain: 0,
-    });
+  if (args.instructions instanceof TransactionBuilder) {
+    builder = args.instructions;
   } else if (args.instructions) {
     args.instructions.forEach((instruction) => {
       const ixSigners: Signer[] = [];
@@ -60,16 +59,18 @@ const executeCommon = (
       });
     });
   } else {
-    throw new Error('No builder or instruction provided');
+    throw new Error('No builder or instructions provided');
   }
 
   // eslint-disable-next-line no-restricted-syntax
   for (const ix of builder.items) {
     const [assetSigner] = findAssetSignerPda(context, {
-      asset: publicKey(args.asset),
+      asset: args.asset.publicKey,
     });
     const baseBuilder = executeV1(context, {
       ...args,
+      asset: args.asset.publicKey,
+      collection: args.collection?.publicKey,
       assetSigner,
       // Forward the programID of the instruction being executed.
       programId: ix.instruction.programId,
