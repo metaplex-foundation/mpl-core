@@ -41,8 +41,8 @@ test('it can execute for an asset as the owner', async (t) => {
   t.deepEqual(beforeAssetBalance, sol(0.00315648));
 
   await execute(umi, {
-    asset: asset.publicKey,
-    builder: transferSol(umi, {
+    asset,
+    instructions: transferSol(umi, {
       source: createNoopSigner(publicKey(assetSigner)),
       destination: recipient.publicKey,
       amount: sol(0.5),
@@ -90,8 +90,8 @@ test('it can execute multiple instructions for an asset as the owner', async (t)
   t.deepEqual(beforeAssetBalance, sol(0.00315648));
 
   await execute(umi, {
-    asset: asset.publicKey,
-    builder: transferSol(umi, {
+    asset,
+    instructions: transferSol(umi, {
       source: createNoopSigner(publicKey(assetSigner)),
       destination: recipient.publicKey,
       amount: sol(0.25),
@@ -154,8 +154,8 @@ test('it can execute for an asset as the owner with an Instruction', async (t) =
   }).getInstructions()[0];
 
   await execute(umi, {
-    asset: asset.publicKey,
-    instruction,
+    asset,
+    instructions: [instruction],
     signers: [createNoopSigner(publicKey(assetSigner))],
   }).sendAndConfirm(umi);
 
@@ -214,7 +214,7 @@ test('it can execute for an asset as the owner with an Instruction[]', async (t)
     .getInstructions();
 
   await execute(umi, {
-    asset: asset.publicKey,
+    asset,
     instructions,
     signers: [createNoopSigner(publicKey(assetSigner))],
   }).sendAndConfirm(umi);
@@ -244,9 +244,9 @@ test('it cannot execute for an asset if not the owner', async (t) => {
   const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
 
   const result = execute(umi, {
-    asset: asset.publicKey,
+    asset,
     authority: attacker,
-    builder: transferSol(umi, {
+    instructions: transferSol(umi, {
       source: createNoopSigner(publicKey(assetSigner)),
       destination: attacker.publicKey,
       amount: sol(0.5),
@@ -271,9 +271,9 @@ test('it cannot execute for an asset as the update authority', async (t) => {
   const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
 
   const result = execute(umi, {
-    asset: asset.publicKey,
+    asset,
     authority: umi.identity,
-    builder: transferSol(umi, {
+    instructions: transferSol(umi, {
       source: createNoopSigner(publicKey(assetSigner)),
       destination: newOwner.publicKey,
       amount: sol(0.5),
@@ -298,8 +298,8 @@ test('it cannot execute for an asset in collection if no collection', async (t) 
   const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
 
   const result = execute(umi, {
-    asset: asset.publicKey,
-    builder: transferSol(umi, {
+    asset,
+    instructions: transferSol(umi, {
       source: createNoopSigner(publicKey(assetSigner)),
       destination: newOwner.publicKey,
       amount: sol(0.5),
@@ -331,9 +331,9 @@ test('it can execute for an asset in collection as the owner', async (t) => {
   t.deepEqual(beforeAssetBalance, sol(0.00315648));
 
   await execute(umi, {
-    asset: asset.publicKey,
-    collection: collection.publicKey,
-    builder: transferSol(umi, {
+    asset,
+    collection,
+    instructions: transferSol(umi, {
       source: createNoopSigner(publicKey(assetSigner)),
       destination: recipient.publicKey,
       amount: sol(0.5),
@@ -362,9 +362,9 @@ test('it cannot transfer asset in collection with the wrong collection', async (
   const wrongCollection = await createCollection(umi);
   const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
   const result = execute(umi, {
-    asset: asset.publicKey,
-    collection: wrongCollection.publicKey,
-    builder: transferSol(umi, {
+    asset,
+    collection: wrongCollection,
+    instructions: transferSol(umi, {
       source: createNoopSigner(publicKey(assetSigner)),
       destination: recipient.publicKey,
       amount: sol(0.5),
@@ -390,8 +390,8 @@ test('it cannot use an invalid system program', async (t) => {
   });
 
   const result = execute(umi, {
-    asset: asset.publicKey,
-    builder: transferSol(umi, {
+    asset,
+    instructions: transferSol(umi, {
       source: createNoopSigner(publicKey(assetSigner)),
       destination: newOwner.publicKey,
       amount: sol(0.5),
