@@ -204,6 +204,10 @@ pub enum MplCoreError {
     /// 48 - Cannot move asset to collection with permanent delegates
     #[error("Cannot move asset to collection with permanent delegates")]
     PermanentDelegatesPreventMove,
+
+    /// 49 - Invalid Signing PDA for Asset or Collection Execute
+    #[error("Invalid Signing PDA for Asset or Collection Execute")]
+    InvalidExecutePda,
 }
 
 impl PrintProgramError for MplCoreError {

@@ -157,6 +157,9 @@ pub enum MplCoreError {
     /// 48 (0x30) - Cannot move asset to collection with permanent delegates
     #[error("Cannot move asset to collection with permanent delegates")]
     PermanentDelegatesPreventMove,
+    /// 49 (0x31) - Invalid Signing PDA for Asset or Collection Execute
+    #[error("Invalid Signing PDA for Asset or Collection Execute")]
+    InvalidExecutePda,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

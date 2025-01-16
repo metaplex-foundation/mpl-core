@@ -5,7 +5,7 @@ const k = require("@metaplex-foundation/kinobi");
 const clientDir = path.join(__dirname, "..", "clients");
 const idlDir = path.join(__dirname, "..", "idls");
 
-// Instanciate Kinobi.
+// Instantiate Kinobi.
 const kinobi = k.createFromIdls([path.join(idlDir, "mpl_core.json")]);
 
 // Update programs.
@@ -13,6 +13,31 @@ kinobi.update(
   k.updateProgramsVisitor({
     mplCoreProgram: { name: "mplCore" },
   })
+);
+
+// Append empty signer accounts.
+kinobi.update(
+  new k.bottomUpTransformerVisitor([{
+    select: ['[programNode]', node => 'name' in node && node.name === "mplCore"],
+    transform: (node) => {
+      return k.programNode({
+        ...node,
+        accounts: [
+          ...node.accounts,
+          k.accountNode({
+            name: "assetSigner",
+            size: 0,
+            data: k.structTypeNode([
+              k.structFieldTypeNode({
+                name: "data",
+                type: k.bytesTypeNode(k.remainderSizeNode()),
+              })
+            ]),
+          }),
+        ],
+      });
+    },
+  }])
 );
 
 
@@ -23,7 +48,18 @@ kinobi.update(
     },
     collectionV1: {
       name: "baseCollectionV1",
-    }
+    },
+    assetSigner: {
+      size: 0,
+      seeds: [
+        k.constantPdaSeedNodeFromString("mpl-core-execute"),
+        k.variablePdaSeedNode(
+          "asset",
+          k.publicKeyTypeNode(),
+          "The address of the asset account"
+        ),
+      ],
+    },
   })
 );
 
@@ -152,7 +188,14 @@ kinobi.update(
           defaultValue: k.noneValueNode()
         },
       }
-    }
+    },
+    executeV1: {
+      accounts: {
+        assetSigner: {
+          defaultValue: k.pdaValueNode("assetSigner")
+        }
+      }
+    },
   })
 );
 
