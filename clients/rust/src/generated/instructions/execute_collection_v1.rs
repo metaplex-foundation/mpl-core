@@ -20,6 +20,8 @@ pub struct ExecuteCollectionV1 {
     pub payer: solana_program::pubkey::Pubkey,
     /// The authority of the collection
     pub authority: Option<solana_program::pubkey::Pubkey>,
+    /// The system program
+    pub system_program: solana_program::pubkey::Pubkey,
     /// The program id of the instruction
     pub program_id: solana_program::pubkey::Pubkey,
 }
@@ -37,7 +39,7 @@ impl ExecuteCollectionV1 {
         args: ExecuteCollectionV1InstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.collection,
             false,
@@ -59,6 +61,10 @@ impl ExecuteCollectionV1 {
                 false,
             ));
         }
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.system_program,
+            false,
+        ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.program_id,
             false,
@@ -106,13 +112,15 @@ pub struct ExecuteCollectionV1InstructionArgs {
 ///   1. `[]` collection_signer
 ///   2. `[writable, signer]` payer
 ///   3. `[signer, optional]` authority
-///   4. `[]` program_id
+///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   5. `[]` program_id
 #[derive(Default)]
 pub struct ExecuteCollectionV1Builder {
     collection: Option<solana_program::pubkey::Pubkey>,
     collection_signer: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
+    system_program: Option<solana_program::pubkey::Pubkey>,
     program_id: Option<solana_program::pubkey::Pubkey>,
     instruction_data: Option<Vec<u8>>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
@@ -148,6 +156,13 @@ impl ExecuteCollectionV1Builder {
     #[inline(always)]
     pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.authority = authority;
+        self
+    }
+    /// `[optional account, default to '11111111111111111111111111111111']`
+    /// The system program
+    #[inline(always)]
+    pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.system_program = Some(system_program);
         self
     }
     /// The program id of the instruction
@@ -188,6 +203,9 @@ impl ExecuteCollectionV1Builder {
                 .expect("collection_signer is not set"),
             payer: self.payer.expect("payer is not set"),
             authority: self.authority,
+            system_program: self
+                .system_program
+                .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
             program_id: self.program_id.expect("program_id is not set"),
         };
         let args = ExecuteCollectionV1InstructionArgs {
@@ -211,6 +229,8 @@ pub struct ExecuteCollectionV1CpiAccounts<'a, 'b> {
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The authority of the collection
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The system program
+    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The program id of the instruction
     pub program_id: &'b solana_program::account_info::AccountInfo<'a>,
 }
@@ -227,6 +247,8 @@ pub struct ExecuteCollectionV1Cpi<'a, 'b> {
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The authority of the collection
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The system program
+    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// The program id of the instruction
     pub program_id: &'b solana_program::account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
@@ -245,6 +267,7 @@ impl<'a, 'b> ExecuteCollectionV1Cpi<'a, 'b> {
             collection_signer: accounts.collection_signer,
             payer: accounts.payer,
             authority: accounts.authority,
+            system_program: accounts.system_program,
             program_id: accounts.program_id,
             __args: args,
         }
@@ -282,7 +305,7 @@ impl<'a, 'b> ExecuteCollectionV1Cpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.collection.key,
             false,
@@ -307,6 +330,10 @@ impl<'a, 'b> ExecuteCollectionV1Cpi<'a, 'b> {
             ));
         }
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.system_program.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.program_id.key,
             false,
         ));
@@ -328,7 +355,7 @@ impl<'a, 'b> ExecuteCollectionV1Cpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.collection.clone());
         account_infos.push(self.collection_signer.clone());
@@ -336,6 +363,7 @@ impl<'a, 'b> ExecuteCollectionV1Cpi<'a, 'b> {
         if let Some(authority) = self.authority {
             account_infos.push(authority.clone());
         }
+        account_infos.push(self.system_program.clone());
         account_infos.push(self.program_id.clone());
         remaining_accounts
             .iter()
@@ -357,7 +385,8 @@ impl<'a, 'b> ExecuteCollectionV1Cpi<'a, 'b> {
 ///   1. `[]` collection_signer
 ///   2. `[writable, signer]` payer
 ///   3. `[signer, optional]` authority
-///   4. `[]` program_id
+///   4. `[]` system_program
+///   5. `[]` program_id
 pub struct ExecuteCollectionV1CpiBuilder<'a, 'b> {
     instruction: Box<ExecuteCollectionV1CpiBuilderInstruction<'a, 'b>>,
 }
@@ -370,6 +399,7 @@ impl<'a, 'b> ExecuteCollectionV1CpiBuilder<'a, 'b> {
             collection_signer: None,
             payer: None,
             authority: None,
+            system_program: None,
             program_id: None,
             instruction_data: None,
             __remaining_accounts: Vec::new(),
@@ -408,6 +438,15 @@ impl<'a, 'b> ExecuteCollectionV1CpiBuilder<'a, 'b> {
         authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
         self.instruction.authority = authority;
+        self
+    }
+    /// The system program
+    #[inline(always)]
+    pub fn system_program(
+        &mut self,
+        system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.system_program = Some(system_program);
         self
     }
     /// The program id of the instruction
@@ -486,6 +525,11 @@ impl<'a, 'b> ExecuteCollectionV1CpiBuilder<'a, 'b> {
 
             authority: self.instruction.authority,
 
+            system_program: self
+                .instruction
+                .system_program
+                .expect("system_program is not set"),
+
             program_id: self.instruction.program_id.expect("program_id is not set"),
             __args: args,
         };
@@ -502,6 +546,7 @@ struct ExecuteCollectionV1CpiBuilderInstruction<'a, 'b> {
     collection_signer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     program_id: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     instruction_data: Option<Vec<u8>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.

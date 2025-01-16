@@ -40,6 +40,8 @@ export type ExecuteCollectionV1InstructionAccounts = {
   payer?: Signer;
   /** The authority of the collection */
   authority?: Signer;
+  /** The system program */
+  systemProgram?: PublicKey | Pda;
   /** The program id of the instruction */
   programId?: PublicKey | Pda;
 };
@@ -115,8 +117,13 @@ export function executeCollectionV1(
       isWritable: false as boolean,
       value: input.authority ?? null,
     },
-    programId: {
+    systemProgram: {
       index: 4,
+      isWritable: false as boolean,
+      value: input.systemProgram ?? null,
+    },
+    programId: {
+      index: 5,
       isWritable: false as boolean,
       value: input.programId ?? null,
     },
@@ -133,6 +140,13 @@ export function executeCollectionV1(
   }
   if (!resolvedAccounts.payer.value) {
     resolvedAccounts.payer.value = context.payer;
+  }
+  if (!resolvedAccounts.systemProgram.value) {
+    resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
+      'splSystem',
+      '11111111111111111111111111111111'
+    );
+    resolvedAccounts.systemProgram.isWritable = false;
   }
   if (!resolvedAccounts.programId.value) {
     resolvedAccounts.programId.value = programId;

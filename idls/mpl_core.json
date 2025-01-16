@@ -2119,6 +2119,14 @@
           ]
         },
         {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
           "name": "programId",
           "isMut": false,
           "isSigner": false,
