@@ -62,6 +62,20 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         _ => (),
     }
 
+    let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
+    let external_plugin_adapter_authority = match &args.init_info {
+        ExternalPluginAdapterInitInfo::LifecycleHook(lifecycle_hook) => {
+            lifecycle_hook.init_plugin_authority
+        }
+        ExternalPluginAdapterInitInfo::Oracle(oracle) => oracle.init_plugin_authority,
+        ExternalPluginAdapterInitInfo::AppData(app_data) => app_data.init_plugin_authority,
+        ExternalPluginAdapterInitInfo::LinkedLifecycleHook(lifecycle_hook) => {
+            lifecycle_hook.init_plugin_authority
+        }
+        ExternalPluginAdapterInitInfo::LinkedAppData(app_data) => app_data.init_plugin_authority,
+        ExternalPluginAdapterInitInfo::DataSection(_) => unreachable!(),
+    }
+    .unwrap_or(Authority::UpdateAuthority);
     let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: Some(ctx.accounts.asset),
@@ -73,18 +87,20 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         new_asset_authority: None,
         new_collection_authority: None,
         target_plugin: None,
+        target_plugin_authority: None,
+        target_external_plugin: Some(&external_plugin_adapter),
+        target_external_plugin_authority: Some(&external_plugin_adapter_authority),
     };
 
     if ExternalPluginAdapter::validate_add_external_plugin_adapter(
-        &ExternalPluginAdapter::from(&args.init_info),
+        &external_plugin_adapter,
         &validation_ctx,
     )? == ValidationResult::Rejected
     {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
-    let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
-
+    // Validate asset permissions.
     // Validate asset permissions.
     let (mut asset, _, _) = validate_asset_permissions(
         accounts,
@@ -94,7 +110,9 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         None,
         None,
         None,
+        None,
         Some(&external_plugin_adapter),
+        Some(&external_plugin_adapter_authority),
         AssetV1::check_add_external_plugin_adapter,
         CollectionV1::check_add_external_plugin_adapter,
         PluginType::check_add_external_plugin_adapter,
@@ -147,6 +165,20 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         return Err(MplCoreError::CannotAddDataSection.into());
     }
 
+    let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
+    let external_plugin_adapter_authority = match &args.init_info {
+        ExternalPluginAdapterInitInfo::LifecycleHook(lifecycle_hook) => {
+            lifecycle_hook.init_plugin_authority
+        }
+        ExternalPluginAdapterInitInfo::Oracle(oracle) => oracle.init_plugin_authority,
+        ExternalPluginAdapterInitInfo::AppData(app_data) => app_data.init_plugin_authority,
+        ExternalPluginAdapterInitInfo::LinkedLifecycleHook(lifecycle_hook) => {
+            lifecycle_hook.init_plugin_authority
+        }
+        ExternalPluginAdapterInitInfo::LinkedAppData(app_data) => app_data.init_plugin_authority,
+        ExternalPluginAdapterInitInfo::DataSection(_) => unreachable!(),
+    }
+    .unwrap_or(Authority::UpdateAuthority);
     let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: None,
@@ -158,10 +190,13 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         new_asset_authority: None,
         new_collection_authority: None,
         target_plugin: None,
+        target_plugin_authority: None,
+        target_external_plugin: Some(&external_plugin_adapter),
+        target_external_plugin_authority: Some(&external_plugin_adapter_authority),
     };
 
     if ExternalPluginAdapter::validate_add_external_plugin_adapter(
-        &ExternalPluginAdapter::from(&args.init_info),
+        &external_plugin_adapter,
         &validation_ctx,
     )? == ValidationResult::Rejected
     {
@@ -177,7 +212,9 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         ctx.accounts.collection,
         None,
         None,
+        None,
         Some(&external_plugin_adapter),
+        Some(&external_plugin_adapter_authority),
         CollectionV1::check_add_external_plugin_adapter,
         PluginType::check_add_external_plugin_adapter,
         CollectionV1::validate_add_external_plugin_adapter,

@@ -57,7 +57,7 @@ pub(crate) fn remove_external_plugin_adapter<'a>(
         return Err(MplCoreError::PluginNotFound.into());
     }
 
-    let (_, plugin_to_remove) = fetch_wrapped_external_plugin_adapter::<AssetV1>(
+    let (record, plugin_to_remove) = fetch_wrapped_external_plugin_adapter::<AssetV1>(
         ctx.accounts.asset,
         Some(&asset),
         &args.key,
@@ -72,7 +72,9 @@ pub(crate) fn remove_external_plugin_adapter<'a>(
         None,
         None,
         None,
+        None,
         Some(&plugin_to_remove),
+        Some(&record.authority),
         AssetV1::check_remove_external_plugin_adapter,
         CollectionV1::check_remove_external_plugin_adapter,
         PluginType::check_remove_external_plugin_adapter,
@@ -127,7 +129,7 @@ pub(crate) fn remove_collection_external_plugin_adapter<'a>(
         return Err(MplCoreError::PluginNotFound.into());
     }
 
-    let (_, plugin_to_remove) = fetch_wrapped_external_plugin_adapter::<CollectionV1>(
+    let (record, plugin_to_remove) = fetch_wrapped_external_plugin_adapter::<CollectionV1>(
         ctx.accounts.collection,
         Some(&collection),
         &args.key,
@@ -140,7 +142,9 @@ pub(crate) fn remove_collection_external_plugin_adapter<'a>(
         ctx.accounts.collection,
         None,
         None,
+        None,
         Some(&plugin_to_remove),
+        Some(&record.authority),
         CollectionV1::check_remove_external_plugin_adapter,
         PluginType::check_remove_external_plugin_adapter,
         CollectionV1::validate_remove_external_plugin_adapter,

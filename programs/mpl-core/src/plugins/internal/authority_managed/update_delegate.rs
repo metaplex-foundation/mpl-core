@@ -198,14 +198,16 @@ impl PluginValidation for UpdateDelegate {
                 if existing.difference(&new).collect::<Vec<_>>() == vec![&ctx.authority_info.key]
                     && new.difference(&existing).collect::<Vec<_>>().is_empty()
                 {
-                    solana_program::msg!("UpdateDelegate: Approved");
-                    return Ok(ValidationResult::Approved);
+                    return approve!();
                 }
-            } else {
-                return Ok(ValidationResult::Approved);
+            }
+            // UpdateDelegate has the same authority as UpdateAuthority, so if the target plugin authority is UpdateAuthority, we can approve.
+            else if ctx.target_plugin_authority == Some(&Authority::UpdateAuthority) {
+                return approve!();
             }
         }
 
+        // Otherwise, abstain.
         abstain!()
     }
 }

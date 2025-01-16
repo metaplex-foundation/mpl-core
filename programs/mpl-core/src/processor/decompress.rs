@@ -68,6 +68,8 @@ pub(crate) fn decompress<'a>(
                 None,
                 None,
                 None,
+                None,
+                None,
                 AssetV1::check_decompress,
                 CollectionV1::check_decompress,
                 PluginType::check_decompress,
