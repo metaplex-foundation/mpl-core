@@ -52,6 +52,8 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
         None,
         None,
         None,
+        None,
+        None,
         AssetV1::check_execute,
         CollectionV1::check_execute,
         PluginType::check_execute,
