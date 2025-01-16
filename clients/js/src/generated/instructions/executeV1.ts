@@ -18,7 +18,6 @@ import {
   Serializer,
   bytes,
   mapSerializer,
-  publicKey as publicKeySerializer,
   struct,
   u32,
   u8,
@@ -45,19 +44,17 @@ export type ExecuteV1InstructionAccounts = {
   authority?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;
+  /** The program id of the instruction */
+  programId?: PublicKey | Pda;
 };
 
 // Data.
 export type ExecuteV1InstructionData = {
   discriminator: number;
-  programId: PublicKey;
   instructionData: Uint8Array;
 };
 
-export type ExecuteV1InstructionDataArgs = {
-  programId: PublicKey;
-  instructionData: Uint8Array;
-};
+export type ExecuteV1InstructionDataArgs = { instructionData: Uint8Array };
 
 export function getExecuteV1InstructionDataSerializer(): Serializer<
   ExecuteV1InstructionDataArgs,
@@ -71,7 +68,6 @@ export function getExecuteV1InstructionDataSerializer(): Serializer<
     struct<ExecuteV1InstructionData>(
       [
         ['discriminator', u8()],
-        ['programId', publicKeySerializer()],
         ['instructionData', bytes({ size: u32() })],
       ],
       { description: 'ExecuteV1InstructionData' }
@@ -126,6 +122,11 @@ export function executeV1(
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
+    programId: {
+      index: 6,
+      isWritable: false as boolean,
+      value: input.programId ?? null,
+    },
   } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
@@ -146,6 +147,10 @@ export function executeV1(
       '11111111111111111111111111111111'
     );
     resolvedAccounts.systemProgram.isWritable = false;
+  }
+  if (!resolvedAccounts.programId.value) {
+    resolvedAccounts.programId.value = programId;
+    resolvedAccounts.programId.isWritable = false;
   }
 
   // Accounts in order.

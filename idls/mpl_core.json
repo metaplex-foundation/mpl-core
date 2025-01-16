@@ -2059,6 +2059,14 @@
           "docs": [
             "The system program"
           ]
+        },
+        {
+          "name": "programId",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The program id of the instruction"
+          ]
         }
       ],
       "args": [
@@ -2108,6 +2116,14 @@
           "isOptional": true,
           "docs": [
             "The authority of the collection"
+          ]
+        },
+        {
+          "name": "programId",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The program id of the instruction"
           ]
         }
       ],
@@ -3522,10 +3538,6 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "programId",
-            "type": "publicKey"
-          },
-          {
             "name": "instructionData",
             "type": "bytes"
           }
@@ -3537,10 +3549,6 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "programId",
-            "type": "publicKey"
-          },
           {
             "name": "instructionData",
             "type": "bytes"

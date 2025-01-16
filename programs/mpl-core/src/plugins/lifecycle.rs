@@ -397,36 +397,7 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        let resolved_authorities = ctx
-            .resolved_authorities
-            .ok_or(MplCoreError::InvalidAuthority)?;
-        let base_result = if resolved_authorities.contains(ctx.self_authority) {
-            solana_program::msg!("Base: Approved");
-            ValidationResult::Approved
-        } else {
-            ValidationResult::Pass
-        };
-
-        let result = plugin.inner().validate_execute(ctx)?;
-
-        match (&base_result, &result) {
-            (ValidationResult::Approved, ValidationResult::Approved) => {
-                approve!()
-            }
-            (ValidationResult::Approved, ValidationResult::Rejected) => {
-                reject!()
-            }
-            (ValidationResult::Rejected, ValidationResult::Approved) => {
-                reject!()
-            }
-            (ValidationResult::Rejected, ValidationResult::Rejected) => {
-                reject!()
-            }
-            (ValidationResult::Pass, _) => Ok(result),
-            (ValidationResult::ForceApproved, _) => force_approve!(),
-            (_, ValidationResult::Pass) => Ok(base_result),
-            (_, ValidationResult::ForceApproved) => force_approve!(),
-        }
+        plugin.inner().validate_execute(ctx)
     }
 
     /// Validate the add external plugin adapter lifecycle event.

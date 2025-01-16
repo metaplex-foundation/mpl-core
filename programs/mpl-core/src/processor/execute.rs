@@ -25,7 +25,6 @@ const PREFIX: &str = "mpl-core-execute";
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct ExecuteV1Args {
-    pub program_id: Pubkey,
     pub instruction_data: Vec<u8>,
 }
 
@@ -80,7 +79,7 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
     process_execute(
         ctx.accounts.asset.key,
         ctx.accounts.asset_signer.key,
-        &args.program_id,
+        ctx.accounts.program_id.key,
         args.instruction_data,
         ctx.remaining_accounts,
     )
@@ -89,7 +88,6 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct ExecuteCollectionV1Args {
-    pub program_id: Pubkey,
     pub instruction_data: Vec<u8>,
 }
 
@@ -123,7 +121,7 @@ pub(crate) fn execute_collection<'a>(
     process_execute(
         ctx.accounts.collection.key,
         ctx.accounts.collection_signer.key,
-        &args.program_id,
+        ctx.accounts.program_id.key,
         args.instruction_data,
         ctx.remaining_accounts,
     )

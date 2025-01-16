@@ -301,6 +301,7 @@ pub(crate) enum MplAssetInstruction {
     #[account(3, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(5, name="system_program", desc = "The system program")]
+    #[account(6, name="program_id", desc = "The program id of the instruction")]
     ExecuteV1(ExecuteV1Args),
 
     /// Execute an instruction on behalf of the Collection authority.
@@ -308,5 +309,6 @@ pub(crate) enum MplAssetInstruction {
     #[account(1, name="collection_signer", desc = "The signing PDA for the collection")]    
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, optional, signer, name="authority", desc = "The authority of the collection")]
+    #[account(4, name="program_id", desc = "The program id of the instruction")]
     ExecuteCollectionV1(ExecuteCollectionV1Args),
 }

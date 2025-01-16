@@ -9,7 +9,6 @@
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::pubkey::Pubkey;
 
 /// Accounts.
 pub struct ExecuteV1 {
@@ -25,6 +24,8 @@ pub struct ExecuteV1 {
     pub authority: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
+    /// The program id of the instruction
+    pub program_id: solana_program::pubkey::Pubkey,
 }
 
 impl ExecuteV1 {
@@ -40,7 +41,7 @@ impl ExecuteV1 {
         args: ExecuteV1InstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset, false,
         ));
@@ -75,6 +76,10 @@ impl ExecuteV1 {
             self.system_program,
             false,
         ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.program_id,
+            false,
+        ));
         accounts.extend_from_slice(remaining_accounts);
         let mut data = ExecuteV1InstructionData::new().try_to_vec().unwrap();
         let mut args = args.try_to_vec().unwrap();
@@ -105,7 +110,6 @@ impl ExecuteV1InstructionData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ExecuteV1InstructionArgs {
-    pub program_id: Pubkey,
     pub instruction_data: Vec<u8>,
 }
 
@@ -119,6 +123,7 @@ pub struct ExecuteV1InstructionArgs {
 ///   3. `[writable, signer]` payer
 ///   4. `[signer, optional]` authority
 ///   5. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   6. `[]` program_id
 #[derive(Default)]
 pub struct ExecuteV1Builder {
     asset: Option<solana_program::pubkey::Pubkey>,
@@ -127,7 +132,7 @@ pub struct ExecuteV1Builder {
     payer: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
-    program_id: Option<Pubkey>,
+    program_id: Option<solana_program::pubkey::Pubkey>,
     instruction_data: Option<Vec<u8>>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
@@ -175,8 +180,9 @@ impl ExecuteV1Builder {
         self.system_program = Some(system_program);
         self
     }
+    /// The program id of the instruction
     #[inline(always)]
-    pub fn program_id(&mut self, program_id: Pubkey) -> &mut Self {
+    pub fn program_id(&mut self, program_id: solana_program::pubkey::Pubkey) -> &mut Self {
         self.program_id = Some(program_id);
         self
     }
@@ -214,9 +220,9 @@ impl ExecuteV1Builder {
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
+            program_id: self.program_id.expect("program_id is not set"),
         };
         let args = ExecuteV1InstructionArgs {
-            program_id: self.program_id.clone().expect("program_id is not set"),
             instruction_data: self
                 .instruction_data
                 .clone()
@@ -241,6 +247,8 @@ pub struct ExecuteV1CpiAccounts<'a, 'b> {
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The program id of the instruction
+    pub program_id: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
 /// `execute_v1` CPI instruction.
@@ -259,6 +267,8 @@ pub struct ExecuteV1Cpi<'a, 'b> {
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The program id of the instruction
+    pub program_id: &'b solana_program::account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: ExecuteV1InstructionArgs,
 }
@@ -277,6 +287,7 @@ impl<'a, 'b> ExecuteV1Cpi<'a, 'b> {
             payer: accounts.payer,
             authority: accounts.authority,
             system_program: accounts.system_program,
+            program_id: accounts.program_id,
             __args: args,
         }
     }
@@ -313,7 +324,7 @@ impl<'a, 'b> ExecuteV1Cpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset.key,
             false,
@@ -352,6 +363,10 @@ impl<'a, 'b> ExecuteV1Cpi<'a, 'b> {
             *self.system_program.key,
             false,
         ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.program_id.key,
+            false,
+        ));
         remaining_accounts.iter().for_each(|remaining_account| {
             accounts.push(solana_program::instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
@@ -368,7 +383,7 @@ impl<'a, 'b> ExecuteV1Cpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(7 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
         if let Some(collection) = self.collection {
@@ -380,6 +395,7 @@ impl<'a, 'b> ExecuteV1Cpi<'a, 'b> {
             account_infos.push(authority.clone());
         }
         account_infos.push(self.system_program.clone());
+        account_infos.push(self.program_id.clone());
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -402,6 +418,7 @@ impl<'a, 'b> ExecuteV1Cpi<'a, 'b> {
 ///   3. `[writable, signer]` payer
 ///   4. `[signer, optional]` authority
 ///   5. `[]` system_program
+///   6. `[]` program_id
 pub struct ExecuteV1CpiBuilder<'a, 'b> {
     instruction: Box<ExecuteV1CpiBuilderInstruction<'a, 'b>>,
 }
@@ -472,8 +489,12 @@ impl<'a, 'b> ExecuteV1CpiBuilder<'a, 'b> {
         self.instruction.system_program = Some(system_program);
         self
     }
+    /// The program id of the instruction
     #[inline(always)]
-    pub fn program_id(&mut self, program_id: Pubkey) -> &mut Self {
+    pub fn program_id(
+        &mut self,
+        program_id: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
         self.instruction.program_id = Some(program_id);
         self
     }
@@ -524,11 +545,6 @@ impl<'a, 'b> ExecuteV1CpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = ExecuteV1InstructionArgs {
-            program_id: self
-                .instruction
-                .program_id
-                .clone()
-                .expect("program_id is not set"),
             instruction_data: self
                 .instruction
                 .instruction_data
@@ -555,6 +571,8 @@ impl<'a, 'b> ExecuteV1CpiBuilder<'a, 'b> {
                 .instruction
                 .system_program
                 .expect("system_program is not set"),
+
+            program_id: self.instruction.program_id.expect("program_id is not set"),
             __args: args,
         };
         instruction.invoke_signed_with_remaining_accounts(
@@ -572,7 +590,7 @@ struct ExecuteV1CpiBuilderInstruction<'a, 'b> {
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    program_id: Option<Pubkey>,
+    program_id: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     instruction_data: Option<Vec<u8>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
