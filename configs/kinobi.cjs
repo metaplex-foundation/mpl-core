@@ -34,16 +34,6 @@ kinobi.update(
               })
             ]),
           }),
-          k.accountNode({
-            name: "collectionSigner",
-            size: 0,
-            data: k.structTypeNode([
-              k.structFieldTypeNode({
-                name: "data",
-                type: k.bytesTypeNode(k.remainderSizeNode()),
-              })
-            ]),
-          }),
         ],
       });
     },
@@ -70,17 +60,6 @@ kinobi.update(
         ),
       ],
     },
-    collectionSigner: {
-      size: 0,
-      seeds: [
-        k.constantPdaSeedNodeFromString("mpl-core-execute"),
-        k.variablePdaSeedNode(
-          "collection",
-          k.publicKeyTypeNode(),
-          "The address of the collection account"
-        ),
-      ],
-    }
   })
 );
 
@@ -217,13 +196,6 @@ kinobi.update(
         }
       }
     },
-    executeCollectionV1: {
-      accounts: {
-        collectionSigner: {
-          defaultValue: k.pdaValueNode("collectionSigner")
-        }
-      }
-    }
   })
 );
 

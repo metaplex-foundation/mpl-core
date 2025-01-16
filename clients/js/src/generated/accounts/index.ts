@@ -8,7 +8,6 @@
 
 export * from './assetSigner';
 export * from './assetV1';
-export * from './collectionSigner';
 export * from './collectionV1';
 export * from './hashedAssetV1';
 export * from './pluginHeaderV1';
