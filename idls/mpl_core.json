@@ -2081,72 +2081,6 @@
         "type": "u8",
         "value": 31
       }
-    },
-    {
-      "name": "ExecuteCollectionV1",
-      "accounts": [
-        {
-          "name": "collection",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The address of the collection"
-          ]
-        },
-        {
-          "name": "collectionSigner",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The signing PDA for the collection"
-          ]
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The account paying for the storage fees"
-          ]
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "isOptional": true,
-          "docs": [
-            "The authority of the collection"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The system program"
-          ]
-        },
-        {
-          "name": "programId",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "The program id of the instruction"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "executeCollectionV1Args",
-          "type": {
-            "defined": "ExecuteCollectionV1Args"
-          }
-        }
-      ],
-      "discriminant": {
-        "type": "u8",
-        "value": 32
-      }
     }
   ],
   "accounts": [
@@ -3542,18 +3476,6 @@
     },
     {
       "name": "ExecuteV1Args",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "instructionData",
-            "type": "bytes"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ExecuteCollectionV1Args",
       "type": {
         "kind": "struct",
         "fields": [

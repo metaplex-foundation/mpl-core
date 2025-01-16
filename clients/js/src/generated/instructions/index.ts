@@ -21,7 +21,6 @@ export * from './createCollectionV2';
 export * from './createV1';
 export * from './createV2';
 export * from './decompressV1';
-export * from './executeCollectionV1';
 export * from './executeV1';
 export * from './removeCollectionExternalPluginAdapterV1';
 export * from './removeCollectionPluginV1';

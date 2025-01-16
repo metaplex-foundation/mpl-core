@@ -12,12 +12,10 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    instruction::accounts::{ExecuteCollectionV1Accounts, ExecuteV1Accounts},
+    instruction::accounts::ExecuteV1Accounts,
     plugins::{Plugin, PluginType},
     state::{get_execute_fee, AssetV1, CollectionV1, Key},
-    utils::{
-        load_key, resolve_authority, validate_asset_permissions, validate_collection_permissions,
-    },
+    utils::{load_key, resolve_authority, validate_asset_permissions},
 };
 
 const PREFIX: &str = "mpl-core-execute";
@@ -79,48 +77,6 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
     process_execute(
         ctx.accounts.asset.key,
         ctx.accounts.asset_signer.key,
-        ctx.accounts.program_id.key,
-        args.instruction_data,
-        ctx.remaining_accounts,
-    )
-}
-
-#[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct ExecuteCollectionV1Args {
-    pub instruction_data: Vec<u8>,
-}
-
-pub(crate) fn execute_collection<'a>(
-    accounts: &'a [AccountInfo<'a>],
-    args: ExecuteCollectionV1Args,
-) -> ProgramResult {
-    // Accounts.
-    let ctx = ExecuteCollectionV1Accounts::context(accounts)?;
-
-    // Guards.
-    assert_signer(ctx.accounts.payer)?;
-    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
-
-    // Validate collection permissions.
-    let _ = validate_collection_permissions(
-        accounts,
-        authority,
-        ctx.accounts.collection,
-        None,
-        None,
-        None,
-        CollectionV1::check_execute,
-        PluginType::check_execute,
-        CollectionV1::validate_execute,
-        Plugin::validate_execute,
-        None,
-        None,
-    )?;
-
-    process_execute(
-        ctx.accounts.collection.key,
-        ctx.accounts.collection_signer.key,
         ctx.accounts.program_id.key,
         args.instruction_data,
         ctx.remaining_accounts,

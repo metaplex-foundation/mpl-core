@@ -174,9 +174,5 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Execute");
             execute(accounts, args)
         }
-        MplAssetInstruction::ExecuteCollectionV1(args) => {
-            msg!("Instruction: ExecuteCollection");
-            execute_collection(accounts, args)
-        }
     }
 }

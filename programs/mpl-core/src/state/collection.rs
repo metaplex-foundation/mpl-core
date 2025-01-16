@@ -293,15 +293,11 @@ impl CollectionV1 {
     /// Validate the execute lifecycle event.
     pub fn validate_execute(
         &self,
-        authority_info: &AccountInfo,
+        _authority_info: &AccountInfo,
         _: Option<&Plugin>,
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
-        if authority_info.key == &self.update_authority {
-            approve!()
-        } else {
-            abstain!()
-        }
+        abstain!()
     }
 
     /// Validate the add external plugin adapter lifecycle event.

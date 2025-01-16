@@ -1,17 +1,11 @@
 import {
   Context,
   Instruction,
-  PublicKey,
   publicKey,
   Signer,
   TransactionBuilder,
 } from '@metaplex-foundation/umi';
-import {
-  executeCollectionV1,
-  executeV1,
-  findAssetSignerPda,
-  findCollectionSignerPda,
-} from '../generated';
+import { executeV1, findAssetSignerPda } from '../generated';
 
 export type ExecuteInput = TransactionBuilder | Instruction;
 
@@ -25,29 +19,14 @@ export type ExecuteArgs = Omit<
   signers?: Signer[];
 };
 
-export type ExecuteCollectionArgs = Omit<
-  Parameters<typeof executeCollectionV1>[1],
-  'programId' | 'instructionData'
-> & {
-  builder?: TransactionBuilder;
-  instruction?: Instruction;
-  instructions?: Instruction[];
-  signers?: Signer[];
-};
-
 export const execute = (
   context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
   args: ExecuteArgs
 ) => executeCommon(context, args);
 
-export const executeCollection = (
-  context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
-  args: ExecuteCollectionArgs
-) => executeCommon(context, args);
-
 const executeCommon = (
   context: Pick<Context, 'payer' | 'programs' | 'eddsa' | 'identity'>,
-  args: ExecuteArgs | ExecuteCollectionArgs
+  args: ExecuteArgs
 ) => {
   // Create a new builder to store the translated Execute instructions.
   let executeBuilder = new TransactionBuilder();
@@ -86,33 +65,18 @@ const executeCommon = (
 
   // eslint-disable-next-line no-restricted-syntax
   for (const ix of builder.items) {
-    let baseBuilder: TransactionBuilder;
-    let assetSigner: PublicKey;
-    if ('asset' in args) {
-      [assetSigner] = findAssetSignerPda(context, {
-        asset: publicKey(args.asset),
-      });
-      baseBuilder = executeV1(context, {
-        ...args,
-        assetSigner,
-        // Forward the programID of the instruction being executed.
-        programId: ix.instruction.programId,
-        // Forward the data of the instruction being executed.
-        instructionData: ix.instruction.data,
-      });
-    } else {
-      [assetSigner] = findCollectionSignerPda(context, {
-        collection: publicKey(args.collection),
-      });
-      baseBuilder = executeCollectionV1(context, {
-        ...args,
-        collectionSigner: assetSigner,
-        // Forward the programID of the instruction being executed.
-        programId: ix.instruction.programId,
-        // Forward the data of the instruction being executed.
-        instructionData: ix.instruction.data,
-      });
-    }
+    const [assetSigner] = findAssetSignerPda(context, {
+      asset: publicKey(args.asset),
+    });
+    const baseBuilder = executeV1(context, {
+      ...args,
+      assetSigner,
+      // Forward the programID of the instruction being executed.
+      programId: ix.instruction.programId,
+      // Forward the data of the instruction being executed.
+      instructionData: ix.instruction.data,
+    });
+
     executeBuilder = executeBuilder.add(
       baseBuilder
         // Add the instruction keys as remaining accounts.
