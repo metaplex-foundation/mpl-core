@@ -7,6 +7,7 @@ use solana_program::{
     pubkey::Pubkey,
 };
 use std::collections::HashSet;
+use bytemuck;
 
 use crate::{
     error::MplCoreError,
@@ -578,8 +579,8 @@ pub fn delete_plugin<'a, T: DataBlob>(
         return Err(MplCoreError::PluginNotFound.into());
     }
 
-    //TODO: Bytemuck this.
-    let mut header = PluginHeaderV1::load(account, asset.len())?;
+    let header = bytemuck::try_from_bytes::<PluginHeaderV1>(&account.data[..std::mem::size_of::<PluginHeaderV1>()])
+        .map_err(|_| MplCoreError::InvalidPluginHeader)?;
     let mut plugin_registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
     if let Some(index) = plugin_registry
@@ -659,13 +660,11 @@ pub fn delete_external_plugin_adapter<'a, T: DataBlob>(
         return Err(MplCoreError::ExternalPluginAdapterNotFound.into());
     }
 
-    //TODO: Bytemuck this.
-    let mut header = PluginHeaderV1::load(account, asset.len())?;
+    let header = bytemuck::try_from_bytes::<PluginHeaderV1>(&account.data[..std::mem::size_of::<PluginHeaderV1>()])
+        .map_err(|_| MplCoreError::InvalidPluginHeader)?;
     let mut plugin_registry = PluginRegistryV1::load(account, header.plugin_registry_offset)?;
 
-    let result = find_external_plugin_adapter(&plugin_registry, plugin_key, account)?;
-
-    if let (Some(index), _) = result {
+    if let Some(index) = plugin_registry.find_external_plugin_adapter_index(plugin_key) {
         let registry_record = plugin_registry.external_registry.remove(index);
         let serialized_registry_record = registry_record.try_to_vec()?;
 
