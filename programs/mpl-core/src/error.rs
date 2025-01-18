@@ -204,6 +204,10 @@ pub enum MplCoreError {
     /// 48 - Cannot move asset to collection with permanent delegates
     #[error("Cannot move asset to collection with permanent delegates")]
     PermanentDelegatesPreventMove,
+
+    /// 49 - Invalid plugin header data
+    #[error("Invalid plugin header data")]
+    InvalidPluginHeader,
 }
 
 impl PrintProgramError for MplCoreError {
