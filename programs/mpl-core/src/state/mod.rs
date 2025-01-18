@@ -87,6 +87,8 @@ impl DataBlob for Authority {
     FromPrimitive,
     EnumIter,
 )]
+#[derive(bytemuck::Pod, bytemuck::Zeroable)]
+#[repr(u8)]
 pub enum Key {
     /// Uninitialized or invalid account.
     Uninitialized,
