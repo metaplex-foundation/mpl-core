@@ -7,7 +7,7 @@ use crate::processor::{
     AddExternalPluginAdapterV1Args, AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args,
     ApprovePluginAuthorityV1Args, BurnCollectionV1Args, BurnV1Args, CompressV1Args,
     CreateCollectionV1Args, CreateCollectionV2Args, CreateV1Args, CreateV2Args, DecompressV1Args,
-    RemoveCollectionExternalPluginAdapterV1Args, RemoveCollectionPluginV1Args,
+    ExecuteV1Args, RemoveCollectionExternalPluginAdapterV1Args, RemoveCollectionPluginV1Args,
     RemoveExternalPluginAdapterV1Args, RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args,
     RevokePluginAuthorityV1Args, TransferV1Args, UpdateCollectionExternalPluginAdapterV1Args,
     UpdateCollectionPluginV1Args, UpdateCollectionV1Args, UpdateExternalPluginAdapterV1Args,
@@ -292,4 +292,14 @@ pub(crate) enum MplAssetInstruction {
     #[account(5, name="system_program", desc = "The system program")]
     #[account(6, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     UpdateV2(UpdateV2Args),
+
+    /// Execute an instruction on behalf of the owner.
+    #[account(0, writable, name="asset", desc = "The address of the asset")]
+    #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
+    #[account(2, name="asset_signer", desc = "The signing PDA for the asset")]
+    #[account(3, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(4, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
+    #[account(5, name="system_program", desc = "The system program")]
+    #[account(6, name="program_id", desc = "The program id of the instruction")]
+    ExecuteV1(ExecuteV1Args),
 }
