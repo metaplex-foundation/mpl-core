@@ -7,6 +7,7 @@ mod compress;
 mod create;
 mod create_collection;
 mod decompress;
+mod execute;
 mod remove_external_plugin_adapter;
 mod remove_plugin;
 mod revoke_plugin_authority;
@@ -25,6 +26,7 @@ pub(crate) use compress::*;
 pub(crate) use create::*;
 pub(crate) use create_collection::*;
 pub(crate) use decompress::*;
+pub(crate) use execute::*;
 pub(crate) use remove_external_plugin_adapter::*;
 pub(crate) use remove_plugin::*;
 pub(crate) use revoke_plugin_authority::*;
@@ -167,6 +169,10 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::UpdateV2(args) => {
             msg!("Instruction: UpdateV2");
             update_v2(accounts, args)
+        }
+        MplAssetInstruction::ExecuteV1(args) => {
+            msg!("Instruction: Execute");
+            execute(accounts, args)
         }
     }
 }
