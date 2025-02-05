@@ -26,7 +26,7 @@ use crate::{
     errors::MplCoreError,
     types::{
         ExternalCheckResult, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
-        ExternalPluginAdapterType, Key, Plugin, PluginType, RegistryRecord,
+        ExternalPluginAdapterType, Key, Plugin, PluginType, RegistryRecord, UpdateAuthority,
     },
 };
 use solana_program::account_info::AccountInfo;
@@ -55,12 +55,22 @@ impl From<&Plugin> for PluginType {
 
 impl BaseAssetV1 {
     /// The base length of the asset account with an empty name and uri and no seq.
-    pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4 + 1;
+    const BASE_LEN: usize = 1 // Key
+                            + 32 // Owner
+                            + 1 // Update Authority discriminator
+                            + 4 // Name length
+                            + 4 // URI length
+                            + 1; // Seq option
 }
 
 impl BaseCollectionV1 {
     /// The base length of the collection account with an empty name and uri.
-    pub const BASE_LENGTH: usize = 1 + 32 + 4 + 4 + 4 + 4;
+    const BASE_LEN: usize = 1 // Key
+                            + 32 // Update Authority
+                            + 4 // Name Length
+                            + 4 // URI Length
+                            + 4 // num_minted
+                            + 4; // current_size
 }
 
 /// Anchor implementations that enable using `Account<BaseAssetV1>` and `Account<BaseCollectionV1>`
@@ -119,12 +129,14 @@ mod anchor_impl {
 }
 
 impl DataBlob for BaseAssetV1 {
-    fn get_initial_size() -> usize {
-        BaseAssetV1::BASE_LENGTH
-    }
+    fn len(&self) -> usize {
+        let mut size = BaseAssetV1::BASE_LEN + self.name.len() + self.uri.len();
 
-    fn get_size(&self) -> usize {
-        let mut size = BaseAssetV1::BASE_LENGTH + self.name.len() + self.uri.len();
+        if let UpdateAuthority::Address(_) | UpdateAuthority::Collection(_) = self.update_authority
+        {
+            size += 32;
+        }
+
         if self.seq.is_some() {
             size += size_of::<u64>();
         }
@@ -139,12 +151,8 @@ impl SolanaAccount for BaseAssetV1 {
 }
 
 impl DataBlob for BaseCollectionV1 {
-    fn get_initial_size() -> usize {
-        Self::BASE_LENGTH
-    }
-
-    fn get_size(&self) -> usize {
-        Self::BASE_LENGTH + self.name.len() + self.uri.len()
+    fn len(&self) -> usize {
+        Self::BASE_LEN + self.name.len() + self.uri.len()
     }
 }
 
@@ -177,11 +185,10 @@ pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, std::io::Er
 }
 
 /// A trait for generic blobs of data that have size.
+#[allow(clippy::len_without_is_empty)]
 pub trait DataBlob: CrateSerialize + CrateDeserialize {
-    /// Get the size of an empty instance of the data blob.
-    fn get_initial_size() -> usize;
-    /// Get the current size of the data blob.
-    fn get_size(&self) -> usize;
+    /// Get the current length of the data blob.
+    fn len(&self) -> usize;
 }
 
 /// A trait for Solana accounts.

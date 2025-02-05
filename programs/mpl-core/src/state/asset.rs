@@ -67,14 +67,6 @@ impl AssetV1 {
         Ok(())
     }
 
-    /// The base length of the asset account with an empty name and uri and no seq.
-    pub const BASE_LENGTH: usize = 1 // Key
-    + 32 // Owner
-    + 1 // Update Authority
-    + 4 // Name
-    + 4 // URI
-    + 1; // Seq
-
     /// Check permissions for the create lifecycle event.
     pub fn check_create() -> CheckResult {
         CheckResult::CanApprove

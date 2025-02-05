@@ -28,14 +28,14 @@ pub fn fetch_plugin<T: DataBlob + SolanaAccount, U: CrateDeserialize>(
 ) -> Result<(PluginAuthority, U, usize), std::io::Error> {
     let asset = T::load(account, 0)?;
 
-    if asset.get_size() == account.data_len() {
+    if asset.len() == account.data_len() {
         return Err(std::io::Error::new(
             std::io::ErrorKind::Other,
             MplCoreError::PluginNotFound.to_string(),
         ));
     }
 
-    let header = PluginHeaderV1::from_bytes(&(*account.data).borrow()[asset.get_size()..])?;
+    let header = PluginHeaderV1::from_bytes(&(*account.data).borrow()[asset.len()..])?;
     let plugin_registry = PluginRegistryV1Safe::from_bytes(
         &(*account.data).borrow()[header.plugin_registry_offset as usize..],
     )?;
@@ -105,7 +105,7 @@ pub fn fetch_collection_plugin<U: CrateDeserialize>(
 pub fn fetch_plugins(account_data: &[u8]) -> Result<Vec<RegistryRecord>, std::io::Error> {
     let asset = BaseAssetV1::from_bytes(account_data)?;
 
-    let header = PluginHeaderV1::from_bytes(&account_data[asset.get_size()..])?;
+    let header = PluginHeaderV1::from_bytes(&account_data[asset.len()..])?;
     let plugin_registry = PluginRegistryV1Safe::from_bytes(
         &account_data[(header.plugin_registry_offset as usize)..],
     )?;
@@ -207,18 +207,18 @@ fn fetch_external_registry_record<T: DataBlob + SolanaAccount>(
     plugin_key: &ExternalPluginAdapterKey,
 ) -> Result<ExternalRegistryRecordSafe, std::io::Error> {
     let size = match core {
-        Some(core) => core.get_size(),
+        Some(core) => core.len(),
         None => {
             let asset = T::load(account, 0)?;
 
-            if asset.get_size() == account.data_len() {
+            if asset.len() == account.data_len() {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::Other,
                     MplCoreError::ExternalPluginAdapterNotFound.to_string(),
                 ));
             }
 
-            asset.get_size()
+            asset.len()
         }
     };
 
@@ -242,7 +242,7 @@ fn fetch_external_registry_record<T: DataBlob + SolanaAccount>(
 /// and will be updated when those are defined.
 pub fn list_plugins(account_data: &[u8]) -> Result<Vec<PluginType>, std::io::Error> {
     let asset = BaseAssetV1::from_bytes(account_data)?;
-    let header = PluginHeaderV1::from_bytes(&account_data[asset.get_size()..])?;
+    let header = PluginHeaderV1::from_bytes(&account_data[asset.len()..])?;
     let plugin_registry = PluginRegistryV1Safe::from_bytes(
         &account_data[(header.plugin_registry_offset as usize)..],
     )?;
