@@ -113,10 +113,8 @@ async fn test_fetch_plugin() {
         fetch_plugin::<BaseAssetV1, FreezeDelegate>(&account_info, PluginType::FreezeDelegate)
             .unwrap();
 
-    let expected_plugin_offset = BaseAssetV1::from_bytes(&asset_account.data)
-        .unwrap()
-        .get_size()
-        + PluginHeaderV1::LEN;
+    let expected_plugin_offset =
+        BaseAssetV1::from_bytes(&asset_account.data).unwrap().len() + PluginHeaderV1::LEN;
 
     let expected = (
         PluginAuthority::Owner,
@@ -208,10 +206,8 @@ async fn test_fetch_plugins() {
 
     let plugins = fetch_plugins(&asset_account.data).unwrap();
 
-    let expected_first_plugin_offset = BaseAssetV1::from_bytes(&asset_account.data)
-        .unwrap()
-        .get_size()
-        + PluginHeaderV1::LEN;
+    let expected_first_plugin_offset =
+        BaseAssetV1::from_bytes(&asset_account.data).unwrap().len() + PluginHeaderV1::LEN;
 
     let first_expected_registry_record = RegistryRecord {
         plugin_type: PluginType::FreezeDelegate,

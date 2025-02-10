@@ -17,3 +17,8 @@ pub fn get_create_fee() -> Result<u64, ProgramError> {
         .checked_add(CREATE_FEE_OFFSET)
         .ok_or(MplCoreError::NumericalOverflowError)?)
 }
+
+const EXECUTE_FEE_SCALAR: usize = 7;
+pub fn get_execute_fee() -> Result<u64, ProgramError> {
+    Ok(Rent::get()?.minimum_balance(EXECUTE_FEE_SCALAR) - Rent::get()?.minimum_balance(0))
+}

@@ -501,13 +501,13 @@ impl IndexableAsset {
         let (mut indexable_asset, base_size) = match key {
             Key::AssetV1 => {
                 let asset = BaseAssetV1::from_bytes(account)?;
-                let base_size = asset.get_size();
+                let base_size = asset.len();
                 let indexable_asset = Self::from_asset(asset, 0);
                 (indexable_asset, base_size)
             }
             Key::CollectionV1 => {
                 let collection = BaseCollectionV1::from_bytes(account)?;
-                let base_size = collection.get_size();
+                let base_size = collection.len();
                 let indexable_asset = Self::from_collection(collection);
                 (indexable_asset, base_size)
             }

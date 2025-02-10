@@ -123,6 +123,11 @@ impl CollectionV1 {
         CheckResult::None
     }
 
+    /// Check permissions for the execute lifecycle event.
+    pub fn check_execute() -> CheckResult {
+        CheckResult::CanApprove
+    }
+
     /// Validate the create lifecycle event.
     pub fn validate_create(
         &self,
@@ -277,6 +282,16 @@ impl CollectionV1 {
 
     /// Validate the decompress lifecycle event.
     pub fn validate_decompress(
+        &self,
+        _authority_info: &AccountInfo,
+        _: Option<&Plugin>,
+        _: Option<&ExternalPluginAdapter>,
+    ) -> Result<ValidationResult, ProgramError> {
+        abstain!()
+    }
+
+    /// Validate the execute lifecycle event.
+    pub fn validate_execute(
         &self,
         _authority_info: &AccountInfo,
         _: Option<&Plugin>,

@@ -709,6 +709,23 @@ nameToErrorMap.set(
   PermanentDelegatesPreventMoveError
 );
 
+/** InvalidExecutePda: Invalid Signing PDA for Asset or Collection Execute */
+export class InvalidExecutePdaError extends ProgramError {
+  override readonly name: string = 'InvalidExecutePda';
+
+  readonly code: number = 0x31; // 49
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Invalid Signing PDA for Asset or Collection Execute',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x31, InvalidExecutePdaError);
+nameToErrorMap.set('InvalidExecutePda', InvalidExecutePdaError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

@@ -67,14 +67,6 @@ impl AssetV1 {
         Ok(())
     }
 
-    /// The base length of the asset account with an empty name and uri and no seq.
-    pub const BASE_LENGTH: usize = 1 // Key
-    + 32 // Owner
-    + 1 // Update Authority
-    + 4 // Name
-    + 4 // URI
-    + 1; // Seq
-
     /// Check permissions for the create lifecycle event.
     pub fn check_create() -> CheckResult {
         CheckResult::CanApprove
@@ -143,6 +135,11 @@ impl AssetV1 {
     /// Check permissions for the update external plugin adapter lifecycle event.
     pub fn check_update_external_plugin_adapter() -> CheckResult {
         CheckResult::None
+    }
+
+    /// Check permissions for the execute lifecycle event.
+    pub fn check_execute() -> CheckResult {
+        CheckResult::CanApprove
     }
 
     /// Validate the create lifecycle event.
@@ -315,6 +312,20 @@ impl AssetV1 {
 
     /// Validate the decompress lifecycle event.
     pub fn validate_decompress(
+        &self,
+        authority_info: &AccountInfo,
+        _: Option<&Plugin>,
+        _: Option<&ExternalPluginAdapter>,
+    ) -> Result<ValidationResult, ProgramError> {
+        if authority_info.key == &self.owner {
+            approve!()
+        } else {
+            abstain!()
+        }
+    }
+
+    /// Validate the execute lifecycle event.
+    pub fn validate_execute(
         &self,
         authority_info: &AccountInfo,
         _: Option<&Plugin>,
