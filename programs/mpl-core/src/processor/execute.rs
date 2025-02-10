@@ -31,6 +31,10 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
     let ctx = ExecuteV1Accounts::context(accounts)?;
 
     // Guards.
+    if ctx.accounts.asset.owner != &crate::ID {
+        return Err(MplCoreError::InvalidAsset.into());
+    }
+
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
