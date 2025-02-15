@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1739396563723,
+  "lastUpdate": 1739626071209,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -7721,6 +7721,120 @@ window.BENCHMARK_DATA = {
           {
             "name": "CU: sell an asset with collection royalties",
             "value": 61909,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 6444,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 9043,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 14769,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 17368,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "90809591+blockiosaurus@users.noreply.github.com",
+            "name": "blockiosaurus",
+            "username": "blockiosaurus"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b345af286f336b2349ddce42a005f2f128e0dff8",
+          "message": "Patching Kaigan to support anchor builds (#216)",
+          "timestamp": "2025-02-15T08:19:01-05:00",
+          "tree_id": "9089fdc95b1a10a09adabd2896656c83186e2afa",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/b345af286f336b2349ddce42a005f2f128e0dff8"
+        },
+        "date": 1739626070275,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 11206,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 22681,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 35182,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 41202,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 28101,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 44473,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 35663,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 56825,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 36434,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 61936,
             "unit": "Compute Units"
           },
           {
