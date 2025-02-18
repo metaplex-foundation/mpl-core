@@ -5,7 +5,7 @@ license-file = "../../LICENSE"
 name = "mpl-core"
 readme = "README.md"
 repository = "https://github.com/metaplex-foundation/mpl-core"
-version = "0.8.1-beta.1"
+version = "0.9.0"
 
 [lib]
 crate-type = ["cdylib", "lib"]
