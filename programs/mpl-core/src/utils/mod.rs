@@ -7,10 +7,10 @@ pub(crate) use compression::*;
 use crate::{
     error::MplCoreError,
     plugins::{
-        validate_external_plugin_adapter_checks, validate_plugin_checks, CheckResult,
-        ExternalCheckResultBits, ExternalPluginAdapter, ExternalPluginAdapterKey,
-        ExternalRegistryRecord, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
-        PluginType, PluginValidationContext, RegistryRecord, ValidationResult,
+        fetch_plugin, list_plugins, validate_external_plugin_adapter_checks, validate_plugin_checks, 
+        CheckResult, ExternalCheckResultBits, ExternalPluginAdapter, ExternalPluginAdapterKey, 
+        ExternalRegistryRecord, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1, 
+        PluginType, PluginValidationContext, RegistryRecord, UpdateDelegate, ValidationResult
     },
     state::{
         AssetV1, Authority, CollectionV1, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority,
@@ -22,7 +22,9 @@ use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
     pubkey::Pubkey,
 };
-use std::collections::BTreeMap;
+use std::collections::{
+    BTreeMap, HashSet
+};
 
 /// Load the one byte key from the account data at the given offset.
 pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, ProgramError> {
@@ -225,6 +227,32 @@ pub(crate) fn validate_asset_permissions<'a>(
             }
         }
     };
+
+    let plugin_set: HashSet<_> =
+        if asset.data_len() > deserialized_asset.len() {
+            let plugin_list = list_plugins::<AssetV1>(asset)?;
+            plugin_list.into_iter().collect()
+        }
+        else {
+            HashSet::new()
+        };
+    
+    if plugin_set.contains(&PluginType::UpdateDelegate) {
+        let (plugin_authority, _, _) = fetch_plugin::<AssetV1, UpdateDelegate>(
+            asset,
+            PluginType::UpdateDelegate,
+        )?;
+
+        if assert_authority::<AssetV1>(
+            &deserialized_asset, 
+            authority_info, 
+            &plugin_authority
+        ).is_ok() 
+            && rejected == false 
+        {
+            approved = true;
+        }
+    }
 
     if collection_check != CheckResult::None {
         match collection_validate_fp(
