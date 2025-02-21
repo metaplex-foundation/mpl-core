@@ -208,10 +208,11 @@ fn update<'a>(
                     if plugin_set.contains(&PluginType::UpdateDelegate) {
                         // Fetch the update delegate on the new collection.
                         // Do not ignore the return plugin as we need to check the additional delegates.
-                        let (plugin_authority, fetched_plugin, _) = fetch_plugin::<CollectionV1, UpdateDelegate>(
-                            new_collection_account,
-                            PluginType::UpdateDelegate,
-                        )?;
+                        let (plugin_authority, fetched_plugin, _) =
+                            fetch_plugin::<CollectionV1, UpdateDelegate>(
+                                new_collection_account,
+                                PluginType::UpdateDelegate,
+                            )?;
 
                         plugin = fetched_plugin;
 
@@ -227,7 +228,9 @@ fn update<'a>(
                             solana_program::msg!("UA: Rejected");
                             return Err(MplCoreError::InvalidAuthority.into());
                         }
-                    } else if authority.key != &new_collection.update_authority && !plugin.additional_delegates.contains(&authority.key) {
+                    } else if authority.key != &new_collection.update_authority
+                        && !plugin.additional_delegates.contains(&authority.key)
+                    {
                         solana_program::msg!("UA: Rejected");
                         return Err(MplCoreError::InvalidAuthority.into());
                     }

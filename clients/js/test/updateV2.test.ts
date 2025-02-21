@@ -7,6 +7,8 @@ import {
   updateCollection,
   addCollectionPlugin,
   approveCollectionPluginAuthority,
+  addPlugin,
+  approvePluginAuthority,
 } from '../src';
 import {
   assertAsset,
@@ -1177,7 +1179,129 @@ test('it can remove an asset from collection using additional update delegate', 
   });
 });
 
-test('it cannot add asset to collection using additional update delegate on new collection', async (t) => {
+test('it cannot remove an asset from collection using update delegate on the asset', async (t) => {
+  const umi = await createUmi();
+  const collectionAuthority = generateSigner(umi);
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    { authority: collectionAuthority },
+    { updateAuthority: collectionAuthority }
+  );
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: collectionAuthority.publicKey,
+    currentSize: 1,
+    numMinted: 1,
+  });
+
+  await addPlugin(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    plugin: {
+      type: 'UpdateDelegate',
+      additionalDelegates: [],
+    },
+    authority: collectionAuthority,
+  }).sendAndConfirm(umi);
+
+  const updateDelegate = generateSigner(umi);
+  await approvePluginAuthority(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    plugin: {
+      type: 'UpdateDelegate',
+    },
+    newAuthority: {
+      type: 'Address',
+      address: updateDelegate.publicKey,
+    },
+    authority: collectionAuthority,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    updateDelegate: {
+      authority: {
+        type: 'Address',
+        address: updateDelegate.publicKey,
+      },
+      additionalDelegates: [],
+    },
+  });
+
+  const result = update(umi, {
+    asset,
+    collection,
+    newUpdateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    authority: updateDelegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+});
+
+test('it cannot remove an asset from collection using additional update delegate on the asset', async (t) => {
+  const umi = await createUmi();
+  const collectionAuthority = generateSigner(umi);
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    { authority: collectionAuthority },
+    { updateAuthority: collectionAuthority }
+  );
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+  });
+
+  const additionalDelegate = generateSigner(umi);
+  await addPlugin(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    plugin: {
+      type: 'UpdateDelegate',
+      additionalDelegates: [additionalDelegate.publicKey],
+    },
+    authority: collectionAuthority,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    updateDelegate: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      additionalDelegates: [additionalDelegate.publicKey],
+    },
+  });
+
+  const result = update(umi, {
+    asset,
+    collection,
+    newUpdateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    authority: additionalDelegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+});
+
+test('it can add asset to collection using additional update delegate on new collection', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi);
 
@@ -1216,14 +1340,19 @@ test('it cannot add asset to collection using additional update delegate on new 
     numMinted: 0,
   });
 
-  const result = update(umi, {
+  await update(umi, {
     asset,
     newUpdateAuthority: updateAuthority('Collection', [collection.publicKey]),
     newCollection: collection.publicKey,
     authority: umi.identity,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result, { name: 'InvalidAuthority' });
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+  });
 });
 
 test('it cannot add asset to collection if new collection contains permanent freeze delegate', async (t) => {

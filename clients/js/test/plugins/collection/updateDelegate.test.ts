@@ -4,14 +4,20 @@ import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
 import { SPL_SYSTEM_PROGRAM_ID } from '@metaplex-foundation/mpl-toolbox';
 import {
   addCollectionPlugin,
+  addPlugin,
   approveCollectionPluginAuthority,
   approvePluginAuthority,
+  AssetV1,
+  createV2,
+  fetchAssetV1,
   revokeCollectionPluginAuthority,
   revokePluginAuthority,
   update,
+  updateAuthority,
   updateCollection,
   updateCollectionPlugin,
   updatePlugin,
+  updateV2,
 } from '../../../src';
 import {
   DEFAULT_ASSET,
@@ -924,6 +930,150 @@ test('it can update an owner-managed plugin on an asset as collection update add
     freezeDelegate: {
       authority: { type: 'UpdateAuthority' },
       frozen: false,
+    },
+  });
+});
+
+// Works
+test('it can add asset to collection as collection update delegate', async (t) => {
+  const umi = await createUmi();
+  const assetOwner = umi.identity;
+  const collectionUmi = await createUmi();
+
+  const assetSigner = generateSigner(umi);
+  const assetAddress = assetSigner.publicKey;
+  await createV2(umi, {
+    asset: assetSigner,
+    name: 'My Asset',
+    uri: 'https://example.com/my-asset.json',
+  }).sendAndConfirm(umi);
+
+  const collectionSigner = generateSigner(collectionUmi);
+  const collectionAddress = collectionSigner.publicKey;
+  await createCollection(collectionUmi, {
+    collection: collectionSigner,
+    name: 'My Collection',
+    uri: 'https://example.com/my-collection.json',
+  });
+
+  await addCollectionPlugin(collectionUmi, {
+    collection: collectionAddress,
+    plugin: {
+      type: 'UpdateDelegate',
+      authority: { type: 'Address', address: assetOwner.publicKey },
+      additionalDelegates: [],
+    },
+  }).sendAndConfirm(collectionUmi);
+
+  await updateV2(umi, {
+    asset: assetAddress,
+    newCollection: collectionAddress,
+    newUpdateAuthority: updateAuthority('Collection', [collectionAddress]),
+  }).sendAndConfirm(umi);
+
+  const asset = await fetchAssetV1(umi, assetAddress);
+  t.like(asset, <Partial<AssetV1>>{
+    owner: assetOwner.publicKey,
+    updateAuthority: {
+      type: 'Collection',
+      address: collectionAddress,
+    },
+  });
+});
+
+// Does not work with additionalDelegates
+test('it can add asset to collection as collection additional delegate', async (t) => {
+  const umi = await createUmi();
+  const assetOwner = umi.identity;
+  const collectionUmi = await createUmi();
+
+  const assetSigner = generateSigner(umi);
+  const assetAddress = assetSigner.publicKey;
+  await createV2(umi, {
+    asset: assetSigner,
+    name: 'My Asset',
+    uri: 'https://example.com/my-asset.json',
+  }).sendAndConfirm(umi);
+
+  const collectionSigner = generateSigner(collectionUmi);
+  const collectionAddress = collectionSigner.publicKey;
+  await createCollection(collectionUmi, {
+    collection: collectionSigner,
+    name: 'My Collection',
+    uri: 'https://example.com/my-collection.json',
+  });
+
+  await addCollectionPlugin(collectionUmi, {
+    collection: collectionAddress,
+    plugin: {
+      type: 'UpdateDelegate',
+      // Some other address
+      authority: { type: 'Address', address: generateSigner(umi).publicKey },
+      // Who we want to be able to add collection assets
+      additionalDelegates: [assetOwner.publicKey],
+    },
+  }).sendAndConfirm(collectionUmi);
+
+  await updateV2(umi, {
+    asset: assetAddress,
+    newCollection: collectionAddress,
+    newUpdateAuthority: updateAuthority('Collection', [collectionAddress]),
+  }).sendAndConfirm(umi);
+
+  const asset = await fetchAssetV1(umi, assetAddress);
+  t.like(asset, <Partial<AssetV1>>{
+    owner: assetOwner.publicKey,
+    updateAuthority: {
+      type: 'Collection',
+      address: collectionAddress,
+    },
+  });
+});
+
+// Does not work
+test('it can add asset to collection as collection owner', async (t) => {
+  const umi = await createUmi();
+  const assetOwner = umi.identity;
+  const collectionUmi = await createUmi();
+  const collectionOwner = collectionUmi.identity;
+
+  const assetSigner = generateSigner(umi);
+  await createV2(umi, {
+    asset: assetSigner,
+    name: 'My Asset',
+    uri: 'https://example.com/my-asset.json',
+  }).sendAndConfirm(umi);
+
+  const collectionSigner = generateSigner(collectionUmi);
+  const collectionAddress = collectionSigner.publicKey;
+  await createCollection(collectionUmi, {
+    collection: collectionSigner,
+    name: 'My Collection',
+    uri: 'https://example.com/my-collection.json',
+  });
+
+  await addPlugin(umi, {
+    asset: assetSigner.publicKey,
+    plugin: {
+      type: 'UpdateDelegate',
+      authority: { type: 'Address', address: collectionOwner.publicKey },
+      additionalDelegates: [],
+    },
+  }).sendAndConfirm(umi);
+
+  await updateV2(collectionUmi, {
+    asset: assetSigner.publicKey,
+    authority: collectionOwner,
+    newCollection: collectionAddress,
+    newUpdateAuthority: updateAuthority('Collection', [collectionAddress]),
+  }).sendAndConfirm(collectionUmi);
+
+  const asset = await fetchAssetV1(umi, assetSigner.publicKey);
+  t.like(asset, <Partial<AssetV1>>{
+    owner: assetOwner.publicKey,
+    updateAuthority: {
+      type: 'Collection',
+      address: collectionAddress,
     },
   });
 });

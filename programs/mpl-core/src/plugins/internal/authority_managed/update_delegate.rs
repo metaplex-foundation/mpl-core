@@ -5,8 +5,8 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
     error::MplCoreError,
-    plugins::PluginType,
-    state::{Authority, DataBlob},
+    plugins::{fetch_wrapped_plugin, reject, PluginType},
+    state::{AssetV1, Authority, DataBlob, UpdateAuthority},
 };
 
 use crate::plugins::{
@@ -169,7 +169,24 @@ impl PluginValidation for UpdateDelegate {
                 .contains(ctx.self_authority))
             || self.additional_delegates.contains(ctx.authority_info.key)
         {
-            approve!()
+            // If we are updating the collection, we need to check whether it's an Asset UpdateDelegate.
+            // If there's a collection then it's OK.
+            if ctx.asset_info.is_some()
+                && ctx.collection_info.is_some()
+                && ctx.new_asset_authority.is_some()
+                && ctx.new_asset_authority.unwrap()
+                    != &UpdateAuthority::Collection(*ctx.collection_info.unwrap().key)
+                && fetch_wrapped_plugin::<AssetV1>(
+                    ctx.asset_info.unwrap(),
+                    None,
+                    PluginType::UpdateDelegate,
+                )
+                .is_ok()
+            {
+                reject!()
+            } else {
+                approve!()
+            }
         } else {
             abstain!()
         }
