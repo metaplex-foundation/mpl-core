@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740098850881,
+  "lastUpdate": 1740156696423,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -7969,6 +7969,120 @@ window.BENCHMARK_DATA = {
           {
             "name": "CU: transfer an asset with plugins and empty collection",
             "value": 31351,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "blockiosaurus@gmail.com",
+            "name": "Blockiosaurus",
+            "username": "blockiosaurus"
+          },
+          "committer": {
+            "email": "blockiosaurus@gmail.com",
+            "name": "Blockiosaurus",
+            "username": "blockiosaurus"
+          },
+          "distinct": true,
+          "id": "37b719c647ffec3d883cd2a97e19540b2676062c",
+          "message": "Revert \"Updated mod.rs to check UpdateDelegate in asset\"\n\nThis reverts commit 40eeaa2b4b66080eecfb7f062c1ff10ee6bd4e03.",
+          "timestamp": "2025-02-21T11:46:25-05:00",
+          "tree_id": "6e8eccab5e8f936aa5719cd0f820d3d7e322cfce",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/37b719c647ffec3d883cd2a97e19540b2676062c"
+        },
+        "date": 1740156695560,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 11206,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 22681,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 35182,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 41202,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 28101,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 44473,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 35663,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 56825,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 36434,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 61909,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 6444,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 9043,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 14769,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 17368,
             "unit": "Compute Units"
           }
         ]
