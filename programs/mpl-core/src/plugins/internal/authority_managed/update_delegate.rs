@@ -169,13 +169,20 @@ impl PluginValidation for UpdateDelegate {
                 .contains(ctx.self_authority))
             || self.additional_delegates.contains(ctx.authority_info.key)
         {
-            // If we are updating the collection, we need to check whether it's an Asset UpdateDelegate.
-            // If there's a collection then it's OK.
+            // The rules are:
+            // - Collection UpdateDelegates should be able to add and remove assets from the collection
+            // - Asset UpdateDelegates should not be able to add/remove assets from a collection
+            // so:
+
+            // If there is an asset
             if ctx.asset_info.is_some()
+            // And it's part of a collection
                 && ctx.collection_info.is_some()
+                // And it's being removed from the collection.
                 && ctx.new_asset_authority.is_some()
                 && ctx.new_asset_authority.unwrap()
                     != &UpdateAuthority::Collection(*ctx.collection_info.unwrap().key)
+                    // And the UpdateDelegate plugin is on the Asset, not the collection.
                 && fetch_wrapped_plugin::<AssetV1>(
                     ctx.asset_info.unwrap(),
                     None,
@@ -183,8 +190,10 @@ impl PluginValidation for UpdateDelegate {
                 )
                 .is_ok()
             {
+                // Then we reject.
                 reject!()
             } else {
+                // Otherwise, we approve.
                 approve!()
             }
         } else {

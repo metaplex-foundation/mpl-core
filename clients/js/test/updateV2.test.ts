@@ -1048,6 +1048,90 @@ test('it can change an asset collection using same update authority (delegate ex
   });
 });
 
+test('it can remove an asset from collection as Collection authority with update delegate on asset', async (t) => {
+  const umi = await createUmi();
+  const collectionAuthority = generateSigner(umi);
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    { authority: collectionAuthority },
+    { updateAuthority: collectionAuthority }
+  );
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+  });
+
+  await assertCollection(t, umi, {
+    ...DEFAULT_COLLECTION,
+    collection: collection.publicKey,
+    updateAuthority: collectionAuthority.publicKey,
+    currentSize: 1,
+    numMinted: 1,
+  });
+
+  await addPlugin(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    plugin: {
+      type: 'UpdateDelegate',
+      additionalDelegates: [],
+    },
+    authority: collectionAuthority,
+  }).sendAndConfirm(umi);
+
+  const updateDelegate = generateSigner(umi);
+  await approvePluginAuthority(umi, {
+    asset: asset.publicKey,
+    collection: collection.publicKey,
+    plugin: {
+      type: 'UpdateDelegate',
+    },
+    newAuthority: {
+      type: 'Address',
+      address: updateDelegate.publicKey,
+    },
+    authority: collectionAuthority,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Collection', address: collection.publicKey },
+    updateDelegate: {
+      authority: {
+        type: 'Address',
+        address: updateDelegate.publicKey,
+      },
+      additionalDelegates: [],
+    },
+  });
+
+  await update(umi, {
+    asset,
+    collection,
+    newUpdateAuthority: updateAuthority('Address', [umi.identity.publicKey]),
+    authority: collectionAuthority,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    updateDelegate: {
+      authority: {
+        type: 'Address',
+        address: updateDelegate.publicKey,
+      },
+      additionalDelegates: [],
+    },
+  });
+});
+
 test('it can remove an asset from collection using update delegate', async (t) => {
   const umi = await createUmi();
   const collectionAuthority = generateSigner(umi);

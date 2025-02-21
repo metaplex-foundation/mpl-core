@@ -223,13 +223,13 @@ fn update<'a>(
                         )
                         .is_err()
                             && authority.key != &new_collection.update_authority)
-                            && !plugin.additional_delegates.contains(&authority.key)
+                            && !plugin.additional_delegates.contains(authority.key)
                         {
                             solana_program::msg!("UA: Rejected");
                             return Err(MplCoreError::InvalidAuthority.into());
                         }
                     } else if authority.key != &new_collection.update_authority
-                        && !plugin.additional_delegates.contains(&authority.key)
+                        && !plugin.additional_delegates.contains(authority.key)
                     {
                         solana_program::msg!("UA: Rejected");
                         return Err(MplCoreError::InvalidAuthority.into());
