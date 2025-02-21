@@ -89,8 +89,8 @@ pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
 ) -> Result<(T, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
     let asset = T::load(account, 0)?;
 
-    if asset.get_size() != account.data_len() {
-        let plugin_header = PluginHeaderV1::load(account, asset.get_size())?;
+    if asset.len() != account.data_len() {
+        let plugin_header = PluginHeaderV1::load(account, asset.len())?;
         let plugin_registry =
             PluginRegistryV1::load(account, plugin_header.plugin_registry_offset)?;
 
@@ -110,7 +110,9 @@ pub(crate) fn validate_asset_permissions<'a>(
     new_owner: Option<&'a AccountInfo<'a>>,
     new_authority: Option<&UpdateAuthority>,
     new_plugin: Option<&Plugin>,
+    new_plugin_authority: Option<&Authority>,
     new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
+    new_external_plugin_adapter_authority: Option<&Authority>,
     asset_check_fp: fn() -> CheckResult,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
@@ -249,6 +251,9 @@ pub(crate) fn validate_asset_permissions<'a>(
         new_authority,
         None,
         new_plugin,
+        new_plugin_authority,
+        new_external_plugin_adapter,
+        new_external_plugin_adapter_authority,
         Some(asset),
         collection,
         &resolved_authorities,
@@ -271,6 +276,9 @@ pub(crate) fn validate_asset_permissions<'a>(
         new_authority,
         None,
         new_plugin,
+        new_plugin_authority,
+        new_external_plugin_adapter,
+        new_external_plugin_adapter_authority,
         Some(asset),
         collection,
         &resolved_authorities,
@@ -294,6 +302,9 @@ pub(crate) fn validate_asset_permissions<'a>(
             new_authority,
             None,
             new_plugin,
+            new_plugin_authority,
+            new_external_plugin_adapter,
+            new_external_plugin_adapter_authority,
             Some(asset),
             collection,
             &resolved_authorities,
@@ -315,6 +326,9 @@ pub(crate) fn validate_asset_permissions<'a>(
             new_authority,
             None,
             new_plugin,
+            new_plugin_authority,
+            new_external_plugin_adapter,
+            new_external_plugin_adapter_authority,
             Some(asset),
             collection,
             &resolved_authorities,
@@ -345,7 +359,9 @@ pub(crate) fn validate_collection_permissions<'a>(
     collection: &'a AccountInfo<'a>,
     new_authority: Option<&Pubkey>,
     new_plugin: Option<&Plugin>,
+    new_plugin_authority: Option<&Authority>,
     new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
+    new_external_plugin_adapter_authority: Option<&Authority>,
     collection_check_fp: fn() -> CheckResult,
     plugin_check_fp: fn(&PluginType) -> CheckResult,
     collection_validate_fp: fn(
@@ -442,6 +458,9 @@ pub(crate) fn validate_collection_permissions<'a>(
         None,
         new_authority,
         new_plugin,
+        new_plugin_authority,
+        new_external_plugin_adapter,
+        new_external_plugin_adapter_authority,
         None,
         Some(collection),
         &resolved_authorities,
@@ -465,6 +484,9 @@ pub(crate) fn validate_collection_permissions<'a>(
             None,
             new_authority,
             new_plugin,
+            new_plugin_authority,
+            new_external_plugin_adapter,
+            new_external_plugin_adapter_authority,
             None,
             Some(collection),
             &resolved_authorities,

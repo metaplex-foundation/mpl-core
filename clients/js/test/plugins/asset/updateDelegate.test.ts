@@ -1,5 +1,6 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
+import { SPL_SYSTEM_PROGRAM_ID } from '@metaplex-foundation/mpl-toolbox';
 import {
   addPlugin,
   approvePluginAuthority,
@@ -1478,6 +1479,164 @@ test('an updateDelegate can update a plugin on an asset using delegated owner', 
           value: '012',
         },
       ],
+    },
+  });
+});
+
+test('it can update an authority-managed plugin on an asset as additional delegate', async (t) => {
+  const umi = await createUmi();
+  const updateDelegate = await generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'PermanentFreezeDelegate',
+        frozen: true,
+      },
+      {
+        type: 'UpdateDelegate',
+        additionalDelegates: [updateDelegate.publicKey],
+      },
+    ],
+  });
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'PermanentFreezeDelegate',
+      frozen: false,
+    },
+    authority: updateDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    permanentFreezeDelegate: {
+      authority: { type: 'UpdateAuthority' },
+      frozen: false,
+    },
+  });
+});
+
+test('it cannot update an authority-managed plugin on an asset as additional delegate if the plugin authority is not UpdateAuthority', async (t) => {
+  const umi = await createUmi();
+  const updateDelegate = await generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'PermanentFreezeDelegate',
+        authority: { type: 'Address', address: SPL_SYSTEM_PROGRAM_ID },
+        frozen: true,
+      },
+      {
+        type: 'UpdateDelegate',
+        additionalDelegates: [updateDelegate.publicKey],
+      },
+    ],
+  });
+
+  const result = updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'PermanentFreezeDelegate',
+      frozen: false,
+    },
+    authority: updateDelegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    permanentFreezeDelegate: {
+      authority: { type: 'Address', address: SPL_SYSTEM_PROGRAM_ID },
+      frozen: true,
+    },
+  });
+});
+
+test('it cannot update an owner-managed plugin on an asset as collection update additional delegate', async (t) => {
+  const umi = await createUmi();
+  const updateDelegate = await generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'FreezeDelegate',
+        frozen: true,
+      },
+      {
+        type: 'UpdateDelegate',
+        additionalDelegates: [updateDelegate.publicKey],
+      },
+    ],
+  });
+
+  const result = updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'FreezeDelegate',
+      frozen: false,
+    },
+    authority: updateDelegate,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(result, { name: 'NoApprovals' });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: { type: 'Owner' },
+      frozen: true,
+    },
+  });
+});
+
+test('it can update an owner-managed plugin on an asset as collection update additional delegate if the plugin authority is UpdateAuthority', async (t) => {
+  const umi = await createUmi();
+  const updateDelegate = await generateSigner(umi);
+
+  const asset = await createAsset(umi, {
+    plugins: [
+      {
+        type: 'FreezeDelegate',
+        authority: { type: 'UpdateAuthority' },
+        frozen: true,
+      },
+      {
+        type: 'UpdateDelegate',
+        additionalDelegates: [updateDelegate.publicKey],
+      },
+    ],
+  });
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      type: 'FreezeDelegate',
+      frozen: false,
+    },
+    authority: updateDelegate,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: { type: 'UpdateAuthority' },
+      frozen: false,
     },
   });
 });

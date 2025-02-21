@@ -19,10 +19,12 @@ use crate::plugins::{
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub struct UpdateDelegate {
     /// Additional update delegates.  Not currently available to be used.
-    pub additional_delegates: Vec<Pubkey>, // 4
+    pub additional_delegates: Vec<Pubkey>, // 4 + len * 32
 }
 
 impl UpdateDelegate {
+    const BASE_LEN: usize = 4; // The additional delegates length
+
     /// Initialize the UpdateDelegate plugin.
     pub fn new() -> Self {
         Self {
@@ -38,12 +40,8 @@ impl Default for UpdateDelegate {
 }
 
 impl DataBlob for UpdateDelegate {
-    fn get_initial_size() -> usize {
-        0
-    }
-
-    fn get_size(&self) -> usize {
-        0
+    fn len(&self) -> usize {
+        Self::BASE_LEN + self.additional_delegates.len() * 32
     }
 }
 
@@ -198,14 +196,44 @@ impl PluginValidation for UpdateDelegate {
                 if existing.difference(&new).collect::<Vec<_>>() == vec![&ctx.authority_info.key]
                     && new.difference(&existing).collect::<Vec<_>>().is_empty()
                 {
-                    solana_program::msg!("UpdateDelegate: Approved");
-                    return Ok(ValidationResult::Approved);
+                    return approve!();
                 }
-            } else {
-                return Ok(ValidationResult::Approved);
+            }
+            // UpdateDelegate has the same authority as UpdateAuthority, so if the target plugin authority is UpdateAuthority, we can approve.
+            else if ctx.target_plugin_authority == Some(&Authority::UpdateAuthority) {
+                return approve!();
             }
         }
 
+        // Otherwise, abstain.
         abstain!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_update_delegate_default_len() {
+        let update_delegate = UpdateDelegate::default();
+        let serialized = update_delegate.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), update_delegate.len());
+    }
+
+    #[test]
+    fn test_update_delegate_len() {
+        let update_delegates = vec![
+            UpdateDelegate {
+                additional_delegates: vec![Pubkey::default()],
+            },
+            UpdateDelegate {
+                additional_delegates: vec![Pubkey::default(), Pubkey::default()],
+            },
+        ];
+        for update_delegate in update_delegates {
+            let serialized = update_delegate.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), update_delegate.len());
+        }
     }
 }

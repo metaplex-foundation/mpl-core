@@ -85,6 +85,8 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
         None,
         None,
         None,
+        None,
+        None,
         AssetV1::check_transfer,
         CollectionV1::check_transfer,
         PluginType::check_transfer,

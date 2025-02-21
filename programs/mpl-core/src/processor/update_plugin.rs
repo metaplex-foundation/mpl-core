@@ -1,13 +1,13 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_memory::sol_memcpy,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_memory::sol_memmove,
 };
 
 use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionPluginV1Accounts, UpdatePluginV1Accounts},
-    plugins::{Plugin, PluginHeaderV1, PluginRegistryV1, PluginType},
+    plugins::{fetch_wrapped_plugin, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType},
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
         load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
@@ -47,6 +47,9 @@ pub(crate) fn update_plugin<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
+    let (target_plugin_authority, _) =
+        fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, None, PluginType::from(&args.plugin))?;
+
     let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
         accounts,
         authority,
@@ -55,6 +58,8 @@ pub(crate) fn update_plugin<'a>(
         None,
         None,
         Some(&args.plugin),
+        Some(&target_plugin_authority),
+        None,
         None,
         AssetV1::check_update_plugin,
         CollectionV1::check_update_plugin,
@@ -107,6 +112,12 @@ pub(crate) fn update_collection_plugin<'a>(
         }
     }
 
+    let (target_plugin_authority, _) = fetch_wrapped_plugin::<CollectionV1>(
+        ctx.accounts.collection,
+        None,
+        PluginType::from(&args.plugin),
+    )?;
+
     // Validate collection permissions.
     let (collection, plugin_header, plugin_registry) = validate_collection_permissions(
         accounts,
@@ -114,6 +125,8 @@ pub(crate) fn update_collection_plugin<'a>(
         ctx.accounts.collection,
         None,
         Some(&args.plugin),
+        Some(&target_plugin_authority),
+        None,
         None,
         CollectionV1::check_update_plugin,
         PluginType::check_update_plugin,
@@ -185,18 +198,22 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
         .checked_add(size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
-    // //TODO: This is memory intensive, we should use memmove instead probably.
-    let src = account.data.borrow()[(next_plugin_offset as usize)..registry_offset].to_vec();
-
     resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
 
-    sol_memcpy(
-        &mut account.data.borrow_mut()[(new_next_plugin_offset as usize)..],
-        &src,
-        src.len(),
-    );
+    // SAFETY: `borrow_mut` will always return a valid pointer.
+    // new_next_plugin_offset is derived from next_plugin_offset and size_diff using
+    // checked arithmetic, so it will always be less than or equal to account.data_len().
+    // This will fail and revert state if there is a memory violation.
+    unsafe {
+        let base = account.data.borrow_mut().as_mut_ptr();
+        sol_memmove(
+            base.add(new_next_plugin_offset as usize),
+            base.add(next_plugin_offset as usize),
+            registry_offset - (next_plugin_offset as usize),
+        );
+    }
 
-    plugin_header.save(account, core.get_size())?;
+    plugin_header.save(account, core.len())?;
 
     plugin_registry.bump_offsets(registry_record.offset, size_diff)?;
 

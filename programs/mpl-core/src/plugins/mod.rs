@@ -19,7 +19,7 @@ use num_derive::ToPrimitive;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
 };
-use strum::EnumCount;
+use strum::{EnumCount, EnumIter};
 
 use crate::{
     error::MplCoreError,
@@ -84,9 +84,59 @@ impl Plugin {
             MplCoreError::SerializationError.into()
         })
     }
+
+    /// Extract the inner plugin value from the plugin.
+    pub(crate) fn inner(&self) -> &dyn PluginValidation {
+        match &self {
+            Plugin::Royalties(inner) => inner,
+            Plugin::FreezeDelegate(inner) => inner,
+            Plugin::BurnDelegate(inner) => inner,
+            Plugin::TransferDelegate(inner) => inner,
+            Plugin::UpdateDelegate(inner) => inner,
+            Plugin::PermanentFreezeDelegate(inner) => inner,
+            Plugin::Attributes(inner) => inner,
+            Plugin::PermanentTransferDelegate(inner) => inner,
+            Plugin::PermanentBurnDelegate(inner) => inner,
+            Plugin::Edition(inner) => inner,
+            Plugin::MasterEdition(inner) => inner,
+            Plugin::AddBlocker(inner) => inner,
+            Plugin::ImmutableMetadata(inner) => inner,
+            Plugin::VerifiedCreators(inner) => inner,
+            Plugin::Autograph(inner) => inner,
+        }
+    }
 }
 
 impl Compressible for Plugin {}
+
+impl DataBlob for Plugin {
+    fn len(&self) -> usize {
+        1 // The discriminator
+            + match self {
+                Plugin::Royalties(royalties) => royalties.len(),
+                Plugin::FreezeDelegate(freeze_delegate) => freeze_delegate.len(),
+                Plugin::BurnDelegate(burn_delegate) => burn_delegate.len(),
+                Plugin::TransferDelegate(transfer_delegate) => transfer_delegate.len(),
+                Plugin::UpdateDelegate(update_delegate) => update_delegate.len(),
+                Plugin::PermanentFreezeDelegate(permanent_freeze_delegate) => {
+                    permanent_freeze_delegate.len()
+                }
+                Plugin::Attributes(attributes) => attributes.len(),
+                Plugin::PermanentTransferDelegate(permanent_transfer_delegate) => {
+                    permanent_transfer_delegate.len()
+                }
+                Plugin::PermanentBurnDelegate(permanent_burn_delegate) => {
+                    permanent_burn_delegate.len()
+                }
+                Plugin::Edition(edition) => edition.len(),
+                Plugin::MasterEdition(master_edition) => master_edition.len(),
+                Plugin::AddBlocker(add_blocker) => add_blocker.len(),
+                Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.len(),
+                Plugin::VerifiedCreators(verified_creators) => verified_creators.len(),
+                Plugin::Autograph(autograph) => autograph.len(),
+            }
+    }
+}
 
 /// List of first party plugin types.
 #[repr(C)]
@@ -103,6 +153,7 @@ impl Compressible for Plugin {}
     EnumCount,
     PartialOrd,
     Ord,
+    EnumIter,
 )]
 pub enum PluginType {
     /// Royalties plugin.
@@ -137,6 +188,11 @@ pub enum PluginType {
     Autograph,
 }
 
+impl PluginType {
+    /// A u8 enum discriminator.
+    const BASE_LEN: usize = 1;
+}
+
 /// The list of permanent delegate types.
 pub const PERMANENT_DELEGATES: [PluginType; 3] = [
     PluginType::PermanentFreezeDelegate,
@@ -145,12 +201,8 @@ pub const PERMANENT_DELEGATES: [PluginType; 3] = [
 ];
 
 impl DataBlob for PluginType {
-    fn get_initial_size() -> usize {
-        2
-    }
-
-    fn get_size(&self) -> usize {
-        2
+    fn len(&self) -> usize {
+        Self::BASE_LEN
     }
 }
 
@@ -205,4 +257,192 @@ impl PluginType {
 pub(crate) struct PluginAuthorityPair {
     pub(crate) plugin: Plugin,
     pub(crate) authority: Option<Authority>,
+}
+
+#[cfg(test)]
+mod test {
+    use solana_program::pubkey::Pubkey;
+    use strum::IntoEnumIterator;
+
+    use super::*;
+
+    #[test]
+    fn test_plugin_empty_size() {
+        //TODO: Implement Default for all plugins in a separate PR.
+        let plugins = vec![
+            Plugin::Royalties(Royalties {
+                basis_points: 0,
+                creators: vec![],
+                rule_set: RuleSet::None,
+            }),
+            Plugin::FreezeDelegate(FreezeDelegate { frozen: false }),
+            Plugin::BurnDelegate(BurnDelegate {}),
+            Plugin::TransferDelegate(TransferDelegate {}),
+            Plugin::UpdateDelegate(UpdateDelegate {
+                additional_delegates: vec![],
+            }),
+            Plugin::PermanentFreezeDelegate(PermanentFreezeDelegate { frozen: false }),
+            Plugin::Attributes(Attributes {
+                attribute_list: vec![],
+            }),
+            Plugin::PermanentTransferDelegate(PermanentTransferDelegate {}),
+            Plugin::PermanentBurnDelegate(PermanentBurnDelegate {}),
+            Plugin::Edition(Edition { number: 0 }),
+            Plugin::MasterEdition(MasterEdition {
+                max_supply: None,
+                name: None,
+                uri: None,
+            }),
+            Plugin::AddBlocker(AddBlocker {}),
+            Plugin::ImmutableMetadata(ImmutableMetadata {}),
+            Plugin::VerifiedCreators(VerifiedCreators { signatures: vec![] }),
+            Plugin::Autograph(Autograph { signatures: vec![] }),
+        ];
+
+        assert_eq!(
+            plugins.len(),
+            PluginType::COUNT,
+            "All plugins should be tested"
+        );
+
+        for fixture in plugins {
+            let serialized = fixture.try_to_vec().unwrap();
+            assert_eq!(
+                serialized.len(),
+                fixture.len(),
+                "Serialized {:?} should match size returned by len()",
+                fixture
+            );
+        }
+    }
+
+    #[test]
+    fn test_plugin_different_size() {
+        //TODO: Implement Default for all plugins in a separate PR.
+        let plugins: Vec<Vec<Plugin>> = vec![
+            vec![
+                Plugin::Royalties(Royalties {
+                    basis_points: 0,
+                    creators: vec![],
+                    rule_set: RuleSet::None,
+                }),
+                Plugin::Royalties(Royalties {
+                    basis_points: 1,
+                    creators: vec![Creator {
+                        address: Pubkey::default(),
+                        percentage: 1,
+                    }],
+                    rule_set: RuleSet::ProgramAllowList(vec![]),
+                }),
+                Plugin::Royalties(Royalties {
+                    basis_points: 2,
+                    creators: vec![
+                        Creator {
+                            address: Pubkey::default(),
+                            percentage: 2,
+                        },
+                        Creator {
+                            address: Pubkey::default(),
+                            percentage: 3,
+                        },
+                    ],
+                    rule_set: RuleSet::ProgramDenyList(vec![Pubkey::default()]),
+                }),
+                Plugin::Royalties(Royalties {
+                    basis_points: 3,
+                    creators: vec![
+                        Creator {
+                            address: Pubkey::default(),
+                            percentage: 3,
+                        },
+                        Creator {
+                            address: Pubkey::default(),
+                            percentage: 4,
+                        },
+                        Creator {
+                            address: Pubkey::default(),
+                            percentage: 5,
+                        },
+                    ],
+                    rule_set: RuleSet::ProgramDenyList(vec![Pubkey::default(), Pubkey::default()]),
+                }),
+            ],
+            vec![Plugin::FreezeDelegate(FreezeDelegate { frozen: true })],
+            vec![Plugin::BurnDelegate(BurnDelegate {})],
+            vec![Plugin::TransferDelegate(TransferDelegate {})],
+            vec![Plugin::UpdateDelegate(UpdateDelegate {
+                additional_delegates: vec![Pubkey::default(), Pubkey::default()],
+            })],
+            vec![Plugin::PermanentFreezeDelegate(PermanentFreezeDelegate {
+                frozen: true,
+            })],
+            vec![Plugin::Attributes(Attributes {
+                attribute_list: vec![
+                    Attribute {
+                        key: "test".to_string(),
+                        value: "test".to_string(),
+                    },
+                    Attribute {
+                        key: "test2".to_string(),
+                        value: "test2".to_string(),
+                    },
+                ],
+            })],
+            vec![Plugin::PermanentTransferDelegate(
+                PermanentTransferDelegate {},
+            )],
+            vec![Plugin::PermanentBurnDelegate(PermanentBurnDelegate {})],
+            vec![Plugin::Edition(Edition { number: 1 })],
+            vec![Plugin::MasterEdition(MasterEdition {
+                max_supply: Some(1),
+                name: Some("test".to_string()),
+                uri: Some("test".to_string()),
+            })],
+            vec![Plugin::AddBlocker(AddBlocker {})],
+            vec![Plugin::ImmutableMetadata(ImmutableMetadata {})],
+            vec![Plugin::VerifiedCreators(VerifiedCreators {
+                signatures: vec![VerifiedCreatorsSignature {
+                    address: Pubkey::default(),
+                    verified: true,
+                }],
+            })],
+            vec![Plugin::Autograph(Autograph {
+                signatures: vec![AutographSignature {
+                    address: Pubkey::default(),
+                    message: "test".to_string(),
+                }],
+            })],
+        ];
+
+        assert_eq!(
+            plugins.len(),
+            PluginType::COUNT,
+            "All plugins should be tested"
+        );
+
+        for fixtures in plugins {
+            for fixture in fixtures {
+                let serialized = fixture.try_to_vec().unwrap();
+                assert_eq!(
+                    serialized.len(),
+                    fixture.len(),
+                    "Serialized {:?} should match size returned by len()",
+                    fixture
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_plugin_type_size() {
+        for fixture in PluginType::iter() {
+            let serialized = fixture.try_to_vec().unwrap();
+            assert_eq!(
+                serialized.len(),
+                fixture.len(),
+                "Serialized {:?} should match size returned by len()",
+                fixture
+            );
+        }
+    }
 }

@@ -5,6 +5,7 @@ import {
   fetchAssetsByCollection,
   fetchAssetsByOwner,
   fetchCollectionsByUpdateAuthority,
+  fetchAllAssets,
 } from '../../src';
 import { createUmi } from '../_setupRaw';
 import { createAsset, createCollection } from '../_setupSdk';
@@ -160,4 +161,94 @@ test('it can use helper to fetch assets by collection and derive plugins', async
       });
     }
   });
+});
+
+test('it can use helper to fetch all assets', async (t) => {
+  const umi = await createUmi();
+
+  const collection = await createCollection(umi, {
+    plugins: [
+      {
+        type: 'ImmutableMetadata',
+      },
+    ],
+  });
+
+  const assetsOfOwner1 = await Promise.all(
+    Array(2)
+      .fill(0)
+      .map((_, index) =>
+        createAsset(umi, {
+          collection,
+          name: `Asset ${index + 1}`,
+          plugins: [
+            {
+              type: 'Attributes',
+              attributeList: [
+                {
+                  key: 'asset',
+                  value: 'asset',
+                },
+              ],
+            },
+          ],
+        })
+      )
+  );
+
+  const assetsOfOwner2 = await Promise.all(
+    Array(2)
+      .fill(0)
+      .map((_, index) =>
+        createAsset(umi, {
+          collection,
+          name: `Asset ${index + 1}`,
+          plugins: [
+            {
+              type: 'Attributes',
+              attributeList: [
+                {
+                  key: 'asset',
+                  value: 'asset',
+                },
+              ],
+            },
+          ],
+        })
+      )
+  );
+
+  const allCreatedAssets = [...assetsOfOwner1, ...assetsOfOwner2];
+
+  const assetPublicKeys = [...assetsOfOwner1, ...assetsOfOwner2].map(
+    (asset) => asset.publicKey
+  );
+
+  const fetchedAssets = await fetchAllAssets(umi, assetPublicKeys);
+
+  const createdAssetPubkeys = allCreatedAssets
+    .map((asset) => asset.publicKey)
+    .sort();
+  const fetchedAssetPubkeys = fetchedAssets
+    .map((asset) => asset.publicKey)
+    .filter((pubkey) => createdAssetPubkeys.includes(pubkey))
+    .sort();
+
+  t.deepEqual(
+    fetchedAssetPubkeys,
+    createdAssetPubkeys,
+    'All created assets should be found in fetched assets'
+  );
+
+  t.deepEqual(
+    fetchedAssets[0].attributes,
+    allCreatedAssets[0].attributes,
+    'Asset level attribute plugin should be found in fetched assets'
+  );
+
+  t.deepEqual(
+    fetchedAssets[0].immutableMetadata,
+    collection.immutableMetadata,
+    'Collection level immutableMetadata plugin should be found in fetched assets'
+  );
 });

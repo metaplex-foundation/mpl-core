@@ -62,6 +62,20 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         _ => (),
     }
 
+    let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
+    let external_plugin_adapter_authority = match &args.init_info {
+        ExternalPluginAdapterInitInfo::LifecycleHook(lifecycle_hook) => {
+            lifecycle_hook.init_plugin_authority
+        }
+        ExternalPluginAdapterInitInfo::Oracle(oracle) => oracle.init_plugin_authority,
+        ExternalPluginAdapterInitInfo::AppData(app_data) => app_data.init_plugin_authority,
+        ExternalPluginAdapterInitInfo::LinkedLifecycleHook(lifecycle_hook) => {
+            lifecycle_hook.init_plugin_authority
+        }
+        ExternalPluginAdapterInitInfo::LinkedAppData(app_data) => app_data.init_plugin_authority,
+        ExternalPluginAdapterInitInfo::DataSection(_) => unreachable!(),
+    }
+    .unwrap_or(Authority::UpdateAuthority);
     let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: Some(ctx.accounts.asset),
@@ -73,18 +87,20 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         new_asset_authority: None,
         new_collection_authority: None,
         target_plugin: None,
+        target_plugin_authority: None,
+        target_external_plugin: Some(&external_plugin_adapter),
+        target_external_plugin_authority: Some(&external_plugin_adapter_authority),
     };
 
     if ExternalPluginAdapter::validate_add_external_plugin_adapter(
-        &ExternalPluginAdapter::from(&args.init_info),
+        &external_plugin_adapter,
         &validation_ctx,
     )? == ValidationResult::Rejected
     {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
-    let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
-
+    // Validate asset permissions.
     // Validate asset permissions.
     let (mut asset, _, _) = validate_asset_permissions(
         accounts,
@@ -94,7 +110,9 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         None,
         None,
         None,
+        None,
         Some(&external_plugin_adapter),
+        Some(&external_plugin_adapter_authority),
         AssetV1::check_add_external_plugin_adapter,
         CollectionV1::check_add_external_plugin_adapter,
         PluginType::check_add_external_plugin_adapter,
@@ -113,7 +131,6 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         ctx.accounts.payer,
         ctx.accounts.system_program,
         &args.init_info,
-        &asset,
     )
 }
 
@@ -148,6 +165,20 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         return Err(MplCoreError::CannotAddDataSection.into());
     }
 
+    let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
+    let external_plugin_adapter_authority = match &args.init_info {
+        ExternalPluginAdapterInitInfo::LifecycleHook(lifecycle_hook) => {
+            lifecycle_hook.init_plugin_authority
+        }
+        ExternalPluginAdapterInitInfo::Oracle(oracle) => oracle.init_plugin_authority,
+        ExternalPluginAdapterInitInfo::AppData(app_data) => app_data.init_plugin_authority,
+        ExternalPluginAdapterInitInfo::LinkedLifecycleHook(lifecycle_hook) => {
+            lifecycle_hook.init_plugin_authority
+        }
+        ExternalPluginAdapterInitInfo::LinkedAppData(app_data) => app_data.init_plugin_authority,
+        ExternalPluginAdapterInitInfo::DataSection(_) => unreachable!(),
+    }
+    .unwrap_or(Authority::UpdateAuthority);
     let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: None,
@@ -159,10 +190,13 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         new_asset_authority: None,
         new_collection_authority: None,
         target_plugin: None,
+        target_plugin_authority: None,
+        target_external_plugin: Some(&external_plugin_adapter),
+        target_external_plugin_authority: Some(&external_plugin_adapter_authority),
     };
 
     if ExternalPluginAdapter::validate_add_external_plugin_adapter(
-        &ExternalPluginAdapter::from(&args.init_info),
+        &external_plugin_adapter,
         &validation_ctx,
     )? == ValidationResult::Rejected
     {
@@ -172,13 +206,15 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
     let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
 
     // Validate collection permissions.
-    let (core, _, _) = validate_collection_permissions(
+    let _ = validate_collection_permissions(
         accounts,
         authority,
         ctx.accounts.collection,
         None,
         None,
+        None,
         Some(&external_plugin_adapter),
+        Some(&external_plugin_adapter_authority),
         CollectionV1::check_add_external_plugin_adapter,
         PluginType::check_add_external_plugin_adapter,
         CollectionV1::validate_add_external_plugin_adapter,
@@ -192,7 +228,6 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         ctx.accounts.payer,
         ctx.accounts.system_program,
         &args.init_info,
-        &core,
     )
 }
 
@@ -201,13 +236,12 @@ fn process_add_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
     init_info: &ExternalPluginAdapterInitInfo,
-    core: &T,
 ) -> ProgramResult {
-    let (_, mut plugin_header, mut plugin_registry) =
+    let (_, header_offset, mut plugin_header, mut plugin_registry) =
         create_meta_idempotent::<T>(account, payer, system_program)?;
     initialize_external_plugin_adapter::<T>(
         init_info,
-        Some(core),
+        header_offset,
         &mut plugin_header,
         &mut plugin_registry,
         account,

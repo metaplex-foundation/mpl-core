@@ -181,6 +181,52 @@ test('it can update an asset update authority', async (t) => {
   });
 });
 
+test('it can update an asset update authority to None', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = await createAsset(umi);
+
+  await updateV1(umi, {
+    asset: asset.publicKey,
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
+    newUpdateAuthority: updateAuthority('None'),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'None' },
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
+  });
+});
+
+test('it can update an asset with plugins update authority to None', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = await createAsset(umi, {
+    plugins: [
+      pluginAuthorityPair({ type: 'FreezeDelegate', data: { frozen: false } }),
+    ],
+  });
+
+  await updateV1(umi, {
+    asset: asset.publicKey,
+    newName: 'Test Bread 2',
+    newUri: 'https://example.com/bread2',
+    newUpdateAuthority: updateAuthority('None'),
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'None' },
+    name: 'Test Bread 2',
+    uri: 'https://example.com/bread2',
+  });
+});
+
 test('it cannot update an asset update authority to be part of a collection using updateV1', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();

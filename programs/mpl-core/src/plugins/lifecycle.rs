@@ -5,12 +5,11 @@ use std::collections::BTreeMap;
 
 use crate::{
     error::MplCoreError,
-    state::{Authority, Key, UpdateAuthority},
-};
-
-use crate::plugins::{
-    ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalRegistryRecord, Plugin, PluginType,
-    RegistryRecord,
+    plugins::{
+        ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalRegistryRecord, Plugin,
+        PluginType, RegistryRecord,
+    },
+    state::{Authority, DataBlob, Key, UpdateAuthority},
 };
 
 /// Lifecycle permissions
@@ -37,7 +36,15 @@ pub struct ExternalCheckResult {
     pub flags: u32,
 }
 
+impl DataBlob for ExternalCheckResult {
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+    }
+}
+
 impl ExternalCheckResult {
+    const BASE_LEN: usize = 4; // u32 flags
+
     pub(crate) fn none() -> Self {
         Self { flags: 0 }
     }
@@ -188,6 +195,14 @@ impl PluginType {
         }
     }
 
+    /// Check permissions for the execute lifecycle event.
+    pub fn check_execute(plugin_type: &PluginType) -> CheckResult {
+        #[allow(clippy::match_single_binding)]
+        match plugin_type {
+            _ => CheckResult::None,
+        }
+    }
+
     /// Check permissions for the add external plugin adapter lifecycle event.
     pub fn check_add_external_plugin_adapter(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
@@ -219,33 +234,7 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_add_plugin(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_add_plugin(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_add_plugin(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_add_plugin(ctx),
-            Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_add_plugin(ctx),
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_add_plugin(ctx)
-            }
-            Plugin::Attributes(attributes) => attributes.validate_add_plugin(ctx),
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_add_plugin(ctx)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_add_plugin(ctx)
-            }
-            Plugin::Edition(edition) => edition.validate_add_plugin(ctx),
-            Plugin::MasterEdition(master_edition) => master_edition.validate_add_plugin(ctx),
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_add_plugin(ctx),
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_add_plugin(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => {
-                verified_creators.validate_add_plugin(ctx)
-            }
-            Plugin::Autograph(autograph) => autograph.validate_add_plugin(ctx),
-        }
+        plugin.inner().validate_add_plugin(ctx)
     }
 
     /// Validate the remove plugin lifecycle event.
@@ -260,33 +249,7 @@ impl Plugin {
             return reject!();
         }
 
-        match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_remove_plugin(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_remove_plugin(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_remove_plugin(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_remove_plugin(ctx),
-            Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_remove_plugin(ctx),
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_remove_plugin(ctx)
-            }
-            Plugin::Attributes(attributes) => attributes.validate_remove_plugin(ctx),
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_remove_plugin(ctx)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_remove_plugin(ctx)
-            }
-            Plugin::Edition(edition) => edition.validate_remove_plugin(ctx),
-            Plugin::MasterEdition(master_edition) => master_edition.validate_remove_plugin(ctx),
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_remove_plugin(ctx),
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_remove_plugin(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => {
-                verified_creators.validate_remove_plugin(ctx)
-            }
-            Plugin::Autograph(autograph) => autograph.validate_remove_plugin(ctx),
-        }
+        plugin.inner().validate_remove_plugin(ctx)
     }
 
     /// Validate the approve plugin authority lifecycle event.
@@ -304,37 +267,7 @@ impl Plugin {
             return Err(MplCoreError::InvalidPlugin.into());
         }
 
-        match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_approve_plugin_authority(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_approve_plugin_authority(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_approve_plugin_authority(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_approve_plugin_authority(ctx),
-            Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_approve_plugin_authority(ctx)
-            }
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_approve_plugin_authority(ctx)
-            }
-            Plugin::Attributes(attributes) => attributes.validate_approve_plugin_authority(ctx),
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_approve_plugin_authority(ctx)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_approve_plugin_authority(ctx)
-            }
-            Plugin::Edition(edition) => edition.validate_approve_plugin_authority(ctx),
-            Plugin::MasterEdition(master_edition) => {
-                master_edition.validate_approve_plugin_authority(ctx)
-            }
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_approve_plugin_authority(ctx),
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_approve_plugin_authority(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => {
-                verified_creators.validate_approve_plugin_authority(ctx)
-            }
-            Plugin::Autograph(autograph) => autograph.validate_approve_plugin_authority(ctx),
-        }
+        plugin.inner().validate_approve_plugin_authority(ctx)
     }
 
     /// Validate the revoke plugin authority lifecycle event.
@@ -358,43 +291,13 @@ impl Plugin {
                 .unwrap()
                 .contains(ctx.self_authority)
         {
-            solana_program::msg!("Base: Approved");
+            solana_program::msg!("{}:{}:Base:Approved", std::file!(), std::line!());
             ValidationResult::Approved
         } else {
             ValidationResult::Pass
         };
 
-        let result = match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_revoke_plugin_authority(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_revoke_plugin_authority(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_revoke_plugin_authority(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_revoke_plugin_authority(ctx),
-            Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_revoke_plugin_authority(ctx)
-            }
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_revoke_plugin_authority(ctx)
-            }
-            Plugin::Attributes(attributes) => attributes.validate_revoke_plugin_authority(ctx),
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_revoke_plugin_authority(ctx)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_revoke_plugin_authority(ctx)
-            }
-            Plugin::Edition(edition) => edition.validate_revoke_plugin_authority(ctx),
-            Plugin::MasterEdition(master_edition) => {
-                master_edition.validate_revoke_plugin_authority(ctx)
-            }
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_revoke_plugin_authority(ctx),
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_revoke_plugin_authority(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => {
-                verified_creators.validate_revoke_plugin_authority(ctx)
-            }
-            Plugin::Autograph(autograph) => autograph.validate_revoke_plugin_authority(ctx),
-        }?;
+        let result = plugin.inner().validate_revoke_plugin_authority(ctx)?;
 
         if result == ValidationResult::Pass {
             Ok(base_result)
@@ -408,29 +311,7 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_create(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_create(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_create(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_create(ctx),
-            Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_create(ctx),
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_create(ctx)
-            }
-            Plugin::Attributes(attributes) => attributes.validate_create(ctx),
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_create(ctx)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_create(ctx),
-            Plugin::Edition(edition) => edition.validate_create(ctx),
-            Plugin::MasterEdition(master_edition) => master_edition.validate_create(ctx),
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_create(ctx),
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_create(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_create(ctx),
-            Plugin::Autograph(autograph) => autograph.validate_create(ctx),
-        }
+        plugin.inner().validate_create(ctx)
     }
 
     /// Route the validation of the update action to the appropriate plugin.
@@ -438,29 +319,7 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_update(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_update(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_update(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_update(ctx),
-            Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_update(ctx),
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_update(ctx)
-            }
-            Plugin::Attributes(attributes) => attributes.validate_update(ctx),
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_update(ctx)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_update(ctx),
-            Plugin::Edition(edition) => edition.validate_update(ctx),
-            Plugin::MasterEdition(master_edition) => master_edition.validate_update(ctx),
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_update(ctx),
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_update(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_update(ctx),
-            Plugin::Autograph(autograph) => autograph.validate_update(ctx),
-        }
+        plugin.inner().validate_update(ctx)
     }
 
     /// Route the validation of the update_plugin action to the appropriate plugin.
@@ -472,40 +331,19 @@ impl Plugin {
         let resolved_authorities = ctx
             .resolved_authorities
             .ok_or(MplCoreError::InvalidAuthority)?;
-        let base_result = if resolved_authorities.contains(ctx.self_authority) {
-            solana_program::msg!("Base: Approved");
+        // If the authority is right for the asset performing the validation.
+        let base_result = if resolved_authorities.contains(ctx.self_authority)
+        // And the target plugin is also the one being updated (i.e. self).
+        && ctx.target_plugin.is_some()
+        && PluginType::from(ctx.target_plugin.unwrap()) == PluginType::from(plugin)
+        {
+            solana_program::msg!("{}:{}:Base:Approved", std::file!(), std::line!());
             ValidationResult::Approved
         } else {
             ValidationResult::Pass
         };
 
-        let result = match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_update_plugin(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_update_plugin(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_update_plugin(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_update_plugin(ctx),
-            Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_update_plugin(ctx),
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_update_plugin(ctx)
-            }
-            Plugin::Attributes(attributes) => attributes.validate_update_plugin(ctx),
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_update_plugin(ctx)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_update_plugin(ctx)
-            }
-            Plugin::Edition(edition) => edition.validate_update_plugin(ctx),
-            Plugin::MasterEdition(master_edition) => master_edition.validate_update_plugin(ctx),
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_update_plugin(ctx),
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_update_plugin(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => {
-                verified_creators.validate_update_plugin(ctx)
-            }
-            Plugin::Autograph(autograph) => autograph.validate_update_plugin(ctx),
-        }?;
+        let result = plugin.inner().validate_update_plugin(ctx)?;
 
         match (&base_result, &result) {
             (ValidationResult::Approved, ValidationResult::Approved) => {
@@ -532,27 +370,7 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_burn(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_burn(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_burn(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_burn(ctx),
-            Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_burn(ctx),
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_burn(ctx)
-            }
-            Plugin::Attributes(attributes) => attributes.validate_burn(ctx),
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_burn(ctx)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => permanent_burn.validate_burn(ctx),
-            Plugin::Edition(edition) => edition.validate_burn(ctx),
-            Plugin::MasterEdition(master_edition) => master_edition.validate_burn(ctx),
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_burn(ctx),
-            Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.validate_burn(ctx),
-            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_burn(ctx),
-            Plugin::Autograph(autograph) => autograph.validate_burn(ctx),
-        }
+        plugin.inner().validate_burn(ctx)
     }
 
     /// Route the validation of the transfer action to the appropriate plugin.
@@ -560,29 +378,7 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_transfer(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_transfer(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_transfer(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_transfer(ctx),
-            Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_transfer(ctx),
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_transfer(ctx)
-            }
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_transfer(ctx)
-            }
-            Plugin::Attributes(attributes_transfer) => attributes_transfer.validate_transfer(ctx),
-            Plugin::PermanentBurnDelegate(burn_transfer) => burn_transfer.validate_transfer(ctx),
-            Plugin::Edition(edition) => edition.validate_transfer(ctx),
-            Plugin::MasterEdition(master_edition) => master_edition.validate_transfer(ctx),
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_transfer(ctx),
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_transfer(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_transfer(ctx),
-            Plugin::Autograph(autograph) => autograph.validate_transfer(ctx),
-        }
+        plugin.inner().validate_transfer(ctx)
     }
 
     /// Route the validation of the compress action to the appropriate plugin.
@@ -590,29 +386,7 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_compress(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_compress(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_compress(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_compress(ctx),
-            Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_compress(ctx),
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_compress(ctx)
-            }
-            Plugin::Attributes(attributes) => attributes.validate_compress(ctx),
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_compress(ctx)
-            }
-            Plugin::PermanentBurnDelegate(burn_transfer) => burn_transfer.validate_compress(ctx),
-            Plugin::Edition(edition) => edition.validate_compress(ctx),
-            Plugin::MasterEdition(master_edition) => master_edition.validate_compress(ctx),
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_compress(ctx),
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_compress(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => verified_creators.validate_compress(ctx),
-            Plugin::Autograph(autograph) => autograph.validate_compress(ctx),
-        }
+        plugin.inner().validate_compress(ctx)
     }
 
     /// Route the validation of the decompress action to the appropriate plugin.
@@ -620,33 +394,15 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_decompress(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_decompress(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_decompress(ctx),
-            Plugin::TransferDelegate(transfer) => transfer.validate_decompress(ctx),
-            Plugin::UpdateDelegate(update_delegate) => update_delegate.validate_decompress(ctx),
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_decompress(ctx)
-            }
-            Plugin::Attributes(attributes) => attributes.validate_decompress(ctx),
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_decompress(ctx)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_decompress(ctx)
-            }
-            Plugin::Edition(edition) => edition.validate_decompress(ctx),
-            Plugin::MasterEdition(master_edition) => master_edition.validate_decompress(ctx),
-            Plugin::AddBlocker(add_blocker) => add_blocker.validate_decompress(ctx),
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_decompress(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => {
-                verified_creators.validate_decompress(ctx)
-            }
-            Plugin::Autograph(autograph) => autograph.validate_decompress(ctx),
-        }
+        plugin.inner().validate_decompress(ctx)
+    }
+
+    /// Validate the execute lifecycle event.
+    pub(crate) fn validate_execute(
+        plugin: &Plugin,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        plugin.inner().validate_execute(ctx)
     }
 
     /// Validate the add external plugin adapter lifecycle event.
@@ -654,41 +410,7 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_add_external_plugin_adapter(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_add_external_plugin_adapter(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_add_external_plugin_adapter(ctx),
-            Plugin::TransferDelegate(transfer) => {
-                transfer.validate_add_external_plugin_adapter(ctx)
-            }
-            Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_add_external_plugin_adapter(ctx)
-            }
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_add_external_plugin_adapter(ctx)
-            }
-            Plugin::Attributes(attributes) => attributes.validate_add_external_plugin_adapter(ctx),
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_add_external_plugin_adapter(ctx)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_add_external_plugin_adapter(ctx)
-            }
-            Plugin::Edition(edition) => edition.validate_add_external_plugin_adapter(ctx),
-            Plugin::MasterEdition(master_edition) => {
-                master_edition.validate_add_external_plugin_adapter(ctx)
-            }
-            Plugin::AddBlocker(add_blocker) => {
-                add_blocker.validate_add_external_plugin_adapter(ctx)
-            }
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_add_external_plugin_adapter(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => {
-                verified_creators.validate_add_external_plugin_adapter(ctx)
-            }
-            Plugin::Autograph(autograph) => autograph.validate_add_external_plugin_adapter(ctx),
-        }
+        plugin.inner().validate_add_external_plugin_adapter(ctx)
     }
 
     /// Validate the remove plugin lifecycle event.
@@ -696,43 +418,7 @@ impl Plugin {
         plugin: &Plugin,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        match plugin {
-            Plugin::Royalties(royalties) => royalties.validate_remove_external_plugin_adapter(ctx),
-            Plugin::FreezeDelegate(freeze) => freeze.validate_remove_external_plugin_adapter(ctx),
-            Plugin::BurnDelegate(burn) => burn.validate_remove_external_plugin_adapter(ctx),
-            Plugin::TransferDelegate(transfer) => {
-                transfer.validate_remove_external_plugin_adapter(ctx)
-            }
-            Plugin::UpdateDelegate(update_delegate) => {
-                update_delegate.validate_remove_external_plugin_adapter(ctx)
-            }
-            Plugin::PermanentFreezeDelegate(permanent_freeze) => {
-                permanent_freeze.validate_remove_external_plugin_adapter(ctx)
-            }
-            Plugin::Attributes(attributes) => {
-                attributes.validate_remove_external_plugin_adapter(ctx)
-            }
-            Plugin::PermanentTransferDelegate(permanent_transfer) => {
-                permanent_transfer.validate_remove_external_plugin_adapter(ctx)
-            }
-            Plugin::PermanentBurnDelegate(permanent_burn) => {
-                permanent_burn.validate_remove_external_plugin_adapter(ctx)
-            }
-            Plugin::Edition(edition) => edition.validate_remove_external_plugin_adapter(ctx),
-            Plugin::MasterEdition(master_edition) => {
-                master_edition.validate_remove_external_plugin_adapter(ctx)
-            }
-            Plugin::AddBlocker(add_blocker) => {
-                add_blocker.validate_remove_external_plugin_adapter(ctx)
-            }
-            Plugin::ImmutableMetadata(immutable_metadata) => {
-                immutable_metadata.validate_remove_external_plugin_adapter(ctx)
-            }
-            Plugin::VerifiedCreators(verified_creators) => {
-                verified_creators.validate_remove_external_plugin_adapter(ctx)
-            }
-            Plugin::Autograph(autograph) => autograph.validate_remove_external_plugin_adapter(ctx),
-        }
+        plugin.inner().validate_remove_external_plugin_adapter(ctx)
     }
 }
 
@@ -807,8 +493,8 @@ impl From<ExternalValidationResult> for ValidationResult {
     }
 }
 
-/// The required context for a plugin validation.
 #[allow(dead_code)]
+/// The required context for a plugin validation.
 pub(crate) struct PluginValidationContext<'a, 'b> {
     /// This list of all the accounts passed into the instruction.
     pub accounts: &'a [AccountInfo<'a>],
@@ -830,6 +516,12 @@ pub(crate) struct PluginValidationContext<'a, 'b> {
     pub new_collection_authority: Option<&'b Pubkey>,
     /// The plugin being acted upon with new data from the ix if any. This None for create.
     pub target_plugin: Option<&'b Plugin>,
+    /// The authority of the target plugin.
+    pub target_plugin_authority: Option<&'b Authority>,
+    /// The plugin being acted upon with new data from the ix if any. This None for create.
+    pub target_external_plugin: Option<&'b ExternalPluginAdapter>,
+    /// The authority of the target plugin.
+    pub target_external_plugin_authority: Option<&'b Authority>,
 }
 
 /// Plugin validation trait which is implemented by each plugin.
@@ -947,6 +639,14 @@ pub(crate) trait PluginValidation {
         abstain!()
     }
 
+    /// Validate the execute lifecycle action.
+    fn validate_execute(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        abstain!()
+    }
+
     /// Validate the update_plugin lifecycle action.
     fn validate_update_external_plugin_adapter(
         &self,
@@ -969,6 +669,9 @@ pub(crate) fn validate_plugin_checks<'a>(
     new_asset_authority: Option<&UpdateAuthority>,
     new_collection_authority: Option<&Pubkey>,
     new_plugin: Option<&Plugin>,
+    new_plugin_authority: Option<&Authority>,
+    new_external_plugin: Option<&ExternalPluginAdapter>,
+    new_external_plugin_authority: Option<&Authority>,
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
@@ -1003,6 +706,9 @@ pub(crate) fn validate_plugin_checks<'a>(
                 new_asset_authority,
                 new_collection_authority,
                 target_plugin: new_plugin,
+                target_plugin_authority: new_plugin_authority,
+                target_external_plugin: new_external_plugin,
+                target_external_plugin_authority: new_external_plugin_authority,
             };
 
             let result = plugin_validate_fp(
@@ -1043,6 +749,9 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
     new_asset_authority: Option<&UpdateAuthority>,
     new_collection_authority: Option<&Pubkey>,
     new_plugin: Option<&Plugin>,
+    new_plugin_authority: Option<&Authority>,
+    new_external_plugin: Option<&ExternalPluginAdapter>,
+    new_external_plugin_authority: Option<&Authority>,
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
@@ -1075,6 +784,9 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
                 new_asset_authority,
                 new_collection_authority,
                 target_plugin: new_plugin,
+                target_plugin_authority: new_plugin_authority,
+                target_external_plugin: new_external_plugin,
+                target_external_plugin_authority: new_external_plugin_authority,
             };
 
             let result = external_plugin_adapter_validate_fp(
@@ -1103,5 +815,22 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
         approve!()
     } else {
         abstain!()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_external_check_result_size() {
+        let fixture = ExternalCheckResult { flags: 0 };
+        let serialized = fixture.try_to_vec().unwrap();
+        assert_eq!(
+            serialized.len(),
+            fixture.len(),
+            "Serialized {:?} should match size returned by len()",
+            fixture
+        );
     }
 }

@@ -1,6 +1,9 @@
 name: Benchmark
 on:
   workflow_call:
+    inputs:
+      git_ref:
+        type: string
 
 permissions:
   # deployments permission to deploy GitHub pages website
@@ -19,10 +22,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.git_ref }}
 
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV
+
+      - name: Sanitize Ref
+        id: sanitize
+        shell: bash
+        run: |
+          REF="${{ inputs.git_ref }}"
+          if [ -z "$REF" ]; then
+            REF="default"
+          fi
+          SANITIZED=${REF//\//-}
+          echo "sanitized=$SANITIZED" >> "$GITHUB_OUTPUT"
 
       - name: Start validator
         uses: metaplex-foundation/actions/start-validator@v1
@@ -30,6 +46,7 @@ jobs:
           node: 18.x
           solana: ${{ env.SOLANA_VERSION }}
           cache: ${{ env.CACHE }}
+          artifacts: program-builds-${{ steps.sanitize.outputs.sanitized }}
 
       - name: Install dependencies
         uses: metaplex-foundation/actions/install-node-dependencies@v1

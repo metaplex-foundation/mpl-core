@@ -28,7 +28,12 @@ pub struct CollectionV1 {
 
 impl CollectionV1 {
     /// The base length of the collection account with an empty name and uri.
-    pub const BASE_LENGTH: usize = 1 + 32 + 4 + 4 + 4 + 4;
+    const BASE_LEN: usize = 1 // Key
+                            + 32 // Update Authority
+                            + 4 // Name Length
+                            + 4 // URI Length
+                            + 4 // num_minted
+                            + 4; // current_size
 
     /// Create a new collection.
     pub fn new(
@@ -116,6 +121,11 @@ impl CollectionV1 {
     /// Check permissions for the update external plugin adapter lifecycle event.
     pub fn check_update_external_plugin_adapter() -> CheckResult {
         CheckResult::None
+    }
+
+    /// Check permissions for the execute lifecycle event.
+    pub fn check_execute() -> CheckResult {
+        CheckResult::CanApprove
     }
 
     /// Validate the create lifecycle event.
@@ -280,6 +290,16 @@ impl CollectionV1 {
         abstain!()
     }
 
+    /// Validate the execute lifecycle event.
+    pub fn validate_execute(
+        &self,
+        _authority_info: &AccountInfo,
+        _: Option<&Plugin>,
+        _: Option<&ExternalPluginAdapter>,
+    ) -> Result<ValidationResult, ProgramError> {
+        abstain!()
+    }
+
     /// Validate the add external plugin adapter lifecycle event.
     pub fn validate_add_external_plugin_adapter(
         &self,
@@ -351,12 +371,8 @@ impl CollectionV1 {
 }
 
 impl DataBlob for CollectionV1 {
-    fn get_initial_size() -> usize {
-        Self::BASE_LENGTH
-    }
-
-    fn get_size(&self) -> usize {
-        Self::BASE_LENGTH + self.name.len() + self.uri.len()
+    fn len(&self) -> usize {
+        Self::BASE_LEN + self.name.len() + self.uri.len()
     }
 }
 
@@ -373,5 +389,36 @@ impl CoreAsset for CollectionV1 {
 
     fn owner(&self) -> &Pubkey {
         &self.update_authority
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_collection_len() {
+        let collections = vec![
+            CollectionV1 {
+                key: Key::CollectionV1,
+                update_authority: Pubkey::default(),
+                name: "".to_string(),
+                uri: "".to_string(),
+                num_minted: 0,
+                current_size: 0,
+            },
+            CollectionV1 {
+                key: Key::CollectionV1,
+                update_authority: Pubkey::default(),
+                name: "test".to_string(),
+                uri: "test".to_string(),
+                num_minted: 1,
+                current_size: 1,
+            },
+        ];
+        for collection in collections {
+            let serialized = collection.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), collection.len());
+        }
     }
 }

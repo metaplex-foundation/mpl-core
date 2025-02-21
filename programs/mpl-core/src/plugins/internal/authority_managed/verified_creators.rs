@@ -8,19 +8,43 @@ use crate::error::MplCoreError;
 use crate::plugins::{
     abstain, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
 };
+use crate::state::DataBlob;
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Hash)]
 pub struct VerifiedCreatorsSignature {
-    address: Pubkey,
-    verified: bool,
+    /// The address of the creator.
+    pub address: Pubkey, // 32
+    /// Whether or not the creator is verified.
+    pub verified: bool, // 1
+}
+
+impl VerifiedCreatorsSignature {
+    const BASE_LEN: usize = 32 // The address
+    + 1; // The verified boolean
+}
+
+impl DataBlob for VerifiedCreatorsSignature {
+    fn len(&self) -> usize {
+        Self::BASE_LEN
+    }
 }
 
 /// Structure for storing verified creators, often used in conjunction with the Royalties plugin
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
 pub struct VerifiedCreators {
     /// A list of signatures
-    signatures: Vec<VerifiedCreatorsSignature>,
+    pub signatures: Vec<VerifiedCreatorsSignature>, // 4 + len * VerifiedCreatorsSignature
+}
+
+impl VerifiedCreators {
+    const BASE_LEN: usize = 4; // The signatures length
+}
+
+impl DataBlob for VerifiedCreators {
+    fn len(&self) -> usize {
+        Self::BASE_LEN + self.signatures.iter().map(|sig| sig.len()).sum::<usize>()
+    }
 }
 
 struct SignatureChangeIndices {
@@ -197,5 +221,45 @@ impl PluginValidation for VerifiedCreators {
             }
             _ => abstain!(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_verified_creators_signature_len() {
+        let verified_creators_signature = VerifiedCreatorsSignature {
+            address: Pubkey::default(),
+            verified: false,
+        };
+        let serialized = verified_creators_signature.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), verified_creators_signature.len());
+    }
+
+    #[test]
+    fn test_verified_creators_default_len() {
+        let verified_creators = VerifiedCreators { signatures: vec![] };
+        let serialized = verified_creators.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), verified_creators.len());
+    }
+
+    #[test]
+    fn test_verified_creators_len() {
+        let verified_creators = VerifiedCreators {
+            signatures: vec![
+                VerifiedCreatorsSignature {
+                    address: Pubkey::default(),
+                    verified: false,
+                },
+                VerifiedCreatorsSignature {
+                    address: Pubkey::default(),
+                    verified: true,
+                },
+            ],
+        };
+        let serialized = verified_creators.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), verified_creators.len());
     }
 }

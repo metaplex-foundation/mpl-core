@@ -2050,6 +2050,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "kaigan"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ba15de5aeb137f0f65aa3bf82187647f1285abfe5b20c80c2c37f7007ad519a"
+dependencies = [
+ "anchor-lang",
+ "borsh 0.10.3",
+ "serde",
+]
+
+[[package]]
 name = "keccak"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2287,6 +2298,7 @@ dependencies = [
  "assert_matches",
  "base64 0.22.0",
  "borsh 0.10.3",
+ "kaigan",
  "modular-bitfield",
  "num-derive 0.3.3",
  "num-traits",

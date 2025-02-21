@@ -21,7 +21,6 @@ pub struct AssetV1 {
     pub key: Key, //1
     /// The owner of the asset.
     pub owner: Pubkey, //32
-    //TODO: Fix this for dynamic size
     /// The update authority of the asset.
     pub update_authority: UpdateAuthority, //33
     /// The name of the asset.
@@ -33,6 +32,14 @@ pub struct AssetV1 {
 }
 
 impl AssetV1 {
+    /// The base length of the asset account with an empty name and uri and no seq.
+    const BASE_LEN: usize = 1 // Key
+                            + 32 // Owner
+                            + 1 // Update Authority discriminator
+                            + 4 // Name length
+                            + 4 // URI length
+                            + 1; // Seq option
+
     /// Create a new `Asset` with correct `Key` and `seq` of None.
     pub fn new(
         owner: Pubkey,
@@ -59,9 +66,6 @@ impl AssetV1 {
 
         Ok(())
     }
-
-    /// The base length of the asset account with an empty name and uri and no seq.
-    pub const BASE_LENGTH: usize = 1 + 32 + 33 + 4 + 4 + 1;
 
     /// Check permissions for the create lifecycle event.
     pub fn check_create() -> CheckResult {
@@ -131,6 +135,11 @@ impl AssetV1 {
     /// Check permissions for the update external plugin adapter lifecycle event.
     pub fn check_update_external_plugin_adapter() -> CheckResult {
         CheckResult::None
+    }
+
+    /// Check permissions for the execute lifecycle event.
+    pub fn check_execute() -> CheckResult {
+        CheckResult::CanApprove
     }
 
     /// Validate the create lifecycle event.
@@ -315,6 +324,20 @@ impl AssetV1 {
         }
     }
 
+    /// Validate the execute lifecycle event.
+    pub fn validate_execute(
+        &self,
+        authority_info: &AccountInfo,
+        _: Option<&Plugin>,
+        _: Option<&ExternalPluginAdapter>,
+    ) -> Result<ValidationResult, ProgramError> {
+        if authority_info.key == &self.owner {
+            approve!()
+        } else {
+            abstain!()
+        }
+    }
+
     /// Validate the add external plugin adapter lifecycle event.
     pub fn validate_add_external_plugin_adapter(
         &self,
@@ -358,12 +381,14 @@ impl AssetV1 {
 impl Compressible for AssetV1 {}
 
 impl DataBlob for AssetV1 {
-    fn get_initial_size() -> usize {
-        AssetV1::BASE_LENGTH
-    }
+    fn len(&self) -> usize {
+        let mut size = AssetV1::BASE_LEN + self.name.len() + self.uri.len();
 
-    fn get_size(&self) -> usize {
-        let mut size = AssetV1::BASE_LENGTH + self.name.len() + self.uri.len();
+        if let UpdateAuthority::Address(_) | UpdateAuthority::Collection(_) = self.update_authority
+        {
+            size += 32;
+        }
+
         if self.seq.is_some() {
             size += size_of::<u64>();
         }
@@ -397,5 +422,44 @@ impl CoreAsset for AssetV1 {
 
     fn owner(&self) -> &Pubkey {
         &self.owner
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_asset_len() {
+        let assets = vec![
+            AssetV1 {
+                key: Key::AssetV1,
+                owner: Pubkey::default(),
+                update_authority: UpdateAuthority::None,
+                name: "".to_string(),
+                uri: "".to_string(),
+                seq: None,
+            },
+            AssetV1 {
+                key: Key::AssetV1,
+                owner: Pubkey::default(),
+                update_authority: UpdateAuthority::Address(Pubkey::default()),
+                name: "test".to_string(),
+                uri: "test".to_string(),
+                seq: None,
+            },
+            AssetV1 {
+                key: Key::AssetV1,
+                owner: Pubkey::default(),
+                update_authority: UpdateAuthority::Collection(Pubkey::default()),
+                name: "test2".to_string(),
+                uri: "test2".to_string(),
+                seq: Some(1),
+            },
+        ];
+        for asset in assets {
+            let serialized = asset.try_to_vec().unwrap();
+            assert_eq!(serialized.len(), asset.len());
+        }
     }
 }
