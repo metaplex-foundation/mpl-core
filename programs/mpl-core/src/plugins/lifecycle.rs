@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use modular_bitfield::{bitfield, specifiers::B29};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
-use std::collections::{BTreeMap, HashSet};
+use std::collections::BTreeMap;
 
 use crate::{
     error::MplCoreError,
@@ -9,8 +9,7 @@ use crate::{
         ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalRegistryRecord, Plugin,
         PluginType, RegistryRecord,
     },
-    state::{AssetV1, Authority, DataBlob, Key, UpdateAuthority},
-    utils::{assert_authority, fetch_core_data},
+    state::{Authority, DataBlob, Key, UpdateAuthority},
 };
 
 /// Lifecycle permissions
@@ -190,6 +189,14 @@ impl PluginType {
 
     /// Check if a plugin is permitted to approve or deny a decompress action.
     pub fn check_decompress(plugin_type: &PluginType) -> CheckResult {
+        #[allow(clippy::match_single_binding)]
+        match plugin_type {
+            _ => CheckResult::None,
+        }
+    }
+
+    /// Check permissions for the execute lifecycle event.
+    pub fn check_execute(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
             _ => CheckResult::None,
@@ -390,6 +397,14 @@ impl Plugin {
         plugin.inner().validate_decompress(ctx)
     }
 
+    /// Validate the execute lifecycle event.
+    pub(crate) fn validate_execute(
+        plugin: &Plugin,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        plugin.inner().validate_execute(ctx)
+    }
+
     /// Validate the add external plugin adapter lifecycle event.
     pub(crate) fn validate_add_external_plugin_adapter(
         plugin: &Plugin,
@@ -455,8 +470,6 @@ macro_rules! force_approve {
     }};
 }
 pub(crate) use force_approve;
-
-use super::{fetch_plugin, list_plugins, UpdateDelegate};
 
 /// External plugin adapters lifecycle validations
 /// External plugin adapters utilize this to indicate whether they approve or reject a lifecycle action.
@@ -626,6 +639,14 @@ pub(crate) trait PluginValidation {
         abstain!()
     }
 
+    /// Validate the execute lifecycle action.
+    fn validate_execute(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        abstain!()
+    }
+
     /// Validate the update_plugin lifecycle action.
     fn validate_update_external_plugin_adapter(
         &self,
@@ -699,31 +720,6 @@ pub(crate) fn validate_plugin_checks<'a>(
                 ValidationResult::Approved => approved = true,
                 ValidationResult::Pass => continue,
                 ValidationResult::ForceApproved => return force_approve!(),
-            }
-        }
-    }
-
-    if asset.is_some() {
-        let asset = asset.unwrap();
-
-        let (deserialized_asset, _, _) = fetch_core_data::<AssetV1>(asset)?;
-
-        let plugin_set: HashSet<_> = if asset.data_len() > deserialized_asset.len() {
-            let plugin_list = list_plugins::<AssetV1>(asset)?;
-            plugin_list.into_iter().collect()
-        } else {
-            HashSet::new()
-        };
-
-        if plugin_set.contains(&PluginType::UpdateDelegate) {
-            let (plugin_authority, _, _) =
-                fetch_plugin::<AssetV1, UpdateDelegate>(asset, PluginType::UpdateDelegate)?;
-
-            if assert_authority::<AssetV1>(&deserialized_asset, authority, &plugin_authority)
-                .is_ok()
-                && rejected == false
-            {
-                approved = true;
             }
         }
     }
