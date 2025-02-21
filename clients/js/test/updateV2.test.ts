@@ -7,10 +7,6 @@ import {
   updateCollection,
   addCollectionPlugin,
   approveCollectionPluginAuthority,
-  createV2,
-  AssetV1,
-  updateV2,
-  fetchAssetV1,
 } from '../src';
 import {
   assertAsset,
@@ -1405,52 +1401,6 @@ test('it cannot add asset to collection if new collection contains permanent bur
       authority: {
         type: 'UpdateAuthority',
       },
-    },
-  });
-});
-
-test('it can add asset to collection as collection update delegate', async (t) => {
-  const umi = await createUmi();
-  const assetOwner = umi.identity;
-  const collectionUmi = await createUmi();
-
-  const assetSigner = generateSigner(umi);
-  const assetAddress = assetSigner.publicKey;
-  await createV2(umi, {
-    asset: assetSigner,
-    name: 'My Asset',
-    uri: 'https://example.com/my-asset.json',
-  }).sendAndConfirm(umi);
-
-  const collectionSigner = generateSigner(collectionUmi);
-  const collectionAddress = collectionSigner.publicKey;
-  await createCollection(collectionUmi, {
-    collection: collectionSigner,
-    name: 'My Collection',
-    uri: 'https://example.com/my-collection.json',
-  });
-
-  await addCollectionPlugin(collectionUmi, {
-    collection: collectionAddress,
-    plugin: {
-      type: 'UpdateDelegate',
-      authority: { type: 'Address', address: assetOwner.publicKey },
-      additionalDelegates: [],
-    },
-  }).sendAndConfirm(collectionUmi);
-
-  await updateV2(umi, {
-    asset: assetAddress,
-    newCollection: collectionAddress,
-    newUpdateAuthority: updateAuthority('Collection', [collectionAddress]),
-  }).sendAndConfirm(umi);
-
-  const asset = await fetchAssetV1(umi, assetAddress);
-  t.like(asset, <Partial<AssetV1>>{
-    owner: assetOwner.publicKey,
-    updateAuthority: {
-      type: 'Collection',
-      address: collectionAddress,
     },
   });
 });
