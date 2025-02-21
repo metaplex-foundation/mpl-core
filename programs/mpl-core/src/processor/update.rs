@@ -201,6 +201,9 @@ fn update<'a>(
                         return Err(MplCoreError::PermanentDelegatesPreventMove.into());
                     }
 
+                    // Create a default update delegate to be updated with the fetched plugin.
+                    let mut plugin: UpdateDelegate = UpdateDelegate::default();
+
                     // Make sure the authority has authority to add the asset to the new collection.
                     if plugin_set.contains(&PluginType::UpdateDelegate) {
                         // Fetch the update delegate on the new collection.
@@ -210,6 +213,8 @@ fn update<'a>(
                             PluginType::UpdateDelegate,
                         )?;
 
+                        plugin = fetched_plugin;
+
                         if (assert_collection_authority(
                             &new_collection,
                             authority,
@@ -217,12 +222,12 @@ fn update<'a>(
                         )
                         .is_err()
                             && authority.key != &new_collection.update_authority)
-                            && !fetched_plugin.additional_delegates.contains(&authority.key)
+                            && !plugin.additional_delegates.contains(&authority.key)
                         {
                             solana_program::msg!("UA: Rejected");
                             return Err(MplCoreError::InvalidAuthority.into());
                         }
-                    } else if authority.key != &new_collection.update_authority {
+                    } else if authority.key != &new_collection.update_authority && !plugin.additional_delegates.contains(&authority.key) {
                         solana_program::msg!("UA: Rejected");
                         return Err(MplCoreError::InvalidAuthority.into());
                     }
