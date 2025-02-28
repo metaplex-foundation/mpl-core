@@ -934,7 +934,6 @@ test('it can update an owner-managed plugin on an asset as collection update add
   });
 });
 
-// Works
 test('it can add asset to collection as collection update delegate', async (t) => {
   const umi = await createUmi();
   const assetOwner = umi.identity;
@@ -969,6 +968,7 @@ test('it can add asset to collection as collection update delegate', async (t) =
     asset: assetAddress,
     newCollection: collectionAddress,
     newUpdateAuthority: updateAuthority('Collection', [collectionAddress]),
+    authority: assetOwner,
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetV1(umi, assetAddress);
@@ -981,7 +981,6 @@ test('it can add asset to collection as collection update delegate', async (t) =
   });
 });
 
-// Does not work with additionalDelegates
 test('it can add asset to collection as collection additional delegate', async (t) => {
   const umi = await createUmi();
   const assetOwner = umi.identity;
@@ -1018,6 +1017,7 @@ test('it can add asset to collection as collection additional delegate', async (
     asset: assetAddress,
     newCollection: collectionAddress,
     newUpdateAuthority: updateAuthority('Collection', [collectionAddress]),
+    authority: assetOwner,
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetV1(umi, assetAddress);
@@ -1030,8 +1030,7 @@ test('it can add asset to collection as collection additional delegate', async (
   });
 });
 
-// Does not work
-test('it can add asset to collection as collection owner', async (t) => {
+test('it can add asset to collection with collection owner as update delegate', async (t) => {
   const umi = await createUmi();
   const assetOwner = umi.identity;
   const collectionUmi = await createUmi();
