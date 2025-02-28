@@ -5,8 +5,8 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
     error::MplCoreError,
-    plugins::PluginType,
-    state::{Authority, DataBlob},
+    plugins::{fetch_wrapped_plugin, reject, PluginType},
+    state::{AssetV1, Authority, DataBlob, UpdateAuthority},
 };
 
 use crate::plugins::{
@@ -162,16 +162,40 @@ impl PluginValidation for UpdateDelegate {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if ((ctx.resolved_authorities.is_some()
-        && ctx
-            .resolved_authorities
-            .unwrap()
-            .contains(ctx.self_authority))
-            || self.additional_delegates.contains(ctx.authority_info.key))
-            // We do not allow the root authority (either Collection or Address) to be changed by this delegate.
-            && ctx.new_collection_authority.is_none() && ctx.new_asset_authority.is_none()
+        if (ctx.resolved_authorities.is_some()
+            && ctx
+                .resolved_authorities
+                .unwrap()
+                .contains(ctx.self_authority))
+            || self.additional_delegates.contains(ctx.authority_info.key)
         {
-            approve!()
+            // The rules are:
+            // - Collection UpdateDelegates should be able to add and remove assets from the collection
+            // - Asset UpdateDelegates should not be able to add/remove assets from a collection
+            // so:
+
+            // If there is an asset
+            if ctx.asset_info.is_some()
+            // And it's part of a collection
+                && ctx.collection_info.is_some()
+                // And it's being removed from the collection.
+                && ctx.new_asset_authority.is_some()
+                && ctx.new_asset_authority.unwrap()
+                    != &UpdateAuthority::Collection(*ctx.collection_info.unwrap().key)
+                    // And the UpdateDelegate plugin is on the Asset, not the collection.
+                && fetch_wrapped_plugin::<AssetV1>(
+                    ctx.asset_info.unwrap(),
+                    None,
+                    PluginType::UpdateDelegate,
+                )
+                .is_ok()
+            {
+                // Then we reject.
+                reject!()
+            } else {
+                // Otherwise, we approve.
+                approve!()
+            }
         } else {
             abstain!()
         }
