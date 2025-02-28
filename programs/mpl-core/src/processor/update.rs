@@ -201,26 +201,33 @@ fn update<'a>(
                         return Err(MplCoreError::PermanentDelegatesPreventMove.into());
                     }
 
+                    // Create a default update delegate to be updated with the fetched plugin.
+                    let mut plugin: UpdateDelegate = UpdateDelegate::default();
+
                     // Make sure the authority has authority to add the asset to the new collection.
                     if plugin_set.contains(&PluginType::UpdateDelegate) {
                         // Fetch the update delegate on the new collection.
-                        let (plugin_authority, _, _) = fetch_plugin::<CollectionV1, UpdateDelegate>(
+                        // Do not ignore the return plugin as we need to check the additional delegates.
+                        let (plugin_authority, fetched_plugin, _) = fetch_plugin::<CollectionV1, UpdateDelegate>(
                             new_collection_account,
                             PluginType::UpdateDelegate,
                         )?;
 
-                        if assert_collection_authority(
+                        plugin = fetched_plugin;
+
+                        if (assert_collection_authority(
                             &new_collection,
                             authority,
                             &plugin_authority,
                         )
                         .is_err()
-                            && authority.key != &new_collection.update_authority
+                            && authority.key != &new_collection.update_authority)
+                            && !plugin.additional_delegates.contains(&authority.key)
                         {
                             solana_program::msg!("UA: Rejected");
                             return Err(MplCoreError::InvalidAuthority.into());
                         }
-                    } else if authority.key != &new_collection.update_authority {
+                    } else if authority.key != &new_collection.update_authority && !plugin.additional_delegates.contains(&authority.key) {
                         solana_program::msg!("UA: Rejected");
                         return Err(MplCoreError::InvalidAuthority.into());
                     }
