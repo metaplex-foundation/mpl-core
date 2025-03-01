@@ -101,20 +101,20 @@ pub(crate) fn process_create<'a>(
         ),
     };
 
+    // Create the asset directly with the provided args to avoid cloning
     let new_asset = AssetV1::new(
         *ctx.accounts
             .owner
             .unwrap_or(ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer))
             .key,
         update_authority,
-        args.name.clone(),
-        args.uri.clone(),
+        args.name,
+        args.uri,
     );
 
-    let serialized_data = new_asset.try_to_vec()?;
-
+    // Serialize only once and reuse the result
     let serialized_data = match args.data_state {
-        DataState::AccountState => serialized_data,
+        DataState::AccountState => new_asset.try_to_vec()?,
         DataState::LedgerState => {
             // TODO: Implement minting compressed.
             solana_program::msg!("Error: Minting compressed is currently not available");

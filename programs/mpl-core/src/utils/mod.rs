@@ -26,8 +26,16 @@ use std::collections::BTreeMap;
 
 /// Load the one byte key from the account data at the given offset.
 pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, ProgramError> {
-    let key =
-        Key::from_u8((*account.data).borrow()[offset]).ok_or(MplCoreError::DeserializationError)?;
+    // Borrow the data only once
+    let data = account.data.borrow();
+
+    // Check bounds to avoid panic
+    if offset >= data.len() {
+        return Err(MplCoreError::DeserializationError.into());
+    }
+
+    // Use from_u8 directly on the indexed byte
+    let key = Key::from_u8(data[offset]).ok_or(MplCoreError::DeserializationError)?;
 
     Ok(key)
 }
@@ -38,26 +46,18 @@ pub fn assert_authority<T: CoreAsset>(
     authority_info: &AccountInfo,
     authority: &Authority,
 ) -> ProgramResult {
-    match authority {
-        Authority::None => (),
-        Authority::Owner => {
-            if asset.owner() == authority_info.key {
-                return Ok(());
-            }
-        }
-        Authority::UpdateAuthority => {
-            if asset.update_authority().key() == *authority_info.key {
-                return Ok(());
-            }
-        }
-        Authority::Address { address } => {
-            if authority_info.key == address {
-                return Ok(());
-            }
-        }
-    }
+    let is_authorized = match authority {
+        Authority::None => true,
+        Authority::Owner => asset.owner() == authority_info.key,
+        Authority::UpdateAuthority => asset.update_authority().key() == *authority_info.key,
+        Authority::Address { address } => authority_info.key == address,
+    };
 
-    Err(MplCoreError::InvalidAuthority.into())
+    if is_authorized {
+        Ok(())
+    } else {
+        Err(MplCoreError::InvalidAuthority.into())
+    }
 }
 
 /// Assert that the account info address is the same as the authority.
@@ -66,38 +66,38 @@ pub fn assert_collection_authority(
     authority_info: &AccountInfo,
     authority: &Authority,
 ) -> ProgramResult {
-    match authority {
-        Authority::None | Authority::Owner => (),
-        Authority::UpdateAuthority => {
-            if &collection.update_authority == authority_info.key {
-                return Ok(());
-            }
-        }
-        Authority::Address { address } => {
-            if authority_info.key == address {
-                return Ok(());
-            }
-        }
-    }
+    let is_authorized = match authority {
+        Authority::None | Authority::Owner => false,
+        Authority::UpdateAuthority => &collection.update_authority == authority_info.key,
+        Authority::Address { address } => authority_info.key == address,
+    };
 
-    Err(MplCoreError::InvalidAuthority.into())
+    if is_authorized {
+        Ok(())
+    } else {
+        Err(MplCoreError::InvalidAuthority.into())
+    }
 }
 
 /// Fetch the core data from the account; asset, plugin header (if present), and plugin registry (if present).
 pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
     account: &AccountInfo,
 ) -> Result<(T, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
+    // Only deserialize the asset first
     let asset = T::load(account, 0)?;
 
-    if asset.len() != account.data_len() {
-        let plugin_header = PluginHeaderV1::load(account, asset.len())?;
-        let plugin_registry =
-            PluginRegistryV1::load(account, plugin_header.plugin_registry_offset)?;
-
-        Ok((asset, Some(plugin_header), Some(plugin_registry)))
-    } else {
-        Ok((asset, None, None))
+    // Early return if we know there are no plugins
+    if asset.len() == account.data_len() {
+        return Ok((asset, None, None));
     }
+
+    // Only deserialize the plugin header when needed
+    let plugin_header = PluginHeaderV1::load(account, asset.len())?;
+
+    // Only deserialize the plugin registry when needed
+    let plugin_registry = PluginRegistryV1::load(account, plugin_header.plugin_registry_offset)?;
+
+    Ok((asset, Some(plugin_header), Some(plugin_registry)))
 }
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]

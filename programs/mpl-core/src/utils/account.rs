@@ -40,34 +40,46 @@ pub(crate) fn resize_or_reallocate_account<'a>(
     system_program: &AccountInfo<'a>,
     new_size: usize,
 ) -> ProgramResult {
-    // If the account is already the correct size, return.
-    if new_size == target_account.data_len() {
+    // If the account is already the correct size, return early
+    let current_size = target_account.data_len();
+    if new_size == current_size {
         return Ok(());
     }
 
     let rent = Rent::get()?;
     let new_minimum_balance = rent.minimum_balance(new_size);
-    let current_minimum_balance = rent.minimum_balance(target_account.data_len());
-    let account_infos = &[
-        funding_account.clone(),
-        target_account.clone(),
-        system_program.clone(),
-    ];
+    let current_minimum_balance = rent.minimum_balance(current_size);
 
-    if new_minimum_balance >= current_minimum_balance {
-        let lamports_diff = new_minimum_balance.saturating_sub(current_minimum_balance);
-        invoke(
-            &system_instruction::transfer(funding_account.key, target_account.key, lamports_diff),
-            account_infos,
-        )?;
-    } else {
-        // return lamports to the compressor
-        let lamports_diff = current_minimum_balance.saturating_sub(new_minimum_balance);
-
-        **funding_account.try_borrow_mut_lamports()? += lamports_diff;
-        **target_account.try_borrow_mut_lamports()? -= lamports_diff
+    // Use match with comparison instead of if-chain
+    match new_minimum_balance.cmp(&current_minimum_balance) {
+        std::cmp::Ordering::Greater => {
+            // New size requires more rent
+            let lamports_diff = new_minimum_balance - current_minimum_balance;
+            invoke(
+                &system_instruction::transfer(
+                    funding_account.key,
+                    target_account.key,
+                    lamports_diff,
+                ),
+                &[
+                    funding_account.clone(),
+                    target_account.clone(),
+                    system_program.clone(),
+                ],
+            )?;
+        }
+        std::cmp::Ordering::Less => {
+            // Return excess lamports to the funding account
+            let lamports_diff = current_minimum_balance - new_minimum_balance;
+            **funding_account.try_borrow_mut_lamports()? += lamports_diff;
+            **target_account.try_borrow_mut_lamports()? -= lamports_diff;
+        }
+        std::cmp::Ordering::Equal => {
+            // No lamport adjustment needed
+        }
     }
 
+    // Resize the account
     target_account.realloc(new_size, false)?;
 
     Ok(())

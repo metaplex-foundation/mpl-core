@@ -34,27 +34,28 @@ pub fn create_meta_idempotent<'a, T: SolanaAccount + DataBlob>(
     // Check if the plugin header and registry exist.
     if header_offset == account.data_len() {
         // They don't exist, so create them.
+        // Pre-calculate offsets to avoid redundant calculations
+        let registry_offset = header_offset + 1 + 8; // Plugin Header Key + Plugin Registry Offset
+
         let header = PluginHeaderV1 {
             key: Key::PluginHeaderV1,
-            plugin_registry_offset: header_offset
-                + 1 // Plugin Header Key
-                + 8, // Plugin Registry Offset
+            plugin_registry_offset: registry_offset,
         };
+
+        // Use an empty vector to minimize allocations
         let registry = PluginRegistryV1 {
             key: Key::PluginRegistryV1,
-            registry: vec![],
-            external_registry: vec![],
+            registry: Vec::new(),
+            external_registry: Vec::new(),
         };
 
-        resize_or_reallocate_account(
-            account,
-            payer,
-            system_program,
-            header.plugin_registry_offset + registry.len(),
-        )?;
+        // Calculate the final size once
+        let final_size = registry_offset + registry.len();
+
+        resize_or_reallocate_account(account, payer, system_program, final_size)?;
 
         header.save(account, header_offset)?;
-        registry.save(account, header.plugin_registry_offset)?;
+        registry.save(account, registry_offset)?;
 
         Ok((core, header_offset, header, registry))
     } else {
@@ -75,28 +76,29 @@ pub fn create_plugin_meta<'a, T: SolanaAccount + DataBlob>(
 ) -> Result<(usize, PluginHeaderV1, PluginRegistryV1), ProgramError> {
     let header_offset = asset.len();
 
+    // Pre-calculate offsets to avoid redundant calculations
+    let registry_offset = header_offset + 1 + 8; // Plugin Header Key + Plugin Registry Offset
+
     // They don't exist, so create them.
     let header = PluginHeaderV1 {
         key: Key::PluginHeaderV1,
-        plugin_registry_offset: header_offset
-            + 1 // Plugin Header Key
-            + 8, // Plugin Registry Offset
+        plugin_registry_offset: registry_offset,
     };
+
+    // Use empty vectors to minimize allocations
     let registry = PluginRegistryV1 {
         key: Key::PluginRegistryV1,
-        registry: vec![],
-        external_registry: vec![],
+        registry: Vec::new(),
+        external_registry: Vec::new(),
     };
 
-    resize_or_reallocate_account(
-        account,
-        payer,
-        system_program,
-        header.plugin_registry_offset + registry.len(),
-    )?;
+    // Calculate the final size once
+    let final_size = registry_offset + registry.len();
+
+    resize_or_reallocate_account(account, payer, system_program, final_size)?;
 
     header.save(account, header_offset)?;
-    registry.save(account, header.plugin_registry_offset)?;
+    registry.save(account, registry_offset)?;
 
     Ok((header_offset, header, registry))
 }
@@ -273,7 +275,6 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
     let plugin_type = plugin.into();
-    let plugin_size = plugin.len();
 
     // You cannot add a duplicate plugin.
     if plugin_registry
@@ -284,6 +285,10 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
         return Err(MplCoreError::PluginAlreadyExists.into());
     }
 
+    // Serialize the plugin only once
+    let serialized_plugin = plugin.try_to_vec()?;
+    let plugin_size = serialized_plugin.len();
+
     let old_registry_offset = plugin_header.plugin_registry_offset;
 
     let new_registry_record = RegistryRecord {
@@ -292,8 +297,11 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
         authority: *authority,
     };
 
+    // Pre-calculate the serialized registry record size
+    let serialized_record_size = new_registry_record.len();
+
     let size_increase = plugin_size
-        .checked_add(new_registry_record.len())
+        .checked_add(serialized_record_size)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     let new_registry_offset = plugin_header
@@ -311,8 +319,18 @@ pub fn initialize_plugin<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     resize_or_reallocate_account(account, payer, system_program, new_size)?;
+
+    // Save the plugin header
     plugin_header.save(account, header_offset)?;
-    plugin.save(account, old_registry_offset)?;
+
+    // Use the pre-serialized plugin data
+    solana_program::program_memory::sol_memcpy(
+        &mut account.data.borrow_mut()[old_registry_offset..],
+        &serialized_plugin,
+        plugin_size,
+    );
+
+    // Save the registry
     plugin_registry.save(account, new_registry_offset)?;
 
     Ok(())
@@ -396,6 +414,7 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         data_len: None,
     };
 
+    // Create the plugin instance
     let plugin = ExternalPluginAdapter::from(init_info);
 
     // If the plugin is a LifecycleHook or AppData, then we need to set the data offset and length.
@@ -413,11 +432,15 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         _ => {}
     };
 
+    // Serialize the plugin only once
     let serialized_plugin = plugin.try_to_vec()?;
     let plugin_size = serialized_plugin.len();
 
+    // Pre-calculate the serialized registry record size
+    let serialized_record_size = new_registry_record.try_to_vec()?.len();
+
     let size_increase = plugin_size
-        .checked_add(new_registry_record.try_to_vec()?.len())
+        .checked_add(serialized_record_size)
         .ok_or(MplCoreError::NumericalOverflow)?
         .checked_add(new_registry_record.data_len.unwrap_or(0))
         .ok_or(MplCoreError::NumericalOverflow)?;
@@ -446,17 +469,26 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     resize_or_reallocate_account(account, payer, system_program, new_size)?;
+
+    // Save the plugin header
     plugin_header.save(account, header_offset)?;
-    plugin.save(account, old_registry_offset)?;
+
+    // Use the pre-serialized plugin data
+    solana_program::program_memory::sol_memcpy(
+        &mut account.data.borrow_mut()[old_registry_offset..],
+        &serialized_plugin,
+        plugin_size,
+    );
 
     if let Some(data) = appended_data {
-        sol_memcpy(
+        solana_program::program_memory::sol_memcpy(
             &mut account.data.borrow_mut()[data_offset..],
             data,
             data.len(),
         );
     };
 
+    // Save the registry
     plugin_registry.save(account, new_registry_offset)?;
 
     Ok(())

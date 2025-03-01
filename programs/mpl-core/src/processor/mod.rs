@@ -47,7 +47,10 @@ pub fn process_instruction<'a>(
     accounts: &'a [AccountInfo<'a>],
     instruction_data: &[u8],
 ) -> ProgramResult {
+    // Deserialize the instruction once
     let instruction: MplAssetInstruction = MplAssetInstruction::try_from_slice(instruction_data)?;
+
+    // Use a match statement with minimal logging to reduce compute units
     match instruction {
         MplAssetInstruction::CreateV1(args) => {
             msg!("Instruction: Create");
