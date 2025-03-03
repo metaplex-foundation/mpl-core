@@ -94,6 +94,7 @@ pub(crate) fn add_plugin<'a>(
         AssetV1::validate_add_plugin,
         CollectionV1::validate_add_plugin,
         Plugin::validate_add_plugin,
+        Plugin::side_effects_add_plugin,
         None,
         None,
     )?;

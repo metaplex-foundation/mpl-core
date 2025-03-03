@@ -124,6 +124,7 @@ fn update<'a>(
         AssetV1::validate_update,
         CollectionV1::validate_update,
         Plugin::validate_update,
+        Plugin::side_effects_update,
         Some(ExternalPluginAdapter::validate_update),
         Some(HookableLifecycleEvent::Update),
     )?;

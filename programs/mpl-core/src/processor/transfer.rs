@@ -93,6 +93,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
         AssetV1::validate_transfer,
         CollectionV1::validate_transfer,
         Plugin::validate_transfer,
+        Plugin::side_effects_transfer,
         Some(ExternalPluginAdapter::validate_transfer),
         Some(HookableLifecycleEvent::Transfer),
     )?;

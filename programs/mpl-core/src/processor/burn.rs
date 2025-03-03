@@ -100,6 +100,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
         AssetV1::validate_burn,
         CollectionV1::validate_burn,
         Plugin::validate_burn,
+        Plugin::side_effects_burn,
         Some(ExternalPluginAdapter::validate_burn),
         Some(HookableLifecycleEvent::Burn),
     )?;

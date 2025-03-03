@@ -68,6 +68,7 @@ pub(crate) fn approve_plugin_authority<'a>(
         AssetV1::validate_approve_plugin_authority,
         CollectionV1::validate_approve_plugin_authority,
         Plugin::validate_approve_plugin_authority,
+        Plugin::side_effects_approve_plugin_authority,
         None,
         None,
     )?;

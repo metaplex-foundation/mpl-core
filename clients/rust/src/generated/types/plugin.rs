@@ -17,6 +17,7 @@ use crate::generated::types::PermanentBurnDelegate;
 use crate::generated::types::PermanentFreezeDelegate;
 use crate::generated::types::PermanentTransferDelegate;
 use crate::generated::types::Royalties;
+use crate::generated::types::TransferCount;
 use crate::generated::types::TransferDelegate;
 use crate::generated::types::UpdateDelegate;
 use crate::generated::types::VerifiedCreators;
@@ -45,4 +46,5 @@ pub enum Plugin {
     ImmutableMetadata(ImmutableMetadata),
     VerifiedCreators(VerifiedCreators),
     Autograph(Autograph),
+    TransferCount(TransferCount),
 }

@@ -2943,6 +2943,18 @@
       }
     },
     {
+      "name": "TransferCount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "UpdateDelegate",
       "type": {
         "kind": "struct",
@@ -3984,6 +3996,14 @@
                 "defined": "Autograph"
               }
             ]
+          },
+          {
+            "name": "TransferCount",
+            "fields": [
+              {
+                "defined": "TransferCount"
+              }
+            ]
           }
         ]
       }
@@ -4037,6 +4057,9 @@
           },
           {
             "name": "Autograph"
+          },
+          {
+            "name": "TransferCount"
           }
         ]
       }

@@ -10,8 +10,8 @@ use crate::{
     instruction::accounts::CreateCollectionV2Accounts,
     plugins::{
         create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
-        initialize_plugin, CheckResult, ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair,
-        PluginType, PluginValidationContext, ValidationResult,
+        initialize_plugin, ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair, PluginType,
+        PluginValidationContext, ValidationResult,
     },
     state::{Authority, CollectionV1, Key},
 };
@@ -132,7 +132,7 @@ pub(crate) fn process_create_collection<'a>(
                     return Err(MplCoreError::InvalidPlugin.into());
                 }
 
-                if PluginType::check_create(&plugin_type) != CheckResult::None {
+                if !PluginType::check_create(&plugin_type).none() {
                     let validation_ctx = PluginValidationContext {
                         accounts,
                         asset_info: None,

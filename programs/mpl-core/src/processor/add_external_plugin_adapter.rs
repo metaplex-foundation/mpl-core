@@ -119,6 +119,7 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         AssetV1::validate_add_external_plugin_adapter,
         CollectionV1::validate_add_external_plugin_adapter,
         Plugin::validate_add_external_plugin_adapter,
+        Plugin::side_effects_add_external_plugin_adapter,
         None,
         None,
     )?;

@@ -60,6 +60,8 @@ pub enum Plugin {
     VerifiedCreators(VerifiedCreators),
     /// Autograph plugin allows anybody to add their signature to the asset with an optional message
     Autograph(Autograph),
+    /// TransferCount plugin tracks the number of times an asset has been transferred
+    TransferCount(TransferCount),
 }
 
 impl Plugin {
@@ -103,6 +105,7 @@ impl Plugin {
             Plugin::ImmutableMetadata(inner) => inner,
             Plugin::VerifiedCreators(inner) => inner,
             Plugin::Autograph(inner) => inner,
+            Plugin::TransferCount(inner) => inner,
         }
     }
 }
@@ -134,6 +137,7 @@ impl DataBlob for Plugin {
                 Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.len(),
                 Plugin::VerifiedCreators(verified_creators) => verified_creators.len(),
                 Plugin::Autograph(autograph) => autograph.len(),
+                Plugin::TransferCount(transfer_count) => transfer_count.len(),
             }
     }
 }
@@ -186,6 +190,8 @@ pub enum PluginType {
     VerifiedCreators,
     /// Autograph plugin.
     Autograph,
+    /// TransferCount plugin.
+    TransferCount,
 }
 
 impl PluginType {
@@ -224,6 +230,7 @@ impl From<&Plugin> for PluginType {
             Plugin::MasterEdition(_) => PluginType::MasterEdition,
             Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
             Plugin::Autograph(_) => PluginType::Autograph,
+            Plugin::TransferCount(_) => PluginType::TransferCount,
         }
     }
 }
@@ -247,6 +254,7 @@ impl PluginType {
             PluginType::MasterEdition => Authority::UpdateAuthority,
             PluginType::VerifiedCreators => Authority::UpdateAuthority,
             PluginType::Autograph => Authority::Owner,
+            PluginType::TransferCount => Authority::UpdateAuthority,
         }
     }
 }
@@ -297,6 +305,7 @@ mod test {
             Plugin::ImmutableMetadata(ImmutableMetadata {}),
             Plugin::VerifiedCreators(VerifiedCreators { signatures: vec![] }),
             Plugin::Autograph(Autograph { signatures: vec![] }),
+            Plugin::TransferCount(TransferCount { count: 0 }),
         ];
 
         assert_eq!(
@@ -412,6 +421,7 @@ mod test {
                     message: "test".to_string(),
                 }],
             })],
+            vec![Plugin::TransferCount(TransferCount { count: 1 })],
         ];
 
         assert_eq!(
