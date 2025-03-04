@@ -1094,13 +1094,7 @@ pub(crate) fn run_plugin_side_effects<'a>(
     collection: Option<&'a AccountInfo<'a>>,
     plugin_side_effect_fp: fn(&Plugin, &PluginSideEffectContext) -> Result<Plugin, ProgramError>,
 ) -> Result<(), ProgramError> {
-    solana_program::msg!("Running plugin side effects");
     for (check_key, check_result, registry_record) in checks.values() {
-        solana_program::msg!(
-            "Checking side effect for {:?} with side_effect: {:?}",
-            check_key,
-            check_result.side_effect()
-        );
         if check_result.side_effect() {
             let account = match check_key {
                 Key::CollectionV1 => collection.ok_or(MplCoreError::InvalidCollection)?,
