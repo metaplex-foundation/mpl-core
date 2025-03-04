@@ -81,6 +81,7 @@ pub(crate) fn remove_external_plugin_adapter<'a>(
         AssetV1::validate_remove_external_plugin_adapter,
         CollectionV1::validate_remove_external_plugin_adapter,
         Plugin::validate_remove_external_plugin_adapter,
+        Plugin::side_effects_remove_external_plugin_adapter,
         None,
         None,
     )?;

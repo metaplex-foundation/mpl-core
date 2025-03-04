@@ -7,10 +7,11 @@ pub(crate) use compression::*;
 use crate::{
     error::MplCoreError,
     plugins::{
-        validate_external_plugin_adapter_checks, validate_plugin_checks, CheckResult,
-        ExternalCheckResultBits, ExternalPluginAdapter, ExternalPluginAdapterKey,
+        run_plugin_side_effects, validate_external_plugin_adapter_checks, validate_plugin_checks,
+        CheckResult, ExternalCheckResultBits, ExternalPluginAdapter, ExternalPluginAdapterKey,
         ExternalRegistryRecord, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
-        PluginType, PluginValidationContext, RegistryRecord, ValidationResult,
+        PluginSideEffectContext, PluginType, PluginValidationContext, RegistryRecord,
+        ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority,
@@ -132,6 +133,7 @@ pub(crate) fn validate_asset_permissions<'a>(
         &Plugin,
         &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError>,
+    plugin_side_effect_fp: fn(&Plugin, &PluginSideEffectContext) -> Result<Plugin, ProgramError>,
     external_plugin_adapter_validate_fp: Option<
         fn(
             &ExternalPluginAdapter,
@@ -172,7 +174,7 @@ pub(crate) fn validate_asset_permissions<'a>(
     let collection_check = if collection.is_some() {
         collection_check_fp()
     } else {
-        CheckResult::None
+        CheckResult::new().with_none(true)
     };
 
     // Check the collection plugins first.
@@ -210,7 +212,7 @@ pub(crate) fn validate_asset_permissions<'a>(
     // Do the core validation.
     let mut approved = false;
     let mut rejected = false;
-    if asset_check != CheckResult::None {
+    if !asset_check.none() {
         match asset_validate_fp(
             &deserialized_asset,
             authority_info,
@@ -226,7 +228,7 @@ pub(crate) fn validate_asset_permissions<'a>(
         }
     };
 
-    if collection_check != CheckResult::None {
+    if !collection_check.none() {
         match collection_validate_fp(
             &CollectionV1::load(collection.ok_or(MplCoreError::MissingCollection)?, 0)?,
             authority_info,
@@ -291,6 +293,8 @@ pub(crate) fn validate_asset_permissions<'a>(
             return Ok((deserialized_asset, plugin_header, plugin_registry))
         }
     };
+
+    run_plugin_side_effects(&checks, Some(asset), collection, plugin_side_effect_fp)?;
 
     if let Some(external_plugin_adapter_validate_fp) = external_plugin_adapter_validate_fp {
         match validate_external_plugin_adapter_checks(
@@ -423,13 +427,11 @@ pub(crate) fn validate_collection_permissions<'a>(
     // Do the core validation.
     let mut approved = false;
     let mut rejected = false;
-    if matches!(
-        core_check,
-        (
-            Key::CollectionV1,
-            CheckResult::CanApprove | CheckResult::CanReject | CheckResult::CanForceApprove
-        )
-    ) {
+    if core_check.0 == Key::CollectionV1
+        && (core_check.1.can_approve()
+            || core_check.1.can_reject()
+            || core_check.1.can_force_approve())
+    {
         let result = match core_check.0 {
             Key::CollectionV1 => collection_validate_fp(
                 &deserialized_collection,

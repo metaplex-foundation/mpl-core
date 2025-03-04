@@ -25,6 +25,8 @@ import {
   VerifiedCreatorsArgs,
   Autograph,
   VerifiedCreators,
+  TransferCount,
+  TransferCountArgs,
 } from '../generated';
 import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
 import { PluginAuthority } from './pluginAuthority';
@@ -88,6 +90,9 @@ export type CreatePluginArgs =
     }
   | {
       type: 'AddBlocker';
+    }
+  | {
+      type: 'TransferCount';
     };
 
 export type AuthorityArgsV2 = {
@@ -143,7 +148,10 @@ export type AuthorityManagedPluginArgsV2 =
     }
   | ({
       type: 'VerifiedCreators';
-    } & VerifiedCreatorsArgs);
+    } & VerifiedCreatorsArgs)
+  | ({
+      type: 'TransferCount';
+    } & TransferCountArgs);
 
 export type AssetAddablePluginArgsV2 =
   | OwnerManagedPluginArgsV2
@@ -181,7 +189,7 @@ export type AddBlockerPlugin = BasePlugin & AddBlocker;
 export type ImmutableMetadataPlugin = BasePlugin & ImmutableMetadata;
 export type VerifiedCreatorsPlugin = BasePlugin & VerifiedCreators;
 export type AutographPlugin = BasePlugin & Autograph;
-
+export type TransferCountPlugin = BasePlugin & TransferCount;
 export type CommonPluginsList = {
   attributes?: AttributesPlugin;
   royalties?: RoyaltiesPlugin;
@@ -193,6 +201,7 @@ export type CommonPluginsList = {
   immutableMetadata?: ImmutableMetadataPlugin;
   autograph?: AutographPlugin;
   verifiedCreators?: VerifiedCreatorsPlugin;
+  transferCount?: TransferCountPlugin;
 };
 
 export type AssetPluginsList = {

@@ -67,6 +67,7 @@ pub(crate) fn update_plugin<'a>(
         AssetV1::validate_update_plugin,
         CollectionV1::validate_update_plugin,
         Plugin::validate_update_plugin,
+        Plugin::side_effects_update_plugin,
         None,
         None,
     )?;

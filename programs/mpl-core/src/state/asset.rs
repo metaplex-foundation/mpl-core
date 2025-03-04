@@ -69,77 +69,77 @@ impl AssetV1 {
 
     /// Check permissions for the create lifecycle event.
     pub fn check_create() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Check permissions for the add plugin lifecycle event.
     pub fn check_add_plugin() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Check permissions for the remove plugin lifecycle event.
     pub fn check_remove_plugin() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Check permissions for the update plugin lifecycle event.
     pub fn check_update_plugin() -> CheckResult {
-        CheckResult::None
+        CheckResult::new().with_none(true)
     }
 
     /// Check permissions for the approve plugin authority lifecycle event.
     pub fn check_approve_plugin_authority() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Check permissions for the revoke plugin authority lifecycle event.
     pub fn check_revoke_plugin_authority() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Check permissions for the transfer lifecycle event.
     pub fn check_transfer() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Check permissions for the burn lifecycle event.
     pub fn check_burn() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Check permissions for the update lifecycle event.
     pub fn check_update() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Check permissions for the compress lifecycle event.
     pub fn check_compress() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Check permissions for the decompress lifecycle event.
     pub fn check_decompress() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Check permissions for the add external plugin adapter lifecycle event.
     pub fn check_add_external_plugin_adapter() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Check permissions for the remove external plugin adapter lifecycle event.
     pub fn check_remove_external_plugin_adapter() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Check permissions for the update external plugin adapter lifecycle event.
     pub fn check_update_external_plugin_adapter() -> CheckResult {
-        CheckResult::None
+        CheckResult::new().with_none(true)
     }
 
     /// Check permissions for the execute lifecycle event.
     pub fn check_execute() -> CheckResult {
-        CheckResult::CanApprove
+        CheckResult::new().with_can_approve(true)
     }
 
     /// Validate the create lifecycle event.

@@ -60,6 +60,7 @@ pub(crate) fn compress<'a>(
                 AssetV1::validate_compress,
                 CollectionV1::validate_compress,
                 Plugin::validate_compress,
+                Plugin::side_effects_compress,
                 None,
                 None,
             )?;

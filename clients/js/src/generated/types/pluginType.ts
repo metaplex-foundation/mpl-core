@@ -24,6 +24,7 @@ export enum PluginType {
   ImmutableMetadata,
   VerifiedCreators,
   Autograph,
+  TransferCount,
 }
 
 export type PluginTypeArgs = PluginType;

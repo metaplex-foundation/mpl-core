@@ -76,6 +76,7 @@ pub(crate) fn decompress<'a>(
                 AssetV1::validate_decompress,
                 CollectionV1::validate_decompress,
                 Plugin::validate_decompress,
+                Plugin::side_effects_decompress,
                 None,
                 None,
             )?;

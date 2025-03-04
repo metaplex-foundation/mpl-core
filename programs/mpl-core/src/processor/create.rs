@@ -10,7 +10,7 @@ use crate::{
     instruction::accounts::CreateV2Accounts,
     plugins::{
         create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
-        initialize_plugin, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
+        initialize_plugin, ExternalCheckResultBits, ExternalPluginAdapter,
         ExternalPluginAdapterInitInfo, HookableLifecycleEvent, Plugin, PluginAuthorityPair,
         PluginType, PluginValidationContext, ValidationResult,
     },
@@ -165,6 +165,7 @@ pub(crate) fn process_create<'a>(
             AssetV1::validate_create,
             CollectionV1::validate_create,
             Plugin::validate_create,
+            Plugin::side_effects_create,
             Some(ExternalPluginAdapter::validate_create),
             Some(HookableLifecycleEvent::Create),
         )?;
@@ -188,9 +189,7 @@ pub(crate) fn process_create<'a>(
                     if plugin_type == PluginType::MasterEdition {
                         return Err(MplCoreError::InvalidPlugin.into());
                     }
-                    if PluginType::check_create(&PluginType::from(&plugin.plugin))
-                        != CheckResult::None
-                    {
+                    if !PluginType::check_create(&PluginType::from(&plugin.plugin)).none() {
                         let validation_ctx = PluginValidationContext {
                             accounts,
                             asset_info: Some(ctx.accounts.asset),
