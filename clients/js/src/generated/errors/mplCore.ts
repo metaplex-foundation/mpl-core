@@ -726,6 +726,19 @@ export class InvalidExecutePdaError extends ProgramError {
 codeToErrorMap.set(0x31, InvalidExecutePdaError);
 nameToErrorMap.set('InvalidExecutePda', InvalidExecutePdaError);
 
+/** PluginNotAllowedOnAsset: Plugin is not allowed to be added to an Asset */
+export class PluginNotAllowedOnAssetError extends ProgramError {
+  override readonly name: string = 'PluginNotAllowedOnAsset';
+
+  readonly code: number = 0x32; // 50
+
+  constructor(program: Program, cause?: Error) {
+    super('Plugin is not allowed to be added to an Asset', program, cause);
+  }
+}
+codeToErrorMap.set(0x32, PluginNotAllowedOnAssetError);
+nameToErrorMap.set('PluginNotAllowedOnAsset', PluginNotAllowedOnAssetError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

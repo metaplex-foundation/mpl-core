@@ -4949,6 +4949,11 @@
       "code": 49,
       "name": "InvalidExecutePda",
       "msg": "Invalid Signing PDA for Asset or Collection Execute"
+    },
+    {
+      "code": 50,
+      "name": "PluginNotAllowedOnAsset",
+      "msg": "Plugin is not allowed to be added to an Asset"
     }
   ],
   "metadata": {

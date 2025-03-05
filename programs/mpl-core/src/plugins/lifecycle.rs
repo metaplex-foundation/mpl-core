@@ -91,6 +91,7 @@ impl PluginType {
             PluginType::Edition => CheckResult::CanReject,
             PluginType::Autograph => CheckResult::CanReject,
             PluginType::VerifiedCreators => CheckResult::CanReject,
+            PluginType::MasterEdition => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -142,6 +143,7 @@ impl PluginType {
             PluginType::UpdateDelegate => CheckResult::CanApprove,
             PluginType::Autograph => CheckResult::CanReject,
             PluginType::VerifiedCreators => CheckResult::CanReject,
+            PluginType::MasterEdition => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
