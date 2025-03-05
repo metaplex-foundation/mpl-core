@@ -160,6 +160,9 @@ pub enum MplCoreError {
     /// 49 (0x31) - Invalid Signing PDA for Asset or Collection Execute
     #[error("Invalid Signing PDA for Asset or Collection Execute")]
     InvalidExecutePda,
+    /// 50 (0x32) - Plugin is not allowed to be added to an Asset
+    #[error("Plugin is not allowed to be added to an Asset")]
+    PluginNotAllowedOnAsset,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

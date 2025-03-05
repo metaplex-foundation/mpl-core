@@ -47,12 +47,6 @@ pub(crate) fn add_plugin<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    // TODO move into plugin validation when asset/collection is part of validation context
-    let plugin_type = PluginType::from(&args.plugin);
-    if plugin_type == PluginType::MasterEdition {
-        return Err(MplCoreError::InvalidPlugin.into());
-    }
-
     let target_plugin_authority = args.init_authority.unwrap_or(args.plugin.manager());
 
     // TODO: Seed with Rejected
