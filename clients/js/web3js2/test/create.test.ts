@@ -25,7 +25,6 @@ test('create an Asset', async (t) => {
 
   const user = await generateKeyPairSigner();
 
-  console.log('🔄 - Airdropping to user:', user.address);
   const airdropSignature = await rpc
     .requestAirdrop(user.address, lamports(1000000000n), {
       commitment: 'finalized',
@@ -33,8 +32,6 @@ test('create an Asset', async (t) => {
     .send();
 
   await sleep(2000);
-
-  console.log('🔄 - Airdrop signature:', airdropSignature);
 
   const balance = await rpc.getBalance(user.address).send();
   t.is(balance.value, lamports(1000000000n), 'User should have 1 SOL');
@@ -70,13 +67,10 @@ test('create an Asset', async (t) => {
       commitment: 'confirmed',
     });
     const signature = getSignatureFromTransaction(signedTransaction);
-    console.log('✅ - Create Asset Transaction:', signature);
   } catch (e) {
-    console.error('Transfer failed:', e);
+    console.error('Transaction failed:', e);
     t.fail('Asset creation failed');
   }
-
-  console.log('🔄 - Fetching asset:', asset.address);
 
   const fetchedAsset = await fetchBaseAssetV1(rpc, asset.address);
 
