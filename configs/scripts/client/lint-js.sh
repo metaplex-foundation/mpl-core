@@ -8,7 +8,12 @@ WORKING_DIR=$(pwd)
 # command-line input
 ARGS=$*
 
-# js client tests folder
-cd ${WORKING_DIR}/clients/js
+# js umi client tests folder
+cd ${WORKING_DIR}/clients/js/umi
+
+pnpm install && pnpm format
+
+# js web3js2 client tests folder
+cd ${WORKING_DIR}/clients/js/web3js2
 
 pnpm install && pnpm format

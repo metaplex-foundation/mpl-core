@@ -9,6 +9,11 @@ WORKING_DIR=$(pwd)
 ARGS=$*
 
 # js client tests folder
-cd ${WORKING_DIR}/clients/js
+cd ${WORKING_DIR}/clients/js/umi
+
+pnpm install && pnpm build && pnpm test ${ARGS}
+
+# js web3js2 client tests folder
+cd ${WORKING_DIR}/clients/js/web3js2
 
 pnpm install && pnpm build && pnpm test ${ARGS}

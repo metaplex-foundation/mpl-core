@@ -315,20 +315,20 @@ const prettier = require(path.join(clientDir, "js", "web3js2", ".prettierrc.json
 const renderOptions = {
   prettierOptions: prettier,
   internalNodes: [],
-  customAccountData: [
-    {
-      name: "assetV1",
-      extract: true,
-    },
-    {
-      name: "collectionV1",
-      extract: true,
-    },
-    {
-      name: "pluginRegistryV1",
-      extract: true,
-    },
-  ],
+  // customAccountData: [
+  //   {
+  //     name: "assetV1",
+  //     extract: true,
+  //   },
+  //   {
+  //     name: "collectionV1",
+  //     extract: true,
+  //   },
+  //   {
+  //     name: "pluginRegistryV1",
+  //     extract: true,
+  //   },
+  // ],
 };
 
 // render the web3js2 client
