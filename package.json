@@ -9,7 +9,7 @@
     "clients:js:test": "./configs/scripts/client/test-js.sh",
     "generate": "pnpm generate:idls && pnpm generate:clients",
     "generate:idls": "node ./configs/shank.cjs",
-    "generate:clients": "node ./configs/kinobi.cjs",
+    "generate:clients": "node ./configs/kinobi.cjs && node ./configs/codama.cjs",
     "validator": "CI=1 amman start --config ./configs/validator.cjs",
     "validator:debug": "amman start --config ./configs/validator.cjs",
     "validator:logs": "CI=1 amman logs",
@@ -20,6 +20,9 @@
     "prepare": "husky"
   },
   "devDependencies": {
+    "@codama/nodes-from-anchor": "^1.1.8",
+    "@codama/renderers": "^1.0.16",
+    "codama": "^1.2.8",
     "@metaplex-foundation/amman": "^0.12.1",
     "@metaplex-foundation/kinobi": "0.18.8-alpha.0",
     "@metaplex-foundation/shank-js": "^0.1.7",

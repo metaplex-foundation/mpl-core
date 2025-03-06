@@ -284,8 +284,8 @@ kinobi.update(
 )
 
 // Render JavaScript.
-const jsDir = path.join(clientDir, "js", "src", "generated");
-const prettier = require(path.join(clientDir, "js", ".prettierrc.json"));
+const jsDir = path.join(clientDir, "js", "umi", "src", "generated");
+const prettier = require(path.join(clientDir, "js", "umi", ".prettierrc.json"));
 kinobi.accept(k.renderJavaScriptVisitor(jsDir, {
   prettier,
   internalNodes: [],
