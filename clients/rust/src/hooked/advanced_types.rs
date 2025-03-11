@@ -8,11 +8,12 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, AppData, Attributes, Autograph, BurnDelegate, DataSection, Edition,
-        ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate,
-        ImmutableMetadata, Key, LifecycleHook, LinkedAppData, LinkedLifecycleHook, MasterEdition,
-        Oracle, PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate,
-        PluginAuthority, Royalties, TransferDelegate, UpdateDelegate, VerifiedCreators,
+        AddBlocker, AppData, Attributes, Autograph, BubblegumV1, BurnDelegate, DataSection,
+        Edition, ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey,
+        FreezeDelegate, ImmutableMetadata, Key, LifecycleHook, LinkedAppData, LinkedLifecycleHook,
+        MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
+        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
+        VerifiedCreators,
     },
 };
 
@@ -160,6 +161,12 @@ pub struct AutographPlugin {
     pub autograph: Autograph,
 }
 
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct BubblegumV1Plugin {
+    pub base: BasePlugin,
+    pub bubblegum_v1: BubblegumV1,
+}
+
 #[derive(Debug, Default)]
 pub struct PluginsList {
     pub royalties: Option<RoyaltiesPlugin>,
@@ -177,6 +184,7 @@ pub struct PluginsList {
     pub immutable_metadata: Option<ImmutableMetadataPlugin>,
     pub verified_creators: Option<VerifiedCreatorsPlugin>,
     pub autograph: Option<AutographPlugin>,
+    pub bubblegum_v1: Option<BubblegumV1Plugin>,
 }
 
 #[derive(Debug, Default)]

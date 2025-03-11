@@ -2081,6 +2081,39 @@
         "type": "u8",
         "value": 31
       }
+    },
+    {
+      "name": "UpdateCollectionInfoV1",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "bubblegumSigner",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Bubblegum PDA signer"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updateCollectionInfoV1Args",
+          "type": {
+            "defined": "UpdateCollectionInfoV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 32
+      }
     }
   ],
   "accounts": [
@@ -3047,6 +3080,13 @@
       }
     },
     {
+      "name": "BubblegumV1",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
       "name": "Edition",
       "type": {
         "kind": "struct",
@@ -3663,6 +3703,24 @@
       }
     },
     {
+      "name": "UpdateCollectionInfoV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "updateType",
+            "type": {
+              "defined": "UpdateType"
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
       "name": "UpdateExternalPluginAdapterV1Args",
       "type": {
         "kind": "struct",
@@ -3984,6 +4042,14 @@
                 "defined": "Autograph"
               }
             ]
+          },
+          {
+            "name": "BubblegumV1",
+            "fields": [
+              {
+                "defined": "BubblegumV1"
+              }
+            ]
           }
         ]
       }
@@ -4037,6 +4103,9 @@
           },
           {
             "name": "Autograph"
+          },
+          {
+            "name": "BubblegumV1"
           }
         ]
       }
@@ -4610,6 +4679,23 @@
       }
     },
     {
+      "name": "UpdateType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Mint"
+          },
+          {
+            "name": "Add"
+          },
+          {
+            "name": "Remove"
+          }
+        ]
+      }
+    },
+    {
       "name": "DataState",
       "type": {
         "kind": "enum",
@@ -4949,6 +5035,11 @@
       "code": 49,
       "name": "InvalidExecutePda",
       "msg": "Invalid Signing PDA for Asset or Collection Execute"
+    },
+    {
+      "code": 50,
+      "name": "BlockedByBubblegumV1",
+      "msg": "Bubblegum V1 Plugin limits other plugins"
     }
   ],
   "metadata": {

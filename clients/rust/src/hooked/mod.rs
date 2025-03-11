@@ -34,6 +34,8 @@ use solana_program::account_info::AccountInfo;
 impl From<&Plugin> for PluginType {
     fn from(plugin: &Plugin) -> Self {
         match plugin {
+            Plugin::AddBlocker(_) => PluginType::AddBlocker,
+            Plugin::ImmutableMetadata(_) => PluginType::ImmutableMetadata,
             Plugin::Royalties(_) => PluginType::Royalties,
             Plugin::FreezeDelegate(_) => PluginType::FreezeDelegate,
             Plugin::BurnDelegate(_) => PluginType::BurnDelegate,
@@ -45,10 +47,9 @@ impl From<&Plugin> for PluginType {
             Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
             Plugin::Edition(_) => PluginType::Edition,
             Plugin::MasterEdition(_) => PluginType::MasterEdition,
-            Plugin::AddBlocker(_) => PluginType::AddBlocker,
-            Plugin::ImmutableMetadata(_) => PluginType::ImmutableMetadata,
             Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
             Plugin::Autograph(_) => PluginType::Autograph,
+            Plugin::BubblegumV1(_) => PluginType::BubblegumV1,
         }
     }
 }

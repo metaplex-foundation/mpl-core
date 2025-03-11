@@ -10,9 +10,9 @@ use crate::processor::{
     ExecuteV1Args, RemoveCollectionExternalPluginAdapterV1Args, RemoveCollectionPluginV1Args,
     RemoveExternalPluginAdapterV1Args, RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args,
     RevokePluginAuthorityV1Args, TransferV1Args, UpdateCollectionExternalPluginAdapterV1Args,
-    UpdateCollectionPluginV1Args, UpdateCollectionV1Args, UpdateExternalPluginAdapterV1Args,
-    UpdatePluginV1Args, UpdateV1Args, UpdateV2Args, WriteCollectionExternalPluginAdapterDataV1Args,
-    WriteExternalPluginAdapterDataV1Args,
+    UpdateCollectionInfoV1Args, UpdateCollectionPluginV1Args, UpdateCollectionV1Args,
+    UpdateExternalPluginAdapterV1Args, UpdatePluginV1Args, UpdateV1Args, UpdateV2Args,
+    WriteCollectionExternalPluginAdapterDataV1Args, WriteExternalPluginAdapterDataV1Args,
 };
 
 /// Instructions supported by the mpl-core program.
@@ -302,4 +302,9 @@ pub(crate) enum MplAssetInstruction {
     #[account(5, name="system_program", desc = "The system program")]
     #[account(6, name="program_id", desc = "The program id of the instruction")]
     ExecuteV1(ExecuteV1Args),
+
+    /// Update mpl-core collection info (can only be called by Bubblegum program).
+    #[account(0, writable, name="collection", desc = "The address of the asset")]
+    #[account(1, signer, name="bubblegum_signer", desc = "Bubblegum PDA signer")]
+    UpdateCollectionInfoV1(UpdateCollectionInfoV1Args),
 }

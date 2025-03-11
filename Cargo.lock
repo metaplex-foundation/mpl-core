@@ -2291,8 +2291,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "mpl-bubblegum"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a9eff5ae5cafd1acdf7e7c93359da1eec91dcaede318470d9f68b78e8b7469f4"
+dependencies = [
+ "borsh 0.10.3",
+ "kaigan",
+ "num-derive 0.3.3",
+ "num-traits",
+ "solana-program",
+ "thiserror",
+]
+
+[[package]]
 name = "mpl-core"
-version = "0.8.1-beta.1"
+version = "0.10.0-alpha.1"
 dependencies = [
  "anchor-lang",
  "assert_matches",
@@ -2319,6 +2333,7 @@ dependencies = [
  "borsh 0.10.3",
  "bytemuck",
  "modular-bitfield",
+ "mpl-bubblegum",
  "mpl-utils",
  "num-derive 0.3.3",
  "num-traits",

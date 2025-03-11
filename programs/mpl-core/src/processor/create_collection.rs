@@ -4,14 +4,15 @@ use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
     program_memory::sol_memcpy, rent::Rent, system_instruction, system_program, sysvar::Sysvar,
 };
+use std::collections::HashSet;
 
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateCollectionV2Accounts,
     plugins::{
         create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
-        initialize_plugin, CheckResult, ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair,
-        PluginType, PluginValidationContext, ValidationResult,
+        initialize_plugin, BubblegumV1, CheckResult, ExternalPluginAdapterInitInfo, Plugin,
+        PluginAuthorityPair, PluginType, PluginValidationContext, ValidationResult,
     },
     state::{Authority, CollectionV1, Key},
 };
@@ -111,6 +112,7 @@ pub(crate) fn process_create_collection<'a>(
 
     let mut approved = true;
     let mut force_approved = false;
+    let mut has_bubblegum_v1 = false;
     if let Some(plugins) = args.plugins {
         if !plugins.is_empty() {
             let (header_offset, mut plugin_header, mut plugin_registry) =
@@ -120,6 +122,20 @@ pub(crate) fn process_create_collection<'a>(
                     ctx.accounts.payer,
                     ctx.accounts.system_program,
                 )?;
+
+            // See if the new collection will have the Bubblegum V1 plugin.
+            has_bubblegum_v1 = plugins
+                .iter()
+                .any(|p| PluginType::from(&p.plugin) == PluginType::BubblegumV1);
+
+            // If the Bubblegum V1 plugin is present, only a limited set of other plugins is
+            // allowed on the collection.
+            let bubblegum_v1_allow_list: Option<HashSet<PluginType>> = if has_bubblegum_v1 {
+                Some(BubblegumV1::ALLOW_LIST.iter().cloned().collect())
+            } else {
+                None
+            };
+
             for plugin in &plugins {
                 // Cannot have owner-managed plugins on collection.
                 if plugin.plugin.manager() == Authority::Owner {
@@ -130,6 +146,14 @@ pub(crate) fn process_create_collection<'a>(
                 let plugin_type = PluginType::from(&plugin.plugin);
                 if plugin_type == PluginType::Edition {
                     return Err(MplCoreError::InvalidPlugin.into());
+                }
+
+                // Validate against the Bubblegum V1 allow list.
+                if let Some(allow_list) = &bubblegum_v1_allow_list {
+                    if plugin_type != PluginType::BubblegumV1 && !allow_list.contains(&plugin_type)
+                    {
+                        return Err(MplCoreError::BlockedByBubblegumV1.into());
+                    }
                 }
 
                 if PluginType::check_create(&plugin_type) != CheckResult::None {
@@ -154,9 +178,17 @@ pub(crate) fn process_create_collection<'a>(
                         _ => (),
                     };
                 }
+
+                // Bubblegum V1 plugin always has a fixed authority.
+                let authority = if plugin_type == PluginType::BubblegumV1 {
+                    plugin.plugin.manager()
+                } else {
+                    plugin.authority.unwrap_or(plugin.plugin.manager())
+                };
+
                 initialize_plugin::<CollectionV1>(
                     &plugin.plugin,
-                    &plugin.authority.unwrap_or(plugin.plugin.manager()),
+                    &authority,
                     header_offset,
                     &mut plugin_header,
                     &mut plugin_registry,
@@ -170,6 +202,10 @@ pub(crate) fn process_create_collection<'a>(
 
     if let Some(plugins) = args.external_plugin_adapters {
         if !plugins.is_empty() {
+            if has_bubblegum_v1 {
+                return Err(MplCoreError::BlockedByBubblegumV1.into());
+            }
+
             let (_, header_offset, mut plugin_header, mut plugin_registry) =
                 create_meta_idempotent::<CollectionV1>(
                     ctx.accounts.collection,
