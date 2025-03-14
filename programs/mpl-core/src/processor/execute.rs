@@ -64,6 +64,7 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
         AssetV1::validate_execute,
         CollectionV1::validate_execute,
         Plugin::validate_execute,
+        Plugin::side_effects_execute,
         None,
         None,
     )?;

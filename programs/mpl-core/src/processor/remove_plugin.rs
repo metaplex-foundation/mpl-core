@@ -73,6 +73,7 @@ pub(crate) fn remove_plugin<'a>(
         AssetV1::validate_remove_plugin,
         CollectionV1::validate_remove_plugin,
         Plugin::validate_remove_plugin,
+        Plugin::side_effects_remove_plugin,
         None,
         None,
     )?;

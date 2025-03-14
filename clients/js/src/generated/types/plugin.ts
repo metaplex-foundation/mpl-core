@@ -39,6 +39,8 @@ import {
   PermanentFreezeDelegateArgs,
   PermanentTransferDelegate,
   PermanentTransferDelegateArgs,
+  TransferCount,
+  TransferCountArgs,
   TransferDelegate,
   TransferDelegateArgs,
   UpdateDelegate,
@@ -57,6 +59,7 @@ import {
   getPermanentBurnDelegateSerializer,
   getPermanentFreezeDelegateSerializer,
   getPermanentTransferDelegateSerializer,
+  getTransferCountSerializer,
   getTransferDelegateSerializer,
   getUpdateDelegateSerializer,
   getVerifiedCreatorsSerializer,
@@ -77,7 +80,8 @@ export type Plugin =
   | { __kind: 'AddBlocker'; fields: [AddBlocker] }
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadata] }
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreators] }
-  | { __kind: 'Autograph'; fields: [Autograph] };
+  | { __kind: 'Autograph'; fields: [Autograph] }
+  | { __kind: 'TransferCount'; fields: [TransferCount] };
 
 export type PluginArgs =
   | { __kind: 'Royalties'; fields: [BaseRoyaltiesArgs] }
@@ -97,7 +101,8 @@ export type PluginArgs =
   | { __kind: 'AddBlocker'; fields: [AddBlockerArgs] }
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadataArgs] }
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreatorsArgs] }
-  | { __kind: 'Autograph'; fields: [AutographArgs] };
+  | { __kind: 'Autograph'; fields: [AutographArgs] }
+  | { __kind: 'TransferCount'; fields: [TransferCountArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -192,6 +197,12 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
           ['fields', tuple([getAutographSerializer()])],
         ]),
       ],
+      [
+        'TransferCount',
+        struct<GetDataEnumKindContent<Plugin, 'TransferCount'>>([
+          ['fields', tuple([getTransferCountSerializer()])],
+        ]),
+      ],
     ],
     { description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
@@ -261,6 +272,10 @@ export function plugin(
   kind: 'Autograph',
   data: GetDataEnumKindContent<PluginArgs, 'Autograph'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Autograph'>;
+export function plugin(
+  kind: 'TransferCount',
+  data: GetDataEnumKindContent<PluginArgs, 'TransferCount'>['fields']
+): GetDataEnumKind<PluginArgs, 'TransferCount'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any

@@ -1,6 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use modular_bitfield::{bitfield, specifiers::B29};
-use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
+use modular_bitfield::{bitfield, prelude::B3, specifiers::B29};
+use solana_program::{
+    account_info::AccountInfo, program_error::ProgramError, program_memory::sol_memcpy,
+    pubkey::Pubkey,
+};
 use std::collections::BTreeMap;
 
 use crate::{
@@ -15,16 +18,27 @@ use crate::{
 /// Lifecycle permissions
 /// Plugins use this field to indicate their permission to approve or deny
 /// a lifecycle action.
+#[bitfield(bits = 8)]
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
-pub enum CheckResult {
+pub struct CheckResult {
     /// A plugin is permitted to approve a lifecycle action.
-    CanApprove,
+    pub can_approve: bool,
     /// A plugin is permitted to reject a lifecycle action.
-    CanReject,
+    pub can_reject: bool,
     /// A plugin is not permitted to approve or reject a lifecycle action.
-    None,
+    pub none: bool,
     /// Certain plugins can force approve a lifecycle action.
-    CanForceApprove,
+    pub can_force_approve: bool,
+    /// A plugin has side effects that should be run.
+    pub side_effect: bool,
+    /// Remaining bits are reserved for future use.
+    pub reserved: B3,
+}
+
+impl Default for CheckResult {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 /// Lifecycle permissions for adapter, third party plugins.
@@ -82,16 +96,16 @@ impl PluginType {
     /// Check permissions for the add plugin lifecycle event.
     pub fn check_add_plugin(plugin_type: &PluginType) -> CheckResult {
         match plugin_type {
-            PluginType::AddBlocker => CheckResult::CanReject,
-            PluginType::Royalties => CheckResult::CanReject,
-            PluginType::UpdateDelegate => CheckResult::CanApprove,
-            PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
-            PluginType::PermanentTransferDelegate => CheckResult::CanReject,
-            PluginType::PermanentBurnDelegate => CheckResult::CanReject,
-            PluginType::Edition => CheckResult::CanReject,
-            PluginType::Autograph => CheckResult::CanReject,
-            PluginType::VerifiedCreators => CheckResult::CanReject,
-            _ => CheckResult::None,
+            PluginType::AddBlocker => CheckResult::new().with_can_reject(true),
+            PluginType::Royalties => CheckResult::new().with_can_reject(true),
+            PluginType::UpdateDelegate => CheckResult::new().with_can_approve(true),
+            PluginType::PermanentFreezeDelegate => CheckResult::new().with_can_reject(true),
+            PluginType::PermanentTransferDelegate => CheckResult::new().with_can_reject(true),
+            PluginType::PermanentBurnDelegate => CheckResult::new().with_can_reject(true),
+            PluginType::Edition => CheckResult::new().with_can_reject(true),
+            PluginType::Autograph => CheckResult::new().with_can_reject(true),
+            PluginType::VerifiedCreators => CheckResult::new().with_can_reject(true),
+            _ => CheckResult::new().with_none(true),
         }
     }
 
@@ -99,12 +113,12 @@ impl PluginType {
     pub fn check_remove_plugin(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            PluginType::UpdateDelegate => CheckResult::CanApprove,
-            PluginType::FreezeDelegate => CheckResult::CanReject,
-            PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
-            PluginType::Edition => CheckResult::CanReject,
+            PluginType::UpdateDelegate => CheckResult::new().with_can_approve(true),
+            PluginType::FreezeDelegate => CheckResult::new().with_can_reject(true),
+            PluginType::PermanentFreezeDelegate => CheckResult::new().with_can_reject(true),
+            PluginType::Edition => CheckResult::new().with_can_reject(true),
             // We default to CanReject because Plugins with Authority::None cannot be removed.
-            _ => CheckResult::CanReject,
+            _ => CheckResult::new().with_can_reject(true),
         }
     }
 
@@ -112,7 +126,7 @@ impl PluginType {
     pub fn check_update_plugin(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            _ => CheckResult::CanApprove,
+            _ => CheckResult::new().with_can_approve(true),
         }
     }
 
@@ -120,7 +134,7 @@ impl PluginType {
     pub fn check_approve_plugin_authority(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            _ => CheckResult::CanApprove,
+            _ => CheckResult::new().with_can_approve(true),
         }
     }
 
@@ -130,7 +144,7 @@ impl PluginType {
         match plugin_type {
             //TODO: This isn't very efficient because it requires every plugin to be deserialized
             // to check if it's the plugin whose authority is being revoked.
-            _ => CheckResult::CanApprove,
+            _ => CheckResult::new().with_can_approve(true),
         }
     }
 
@@ -138,11 +152,11 @@ impl PluginType {
     pub fn check_create(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            PluginType::Royalties => CheckResult::CanReject,
-            PluginType::UpdateDelegate => CheckResult::CanApprove,
-            PluginType::Autograph => CheckResult::CanReject,
-            PluginType::VerifiedCreators => CheckResult::CanReject,
-            _ => CheckResult::None,
+            PluginType::Royalties => CheckResult::new().with_can_reject(true),
+            PluginType::UpdateDelegate => CheckResult::new().with_can_approve(true),
+            PluginType::Autograph => CheckResult::new().with_can_reject(true),
+            PluginType::VerifiedCreators => CheckResult::new().with_can_reject(true),
+            _ => CheckResult::new().with_none(true),
         }
     }
 
@@ -150,32 +164,33 @@ impl PluginType {
     pub fn check_update(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            PluginType::ImmutableMetadata => CheckResult::CanReject,
-            PluginType::UpdateDelegate => CheckResult::CanApprove,
-            _ => CheckResult::None,
+            PluginType::ImmutableMetadata => CheckResult::new().with_can_reject(true),
+            PluginType::UpdateDelegate => CheckResult::new().with_can_approve(true),
+            _ => CheckResult::new().with_none(true),
         }
     }
 
     /// Check if a plugin is permitted to approve or deny a burn action.
     pub fn check_burn(plugin_type: &PluginType) -> CheckResult {
         match plugin_type {
-            PluginType::FreezeDelegate => CheckResult::CanReject,
-            PluginType::BurnDelegate => CheckResult::CanApprove,
-            PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
-            PluginType::PermanentBurnDelegate => CheckResult::CanApprove,
-            _ => CheckResult::None,
+            PluginType::FreezeDelegate => CheckResult::new().with_can_reject(true),
+            PluginType::BurnDelegate => CheckResult::new().with_can_approve(true),
+            PluginType::PermanentFreezeDelegate => CheckResult::new().with_can_reject(true),
+            PluginType::PermanentBurnDelegate => CheckResult::new().with_can_approve(true),
+            _ => CheckResult::new().with_none(true),
         }
     }
 
     /// Check if a plugin is permitted to approve or deny a transfer action.
     pub fn check_transfer(plugin_type: &PluginType) -> CheckResult {
         match plugin_type {
-            PluginType::Royalties => CheckResult::CanReject,
-            PluginType::FreezeDelegate => CheckResult::CanReject,
-            PluginType::TransferDelegate => CheckResult::CanApprove,
-            PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
-            PluginType::PermanentTransferDelegate => CheckResult::CanApprove,
-            _ => CheckResult::None,
+            PluginType::Royalties => CheckResult::new().with_can_reject(true),
+            PluginType::FreezeDelegate => CheckResult::new().with_can_reject(true),
+            PluginType::TransferDelegate => CheckResult::new().with_can_approve(true),
+            PluginType::PermanentFreezeDelegate => CheckResult::new().with_can_reject(true),
+            PluginType::PermanentTransferDelegate => CheckResult::new().with_can_approve(true),
+            PluginType::TransferCount => CheckResult::new().with_none(true).with_side_effect(true),
+            _ => CheckResult::new().with_none(true),
         }
     }
 
@@ -183,7 +198,7 @@ impl PluginType {
     pub fn check_compress(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            _ => CheckResult::None,
+            _ => CheckResult::new().with_none(true),
         }
     }
 
@@ -191,7 +206,7 @@ impl PluginType {
     pub fn check_decompress(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            _ => CheckResult::None,
+            _ => CheckResult::new().with_none(true),
         }
     }
 
@@ -199,7 +214,7 @@ impl PluginType {
     pub fn check_execute(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            _ => CheckResult::None,
+            _ => CheckResult::new().with_none(true),
         }
     }
 
@@ -207,7 +222,7 @@ impl PluginType {
     pub fn check_add_external_plugin_adapter(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            _ => CheckResult::None,
+            _ => CheckResult::new().with_none(true),
         }
     }
 
@@ -215,7 +230,7 @@ impl PluginType {
     pub fn check_remove_external_plugin_adapter(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            _ => CheckResult::None,
+            _ => CheckResult::new().with_none(true),
         }
     }
 
@@ -223,7 +238,7 @@ impl PluginType {
     pub fn check_update_external_plugin_adapter(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
-            _ => CheckResult::None,
+            _ => CheckResult::new().with_none(true),
         }
     }
 }
@@ -420,6 +435,140 @@ impl Plugin {
     ) -> Result<ValidationResult, ProgramError> {
         plugin.inner().validate_remove_external_plugin_adapter(ctx)
     }
+
+    /// Process side effects for the add plugin lifecycle action.
+    /// This gets called on all existing plugins when a new plugin is added.
+    pub(crate) fn side_effects_add_plugin(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_add_plugin(ctx)
+    }
+
+    /// Process side effects for the remove plugin lifecycle action.
+    /// This gets called on all existing plugins when the target plugin is removed.
+    pub(crate) fn side_effects_remove_plugin(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_remove_plugin(ctx)
+    }
+
+    /// Process side effects for the add plugin lifecycle action.
+    /// This gets called on all existing plugins when a new external plugin is added.
+    pub(crate) fn side_effects_add_external_plugin_adapter(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_add_external_plugin_adapter(ctx)
+    }
+
+    /// Process side effects for the remove plugin lifecycle action.
+    /// This gets called on all existing plugins when a new external plugin is removed.
+    pub(crate) fn side_effects_remove_external_plugin_adapter(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin
+            .inner()
+            .side_effects_remove_external_plugin_adapter(ctx)
+    }
+
+    /// Process side effects for the approve plugin authority lifecycle action.
+    pub(crate) fn side_effects_approve_plugin_authority(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_approve_plugin_authority(ctx)
+    }
+
+    /// Process side effects for the revoke plugin authority lifecycle action.
+    pub(crate) fn side_effects_revoke_plugin_authority(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_revoke_plugin_authority(ctx)
+    }
+
+    /// Process side effects for the create lifecycle action.
+    /// This ONLY gets called to side_effects the self plugin
+    pub(crate) fn side_effects_create(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_create(ctx)
+    }
+
+    /// Process side effects for the update lifecycle action.
+    /// This gets called on all existing plugins when an asset or collection is updated.
+    pub(crate) fn side_effects_update(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_update(ctx)
+    }
+
+    /// Process side effects for the update_plugin lifecycle action.
+    /// This gets called on all existing plugins when a plugin is updated.
+    pub(crate) fn side_effects_update_plugin(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_update_plugin(ctx)
+    }
+
+    /// Process side effects for the burn lifecycle action.
+    /// This gets called on all existing plugins when an asset is burned.
+    pub(crate) fn side_effects_burn(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_burn(ctx)
+    }
+
+    /// Process side effects for the transfer lifecycle action.
+    /// This gets called on all existing plugins when an asset is transferred.
+    pub(crate) fn side_effects_transfer(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_transfer(ctx)
+    }
+
+    /// Process side effects for the compress lifecycle action.
+    pub(crate) fn side_effects_compress(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_compress(ctx)
+    }
+
+    /// Process side effects for the decompress lifecycle action.
+    pub(crate) fn side_effects_decompress(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_decompress(ctx)
+    }
+
+    /// Process side effects for the execute lifecycle action.
+    pub(crate) fn side_effects_execute(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin.inner().side_effects_execute(ctx)
+    }
+
+    /// Process side effects for the update_plugin lifecycle action.
+    #[allow(unused)]
+    pub(crate) fn side_effects_update_external_plugin_adapter(
+        plugin: &Plugin,
+        ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        plugin
+            .inner()
+            .side_effects_update_external_plugin_adapter(ctx)
+    }
 }
 
 /// Lifecycle validations
@@ -523,6 +672,10 @@ pub(crate) struct PluginValidationContext<'a, 'b> {
     /// The authority of the target plugin.
     pub target_external_plugin_authority: Option<&'b Authority>,
 }
+
+#[allow(dead_code)]
+/// The required context for a plugin validation.
+pub(crate) struct PluginSideEffectContext {}
 
 /// Plugin validation trait which is implemented by each plugin.
 pub(crate) trait PluginValidation {
@@ -654,6 +807,124 @@ pub(crate) trait PluginValidation {
     ) -> Result<ValidationResult, ProgramError> {
         abstain!()
     }
+
+    /// Process side effects for the add plugin lifecycle action.
+    /// This gets called on all existing plugins when a new plugin is added.
+    fn side_effects_add_plugin(
+        &self,
+        _ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the remove plugin lifecycle action.
+    /// This gets called on all existing plugins when the target plugin is removed.
+    fn side_effects_remove_plugin(
+        &self,
+        _ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the add plugin lifecycle action.
+    /// This gets called on all existing plugins when a new external plugin is added.
+    fn side_effects_add_external_plugin_adapter(
+        &self,
+        _ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the remove plugin lifecycle action.
+    /// This gets called on all existing plugins when a new external plugin is removed.
+    fn side_effects_remove_external_plugin_adapter(
+        &self,
+        _ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the approve plugin authority lifecycle action.
+    fn side_effects_approve_plugin_authority(
+        &self,
+        _ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the revoke plugin authority lifecycle action.
+    fn side_effects_revoke_plugin_authority(
+        &self,
+        _ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the create lifecycle action.
+    /// This ONLY gets called to side_effects the self plugin
+    fn side_effects_create(&self, _ctx: &PluginSideEffectContext) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the update lifecycle action.
+    /// This gets called on all existing plugins when an asset or collection is updated.
+    fn side_effects_update(&self, _ctx: &PluginSideEffectContext) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the update_plugin lifecycle action.
+    /// This gets called on all existing plugins when a plugin is updated.
+    fn side_effects_update_plugin(
+        &self,
+        _ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the burn lifecycle action.
+    /// This gets called on all existing plugins when an asset is burned.
+    fn side_effects_burn(&self, _ctx: &PluginSideEffectContext) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the transfer lifecycle action.
+    /// This gets called on all existing plugins when an asset is transferred.
+    fn side_effects_transfer(
+        &self,
+        _ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the compress lifecycle action.
+    fn side_effects_compress(
+        &self,
+        _ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the decompress lifecycle action.
+    fn side_effects_decompress(
+        &self,
+        _ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the execute lifecycle action.
+    fn side_effects_execute(&self, _ctx: &PluginSideEffectContext) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
+
+    /// Process side effects for the update_plugin lifecycle action.
+    #[allow(unused)]
+    fn side_effects_update_external_plugin_adapter(
+        &self,
+        _ctx: &PluginSideEffectContext,
+    ) -> Result<Plugin, ProgramError> {
+        unreachable!()
+    }
 }
 
 /// This function iterates through all plugin checks passed in and performs the validation
@@ -683,12 +954,7 @@ pub(crate) fn validate_plugin_checks<'a>(
     let mut approved = false;
     let mut rejected = false;
     for (check_key, check_result, registry_record) in checks.values() {
-        if *check_key == key
-            && matches!(
-                check_result,
-                CheckResult::CanApprove | CheckResult::CanReject
-            )
-        {
+        if *check_key == key && (check_result.can_approve() || check_result.can_reject()) {
             let account = match key {
                 Key::CollectionV1 => collection.ok_or(MplCoreError::InvalidCollection)?,
                 Key::AssetV1 => asset.ok_or(MplCoreError::InvalidAsset)?,
@@ -816,6 +1082,38 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
     } else {
         abstain!()
     }
+}
+
+/// This function iterates through all plugin checks passed in and performs the validation
+/// by deserializing and calling validate on the plugin.
+/// The STRONGEST result is returned.
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+pub(crate) fn run_plugin_side_effects<'a>(
+    checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
+    asset: Option<&'a AccountInfo<'a>>,
+    collection: Option<&'a AccountInfo<'a>>,
+    plugin_side_effect_fp: fn(&Plugin, &PluginSideEffectContext) -> Result<Plugin, ProgramError>,
+) -> Result<(), ProgramError> {
+    for (check_key, check_result, registry_record) in checks.values() {
+        if check_result.side_effect() {
+            let account = match check_key {
+                Key::CollectionV1 => collection.ok_or(MplCoreError::InvalidCollection)?,
+                Key::AssetV1 => asset.ok_or(MplCoreError::InvalidAsset)?,
+                _ => unreachable!(),
+            };
+
+            let side_effect_ctx = PluginSideEffectContext {};
+
+            let new_plugin = plugin_side_effect_fp(
+                &Plugin::load(account, registry_record.offset)?,
+                &side_effect_ctx,
+            )?;
+
+            new_plugin.save(account, registry_record.offset)?;
+        }
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

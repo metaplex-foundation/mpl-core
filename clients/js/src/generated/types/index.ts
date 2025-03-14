@@ -66,6 +66,7 @@ export * from './plugin';
 export * from './pluginAuthorityPair';
 export * from './pluginType';
 export * from './registryRecord';
+export * from './transferCount';
 export * from './transferDelegate';
 export * from './updateDelegate';
 export * from './validationResult';
