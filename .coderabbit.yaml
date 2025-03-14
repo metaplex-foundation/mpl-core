@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: false
+  path_instructions:
+    [
+      {
+        path: "programs/mpl-core/src/processor/*",
+        instructions: "Make sure the owner is checked on all accounts somehow",
+      },
+      {
+        path: "programs/mpl-core/*",
+        instructions: "Carefully consider performance implications and make sure there are no performance inefficiencies",
+      },
+      {
+        path: "**/*.rs",
+        instructions: "Make duplicated logic between the rust client and program are consistent",
+      },
+    ]
+  auto_review:
+    enabled: true
+    drafts: false
+chat:
+  auto_reply: true
