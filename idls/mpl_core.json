@@ -3080,7 +3080,7 @@
       }
     },
     {
-      "name": "BubblegumV1",
+      "name": "BubblegumV2",
       "type": {
         "kind": "struct",
         "fields": []
@@ -4044,10 +4044,10 @@
             ]
           },
           {
-            "name": "BubblegumV1",
+            "name": "BubblegumV2",
             "fields": [
               {
-                "defined": "BubblegumV1"
+                "defined": "BubblegumV2"
               }
             ]
           }
@@ -4105,7 +4105,7 @@
             "name": "Autograph"
           },
           {
-            "name": "BubblegumV1"
+            "name": "BubblegumV2"
           }
         ]
       }
@@ -5038,8 +5038,8 @@
     },
     {
       "code": 50,
-      "name": "BlockedByBubblegumV1",
-      "msg": "Bubblegum V1 Plugin limits other plugins"
+      "name": "BlockedByBubblegumV2",
+      "msg": "Bubblegum V2 Plugin limits other plugins"
     }
   ],
   "metadata": {

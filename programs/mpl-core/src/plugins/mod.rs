@@ -60,8 +60,8 @@ pub enum Plugin {
     VerifiedCreators(VerifiedCreators),
     /// Autograph plugin allows anybody to add their signature to the asset with an optional message
     Autograph(Autograph),
-    /// The Bubblegum V1 plugin allows a Core collection to contain Compressed NFTs (cNFTs) from the Bubblegum program.
-    BubblegumV1(BubblegumV1),
+    /// The Bubblegum V2 plugin allows a Core collection to contain Compressed NFTs (cNFTs) from the Bubblegum program.
+    BubblegumV2(BubblegumV2),
 }
 
 impl Plugin {
@@ -105,7 +105,7 @@ impl Plugin {
             Plugin::ImmutableMetadata(inner) => inner,
             Plugin::VerifiedCreators(inner) => inner,
             Plugin::Autograph(inner) => inner,
-            Plugin::BubblegumV1(inner) => inner,
+            Plugin::BubblegumV2(inner) => inner,
         }
     }
 }
@@ -137,7 +137,7 @@ impl DataBlob for Plugin {
                 Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.len(),
                 Plugin::VerifiedCreators(verified_creators) => verified_creators.len(),
                 Plugin::Autograph(autograph) => autograph.len(),
-                Plugin::BubblegumV1(bubblegum_v1) => bubblegum_v1.len(),
+                Plugin::BubblegumV2(bubblegum_v2) => bubblegum_v2.len(),
             }
     }
 }
@@ -190,8 +190,8 @@ pub enum PluginType {
     VerifiedCreators,
     /// Autograph plugin.
     Autograph,
-    /// Bubblegum V1 plugin.
-    BubblegumV1,
+    /// Bubblegum V2 plugin.
+    BubblegumV2,
 }
 
 impl PluginType {
@@ -230,7 +230,7 @@ impl From<&Plugin> for PluginType {
             Plugin::MasterEdition(_) => PluginType::MasterEdition,
             Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
             Plugin::Autograph(_) => PluginType::Autograph,
-            Plugin::BubblegumV1(_) => PluginType::BubblegumV1,
+            Plugin::BubblegumV2(_) => PluginType::BubblegumV2,
         }
     }
 }
@@ -254,7 +254,7 @@ impl PluginType {
             PluginType::MasterEdition => Authority::UpdateAuthority,
             PluginType::VerifiedCreators => Authority::UpdateAuthority,
             PluginType::Autograph => Authority::Owner,
-            PluginType::BubblegumV1 => Authority::Address {
+            PluginType::BubblegumV2 => Authority::Address {
                 address: mpl_bubblegum::ID,
             },
         }
@@ -307,7 +307,7 @@ mod test {
             Plugin::ImmutableMetadata(ImmutableMetadata {}),
             Plugin::VerifiedCreators(VerifiedCreators { signatures: vec![] }),
             Plugin::Autograph(Autograph { signatures: vec![] }),
-            Plugin::BubblegumV1(BubblegumV1 {}),
+            Plugin::BubblegumV2(BubblegumV2 {}),
         ];
 
         assert_eq!(
@@ -423,7 +423,7 @@ mod test {
                     message: "test".to_string(),
                 }],
             })],
-            vec![Plugin::BubblegumV1(BubblegumV1 {})],
+            vec![Plugin::BubblegumV2(BubblegumV2 {})],
         ];
 
         assert_eq!(

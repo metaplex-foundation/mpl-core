@@ -25,7 +25,7 @@ import {
   VerifiedCreatorsArgs,
   Autograph,
   VerifiedCreators,
-  BubblegumV1,
+  BubblegumV2,
 } from '../generated';
 import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
 import { PluginAuthority } from './pluginAuthority';
@@ -91,7 +91,7 @@ export type CreatePluginArgs =
       type: 'AddBlocker';
     }
   | {
-      type: 'BubblegumV1';
+      type: 'BubblegumV2';
     };
 
 export type AuthorityArgsV2 = {
@@ -112,7 +112,7 @@ export type CreateOnlyPluginArgsV2 =
       type: 'Edition';
     } & EditionArgs)
   | {
-      type: 'BubblegumV1';
+      type: 'BubblegumV2';
     };
 
 export type OwnerManagedPluginArgsV2 =
@@ -188,7 +188,7 @@ export type AddBlockerPlugin = BasePlugin & AddBlocker;
 export type ImmutableMetadataPlugin = BasePlugin & ImmutableMetadata;
 export type VerifiedCreatorsPlugin = BasePlugin & VerifiedCreators;
 export type AutographPlugin = BasePlugin & Autograph;
-export type BubblegumV1Plugin = BasePlugin & BubblegumV1;
+export type BubblegumV2Plugin = BasePlugin & BubblegumV2;
 
 export type CommonPluginsList = {
   attributes?: AttributesPlugin;
@@ -212,7 +212,7 @@ export type AssetPluginsList = {
 
 export type CollectionPluginsList = {
   masterEdition?: MasterEditionPlugin;
-  bubblegumV1?: BubblegumV1Plugin;
+  bubblegumV2?: BubblegumV2Plugin;
 } & CommonPluginsList;
 
 export type PluginsList = AssetPluginsList & CollectionPluginsList;

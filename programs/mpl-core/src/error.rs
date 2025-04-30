@@ -209,9 +209,9 @@ pub enum MplCoreError {
     #[error("Invalid Signing PDA for Asset or Collection Execute")]
     InvalidExecutePda,
 
-    /// 50 - Bubblegum V1 Plugin limits other plugins
-    #[error("Bubblegum V1 Plugin limits other plugins")]
-    BlockedByBubblegumV1,
+    /// 50 - Bubblegum V2 Plugin limits other plugins
+    #[error("Bubblegum V2 Plugin limits other plugins")]
+    BlockedByBubblegumV2,
 }
 
 impl PrintProgramError for MplCoreError {

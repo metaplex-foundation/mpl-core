@@ -25,8 +25,8 @@ import {
   BaseMasterEditionArgs,
   BaseRoyalties,
   BaseRoyaltiesArgs,
-  BubblegumV1,
-  BubblegumV1Args,
+  BubblegumV2,
+  BubblegumV2Args,
   BurnDelegate,
   BurnDelegateArgs,
   Edition,
@@ -52,7 +52,7 @@ import {
   getAutographSerializer,
   getBaseMasterEditionSerializer,
   getBaseRoyaltiesSerializer,
-  getBubblegumV1Serializer,
+  getBubblegumV2Serializer,
   getBurnDelegateSerializer,
   getEditionSerializer,
   getFreezeDelegateSerializer,
@@ -81,7 +81,7 @@ export type Plugin =
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadata] }
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreators] }
   | { __kind: 'Autograph'; fields: [Autograph] }
-  | { __kind: 'BubblegumV1'; fields: [BubblegumV1] };
+  | { __kind: 'BubblegumV2'; fields: [BubblegumV2] };
 
 export type PluginArgs =
   | { __kind: 'Royalties'; fields: [BaseRoyaltiesArgs] }
@@ -102,7 +102,7 @@ export type PluginArgs =
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadataArgs] }
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreatorsArgs] }
   | { __kind: 'Autograph'; fields: [AutographArgs] }
-  | { __kind: 'BubblegumV1'; fields: [BubblegumV1Args] };
+  | { __kind: 'BubblegumV2'; fields: [BubblegumV2Args] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -198,9 +198,9 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
         ]),
       ],
       [
-        'BubblegumV1',
-        struct<GetDataEnumKindContent<Plugin, 'BubblegumV1'>>([
-          ['fields', tuple([getBubblegumV1Serializer()])],
+        'BubblegumV2',
+        struct<GetDataEnumKindContent<Plugin, 'BubblegumV2'>>([
+          ['fields', tuple([getBubblegumV2Serializer()])],
         ]),
       ],
     ],
@@ -273,9 +273,9 @@ export function plugin(
   data: GetDataEnumKindContent<PluginArgs, 'Autograph'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Autograph'>;
 export function plugin(
-  kind: 'BubblegumV1',
-  data: GetDataEnumKindContent<PluginArgs, 'BubblegumV1'>['fields']
-): GetDataEnumKind<PluginArgs, 'BubblegumV1'>;
+  kind: 'BubblegumV2',
+  data: GetDataEnumKindContent<PluginArgs, 'BubblegumV2'>['fields']
+): GetDataEnumKind<PluginArgs, 'BubblegumV2'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any

@@ -8,16 +8,16 @@
 
 import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
 
-export type BubblegumV1 = {};
+export type BubblegumV2 = {};
 
-export type BubblegumV1Args = BubblegumV1;
+export type BubblegumV2Args = BubblegumV2;
 
-export function getBubblegumV1Serializer(): Serializer<
-  BubblegumV1Args,
-  BubblegumV1
+export function getBubblegumV2Serializer(): Serializer<
+  BubblegumV2Args,
+  BubblegumV2
 > {
-  return struct<BubblegumV1>([], { description: 'BubblegumV1' }) as Serializer<
-    BubblegumV1Args,
-    BubblegumV1
+  return struct<BubblegumV2>([], { description: 'BubblegumV2' }) as Serializer<
+    BubblegumV2Args,
+    BubblegumV2
   >;
 }

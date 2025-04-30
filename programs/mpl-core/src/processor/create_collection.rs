@@ -11,7 +11,7 @@ use crate::{
     instruction::accounts::CreateCollectionV2Accounts,
     plugins::{
         create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
-        initialize_plugin, BubblegumV1, CheckResult, ExternalPluginAdapterInitInfo, Plugin,
+        initialize_plugin, BubblegumV2, CheckResult, ExternalPluginAdapterInitInfo, Plugin,
         PluginAuthorityPair, PluginType, PluginValidationContext, ValidationResult,
     },
     state::{Authority, CollectionV1, Key},
@@ -112,7 +112,7 @@ pub(crate) fn process_create_collection<'a>(
 
     let mut approved = true;
     let mut force_approved = false;
-    let mut has_bubblegum_v1 = false;
+    let mut has_bubblegum_v2 = false;
     if let Some(plugins) = args.plugins {
         if !plugins.is_empty() {
             let (header_offset, mut plugin_header, mut plugin_registry) =
@@ -123,15 +123,15 @@ pub(crate) fn process_create_collection<'a>(
                     ctx.accounts.system_program,
                 )?;
 
-            // See if the new collection will have the Bubblegum V1 plugin.
-            has_bubblegum_v1 = plugins
+            // See if the new collection will have the Bubblegum V2 plugin.
+            has_bubblegum_v2 = plugins
                 .iter()
-                .any(|p| PluginType::from(&p.plugin) == PluginType::BubblegumV1);
+                .any(|p| PluginType::from(&p.plugin) == PluginType::BubblegumV2);
 
-            // If the Bubblegum V1 plugin is present, only a limited set of other plugins is
+            // If the Bubblegum V2 plugin is present, only a limited set of other plugins is
             // allowed on the collection.
-            let bubblegum_v1_allow_list: Option<HashSet<PluginType>> = if has_bubblegum_v1 {
-                Some(BubblegumV1::ALLOW_LIST.iter().cloned().collect())
+            let bubblegum_v2_allow_list: Option<HashSet<PluginType>> = if has_bubblegum_v2 {
+                Some(BubblegumV2::ALLOW_LIST.iter().cloned().collect())
             } else {
                 None
             };
@@ -148,11 +148,11 @@ pub(crate) fn process_create_collection<'a>(
                     return Err(MplCoreError::InvalidPlugin.into());
                 }
 
-                // Validate against the Bubblegum V1 allow list.
-                if let Some(allow_list) = &bubblegum_v1_allow_list {
-                    if plugin_type != PluginType::BubblegumV1 && !allow_list.contains(&plugin_type)
+                // Validate against the Bubblegum V2 allow list.
+                if let Some(allow_list) = &bubblegum_v2_allow_list {
+                    if plugin_type != PluginType::BubblegumV2 && !allow_list.contains(&plugin_type)
                     {
-                        return Err(MplCoreError::BlockedByBubblegumV1.into());
+                        return Err(MplCoreError::BlockedByBubblegumV2.into());
                     }
                 }
 
@@ -179,8 +179,8 @@ pub(crate) fn process_create_collection<'a>(
                     };
                 }
 
-                // Bubblegum V1 plugin always has a fixed authority.
-                let authority = if plugin_type == PluginType::BubblegumV1 {
+                // Bubblegum V2 plugin always has a fixed authority.
+                let authority = if plugin_type == PluginType::BubblegumV2 {
                     plugin.plugin.manager()
                 } else {
                     plugin.authority.unwrap_or(plugin.plugin.manager())
@@ -202,8 +202,8 @@ pub(crate) fn process_create_collection<'a>(
 
     if let Some(plugins) = args.external_plugin_adapters {
         if !plugins.is_empty() {
-            if has_bubblegum_v1 {
-                return Err(MplCoreError::BlockedByBubblegumV1.into());
+            if has_bubblegum_v2 {
+                return Err(MplCoreError::BlockedByBubblegumV2.into());
             }
 
             let (_, header_offset, mut plugin_header, mut plugin_registry) =

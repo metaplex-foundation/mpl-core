@@ -18,12 +18,12 @@ import { createCollection } from '../../_setupSdk';
 const MPL_BUBBLEGUM_PROGRAM_ID =
   'BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY' as PublicKey<'BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY'>;
 
-test('it can create collection with BubblegumV1 plugin', async (t) => {
+test('it can create collection with BubblegumV2 plugin', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
       {
-        type: 'BubblegumV1',
+        type: 'BubblegumV2',
       },
     ],
   });
@@ -34,7 +34,7 @@ test('it can create collection with BubblegumV1 plugin', async (t) => {
     updateAuthority: umi.identity.publicKey,
     currentSize: 0,
     numMinted: 0,
-    bubblegumV1: {
+    bubblegumV2: {
       authority: {
         type: 'Address',
         address: MPL_BUBBLEGUM_PROGRAM_ID,
@@ -43,14 +43,14 @@ test('it can create collection with BubblegumV1 plugin', async (t) => {
   });
 });
 
-test('it cannot add BubblegumV1 to collection after creation', async (t) => {
+test('it cannot add BubblegumV2 to collection after creation', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi);
 
   const result = addCollectionPluginV1(umi, {
     collection: collection.publicKey,
     plugin: createPlugin({
-      type: 'BubblegumV1',
+      type: 'BubblegumV2',
     }),
   }).sendAndConfirm(umi);
 
@@ -62,16 +62,16 @@ test('it cannot add BubblegumV1 to collection after creation', async (t) => {
     ...DEFAULT_COLLECTION,
     collection: collection.publicKey,
     updateAuthority: umi.identity.publicKey,
-    bubblegumV1: undefined,
+    bubblegumV2: undefined,
   });
 });
 
-test('Update Authority cannot remove BubblegumV1 from collection', async (t) => {
+test('Update Authority cannot remove BubblegumV2 from collection', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
       {
-        type: 'BubblegumV1',
+        type: 'BubblegumV2',
       },
     ],
   });
@@ -82,7 +82,7 @@ test('Update Authority cannot remove BubblegumV1 from collection', async (t) => 
     updateAuthority: umi.identity.publicKey,
     currentSize: 0,
     numMinted: 0,
-    bubblegumV1: {
+    bubblegumV2: {
       authority: {
         type: 'Address',
         address: MPL_BUBBLEGUM_PROGRAM_ID,
@@ -92,7 +92,7 @@ test('Update Authority cannot remove BubblegumV1 from collection', async (t) => 
 
   const result = removeCollectionPluginV1(umi, {
     collection: collection.publicKey,
-    pluginType: PluginType.BubblegumV1,
+    pluginType: PluginType.BubblegumV2,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
@@ -105,7 +105,7 @@ test('Update Authority cannot remove BubblegumV1 from collection', async (t) => 
     updateAuthority: umi.identity.publicKey,
     currentSize: 0,
     numMinted: 0,
-    bubblegumV1: {
+    bubblegumV2: {
       authority: {
         type: 'Address',
         address: MPL_BUBBLEGUM_PROGRAM_ID,
@@ -114,12 +114,12 @@ test('Update Authority cannot remove BubblegumV1 from collection', async (t) => 
   });
 });
 
-test('it can create collection with BubblegumV1 plugin and other allow-listed plugins', async (t) => {
+test('it can create collection with BubblegumV2 plugin and other allow-listed plugins', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
       {
-        type: 'BubblegumV1',
+        type: 'BubblegumV2',
       },
       {
         type: 'UpdateDelegate',
@@ -138,7 +138,7 @@ test('it can create collection with BubblegumV1 plugin and other allow-listed pl
     updateAuthority: umi.identity.publicKey,
     currentSize: 0,
     numMinted: 0,
-    bubblegumV1: {
+    bubblegumV2: {
       authority: {
         type: 'Address',
         address: MPL_BUBBLEGUM_PROGRAM_ID,
@@ -159,12 +159,12 @@ test('it can create collection with BubblegumV1 plugin and other allow-listed pl
   });
 });
 
-test('it cannot create collection with BubblegumV1 plugin and non-allow-listed plugins', async (t) => {
+test('it cannot create collection with BubblegumV2 plugin and non-allow-listed plugins', async (t) => {
   const umi = await createUmi();
   const result = createCollection(umi, {
     plugins: [
       {
-        type: 'BubblegumV1',
+        type: 'BubblegumV2',
       },
       {
         type: 'UpdateDelegate',
@@ -184,16 +184,16 @@ test('it cannot create collection with BubblegumV1 plugin and non-allow-listed p
   });
 
   await t.throwsAsync(result, {
-    name: 'BlockedByBubblegumV1',
+    name: 'BlockedByBubblegumV2',
   });
 });
 
-test('it can add allow-listed plugins to collection with BubblegumV1 plugin', async (t) => {
+test('it can add allow-listed plugins to collection with BubblegumV2 plugin', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
       {
-        type: 'BubblegumV1',
+        type: 'BubblegumV2',
       },
     ],
   });
@@ -204,7 +204,7 @@ test('it can add allow-listed plugins to collection with BubblegumV1 plugin', as
     updateAuthority: umi.identity.publicKey,
     currentSize: 0,
     numMinted: 0,
-    bubblegumV1: {
+    bubblegumV2: {
       authority: {
         type: 'Address',
         address: MPL_BUBBLEGUM_PROGRAM_ID,
@@ -231,12 +231,12 @@ test('it can add allow-listed plugins to collection with BubblegumV1 plugin', as
   }).sendAndConfirm(umi);
 });
 
-test('it cannot add non-allow-listed plugins to collection with BubblegumV1 plugin', async (t) => {
+test('it cannot add non-allow-listed plugins to collection with BubblegumV2 plugin', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
       {
-        type: 'BubblegumV1',
+        type: 'BubblegumV2',
       },
     ],
   });
@@ -247,7 +247,7 @@ test('it cannot add non-allow-listed plugins to collection with BubblegumV1 plug
     updateAuthority: umi.identity.publicKey,
     currentSize: 0,
     numMinted: 0,
-    bubblegumV1: {
+    bubblegumV2: {
       authority: {
         type: 'Address',
         address: MPL_BUBBLEGUM_PROGRAM_ID,
@@ -267,12 +267,12 @@ test('it cannot add non-allow-listed plugins to collection with BubblegumV1 plug
   });
 });
 
-test('it cannot create collection with BubblegumV1 plugin and external plugin', async (t) => {
+test('it cannot create collection with BubblegumV2 plugin and external plugin', async (t) => {
   const umi = await createUmi();
   const result = createCollection(umi, {
     plugins: [
       {
-        type: 'BubblegumV1',
+        type: 'BubblegumV2',
       },
       {
         type: 'AppData',
@@ -283,16 +283,16 @@ test('it cannot create collection with BubblegumV1 plugin and external plugin', 
   });
 
   await t.throwsAsync(result, {
-    name: 'BlockedByBubblegumV1',
+    name: 'BlockedByBubblegumV2',
   });
 });
 
-test('it cannot add external plugin to collection with BubblegumV1 plugin', async (t) => {
+test('it cannot add external plugin to collection with BubblegumV2 plugin', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
       {
-        type: 'BubblegumV1',
+        type: 'BubblegumV2',
       },
     ],
   });
@@ -303,7 +303,7 @@ test('it cannot add external plugin to collection with BubblegumV1 plugin', asyn
     updateAuthority: umi.identity.publicKey,
     currentSize: 0,
     numMinted: 0,
-    bubblegumV1: {
+    bubblegumV2: {
       authority: {
         type: 'Address',
         address: MPL_BUBBLEGUM_PROGRAM_ID,

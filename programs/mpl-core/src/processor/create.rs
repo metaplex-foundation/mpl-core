@@ -186,7 +186,7 @@ pub(crate) fn process_create<'a>(
                     // TODO move into plugin validation when asset/collection is part of validation context
                     let plugin_type = PluginType::from(&plugin.plugin);
                     if plugin_type == PluginType::MasterEdition
-                        || plugin_type == PluginType::BubblegumV1
+                        || plugin_type == PluginType::BubblegumV2
                     {
                         return Err(MplCoreError::InvalidPlugin.into());
                     }
