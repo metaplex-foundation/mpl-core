@@ -24,7 +24,7 @@ export enum PluginType {
   ImmutableMetadata,
   VerifiedCreators,
   Autograph,
-  BubblegumV1,
+  BubblegumV2,
 }
 
 export type PluginTypeArgs = PluginType;

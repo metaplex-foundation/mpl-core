@@ -49,7 +49,7 @@ impl From<&Plugin> for PluginType {
             Plugin::MasterEdition(_) => PluginType::MasterEdition,
             Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
             Plugin::Autograph(_) => PluginType::Autograph,
-            Plugin::BubblegumV1(_) => PluginType::BubblegumV1,
+            Plugin::BubblegumV2(_) => PluginType::BubblegumV2,
         }
     }
 }

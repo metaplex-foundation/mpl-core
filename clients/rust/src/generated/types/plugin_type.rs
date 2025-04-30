@@ -31,5 +31,5 @@ pub enum PluginType {
     ImmutableMetadata,
     VerifiedCreators,
     Autograph,
-    BubblegumV1,
+    BubblegumV2,
 }

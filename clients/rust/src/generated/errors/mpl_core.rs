@@ -160,9 +160,9 @@ pub enum MplCoreError {
     /// 49 (0x31) - Invalid Signing PDA for Asset or Collection Execute
     #[error("Invalid Signing PDA for Asset or Collection Execute")]
     InvalidExecutePda,
-    /// 50 (0x32) - Bubblegum V1 Plugin limits other plugins
-    #[error("Bubblegum V1 Plugin limits other plugins")]
-    BlockedByBubblegumV1,
+    /// 50 (0x32) - Bubblegum V2 Plugin limits other plugins
+    #[error("Bubblegum V2 Plugin limits other plugins")]
+    BlockedByBubblegumV2,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

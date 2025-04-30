@@ -9,15 +9,15 @@ use crate::{
     state::DataBlob,
 };
 
-/// The Bubblegum V1 plugin allows a Core collection to contain Compressed NFTs (cNFTs)
+/// The Bubblegum V2 plugin allows a Core collection to contain Compressed NFTs (cNFTs)
 /// from the Bubblegum program.  The authority for this plugin can only be the Bubblegum
 /// program.
 #[repr(C)]
 #[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, Default, PartialEq, Eq)]
-pub struct BubblegumV1 {}
+pub struct BubblegumV2 {}
 
-impl BubblegumV1 {
-    /// List of other plugins allowed on collections with the Bubblegum V1 plugin.
+impl BubblegumV2 {
+    /// List of other plugins allowed on collections with the Bubblegum V2 plugin.
     pub const ALLOW_LIST: [PluginType; 6] = [
         PluginType::Attributes,
         PluginType::PermanentFreezeDelegate,
@@ -28,14 +28,14 @@ impl BubblegumV1 {
     ];
 }
 
-impl DataBlob for BubblegumV1 {
+impl DataBlob for BubblegumV2 {
     fn len(&self) -> usize {
         // Stateless data blob
         0
     }
 }
 
-impl PluginValidation for BubblegumV1 {
+impl PluginValidation for BubblegumV2 {
     fn validate_add_plugin(
         &self,
         ctx: &PluginValidationContext,
@@ -44,7 +44,7 @@ impl PluginValidation for BubblegumV1 {
             let plugin_type = PluginType::from(target_plugin);
             if Self::ALLOW_LIST.contains(&plugin_type) {
                 abstain!()
-            } else if plugin_type == PluginType::BubblegumV1 {
+            } else if plugin_type == PluginType::BubblegumV2 {
                 // This plugin can only be added at creation time, so we
                 // always reject it.
                 reject!()
@@ -64,7 +64,7 @@ impl PluginValidation for BubblegumV1 {
     ) -> Result<ValidationResult, ProgramError> {
         // This plugin cannot be removed so always reject it.
         match ctx.target_plugin {
-            Some(Plugin::BubblegumV1(_)) => {
+            Some(Plugin::BubblegumV2(_)) => {
                 reject!()
             }
             _ => abstain!(),
@@ -75,7 +75,7 @@ impl PluginValidation for BubblegumV1 {
         &self,
         _ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        // If the BubblegumV1 plugin is present, no external plugin adapters
+        // If the BubblegumV2 plugin is present, no external plugin adapters
         // can be added.
         reject!()
     }
@@ -86,9 +86,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_bubblegum_v1_len() {
-        let bubblegum_v1 = BubblegumV1::default();
-        let serialized = bubblegum_v1.try_to_vec().unwrap();
-        assert_eq!(serialized.len(), bubblegum_v1.len());
+    fn test_bubblegum_v2_len() {
+        let bubblegum_v2 = BubblegumV2::default();
+        let serialized = bubblegum_v2.try_to_vec().unwrap();
+        assert_eq!(serialized.len(), bubblegum_v2.len());
     }
 }

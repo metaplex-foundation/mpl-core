@@ -41,7 +41,7 @@ export * from './baseRuleSet';
 export * from './baseSeed';
 export * from './baseUpdateAuthority';
 export * from './baseValidationResultsOffset';
-export * from './bubblegumV1';
+export * from './bubblegumV2';
 export * from './burnDelegate';
 export * from './compressionProof';
 export * from './creator';

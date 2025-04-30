@@ -8,7 +8,7 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, AppData, Attributes, Autograph, BubblegumV1, BurnDelegate, DataSection,
+        AddBlocker, AppData, Attributes, Autograph, BubblegumV2, BurnDelegate, DataSection,
         Edition, ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey,
         FreezeDelegate, ImmutableMetadata, Key, LifecycleHook, LinkedAppData, LinkedLifecycleHook,
         MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
@@ -162,9 +162,9 @@ pub struct AutographPlugin {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct BubblegumV1Plugin {
+pub struct BubblegumV2Plugin {
     pub base: BasePlugin,
-    pub bubblegum_v1: BubblegumV1,
+    pub bubblegum_v2: BubblegumV2,
 }
 
 #[derive(Debug, Default)]
@@ -184,7 +184,7 @@ pub struct PluginsList {
     pub immutable_metadata: Option<ImmutableMetadataPlugin>,
     pub verified_creators: Option<VerifiedCreatorsPlugin>,
     pub autograph: Option<AutographPlugin>,
-    pub bubblegum_v1: Option<BubblegumV1Plugin>,
+    pub bubblegum_v2: Option<BubblegumV2Plugin>,
 }
 
 #[derive(Debug, Default)]
