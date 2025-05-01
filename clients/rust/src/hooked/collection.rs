@@ -3,14 +3,21 @@ use anchor_lang::prelude::AnchorSerialize;
 #[cfg(not(feature = "anchor"))]
 use borsh::BorshSerialize;
 
+use std::io::ErrorKind;
+
 use crate::{
     accounts::{BaseCollectionV1, PluginHeaderV1},
-    registry_records_to_external_plugin_adapter_list, registry_records_to_plugin_list, Collection,
-    ExternalPluginAdaptersList, PluginRegistryV1Safe, PluginsList,
+    registry_records_to_external_plugin_adapter_list, registry_records_to_plugin_list,
+    types::Key,
+    Collection, ExternalPluginAdaptersList, PluginRegistryV1Safe, PluginsList,
 };
 
 impl Collection {
     pub fn deserialize(data: &[u8]) -> Result<Box<Self>, std::io::Error> {
+        if Key::from_slice(data, 0)? != Key::CollectionV1 {
+            return Err(ErrorKind::InvalidInput.into());
+        }
+
         let base = BaseCollectionV1::from_bytes(data)?;
         let base_data = base.try_to_vec()?;
 

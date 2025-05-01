@@ -175,14 +175,29 @@ impl SolanaAccount for PluginHeaderV1 {
     }
 }
 
+impl Key {
+    /// Load the one byte key from a slice of data at the given offset.
+    pub fn from_slice(data: &[u8], offset: usize) -> Result<Self, std::io::Error> {
+        let key_byte = *data.get(offset).ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::Other,
+                MplCoreError::DeserializationError.to_string(),
+            )
+        })?;
+
+        Self::from_u8(key_byte).ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::Other,
+                MplCoreError::DeserializationError.to_string(),
+            )
+        })
+    }
+}
+
 /// Load the one byte key from the account data at the given offset.
 pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, std::io::Error> {
-    let key = Key::from_u8((*account.data).borrow()[offset]).ok_or(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        MplCoreError::DeserializationError.to_string(),
-    ))?;
-
-    Ok(key)
+    let data = account.data.borrow();
+    Key::from_slice(&data, offset)
 }
 
 /// A trait for generic blobs of data that have size.
