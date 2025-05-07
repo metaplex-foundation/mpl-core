@@ -181,6 +181,11 @@ pub(crate) fn process_create_collection<'a>(
 
                 // Bubblegum V2 plugin always has a fixed authority.
                 let authority = if plugin_type == PluginType::BubblegumV2 {
+                    if let Some(supplied) = &plugin.authority {
+                        if supplied != &plugin.plugin.manager() {
+                            return Err(MplCoreError::InvalidAuthority.into());
+                        }
+                    }
                     plugin.plugin.manager()
                 } else {
                     plugin.authority.unwrap_or(plugin.plugin.manager())

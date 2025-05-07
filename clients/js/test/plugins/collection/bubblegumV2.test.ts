@@ -1,5 +1,5 @@
 import test from 'ava';
-import { PublicKey } from '@metaplex-foundation/umi';
+import { generateSigner, PublicKey } from '@metaplex-foundation/umi';
 import {
   addCollectionPluginV1,
   createPlugin,
@@ -321,6 +321,70 @@ test('it cannot add external plugin to collection with BubblegumV2 plugin', asyn
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, {
+    name: 'InvalidAuthority',
+  });
+});
+
+test('it cannot create collection with BubblegumV2 plugin using wrong authority', async (t) => {
+  const umi = await createUmi();
+  const updateAuthorityResult = createCollection(umi, {
+    plugins: [
+      {
+        type: 'BubblegumV2',
+        authority: {
+          type: 'UpdateAuthority',
+        },
+      },
+    ],
+  });
+
+  await t.throwsAsync(updateAuthorityResult, {
+    name: 'InvalidAuthority',
+  });
+
+  const noneResult = createCollection(umi, {
+    plugins: [
+      {
+        type: 'BubblegumV2',
+        authority: {
+          type: 'None',
+        },
+      },
+    ],
+  });
+
+  await t.throwsAsync(noneResult, {
+    name: 'InvalidAuthority',
+  });
+
+  const ownerResult = createCollection(umi, {
+    plugins: [
+      {
+        type: 'BubblegumV2',
+        authority: {
+          type: 'Owner',
+        },
+      },
+    ],
+  });
+
+  await t.throwsAsync(ownerResult, {
+    name: 'InvalidAuthority',
+  });
+
+  const addressResult = createCollection(umi, {
+    plugins: [
+      {
+        type: 'BubblegumV2',
+        authority: {
+          type: 'Address',
+          address: generateSigner(umi).publicKey,
+        },
+      },
+    ],
+  });
+
+  await t.throwsAsync(addressResult, {
     name: 'InvalidAuthority',
   });
 });
