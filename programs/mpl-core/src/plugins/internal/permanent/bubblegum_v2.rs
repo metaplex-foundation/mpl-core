@@ -19,8 +19,9 @@ pub struct BubblegumV2 {}
 impl BubblegumV2 {
     /// List of other plugins allowed on collections with the Bubblegum V2 plugin.
     /// The BubblegumV2 plugin limits what can be on the collection to plugins that are
-    /// supported and validated at runtime by the Bubblegum program.
-    pub const ALLOW_LIST: [PluginType; 6] = [
+    /// supported and validated at runtime by the Bubblegum program.  Other plugins may
+    /// be added in the future but for now this subset was chosen.
+    pub(crate) const ALLOW_LIST: [PluginType; 6] = [
         PluginType::Attributes,
         PluginType::PermanentFreezeDelegate,
         PluginType::PermanentTransferDelegate,
@@ -80,7 +81,8 @@ impl PluginValidation for BubblegumV2 {
         // If the BubblegumV2 plugin is present, no external plugin adapters
         // can be added.  The BubblegumV2 plugin limits what can be on the
         // collection to plugins that are supported and validated at runtime
-        // by the Bubblegum program.
+        // by the Bubblegum program.  External plugin adapters may be added
+        // in the future but for now this subset was chosen.
         reject!()
     }
 }
