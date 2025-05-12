@@ -100,6 +100,12 @@ pub enum Key {
     PluginRegistryV1,
     /// A discriminator indicating the collection.
     CollectionV1,
+    /// A discriminator indicating the group account.
+    GroupV1,
+    /// A discriminator indicating the collection group plugin account.
+    CollectionGroupPluginV1,
+    /// A discriminator indicating the asset group plugin account.
+    AssetGroupPluginV1,
 }
 
 impl Key {
@@ -147,3 +153,12 @@ mod tests {
         }
     }
 }
+
+mod group;
+pub use group::*;
+
+mod collection_group_plugin;
+pub use collection_group_plugin::*;
+
+mod asset_group_plugin;
+pub use asset_group_plugin::*;

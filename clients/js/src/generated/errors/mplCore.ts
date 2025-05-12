@@ -726,6 +726,88 @@ export class InvalidExecutePdaError extends ProgramError {
 codeToErrorMap.set(0x31, InvalidExecutePdaError);
 nameToErrorMap.set('InvalidExecutePda', InvalidExecutePdaError);
 
+/** GroupNotFound: Group not found */
+export class GroupNotFoundError extends ProgramError {
+  override readonly name: string = 'GroupNotFound';
+
+  readonly code: number = 0x32; // 50
+
+  constructor(program: Program, cause?: Error) {
+    super('Group not found', program, cause);
+  }
+}
+codeToErrorMap.set(0x32, GroupNotFoundError);
+nameToErrorMap.set('GroupNotFound', GroupNotFoundError);
+
+/** CollectionNotFound: Collection not found */
+export class CollectionNotFoundError extends ProgramError {
+  override readonly name: string = 'CollectionNotFound';
+
+  readonly code: number = 0x33; // 51
+
+  constructor(program: Program, cause?: Error) {
+    super('Collection not found', program, cause);
+  }
+}
+codeToErrorMap.set(0x33, CollectionNotFoundError);
+nameToErrorMap.set('CollectionNotFound', CollectionNotFoundError);
+
+/** CircularGroupReference: Circular group reference detected */
+export class CircularGroupReferenceError extends ProgramError {
+  override readonly name: string = 'CircularGroupReference';
+
+  readonly code: number = 0x34; // 52
+
+  constructor(program: Program, cause?: Error) {
+    super('Circular group reference detected', program, cause);
+  }
+}
+codeToErrorMap.set(0x34, CircularGroupReferenceError);
+nameToErrorMap.set('CircularGroupReference', CircularGroupReferenceError);
+
+/** GroupNotEmpty: Group cannot be closed while it has collections or groups attached */
+export class GroupNotEmptyError extends ProgramError {
+  override readonly name: string = 'GroupNotEmpty';
+
+  readonly code: number = 0x35; // 53
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Group cannot be closed while it has collections or groups attached',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x35, GroupNotEmptyError);
+nameToErrorMap.set('GroupNotEmpty', GroupNotEmptyError);
+
+/** InvalidGroupOperation: Invalid group operation */
+export class InvalidGroupOperationError extends ProgramError {
+  override readonly name: string = 'InvalidGroupOperation';
+
+  readonly code: number = 0x36; // 54
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid group operation', program, cause);
+  }
+}
+codeToErrorMap.set(0x36, InvalidGroupOperationError);
+nameToErrorMap.set('InvalidGroupOperation', InvalidGroupOperationError);
+
+/** GroupPluginNotAllowed: Group plugin not allowed */
+export class GroupPluginNotAllowedError extends ProgramError {
+  override readonly name: string = 'GroupPluginNotAllowed';
+
+  readonly code: number = 0x37; // 55
+
+  constructor(program: Program, cause?: Error) {
+    super('Group plugin not allowed', program, cause);
+  }
+}
+codeToErrorMap.set(0x37, GroupPluginNotAllowedError);
+nameToErrorMap.set('GroupPluginNotAllowed', GroupPluginNotAllowedError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

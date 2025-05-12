@@ -208,6 +208,30 @@ pub enum MplCoreError {
     /// 49 - Invalid Signing PDA for Asset or Collection Execute
     #[error("Invalid Signing PDA for Asset or Collection Execute")]
     InvalidExecutePda,
+
+    /// 50 - Group not found
+    #[error("Group not found")]
+    GroupNotFound,
+
+    /// 51 - Collection not found
+    #[error("Collection not found")]
+    CollectionNotFound,
+
+    /// 52 - Circular group reference detected
+    #[error("Circular group reference detected")]
+    CircularGroupReference,
+
+    /// 53 - Group cannot be closed while it has collections or groups attached
+    #[error("Group cannot be closed while it has collections or groups attached")]
+    GroupNotEmpty,
+
+    /// 54 - Invalid group operation
+    #[error("Invalid group operation")]
+    InvalidGroupOperation,
+
+    /// 55 - Group plugin not allowed
+    #[error("Group plugin not allowed")]
+    GroupPluginNotAllowed,
 }
 
 impl PrintProgramError for MplCoreError {

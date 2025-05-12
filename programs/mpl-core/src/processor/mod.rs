@@ -8,6 +8,7 @@ mod create;
 mod create_collection;
 mod decompress;
 mod execute;
+mod group;
 mod remove_external_plugin_adapter;
 mod remove_plugin;
 mod revoke_plugin_authority;
@@ -27,6 +28,7 @@ pub(crate) use create::*;
 pub(crate) use create_collection::*;
 pub(crate) use decompress::*;
 pub(crate) use execute::*;
+pub(crate) use group::*;
 pub(crate) use remove_external_plugin_adapter::*;
 pub(crate) use remove_plugin::*;
 pub(crate) use revoke_plugin_authority::*;
@@ -173,6 +175,62 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::ExecuteV1(args) => {
             msg!("Instruction: Execute");
             execute(accounts, args)
+        }
+        MplAssetInstruction::CreateGroup(args) => {
+            msg!("Instruction: CreateGroup");
+            create_group(accounts, args)
+        }
+        MplAssetInstruction::CloseGroup => {
+            msg!("Instruction: CloseGroup");
+            close_group(accounts)
+        }
+        MplAssetInstruction::UpdateGroupMetadata(args) => {
+            msg!("Instruction: UpdateGroupMetadata");
+            update_group_metadata(accounts, args)
+        }
+        MplAssetInstruction::AddCollectionsToGroup(args) => {
+            msg!("Instruction: AddCollectionsToGroup");
+            add_collections_to_group(accounts, args)
+        }
+        MplAssetInstruction::RemoveCollectionsFromGroup(args) => {
+            msg!("Instruction: RemoveCollectionsFromGroup");
+            remove_collections_from_group(accounts, args)
+        }
+        MplAssetInstruction::AddAssetsToGroup(args) => {
+            msg!("Instruction: AddAssetsToGroup");
+            add_assets_to_group(accounts, args)
+        }
+        MplAssetInstruction::RemoveAssetsFromGroup(args) => {
+            msg!("Instruction: RemoveAssetsFromGroup");
+            remove_assets_from_group(accounts, args)
+        }
+        MplAssetInstruction::AddGroupsToGroup(args) => {
+            msg!("Instruction: AddGroupsToGroup");
+            add_groups_to_group(accounts, args)
+        }
+        MplAssetInstruction::RemoveGroupsFromGroup(args) => {
+            msg!("Instruction: RemoveGroupsFromGroup");
+            remove_groups_from_group(accounts, args)
+        }
+        MplAssetInstruction::AddGroupPlugin(args) => {
+            msg!("Instruction: AddGroupPlugin");
+            add_group_plugin(accounts, args)
+        }
+        MplAssetInstruction::RemoveGroupPlugin => {
+            msg!("Instruction: RemoveGroupPlugin");
+            remove_group_plugin(accounts)
+        }
+        MplAssetInstruction::UpdateGroupPlugin(args) => {
+            msg!("Instruction: UpdateGroupPlugin");
+            update_group_plugin(accounts, args)
+        }
+        MplAssetInstruction::ApproveGroupPlugin(args) => {
+            msg!("Instruction: ApproveGroupPlugin");
+            approve_group_plugin(accounts, args)
+        }
+        MplAssetInstruction::RevokeGroupPlugin => {
+            msg!("Instruction: RevokeGroupPlugin");
+            revoke_group_plugin(accounts)
         }
     }
 }

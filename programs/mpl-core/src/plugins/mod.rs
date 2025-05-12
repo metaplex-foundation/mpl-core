@@ -1,5 +1,6 @@
 mod external;
 mod external_plugin_adapters;
+mod group_plugins;
 mod internal;
 mod lifecycle;
 mod plugin_header;
@@ -8,6 +9,7 @@ mod utils;
 
 pub use external::*;
 pub use external_plugin_adapters::*;
+pub use group_plugins::*;
 pub use internal::*;
 pub use lifecycle::*;
 pub use plugin_header::*;

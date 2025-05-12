@@ -160,6 +160,24 @@ pub enum MplCoreError {
     /// 49 (0x31) - Invalid Signing PDA for Asset or Collection Execute
     #[error("Invalid Signing PDA for Asset or Collection Execute")]
     InvalidExecutePda,
+    /// 50 (0x32) - Group not found
+    #[error("Group not found")]
+    GroupNotFound,
+    /// 51 (0x33) - Collection not found
+    #[error("Collection not found")]
+    CollectionNotFound,
+    /// 52 (0x34) - Circular group reference detected
+    #[error("Circular group reference detected")]
+    CircularGroupReference,
+    /// 53 (0x35) - Group cannot be closed while it has collections or groups attached
+    #[error("Group cannot be closed while it has collections or groups attached")]
+    GroupNotEmpty,
+    /// 54 (0x36) - Invalid group operation
+    #[error("Invalid group operation")]
+    InvalidGroupOperation,
+    /// 55 (0x37) - Group plugin not allowed
+    #[error("Group plugin not allowed")]
+    GroupPluginNotAllowed,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {
