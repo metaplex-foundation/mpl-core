@@ -15,21 +15,8 @@ use num_derive::FromPrimitive;
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Hash, FromPrimitive)]
-pub enum PluginType {
-    Royalties,
-    FreezeDelegate,
-    BurnDelegate,
-    TransferDelegate,
-    UpdateDelegate,
-    PermanentFreezeDelegate,
-    Attributes,
-    PermanentTransferDelegate,
-    PermanentBurnDelegate,
-    Edition,
-    MasterEdition,
-    AddBlocker,
-    ImmutableMetadata,
-    VerifiedCreators,
-    Autograph,
-    BubblegumV2,
+pub enum UpdateType {
+    Mint,
+    Add,
+    Remove,
 }

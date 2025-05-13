@@ -726,6 +726,19 @@ export class InvalidExecutePdaError extends ProgramError {
 codeToErrorMap.set(0x31, InvalidExecutePdaError);
 nameToErrorMap.set('InvalidExecutePda', InvalidExecutePdaError);
 
+/** BlockedByBubblegumV2: Bubblegum V2 Plugin limits other plugins */
+export class BlockedByBubblegumV2Error extends ProgramError {
+  override readonly name: string = 'BlockedByBubblegumV2';
+
+  readonly code: number = 0x32; // 50
+
+  constructor(program: Program, cause?: Error) {
+    super('Bubblegum V2 Plugin limits other plugins', program, cause);
+  }
+}
+codeToErrorMap.set(0x32, BlockedByBubblegumV2Error);
+nameToErrorMap.set('BlockedByBubblegumV2', BlockedByBubblegumV2Error);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

@@ -8,6 +8,7 @@
 use crate::generated::types::AddBlocker;
 use crate::generated::types::Attributes;
 use crate::generated::types::Autograph;
+use crate::generated::types::BubblegumV2;
 use crate::generated::types::BurnDelegate;
 use crate::generated::types::Edition;
 use crate::generated::types::FreezeDelegate;
@@ -45,4 +46,5 @@ pub enum Plugin {
     ImmutableMetadata(ImmutableMetadata),
     VerifiedCreators(VerifiedCreators),
     Autograph(Autograph),
+    BubblegumV2(BubblegumV2),
 }
