@@ -232,6 +232,10 @@ pub enum MplCoreError {
     /// 55 - Group plugin not allowed
     #[error("Group plugin not allowed")]
     GroupPluginNotAllowed,
+    
+    /// 50 - Bubblegum V2 Plugin limits other plugins
+    #[error("Bubblegum V2 Plugin limits other plugins")]
+    BlockedByBubblegumV2,
 }
 
 impl PrintProgramError for MplCoreError {

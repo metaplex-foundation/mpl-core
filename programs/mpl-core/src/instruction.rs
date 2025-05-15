@@ -10,13 +10,13 @@ use crate::processor::{
     CompressV1Args, CreateCollectionV1Args, CreateCollectionV2Args, /* Group args */
     CreateGroupArgs, CreateV1Args, CreateV2Args, DecompressV1Args, ExecuteV1Args,
     RemoveAssetsFromGroupArgs, RemoveCollectionExternalPluginAdapterV1Args,
-    RemoveCollectionPluginV1Args, RemoveCollectionsFromGroupArgs,
-    RemoveExternalPluginAdapterV1Args, RemoveGroupsFromGroupArgs, RemovePluginV1Args,
-    RevokeCollectionPluginAuthorityV1Args, RevokePluginAuthorityV1Args, TransferV1Args,
-    UpdateCollectionExternalPluginAdapterV1Args, UpdateCollectionPluginV1Args,
-    UpdateCollectionV1Args, UpdateExternalPluginAdapterV1Args, UpdateGroupMetadataArgs,
-    UpdateGroupPluginArgs, UpdatePluginV1Args, UpdateV1Args, UpdateV2Args,
-    WriteCollectionExternalPluginAdapterDataV1Args, WriteExternalPluginAdapterDataV1Args,
+    RemoveCollectionPluginV1Args, RemoveCollectionsFromGroupArgs, RemoveExternalPluginAdapterV1Args,
+    RemoveGroupsFromGroupArgs, RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args,
+    RevokePluginAuthorityV1Args, TransferV1Args, UpdateCollectionExternalPluginAdapterV1Args,
+    UpdateCollectionInfoV1Args, UpdateCollectionPluginV1Args, UpdateCollectionV1Args,
+    UpdateExternalPluginAdapterV1Args, UpdateGroupMetadataArgs, UpdateGroupPluginArgs,
+    UpdatePluginV1Args, UpdateV1Args, UpdateV2Args, WriteCollectionExternalPluginAdapterDataV1Args,
+    WriteExternalPluginAdapterDataV1Args,
 };
 
 /// Instructions supported by the mpl-core program.
@@ -388,4 +388,8 @@ pub(crate) enum MplAssetInstruction {
     #[account(1, name="group", desc = "The group account")]
     #[account(2, writable, name="plugin", desc = "The plugin account to revoke")]
     RevokeGroupPlugin,
+    /// Update mpl-core collection info (can only be called by Bubblegum program).
+    #[account(0, writable, name="collection", desc = "The address of the asset")]
+    #[account(1, signer, name="bubblegum_signer", desc = "Bubblegum PDA signer")]
+    UpdateCollectionInfoV1(UpdateCollectionInfoV1Args),
 }

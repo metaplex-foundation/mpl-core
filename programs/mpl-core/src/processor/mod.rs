@@ -14,6 +14,7 @@ mod remove_plugin;
 mod revoke_plugin_authority;
 mod transfer;
 mod update;
+mod update_collection_info;
 mod update_external_plugin_adapter;
 mod update_plugin;
 mod write_external_plugin_adapter_data;
@@ -34,6 +35,7 @@ pub(crate) use remove_plugin::*;
 pub(crate) use revoke_plugin_authority::*;
 pub(crate) use transfer::*;
 pub(crate) use update::*;
+pub(crate) use update_collection_info::*;
 pub(crate) use update_external_plugin_adapter::*;
 pub(crate) use update_plugin::*;
 pub(crate) use write_external_plugin_adapter_data::*;
@@ -172,6 +174,7 @@ pub fn process_instruction<'a>(
             msg!("Instruction: UpdateV2");
             update_v2(accounts, args)
         }
+
         MplAssetInstruction::ExecuteV1(args) => {
             msg!("Instruction: Execute");
             execute(accounts, args)
@@ -231,6 +234,10 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::RevokeGroupPlugin => {
             msg!("Instruction: RevokeGroupPlugin");
             revoke_group_plugin(accounts)
+        }
+        MplAssetInstruction::UpdateCollectionInfoV1(args) => {
+            msg!("Instruction: UpdateCollectionInfoV1");
+            update_collection_info(accounts, args)
         }
     }
 }

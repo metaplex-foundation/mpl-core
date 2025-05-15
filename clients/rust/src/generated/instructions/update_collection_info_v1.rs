@@ -5,48 +5,44 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::UpdateType;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Accounts.
-pub struct ApproveGroupPlugin {
-    /// The group update authority or delegated authority
-    pub authority: solana_program::pubkey::Pubkey,
-    /// The group account
-    pub group: solana_program::pubkey::Pubkey,
-    /// The plugin account to approve
-    pub plugin: solana_program::pubkey::Pubkey,
+pub struct UpdateCollectionInfoV1 {
+    /// The address of the asset
+    pub collection: solana_program::pubkey::Pubkey,
+    /// Bubblegum PDA signer
+    pub bubblegum_signer: solana_program::pubkey::Pubkey,
 }
 
-impl ApproveGroupPlugin {
+impl UpdateCollectionInfoV1 {
     pub fn instruction(
         &self,
-        args: ApproveGroupPluginInstructionArgs,
+        args: UpdateCollectionInfoV1InstructionArgs,
     ) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        args: ApproveGroupPluginInstructionArgs,
+        args: UpdateCollectionInfoV1InstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.authority,
-            true,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.group, false,
-        ));
+        let mut accounts = Vec::with_capacity(2 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.plugin,
+            self.collection,
             false,
         ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.bubblegum_signer,
+            true,
+        ));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = ApproveGroupPluginInstructionData::new()
+        let mut data = UpdateCollectionInfoV1InstructionData::new()
             .try_to_vec()
             .unwrap();
         let mut args = args.try_to_vec().unwrap();
@@ -62,13 +58,13 @@ impl ApproveGroupPlugin {
 
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
-pub struct ApproveGroupPluginInstructionData {
+pub struct UpdateCollectionInfoV1InstructionData {
     discriminator: u8,
 }
 
-impl ApproveGroupPluginInstructionData {
+impl UpdateCollectionInfoV1InstructionData {
     pub fn new() -> Self {
-        Self { discriminator: 44 }
+        Self { discriminator: 46 }
     }
 }
 
@@ -76,51 +72,53 @@ impl ApproveGroupPluginInstructionData {
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ApproveGroupPluginInstructionArgs {
-    pub plugin_args: Vec<u8>,
+pub struct UpdateCollectionInfoV1InstructionArgs {
+    pub update_type: UpdateType,
+    pub amount: u32,
 }
 
-/// Instruction builder for `ApproveGroupPlugin`.
+/// Instruction builder for `UpdateCollectionInfoV1`.
 ///
 /// ### Accounts:
 ///
-///   0. `[signer]` authority
-///   1. `[]` group
-///   2. `[writable]` plugin
+///   0. `[writable]` collection
+///   1. `[signer]` bubblegum_signer
 #[derive(Default)]
-pub struct ApproveGroupPluginBuilder {
-    authority: Option<solana_program::pubkey::Pubkey>,
-    group: Option<solana_program::pubkey::Pubkey>,
-    plugin: Option<solana_program::pubkey::Pubkey>,
-    plugin_args: Option<Vec<u8>>,
+pub struct UpdateCollectionInfoV1Builder {
+    collection: Option<solana_program::pubkey::Pubkey>,
+    bubblegum_signer: Option<solana_program::pubkey::Pubkey>,
+    update_type: Option<UpdateType>,
+    amount: Option<u32>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl ApproveGroupPluginBuilder {
+impl UpdateCollectionInfoV1Builder {
     pub fn new() -> Self {
         Self::default()
     }
-    /// The group update authority or delegated authority
+    /// The address of the asset
     #[inline(always)]
-    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.authority = Some(authority);
+    pub fn collection(&mut self, collection: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.collection = Some(collection);
         self
     }
-    /// The group account
+    /// Bubblegum PDA signer
     #[inline(always)]
-    pub fn group(&mut self, group: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.group = Some(group);
-        self
-    }
-    /// The plugin account to approve
-    #[inline(always)]
-    pub fn plugin(&mut self, plugin: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.plugin = Some(plugin);
+    pub fn bubblegum_signer(
+        &mut self,
+        bubblegum_signer: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.bubblegum_signer = Some(bubblegum_signer);
         self
     }
     #[inline(always)]
-    pub fn plugin_args(&mut self, plugin_args: Vec<u8>) -> &mut Self {
-        self.plugin_args = Some(plugin_args);
+    pub fn update_type(&mut self, update_type: UpdateType) -> &mut Self {
+        self.update_type = Some(update_type);
+        self
+    }
+    #[inline(always)]
+    pub fn amount(&mut self, amount: u32) -> &mut Self {
+        self.amount = Some(amount);
         self
     }
     /// Add an aditional account to the instruction.
@@ -143,54 +141,49 @@ impl ApproveGroupPluginBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = ApproveGroupPlugin {
-            authority: self.authority.expect("authority is not set"),
-            group: self.group.expect("group is not set"),
-            plugin: self.plugin.expect("plugin is not set"),
+        let accounts = UpdateCollectionInfoV1 {
+            collection: self.collection.expect("collection is not set"),
+            bubblegum_signer: self.bubblegum_signer.expect("bubblegum_signer is not set"),
         };
-        let args = ApproveGroupPluginInstructionArgs {
-            plugin_args: self.plugin_args.clone().expect("plugin_args is not set"),
+        let args = UpdateCollectionInfoV1InstructionArgs {
+            update_type: self.update_type.clone().expect("update_type is not set"),
+            amount: self.amount.clone().expect("amount is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
     }
 }
 
-/// `approve_group_plugin` CPI accounts.
-pub struct ApproveGroupPluginCpiAccounts<'a, 'b> {
-    /// The group update authority or delegated authority
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The group account
-    pub group: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The plugin account to approve
-    pub plugin: &'b solana_program::account_info::AccountInfo<'a>,
+/// `update_collection_info_v1` CPI accounts.
+pub struct UpdateCollectionInfoV1CpiAccounts<'a, 'b> {
+    /// The address of the asset
+    pub collection: &'b solana_program::account_info::AccountInfo<'a>,
+    /// Bubblegum PDA signer
+    pub bubblegum_signer: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-/// `approve_group_plugin` CPI instruction.
-pub struct ApproveGroupPluginCpi<'a, 'b> {
+/// `update_collection_info_v1` CPI instruction.
+pub struct UpdateCollectionInfoV1Cpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The group update authority or delegated authority
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The group account
-    pub group: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The plugin account to approve
-    pub plugin: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The address of the asset
+    pub collection: &'b solana_program::account_info::AccountInfo<'a>,
+    /// Bubblegum PDA signer
+    pub bubblegum_signer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
-    pub __args: ApproveGroupPluginInstructionArgs,
+    pub __args: UpdateCollectionInfoV1InstructionArgs,
 }
 
-impl<'a, 'b> ApproveGroupPluginCpi<'a, 'b> {
+impl<'a, 'b> UpdateCollectionInfoV1Cpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: ApproveGroupPluginCpiAccounts<'a, 'b>,
-        args: ApproveGroupPluginInstructionArgs,
+        accounts: UpdateCollectionInfoV1CpiAccounts<'a, 'b>,
+        args: UpdateCollectionInfoV1InstructionArgs,
     ) -> Self {
         Self {
             __program: program,
-            authority: accounts.authority,
-            group: accounts.group,
-            plugin: accounts.plugin,
+            collection: accounts.collection,
+            bubblegum_signer: accounts.bubblegum_signer,
             __args: args,
         }
     }
@@ -227,18 +220,14 @@ impl<'a, 'b> ApproveGroupPluginCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.authority.key,
-            true,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.group.key,
-            false,
-        ));
+        let mut accounts = Vec::with_capacity(2 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.plugin.key,
+            *self.collection.key,
             false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.bubblegum_signer.key,
+            true,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
             accounts.push(solana_program::instruction::AccountMeta {
@@ -247,7 +236,7 @@ impl<'a, 'b> ApproveGroupPluginCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = ApproveGroupPluginInstructionData::new()
+        let mut data = UpdateCollectionInfoV1InstructionData::new()
             .try_to_vec()
             .unwrap();
         let mut args = self.__args.try_to_vec().unwrap();
@@ -258,11 +247,10 @@ impl<'a, 'b> ApproveGroupPluginCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(2 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.authority.clone());
-        account_infos.push(self.group.clone());
-        account_infos.push(self.plugin.clone());
+        account_infos.push(self.collection.clone());
+        account_infos.push(self.bubblegum_signer.clone());
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -275,56 +263,54 @@ impl<'a, 'b> ApproveGroupPluginCpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `ApproveGroupPlugin` via CPI.
+/// Instruction builder for `UpdateCollectionInfoV1` via CPI.
 ///
 /// ### Accounts:
 ///
-///   0. `[signer]` authority
-///   1. `[]` group
-///   2. `[writable]` plugin
-pub struct ApproveGroupPluginCpiBuilder<'a, 'b> {
-    instruction: Box<ApproveGroupPluginCpiBuilderInstruction<'a, 'b>>,
+///   0. `[writable]` collection
+///   1. `[signer]` bubblegum_signer
+pub struct UpdateCollectionInfoV1CpiBuilder<'a, 'b> {
+    instruction: Box<UpdateCollectionInfoV1CpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> ApproveGroupPluginCpiBuilder<'a, 'b> {
+impl<'a, 'b> UpdateCollectionInfoV1CpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(ApproveGroupPluginCpiBuilderInstruction {
+        let instruction = Box::new(UpdateCollectionInfoV1CpiBuilderInstruction {
             __program: program,
-            authority: None,
-            group: None,
-            plugin: None,
-            plugin_args: None,
+            collection: None,
+            bubblegum_signer: None,
+            update_type: None,
+            amount: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
     }
-    /// The group update authority or delegated authority
+    /// The address of the asset
     #[inline(always)]
-    pub fn authority(
+    pub fn collection(
         &mut self,
-        authority: &'b solana_program::account_info::AccountInfo<'a>,
+        collection: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.authority = Some(authority);
+        self.instruction.collection = Some(collection);
         self
     }
-    /// The group account
+    /// Bubblegum PDA signer
     #[inline(always)]
-    pub fn group(&mut self, group: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.group = Some(group);
-        self
-    }
-    /// The plugin account to approve
-    #[inline(always)]
-    pub fn plugin(
+    pub fn bubblegum_signer(
         &mut self,
-        plugin: &'b solana_program::account_info::AccountInfo<'a>,
+        bubblegum_signer: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.plugin = Some(plugin);
+        self.instruction.bubblegum_signer = Some(bubblegum_signer);
         self
     }
     #[inline(always)]
-    pub fn plugin_args(&mut self, plugin_args: Vec<u8>) -> &mut Self {
-        self.instruction.plugin_args = Some(plugin_args);
+    pub fn update_type(&mut self, update_type: UpdateType) -> &mut Self {
+        self.instruction.update_type = Some(update_type);
+        self
+    }
+    #[inline(always)]
+    pub fn amount(&mut self, amount: u32) -> &mut Self {
+        self.instruction.amount = Some(amount);
         self
     }
     /// Add an additional account to the instruction.
@@ -368,21 +354,23 @@ impl<'a, 'b> ApproveGroupPluginCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let args = ApproveGroupPluginInstructionArgs {
-            plugin_args: self
+        let args = UpdateCollectionInfoV1InstructionArgs {
+            update_type: self
                 .instruction
-                .plugin_args
+                .update_type
                 .clone()
-                .expect("plugin_args is not set"),
+                .expect("update_type is not set"),
+            amount: self.instruction.amount.clone().expect("amount is not set"),
         };
-        let instruction = ApproveGroupPluginCpi {
+        let instruction = UpdateCollectionInfoV1Cpi {
             __program: self.instruction.__program,
 
-            authority: self.instruction.authority.expect("authority is not set"),
+            collection: self.instruction.collection.expect("collection is not set"),
 
-            group: self.instruction.group.expect("group is not set"),
-
-            plugin: self.instruction.plugin.expect("plugin is not set"),
+            bubblegum_signer: self
+                .instruction
+                .bubblegum_signer
+                .expect("bubblegum_signer is not set"),
             __args: args,
         };
         instruction.invoke_signed_with_remaining_accounts(
@@ -392,12 +380,12 @@ impl<'a, 'b> ApproveGroupPluginCpiBuilder<'a, 'b> {
     }
 }
 
-struct ApproveGroupPluginCpiBuilderInstruction<'a, 'b> {
+struct UpdateCollectionInfoV1CpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
-    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    plugin: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    plugin_args: Option<Vec<u8>>,
+    collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    bubblegum_signer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    update_type: Option<UpdateType>,
+    amount: Option<u32>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

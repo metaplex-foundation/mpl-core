@@ -42,6 +42,7 @@ export * from './revokeGroupPlugin';
 export * from './revokePluginAuthorityV1';
 export * from './transferV1';
 export * from './updateCollectionExternalPluginAdapterV1';
+export * from './updateCollectionInfoV1';
 export * from './updateCollectionPluginV1';
 export * from './updateCollectionV1';
 export * from './updateExternalPluginAdapterV1';

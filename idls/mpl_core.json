@@ -2594,6 +2594,39 @@
         "type": "u8",
         "value": 45
       }
+    },
+    {
+      "name": "UpdateCollectionInfoV1",
+      "accounts": [
+        {
+          "name": "collection",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the asset"
+          ]
+        },
+        {
+          "name": "bubblegumSigner",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Bubblegum PDA signer"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updateCollectionInfoV1Args",
+          "type": {
+            "defined": "UpdateCollectionInfoV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 46
+      }
     }
   ],
   "accounts": [
@@ -3718,6 +3751,13 @@
       }
     },
     {
+      "name": "BubblegumV2",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
       "name": "Edition",
       "type": {
         "kind": "struct",
@@ -4506,6 +4546,24 @@
       }
     },
     {
+      "name": "UpdateCollectionInfoV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "updateType",
+            "type": {
+              "defined": "UpdateType"
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
       "name": "UpdateExternalPluginAdapterV1Args",
       "type": {
         "kind": "struct",
@@ -4845,6 +4903,14 @@
                 "defined": "Autograph"
               }
             ]
+          },
+          {
+            "name": "BubblegumV2",
+            "fields": [
+              {
+                "defined": "BubblegumV2"
+              }
+            ]
           }
         ]
       }
@@ -4898,6 +4964,9 @@
           },
           {
             "name": "Autograph"
+          },
+          {
+            "name": "BubblegumV2"
           }
         ]
       }
@@ -5471,6 +5540,23 @@
       }
     },
     {
+      "name": "UpdateType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Mint"
+          },
+          {
+            "name": "Add"
+          },
+          {
+            "name": "Remove"
+          }
+        ]
+      }
+    },
+    {
       "name": "DataState",
       "type": {
         "kind": "enum",
@@ -5869,6 +5955,11 @@
       "code": 55,
       "name": "GroupPluginNotAllowed",
       "msg": "Group plugin not allowed"
+    },
+    {
+      "code": 56,
+      "name": "BlockedByBubblegumV2",
+      "msg": "Bubblegum V2 Plugin limits other plugins"
     }
   ],
   "metadata": {

@@ -808,6 +808,19 @@ export class GroupPluginNotAllowedError extends ProgramError {
 codeToErrorMap.set(0x37, GroupPluginNotAllowedError);
 nameToErrorMap.set('GroupPluginNotAllowed', GroupPluginNotAllowedError);
 
+/** BlockedByBubblegumV2: Bubblegum V2 Plugin limits other plugins */
+export class BlockedByBubblegumV2Error extends ProgramError {
+  override readonly name: string = 'BlockedByBubblegumV2';
+
+  readonly code: number = 0x38; // 56
+
+  constructor(program: Program, cause?: Error) {
+    super('Bubblegum V2 Plugin limits other plugins', program, cause);
+  }
+}
+codeToErrorMap.set(0x38, BlockedByBubblegumV2Error);
+nameToErrorMap.set('BlockedByBubblegumV2', BlockedByBubblegumV2Error);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

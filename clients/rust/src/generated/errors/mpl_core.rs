@@ -178,6 +178,9 @@ pub enum MplCoreError {
     /// 55 (0x37) - Group plugin not allowed
     #[error("Group plugin not allowed")]
     GroupPluginNotAllowed,
+    /// 56 (0x38) - Bubblegum V2 Plugin limits other plugins
+    #[error("Bubblegum V2 Plugin limits other plugins")]
+    BlockedByBubblegumV2,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {
