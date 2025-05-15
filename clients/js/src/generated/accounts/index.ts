@@ -6,9 +6,12 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+export * from './assetGroupPluginV1';
 export * from './assetSigner';
 export * from './assetV1';
+export * from './collectionGroupPluginV1';
 export * from './collectionV1';
+export * from './groupV1';
 export * from './hashedAssetV1';
 export * from './pluginHeaderV1';
 export * from './pluginRegistryV1';

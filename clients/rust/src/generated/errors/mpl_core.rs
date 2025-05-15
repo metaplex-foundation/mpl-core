@@ -163,6 +163,24 @@ pub enum MplCoreError {
     /// 50 (0x32) - Bubblegum V2 Plugin limits other plugins
     #[error("Bubblegum V2 Plugin limits other plugins")]
     BlockedByBubblegumV2,
+    /// 51 (0x33) - Group not found
+    #[error("Group not found")]
+    GroupNotFound,
+    /// 52 (0x34) - Collection not found
+    #[error("Collection not found")]
+    CollectionNotFound,
+    /// 53 (0x35) - Circular group reference detected
+    #[error("Circular group reference detected")]
+    CircularGroupReference,
+    /// 54 (0x36) - Group cannot be closed while it has collections or groups attached
+    #[error("Group cannot be closed while it has collections or groups attached")]
+    GroupNotEmpty,
+    /// 55 (0x37) - Invalid group operation
+    #[error("Invalid group operation")]
+    InvalidGroupOperation,
+    /// 56 (0x38) - Group plugin not allowed
+    #[error("Group plugin not allowed")]
+    GroupPluginNotAllowed,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

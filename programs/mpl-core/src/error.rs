@@ -212,6 +212,30 @@ pub enum MplCoreError {
     /// 50 - Bubblegum V2 Plugin limits other plugins
     #[error("Bubblegum V2 Plugin limits other plugins")]
     BlockedByBubblegumV2,
+
+    /// 51 - Group not found
+    #[error("Group not found")]
+    GroupNotFound,
+
+    /// 52 - Collection not found
+    #[error("Collection not found")]
+    CollectionNotFound,
+
+    /// 53 - Circular group reference detected
+    #[error("Circular group reference detected")]
+    CircularGroupReference,
+
+    /// 54 - Group cannot be closed while it has collections or groups attached
+    #[error("Group cannot be closed while it has collections or groups attached")]
+    GroupNotEmpty,
+
+    /// 55 - Invalid group operation
+    #[error("Invalid group operation")]
+    InvalidGroupOperation,
+
+    /// 56 - Group plugin not allowed
+    #[error("Group plugin not allowed")]
+    GroupPluginNotAllowed,
 }
 
 impl PrintProgramError for MplCoreError {

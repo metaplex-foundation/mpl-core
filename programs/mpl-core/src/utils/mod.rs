@@ -1,3 +1,7 @@
+pub(crate) mod group;
+
+// Re-export the commonly used helper functions so callers can simply `use crate::utils::*;` if desired.
+
 mod account;
 mod compression;
 

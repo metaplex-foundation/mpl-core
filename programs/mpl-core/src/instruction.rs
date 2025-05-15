@@ -3,15 +3,18 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
 use crate::processor::{
-    AddCollectionExternalPluginAdapterV1Args, AddCollectionPluginV1Args,
-    AddExternalPluginAdapterV1Args, AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args,
-    ApprovePluginAuthorityV1Args, BurnCollectionV1Args, BurnV1Args, CompressV1Args,
-    CreateCollectionV1Args, CreateCollectionV2Args, CreateV1Args, CreateV2Args, DecompressV1Args,
-    ExecuteV1Args, RemoveCollectionExternalPluginAdapterV1Args, RemoveCollectionPluginV1Args,
-    RemoveExternalPluginAdapterV1Args, RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args,
-    RevokePluginAuthorityV1Args, TransferV1Args, UpdateCollectionExternalPluginAdapterV1Args,
-    UpdateCollectionInfoV1Args, UpdateCollectionPluginV1Args, UpdateCollectionV1Args,
-    UpdateExternalPluginAdapterV1Args, UpdatePluginV1Args, UpdateV1Args, UpdateV2Args,
+    AddAssetsToGroupArgs, AddCollectionExternalPluginAdapterV1Args, AddCollectionPluginV1Args,
+    AddCollectionsToGroupArgs, AddExternalPluginAdapterV1Args, AddGroupPluginArgs,
+    AddGroupsToGroupArgs, AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args,
+    ApproveGroupPluginArgs, ApprovePluginAuthorityV1Args, BurnCollectionV1Args, BurnV1Args,
+    CompressV1Args, CreateCollectionV1Args, CreateCollectionV2Args, CreateGroupArgs, CreateV1Args,
+    CreateV2Args, DecompressV1Args, ExecuteV1Args, RemoveAssetsFromGroupArgs,
+    RemoveCollectionExternalPluginAdapterV1Args, RemoveCollectionPluginV1Args,
+    RemoveCollectionsFromGroupArgs, RemoveExternalPluginAdapterV1Args, RemoveGroupsFromGroupArgs,
+    RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args, RevokePluginAuthorityV1Args,
+    TransferV1Args, UpdateCollectionExternalPluginAdapterV1Args, UpdateCollectionInfoV1Args,
+    UpdateCollectionPluginV1Args, UpdateCollectionV1Args, UpdateExternalPluginAdapterV1Args,
+    UpdateGroupMetadataArgs, UpdateGroupPluginArgs, UpdatePluginV1Args, UpdateV1Args, UpdateV2Args,
     WriteCollectionExternalPluginAdapterDataV1Args, WriteExternalPluginAdapterDataV1Args,
 };
 
@@ -307,4 +310,86 @@ pub(crate) enum MplAssetInstruction {
     #[account(0, writable, name="collection", desc = "The address of the asset")]
     #[account(1, signer, name="bubblegum_signer", desc = "Bubblegum PDA signer")]
     UpdateCollectionInfoV1(UpdateCollectionInfoV1Args),
+    
+    // Group operations
+    /// Create a new Group account.
+    #[account(0, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(1, writable, name="group", desc = "The address of the new group account")]
+    #[account(2, signer, name="update_authority", desc = "The update authority for the group")]
+    #[account(3, name="system_program", desc = "The system program")]
+    CreateGroup(CreateGroupArgs),
+
+    /// Close an existing Group, returning its lamports to the update authority.
+    #[account(0, writable, signer, name="update_authority", desc = "The update authority receiving lamports")]
+    #[account(1, writable, name="group", desc = "The group account to close")]
+    CloseGroup,
+
+    /// Update metadata or authority fields on a Group.
+    #[account(0, signer, name="authority", desc = "The current update authority or delegated authority")]
+    #[account(1, writable, name="group", desc = "The group account to update")]
+    UpdateGroupMetadata(UpdateGroupMetadataArgs),
+
+    /// Add collections to a Group.
+    #[account(0, signer, name="authority", desc = "The group update authority or delegated authority")]
+    #[account(1, writable, name="group", desc = "The group account")]
+    // Additional collection + authority accounts are passed after
+    AddCollectionsToGroup(AddCollectionsToGroupArgs),
+
+    /// Remove collections from a Group.
+    #[account(0, signer, name="authority", desc = "The group update authority or delegated authority")]
+    #[account(1, writable, name="group", desc = "The group account")]
+    RemoveCollectionsFromGroup(RemoveCollectionsFromGroupArgs),
+
+    /// Add assets to a Group.
+    #[account(0, signer, name="authority", desc = "The group update authority or delegated authority")]
+    #[account(1, writable, name="group", desc = "The group account")]
+    // Additional asset + authority accounts are passed after
+    AddAssetsToGroup(AddAssetsToGroupArgs),
+
+    /// Remove assets from a Group.
+    #[account(0, signer, name="authority", desc = "The group update authority or delegated authority")]
+    #[account(1, writable, name="group", desc = "The group account")]
+    RemoveAssetsFromGroup(RemoveAssetsFromGroupArgs),
+
+    /// Add child Groups to a parent Group.
+    #[account(0, signer, name="authority", desc = "The parent group update authority or delegated authority")]
+    #[account(1, writable, name="parent_group", desc = "The parent group account")]
+    AddGroupsToGroup(AddGroupsToGroupArgs),
+
+    /// Remove child Groups from a parent Group.
+    #[account(0, signer, name="authority", desc = "The parent group update authority or delegated authority")]
+    #[account(1, writable, name="parent_group", desc = "The parent group account")]
+    RemoveGroupsFromGroup(RemoveGroupsFromGroupArgs),
+
+    /// Add a plugin to a Group.
+    #[account(0, signer, name="authority", desc = "The group update authority or delegated authority")]
+    #[account(1, writable, name="group", desc = "The group account")]
+    #[account(2, writable, name="plugin", desc = "The plugin account to create")]
+    #[account(3, name="plugin_program", desc = "The plugin program id")]
+    #[account(4, name="system_program", desc = "The system program")]
+    AddGroupPlugin(AddGroupPluginArgs),
+
+    /// Remove a plugin from a Group.
+    #[account(0, signer, name="authority", desc = "The group update authority or delegated authority")]
+    #[account(1, writable, name="group", desc = "The group account")]
+    #[account(2, writable, name="plugin", desc = "The plugin account to remove")]
+    RemoveGroupPlugin,
+
+    /// Update a plugin attached to a Group.
+    #[account(0, signer, name="authority", desc = "The plugin authority as defined by plugin config")]
+    #[account(1, name="group", desc = "The group account")]
+    #[account(2, writable, name="plugin", desc = "The plugin account to update")]
+    UpdateGroupPlugin(UpdateGroupPluginArgs),
+
+    /// Approve an existing plugin on a Group.
+    #[account(0, signer, name="authority", desc = "The group update authority or delegated authority")]
+    #[account(1, name="group", desc = "The group account")]
+    #[account(2, writable, name="plugin", desc = "The plugin account to approve")]
+    ApproveGroupPlugin(ApproveGroupPluginArgs),
+
+    /// Revoke (disable) a plugin on a Group.
+    #[account(0, signer, name="authority", desc = "The group update authority or delegated authority")]
+    #[account(1, name="group", desc = "The group account")]
+    #[account(2, writable, name="plugin", desc = "The plugin account to revoke")]
+    RevokeGroupPlugin,
 }

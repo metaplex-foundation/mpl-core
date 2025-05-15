@@ -2114,6 +2114,519 @@
         "type": "u8",
         "value": 32
       }
+    },
+    {
+      "name": "CreateGroup",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for storage fees"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the new group account"
+          ]
+        },
+        {
+          "name": "updateAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The update authority for the group"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "createGroupArgs",
+          "type": {
+            "defined": "CreateGroupArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 33
+      }
+    },
+    {
+      "name": "CloseGroup",
+      "accounts": [
+        {
+          "name": "updateAuthority",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The update authority receiving lamports"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The group account to close"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 34
+      }
+    },
+    {
+      "name": "UpdateGroupMetadata",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The current update authority or delegated authority"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The group account to update"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updateGroupMetadataArgs",
+          "type": {
+            "defined": "UpdateGroupMetadataArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 35
+      }
+    },
+    {
+      "name": "AddCollectionsToGroup",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The group update authority or delegated authority"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The group account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addCollectionsToGroupArgs",
+          "type": {
+            "defined": "AddCollectionsToGroupArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 36
+      }
+    },
+    {
+      "name": "RemoveCollectionsFromGroup",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The group update authority or delegated authority"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The group account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removeCollectionsFromGroupArgs",
+          "type": {
+            "defined": "RemoveCollectionsFromGroupArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 37
+      }
+    },
+    {
+      "name": "AddAssetsToGroup",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The group update authority or delegated authority"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The group account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addAssetsToGroupArgs",
+          "type": {
+            "defined": "AddAssetsToGroupArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 38
+      }
+    },
+    {
+      "name": "RemoveAssetsFromGroup",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The group update authority or delegated authority"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The group account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removeAssetsFromGroupArgs",
+          "type": {
+            "defined": "RemoveAssetsFromGroupArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 39
+      }
+    },
+    {
+      "name": "AddGroupsToGroup",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The parent group update authority or delegated authority"
+          ]
+        },
+        {
+          "name": "parentGroup",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The parent group account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addGroupsToGroupArgs",
+          "type": {
+            "defined": "AddGroupsToGroupArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 40
+      }
+    },
+    {
+      "name": "RemoveGroupsFromGroup",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The parent group update authority or delegated authority"
+          ]
+        },
+        {
+          "name": "parentGroup",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The parent group account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removeGroupsFromGroupArgs",
+          "type": {
+            "defined": "RemoveGroupsFromGroupArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 41
+      }
+    },
+    {
+      "name": "AddGroupPlugin",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The group update authority or delegated authority"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The group account"
+          ]
+        },
+        {
+          "name": "plugin",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The plugin account to create"
+          ]
+        },
+        {
+          "name": "pluginProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The plugin program id"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addGroupPluginArgs",
+          "type": {
+            "defined": "AddGroupPluginArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 42
+      }
+    },
+    {
+      "name": "RemoveGroupPlugin",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The group update authority or delegated authority"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The group account"
+          ]
+        },
+        {
+          "name": "plugin",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The plugin account to remove"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 43
+      }
+    },
+    {
+      "name": "UpdateGroupPlugin",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The plugin authority as defined by plugin config"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The group account"
+          ]
+        },
+        {
+          "name": "plugin",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The plugin account to update"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updateGroupPluginArgs",
+          "type": {
+            "defined": "UpdateGroupPluginArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 44
+      }
+    },
+    {
+      "name": "ApproveGroupPlugin",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The group update authority or delegated authority"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The group account"
+          ]
+        },
+        {
+          "name": "plugin",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The plugin account to approve"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "approveGroupPluginArgs",
+          "type": {
+            "defined": "ApproveGroupPluginArgs"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 45
+      }
+    },
+    {
+      "name": "RevokeGroupPlugin",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The group update authority or delegated authority"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The group account"
+          ]
+        },
+        {
+          "name": "plugin",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The plugin account to revoke"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 46
+      }
     }
   ],
   "accounts": [
@@ -2204,6 +2717,30 @@
       }
     },
     {
+      "name": "AssetGroupPluginV1",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "asset",
+            "type": "publicKey"
+          },
+          {
+            "name": "groups",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "CollectionV1",
       "type": {
         "kind": "struct",
@@ -2233,6 +2770,94 @@
           {
             "name": "currentSize",
             "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CollectionGroupPluginV1",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "collection",
+            "type": "publicKey"
+          },
+          {
+            "name": "groups",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GroupV1",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "updateAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "delegatedAuthority",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "collections",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "assets",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "childGroups",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "parentGroups",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "allowedPlugins",
+            "type": {
+              "vec": {
+                "defined": "AllowedPlugin"
+              }
+            }
           }
         ]
       }
@@ -2857,6 +3482,52 @@
                 "defined": "ValidationResultsOffset"
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddGroupPluginArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pluginType",
+            "type": "string"
+          },
+          {
+            "name": "authorityType",
+            "type": {
+              "defined": "PluginAuthorityType"
+            }
+          },
+          {
+            "name": "pluginArgs",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateGroupPluginArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pluginArgs",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ApproveGroupPluginArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pluginArgs",
+            "type": "bytes"
           }
         ]
       }
@@ -3527,6 +4198,178 @@
       }
     },
     {
+      "name": "AddAssetsToGroupArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "assetIndices",
+            "type": "bytes"
+          },
+          {
+            "name": "authorityIndices",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveAssetsFromGroupArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "assetIndices",
+            "type": "bytes"
+          },
+          {
+            "name": "authorityIndices",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddGroupsToGroupArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "groupIndices",
+            "type": "bytes"
+          },
+          {
+            "name": "authorityIndices",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveGroupsFromGroupArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "groupIndices",
+            "type": "bytes"
+          },
+          {
+            "name": "authorityIndices",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddCollectionsToGroupArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "collectionIndices",
+            "type": "bytes"
+          },
+          {
+            "name": "authorityIndices",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveCollectionsFromGroupArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "collectionIndices",
+            "type": "bytes"
+          },
+          {
+            "name": "authorityIndices",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreateGroupArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "maxCollections",
+            "type": "u32"
+          },
+          {
+            "name": "maxAssets",
+            "type": "u32"
+          },
+          {
+            "name": "maxGroups",
+            "type": "u32"
+          },
+          {
+            "name": "maxPlugins",
+            "type": "u32"
+          },
+          {
+            "name": "initialCollections",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "initialParentGroups",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "initialAssets",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateGroupMetadataArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "newUpdateAuthority",
+            "type": {
+              "option": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "RemoveExternalPluginAdapterV1Args",
       "type": {
         "kind": "struct",
@@ -3861,6 +4704,24 @@
               "vec": {
                 "defined": "HashablePluginSchema"
               }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AllowedPlugin",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": "publicKey"
+          },
+          {
+            "name": "authorityType",
+            "type": {
+              "defined": "PluginAuthorityType"
             }
           }
         ]
@@ -4757,6 +5618,35 @@
           },
           {
             "name": "CollectionV1"
+          },
+          {
+            "name": "GroupV1"
+          },
+          {
+            "name": "CollectionGroupPluginV1"
+          },
+          {
+            "name": "AssetGroupPluginV1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PluginAuthorityType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "None"
+          },
+          {
+            "name": "UpdateAuthority"
+          },
+          {
+            "name": "SpecificAddress",
+            "fields": [
+              "publicKey"
+            ]
           }
         ]
       }
@@ -5040,6 +5930,36 @@
       "code": 50,
       "name": "BlockedByBubblegumV2",
       "msg": "Bubblegum V2 Plugin limits other plugins"
+    },
+    {
+      "code": 51,
+      "name": "GroupNotFound",
+      "msg": "Group not found"
+    },
+    {
+      "code": 52,
+      "name": "CollectionNotFound",
+      "msg": "Collection not found"
+    },
+    {
+      "code": 53,
+      "name": "CircularGroupReference",
+      "msg": "Circular group reference detected"
+    },
+    {
+      "code": 54,
+      "name": "GroupNotEmpty",
+      "msg": "Group cannot be closed while it has collections or groups attached"
+    },
+    {
+      "code": 55,
+      "name": "InvalidGroupOperation",
+      "msg": "Invalid group operation"
+    },
+    {
+      "code": 56,
+      "name": "GroupPluginNotAllowed",
+      "msg": "Group plugin not allowed"
     }
   ],
   "metadata": {

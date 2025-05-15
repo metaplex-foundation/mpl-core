@@ -23,3 +23,6 @@ mpl-utils = "0.3.5"
 spl-noop = { version = "0.2.0", features = ["cpi"] }
 podded = "0.5.1"
 strum = { version = "0.26.1", features = ["derive"] }
+
+[patch.crates-io]
+ahash = "=0.8.7"
