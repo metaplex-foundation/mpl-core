@@ -6,6 +6,7 @@
 //!
 
 pub(crate) mod r#add_blocker;
+pub(crate) mod r#allowed_plugin;
 pub(crate) mod r#app_data;
 pub(crate) mod r#app_data_init_info;
 pub(crate) mod r#app_data_update_info;
@@ -59,6 +60,7 @@ pub(crate) mod r#permanent_transfer_delegate;
 pub(crate) mod r#plugin;
 pub(crate) mod r#plugin_authority;
 pub(crate) mod r#plugin_authority_pair;
+pub(crate) mod r#plugin_authority_type;
 pub(crate) mod r#plugin_type;
 pub(crate) mod r#registry_record;
 pub(crate) mod r#royalties;
@@ -74,6 +76,7 @@ pub(crate) mod r#verified_creators;
 pub(crate) mod r#verified_creators_signature;
 
 pub use self::r#add_blocker::*;
+pub use self::r#allowed_plugin::*;
 pub use self::r#app_data::*;
 pub use self::r#app_data_init_info::*;
 pub use self::r#app_data_update_info::*;
@@ -127,6 +130,7 @@ pub use self::r#permanent_transfer_delegate::*;
 pub use self::r#plugin::*;
 pub use self::r#plugin_authority::*;
 pub use self::r#plugin_authority_pair::*;
+pub use self::r#plugin_authority_type::*;
 pub use self::r#plugin_type::*;
 pub use self::r#registry_record::*;
 pub use self::r#royalties::*;

@@ -7,6 +7,7 @@
  */
 
 export * from './addBlocker';
+export * from './allowedPlugin';
 export * from './attribute';
 export * from './attributes';
 export * from './autograph';
@@ -65,6 +66,7 @@ export * from './permanentFreezeDelegate';
 export * from './permanentTransferDelegate';
 export * from './plugin';
 export * from './pluginAuthorityPair';
+export * from './pluginAuthorityType';
 export * from './pluginType';
 export * from './registryRecord';
 export * from './transferDelegate';

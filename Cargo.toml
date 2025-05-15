@@ -8,3 +8,4 @@ strip = true           # Automatically strip symbols from the binary.
 opt-level = 3          # Optimize for speed.
 lto = true
 codegen-units = 1
+
