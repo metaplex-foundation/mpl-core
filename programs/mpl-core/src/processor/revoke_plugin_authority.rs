@@ -125,6 +125,11 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
         }
     }
 
+    // Groups plugins must be managed only via Group-specific instructions; revoke is not allowed.
+    if args.plugin_type == PluginType::Groups {
+        return Err(MplCoreError::InvalidPlugin.into());
+    }
+
     let (collection, plugin_header, mut plugin_registry) =
         fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;
 

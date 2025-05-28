@@ -212,6 +212,10 @@ pub enum MplCoreError {
     /// 50 - Bubblegum V2 Plugin limits other plugins
     #[error("Bubblegum V2 Plugin limits other plugins")]
     BlockedByBubblegumV2,
+
+    /// 51 - Group must be empty to be closed
+    #[error("Group must be empty to be closed")]
+    GroupMustBeEmpty,
 }
 
 impl PrintProgramError for MplCoreError {

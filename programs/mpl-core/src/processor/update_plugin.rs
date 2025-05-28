@@ -112,6 +112,11 @@ pub(crate) fn update_collection_plugin<'a>(
         }
     }
 
+    // Groups plugins must be mutated only through dedicated Group instructions.
+    if PluginType::from(&args.plugin) == PluginType::Groups {
+        return Err(MplCoreError::InvalidPlugin.into());
+    }
+
     let (target_plugin_authority, _) = fetch_wrapped_plugin::<CollectionV1>(
         ctx.accounts.collection,
         None,

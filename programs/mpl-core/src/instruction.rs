@@ -3,16 +3,22 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
 use crate::processor::{
-    AddCollectionExternalPluginAdapterV1Args, AddCollectionPluginV1Args,
-    AddExternalPluginAdapterV1Args, AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args,
-    ApprovePluginAuthorityV1Args, BurnCollectionV1Args, BurnV1Args, CompressV1Args,
-    CreateCollectionV1Args, CreateCollectionV2Args, CreateV1Args, CreateV2Args, DecompressV1Args,
-    ExecuteV1Args, RemoveCollectionExternalPluginAdapterV1Args, RemoveCollectionPluginV1Args,
-    RemoveExternalPluginAdapterV1Args, RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args,
+    AddAssetsToGroupV1Args, AddCollectionExternalPluginAdapterV1Args, AddCollectionPluginV1Args,
+    AddCollectionsToGroupV1Args, AddExternalPluginAdapterV1Args,
+    AddGroupExternalPluginAdapterV1Args, AddGroupPluginV1Args, AddGroupsToGroupV1Args,
+    AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args, ApproveGroupPluginAuthorityV1Args,
+    ApprovePluginAuthorityV1Args, BurnCollectionV1Args, BurnV1Args, CloseGroupV1Args,
+    CompressV1Args, CreateCollectionV1Args, CreateCollectionV2Args, CreateGroupV1Args,
+    CreateV1Args, CreateV2Args, DecompressV1Args, ExecuteV1Args, RemoveAssetsFromGroupV1Args,
+    RemoveCollectionExternalPluginAdapterV1Args, RemoveCollectionPluginV1Args,
+    RemoveCollectionsFromGroupV1Args, RemoveExternalPluginAdapterV1Args,
+    RemoveGroupExternalPluginAdapterV1Args, RemoveGroupPluginV1Args, RemoveGroupsFromGroupV1Args,
+    RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args, RevokeGroupPluginAuthorityV1Args,
     RevokePluginAuthorityV1Args, TransferV1Args, UpdateCollectionExternalPluginAdapterV1Args,
     UpdateCollectionInfoV1Args, UpdateCollectionPluginV1Args, UpdateCollectionV1Args,
-    UpdateExternalPluginAdapterV1Args, UpdatePluginV1Args, UpdateV1Args, UpdateV2Args,
-    WriteCollectionExternalPluginAdapterDataV1Args, WriteExternalPluginAdapterDataV1Args,
+    UpdateExternalPluginAdapterV1Args, UpdateGroupPluginV1Args, UpdateGroupV1Args,
+    UpdatePluginV1Args, UpdateV1Args, UpdateV2Args, WriteCollectionExternalPluginAdapterDataV1Args,
+    WriteExternalPluginAdapterDataV1Args, WriteGroupExternalPluginAdapterDataV1Args,
 };
 
 /// Instructions supported by the mpl-core program.
@@ -38,6 +44,27 @@ pub(crate) enum MplAssetInstruction {
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, name="system_program", desc = "The system program")]
     CreateCollectionV1(CreateCollectionV1Args),
+
+    /// Create a new Group account.
+    #[account(0, writable, signer, name="group", desc = "The address of the new group")]
+    #[account(1, optional, name="update_authority", desc = "The authority of the new group")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, name="system_program", desc = "The system program")]
+    CreateGroupV1(CreateGroupV1Args),
+
+    /// Close an existing Group account. The group must have no parent or child relationships.
+    #[account(0, writable, name="group", desc = "The address of the group to close")]
+    #[account(1, writable, signer, name="payer", desc = "The account receiving reclaimed lamports")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or update delegate of the group")]
+    CloseGroupV1(CloseGroupV1Args),
+
+    /// Update an existing Group account.
+    #[account(0, writable, name="group", desc = "The address of the group to update")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or update delegate of the group")]
+    #[account(3, optional, name="new_update_authority", desc = "The new update authority of the group")]
+    #[account(4, name="system_program", desc = "The system program")]
+    UpdateGroupV1(UpdateGroupV1Args),
 
     /// Add a plugin to an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
@@ -307,4 +334,111 @@ pub(crate) enum MplAssetInstruction {
     #[account(0, writable, name="collection", desc = "The address of the asset")]
     #[account(1, signer, name="bubblegum_signer", desc = "Bubblegum PDA signer")]
     UpdateCollectionInfoV1(UpdateCollectionInfoV1Args),
+
+    /// Add collections to a group.
+    #[account(0, writable, name="group", desc = "The address of the group to modify")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the group/collections")]
+    #[account(3, name="system_program", desc = "The system program")]
+    AddCollectionsToGroupV1(AddCollectionsToGroupV1Args),
+
+    /// Remove collections from a group.
+    #[account(0, writable, name="group", desc = "The address of the group to modify")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the group/collections")]
+    #[account(3, name="system_program", desc = "The system program")]
+    RemoveCollectionsFromGroupV1(RemoveCollectionsFromGroupV1Args),
+
+    /// Add assets to a group.
+    #[account(0, writable, name="group", desc = "The address of the group to modify")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the group/assets")]
+    #[account(3, name="system_program", desc = "The system program")]
+    AddAssetsToGroupV1(AddAssetsToGroupV1Args),
+
+    /// Remove assets from a group.
+    #[account(0, writable, name="group", desc = "The address of the group to modify")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the group/assets")]
+    #[account(3, name="system_program", desc = "The system program")]
+    RemoveAssetsFromGroupV1(RemoveAssetsFromGroupV1Args),
+
+    /// Add groups to a parent group.
+    #[account(0, writable, name="parent_group", desc = "The address of the parent group to modify")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the groups")]
+    #[account(3, name="system_program", desc = "The system program")]
+    AddGroupsToGroupV1(AddGroupsToGroupV1Args),
+
+    /// Remove groups from a parent group.
+    #[account(0, writable, name="parent_group", desc = "The address of the parent group to modify")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the groups")]
+    #[account(3, name="system_program", desc = "The system program")]
+    RemoveGroupsFromGroupV1(RemoveGroupsFromGroupV1Args),
+
+    /// Add a plugin to a Group account.
+    #[account(0, writable, name="group", desc = "The address of the group")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the group")] 
+    #[account(3, name="system_program", desc = "The system program")]
+    #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    AddGroupPluginV1(AddGroupPluginV1Args),
+
+    /// Remove a plugin from a Group account.
+    #[account(0, writable, name="group", desc = "The address of the group")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the group")] 
+    #[account(3, name="system_program", desc = "The system program")]
+    #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    RemoveGroupPluginV1(RemoveGroupPluginV1Args),
+
+    /// Update a plugin of a Group account.
+    #[account(0, writable, name="group", desc = "The address of the group")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the group")] 
+    #[account(3, name="system_program", desc = "The system program")]
+    #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    UpdateGroupPluginV1(UpdateGroupPluginV1Args),
+
+    /// Approve an authority to a Group plugin.
+    #[account(0, writable, name="group", desc = "The address of the group")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the group")] 
+    #[account(3, name="system_program", desc = "The system program")]
+    #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    ApproveGroupPluginAuthorityV1(ApproveGroupPluginAuthorityV1Args),
+
+    /// Revoke an authority from a Group plugin.
+    #[account(0, writable, name="group", desc = "The address of the group")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the group")] 
+    #[account(3, name="system_program", desc = "The system program")]
+    #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    RevokeGroupPluginAuthorityV1(RevokeGroupPluginAuthorityV1Args),
+
+    /// Add an external plugin adapter to a Group.
+    #[account(0, writable, name="group", desc = "The address of the group")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the group")]
+    #[account(3, name="system_program", desc = "The system program")]
+    #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    AddGroupExternalPluginAdapterV1(AddGroupExternalPluginAdapterV1Args),
+
+    /// Remove an external plugin adapter from a Group.
+    #[account(0, writable, name="group", desc = "The address of the group")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or delegate of the group")]
+    #[account(3, name="system_program", desc = "The system program")]
+    #[account(4, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    RemoveGroupExternalPluginAdapterV1(RemoveGroupExternalPluginAdapterV1Args),
+
+    /// Write data to a Group external plugin adapter.
+    #[account(0, writable, name="group", desc = "The address of the group")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The data authority or update authority of the group")]
+    #[account(3, optional, name="buffer", desc = "Buffer account containing data")]
+    #[account(4, name="system_program", desc = "The system program")]
+    #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
+    WriteGroupExternalPluginAdapterDataV1(WriteGroupExternalPluginAdapterDataV1Args),
 }
