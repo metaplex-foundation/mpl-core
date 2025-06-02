@@ -10,10 +10,10 @@ use crate::{
     types::{
         AddBlocker, AppData, Attributes, Autograph, BubblegumV2, BurnDelegate, DataSection,
         Edition, ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey,
-        FreezeDelegate, ImmutableMetadata, Key, LifecycleHook, LinkedAppData, LinkedLifecycleHook,
-        MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
-        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
-        VerifiedCreators,
+        ExternalPluginAdapterType, FreezeDelegate, FreezeExecute, ImmutableMetadata, Key,
+        LifecycleHook, LinkedAppData, LinkedLifecycleHook, MasterEdition, Oracle,
+        PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate, PluginAuthority,
+        Royalties, TransferDelegate, UpdateDelegate, VerifiedCreators,
     },
 };
 
@@ -167,6 +167,12 @@ pub struct BubblegumV2Plugin {
     pub bubblegum_v2: BubblegumV2,
 }
 
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct FreezeExecutePlugin {
+    pub base: BasePlugin,
+    pub freeze_execute: FreezeExecute,
+}
+
 #[derive(Debug, Default)]
 pub struct PluginsList {
     pub royalties: Option<RoyaltiesPlugin>,
@@ -185,6 +191,7 @@ pub struct PluginsList {
     pub verified_creators: Option<VerifiedCreatorsPlugin>,
     pub autograph: Option<AutographPlugin>,
     pub bubblegum_v2: Option<BubblegumV2Plugin>,
+    pub freeze_execute: Option<FreezeExecutePlugin>,
 }
 
 #[derive(Debug, Default)]
