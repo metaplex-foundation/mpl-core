@@ -58,12 +58,12 @@ pub enum Plugin {
     ImmutableMetadata(ImmutableMetadata),
     /// VerifiedCreators plugin allows update auth to specify verified creators and additional creators to sign
     VerifiedCreators(VerifiedCreators),
-    /// Groups plugin stores parent group memberships of a collection for taxonomy purposes
-    Groups(Groups),
     /// Autograph plugin allows anybody to add their signature to the asset with an optional message
     Autograph(Autograph),
     /// The Bubblegum V2 plugin allows a Core collection to contain Compressed NFTs (cNFTs) from the Bubblegum program.
     BubblegumV2(BubblegumV2),
+    /// Groups plugin stores parent group memberships of a collection for taxonomy purposes
+    Groups(Groups),
 }
 
 impl Plugin {
@@ -106,9 +106,9 @@ impl Plugin {
             Plugin::AddBlocker(inner) => inner,
             Plugin::ImmutableMetadata(inner) => inner,
             Plugin::VerifiedCreators(inner) => inner,
-            Plugin::Groups(inner) => inner,
             Plugin::Autograph(inner) => inner,
             Plugin::BubblegumV2(inner) => inner,
+            Plugin::Groups(inner) => inner,
         }
     }
 }
@@ -139,9 +139,9 @@ impl DataBlob for Plugin {
                 Plugin::AddBlocker(add_blocker) => add_blocker.len(),
                 Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.len(),
                 Plugin::VerifiedCreators(verified_creators) => verified_creators.len(),
-                Plugin::Groups(groups) => groups.len(),
                 Plugin::Autograph(autograph) => autograph.len(),
                 Plugin::BubblegumV2(bubblegum_v2) => bubblegum_v2.len(),
+                Plugin::Groups(groups) => groups.len(),
             }
     }
 }
@@ -192,12 +192,12 @@ pub enum PluginType {
     ImmutableMetadata,
     /// VerifiedCreators plugin.
     VerifiedCreators,
-    /// Groups plugin.
-    Groups,
     /// Autograph plugin.
     Autograph,
     /// Bubblegum V2 plugin.
     BubblegumV2,
+    /// Groups plugin.
+    Groups,
 }
 
 impl PluginType {
@@ -235,9 +235,9 @@ impl From<&Plugin> for PluginType {
             Plugin::Edition(_) => PluginType::Edition,
             Plugin::MasterEdition(_) => PluginType::MasterEdition,
             Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
-            Plugin::Groups(_) => PluginType::Groups,
             Plugin::Autograph(_) => PluginType::Autograph,
             Plugin::BubblegumV2(_) => PluginType::BubblegumV2,
+            Plugin::Groups(_) => PluginType::Groups,
         }
     }
 }
@@ -260,11 +260,11 @@ impl PluginType {
             PluginType::Edition => Authority::UpdateAuthority,
             PluginType::MasterEdition => Authority::UpdateAuthority,
             PluginType::VerifiedCreators => Authority::UpdateAuthority,
-            PluginType::Groups => Authority::UpdateAuthority,
             PluginType::Autograph => Authority::Owner,
             PluginType::BubblegumV2 => Authority::Address {
                 address: mpl_bubblegum::ID,
             },
+            PluginType::Groups => Authority::UpdateAuthority,
         }
     }
 }
@@ -314,9 +314,9 @@ mod test {
             Plugin::AddBlocker(AddBlocker {}),
             Plugin::ImmutableMetadata(ImmutableMetadata {}),
             Plugin::VerifiedCreators(VerifiedCreators { signatures: vec![] }),
-            Plugin::Groups(Groups { groups: vec![] }),
             Plugin::Autograph(Autograph { signatures: vec![] }),
             Plugin::BubblegumV2(BubblegumV2 {}),
+            Plugin::Groups(Groups { groups: vec![] }),
         ];
 
         assert_eq!(
@@ -426,9 +426,6 @@ mod test {
                     verified: true,
                 }],
             })],
-            vec![Plugin::Groups(Groups {
-                groups: vec![Pubkey::default()],
-            })],
             vec![Plugin::Autograph(Autograph {
                 signatures: vec![AutographSignature {
                     address: Pubkey::default(),
@@ -436,6 +433,9 @@ mod test {
                 }],
             })],
             vec![Plugin::BubblegumV2(BubblegumV2 {})],
+            vec![Plugin::Groups(Groups {
+                groups: vec![Pubkey::default()],
+            })],
         ];
 
         assert_eq!(

@@ -11,6 +11,7 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
+    instruction::accounts::{AddCollectionsToGroupV1Accounts, Context},
     plugins::{
         create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginHeaderV1,
         PluginRegistryV1, PluginType,
@@ -25,35 +26,25 @@ use crate::{
 /// Arguments for the `AddCollectionsToGroupV1` instruction.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub(crate) struct AddCollectionsToGroupV1Args {
-    /// The list of collections to add to the group.
-    pub(crate) collections: Vec<Pubkey>,
-}
+pub(crate) struct AddCollectionsToGroupV1Args {}
 
 /// Processor for the `AddCollectionsToGroupV1` instruction.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn add_collections_to_group_v1<'a>(
     accounts: &'a [AccountInfo<'a>],
-    args: AddCollectionsToGroupV1Args,
+    _args: AddCollectionsToGroupV1Args,
 ) -> ProgramResult {
-    // Expected account layout:
-    //   0. [writable] Group account
-    //   1. [writable, signer] Payer account (also default authority)
-    //   2. [signer] Optional authority (update auth/delegate)
-    //   3. [] System program
-    //   4..N [writable] Collection accounts, one for each pubkey in args.collections
+    // Use generated context to access fixed and remaining accounts.
+    let ctx: Context<AddCollectionsToGroupV1Accounts> =
+        AddCollectionsToGroupV1Accounts::context(accounts)?;
 
-    if accounts.len() < 4 {
-        return Err(ProgramError::NotEnoughAccountKeys);
-    }
+    let group_info = ctx.accounts.group;
+    let payer_info = ctx.accounts.payer;
+    let authority_info_opt = ctx.accounts.authority;
+    let system_program_info = ctx.accounts.system_program;
 
-    let group_info = &accounts[0];
-    let payer_info = &accounts[1];
-    let authority_info_opt = accounts.get(2);
-    let system_program_info = &accounts[3];
-
-    // Remaining accounts are the collection accounts.
-    let collection_accounts = &accounts[4..];
+    // Dynamic list of collection accounts passed after the fixed accounts.
+    let remaining_accounts = ctx.remaining_accounts;
 
     // Basic guards.
     assert_signer(payer_info)?;
@@ -61,16 +52,6 @@ pub(crate) fn add_collections_to_group_v1<'a>(
 
     if system_program_info.key != &solana_program::system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
-    }
-
-    // Validate arg count matches remaining accounts.
-    if collection_accounts.len() != args.collections.len() {
-        msg!(
-            "Error: Number of collection accounts ({}) does not match number of pubkeys in args ({}).",
-            collection_accounts.len(),
-            args.collections.len()
-        );
-        return Err(ProgramError::NotEnoughAccountKeys);
     }
 
     // Deserialize group.
@@ -83,16 +64,7 @@ pub(crate) fn add_collections_to_group_v1<'a>(
     }
 
     // Process each collection.
-    for (i, collection_info) in collection_accounts.iter().enumerate() {
-        // Ensure account key matches expected pubkey.
-        if collection_info.key != &args.collections[i] {
-            msg!(
-                "Error: Collection account at position {} does not match provided pubkey list",
-                i
-            );
-            return Err(MplCoreError::IncorrectAccount.into());
-        }
-
+    for collection_info in remaining_accounts.iter() {
         // Verify collection is writable.
         if !collection_info.is_writable {
             msg!("Error: Collection account must be writable");

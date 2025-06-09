@@ -45,27 +45,6 @@ pub(crate) enum MplAssetInstruction {
     #[account(3, name="system_program", desc = "The system program")]
     CreateCollectionV1(CreateCollectionV1Args),
 
-    /// Create a new Group account.
-    #[account(0, writable, signer, name="group", desc = "The address of the new group")]
-    #[account(1, optional, name="update_authority", desc = "The authority of the new group")]
-    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
-    #[account(3, name="system_program", desc = "The system program")]
-    CreateGroupV1(CreateGroupV1Args),
-
-    /// Close an existing Group account. The group must have no parent or child relationships.
-    #[account(0, writable, name="group", desc = "The address of the group to close")]
-    #[account(1, writable, signer, name="payer", desc = "The account receiving reclaimed lamports")]
-    #[account(2, optional, signer, name="authority", desc = "The update authority or update delegate of the group")]
-    CloseGroupV1(CloseGroupV1Args),
-
-    /// Update an existing Group account.
-    #[account(0, writable, name="group", desc = "The address of the group to update")]
-    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
-    #[account(2, optional, signer, name="authority", desc = "The update authority or update delegate of the group")]
-    #[account(3, optional, name="new_update_authority", desc = "The new update authority of the group")]
-    #[account(4, name="system_program", desc = "The system program")]
-    UpdateGroupV1(UpdateGroupV1Args),
-
     /// Add a plugin to an mpl-core.
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
@@ -441,4 +420,25 @@ pub(crate) enum MplAssetInstruction {
     #[account(4, name="system_program", desc = "The system program")]
     #[account(5, optional, name="log_wrapper", desc = "The SPL Noop Program")]
     WriteGroupExternalPluginAdapterDataV1(WriteGroupExternalPluginAdapterDataV1Args),
+
+    /// Create a new Group account.
+    #[account(0, writable, signer, name="group", desc = "The address of the new group")]
+    #[account(1, optional, name="update_authority", desc = "The authority of the new group")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, name="system_program", desc = "The system program")]
+    CreateGroupV1(CreateGroupV1Args),
+
+    /// Close an existing Group account. The group must have no parent or child relationships.
+    #[account(0, writable, name="group", desc = "The address of the group to close")]
+    #[account(1, writable, signer, name="payer", desc = "The account receiving reclaimed lamports")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or update delegate of the group")]
+    CloseGroupV1(CloseGroupV1Args),
+
+    /// Update an existing Group account.
+    #[account(0, writable, name="group", desc = "The address of the group to update")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority or update delegate of the group")]
+    #[account(3, optional, name="new_update_authority", desc = "The new update authority of the group")]
+    #[account(4, name="system_program", desc = "The system program")]
+    UpdateGroupV1(UpdateGroupV1Args),
 }
