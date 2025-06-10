@@ -39,21 +39,21 @@ env:
 
 jobs:
   check_tag:
-    name: 'Check tag'
+    name: "Check tag"
     runs-on: ubuntu-latest
     outputs:
       program: ${{ steps.set_program.outputs.program }}
       type: ${{ steps.set_program.outputs.type }}
     steps:
-    - name: Check tag
-      id: set_program
-      run: |
-        echo program="core" >> $GITHUB_OUTPUT
-        if [[ "${{ inputs.git_ref }}" =~ ^release/core@* ]]; then
-          echo type="release" >> $GITHUB_OUTPUT
-        else
-          echo type="ref" >> $GITHUB_OUTPUT
-        fi
+      - name: Check tag
+        id: set_program
+        run: |
+          echo program="core" >> $GITHUB_OUTPUT
+          if [[ "${{ inputs.git_ref }}" =~ ^release/core@* ]]; then
+            echo type="release" >> $GITHUB_OUTPUT
+          else
+            echo type="ref" >> $GITHUB_OUTPUT
+          fi
   build_programs:
     name: Programs
     uses: ./.github/workflows/build-programs.yml
@@ -109,6 +109,9 @@ jobs:
           token: ${{ secrets.SVC_TOKEN }}
           ref: ${{ inputs.git_ref }}
 
+      - name: Export GitHub vars to GITHUB_ENV
+        run: echo "NODE_VERSION=${{ vars.NODE_VERSION }}" >> $GITHUB_ENV
+
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV
 
@@ -152,7 +155,7 @@ jobs:
         run: |
           echo PROGRAM_NAME="mpl_core" >> $GITHUB_ENV
           echo ${{ secrets.CORE_ID }} > ./program-id.json
-          
+
           if [[ "${{ inputs.cluster }}" == "sonic"* ]]; then
             echo ${{ secrets.CORE_SONIC_DEPLOY_KEY }} > ./deployer-key.json
             echo DEPLOY_TYPE="direct" >> $GITHUB_ENV
@@ -172,7 +175,7 @@ jobs:
           else
             echo "Invalid cluster: ${{ inputs.cluster }}"
             exit 1
-          fi          
+          fi
 
       - name: Sanitize Ref
         id: sanitize
@@ -190,7 +193,7 @@ jobs:
         if: needs.check_tag.outputs.type == 'ref'
         with:
           name: program-builds-${{ steps.sanitize.outputs.sanitized }}
-      
+
       - name: Download release asset
         uses: actions/github-script@v5
         id: get_release
@@ -206,11 +209,11 @@ jobs:
               repo: context.repo.repo,
               tag: tag
             });
-            
+
             if (release.status !== 200) {
               throw new Error(`Failed to fetch release for tag ${tag}`);
             }
-            
+
             const asset = release.data.assets.find(asset => asset.name === assetName);
             if (!asset) {
               throw new Error(`Asset ${assetName} not found in release tagged ${tag}`);
@@ -259,7 +262,6 @@ jobs:
           rm ./submitter-key.json
 
           echo "BUFFER=$BUFFER" >> $GITHUB_ENV
-    
 
       - name: Create Squads proposal
         if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'squads'
@@ -267,12 +269,12 @@ jobs:
         with:
           network-url: ${{ env.RPC }}
           program-multisig: ${{ env.SQUADS_MULTISIG }}
-          program-id: 'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d'
+          program-id: "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
           program-index: ${{ env.SQUADS_PROGRAM_INDEX }}
           buffer: ${{ env.BUFFER }}
-          spill-address: 'botTxAkJhuCtNNn9xsH8fHJjzTkcN6XD4dR3R5hkzV2'
+          spill-address: "botTxAkJhuCtNNn9xsH8fHJjzTkcN6XD4dR3R5hkzV2"
           authority: ${{ env.SQUADS_VAULT }}
-          name: 'Deploy ${{ inputs.git_ref }}'
+          name: "Deploy ${{ inputs.git_ref }}"
           keypair: ${{ secrets.SQUADS_BOT_KEY }}
 
       - name: Create env tag

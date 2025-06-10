@@ -22,6 +22,9 @@ jobs:
       - name: Git checkout
         uses: actions/checkout@v4
 
+      - name: Export GitHub vars to GITHUB_ENV
+        run: echo "NODE_VERSION=${{ vars.NODE_VERSION }}" >> $GITHUB_ENV
+
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV
 

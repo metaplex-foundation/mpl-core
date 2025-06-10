@@ -15,12 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: ["20.x", "22.x"]
+        node: ["${{ vars.NEXT_VERSION }}", "${{ vars.NEXT_VERSION_NEXT }}"]
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.git_ref }}
+
+      - name: Export GitHub vars to GITHUB_ENV
+        run: echo "NODE_VERSION=${{ vars.NODE_VERSION }}" >> $GITHUB_ENV
 
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV
@@ -65,6 +68,9 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+
+      - name: Export GitHub vars to GITHUB_ENV
+        run: echo "NODE_VERSION=${{ vars.NODE_VERSION }}" >> $GITHUB_ENV
 
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV
