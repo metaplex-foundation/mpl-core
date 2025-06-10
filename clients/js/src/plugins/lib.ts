@@ -2,31 +2,31 @@ import { isSome, none, Option, some } from '@metaplex-foundation/umi';
 
 import { decode } from '@msgpack/msgpack';
 import {
-  Key,
-  PluginHeaderV1,
   Plugin as BasePlugin,
-  getPluginSerializer,
-  RegistryRecord,
-  PluginAuthorityPair,
-  PluginType,
   ExternalPluginAdapterSchema,
+  getPluginSerializer,
+  Key,
+  PluginAuthorityPair,
+  PluginHeaderV1,
+  PluginType,
+  RegistryRecord,
 } from '../generated';
 
 import { toWords } from '../utils';
-import {
-  CreatePluginArgs,
-  AssetAllPluginArgsV2,
-  PluginAuthorityPairHelperArgs,
-  AssetPluginAuthorityPairArgsV2,
-  PluginsList,
-} from './types';
+import { masterEditionFromBase, masterEditionToBase } from './masterEdition';
 import {
   PluginAuthority,
   pluginAuthorityFromBase,
   pluginAuthorityToBase,
 } from './pluginAuthority';
 import { royaltiesFromBase, royaltiesToBase } from './royalties';
-import { masterEditionFromBase, masterEditionToBase } from './masterEdition';
+import {
+  AssetAllPluginArgsV2,
+  AssetPluginAuthorityPairArgsV2,
+  CreatePluginArgs,
+  PluginAuthorityPairHelperArgs,
+  PluginsList,
+} from './types';
 
 export function formPluginHeaderV1(
   pluginRegistryOffset: bigint
@@ -102,6 +102,22 @@ export function createPluginV2(args: AssetAllPluginArgsV2): BasePlugin {
       __kind: type,
       fields: [masterEditionToBase(args)],
     };
+  }
+
+  // Explicit handling for the owner-managed FreezeExecute plugin so that we
+  // serialize only the `{ frozen: boolean }` payload expected by the on-chain
+  // program. If we passed the full `args` object (which also contains the
+  // `type` property), the resulting Borsh layout would be larger than the
+  // program expects and the plugin would silently default to `frozen = false`.
+  if ((type as any) === 'FreezeExecute') {
+    // The args shape is `{ type: 'FreezeExecute'; frozen: boolean }` when
+    // coming from the SDK. Extract the `frozen` flag and wrap it in the
+    // expected tuple.
+    const { frozen } = args as any;
+    return {
+      __kind: type,
+      fields: [{ frozen }],
+    } as any;
   }
 
   return {
