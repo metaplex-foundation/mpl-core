@@ -13,13 +13,13 @@ crate-type = ["cdylib", "lib"]
 borsh = "^0.10"
 shank = "0.4.2"
 modular-bitfield = "0.11.2"
-mpl-bubblegum = "1.4.0"
+mpl-bubblegum = "2.1.0"
 num-derive = "^0.3"
 num-traits = "^0.2"
-solana-program = "^1.17"
+solana-program = "^2.0"
 thiserror = "^1.0"
 bytemuck = "1.14.1"
-mpl-utils = "0.3.5"
-spl-noop = { version = "0.2.0", features = ["cpi"] }
+mpl-utils = "0.3.6"
+spl-noop = { version = "1.0.0", features = ["cpi"] }
 podded = "0.5.1"
 strum = { version = "0.26.1", features = ["derive"] }
