@@ -216,6 +216,10 @@ pub enum MplCoreError {
     /// 51 - Group must be empty to be closed
     #[error("Group must be empty to be closed")]
     GroupMustBeEmpty,
+
+    /// 52 - Duplicate entry provided when adding relationships to a group
+    #[error("Duplicate entry provided when adding relationships to a group")]
+    DuplicateEntry,
 }
 
 impl PrintProgramError for MplCoreError {

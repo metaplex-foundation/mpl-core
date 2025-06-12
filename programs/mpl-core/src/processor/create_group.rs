@@ -29,6 +29,8 @@ use crate::{
 };
 
 use crate::plugins::fetch_wrapped_plugin;
+use crate::state::RelationshipKind;
+use std::collections::HashSet;
 
 /// Arguments for the `CreateGroupV1` instruction.
 #[repr(C)]
@@ -38,14 +40,8 @@ pub(crate) struct CreateGroupV1Args {
     pub(crate) name: String,
     /// URI pointing to off-chain JSON describing the group.
     pub(crate) uri: String,
-    /// Initial collections that are direct children of the group (optional).
-    pub(crate) collections: Option<Vec<Pubkey>>,
-    /// Initial groups that are direct children of the group (optional).
-    pub(crate) groups: Option<Vec<Pubkey>>,
-    /// Initial parent groups that the group belongs to (optional).
-    pub(crate) parent_groups: Option<Vec<Pubkey>>,
-    /// Initial assets that are direct members of the group (optional).
-    pub(crate) assets: Option<Vec<Pubkey>>,
+    /// Relationships (collections, child groups, parent groups, assets) to link at creation.
+    pub(crate) relationships: Vec<crate::state::RelationshipEntry>,
 }
 
 /// Returns true if the `authority_info` represents either the update authority of the asset
@@ -107,16 +103,32 @@ pub(crate) fn create_group_v1<'a>(
     let CreateGroupV1Args {
         name,
         uri,
-        collections,
-        groups,
-        parent_groups,
-        assets,
+        relationships,
     } = args;
 
-    let collections_vec = collections.unwrap_or_default();
-    let child_groups_vec = groups.unwrap_or_default();
-    let parent_groups_vec = parent_groups.unwrap_or_default();
-    let assets_vec = assets.unwrap_or_default();
+    let mut collections_vec: Vec<Pubkey> = Vec::new();
+    let mut child_groups_vec: Vec<Pubkey> = Vec::new();
+    let mut parent_groups_vec: Vec<Pubkey> = Vec::new();
+    let mut assets_vec: Vec<Pubkey> = Vec::new();
+
+    // Track all relationship keys we have already seen to prevent duplicates across
+    // categories (e.g., the same account referenced twice or in two different
+    // categories).  If a duplicate is detected, abort early with an error.
+    let mut seen: HashSet<Pubkey> = HashSet::new();
+
+    for rel in relationships.into_iter() {
+        // If insert returns false, the value was already present – duplicate detected.
+        if !seen.insert(rel.key) {
+            return Err(MplCoreError::DuplicateEntry.into());
+        }
+
+        match rel.kind {
+            RelationshipKind::Collection => collections_vec.push(rel.key),
+            RelationshipKind::ChildGroup => child_groups_vec.push(rel.key),
+            RelationshipKind::ParentGroup => parent_groups_vec.push(rel.key),
+            RelationshipKind::Asset => assets_vec.push(rel.key),
+        }
+    }
 
     let new_group = GroupV1::new(
         *authority_info.key,

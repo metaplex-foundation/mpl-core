@@ -120,6 +120,32 @@ impl CoreAsset for GroupV1 {
     }
 }
 
+/// Specifies the category of relationship a `Group` account has with another
+/// account. This enum is used only for instruction input (not stored on chain)
+/// to keep the `CreateGroup` API compact.
+#[repr(u8)]
+#[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
+pub enum RelationshipKind {
+    /// Relationship to a `Collection` account the group directly contains.
+    Collection,
+    /// Relationship to a child `Group` that this group directly contains.
+    ChildGroup,
+    /// Relationship to a parent `Group` that contains this group.
+    ParentGroup,
+    /// Relationship to an `Asset` account that is a direct member of the group.
+    Asset,
+}
+
+/// Compact representation of a single relationship passed into
+/// `CreateGroupV1Args`.
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq)]
+pub struct RelationshipEntry {
+    /// The kind of relationship.
+    pub kind: RelationshipKind,
+    /// The public key of the related account.
+    pub key: Pubkey,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
