@@ -31,10 +31,7 @@ test('it covers the freeze execute backed NFT flow', async (t) => {
     asset: assetSigner,
     name: 'Test Asset',
     uri: 'https://example.com/asset',
-    plugins: [
-      // Cast to any – FreezeExecute not yet in SDK type union.
-      { type: 'FreezeExecute', frozen: true } as any,
-    ],
+    plugins: [{ type: 'FreezeExecute', frozen: true }],
   }).sendAndConfirm(umi);
 
   const asset = await fetchAssetV1(umi, publicKey(assetSigner));

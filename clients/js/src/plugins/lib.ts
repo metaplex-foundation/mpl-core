@@ -104,20 +104,15 @@ export function createPluginV2(args: AssetAllPluginArgsV2): BasePlugin {
     };
   }
 
-  // Explicit handling for the owner-managed FreezeExecute plugin so that we
-  // serialize only the `{ frozen: boolean }` payload expected by the on-chain
-  // program. If we passed the full `args` object (which also contains the
-  // `type` property), the resulting Borsh layout would be larger than the
-  // program expects and the plugin would silently default to `frozen = false`.
-  if ((type as any) === 'FreezeExecute') {
-    // The args shape is `{ type: 'FreezeExecute'; frozen: boolean }` when
-    // coming from the SDK. Extract the `frozen` flag and wrap it in the
-    // expected tuple.
-    const { frozen } = args as any;
+  if (type === 'FreezeExecute') {
+    const { frozen } = args;
+    if (typeof frozen !== 'boolean') {
+      throw new Error('FreezeExecute plugin requires a boolean "frozen" flag.');
+    }
     return {
-      __kind: type,
+      __kind: 'FreezeExecute',
       fields: [{ frozen }],
-    } as any;
+    };
   }
 
   return {
