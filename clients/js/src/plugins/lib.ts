@@ -110,7 +110,7 @@ export function createPluginV2(args: AssetAllPluginArgsV2): BasePlugin {
       throw new Error('FreezeExecute plugin requires a boolean "frozen" flag.');
     }
     return {
-      __kind: 'FreezeExecute',
+      __kind: type,
       fields: [{ frozen }],
     };
   }
