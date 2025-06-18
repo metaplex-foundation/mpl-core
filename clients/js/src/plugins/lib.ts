@@ -104,17 +104,6 @@ export function createPluginV2(args: AssetAllPluginArgsV2): BasePlugin {
     };
   }
 
-  if (type === 'FreezeExecute') {
-    const { frozen } = args;
-    if (typeof frozen !== 'boolean') {
-      throw new Error('FreezeExecute plugin requires a boolean "frozen" flag.');
-    }
-    return {
-      __kind: type,
-      fields: [{ frozen }],
-    };
-  }
-
   return {
     __kind: type,
     fields: [(args as any) || {}],
