@@ -2576,7 +2576,7 @@ dependencies = [
 
 [[package]]
 name = "mpl-core"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "anchor-lang",
  "assert_matches",
@@ -2598,7 +2598,7 @@ dependencies = [
 
 [[package]]
 name = "mpl-core-program"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "borsh 0.10.4",
  "bytemuck",
