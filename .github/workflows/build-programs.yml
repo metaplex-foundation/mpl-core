@@ -49,6 +49,9 @@ jobs:
                   version: ${{ inputs.solana || env.SOLANA_VERSION }}
                   cache: ${{ env.CACHE }}
 
+            - name: Install Protobuf Compiler
+              run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
             - name: Cache program dependencies
               if: env.CACHE == 'true'
               uses: metaplex-foundation/actions/cache-programs@v1
