@@ -15,7 +15,7 @@ use crate::{
     AddBlockerPlugin, AppDataWithData, AttributesPlugin, AutographPlugin, BaseAuthority,
     BasePlugin, BubblegumV2Plugin, BurnDelegatePlugin, DataBlob, DataSectionWithData,
     EditionPlugin, ExternalPluginAdaptersList, ExternalRegistryRecordSafe, FreezeDelegatePlugin,
-    ImmutableMetadataPlugin, LifecycleHookWithData, MasterEditionPlugin,
+    FreezeExecutePlugin, ImmutableMetadataPlugin, LifecycleHookWithData, MasterEditionPlugin,
     PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin,
     PluginRegistryV1Safe, PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount,
     TransferDelegatePlugin, UpdateDelegatePlugin, VerifiedCreatorsPlugin,
@@ -347,6 +347,12 @@ pub(crate) fn registry_records_to_plugin_list(
                     }
                     Plugin::BubblegumV2(bubblegum_v2) => {
                         acc.bubblegum_v2 = Some(BubblegumV2Plugin { base, bubblegum_v2 })
+                    }
+                    Plugin::FreezeExecute(freeze_execute) => {
+                        acc.freeze_execute = Some(FreezeExecutePlugin {
+                            base,
+                            freeze_execute,
+                        })
                     }
                 }
             }
