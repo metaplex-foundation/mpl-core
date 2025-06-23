@@ -201,6 +201,7 @@ impl PluginType {
     pub fn check_execute(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
+            PluginType::FreezeExecute => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }

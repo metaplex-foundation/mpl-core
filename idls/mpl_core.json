@@ -3073,6 +3073,18 @@
       }
     },
     {
+      "name": "FreezeExecute",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "frozen",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
       "name": "TransferDelegate",
       "type": {
         "kind": "struct",
@@ -4050,6 +4062,14 @@
                 "defined": "BubblegumV2"
               }
             ]
+          },
+          {
+            "name": "FreezeExecute",
+            "fields": [
+              {
+                "defined": "FreezeExecute"
+              }
+            ]
           }
         ]
       }
@@ -4106,6 +4126,9 @@
           },
           {
             "name": "BubblegumV2"
+          },
+          {
+            "name": "FreezeExecute"
           }
         ]
       }
