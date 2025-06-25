@@ -58,6 +58,7 @@
     "vercel": "^28.16.0"
   },
   "ava": {
+    "concurrency": 2,
     "typescript": {
       "compile": false,
       "rewritePaths": {
