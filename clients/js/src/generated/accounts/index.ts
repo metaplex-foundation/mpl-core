@@ -9,6 +9,7 @@
 export * from './assetSigner';
 export * from './assetV1';
 export * from './collectionV1';
+export * from './groupV1';
 export * from './hashedAssetV1';
 export * from './pluginHeaderV1';
 export * from './pluginRegistryV1';

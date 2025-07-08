@@ -247,17 +247,19 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
 
     resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
 
-    // SAFETY: `borrow_mut` will always return a valid pointer.
-    // new_next_plugin_offset is derived from next_plugin_offset and size_diff using
-    // checked arithmetic, so it will always be less than or equal to account.data_len().
-    // This will fail and revert state if there is a memory violation.
-    unsafe {
-        let base = account.data.borrow_mut().as_mut_ptr();
-        sol_memmove(
-            base.add(new_next_plugin_offset as usize),
-            base.add(next_plugin_offset as usize),
-            registry_offset - next_plugin_offset as usize,
-        );
+    let copy_len = plugin_header
+        .plugin_registry_offset
+        .saturating_sub(next_plugin_offset as usize);
+
+    if copy_len > 0 {
+        unsafe {
+            let base = account.data.borrow_mut().as_mut_ptr();
+            sol_memmove(
+                base.add(new_next_plugin_offset as usize),
+                base.add(next_plugin_offset as usize),
+                copy_len,
+            );
+        }
     }
 
     plugin_header.save(account, core.len())?;

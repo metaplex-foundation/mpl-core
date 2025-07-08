@@ -199,13 +199,19 @@ fn process_collection_groups_plugin_remove<'a>(
             let next_plugin_offset = (record_offset + old_plugin_data.len()) as isize;
             let new_next_plugin_offset = next_plugin_offset + size_diff;
 
-            unsafe {
-                let base_ptr = collection_info.data.borrow_mut().as_mut_ptr();
-                sol_memmove(
-                    base_ptr.add(new_next_plugin_offset as usize),
-                    base_ptr.add(next_plugin_offset as usize),
-                    plugin_header.plugin_registry_offset - next_plugin_offset as usize,
-                );
+            let copy_len = plugin_header
+                .plugin_registry_offset
+                .saturating_sub(next_plugin_offset as usize);
+
+            if copy_len > 0 {
+                unsafe {
+                    let base_ptr = collection_info.data.borrow_mut().as_mut_ptr();
+                    sol_memmove(
+                        base_ptr.add(new_next_plugin_offset as usize),
+                        base_ptr.add(next_plugin_offset as usize),
+                        copy_len,
+                    );
+                }
             }
         }
 

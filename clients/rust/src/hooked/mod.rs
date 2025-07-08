@@ -50,6 +50,7 @@ impl From<&Plugin> for PluginType {
             Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
             Plugin::Autograph(_) => PluginType::Autograph,
             Plugin::BubblegumV2(_) => PluginType::BubblegumV2,
+            Plugin::Groups(_) => PluginType::Groups,
         }
     }
 }

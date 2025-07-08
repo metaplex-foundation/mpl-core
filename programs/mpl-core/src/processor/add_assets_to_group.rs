@@ -78,6 +78,11 @@ pub(crate) fn add_assets_to_group_v1<'a>(
     // Dynamic list of asset accounts passed after the fixed accounts.
     let remaining_accounts = ctx.remaining_accounts;
 
+    // The payer must ALWAYS be a signer because they may be charged rent
+    // if the group account or any of the asset plugin registries need to be
+    // resized or reallocated. Therefore, even when a distinct authority is
+    // provided (and signed) via the optional `authority` account, the payer
+    // is still required to sign this instruction.
     assert_signer(payer_info)?;
     let authority_info = resolve_authority(payer_info, authority_info_opt)?;
 
@@ -202,13 +207,19 @@ fn process_asset_groups_plugin_add<'a>(
 
                 let next_offset = (record.offset + old_data.len()) as isize;
                 let new_next_offset = next_offset + size_diff;
-                unsafe {
-                    let base_ptr = asset_info.data.borrow_mut().as_mut_ptr();
-                    sol_memmove(
-                        base_ptr.add(new_next_offset as usize),
-                        base_ptr.add(next_offset as usize),
-                        plugin_header.plugin_registry_offset - next_offset as usize,
-                    );
+                let copy_len = plugin_header
+                    .plugin_registry_offset
+                    .saturating_sub(next_offset as usize);
+
+                if copy_len > 0 {
+                    unsafe {
+                        let base_ptr = asset_info.data.borrow_mut().as_mut_ptr();
+                        sol_memmove(
+                            base_ptr.add(new_next_offset as usize),
+                            base_ptr.add(next_offset as usize),
+                            copy_len,
+                        );
+                    }
                 }
             }
             plugin_header.save(asset_info, header_offset)?;

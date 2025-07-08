@@ -165,13 +165,30 @@ fn process_asset_groups_plugin_remove<'a>(
             resize_or_reallocate_account(asset_info, payer_info, system_program_info, new_size)?;
             let next_offset = (record_offset + old_data.len()) as isize;
             let new_next_offset = next_offset + size_diff;
-            unsafe {
-                let base_ptr = asset_info.data.borrow_mut().as_mut_ptr();
-                sol_memmove(
-                    base_ptr.add(new_next_offset as usize),
-                    base_ptr.add(next_offset as usize),
-                    plugin_header.plugin_registry_offset - next_offset as usize,
-                );
+
+            // Copy the bytes that sit between the end of the plugin we just
+            // updated/removed and the start of the plugin registry. In some
+            // edge-cases (e.g. when the plugin we touched was the **last**
+            // plugin in the account), there is nothing left to move which
+            // would previously lead to an underflow when calculating the
+            // length of the range to copy. Switching to `saturating_sub` and
+            // gating the `sol_memmove` behind a size-check prevents the
+            // debug-panic `attempt to subtract with overflow` whilst keeping
+            // the behaviour identical for the common case.
+
+            let copy_len = plugin_header
+                .plugin_registry_offset
+                .saturating_sub(next_offset as usize);
+
+            if copy_len > 0 {
+                unsafe {
+                    let base_ptr = asset_info.data.borrow_mut().as_mut_ptr();
+                    sol_memmove(
+                        base_ptr.add(new_next_offset as usize),
+                        base_ptr.add(next_offset as usize),
+                        copy_len,
+                    );
+                }
             }
         }
         plugin_header.save(asset_info, header_offset)?;

@@ -1,38 +1,38 @@
 import {
-  BurnDelegate,
-  FreezeDelegate,
-  PermanentFreezeDelegate,
-  TransferDelegate,
-  UpdateDelegate,
+  AddBlocker,
   Attributes,
-  PermanentTransferDelegate,
-  PermanentBurnDelegate,
-  Edition,
-  basePluginAuthority as pluginAuthority,
-  baseUpdateAuthority as updateAuthority,
-  baseRuleSet as ruleSet,
-  FreezeDelegateArgs,
-  UpdateDelegateArgs,
   AttributesArgs,
-  PermanentFreezeDelegateArgs,
-  EditionArgs,
+  Autograph,
+  AutographArgs,
+  BaseMasterEditionArgs,
   BasePluginAuthority,
   BaseRoyaltiesArgs,
-  BaseMasterEditionArgs,
-  AddBlocker,
-  ImmutableMetadata,
-  AutographArgs,
-  VerifiedCreatorsArgs,
-  Autograph,
-  VerifiedCreators,
   BubblegumV2,
+  BurnDelegate,
+  Edition,
+  EditionArgs,
+  FreezeDelegate,
+  FreezeDelegateArgs,
+  ImmutableMetadata,
+  PermanentBurnDelegate,
+  PermanentFreezeDelegate,
+  PermanentFreezeDelegateArgs,
+  PermanentTransferDelegate,
+  basePluginAuthority as pluginAuthority,
+  baseRuleSet as ruleSet,
+  TransferDelegate,
+  baseUpdateAuthority as updateAuthority,
+  UpdateDelegate,
+  UpdateDelegateArgs,
+  VerifiedCreators,
+  VerifiedCreatorsArgs,
 } from '../generated';
-import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
-import { PluginAuthority } from './pluginAuthority';
 import { MasterEdition, MasterEditionArgs } from './masterEdition';
+import { PluginAuthority } from './pluginAuthority';
+import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
 
 // for backwards compatibility
-export { pluginAuthority, updateAuthority, ruleSet };
+export { pluginAuthority, ruleSet, updateAuthority };
 
 export type BasePlugin = {
   authority: PluginAuthority;
@@ -216,3 +216,27 @@ export type CollectionPluginsList = {
 } & CommonPluginsList;
 
 export type PluginsList = AssetPluginsList & CollectionPluginsList;
+
+export type GroupAddablePluginArgsV2 =
+  | ({
+      type: 'Attributes';
+    } & AttributesArgs)
+  | ({
+      type: 'Autograph';
+    } & AutographArgs)
+  | ({
+      type: 'VerifiedCreators';
+    } & VerifiedCreatorsArgs);
+
+export type GroupAllPluginArgsV2 = GroupAddablePluginArgsV2;
+export type GroupPluginAuthorityPairArgsV2 = GroupAllPluginArgsV2 &
+  AuthorityArgsV2;
+
+export type GroupAddablePluginAuthorityPairArgsV2 = GroupAddablePluginArgsV2 &
+  AuthorityArgsV2;
+
+export type GroupPluginsList = {
+  attributes?: AttributesPlugin;
+  autograph?: AutographPlugin;
+  verifiedCreators?: VerifiedCreatorsPlugin;
+};

@@ -2114,6 +2114,938 @@
         "type": "u8",
         "value": 32
       }
+    },
+    {
+      "name": "AddCollectionsToGroupV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group to modify"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the group/collections"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addCollectionsToGroupV1Args",
+          "type": {
+            "defined": "AddCollectionsToGroupV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 33
+      }
+    },
+    {
+      "name": "RemoveCollectionsFromGroupV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group to modify"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the group/collections"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removeCollectionsFromGroupV1Args",
+          "type": {
+            "defined": "RemoveCollectionsFromGroupV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 34
+      }
+    },
+    {
+      "name": "AddAssetsToGroupV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group to modify"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the group/assets"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addAssetsToGroupV1Args",
+          "type": {
+            "defined": "AddAssetsToGroupV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 35
+      }
+    },
+    {
+      "name": "RemoveAssetsFromGroupV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group to modify"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the group/assets"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removeAssetsFromGroupV1Args",
+          "type": {
+            "defined": "RemoveAssetsFromGroupV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 36
+      }
+    },
+    {
+      "name": "AddGroupsToGroupV1",
+      "accounts": [
+        {
+          "name": "parentGroup",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the parent group to modify"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the groups"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addGroupsToGroupV1Args",
+          "type": {
+            "defined": "AddGroupsToGroupV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 37
+      }
+    },
+    {
+      "name": "RemoveGroupsFromGroupV1",
+      "accounts": [
+        {
+          "name": "parentGroup",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the parent group to modify"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the groups"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removeGroupsFromGroupV1Args",
+          "type": {
+            "defined": "RemoveGroupsFromGroupV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 38
+      }
+    },
+    {
+      "name": "AddGroupPluginV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the group"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addGroupPluginV1Args",
+          "type": {
+            "defined": "AddGroupPluginV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 39
+      }
+    },
+    {
+      "name": "RemoveGroupPluginV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the group"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removeGroupPluginV1Args",
+          "type": {
+            "defined": "RemoveGroupPluginV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 40
+      }
+    },
+    {
+      "name": "UpdateGroupPluginV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the group"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updateGroupPluginV1Args",
+          "type": {
+            "defined": "UpdateGroupPluginV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 41
+      }
+    },
+    {
+      "name": "ApproveGroupPluginAuthorityV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the group"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "approveGroupPluginAuthorityV1Args",
+          "type": {
+            "defined": "ApproveGroupPluginAuthorityV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 42
+      }
+    },
+    {
+      "name": "RevokeGroupPluginAuthorityV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the group"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "revokeGroupPluginAuthorityV1Args",
+          "type": {
+            "defined": "RevokeGroupPluginAuthorityV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 43
+      }
+    },
+    {
+      "name": "AddGroupExternalPluginAdapterV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the group"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "addGroupExternalPluginAdapterV1Args",
+          "type": {
+            "defined": "AddGroupExternalPluginAdapterV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 44
+      }
+    },
+    {
+      "name": "RemoveGroupExternalPluginAdapterV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or delegate of the group"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "removeGroupExternalPluginAdapterV1Args",
+          "type": {
+            "defined": "RemoveGroupExternalPluginAdapterV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 45
+      }
+    },
+    {
+      "name": "WriteGroupExternalPluginAdapterDataV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The data authority or update authority of the group"
+          ]
+        },
+        {
+          "name": "buffer",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Buffer account containing data"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The SPL Noop Program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "writeGroupExternalPluginAdapterDataV1Args",
+          "type": {
+            "defined": "WriteGroupExternalPluginAdapterDataV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 46
+      }
+    },
+    {
+      "name": "CreateGroupV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The address of the new group"
+          ]
+        },
+        {
+          "name": "updateAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The authority of the new group"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "createGroupV1Args",
+          "type": {
+            "defined": "CreateGroupV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 47
+      }
+    },
+    {
+      "name": "CloseGroupV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group to close"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account receiving reclaimed lamports"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or update delegate of the group"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "closeGroupV1Args",
+          "type": {
+            "defined": "CloseGroupV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 48
+      }
+    },
+    {
+      "name": "UpdateGroupV1",
+      "accounts": [
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address of the group to update"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The update authority or update delegate of the group"
+          ]
+        },
+        {
+          "name": "newUpdateAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The new update authority of the group"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updateGroupV1Args",
+          "type": {
+            "defined": "UpdateGroupV1Args"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 49
+      }
     }
   ],
   "accounts": [
@@ -2233,6 +3165,56 @@
           {
             "name": "currentSize",
             "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GroupV1",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "updateAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "collections",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "groups",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "parentGroups",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "assets",
+            "type": {
+              "vec": "publicKey"
+            }
           }
         ]
       }
@@ -2901,6 +3883,20 @@
       }
     },
     {
+      "name": "Groups",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "groups",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "ImmutableMetadata",
       "type": {
         "kind": "struct",
@@ -3214,6 +4210,20 @@
       }
     },
     {
+      "name": "AddAssetsToGroupV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "AddCollectionsToGroupV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
       "name": "AddExternalPluginAdapterV1Args",
       "type": {
         "kind": "struct",
@@ -3236,6 +4246,56 @@
             "name": "initInfo",
             "type": {
               "defined": "ExternalPluginAdapterInitInfo"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddGroupExternalPluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initInfo",
+            "type": {
+              "defined": "ExternalPluginAdapterInitInfo"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddGroupPluginV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plugin",
+            "type": {
+              "defined": "Plugin"
+            }
+          },
+          {
+            "name": "initAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddGroupsToGroupV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "groups",
+            "type": {
+              "vec": "publicKey"
             }
           }
         ]
@@ -3280,6 +4340,26 @@
               "option": {
                 "defined": "Authority"
               }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ApproveGroupPluginAuthorityV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pluginType",
+            "type": {
+              "defined": "PluginType"
+            }
+          },
+          {
+            "name": "newAuthority",
+            "type": {
+              "defined": "Authority"
             }
           }
         ]
@@ -3355,6 +4435,13 @@
             }
           }
         ]
+      }
+    },
+    {
+      "name": "CloseGroupV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": []
       }
     },
     {
@@ -3501,6 +4588,30 @@
       }
     },
     {
+      "name": "CreateGroupV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "relationships",
+            "type": {
+              "vec": {
+                "defined": "crate"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "DecompressV1Args",
       "type": {
         "kind": "struct",
@@ -3522,6 +4633,34 @@
           {
             "name": "instructionData",
             "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveAssetsFromGroupV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "assets",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveCollectionsFromGroupV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "collections",
+            "type": {
+              "vec": "publicKey"
+            }
           }
         ]
       }
@@ -3555,6 +4694,48 @@
       }
     },
     {
+      "name": "RemoveGroupExternalPluginAdapterV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "ExternalPluginAdapterKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveGroupPluginV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pluginType",
+            "type": {
+              "defined": "PluginType"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveGroupsFromGroupV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "groups",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "RemovePluginV1Args",
       "type": {
         "kind": "struct",
@@ -3570,6 +4751,20 @@
     },
     {
       "name": "RemoveCollectionPluginV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pluginType",
+            "type": {
+              "defined": "PluginType"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RevokeGroupPluginAuthorityV1Args",
       "type": {
         "kind": "struct",
         "fields": [
@@ -3761,6 +4956,40 @@
       }
     },
     {
+      "name": "UpdateGroupV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "newName",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "newUri",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateGroupPluginV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plugin",
+            "type": {
+              "defined": "Plugin"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "UpdatePluginV1Args",
       "type": {
         "kind": "struct",
@@ -3829,6 +5058,26 @@
       }
     },
     {
+      "name": "WriteGroupExternalPluginAdapterDataV1Args",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "ExternalPluginAdapterKey"
+            }
+          },
+          {
+            "name": "data",
+            "type": {
+              "option": "bytes"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "CompressionProof",
       "type": {
         "kind": "struct",
@@ -3862,6 +5111,24 @@
                 "defined": "HashablePluginSchema"
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RelationshipEntry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "kind",
+            "type": {
+              "defined": "RelationshipKind"
+            }
+          },
+          {
+            "name": "key",
+            "type": "publicKey"
           }
         ]
       }
@@ -4050,6 +5317,14 @@
                 "defined": "BubblegumV2"
               }
             ]
+          },
+          {
+            "name": "Groups",
+            "fields": [
+              {
+                "defined": "Groups"
+              }
+            ]
           }
         ]
       }
@@ -4106,6 +5381,9 @@
           },
           {
             "name": "BubblegumV2"
+          },
+          {
+            "name": "Groups"
           }
         ]
       }
@@ -4757,6 +6035,29 @@
           },
           {
             "name": "CollectionV1"
+          },
+          {
+            "name": "GroupV1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RelationshipKind",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Collection"
+          },
+          {
+            "name": "ChildGroup"
+          },
+          {
+            "name": "ParentGroup"
+          },
+          {
+            "name": "Asset"
           }
         ]
       }
@@ -5040,6 +6341,16 @@
       "code": 50,
       "name": "BlockedByBubblegumV2",
       "msg": "Bubblegum V2 Plugin limits other plugins"
+    },
+    {
+      "code": 51,
+      "name": "GroupMustBeEmpty",
+      "msg": "Group must be empty to be closed"
+    },
+    {
+      "code": 52,
+      "name": "DuplicateEntry",
+      "msg": "Duplicate entry provided when adding relationships to a group"
     }
   ],
   "metadata": {

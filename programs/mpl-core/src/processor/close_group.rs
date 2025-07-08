@@ -16,7 +16,7 @@ use crate::{
 /// processors in the codebase.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone, Default)]
-pub(crate) struct CloseGroupV1Args;
+pub(crate) struct CloseGroupV1Args {}
 
 /// Processor for the `CloseGroupV1` instruction.
 pub(crate) fn close_group_v1<'a>(

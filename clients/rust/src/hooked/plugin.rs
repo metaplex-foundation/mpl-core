@@ -348,6 +348,7 @@ pub(crate) fn registry_records_to_plugin_list(
                     Plugin::BubblegumV2(bubblegum_v2) => {
                         acc.bubblegum_v2 = Some(BubblegumV2Plugin { base, bubblegum_v2 })
                     }
+                    Plugin::Groups(_) => {}
                 }
             }
             Ok(acc)
