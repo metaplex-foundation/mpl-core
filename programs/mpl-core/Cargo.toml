@@ -16,10 +16,11 @@ modular-bitfield = "0.11.2"
 mpl-bubblegum = "2.1.0"
 num-derive = "^0.3"
 num-traits = "^0.2"
-solana-program = "2.0"
+solana-program = "2.2.18"
 thiserror = "^1.0"
 bytemuck = "1.14.1"
-mpl-utils = "0.4.0"
+mpl-utils = "0.4.1"
 spl-noop = { version = "1.0.0", features = ["cpi"] }
 podded = "0.5.1"
 strum = { version = "0.26.1", features = ["derive"] }
+
