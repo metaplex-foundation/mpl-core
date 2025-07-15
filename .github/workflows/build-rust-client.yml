@@ -18,7 +18,7 @@ on:
                 type: string
             solana:
                 description: Solana version
-                default: 2.2.18
+                default: 2.2.1
                 required: true
                 type: string
 
