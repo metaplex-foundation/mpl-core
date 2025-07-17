@@ -54,6 +54,7 @@ export * from './externalPluginAdapterType';
 export * from './externalRegistryRecord';
 export * from './externalValidationResult';
 export * from './freezeDelegate';
+export * from './freezeExecute';
 export * from './groups';
 export * from './hashablePluginSchema';
 export * from './hashedAssetSchema';

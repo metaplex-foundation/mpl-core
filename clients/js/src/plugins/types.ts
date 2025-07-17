@@ -13,6 +13,8 @@ import {
   EditionArgs,
   FreezeDelegate,
   FreezeDelegateArgs,
+  FreezeExecute,
+  FreezeExecuteArgs,
   ImmutableMetadata,
   PermanentBurnDelegate,
   PermanentFreezeDelegate,
@@ -92,6 +94,10 @@ export type CreatePluginArgs =
     }
   | {
       type: 'BubblegumV2';
+    }
+  | {
+      type: 'FreezeExecute';
+      data: FreezeExecuteArgs;
     };
 
 export type AuthorityArgsV2 = {
@@ -127,7 +133,10 @@ export type OwnerManagedPluginArgsV2 =
     }
   | ({
       type: 'Autograph';
-    } & AutographArgs);
+    } & AutographArgs)
+  | ({
+      type: 'FreezeExecute';
+    } & FreezeExecuteArgs);
 
 export type AuthorityManagedPluginArgsV2 =
   | ({
@@ -189,6 +198,7 @@ export type ImmutableMetadataPlugin = BasePlugin & ImmutableMetadata;
 export type VerifiedCreatorsPlugin = BasePlugin & VerifiedCreators;
 export type AutographPlugin = BasePlugin & Autograph;
 export type BubblegumV2Plugin = BasePlugin & BubblegumV2;
+export type FreezeExecutePlugin = BasePlugin & FreezeExecute;
 
 export type CommonPluginsList = {
   attributes?: AttributesPlugin;
@@ -201,6 +211,7 @@ export type CommonPluginsList = {
   immutableMetadata?: ImmutableMetadataPlugin;
   autograph?: AutographPlugin;
   verifiedCreators?: VerifiedCreatorsPlugin;
+  freezeExecute?: FreezeExecutePlugin;
 };
 
 export type AssetPluginsList = {

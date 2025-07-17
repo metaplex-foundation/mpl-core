@@ -4069,6 +4069,18 @@
       }
     },
     {
+      "name": "FreezeExecute",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "frozen",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
       "name": "TransferDelegate",
       "type": {
         "kind": "struct",
@@ -5325,6 +5337,14 @@
                 "defined": "Groups"
               }
             ]
+          },
+          {
+            "name": "FreezeExecute",
+            "fields": [
+              {
+                "defined": "FreezeExecute"
+              }
+            ]
           }
         ]
       }
@@ -5384,6 +5404,9 @@
           },
           {
             "name": "Groups"
+          },
+          {
+            "name": "FreezeExecute"
           }
         ]
       }

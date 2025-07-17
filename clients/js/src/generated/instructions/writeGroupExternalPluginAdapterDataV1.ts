@@ -160,13 +160,10 @@ export function writeGroupExternalPluginAdapterDataV1(
     resolvedAccounts
   ).sort((a, b) => a.index - b.index);
 
-  // Use the `omitted` strategy so that optional accounts like `buffer` are
-  // not replaced by a dummy Program ID when undefined. This prevents sending
-  // a placeholder account that would otherwise be interpreted on-chain as an
-  // actual data buffer and cause the "TwoDataSources" error.
+  // Keys and Signers.
   const [keys, signers] = getAccountMetasAndSigners(
     orderedAccounts,
-    'omitted',
+    'programId',
     programId
   );
 

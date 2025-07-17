@@ -1,30 +1,31 @@
 {
-    "private": true,
-    "scripts": {
-        "programs:build": "./configs/scripts/program/build.sh",
-        "programs:test": "RUST_LOG=error ./configs/scripts/program/test.sh",
-        "programs:debug": "./configs/scripts/program/test.sh",
-        "programs:clean": "./configs/scripts/program/clean.sh",
-        "clients:rust:test": "./configs/scripts/client/test-rust.sh",
-        "clients:js:test": "./configs/scripts/client/test-js.sh",
-        "generate": "pnpm generate:idls && pnpm generate:clients",
-        "generate:idls": "node ./configs/shank.cjs",
-        "generate:clients": "node ./configs/kinobi.cjs",
-        "validator": "CI=1 amman start --config ./configs/validator.cjs",
-        "validator:debug": "amman start --config ./configs/validator.cjs",
-        "validator:logs": "CI=1 amman logs",
-        "validator:stop": "amman stop",
-        "lint:fix": "./configs/scripts/client/format-js.sh && ./configs/scripts/program/format.sh",
-        "format:fix": "pnpm lint:fix",
-        "lint": "./configs/scripts/client/lint-js.sh && ./configs/scripts/program/lint.sh",
-        "prepare": "husky"
-    },
-    "devDependencies": {
-        "@metaplex-foundation/amman": "^0.12.1",
-        "@metaplex-foundation/kinobi": "0.18.8-alpha.0",
-        "@metaplex-foundation/shank-js": "^0.1.7",
-        "husky": "^9.0.11",
-        "typescript": "^4.9.4"
-    },
-    "packageManager": "pnpm@8.9.0"
+  "private": true,
+  "scripts": {
+    "programs:build": "./configs/scripts/program/build.sh",
+    "programs:test": "RUST_LOG=error ./configs/scripts/program/test.sh",
+    "programs:debug": "./configs/scripts/program/test.sh",
+    "programs:clean": "./configs/scripts/program/clean.sh",
+    "clients:rust:test": "./configs/scripts/client/test-rust.sh",
+    "clients:js:test": "./configs/scripts/client/test-js.sh",
+    "generate": "pnpm generate:idls && pnpm generate:clients",
+    "generate:idls": "node ./configs/shank.cjs",
+    "generate:clients": "node ./configs/kinobi.cjs",
+    "validator": "CI=1 amman start --config ./configs/validator.cjs",
+    "validator:debug": "amman start --config ./configs/validator.cjs",
+    "validator:logs": "CI=1 amman logs",
+    "validator:stop": "amman stop",
+    "lint:fix": "./configs/scripts/client/format-js.sh && ./configs/scripts/program/format.sh",
+    "format:fix": "pnpm lint:fix",
+    "lint": "./configs/scripts/client/lint-js.sh && ./configs/scripts/program/lint.sh",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@metaplex-foundation/amman": "^0.12.1",
+    "@metaplex-foundation/kinobi": "0.18.8-alpha.0",
+    "@metaplex-foundation/shank-js": "^0.1.7",
+    "@types/node": "^24.0.3",
+    "husky": "^9.0.11",
+    "typescript": "^4.9.4"
+  },
+  "packageManager": "pnpm@8.9.0"
 }

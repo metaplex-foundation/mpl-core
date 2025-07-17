@@ -64,6 +64,8 @@ pub enum Plugin {
     BubblegumV2(BubblegumV2),
     /// Groups plugin stores parent group memberships of a collection for taxonomy purposes
     Groups(Groups),
+    /// Freeze Execute plugin.
+    FreezeExecute(FreezeExecute),
 }
 
 impl Plugin {
@@ -109,6 +111,7 @@ impl Plugin {
             Plugin::Autograph(inner) => inner,
             Plugin::BubblegumV2(inner) => inner,
             Plugin::Groups(inner) => inner,
+            Plugin::FreezeExecute(inner) => inner,
         }
     }
 }
@@ -142,6 +145,7 @@ impl DataBlob for Plugin {
                 Plugin::Autograph(autograph) => autograph.len(),
                 Plugin::BubblegumV2(bubblegum_v2) => bubblegum_v2.len(),
                 Plugin::Groups(groups) => groups.len(),
+                Plugin::FreezeExecute(freeze_execute) => freeze_execute.len(),
             }
     }
 }
@@ -198,6 +202,8 @@ pub enum PluginType {
     BubblegumV2,
     /// Groups plugin.
     Groups,
+    /// Freeze Execute plugin.
+    FreezeExecute,
 }
 
 impl PluginType {
@@ -238,6 +244,7 @@ impl From<&Plugin> for PluginType {
             Plugin::Autograph(_) => PluginType::Autograph,
             Plugin::BubblegumV2(_) => PluginType::BubblegumV2,
             Plugin::Groups(_) => PluginType::Groups,
+            Plugin::FreezeExecute(_) => PluginType::FreezeExecute,
         }
     }
 }
@@ -265,6 +272,7 @@ impl PluginType {
                 address: mpl_bubblegum::ID,
             },
             PluginType::Groups => Authority::UpdateAuthority,
+            PluginType::FreezeExecute => Authority::Owner,
         }
     }
 }
@@ -317,6 +325,7 @@ mod test {
             Plugin::Autograph(Autograph { signatures: vec![] }),
             Plugin::BubblegumV2(BubblegumV2 {}),
             Plugin::Groups(Groups { groups: vec![] }),
+            Plugin::FreezeExecute(FreezeExecute { frozen: false }),
         ];
 
         assert_eq!(
@@ -436,6 +445,7 @@ mod test {
             vec![Plugin::Groups(Groups {
                 groups: vec![Pubkey::default()],
             })],
+            vec![Plugin::FreezeExecute(FreezeExecute { frozen: true })],
         ];
 
         assert_eq!(
