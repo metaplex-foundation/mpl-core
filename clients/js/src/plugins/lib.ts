@@ -24,6 +24,8 @@ import {
   AssetAllPluginArgsV2,
   AssetPluginAuthorityPairArgsV2,
   CreatePluginArgs,
+  GroupAddablePluginAuthorityPairArgsV2,
+  GroupAllPluginArgsV2,
   PluginAuthorityPairHelperArgs,
   PluginsList,
 } from './types';
@@ -127,6 +129,23 @@ export function pluginAuthorityPairV2({
     } as any),
     authority: authority ? some(pluginAuthorityToBase(authority)) : none(),
   };
+}
+
+export function createGroupPluginV2(args: GroupAllPluginArgsV2): BasePlugin {
+  // Group plugins are a strict subset of Asset plugins, so we can safely
+  // delegate to the generic Asset helper while preserving type safety.
+  return createPluginV2(args as unknown as AssetAllPluginArgsV2);
+}
+
+export function groupPluginAuthorityPairV2({
+  authority,
+  ...rest
+}: GroupAddablePluginAuthorityPairArgsV2): PluginAuthorityPair {
+  // Delegate to the generic Asset helper – the types are compatible.
+  return pluginAuthorityPairV2({
+    authority,
+    ...rest,
+  } as unknown as AssetPluginAuthorityPairArgsV2);
 }
 
 export function mapPluginFields(fields: Array<Record<string, any>>) {

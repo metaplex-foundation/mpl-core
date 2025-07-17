@@ -26,6 +26,9 @@ pub use traits::*;
 mod update_authority;
 pub use update_authority::*;
 
+mod group;
+pub use group::*;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 use num_derive::{FromPrimitive, ToPrimitive};
 use solana_program::pubkey::Pubkey;
@@ -100,6 +103,8 @@ pub enum Key {
     PluginRegistryV1,
     /// A discriminator indicating the collection.
     CollectionV1,
+    /// A discriminator indicating the group.
+    GroupV1,
 }
 
 impl Key {

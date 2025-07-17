@@ -35,6 +35,8 @@ import {
   FreezeDelegateArgs,
   FreezeExecute,
   FreezeExecuteArgs,
+  Groups,
+  GroupsArgs,
   ImmutableMetadata,
   ImmutableMetadataArgs,
   PermanentBurnDelegate,
@@ -59,6 +61,7 @@ import {
   getEditionSerializer,
   getFreezeDelegateSerializer,
   getFreezeExecuteSerializer,
+  getGroupsSerializer,
   getImmutableMetadataSerializer,
   getPermanentBurnDelegateSerializer,
   getPermanentFreezeDelegateSerializer,
@@ -85,6 +88,7 @@ export type Plugin =
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreators] }
   | { __kind: 'Autograph'; fields: [Autograph] }
   | { __kind: 'BubblegumV2'; fields: [BubblegumV2] }
+  | { __kind: 'Groups'; fields: [Groups] }
   | { __kind: 'FreezeExecute'; fields: [FreezeExecute] };
 
 export type PluginArgs =
@@ -107,6 +111,7 @@ export type PluginArgs =
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreatorsArgs] }
   | { __kind: 'Autograph'; fields: [AutographArgs] }
   | { __kind: 'BubblegumV2'; fields: [BubblegumV2Args] }
+  | { __kind: 'Groups'; fields: [GroupsArgs] }
   | { __kind: 'FreezeExecute'; fields: [FreezeExecuteArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
@@ -209,6 +214,12 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
         ]),
       ],
       [
+        'Groups',
+        struct<GetDataEnumKindContent<Plugin, 'Groups'>>([
+          ['fields', tuple([getGroupsSerializer()])],
+        ]),
+      ],
+      [
         'FreezeExecute',
         struct<GetDataEnumKindContent<Plugin, 'FreezeExecute'>>([
           ['fields', tuple([getFreezeExecuteSerializer()])],
@@ -287,6 +298,10 @@ export function plugin(
   kind: 'BubblegumV2',
   data: GetDataEnumKindContent<PluginArgs, 'BubblegumV2'>['fields']
 ): GetDataEnumKind<PluginArgs, 'BubblegumV2'>;
+export function plugin(
+  kind: 'Groups',
+  data: GetDataEnumKindContent<PluginArgs, 'Groups'>['fields']
+): GetDataEnumKind<PluginArgs, 'Groups'>;
 export function plugin(
   kind: 'FreezeExecute',
   data: GetDataEnumKindContent<PluginArgs, 'FreezeExecute'>['fields']

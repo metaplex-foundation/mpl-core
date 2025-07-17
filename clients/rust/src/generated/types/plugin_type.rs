@@ -32,5 +32,6 @@ pub enum PluginType {
     VerifiedCreators,
     Autograph,
     BubblegumV2,
+    Groups,
     FreezeExecute,
 }

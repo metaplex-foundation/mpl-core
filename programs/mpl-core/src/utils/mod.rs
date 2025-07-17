@@ -7,13 +7,14 @@ pub(crate) use compression::*;
 use crate::{
     error::MplCoreError,
     plugins::{
-        validate_external_plugin_adapter_checks, validate_plugin_checks, CheckResult,
-        ExternalCheckResultBits, ExternalPluginAdapter, ExternalPluginAdapterKey,
+        fetch_wrapped_plugin, validate_external_plugin_adapter_checks, validate_plugin_checks,
+        CheckResult, ExternalCheckResultBits, ExternalPluginAdapter, ExternalPluginAdapterKey,
         ExternalRegistryRecord, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
         PluginType, PluginValidationContext, RegistryRecord, ValidationResult,
     },
     state::{
-        AssetV1, Authority, CollectionV1, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority,
+        AssetV1, Authority, CollectionV1, CoreAsset, DataBlob, GroupV1, Key, SolanaAccount,
+        UpdateAuthority,
     },
 };
 use mpl_utils::assert_signer;
@@ -574,4 +575,64 @@ pub(crate) fn resolve_authority<'a>(
         }
         None => Ok(payer),
     }
+}
+
+/// Returns true if the `authority_info` represents either the update authority of the group
+/// or a valid update delegate (defined by an `UpdateDelegate` plugin on the group).
+pub fn is_valid_group_authority(
+    group_info: &AccountInfo,
+    authority_info: &AccountInfo,
+) -> Result<bool, ProgramError> {
+    // Fast path: signer is the canonical update authority.
+    let group_core = GroupV1::load(group_info, 0)?;
+    if authority_info.key == &group_core.update_authority {
+        return Ok(true);
+    }
+
+    // Attempt to locate an UpdateDelegate plugin on the group.
+    if let Ok((_plugin_authority, plugin)) =
+        fetch_wrapped_plugin::<GroupV1>(group_info, Some(&group_core), PluginType::UpdateDelegate)
+    {
+        if let crate::plugins::Plugin::UpdateDelegate(update_delegate) = plugin {
+            // Accept if the signer is listed in additional delegates.
+            if update_delegate
+                .additional_delegates
+                .contains(authority_info.key)
+            {
+                return Ok(true);
+            }
+        }
+    }
+
+    Ok(false)
+}
+
+/// Returns true if the `authority_info` represents either the update authority of the collection
+/// or a valid update delegate (defined by an `UpdateDelegate` plugin on the collection).
+pub fn is_valid_collection_authority(
+    collection_info: &AccountInfo,
+    authority_info: &AccountInfo,
+) -> Result<bool, ProgramError> {
+    let collection_core = CollectionV1::load(collection_info, 0)?;
+    if authority_info.key == &collection_core.update_authority {
+        return Ok(true);
+    }
+
+    // Attempt to locate an UpdateDelegate plugin on the collection.
+    if let Ok((_plugin_authority, plugin)) = fetch_wrapped_plugin::<CollectionV1>(
+        collection_info,
+        Some(&collection_core),
+        PluginType::UpdateDelegate,
+    ) {
+        if let crate::plugins::Plugin::UpdateDelegate(update_delegate) = plugin {
+            if update_delegate
+                .additional_delegates
+                .contains(authority_info.key)
+            {
+                return Ok(true);
+            }
+        }
+    }
+
+    Ok(false)
 }

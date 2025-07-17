@@ -22,4 +22,5 @@ pub enum Key {
     PluginHeaderV1,
     PluginRegistryV1,
     CollectionV1,
+    GroupV1,
 }

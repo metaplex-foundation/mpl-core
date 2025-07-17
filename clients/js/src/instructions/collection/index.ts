@@ -6,3 +6,4 @@ export * from './removeCollectionPlugin';
 export * from './revokeCollectionPluginAuthority';
 export * from './updateCollection';
 export * from './updateCollectionPlugin';
+export * from './writeCollectionData';

@@ -8,6 +8,7 @@
 pub(crate) mod r#asset_signer;
 pub(crate) mod r#base_asset_v1;
 pub(crate) mod r#base_collection_v1;
+pub(crate) mod r#group_v1;
 pub(crate) mod r#hashed_asset_v1;
 pub(crate) mod r#plugin_header_v1;
 pub(crate) mod r#plugin_registry_v1;
@@ -15,6 +16,7 @@ pub(crate) mod r#plugin_registry_v1;
 pub use self::r#asset_signer::*;
 pub use self::r#base_asset_v1::*;
 pub use self::r#base_collection_v1::*;
+pub use self::r#group_v1::*;
 pub use self::r#hashed_asset_v1::*;
 pub use self::r#plugin_header_v1::*;
 pub use self::r#plugin_registry_v1::*;
