@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@metaplex-foundation/amman": "^0.12.1",
-    "@metaplex-foundation/kinobi": "0.18.8-alpha.0",
+    "@metaplex-foundation/kinobi": "0.19.2",
     "@metaplex-foundation/shank-js": "^0.1.7",
     "@types/node": "^24.0.3",
     "husky": "^9.0.11",
