@@ -5,10 +5,8 @@ pub mod advanced_types;
 pub use advanced_types::*;
 
 pub mod asset;
-pub use asset::*;
 
 pub mod collection;
-pub use collection::*;
 
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{
@@ -98,7 +96,7 @@ mod anchor_impl {
 
     // Not used but needed for Anchor.
     impl Discriminator for BaseAssetV1 {
-        const DISCRIMINATOR: [u8; 8] = [0; 8];
+        const DISCRIMINATOR: &[u8] = &[0u8; 8];
     }
 
     impl Owner for BaseAssetV1 {
@@ -120,7 +118,7 @@ mod anchor_impl {
 
     // Not used but needed for Anchor.
     impl Discriminator for BaseCollectionV1 {
-        const DISCRIMINATOR: [u8; 8] = [0; 8];
+        const DISCRIMINATOR: &[u8] = &[0u8; 8];
     }
 
     impl Owner for BaseCollectionV1 {
