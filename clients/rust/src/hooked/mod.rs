@@ -51,6 +51,7 @@ impl From<&Plugin> for PluginType {
             Plugin::Autograph(_) => PluginType::Autograph,
             Plugin::BubblegumV2(_) => PluginType::BubblegumV2,
             Plugin::FreezeExecute(_) => PluginType::FreezeExecute,
+            Plugin::Groups(_) => PluginType::Groups,
         }
     }
 }

@@ -64,6 +64,8 @@ pub enum Plugin {
     BubblegumV2(BubblegumV2),
     /// Freeze Execute plugin.
     FreezeExecute(FreezeExecute),
+    /// Groups plugin stores parent group memberships of a collection for taxonomy purposes
+    Groups(Groups),
 }
 
 impl Plugin {
@@ -109,6 +111,7 @@ impl Plugin {
             Plugin::Autograph(inner) => inner,
             Plugin::BubblegumV2(inner) => inner,
             Plugin::FreezeExecute(inner) => inner,
+            Plugin::Groups(inner) => inner,
         }
     }
 }
@@ -139,9 +142,10 @@ impl DataBlob for Plugin {
                 Plugin::AddBlocker(add_blocker) => add_blocker.len(),
                 Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.len(),
                 Plugin::VerifiedCreators(verified_creators) => verified_creators.len(),
-                Plugin::Autograph(autograph) => autograph.len(),
-                Plugin::BubblegumV2(bubblegum_v2) => bubblegum_v2.len(),
-                Plugin::FreezeExecute(freeze_execute) => freeze_execute.len(),
+                            Plugin::Autograph(autograph) => autograph.len(),
+            Plugin::BubblegumV2(bubblegum_v2) => bubblegum_v2.len(),
+            Plugin::FreezeExecute(freeze_execute) => freeze_execute.len(),
+            Plugin::Groups(groups) => groups.len(),
             }
     }
 }
@@ -198,6 +202,8 @@ pub enum PluginType {
     BubblegumV2,
     /// Freeze Execute plugin.
     FreezeExecute,
+    /// Groups plugin.
+    Groups,
 }
 
 impl PluginType {
@@ -238,6 +244,7 @@ impl From<&Plugin> for PluginType {
             Plugin::Autograph(_) => PluginType::Autograph,
             Plugin::BubblegumV2(_) => PluginType::BubblegumV2,
             Plugin::FreezeExecute(_) => PluginType::FreezeExecute,
+            Plugin::Groups(_) => PluginType::Groups,
         }
     }
 }
@@ -265,6 +272,7 @@ impl PluginType {
                 address: mpl_bubblegum::ID,
             },
             PluginType::FreezeExecute => Authority::Owner,
+            PluginType::Groups => Authority::UpdateAuthority,
         }
     }
 }
@@ -317,6 +325,7 @@ mod test {
             Plugin::Autograph(Autograph { signatures: vec![] }),
             Plugin::BubblegumV2(BubblegumV2 {}),
             Plugin::FreezeExecute(FreezeExecute { frozen: false }),
+            Plugin::Groups(Groups { groups: vec![] }),
         ];
 
         assert_eq!(
@@ -434,6 +443,9 @@ mod test {
             })],
             vec![Plugin::BubblegumV2(BubblegumV2 {})],
             vec![Plugin::FreezeExecute(FreezeExecute { frozen: true })],
+            vec![Plugin::Groups(Groups {
+                groups: vec![Pubkey::default()],
+            })],
         ];
 
         assert_eq!(

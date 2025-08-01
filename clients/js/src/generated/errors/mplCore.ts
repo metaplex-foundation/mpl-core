@@ -739,6 +739,36 @@ export class BlockedByBubblegumV2Error extends ProgramError {
 codeToErrorMap.set(0x32, BlockedByBubblegumV2Error);
 nameToErrorMap.set('BlockedByBubblegumV2', BlockedByBubblegumV2Error);
 
+/** GroupMustBeEmpty: Group must be empty to be closed */
+export class GroupMustBeEmptyError extends ProgramError {
+  override readonly name: string = 'GroupMustBeEmpty';
+
+  readonly code: number = 0x33; // 51
+
+  constructor(program: Program, cause?: Error) {
+    super('Group must be empty to be closed', program, cause);
+  }
+}
+codeToErrorMap.set(0x33, GroupMustBeEmptyError);
+nameToErrorMap.set('GroupMustBeEmpty', GroupMustBeEmptyError);
+
+/** DuplicateEntry: Duplicate entry provided when adding relationships to a group */
+export class DuplicateEntryError extends ProgramError {
+  override readonly name: string = 'DuplicateEntry';
+
+  readonly code: number = 0x34; // 52
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Duplicate entry provided when adding relationships to a group',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x34, DuplicateEntryError);
+nameToErrorMap.set('DuplicateEntry', DuplicateEntryError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

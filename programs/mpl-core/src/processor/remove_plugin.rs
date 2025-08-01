@@ -115,6 +115,11 @@ pub(crate) fn remove_collection_plugin<'a>(
         }
     }
 
+    // Groups plugins can only be removed via specialized Group instructions.
+    if args.plugin_type == PluginType::Groups {
+        return Err(MplCoreError::InvalidPlugin.into());
+    }
+
     let (collection, plugin_header, plugin_registry) =
         fetch_core_data::<CollectionV1>(ctx.accounts.collection)?;
 

@@ -111,6 +111,11 @@ pub(crate) fn approve_collection_plugin_authority<'a>(
         }
     }
 
+    // Groups plugins must be managed only via Group-specific instructions; approve is not allowed.
+    if args.plugin_type == PluginType::Groups {
+        return Err(MplCoreError::InvalidPlugin.into());
+    }
+
     let (plugin_authority, plugin) =
         fetch_wrapped_plugin::<CollectionV1>(ctx.accounts.collection, None, args.plugin_type)?;
 

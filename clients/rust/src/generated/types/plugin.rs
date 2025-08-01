@@ -13,6 +13,7 @@ use crate::generated::types::BurnDelegate;
 use crate::generated::types::Edition;
 use crate::generated::types::FreezeDelegate;
 use crate::generated::types::FreezeExecute;
+use crate::generated::types::Groups;
 use crate::generated::types::ImmutableMetadata;
 use crate::generated::types::MasterEdition;
 use crate::generated::types::PermanentBurnDelegate;
@@ -49,4 +50,5 @@ pub enum Plugin {
     Autograph(Autograph),
     BubblegumV2(BubblegumV2),
     FreezeExecute(FreezeExecute),
+    Groups(Groups),
 }
