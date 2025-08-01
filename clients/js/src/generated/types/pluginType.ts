@@ -25,8 +25,8 @@ export enum PluginType {
   VerifiedCreators,
   Autograph,
   BubblegumV2,
-  Groups,
   FreezeExecute,
+  Groups,
 }
 
 export type PluginTypeArgs = PluginType;

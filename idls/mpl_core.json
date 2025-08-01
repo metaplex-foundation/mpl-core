@@ -5331,18 +5331,18 @@
             ]
           },
           {
-            "name": "Groups",
-            "fields": [
-              {
-                "defined": "Groups"
-              }
-            ]
-          },
-          {
             "name": "FreezeExecute",
             "fields": [
               {
                 "defined": "FreezeExecute"
+              }
+            ]
+          },
+          {
+            "name": "Groups",
+            "fields": [
+              {
+                "defined": "Groups"
               }
             ]
           }
@@ -5403,10 +5403,10 @@
             "name": "BubblegumV2"
           },
           {
-            "name": "Groups"
+            "name": "FreezeExecute"
           },
           {
-            "name": "FreezeExecute"
+            "name": "Groups"
           }
         ]
       }

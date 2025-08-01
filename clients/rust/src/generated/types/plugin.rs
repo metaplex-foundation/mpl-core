@@ -49,6 +49,6 @@ pub enum Plugin {
     VerifiedCreators(VerifiedCreators),
     Autograph(Autograph),
     BubblegumV2(BubblegumV2),
-    Groups(Groups),
     FreezeExecute(FreezeExecute),
+    Groups(Groups),
 }

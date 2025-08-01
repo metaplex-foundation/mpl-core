@@ -87,11 +87,6 @@ pub(crate) fn add_group_plugin<'a>(
         return Err(MplCoreError::InvalidPlugin.into());
     }
 
-    // Disallow owner-managed plugins **except** Autograph (which is explicitly allowed above).
-    if plugin_type != PluginType::Autograph && args.plugin.manager() == Authority::Owner {
-        return Err(MplCoreError::InvalidAuthority.into());
-    }
-
     // Plugin-specific validation (best-effort, mirrors AddCollectionPlugin)
     let default_authority = args.plugin.manager();
     let target_plugin_authority = args.init_authority.as_ref().unwrap_or(&default_authority);

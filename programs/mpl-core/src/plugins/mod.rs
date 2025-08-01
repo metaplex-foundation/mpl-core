@@ -62,10 +62,10 @@ pub enum Plugin {
     Autograph(Autograph),
     /// The Bubblegum V2 plugin allows a Core collection to contain Compressed NFTs (cNFTs) from the Bubblegum program.
     BubblegumV2(BubblegumV2),
-    /// Groups plugin stores parent group memberships of a collection for taxonomy purposes
-    Groups(Groups),
     /// Freeze Execute plugin.
     FreezeExecute(FreezeExecute),
+    /// Groups plugin stores parent group memberships of a collection for taxonomy purposes
+    Groups(Groups),
 }
 
 impl Plugin {
@@ -110,8 +110,8 @@ impl Plugin {
             Plugin::VerifiedCreators(inner) => inner,
             Plugin::Autograph(inner) => inner,
             Plugin::BubblegumV2(inner) => inner,
-            Plugin::Groups(inner) => inner,
             Plugin::FreezeExecute(inner) => inner,
+            Plugin::Groups(inner) => inner,
         }
     }
 }
@@ -142,10 +142,10 @@ impl DataBlob for Plugin {
                 Plugin::AddBlocker(add_blocker) => add_blocker.len(),
                 Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.len(),
                 Plugin::VerifiedCreators(verified_creators) => verified_creators.len(),
-                Plugin::Autograph(autograph) => autograph.len(),
-                Plugin::BubblegumV2(bubblegum_v2) => bubblegum_v2.len(),
-                Plugin::Groups(groups) => groups.len(),
-                Plugin::FreezeExecute(freeze_execute) => freeze_execute.len(),
+                            Plugin::Autograph(autograph) => autograph.len(),
+            Plugin::BubblegumV2(bubblegum_v2) => bubblegum_v2.len(),
+            Plugin::FreezeExecute(freeze_execute) => freeze_execute.len(),
+            Plugin::Groups(groups) => groups.len(),
             }
     }
 }
@@ -200,10 +200,10 @@ pub enum PluginType {
     Autograph,
     /// Bubblegum V2 plugin.
     BubblegumV2,
-    /// Groups plugin.
-    Groups,
     /// Freeze Execute plugin.
     FreezeExecute,
+    /// Groups plugin.
+    Groups,
 }
 
 impl PluginType {
@@ -243,8 +243,8 @@ impl From<&Plugin> for PluginType {
             Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
             Plugin::Autograph(_) => PluginType::Autograph,
             Plugin::BubblegumV2(_) => PluginType::BubblegumV2,
-            Plugin::Groups(_) => PluginType::Groups,
             Plugin::FreezeExecute(_) => PluginType::FreezeExecute,
+            Plugin::Groups(_) => PluginType::Groups,
         }
     }
 }
@@ -271,8 +271,8 @@ impl PluginType {
             PluginType::BubblegumV2 => Authority::Address {
                 address: mpl_bubblegum::ID,
             },
-            PluginType::Groups => Authority::UpdateAuthority,
             PluginType::FreezeExecute => Authority::Owner,
+            PluginType::Groups => Authority::UpdateAuthority,
         }
     }
 }
@@ -324,8 +324,8 @@ mod test {
             Plugin::VerifiedCreators(VerifiedCreators { signatures: vec![] }),
             Plugin::Autograph(Autograph { signatures: vec![] }),
             Plugin::BubblegumV2(BubblegumV2 {}),
-            Plugin::Groups(Groups { groups: vec![] }),
             Plugin::FreezeExecute(FreezeExecute { frozen: false }),
+            Plugin::Groups(Groups { groups: vec![] }),
         ];
 
         assert_eq!(
@@ -442,10 +442,10 @@ mod test {
                 }],
             })],
             vec![Plugin::BubblegumV2(BubblegumV2 {})],
+            vec![Plugin::FreezeExecute(FreezeExecute { frozen: true })],
             vec![Plugin::Groups(Groups {
                 groups: vec![Pubkey::default()],
             })],
-            vec![Plugin::FreezeExecute(FreezeExecute { frozen: true })],
         ];
 
         assert_eq!(

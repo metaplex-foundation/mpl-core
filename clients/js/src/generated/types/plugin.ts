@@ -88,8 +88,8 @@ export type Plugin =
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreators] }
   | { __kind: 'Autograph'; fields: [Autograph] }
   | { __kind: 'BubblegumV2'; fields: [BubblegumV2] }
-  | { __kind: 'Groups'; fields: [Groups] }
-  | { __kind: 'FreezeExecute'; fields: [FreezeExecute] };
+  | { __kind: 'FreezeExecute'; fields: [FreezeExecute] }
+  | { __kind: 'Groups'; fields: [Groups] };
 
 export type PluginArgs =
   | { __kind: 'Royalties'; fields: [BaseRoyaltiesArgs] }
@@ -111,8 +111,8 @@ export type PluginArgs =
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreatorsArgs] }
   | { __kind: 'Autograph'; fields: [AutographArgs] }
   | { __kind: 'BubblegumV2'; fields: [BubblegumV2Args] }
-  | { __kind: 'Groups'; fields: [GroupsArgs] }
-  | { __kind: 'FreezeExecute'; fields: [FreezeExecuteArgs] };
+  | { __kind: 'FreezeExecute'; fields: [FreezeExecuteArgs] }
+  | { __kind: 'Groups'; fields: [GroupsArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -214,15 +214,15 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
         ]),
       ],
       [
-        'Groups',
-        struct<GetDataEnumKindContent<Plugin, 'Groups'>>([
-          ['fields', tuple([getGroupsSerializer()])],
-        ]),
-      ],
-      [
         'FreezeExecute',
         struct<GetDataEnumKindContent<Plugin, 'FreezeExecute'>>([
           ['fields', tuple([getFreezeExecuteSerializer()])],
+        ]),
+      ],
+      [
+        'Groups',
+        struct<GetDataEnumKindContent<Plugin, 'Groups'>>([
+          ['fields', tuple([getGroupsSerializer()])],
         ]),
       ],
     ],
@@ -299,13 +299,13 @@ export function plugin(
   data: GetDataEnumKindContent<PluginArgs, 'BubblegumV2'>['fields']
 ): GetDataEnumKind<PluginArgs, 'BubblegumV2'>;
 export function plugin(
-  kind: 'Groups',
-  data: GetDataEnumKindContent<PluginArgs, 'Groups'>['fields']
-): GetDataEnumKind<PluginArgs, 'Groups'>;
-export function plugin(
   kind: 'FreezeExecute',
   data: GetDataEnumKindContent<PluginArgs, 'FreezeExecute'>['fields']
 ): GetDataEnumKind<PluginArgs, 'FreezeExecute'>;
+export function plugin(
+  kind: 'Groups',
+  data: GetDataEnumKindContent<PluginArgs, 'Groups'>['fields']
+): GetDataEnumKind<PluginArgs, 'Groups'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any

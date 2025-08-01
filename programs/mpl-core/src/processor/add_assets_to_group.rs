@@ -101,11 +101,6 @@ pub(crate) fn add_assets_to_group_v1<'a>(
 
     // Iterate over each asset account in remaining_accounts.
     for asset_info in remaining_accounts.iter() {
-        if !asset_info.is_writable {
-            msg!("Error: Asset account must be writable");
-            return Err(ProgramError::InvalidAccountData);
-        }
-
         // authority must be valid for asset
         is_valid_asset_authority(asset_info, authority_info)?;
 
