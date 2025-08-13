@@ -103,7 +103,7 @@ mod anchor_impl {
 
     impl Owner for BaseAssetV1 {
         fn owner() -> Pubkey {
-            crate::ID
+            Pubkey::new_from_array(crate::ID.to_bytes())
         }
     }
 
@@ -125,7 +125,7 @@ mod anchor_impl {
 
     impl Owner for BaseCollectionV1 {
         fn owner() -> Pubkey {
-            crate::ID
+            Pubkey::new_from_array(crate::ID.to_bytes())
         }
     }
 }
