@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1752771496294,
+  "lastUpdate": 1756155395703,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -8767,6 +8767,120 @@ window.BENCHMARK_DATA = {
           {
             "name": "CU: transfer an asset with plugins and empty collection",
             "value": 14257,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sarah@metaplex.foundation",
+            "name": "stranzhay",
+            "username": "stranzhay"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8614f4bd62b15b4602d2f2390baab3d403ffc32a",
+          "message": "Stranzhay/upgrade to solana 2 (#236)\n\n* feat: mid upgrade still doesn't compile\n\n* chore: bump all solana versions to 2.0 and bump mpl-utils version\n\n* chore: bump versions\n\n* chore: force version 3 in lock file\n\n* chore: frozen lockfile pnpm\n\n* chore: updating github env to try to fix ci\n\n* chore: updating github env to try to fix ci\n\n* chore: updating github env to try to fix ci\n\n* chore: match workflow files to githubenv\n\n* chore: match workflow files to githubenv\n\n* chore: final rustv change\n\n* chore: add protobuf compiler to github workflows\n\n* chore: upgrade anchor version in rust client\n\n* chore: revert lock back\n\n* chore: anchor ci error\n\n* chore: fix js client ci\n\n* chore: lockfile issue\n\n* chore: lockfile issue\n\n* chore: trying to fix all of the ci stuff\n\n* chore: further bumping versions\n\n* chore: bump down lock v\n\n* chore: update gh actions solana v\n\n* chore: fix version to crate published version\n\n* chore: fix lockfile v again\n\n* chore: update github env file\n\n* chore: rustc to v1.83.0\n\n* chore: lockfile\n\n* chore: update package manager v\n\n* chore: match package manager\n\n* chore: downgrade package manager\n\n* chore: run pnpm lockfile again with other v",
+          "timestamp": "2025-08-25T16:49:06-04:00",
+          "tree_id": "5952ab16b45738e330aabbeba757b2cdc63b31a6",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/8614f4bd62b15b4602d2f2390baab3d403ffc32a"
+        },
+        "date": 1756155395052,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 8166,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 16685,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 27502,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 32723,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 20181,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 25331,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 24878,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 33050,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 24063,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 36114,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 3826,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 5463,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 7277,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 8914,
             "unit": "Compute Units"
           }
         ]
