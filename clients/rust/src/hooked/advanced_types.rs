@@ -10,10 +10,10 @@ use crate::{
     types::{
         AddBlocker, AppData, Attributes, Autograph, BubblegumV2, BurnDelegate, DataSection,
         Edition, ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey,
-        ExternalPluginAdapterType, FreezeDelegate, FreezeExecute, ImmutableMetadata, Key,
-        LifecycleHook, LinkedAppData, LinkedLifecycleHook, MasterEdition, Oracle,
-        PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate, PluginAuthority,
-        Royalties, TransferDelegate, UpdateDelegate, VerifiedCreators,
+        FreezeDelegate, FreezeExecute, ImmutableMetadata, Key, LifecycleHook, LinkedAppData,
+        LinkedLifecycleHook, MasterEdition, Oracle, PermanentBurnDelegate, PermanentFreezeDelegate,
+        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
+        VerifiedCreators,
     },
 };
 
