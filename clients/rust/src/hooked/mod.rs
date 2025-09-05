@@ -96,7 +96,7 @@ mod anchor_impl {
 
     // Not used but needed for Anchor.
     impl Discriminator for BaseAssetV1 {
-        const DISCRIMINATOR: &[u8] = &[Key::AssetV1 as u8];
+        const DISCRIMINATOR: &'static [u8] = &[Key::AssetV1 as u8];
     }
 
     impl Owner for BaseAssetV1 {
@@ -118,7 +118,7 @@ mod anchor_impl {
 
     // Not used but needed for Anchor.
     impl Discriminator for BaseCollectionV1 {
-        const DISCRIMINATOR: &[u8] = &[Key::CollectionV1 as u8];
+        const DISCRIMINATOR: &'static [u8] = &[Key::CollectionV1 as u8];
     }
 
     impl Owner for BaseCollectionV1 {
