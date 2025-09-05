@@ -11,12 +11,12 @@ version = "0.11.0"
 crate-type = ["cdylib", "lib"]
 
 [features]
-anchor = ["dep:anchor-lang"]
+anchor = ["dep:anchor-lang", "kaigan/anchor"]
 serde = ["dep:serde", "dep:serde_with"]
 test-sbf = []
 
 [dependencies]
-anchor-lang = { version = "0.31.0", optional = true }
+anchor-lang = { version = "0.31.1", optional = true }
 base64 = "0.22.0"
 borsh = "^0.10"
 modular-bitfield = "0.11.2"
@@ -29,7 +29,7 @@ serde_with = { version = "^3.0", optional = true }
 solana-program = "2.2.1"
 thiserror = "^1.0"
 
-kaigan = { version = "0.2.6", features = ["serde"], optional = false }
+kaigan = { version = "0.3.0",features = ["serde"], optional = false }
 
 [dev-dependencies]
 assert_matches = "1.5.0"
