@@ -1,13 +1,8 @@
-//! Integration tests for the FreezeExecute plugin covering the
-//! "backed NFT" flow: mint → freeze → execute blocked → burn & refund.
+//! Integration tests for the ExecuteV1 instruction.
 #![cfg(feature = "test-sbf")]
 
 pub mod setup;
-use mpl_core::{
-    errors::MplCoreError,
-    instructions::{BurnV1Builder, ExecuteV1Builder},
-    types::{FreezeExecute, Plugin, PluginAuthority, PluginAuthorityPair},
-};
+use mpl_core::instructions::ExecuteV1Builder;
 use setup::*;
 
 use solana_program::{
@@ -16,10 +11,10 @@ use solana_program::{
 use solana_program_test::tokio;
 use solana_sdk::{signature::Keypair, signer::Signer, transaction::Transaction};
 
-const FREEZE_EXECUTE_PREFIX: &str = "mpl-core-execute";
+const EXECUTE_PREFIX: &str = "mpl-core-execute";
 
 #[tokio::test]
-async fn test_freeze_execute_backed_nft_flow() {
+async fn test_execute() {
     // ----------------------------------
     // 0. Test setup
     // ----------------------------------
@@ -32,7 +27,7 @@ async fn test_freeze_execute_backed_nft_flow() {
         .unwrap();
 
     // ----------------------------------
-    // 1. Mint an asset with FreezeExecute { frozen: true }
+    // 1. Mint an asset
     // ----------------------------------
     let asset = Keypair::new();
     create_asset(
@@ -47,10 +42,7 @@ async fn test_freeze_execute_backed_nft_flow() {
             authority: None,
             update_authority: None,
             collection: None,
-            plugins: vec![PluginAuthorityPair {
-                plugin: Plugin::FreezeExecute(FreezeExecute { frozen: true }),
-                authority: None,
-            }],
+            plugins: vec![],
             external_plugin_adapters: vec![],
         },
     )
@@ -65,10 +57,7 @@ async fn test_freeze_execute_backed_nft_flow() {
             update_authority: None,
             name: None,
             uri: None,
-            plugins: vec![PluginAuthorityPair {
-                plugin: Plugin::FreezeExecute(FreezeExecute { frozen: true }),
-                authority: Some(PluginAuthority::Owner),
-            }],
+            plugins: vec![],
             external_plugin_adapters: vec![],
         },
     )
@@ -78,7 +67,7 @@ async fn test_freeze_execute_backed_nft_flow() {
     // 2. Deposit backing SOL into the asset account (simulate 0.5 SOL backing)
     // ----------------------------------
     let (asset_signer, _) = Pubkey::find_program_address(
-        &[FREEZE_EXECUTE_PREFIX.as_bytes(), asset.pubkey().as_ref()],
+        &[EXECUTE_PREFIX.as_bytes(), asset.pubkey().as_ref()],
         &mpl_core::ID,
     );
 
@@ -103,12 +92,10 @@ async fn test_freeze_execute_backed_nft_flow() {
     assert_eq!(lamports_in_asset, backing_amount);
 
     // ----------------------------------
-    // 3. Attempt Execute → should fail because plugin is frozen.
+    // 3. Execute → Transfer funds from asset_signer to payer.
     // ----------------------------------
     let execute_transfer_ix =
         system_instruction::transfer(&asset_signer, &payer_key, lamports_in_asset);
-
-    println!("execute_transfer_ix: {:#?}", execute_transfer_ix);
 
     let execute_ix = ExecuteV1Builder::new()
         .asset(asset.pubkey())
@@ -140,33 +127,6 @@ async fn test_freeze_execute_backed_nft_flow() {
         context.last_blockhash,
     );
 
-    let error = context
-        .banks_client
-        .process_transaction(tx)
-        .await
-        .unwrap_err();
-    assert_custom_instruction_error!(0, error, MplCoreError::InvalidAuthority);
-
-    // ----------------------------------
-    // 4. Burn the asset → user should receive lamports back, asset account closed.
-    // ----------------------------------
-    // Record payer balance before burn.
-    let payer_balance_before_burn = context.banks_client.get_balance(payer_key).await.unwrap();
-
-    let burn_ix = BurnV1Builder::new()
-        .asset(asset.pubkey())
-        .collection(None)
-        .payer(payer_key)
-        .authority(Some(payer_key))
-        .system_program(Some(system_program::ID))
-        .instruction();
-
-    let tx = Transaction::new_signed_with_payer(
-        &[burn_ix],
-        Some(&payer_key),
-        &[&context.payer],
-        context.last_blockhash,
-    );
     context.banks_client.process_transaction(tx).await.unwrap();
 
     // Verify that the transfer was successful.
@@ -176,14 +136,6 @@ async fn test_freeze_execute_backed_nft_flow() {
         .await
         .expect("get_balance failed");
 
-    // Verify that the asset balance has not changed.
-    assert_eq!(lamports_in_asset_after_execute, lamports_in_asset);
-
-    // Verify payer balance increased (should receive refund though exact amount may be reduced by rent/taxes).
-    let payer_balance_after_burn = context.banks_client.get_balance(payer_key).await.unwrap();
-
-    assert!(
-        payer_balance_after_burn > payer_balance_before_burn,
-        "Payer balance did not increase after burn refund"
-    );
+    // Verify that the transfer was successful.
+    assert_eq!(lamports_in_asset_after_execute, 0);
 }
