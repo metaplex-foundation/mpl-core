@@ -2,7 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
-    plugins::{reject, Plugin, PluginType},
+    plugins::{reject, PluginType},
     state::DataBlob,
 };
 
@@ -81,13 +81,11 @@ impl PluginValidation for PermanentFreezeDelegate {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(Plugin::PermanentFreezeExecute(stored)) = ctx.target_plugin {
-            // Only block removal if the stored plugin is frozen.
-            if stored.frozen {
-                return reject!();
-            }
+        if ctx.target_plugin.is_some() && self.frozen {
+            reject!()
+        } else {
+            abstain!()
         }
-        abstain!()
     }
 }
 
