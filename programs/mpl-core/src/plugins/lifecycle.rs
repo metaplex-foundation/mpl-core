@@ -105,6 +105,7 @@ impl PluginType {
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::Edition => CheckResult::CanReject,
             PluginType::BubblegumV2 => CheckResult::CanReject,
+            PluginType::PermanentFreezeExecute => CheckResult::CanReject,
             // We default to CanReject because Plugins with Authority::None cannot be removed.
             _ => CheckResult::CanReject,
         }
