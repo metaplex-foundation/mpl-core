@@ -64,6 +64,8 @@ pub enum Plugin {
     BubblegumV2(BubblegumV2),
     /// Freeze Execute plugin.
     FreezeExecute(FreezeExecute),
+    /// Permanent Freeze Execute plugin allows the authority to freeze the execute lifecycle event.
+    PermanentFreezeExecute(PermanentFreezeExecute),
 }
 
 impl Plugin {
@@ -109,6 +111,7 @@ impl Plugin {
             Plugin::Autograph(inner) => inner,
             Plugin::BubblegumV2(inner) => inner,
             Plugin::FreezeExecute(inner) => inner,
+            Plugin::PermanentFreezeExecute(inner) => inner,
         }
     }
 }
@@ -142,6 +145,9 @@ impl DataBlob for Plugin {
                 Plugin::Autograph(autograph) => autograph.len(),
                 Plugin::BubblegumV2(bubblegum_v2) => bubblegum_v2.len(),
                 Plugin::FreezeExecute(freeze_execute) => freeze_execute.len(),
+                Plugin::PermanentFreezeExecute(permanent_freeze_execute) => {
+                    permanent_freeze_execute.len()
+                }
             }
     }
 }
@@ -198,6 +204,8 @@ pub enum PluginType {
     BubblegumV2,
     /// Freeze Execute plugin.
     FreezeExecute,
+    /// Permanent Freeze Execute plugin.
+    PermanentFreezeExecute,
 }
 
 impl PluginType {
@@ -206,10 +214,11 @@ impl PluginType {
 }
 
 /// The list of permanent delegate types.
-pub const PERMANENT_DELEGATES: [PluginType; 3] = [
+pub const PERMANENT_DELEGATES: [PluginType; 4] = [
     PluginType::PermanentFreezeDelegate,
     PluginType::PermanentTransferDelegate,
     PluginType::PermanentBurnDelegate,
+    PluginType::PermanentFreezeExecute,
 ];
 
 impl DataBlob for PluginType {
@@ -238,6 +247,7 @@ impl From<&Plugin> for PluginType {
             Plugin::Autograph(_) => PluginType::Autograph,
             Plugin::BubblegumV2(_) => PluginType::BubblegumV2,
             Plugin::FreezeExecute(_) => PluginType::FreezeExecute,
+            Plugin::PermanentFreezeExecute(_) => PluginType::PermanentFreezeExecute,
         }
     }
 }
@@ -265,6 +275,7 @@ impl PluginType {
                 address: mpl_bubblegum::ID,
             },
             PluginType::FreezeExecute => Authority::Owner,
+            PluginType::PermanentFreezeExecute => Authority::UpdateAuthority,
         }
     }
 }
@@ -317,6 +328,7 @@ mod test {
             Plugin::Autograph(Autograph { signatures: vec![] }),
             Plugin::BubblegumV2(BubblegumV2 {}),
             Plugin::FreezeExecute(FreezeExecute { frozen: false }),
+            Plugin::PermanentFreezeExecute(PermanentFreezeExecute { frozen: false }),
         ];
 
         assert_eq!(
@@ -434,6 +446,9 @@ mod test {
             })],
             vec![Plugin::BubblegumV2(BubblegumV2 {})],
             vec![Plugin::FreezeExecute(FreezeExecute { frozen: true })],
+            vec![Plugin::PermanentFreezeExecute(PermanentFreezeExecute {
+                frozen: true,
+            })],
         ];
 
         assert_eq!(

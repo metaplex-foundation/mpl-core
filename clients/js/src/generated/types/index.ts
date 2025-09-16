@@ -63,6 +63,7 @@ export * from './key';
 export * from './oracleValidation';
 export * from './permanentBurnDelegate';
 export * from './permanentFreezeDelegate';
+export * from './permanentFreezeExecute';
 export * from './permanentTransferDelegate';
 export * from './plugin';
 export * from './pluginAuthorityPair';

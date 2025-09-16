@@ -202,6 +202,7 @@ impl PluginType {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
             PluginType::FreezeExecute => CheckResult::CanReject,
+            PluginType::PermanentFreezeExecute => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }

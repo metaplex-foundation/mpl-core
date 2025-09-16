@@ -17,6 +17,7 @@ use crate::generated::types::ImmutableMetadata;
 use crate::generated::types::MasterEdition;
 use crate::generated::types::PermanentBurnDelegate;
 use crate::generated::types::PermanentFreezeDelegate;
+use crate::generated::types::PermanentFreezeExecute;
 use crate::generated::types::PermanentTransferDelegate;
 use crate::generated::types::Royalties;
 use crate::generated::types::TransferDelegate;
@@ -49,4 +50,5 @@ pub enum Plugin {
     Autograph(Autograph),
     BubblegumV2(BubblegumV2),
     FreezeExecute(FreezeExecute),
+    PermanentFreezeExecute(PermanentFreezeExecute),
 }

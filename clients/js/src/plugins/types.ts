@@ -19,6 +19,8 @@ import {
   PermanentBurnDelegate,
   PermanentFreezeDelegate,
   PermanentFreezeDelegateArgs,
+  PermanentFreezeExecute,
+  PermanentFreezeExecuteArgs,
   PermanentTransferDelegate,
   basePluginAuthority as pluginAuthority,
   baseRuleSet as ruleSet,
@@ -98,6 +100,10 @@ export type CreatePluginArgs =
   | {
       type: 'FreezeExecute';
       data: FreezeExecuteArgs;
+    }
+  | {
+      type: 'PermanentFreezeExecute';
+      data: PermanentFreezeExecuteArgs;
     };
 
 export type AuthorityArgsV2 = {
@@ -119,7 +125,10 @@ export type CreateOnlyPluginArgsV2 =
     } & EditionArgs)
   | {
       type: 'BubblegumV2';
-    };
+    }
+  | ({
+      type: 'PermanentFreezeExecute';
+    } & PermanentFreezeExecuteArgs);
 
 export type OwnerManagedPluginArgsV2 =
   | ({
@@ -199,6 +208,7 @@ export type VerifiedCreatorsPlugin = BasePlugin & VerifiedCreators;
 export type AutographPlugin = BasePlugin & Autograph;
 export type BubblegumV2Plugin = BasePlugin & BubblegumV2;
 export type FreezeExecutePlugin = BasePlugin & FreezeExecute;
+export type PermanentFreezeExecutePlugin = BasePlugin & PermanentFreezeExecute;
 
 export type CommonPluginsList = {
   attributes?: AttributesPlugin;
@@ -212,6 +222,7 @@ export type CommonPluginsList = {
   autograph?: AutographPlugin;
   verifiedCreators?: VerifiedCreatorsPlugin;
   freezeExecute?: FreezeExecutePlugin;
+  permanentFreezeExecute?: PermanentFreezeExecutePlugin;
 };
 
 export type AssetPluginsList = {

@@ -3130,6 +3130,18 @@
       }
     },
     {
+      "name": "PermanentFreezeExecute",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "frozen",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
       "name": "PermanentTransferDelegate",
       "type": {
         "kind": "struct",
@@ -4070,6 +4082,14 @@
                 "defined": "FreezeExecute"
               }
             ]
+          },
+          {
+            "name": "PermanentFreezeExecute",
+            "fields": [
+              {
+                "defined": "PermanentFreezeExecute"
+              }
+            ]
           }
         ]
       }
@@ -4129,6 +4149,9 @@
           },
           {
             "name": "FreezeExecute"
+          },
+          {
+            "name": "PermanentFreezeExecute"
           }
         ]
       }
