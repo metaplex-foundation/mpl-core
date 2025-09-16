@@ -458,3 +458,110 @@ test('PermanentFreezeExecute blocks execute but allows burn', async (t) => {
     'Owner balance did not increase after burn refund'
   );
 });
+
+test('owner cannot remove or unfreeze PermanentFreezeExecute plugin', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+
+  // Create an asset with PermanentFreezeExecute plugin (frozen)
+  const assetSigner = generateSigner(umi);
+
+  await create(umi, {
+    asset: assetSigner,
+    owner: owner.publicKey,
+    name: 'Test Asset',
+    uri: 'https://example.com/asset',
+    plugins: [
+      {
+        type: 'PermanentFreezeExecute',
+        frozen: true,
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  const asset = await fetchAssetV1(umi, publicKey(assetSigner));
+
+  // Verify initial state
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    permanentFreezeExecute: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: true,
+    },
+  });
+
+  // Owner should not be able to unfreeze the plugin
+  const unfreezeResult = updatePluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'PermanentFreezeExecute',
+      data: { frozen: false },
+    }),
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(unfreezeResult, { name: 'NoApprovals' });
+
+  // Owner should not be able to remove the plugin (even when frozen)
+  const removeResult = removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.PermanentFreezeExecute,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(removeResult, { name: 'InvalidAuthority' });
+
+  // Plugin should still be there and frozen
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    permanentFreezeExecute: {
+      authority: {
+        type: 'UpdateAuthority',
+      },
+      frozen: true,
+    },
+  });
+
+  // Only update authority should be able to unfreeze
+  await updatePluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({
+      type: 'PermanentFreezeExecute',
+      data: { frozen: false },
+    }),
+    authority: umi.identity, // Update authority
+  }).sendAndConfirm(umi);
+
+  // Now owner still cannot remove it even when unfrozen
+  const removeUnfrozenResult = removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.PermanentFreezeExecute,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(removeUnfrozenResult, { name: 'NoApprovals' });
+
+  // But update authority can remove it when unfrozen
+  await removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.PermanentFreezeExecute,
+    authority: umi.identity,
+  }).sendAndConfirm(umi);
+
+  // Verify plugin is removed
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    permanentFreezeExecute: undefined,
+  });
+});
