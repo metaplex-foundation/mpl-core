@@ -92,6 +92,7 @@ impl PluginType {
             PluginType::Autograph => CheckResult::CanReject,
             PluginType::VerifiedCreators => CheckResult::CanReject,
             PluginType::BubblegumV2 => CheckResult::CanReject,
+            PluginType::PermanentFreezeExecute => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
