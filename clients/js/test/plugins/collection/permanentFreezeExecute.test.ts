@@ -440,15 +440,6 @@ test('collection PermanentFreezeExecute persists through asset transfer and stil
 
   await t.throwsAsync(execResult1, { name: 'InvalidAuthority' });
 
-  // Temporarily unfreeze the collection plugin so we can transfer the asset
-  await updateCollectionPluginV1(umi, {
-    collection: collection.publicKey,
-    plugin: createPlugin({
-      type: 'PermanentFreezeExecute',
-      data: { frozen: false },
-    }),
-  }).sendAndConfirm(umi);
-
   // Transfer the asset to a new owner
   await transferV1(umi, {
     asset: asset.publicKey,
@@ -465,15 +456,6 @@ test('collection PermanentFreezeExecute persists through asset transfer and stil
     updateAuthority: { type: 'Collection', address: collection.publicKey },
     permanentFreezeExecute: undefined, // No asset-level plugin
   });
-
-  // Re-freeze the collection plugin
-  await updateCollectionPluginV1(umi, {
-    collection: collection.publicKey,
-    plugin: createPlugin({
-      type: 'PermanentFreezeExecute',
-      data: { frozen: true },
-    }),
-  }).sendAndConfirm(umi);
 
   // Execute should still be blocked for the new owner due to inherited collection plugin
   const recipient2 = generateSigner(umi);
