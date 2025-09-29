@@ -15,10 +15,11 @@ use crate::{
     AddBlockerPlugin, AppDataWithData, AttributesPlugin, AutographPlugin, BaseAuthority,
     BasePlugin, BubblegumV2Plugin, BurnDelegatePlugin, DataBlob, DataSectionWithData,
     EditionPlugin, ExternalPluginAdaptersList, ExternalRegistryRecordSafe, FreezeDelegatePlugin,
-    FreezeExecutePlugin, ImmutableMetadataPlugin, LifecycleHookWithData, MasterEditionPlugin,
-    PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin,
-    PluginRegistryV1Safe, PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount,
-    TransferDelegatePlugin, UpdateDelegatePlugin, VerifiedCreatorsPlugin,
+    FreezeExecutePlugin, GroupsPlugin, ImmutableMetadataPlugin, LifecycleHookWithData,
+    MasterEditionPlugin, PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin,
+    PermanentTransferDelegatePlugin, PluginRegistryV1Safe, PluginsList, RegistryRecordSafe,
+    RoyaltiesPlugin, SolanaAccount, TransferDelegatePlugin, UpdateDelegatePlugin,
+    VerifiedCreatorsPlugin,
 };
 
 /// Fetch the plugin from the registry.
@@ -348,7 +349,7 @@ pub(crate) fn registry_records_to_plugin_list(
                     Plugin::BubblegumV2(bubblegum_v2) => {
                         acc.bubblegum_v2 = Some(BubblegumV2Plugin { base, bubblegum_v2 })
                     }
-                    Plugin::Groups(_) => {}
+                    Plugin::Groups(groups) => acc.groups = Some(GroupsPlugin { base, groups }),
                     Plugin::FreezeExecute(freeze_execute) => {
                         acc.freeze_execute = Some(FreezeExecutePlugin {
                             base,
