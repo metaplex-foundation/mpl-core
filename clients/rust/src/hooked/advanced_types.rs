@@ -12,8 +12,8 @@ use crate::{
         Edition, ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey,
         FreezeDelegate, FreezeExecute, Groups, ImmutableMetadata, Key, LifecycleHook,
         LinkedAppData, LinkedLifecycleHook, MasterEdition, Oracle, PermanentBurnDelegate,
-        PermanentFreezeDelegate, PermanentTransferDelegate, PluginAuthority, Royalties,
-        TransferDelegate, UpdateDelegate, VerifiedCreators,
+        PermanentFreezeDelegate, PermanentFreezeExecute, PermanentTransferDelegate,
+        PluginAuthority, Royalties, TransferDelegate, UpdateDelegate, VerifiedCreators,
     },
 };
 
@@ -174,6 +174,12 @@ pub struct FreezeExecutePlugin {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
+pub struct PermanentFreezeExecutePlugin {
+    pub base: BasePlugin,
+    pub permanent_freeze_execute: PermanentFreezeExecute,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct GroupsPlugin {
     pub base: BasePlugin,
     pub groups: Groups,
@@ -198,6 +204,7 @@ pub struct PluginsList {
     pub autograph: Option<AutographPlugin>,
     pub bubblegum_v2: Option<BubblegumV2Plugin>,
     pub freeze_execute: Option<FreezeExecutePlugin>,
+    pub permanent_freeze_execute: Option<PermanentFreezeExecutePlugin>,
     pub groups: Option<GroupsPlugin>,
 }
 

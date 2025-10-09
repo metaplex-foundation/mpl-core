@@ -92,6 +92,7 @@ impl PluginType {
             PluginType::Autograph => CheckResult::CanReject,
             PluginType::VerifiedCreators => CheckResult::CanReject,
             PluginType::BubblegumV2 => CheckResult::CanReject,
+            PluginType::PermanentFreezeExecute => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -105,6 +106,7 @@ impl PluginType {
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::Edition => CheckResult::CanReject,
             PluginType::BubblegumV2 => CheckResult::CanReject,
+            PluginType::PermanentFreezeExecute => CheckResult::CanReject,
             // We default to CanReject because Plugins with Authority::None cannot be removed.
             _ => CheckResult::CanReject,
         }
@@ -202,6 +204,7 @@ impl PluginType {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
             PluginType::FreezeExecute => CheckResult::CanReject,
+            PluginType::PermanentFreezeExecute => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }

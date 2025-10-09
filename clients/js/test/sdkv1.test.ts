@@ -1,28 +1,23 @@
 import { assertAccountExists, generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
-  AssetAddablePluginAuthorityPairArgsV2,
+  addCollectionPlugin,
   addPlugin,
-  burn,
-  Key,
+  AssetAddablePluginAuthorityPairArgsV2,
   AssetAllPluginArgsV2,
+  burn,
+  CollectionAddablePluginAuthorityPairArgsV2,
+  CollectionAllPluginArgsV2,
+  ExternalPluginAdapterSchema,
+  Key,
+  removeCollectionPlugin,
   removePlugin,
   transfer,
   update,
   updateCollection,
   updateCollectionPlugin,
   updatePlugin,
-  CollectionAllPluginArgsV2,
-  CollectionAddablePluginAuthorityPairArgsV2,
-  addCollectionPlugin,
-  removeCollectionPlugin,
-  ExternalPluginAdapterSchema,
 } from '../src';
-import {
-  createAsset,
-  createAssetWithCollection,
-  createCollection,
-} from './_setupSdk';
 import {
   assertAsset,
   assertCollection,
@@ -30,6 +25,15 @@ import {
   DEFAULT_ASSET,
   DEFAULT_COLLECTION,
 } from './_setupRaw';
+import {
+  createAsset,
+  createAssetWithCollection,
+  createCollection,
+} from './_setupSdk';
+
+// Heavy plugin manipulation tests can exhaust the validator when run in parallel.
+// Use AVA's serial mode for these selected tests to prevent block height expiry.
+const serial = test.serial;
 
 test('it can create asset and collection with all update auth managed party plugins', async (t) => {
   const umi = await createUmi();
@@ -409,133 +413,132 @@ test('it can create all owner and update auth managed party plugins to asset', a
   });
 });
 
-test('it can add and remove all owner and update auth managed party plugins to asset', async (t) => {
-  const umi = await createUmi();
-  const asset = await createAsset(umi);
+serial(
+  'it can add and remove all owner and update auth managed party plugins to asset',
+  async (t) => {
+    const umi = await createUmi();
+    const asset = await createAsset(umi);
 
-  const plugins: AssetAddablePluginAuthorityPairArgsV2[] = [
-    {
-      type: 'Royalties',
-      basisPoints: 500,
-      creators: [
-        {
+    const plugins: AssetAddablePluginAuthorityPairArgsV2[] = [
+      {
+        type: 'Royalties',
+        basisPoints: 500,
+        creators: [
+          {
+            address: umi.identity.publicKey,
+            percentage: 100,
+          },
+        ],
+        ruleSet: {
+          type: 'ProgramDenyList',
+          addresses: [umi.identity.publicKey],
+        },
+        authority: {
+          type: 'Address',
           address: umi.identity.publicKey,
-          percentage: 100,
         },
-      ],
-      ruleSet: {
-        type: 'ProgramDenyList',
-        addresses: [umi.identity.publicKey],
       },
-      authority: {
-        type: 'Address',
-        address: umi.identity.publicKey,
+      {
+        type: 'Attributes',
+        attributeList: [
+          {
+            key: '123',
+            value: '456',
+          },
+        ],
       },
-    },
-    {
-      type: 'Attributes',
-      attributeList: [
-        {
-          key: '123',
-          value: '456',
+      {
+        type: 'FreezeDelegate',
+        frozen: false,
+      },
+      {
+        type: 'BurnDelegate',
+      },
+      {
+        type: 'TransferDelegate',
+        authority: {
+          type: 'UpdateAuthority',
         },
-      ],
-    },
-    {
-      type: 'FreezeDelegate',
-      frozen: false,
-    },
-    {
-      type: 'BurnDelegate',
-    },
-    {
-      type: 'TransferDelegate',
-      authority: {
-        type: 'UpdateAuthority',
       },
-    },
-  ];
+    ];
 
-  await Promise.all(
-    plugins.map(async (plugin) =>
-      addPlugin(umi, {
+    for (const plugin of plugins) {
+      await addPlugin(umi, {
         asset: asset.publicKey,
         plugin,
-      }).sendAndConfirm(umi)
-    )
-  );
+      }).sendAndConfirm(umi);
+    }
 
-  await assertAsset(t, umi, {
-    asset: asset.publicKey,
-    owner: umi.identity.publicKey,
-    royalties: {
-      basisPoints: 500,
-      creators: [
-        {
+    await assertAsset(t, umi, {
+      asset: asset.publicKey,
+      owner: umi.identity.publicKey,
+      royalties: {
+        basisPoints: 500,
+        creators: [
+          {
+            address: umi.identity.publicKey,
+            percentage: 100,
+          },
+        ],
+        ruleSet: {
+          type: 'ProgramDenyList',
+          addresses: [umi.identity.publicKey],
+        },
+        authority: {
+          type: 'Address',
           address: umi.identity.publicKey,
-          percentage: 100,
         },
-      ],
-      ruleSet: {
-        type: 'ProgramDenyList',
-        addresses: [umi.identity.publicKey],
       },
-      authority: {
-        type: 'Address',
-        address: umi.identity.publicKey,
-      },
-    },
-    attributes: {
-      attributeList: [
-        {
-          key: '123',
-          value: '456',
+      attributes: {
+        attributeList: [
+          {
+            key: '123',
+            value: '456',
+          },
+        ],
+        authority: {
+          type: 'UpdateAuthority',
         },
-      ],
-      authority: {
-        type: 'UpdateAuthority',
       },
-    },
-    freezeDelegate: {
-      frozen: false,
-      authority: {
-        type: 'Owner',
+      freezeDelegate: {
+        frozen: false,
+        authority: {
+          type: 'Owner',
+        },
       },
-    },
-    burnDelegate: {
-      authority: {
-        type: 'Owner',
+      burnDelegate: {
+        authority: {
+          type: 'Owner',
+        },
       },
-    },
-    transferDelegate: {
-      authority: {
-        type: 'UpdateAuthority',
+      transferDelegate: {
+        authority: {
+          type: 'UpdateAuthority',
+        },
       },
-    },
-  });
+    });
 
-  await Promise.all(
-    plugins.map(async (plugin) =>
-      removePlugin(umi, {
+    for (const plugin of plugins) {
+      await removePlugin(umi, {
         asset: asset.publicKey,
         plugin,
-      }).sendAndConfirm(umi)
-    )
-  );
+      }).sendAndConfirm(umi);
+    }
 
-  await assertAsset(t, umi, {
-    ...DEFAULT_ASSET,
-    asset: asset.publicKey,
-    owner: umi.identity.publicKey,
-    attributes: undefined,
-    royalties: undefined,
-    freezeDelegate: undefined,
-    burnDelegate: undefined,
-    transferDelegate: undefined,
-  });
-});
+    await assertAsset(t, umi, {
+      ...DEFAULT_ASSET,
+      asset: asset.publicKey,
+      owner: umi.identity.publicKey,
+      attributes: undefined,
+      royalties: undefined,
+      freezeDelegate: undefined,
+      burnDelegate: undefined,
+      transferDelegate: undefined,
+    });
+  }
+);
 
-test('it can update all updatable plugins on asset', async (t) => {
+serial('it can update all updatable plugins on asset', async (t) => {
   const umi = await createUmi();
   const asset = await createAsset(umi, {
     plugins: [
@@ -615,14 +618,12 @@ test('it can update all updatable plugins on asset', async (t) => {
     },
   ];
 
-  await Promise.all(
-    updates.map(async (plugin) =>
-      updatePlugin(umi, {
-        asset: asset.publicKey,
-        plugin,
-      }).sendAndConfirm(umi)
-    )
-  );
+  for (const plugin of updates) {
+    await updatePlugin(umi, {
+      asset: asset.publicKey,
+      plugin,
+    }).sendAndConfirm(umi);
+  }
 
   await assertAsset(t, umi, {
     asset: asset.publicKey,
@@ -675,7 +676,7 @@ test('it can update all updatable plugins on asset', async (t) => {
   });
 });
 
-test('it can update all updatable plugins on collection', async (t) => {
+serial('it can update all updatable plugins on collection', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi, {
     plugins: [
@@ -751,14 +752,12 @@ test('it can update all updatable plugins on collection', async (t) => {
     },
   ];
 
-  await Promise.all(
-    updates.map(async (plugin) =>
-      updateCollectionPlugin(umi, {
-        collection: collection.publicKey,
-        plugin,
-      }).sendAndConfirm(umi)
-    )
-  );
+  for (const plugin of updates) {
+    await updateCollectionPlugin(umi, {
+      collection: collection.publicKey,
+      plugin,
+    }).sendAndConfirm(umi);
+  }
 
   await assertCollection(t, umi, {
     collection: collection.publicKey,
@@ -806,99 +805,98 @@ test('it can update all updatable plugins on collection', async (t) => {
   });
 });
 
-test('it can add and remove all update auth managed party plugins to collection', async (t) => {
-  const umi = await createUmi();
-  const collection = await createCollection(umi);
+serial(
+  'it can add and remove all update auth managed party plugins to collection',
+  async (t) => {
+    const umi = await createUmi();
+    const collection = await createCollection(umi);
 
-  const plugins: CollectionAddablePluginAuthorityPairArgsV2[] = [
-    {
-      type: 'Royalties',
-      basisPoints: 500,
-      creators: [
-        {
+    const plugins: CollectionAddablePluginAuthorityPairArgsV2[] = [
+      {
+        type: 'Royalties',
+        basisPoints: 500,
+        creators: [
+          {
+            address: umi.identity.publicKey,
+            percentage: 100,
+          },
+        ],
+        ruleSet: {
+          type: 'ProgramDenyList',
+          addresses: [umi.identity.publicKey],
+        },
+        authority: {
+          type: 'Address',
           address: umi.identity.publicKey,
-          percentage: 100,
         },
-      ],
-      ruleSet: {
-        type: 'ProgramDenyList',
-        addresses: [umi.identity.publicKey],
       },
-      authority: {
-        type: 'Address',
-        address: umi.identity.publicKey,
+      {
+        type: 'Attributes',
+        attributeList: [
+          {
+            key: '123',
+            value: '456',
+          },
+        ],
       },
-    },
-    {
-      type: 'Attributes',
-      attributeList: [
-        {
-          key: '123',
-          value: '456',
-        },
-      ],
-    },
-  ];
+    ];
 
-  await Promise.all(
-    plugins.map(async (plugin) =>
-      addCollectionPlugin(umi, {
+    for (const plugin of plugins) {
+      await addCollectionPlugin(umi, {
         collection: collection.publicKey,
         plugin,
-      }).sendAndConfirm(umi)
-    )
-  );
+      }).sendAndConfirm(umi);
+    }
 
-  await assertCollection(t, umi, {
-    collection: collection.publicKey,
-    updateAuthority: umi.identity.publicKey,
-    royalties: {
-      basisPoints: 500,
-      creators: [
-        {
+    await assertCollection(t, umi, {
+      collection: collection.publicKey,
+      updateAuthority: umi.identity.publicKey,
+      royalties: {
+        basisPoints: 500,
+        creators: [
+          {
+            address: umi.identity.publicKey,
+            percentage: 100,
+          },
+        ],
+        ruleSet: {
+          type: 'ProgramDenyList',
+          addresses: [umi.identity.publicKey],
+        },
+        authority: {
+          type: 'Address',
           address: umi.identity.publicKey,
-          percentage: 100,
         },
-      ],
-      ruleSet: {
-        type: 'ProgramDenyList',
-        addresses: [umi.identity.publicKey],
       },
-      authority: {
-        type: 'Address',
-        address: umi.identity.publicKey,
-      },
-    },
-    attributes: {
-      attributeList: [
-        {
-          key: '123',
-          value: '456',
+      attributes: {
+        attributeList: [
+          {
+            key: '123',
+            value: '456',
+          },
+        ],
+        authority: {
+          type: 'UpdateAuthority',
         },
-      ],
-      authority: {
-        type: 'UpdateAuthority',
       },
-    },
-  });
+    });
 
-  await Promise.all(
-    plugins.map(async (plugin) =>
-      removeCollectionPlugin(umi, {
+    for (const plugin of plugins) {
+      await removeCollectionPlugin(umi, {
         collection: collection.publicKey,
         plugin,
-      }).sendAndConfirm(umi)
-    )
-  );
+      }).sendAndConfirm(umi);
+    }
 
-  await assertCollection(t, umi, {
-    ...DEFAULT_COLLECTION,
-    collection: collection.publicKey,
-    updateAuthority: umi.identity.publicKey,
-    attributes: undefined,
-    royalties: undefined,
-  });
-});
+    await assertCollection(t, umi, {
+      ...DEFAULT_COLLECTION,
+      collection: collection.publicKey,
+      updateAuthority: umi.identity.publicKey,
+      attributes: undefined,
+      royalties: undefined,
+    });
+  }
+);
 
 test('it can transfer asset', async (t) => {
   const umi = await createUmi();

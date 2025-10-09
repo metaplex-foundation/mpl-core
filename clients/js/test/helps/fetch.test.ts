@@ -2,23 +2,26 @@ import test from 'ava';
 
 import { generateSigner } from '@metaplex-foundation/umi';
 import {
+  fetchAllAssets,
   fetchAssetsByCollection,
   fetchAssetsByOwner,
   fetchCollectionsByUpdateAuthority,
-  fetchAllAssets,
 } from '../../src';
 import { createUmi } from '../_setupRaw';
 import { createAsset, createCollection } from '../_setupSdk';
 
-test('it can use the helper to fetch assets by owner', async (t) => {
+// Run all tests in this file serially to avoid overwhelming the local validator and hitting
+// TransactionExpiredBlockheightExceededError when many concurrent transactions are sent.
+const serial = test.serial;
+
+serial('it can use the helper to fetch assets by owner', async (t) => {
   const umi = await createUmi();
   const owner = generateSigner(umi);
 
-  const assets = await Promise.all(
-    Array(5)
-      .fill(0)
-      .map(() => createAsset(umi, { owner: owner.publicKey }))
-  );
+  const assets = [] as Awaited<ReturnType<typeof createAsset>>[];
+  for (let i = 0; i < 5; i += 1) {
+    assets.push(await createAsset(umi, { owner: owner.publicKey }));
+  }
 
   const fetchedAssets = await fetchAssetsByOwner(umi, owner.publicKey);
 
@@ -29,15 +32,14 @@ test('it can use the helper to fetch assets by owner', async (t) => {
   );
 });
 
-test('it can use helper to fetch assets by collection', async (t) => {
+serial('it can use helper to fetch assets by collection', async (t) => {
   const umi = await createUmi();
   const collection = await createCollection(umi);
 
-  const assets = await Promise.all(
-    Array(5)
-      .fill(0)
-      .map(() => createAsset(umi, { collection }))
-  );
+  const assets = [] as Awaited<ReturnType<typeof createAsset>>[];
+  for (let i = 0; i < 5; i += 1) {
+    assets.push(await createAsset(umi, { collection }));
+  }
 
   const fetchedAssets = await fetchAssetsByCollection(
     umi,
@@ -51,66 +53,71 @@ test('it can use helper to fetch assets by collection', async (t) => {
   );
 });
 
-test('it can use helper to fetch collections by update authority', async (t) => {
-  const umi = await createUmi();
-  const updateAuthority = generateSigner(umi);
+serial(
+  'it can use helper to fetch collections by update authority',
+  async (t) => {
+    const umi = await createUmi();
+    const updateAuthority = generateSigner(umi);
 
-  const collections = await Promise.all(
-    Array(5)
-      .fill(0)
-      .map(() =>
-        createCollection(umi, { updateAuthority: updateAuthority.publicKey })
-      )
-  );
+    const collections = [] as Awaited<ReturnType<typeof createCollection>>[];
+    for (let i = 0; i < 5; i += 1) {
+      collections.push(
+        await createCollection(umi, {
+          updateAuthority: updateAuthority.publicKey,
+        })
+      );
+    }
 
-  const fetchedCollections = await fetchCollectionsByUpdateAuthority(
-    umi,
-    updateAuthority.publicKey
-  );
+    const fetchedCollections = await fetchCollectionsByUpdateAuthority(
+      umi,
+      updateAuthority.publicKey
+    );
 
-  t.is(fetchedCollections.length, collections.length);
-  t.deepEqual(
-    fetchedCollections.map((collection) => collection.publicKey).sort(),
-    collections.map((collection) => collection.publicKey).sort()
-  );
-});
+    t.is(fetchedCollections.length, collections.length);
+    t.deepEqual(
+      fetchedCollections.map((collection) => collection.publicKey).sort(),
+      collections.map((collection) => collection.publicKey).sort()
+    );
+  }
+);
 
-test('it can use helper to fetch assets by collection and derive plugins', async (t) => {
-  const umi = await createUmi();
-  const collection = await createCollection(umi, {
-    plugins: [
-      {
-        type: 'Attributes',
-        attributeList: [
-          {
-            key: 'collection',
-            value: 'col',
-          },
-        ],
-      },
-    ],
-  });
+serial(
+  'it can use helper to fetch assets by collection and derive plugins',
+  async (t) => {
+    const umi = await createUmi();
+    const collection = await createCollection(umi, {
+      plugins: [
+        {
+          type: 'Attributes',
+          attributeList: [
+            {
+              key: 'collection',
+              value: 'col',
+            },
+          ],
+        },
+      ],
+    });
 
-  const override = await createAsset(umi, {
-    collection,
-    plugins: [
-      {
-        type: 'Attributes',
-        attributeList: [
-          {
-            key: 'asset',
-            value: 'asset',
-          },
-        ],
-      },
-    ],
-  });
+    const override = await createAsset(umi, {
+      collection,
+      plugins: [
+        {
+          type: 'Attributes',
+          attributeList: [
+            {
+              key: 'asset',
+              value: 'asset',
+            },
+          ],
+        },
+      ],
+    });
 
-  const assets = await Promise.all(
-    Array(4)
-      .fill(0)
-      .map(() =>
-        createAsset(umi, {
+    const assets = [] as Awaited<ReturnType<typeof createAsset>>[];
+    for (let i = 0; i < 4; i += 1) {
+      assets.push(
+        await createAsset(umi, {
           collection,
           plugins: [
             {
@@ -119,51 +126,52 @@ test('it can use helper to fetch assets by collection and derive plugins', async
             },
           ],
         })
-      )
-  );
-
-  const fetchedAssets = await fetchAssetsByCollection(
-    umi,
-    collection.publicKey
-  );
-
-  t.is(fetchedAssets.length, assets.length + 1);
-
-  fetchedAssets.forEach((asset) => {
-    if (asset.publicKey === override.publicKey) {
-      t.like(asset, {
-        numMinted: undefined,
-        currentSize: undefined,
-        attributes: {
-          attributeList: [
-            {
-              key: 'asset',
-              value: 'asset',
-            },
-          ],
-        },
-      });
-    } else {
-      t.like(asset, {
-        numMinted: undefined,
-        currentSize: undefined,
-        freezeDelegate: {
-          frozen: true,
-        },
-        attributes: {
-          attributeList: [
-            {
-              key: 'collection',
-              value: 'col',
-            },
-          ],
-        },
-      });
+      );
     }
-  });
-});
 
-test('it can use helper to fetch all assets', async (t) => {
+    const fetchedAssets = await fetchAssetsByCollection(
+      umi,
+      collection.publicKey
+    );
+
+    t.is(fetchedAssets.length, assets.length + 1);
+
+    fetchedAssets.forEach((asset) => {
+      if (asset.publicKey === override.publicKey) {
+        t.like(asset, {
+          numMinted: undefined,
+          currentSize: undefined,
+          attributes: {
+            attributeList: [
+              {
+                key: 'asset',
+                value: 'asset',
+              },
+            ],
+          },
+        });
+      } else {
+        t.like(asset, {
+          numMinted: undefined,
+          currentSize: undefined,
+          freezeDelegate: {
+            frozen: true,
+          },
+          attributes: {
+            attributeList: [
+              {
+                key: 'collection',
+                value: 'col',
+              },
+            ],
+          },
+        });
+      }
+    });
+  }
+);
+
+serial('it can use helper to fetch all assets', async (t) => {
   const umi = await createUmi();
 
   const collection = await createCollection(umi, {
@@ -174,49 +182,47 @@ test('it can use helper to fetch all assets', async (t) => {
     ],
   });
 
-  const assetsOfOwner1 = await Promise.all(
-    Array(2)
-      .fill(0)
-      .map((_, index) =>
-        createAsset(umi, {
-          collection,
-          name: `Asset ${index + 1}`,
-          plugins: [
-            {
-              type: 'Attributes',
-              attributeList: [
-                {
-                  key: 'asset',
-                  value: 'asset',
-                },
-              ],
-            },
-          ],
-        })
-      )
-  );
+  const assetsOfOwner1 = [] as Awaited<ReturnType<typeof createAsset>>[];
+  for (let i = 0; i < 2; i += 1) {
+    assetsOfOwner1.push(
+      await createAsset(umi, {
+        collection,
+        name: `Asset ${i + 1}`,
+        plugins: [
+          {
+            type: 'Attributes',
+            attributeList: [
+              {
+                key: 'asset',
+                value: 'asset',
+              },
+            ],
+          },
+        ],
+      })
+    );
+  }
 
-  const assetsOfOwner2 = await Promise.all(
-    Array(2)
-      .fill(0)
-      .map((_, index) =>
-        createAsset(umi, {
-          collection,
-          name: `Asset ${index + 1}`,
-          plugins: [
-            {
-              type: 'Attributes',
-              attributeList: [
-                {
-                  key: 'asset',
-                  value: 'asset',
-                },
-              ],
-            },
-          ],
-        })
-      )
-  );
+  const assetsOfOwner2 = [] as Awaited<ReturnType<typeof createAsset>>[];
+  for (let i = 0; i < 2; i += 1) {
+    assetsOfOwner2.push(
+      await createAsset(umi, {
+        collection,
+        name: `Asset ${i + 1}`,
+        plugins: [
+          {
+            type: 'Attributes',
+            attributeList: [
+              {
+                key: 'asset',
+                value: 'asset',
+              },
+            ],
+          },
+        ],
+      })
+    );
+  }
 
   const allCreatedAssets = [...assetsOfOwner1, ...assetsOfOwner2];
 

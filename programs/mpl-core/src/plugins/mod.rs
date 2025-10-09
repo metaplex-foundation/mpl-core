@@ -64,10 +64,11 @@ pub enum Plugin {
     BubblegumV2(BubblegumV2),
     /// Freeze Execute plugin.
     FreezeExecute(FreezeExecute),
+    /// Permanent Freeze Execute plugin allows the authority to freeze the execute lifecycle event.
+    PermanentFreezeExecute(PermanentFreezeExecute),
     /// Groups plugin stores parent group memberships of a collection for taxonomy purposes
     Groups(Groups),
 }
-
 impl Plugin {
     /// Get the default authority for a plugin which defines who must allow the plugin to be created.
     pub fn manager(&self) -> Authority {
@@ -111,6 +112,7 @@ impl Plugin {
             Plugin::Autograph(inner) => inner,
             Plugin::BubblegumV2(inner) => inner,
             Plugin::FreezeExecute(inner) => inner,
+            Plugin::PermanentFreezeExecute(inner) => inner,
             Plugin::Groups(inner) => inner,
         }
     }
@@ -142,10 +144,13 @@ impl DataBlob for Plugin {
                 Plugin::AddBlocker(add_blocker) => add_blocker.len(),
                 Plugin::ImmutableMetadata(immutable_metadata) => immutable_metadata.len(),
                 Plugin::VerifiedCreators(verified_creators) => verified_creators.len(),
-                            Plugin::Autograph(autograph) => autograph.len(),
-            Plugin::BubblegumV2(bubblegum_v2) => bubblegum_v2.len(),
-            Plugin::FreezeExecute(freeze_execute) => freeze_execute.len(),
-            Plugin::Groups(groups) => groups.len(),
+                Plugin::Autograph(autograph) => autograph.len(),
+                Plugin::BubblegumV2(bubblegum_v2) => bubblegum_v2.len(),
+                Plugin::FreezeExecute(freeze_execute) => freeze_execute.len(),
+                Plugin::PermanentFreezeExecute(permanent_freeze_execute) => {
+                    permanent_freeze_execute.len()
+                },
+                Plugin::Groups(groups) => groups.len(),
             }
     }
 }
@@ -202,6 +207,8 @@ pub enum PluginType {
     BubblegumV2,
     /// Freeze Execute plugin.
     FreezeExecute,
+    /// Permanent Freeze Execute plugin.
+    PermanentFreezeExecute,
     /// Groups plugin.
     Groups,
 }
@@ -212,10 +219,11 @@ impl PluginType {
 }
 
 /// The list of permanent delegate types.
-pub const PERMANENT_DELEGATES: [PluginType; 3] = [
+pub const PERMANENT_DELEGATES: [PluginType; 4] = [
     PluginType::PermanentFreezeDelegate,
     PluginType::PermanentTransferDelegate,
     PluginType::PermanentBurnDelegate,
+    PluginType::PermanentFreezeExecute,
 ];
 
 impl DataBlob for PluginType {
@@ -244,6 +252,7 @@ impl From<&Plugin> for PluginType {
             Plugin::Autograph(_) => PluginType::Autograph,
             Plugin::BubblegumV2(_) => PluginType::BubblegumV2,
             Plugin::FreezeExecute(_) => PluginType::FreezeExecute,
+            Plugin::PermanentFreezeExecute(_) => PluginType::PermanentFreezeExecute,
             Plugin::Groups(_) => PluginType::Groups,
         }
     }
@@ -272,6 +281,7 @@ impl PluginType {
                 address: mpl_bubblegum::ID,
             },
             PluginType::FreezeExecute => Authority::Owner,
+            PluginType::PermanentFreezeExecute => Authority::UpdateAuthority,
             PluginType::Groups => Authority::UpdateAuthority,
         }
     }
@@ -325,6 +335,7 @@ mod test {
             Plugin::Autograph(Autograph { signatures: vec![] }),
             Plugin::BubblegumV2(BubblegumV2 {}),
             Plugin::FreezeExecute(FreezeExecute { frozen: false }),
+            Plugin::PermanentFreezeExecute(PermanentFreezeExecute { frozen: false }),
             Plugin::Groups(Groups { groups: vec![] }),
         ];
 
@@ -445,6 +456,9 @@ mod test {
             vec![Plugin::FreezeExecute(FreezeExecute { frozen: true })],
             vec![Plugin::Groups(Groups {
                 groups: vec![Pubkey::default()],
+            })],
+            vec![Plugin::PermanentFreezeExecute(PermanentFreezeExecute {
+                frozen: true,
             })],
         ];
 
