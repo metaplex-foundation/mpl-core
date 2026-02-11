@@ -44,12 +44,20 @@ import { createAsset } from '../../_setupSdk';
  */
 test('it should NOT allow update authority to revoke authority on owner-managed plugins via UpdateDelegate', async (t) => {
   const umi = await createUmi();
+  // IMPORTANT: Use a separate owner distinct from the update authority (umi.identity)
+  // This ensures the signer acts ONLY as update authority, not as owner.
+  // Without this separation, the revoke would succeed via owner permissions,
+  // not through the UpdateDelegate bug path we're trying to test.
+  const owner = generateSigner(umi);
   const freezeDelegateAuthority = generateSigner(umi);
 
   // Create an asset with:
-  // 1. UpdateDelegate plugin (default authority: UpdateAuthority)
-  // 2. FreezeDelegate plugin (default authority: Owner - an owner-managed plugin)
+  // - owner: separate signer (NOT umi.identity)
+  // - updateAuthority: umi.identity
+  // - UpdateDelegate plugin (default authority: UpdateAuthority)
+  // - FreezeDelegate plugin (default authority: Owner - an owner-managed plugin)
   const asset = await createAsset(umi, {
+    owner: owner.publicKey,
     plugins: [
       {
         type: 'UpdateDelegate',
@@ -66,7 +74,7 @@ test('it should NOT allow update authority to revoke authority on owner-managed 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
-    owner: umi.identity.publicKey,
+    owner: owner.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     updateDelegate: {
       authority: { type: 'UpdateAuthority' },
@@ -86,13 +94,14 @@ test('it should NOT allow update authority to revoke authority on owner-managed 
       type: 'Address',
       address: freezeDelegateAuthority.publicKey,
     },
+    authority: owner, // Owner must sign to approve authority on owner-managed plugin
   }).sendAndConfirm(umi);
 
   // Verify the FreezeDelegate authority was changed
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
-    owner: umi.identity.publicKey,
+    owner: owner.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     updateDelegate: {
       authority: { type: 'UpdateAuthority' },
@@ -118,7 +127,7 @@ test('it should NOT allow update authority to revoke authority on owner-managed 
   const result = revokePluginAuthority(umi, {
     asset: asset.publicKey,
     plugin: { type: 'FreezeDelegate' },
-    // Using the default authority (UpdateAuthority/identity)
+    // Using the default authority (umi.identity = UpdateAuthority, NOT owner)
   }).sendAndConfirm(umi);
 
   // After the fix, this should throw NoApprovals
@@ -132,12 +141,17 @@ test('it should NOT allow update authority to revoke authority on owner-managed 
  */
 test('it should allow update authority to revoke authority on UpdateAuthority-managed plugins via UpdateDelegate', async (t) => {
   const umi = await createUmi();
+  // Use separate owner for consistency with other tests
+  const owner = generateSigner(umi);
   const editionAuthority = generateSigner(umi);
 
   // Create an asset with:
-  // 1. UpdateDelegate plugin (default authority: UpdateAuthority)
-  // 2. Edition plugin (default authority: UpdateAuthority - an authority-managed plugin)
+  // - owner: separate signer
+  // - updateAuthority: umi.identity
+  // - UpdateDelegate plugin (default authority: UpdateAuthority)
+  // - Edition plugin (default authority: UpdateAuthority - an authority-managed plugin)
   const asset = await createAsset(umi, {
+    owner: owner.publicKey,
     plugins: [
       {
         type: 'UpdateDelegate',
@@ -150,7 +164,7 @@ test('it should allow update authority to revoke authority on UpdateAuthority-ma
     ],
   });
 
-  // Approve a new authority for Edition
+  // Approve a new authority for Edition (UpdateAuthority can do this)
   await approvePluginAuthority(umi, {
     asset: asset.publicKey,
     plugin: { type: 'Edition' },
@@ -160,7 +174,7 @@ test('it should allow update authority to revoke authority on UpdateAuthority-ma
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
-    owner: umi.identity.publicKey,
+    owner: owner.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     updateDelegate: {
       authority: { type: 'UpdateAuthority' },
@@ -183,7 +197,7 @@ test('it should allow update authority to revoke authority on UpdateAuthority-ma
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
-    owner: umi.identity.publicKey,
+    owner: owner.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     updateDelegate: {
       authority: { type: 'UpdateAuthority' },
@@ -203,10 +217,14 @@ test('it should allow update authority to revoke authority on UpdateAuthority-ma
  */
 test('it should NOT allow update authority to revoke authority on TransferDelegate via UpdateDelegate', async (t) => {
   const umi = await createUmi();
+  // IMPORTANT: Use a separate owner distinct from the update authority (umi.identity)
+  const owner = generateSigner(umi);
   const transferDelegateAuthority = generateSigner(umi);
 
   // Create an asset with UpdateDelegate and TransferDelegate
+  // owner is separate from updateAuthority to isolate the UpdateDelegate bug
   const asset = await createAsset(umi, {
+    owner: owner.publicKey,
     plugins: [
       {
         type: 'UpdateDelegate',
@@ -226,12 +244,13 @@ test('it should NOT allow update authority to revoke authority on TransferDelega
       type: 'Address',
       address: transferDelegateAuthority.publicKey,
     },
+    authority: owner, // Owner must sign to approve authority on owner-managed plugin
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
     ...DEFAULT_ASSET,
     asset: asset.publicKey,
-    owner: umi.identity.publicKey,
+    owner: owner.publicKey,
     updateAuthority: { type: 'Address', address: umi.identity.publicKey },
     updateDelegate: {
       authority: { type: 'UpdateAuthority' },
@@ -250,6 +269,7 @@ test('it should NOT allow update authority to revoke authority on TransferDelega
   const result = revokePluginAuthority(umi, {
     asset: asset.publicKey,
     plugin: { type: 'TransferDelegate' },
+    // Using the default authority (umi.identity = UpdateAuthority, NOT owner)
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'NoApprovals' });
