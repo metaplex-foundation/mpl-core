@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1758045335284,
+  "lastUpdate": 1770854346707,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -9133,6 +9133,120 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/metaplex-foundation/mpl-core/commit/4917f624a76f8ba37553a84cc6321af14ec93797"
         },
         "date": 1758045334686,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 7628,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 15706,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 25922,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 30830,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 19019,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 24206,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 23516,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 31593,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 22906,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 34644,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 3611,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 5171,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 7048,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 8608,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "adeshatole200@gmail.com",
+            "name": "Adesh Atole",
+            "username": "AdeshAtole"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1a681147131a1d8ef8931bb803ecaed846f92324",
+          "message": "fix: operator precedence bug in UpdateDelegate revoke authority (#253)\n\nDue to Rust's operator precedence (&& binds tighter than ||), the\ncondition `A || B && C && D` was evaluated as `A || (B && C && D)`\ninstead of the intended `(A || (B && C)) && D`.\n\nThis meant the `plugin.manager() == Authority::UpdateAuthority` check\nonly applied to the additional_delegates branch, not the main\nresolved_authorities branch. As a result, UpdateDelegate could revoke\nauthority on owner-managed plugins (FreezeDelegate, TransferDelegate)\nthat it should not control.\n\nAdded explicit parentheses to ensure the manager check applies to\nboth branches.",
+          "timestamp": "2026-02-11T18:52:14-05:00",
+          "tree_id": "e7fdbe4a89062e60c0faeb7a783d398e46177f28",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/1a681147131a1d8ef8931bb803ecaed846f92324"
+        },
+        "date": 1770854345851,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
