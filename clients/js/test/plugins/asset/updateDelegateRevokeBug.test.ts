@@ -208,8 +208,6 @@ test('it should allow update authority to revoke authority on UpdateAuthority-ma
       number: 1,
     },
   });
-
-  t.pass();
 });
 
 /**
