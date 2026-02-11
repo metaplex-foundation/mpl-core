@@ -88,6 +88,11 @@ pub(crate) fn add_groups_to_group_v1<'a>(
             return Err(ProgramError::InvalidAccountData);
         }
 
+        if child_info.key == parent_group_info.key {
+            msg!("Error: Parent group cannot be added as its own child group");
+            return Err(MplCoreError::IncorrectAccount.into());
+        }
+
         // Deserialize child group.
         let mut child_group = GroupV1::load(child_info, 0)?;
 

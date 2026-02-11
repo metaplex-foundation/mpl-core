@@ -66,3 +66,21 @@ test('it keeps parentGroups in sync with groups when adding and removing child g
     parentGroups: [],
   });
 });
+
+test('it rejects adding a parent group as its own child group', async (t) => {
+  const umi = await createUmi();
+  const parent = await createGroup(umi, { name: 'parent' });
+
+  await t.throwsAsync(
+    addGroupsToGroup(umi, {
+      parentGroup: parent.publicKey,
+      groups: [parent.publicKey],
+      authority: umi.identity,
+    })
+      .addRemainingAccounts([
+        { isSigner: false, isWritable: true, pubkey: parent.publicKey },
+      ])
+      .sendAndConfirm(umi),
+    { name: 'IncorrectAccount' }
+  );
+});

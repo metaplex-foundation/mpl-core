@@ -82,6 +82,16 @@ pub(crate) fn create_group_v1<'a>(
             return Err(MplCoreError::DuplicateEntry.into());
         }
 
+        if rel.key == *ctx.accounts.group.key
+            && matches!(
+                rel.kind,
+                RelationshipKind::ChildGroup | RelationshipKind::ParentGroup
+            )
+        {
+            msg!("Error: Group cannot reference itself as child or parent group");
+            return Err(MplCoreError::IncorrectAccount.into());
+        }
+
         match rel.kind {
             RelationshipKind::Collection => collections_vec.push(rel.key),
             RelationshipKind::ChildGroup => child_groups_vec.push(rel.key),
