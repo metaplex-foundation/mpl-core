@@ -43,7 +43,7 @@ impl CreateGroupV1 {
         if let Some(update_authority) = self.update_authority {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 update_authority,
-                false,
+                true,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -98,7 +98,7 @@ pub struct CreateGroupV1InstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` group
-///   1. `[optional]` update_authority
+///   1. `[signer, optional]` update_authority
 ///   2. `[writable, signer]` payer
 ///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Default)]
@@ -286,7 +286,7 @@ impl<'a, 'b> CreateGroupV1Cpi<'a, 'b> {
         if let Some(update_authority) = self.update_authority {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 *update_authority.key,
-                false,
+                true,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -343,7 +343,7 @@ impl<'a, 'b> CreateGroupV1Cpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` group
-///   1. `[optional]` update_authority
+///   1. `[signer, optional]` update_authority
 ///   2. `[writable, signer]` payer
 ///   3. `[]` system_program
 pub struct CreateGroupV1CpiBuilder<'a, 'b> {

@@ -38,7 +38,7 @@ export type CreateGroupV1InstructionAccounts = {
   /** The address of the new group */
   group: Signer;
   /** The authority of the new group */
-  updateAuthority?: PublicKey | Pda;
+  updateAuthority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */

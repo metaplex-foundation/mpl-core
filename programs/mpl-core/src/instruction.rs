@@ -423,7 +423,7 @@ pub(crate) enum MplAssetInstruction {
 
     /// Create a new Group account.
     #[account(0, writable, signer, name="group", desc = "The address of the new group")]
-    #[account(1, optional, name="update_authority", desc = "The authority of the new group")]
+    #[account(1, optional, signer, name="update_authority", desc = "The authority of the new group")]
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, name="system_program", desc = "The system program")]
     CreateGroupV1(CreateGroupV1Args),
