@@ -577,6 +577,39 @@ pub(crate) fn resolve_authority<'a>(
     }
 }
 
+/// Returns true if the `authority_info` represents either the update authority of the asset
+/// or a valid update delegate (defined by an `UpdateDelegate` plugin on the asset).
+pub fn is_valid_asset_authority(
+    asset_info: &AccountInfo,
+    authority_info: &AccountInfo,
+) -> Result<bool, ProgramError> {
+    // Load asset core data.
+    let asset_core = AssetV1::load(asset_info, 0)?;
+
+    // Fast path: signer is the update authority address (when address type).
+    if let UpdateAuthority::Address(addr) = asset_core.update_authority.clone() {
+        if addr == *authority_info.key {
+            return Ok(true);
+        }
+    }
+
+    // Attempt to locate an UpdateDelegate plugin on the asset.
+    if let Ok((_plugin_authority, plugin)) =
+        fetch_wrapped_plugin::<AssetV1>(asset_info, Some(&asset_core), PluginType::UpdateDelegate)
+    {
+        if let crate::plugins::Plugin::UpdateDelegate(update_delegate) = plugin {
+            if update_delegate
+                .additional_delegates
+                .contains(authority_info.key)
+            {
+                return Ok(true);
+            }
+        }
+    }
+
+    Ok(false)
+}
+
 /// Returns true if the `authority_info` represents either the update authority of the group
 /// or a valid update delegate (defined by an `UpdateDelegate` plugin on the group).
 pub fn is_valid_group_authority(

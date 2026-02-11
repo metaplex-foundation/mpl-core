@@ -11,9 +11,12 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    plugins::{create_meta_idempotent, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType},
-    state::{AssetV1, DataBlob, GroupV1, SolanaAccount},
-    utils::{is_valid_group_authority, resize_or_reallocate_account, resolve_authority},
+    plugins::{create_meta_idempotent, Plugin, PluginType},
+    state::{AssetV1, GroupV1, SolanaAccount},
+    utils::{
+        is_valid_asset_authority, is_valid_group_authority, resize_or_reallocate_account,
+        resolve_authority,
+    },
 };
 
 /// Args for RemoveAssetsFromGroupV1
@@ -21,37 +24,6 @@ use crate::{
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct RemoveAssetsFromGroupV1Args {
     pub(crate) assets: Vec<Pubkey>,
-}
-
-fn is_valid_asset_authority(
-    asset_info: &AccountInfo,
-    authority_info: &AccountInfo,
-) -> ProgramResult {
-    use crate::plugins::{fetch_wrapped_plugin, PluginType};
-    use crate::state::UpdateAuthority;
-
-    let asset_core = AssetV1::load(asset_info, 0)?;
-
-    if let UpdateAuthority::Address(addr) = asset_core.update_authority.clone() {
-        if addr == *authority_info.key {
-            return Ok(());
-        }
-    }
-
-    if let Ok((_pa, plugin)) =
-        fetch_wrapped_plugin::<AssetV1>(asset_info, Some(&asset_core), PluginType::UpdateDelegate)
-    {
-        if let crate::plugins::Plugin::UpdateDelegate(update_delegate) = plugin {
-            if update_delegate
-                .additional_delegates
-                .contains(authority_info.key)
-            {
-                return Ok(());
-            }
-        }
-    }
-
-    Err(MplCoreError::InvalidAuthority.into())
 }
 
 pub(crate) fn remove_assets_from_group_v1<'a>(
@@ -92,7 +64,9 @@ pub(crate) fn remove_assets_from_group_v1<'a>(
             return Err(ProgramError::InvalidAccountData);
         }
 
-        is_valid_asset_authority(asset_info, authority_info)?;
+        if !is_valid_asset_authority(asset_info, authority_info)? {
+            return Err(MplCoreError::InvalidAuthority.into());
+        }
 
         // remove asset from group list
         if let Some(pos) = group.assets.iter().position(|pk| pk == asset_info.key) {

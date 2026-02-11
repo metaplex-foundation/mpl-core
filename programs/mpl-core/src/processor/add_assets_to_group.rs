@@ -4,7 +4,6 @@ use solana_program::{
     account_info::AccountInfo,
     entrypoint::ProgramResult,
     msg,
-    program_error::ProgramError,
     program_memory::{sol_memcpy, sol_memmove},
     pubkey::Pubkey,
 };
@@ -13,53 +12,18 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::AddAssetsToGroupV1Accounts,
     instruction::accounts::Context,
-    plugins::{
-        create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginHeaderV1,
-        PluginRegistryV1, PluginType,
+    plugins::{create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginType},
+    state::{AssetV1, GroupV1, SolanaAccount},
+    utils::{
+        is_valid_asset_authority, is_valid_group_authority, resize_or_reallocate_account,
+        resolve_authority,
     },
-    state::{AssetV1, DataBlob, GroupV1, SolanaAccount},
-    utils::{is_valid_group_authority, resize_or_reallocate_account, resolve_authority},
 };
 
 /// Arguments for the `AddAssetsToGroupV1` instruction.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct AddAssetsToGroupV1Args {}
-
-/// Returns true if the authority is allowed to mutate the asset (update authority or delegate).
-fn is_valid_asset_authority(
-    asset_info: &AccountInfo,
-    authority_info: &AccountInfo,
-) -> ProgramResult {
-    use crate::plugins::fetch_wrapped_plugin;
-    use crate::plugins::PluginType;
-    use crate::state::UpdateAuthority;
-
-    let asset_core = AssetV1::load(asset_info, 0)?;
-
-    // Direct update authority address.
-    if let UpdateAuthority::Address(addr) = asset_core.update_authority.clone() {
-        if addr == *authority_info.key {
-            return Ok(());
-        }
-    }
-
-    // Check UpdateDelegate plugin.
-    if let Ok((_pa, plugin)) =
-        fetch_wrapped_plugin::<AssetV1>(asset_info, Some(&asset_core), PluginType::UpdateDelegate)
-    {
-        if let crate::plugins::Plugin::UpdateDelegate(update_delegate) = plugin {
-            if update_delegate
-                .additional_delegates
-                .contains(authority_info.key)
-            {
-                return Ok(());
-            }
-        }
-    }
-
-    Err(MplCoreError::InvalidAuthority.into())
-}
 
 /// Processor for the `AddAssetsToGroupV1` instruction.
 #[allow(clippy::too_many_arguments)]
@@ -102,7 +66,9 @@ pub(crate) fn add_assets_to_group_v1<'a>(
     // Iterate over each asset account in remaining_accounts.
     for asset_info in remaining_accounts.iter() {
         // authority must be valid for asset
-        is_valid_asset_authority(asset_info, authority_info)?;
+        if !is_valid_asset_authority(asset_info, authority_info)? {
+            return Err(MplCoreError::InvalidAuthority.into());
+        }
 
         // Update group.assets vector
         if !group.assets.contains(asset_info.key) {
