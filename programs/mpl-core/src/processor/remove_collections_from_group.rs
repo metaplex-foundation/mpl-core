@@ -109,8 +109,8 @@ pub(crate) fn remove_collections_from_group_v1<'a>(
         {
             group.collections.remove(pos);
         } else {
-            // If collection not present, skip plugin update.
-            continue;
+            msg!("Error: Collection is not a child of the provided group");
+            return Err(MplCoreError::IncorrectAccount.into());
         }
 
         // Remove group from collection's Groups plugin.

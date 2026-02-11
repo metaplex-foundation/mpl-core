@@ -102,8 +102,8 @@ pub(crate) fn remove_groups_from_group_v1<'a>(
         {
             parent_group.groups.remove(pos);
         } else {
-            // Not present, skip modification of child.
-            continue;
+            msg!("Error: Child group is not linked to the parent group");
+            return Err(MplCoreError::IncorrectAccount.into());
         }
 
         // Remove parent from child's parent_groups if present.

@@ -72,7 +72,8 @@ pub(crate) fn remove_assets_from_group_v1<'a>(
         if let Some(pos) = group.assets.iter().position(|pk| pk == asset_info.key) {
             group.assets.remove(pos);
         } else {
-            continue; // asset not part of group: skip plugin update
+            msg!("Error: Asset is not a child of the provided group");
+            return Err(MplCoreError::IncorrectAccount.into());
         }
 
         process_asset_groups_plugin_remove(
