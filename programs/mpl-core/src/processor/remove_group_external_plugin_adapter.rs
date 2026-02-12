@@ -1,16 +1,15 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
+    instruction::accounts::RemoveGroupExternalPluginAdapterV1Accounts,
     plugins::{
         delete_external_plugin_adapter, fetch_wrapped_external_plugin_adapter,
         ExternalPluginAdapterKey,
     },
-    state::{DataBlob, GroupV1, SolanaAccount},
+    state::GroupV1,
     utils::{fetch_core_data, is_valid_group_authority, resolve_authority},
 };
 
@@ -32,16 +31,12 @@ pub(crate) fn remove_group_external_plugin_adapter<'a>(
     // 2. [signer] Optional authority (update authority or delegate)
     // 3. [] System program
     // 4. [] Optional SPL Noop (log wrapper)
-
-    if accounts.len() < 4 {
-        return Err(ProgramError::NotEnoughAccountKeys);
-    }
-
-    let group_info = &accounts[0];
-    let payer_info = &accounts[1];
-    let authority_info_opt = accounts.get(2);
-    let system_program_info = &accounts[3];
-    let log_wrapper_info_opt = accounts.get(4);
+    let ctx = RemoveGroupExternalPluginAdapterV1Accounts::context(accounts)?;
+    let group_info = ctx.accounts.group;
+    let payer_info = ctx.accounts.payer;
+    let authority_info_opt = ctx.accounts.authority;
+    let system_program_info = ctx.accounts.system_program;
+    let log_wrapper_info_opt = ctx.accounts.log_wrapper;
 
     // Guards.
     assert_signer(payer_info)?;

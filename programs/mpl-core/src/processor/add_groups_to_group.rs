@@ -7,7 +7,8 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    state::{DataBlob, GroupV1, SolanaAccount},
+    instruction::accounts::{AddGroupsToGroupV1Accounts, Context},
+    state::{GroupV1, SolanaAccount},
     utils::{is_valid_group_authority, resize_or_reallocate_account, resolve_authority},
 };
 
@@ -31,18 +32,12 @@ pub(crate) fn add_groups_to_group_v1<'a>(
     //   2. [signer] Optional authority (update auth/delegate)
     //   3. [] System program
     //   4..N [writable] Child group accounts, one for each pubkey in args.groups
-
-    if accounts.len() < 4 {
-        return Err(ProgramError::NotEnoughAccountKeys);
-    }
-
-    let parent_group_info = &accounts[0];
-    let payer_info = &accounts[1];
-    let authority_info_opt = accounts.get(2);
-    let system_program_info = &accounts[3];
-
-    // Remaining accounts are the child group accounts.
-    let child_group_accounts = &accounts[4..];
+    let ctx: Context<AddGroupsToGroupV1Accounts> = AddGroupsToGroupV1Accounts::context(accounts)?;
+    let parent_group_info = ctx.accounts.parent_group;
+    let payer_info = ctx.accounts.payer;
+    let authority_info_opt = ctx.accounts.authority;
+    let system_program_info = ctx.accounts.system_program;
+    let child_group_accounts = ctx.remaining_accounts;
 
     // Basic guards.
     assert_signer(payer_info)?;

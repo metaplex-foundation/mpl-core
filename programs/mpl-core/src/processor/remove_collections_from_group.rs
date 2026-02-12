@@ -11,11 +11,9 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
-    plugins::{
-        create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginHeaderV1,
-        PluginRegistryV1, PluginType,
-    },
-    state::{CollectionV1, DataBlob, GroupV1, SolanaAccount},
+    instruction::accounts::{Context, RemoveCollectionsFromGroupV1Accounts},
+    plugins::{create_meta_idempotent, Plugin, PluginType},
+    state::{CollectionV1, GroupV1, SolanaAccount},
     utils::{
         is_valid_collection_authority, is_valid_group_authority, resize_or_reallocate_account,
         resolve_authority,
@@ -42,17 +40,13 @@ pub(crate) fn remove_collections_from_group_v1<'a>(
     //   2. [signer] Optional authority (update auth/delegate)
     //   3. [] System program
     //   4..N [writable] Collection accounts, one for each pubkey in args.collections
-
-    if accounts.len() < 4 {
-        return Err(ProgramError::NotEnoughAccountKeys);
-    }
-
-    let group_info = &accounts[0];
-    let payer_info = &accounts[1];
-    let authority_info_opt = accounts.get(2);
-    let system_program_info = &accounts[3];
-
-    let collection_accounts = &accounts[4..];
+    let ctx: Context<RemoveCollectionsFromGroupV1Accounts> =
+        RemoveCollectionsFromGroupV1Accounts::context(accounts)?;
+    let group_info = ctx.accounts.group;
+    let payer_info = ctx.accounts.payer;
+    let authority_info_opt = ctx.accounts.authority;
+    let system_program_info = ctx.accounts.system_program;
+    let collection_accounts = ctx.remaining_accounts;
 
     // Basic guards
     assert_signer(payer_info)?;

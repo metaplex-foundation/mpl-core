@@ -11,6 +11,7 @@ use solana_program::{
 
 use crate::{
     error::MplCoreError,
+    instruction::accounts::{Context, RemoveAssetsFromGroupV1Accounts},
     plugins::{create_meta_idempotent, Plugin, PluginType},
     state::{AssetV1, GroupV1, SolanaAccount},
     utils::{
@@ -30,15 +31,13 @@ pub(crate) fn remove_assets_from_group_v1<'a>(
     accounts: &'a [AccountInfo<'a>],
     args: RemoveAssetsFromGroupV1Args,
 ) -> ProgramResult {
-    if accounts.len() < 4 {
-        return Err(ProgramError::NotEnoughAccountKeys);
-    }
-
-    let group_info = &accounts[0];
-    let payer_info = &accounts[1];
-    let authority_info_opt = accounts.get(2);
-    let system_program_info = &accounts[3];
-    let asset_accounts = &accounts[4..];
+    let ctx: Context<RemoveAssetsFromGroupV1Accounts> =
+        RemoveAssetsFromGroupV1Accounts::context(accounts)?;
+    let group_info = ctx.accounts.group;
+    let payer_info = ctx.accounts.payer;
+    let authority_info_opt = ctx.accounts.authority;
+    let system_program_info = ctx.accounts.system_program;
+    let asset_accounts = ctx.remaining_accounts;
 
     assert_signer(payer_info)?;
     let authority_info = resolve_authority(payer_info, authority_info_opt)?;

@@ -1,16 +1,15 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
+    instruction::accounts::AddGroupPluginV1Accounts,
     plugins::{
         create_meta_idempotent, initialize_plugin, Plugin, PluginType, PluginValidationContext,
         ValidationResult,
     },
-    state::{Authority, GroupV1, SolanaAccount},
+    state::{Authority, GroupV1},
     utils::{is_valid_group_authority, resolve_authority},
 };
 
@@ -35,17 +34,14 @@ pub(crate) fn add_group_plugin<'a>(
     // 2. [signer] Optional authority (update authority or its delegate)
     // 3. [] System program
     // 4. [] Optional SPL Noop (log wrapper)
-
-    if accounts.len() < 4 {
-        return Err(ProgramError::NotEnoughAccountKeys);
-    }
-    let group_info = &accounts[0];
-    let payer_info = &accounts[1];
-    let authority_info_opt = accounts.get(2);
-    let system_program_info = &accounts[3];
+    let ctx = AddGroupPluginV1Accounts::context(accounts)?;
+    let group_info = ctx.accounts.group;
+    let payer_info = ctx.accounts.payer;
+    let authority_info_opt = ctx.accounts.authority;
+    let system_program_info = ctx.accounts.system_program;
 
     // Optional log wrapper validation
-    if let Some(wrapper_info) = accounts.get(4) {
+    if let Some(wrapper_info) = ctx.accounts.log_wrapper {
         if wrapper_info.key != &spl_noop::ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
@@ -58,9 +54,6 @@ pub(crate) fn add_group_plugin<'a>(
     if system_program_info.key != &solana_program::system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
-
-    // Deserialize group and authority check
-    let group = GroupV1::load(group_info, 0)?;
 
     if !is_valid_group_authority(group_info, authority_info)? {
         msg!("Error: Invalid authority for group account");

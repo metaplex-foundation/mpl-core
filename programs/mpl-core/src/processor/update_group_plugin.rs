@@ -1,12 +1,11 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
-    plugins::{fetch_wrapped_plugin, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType},
+    instruction::accounts::UpdateGroupPluginV1Accounts,
+    plugins::{fetch_wrapped_plugin, Plugin, PluginType},
     state::{DataBlob, GroupV1, SolanaAccount},
     utils::{
         fetch_core_data, is_valid_group_authority, resize_or_reallocate_account, resolve_authority,
@@ -24,15 +23,13 @@ pub(crate) fn update_group_plugin<'a>(
     accounts: &'a [AccountInfo<'a>],
     args: UpdateGroupPluginV1Args,
 ) -> ProgramResult {
-    if accounts.len() < 4 {
-        return Err(ProgramError::NotEnoughAccountKeys);
-    }
-    let group_info = &accounts[0];
-    let payer_info = &accounts[1];
-    let authority_info_opt = accounts.get(2);
-    let system_program_info = &accounts[3];
+    let ctx = UpdateGroupPluginV1Accounts::context(accounts)?;
+    let group_info = ctx.accounts.group;
+    let payer_info = ctx.accounts.payer;
+    let authority_info_opt = ctx.accounts.authority;
+    let system_program_info = ctx.accounts.system_program;
 
-    if let Some(wrapper_info) = accounts.get(4) {
+    if let Some(wrapper_info) = ctx.accounts.log_wrapper {
         if wrapper_info.key != &spl_noop::ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
@@ -60,7 +57,6 @@ pub(crate) fn update_group_plugin<'a>(
     }
 
     // Authority check against group update authority or delegate
-    let group = GroupV1::load(group_info, 0)?;
     if !is_valid_group_authority(group_info, authority_info)? {
         msg!("Error: Invalid authority for group account");
         return Err(MplCoreError::InvalidAuthority.into());
