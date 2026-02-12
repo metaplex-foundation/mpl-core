@@ -747,15 +747,23 @@ pub fn approve_authority_on_plugin<'a, T: CoreAsset>(
         .find(|record| record.plugin_type == *plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
 
+    let old_authority_bytes = registry_record.authority.try_to_vec()?;
+    let new_authority_bytes = new_authority.try_to_vec()?;
+    let size_diff = (new_authority_bytes.len() as isize)
+        .checked_sub(old_authority_bytes.len() as isize)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
     registry_record.authority = *new_authority;
 
-    let authority_bytes = new_authority.try_to_vec()?;
-
-    let new_size = account
-        .data_len()
-        .checked_add(authority_bytes.len())
-        .ok_or(MplCoreError::NumericalOverflow)?;
-    resize_or_reallocate_account(account, payer, system_program, new_size)?;
+    if size_diff != 0 {
+        let new_size = (account.data_len() as isize)
+            .checked_add(size_diff)
+            .ok_or(MplCoreError::NumericalOverflow)?;
+        let new_size: usize = new_size
+            .try_into()
+            .map_err(|_| MplCoreError::NumericalOverflow)?;
+        resize_or_reallocate_account(account, payer, system_program, new_size)?;
+    }
 
     plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
 
