@@ -668,7 +668,6 @@ pub(crate) trait PluginValidation {
 /// The STRONGEST result is returned.
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn validate_plugin_checks<'a>(
-    key: Key,
     accounts: &'a [AccountInfo<'a>],
     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &'a AccountInfo<'a>,
@@ -690,13 +689,11 @@ pub(crate) fn validate_plugin_checks<'a>(
     let mut approved = false;
     let mut rejected = false;
     for (check_key, check_result, registry_record) in checks.values() {
-        if *check_key == key
-            && matches!(
-                check_result,
-                CheckResult::CanApprove | CheckResult::CanReject
-            )
-        {
-            let account = match key {
+        if matches!(
+            check_result,
+            CheckResult::CanApprove | CheckResult::CanReject
+        ) {
+            let account = match check_key {
                 Key::CollectionV1 => collection.ok_or(MplCoreError::InvalidCollection)?,
                 Key::AssetV1 => asset.ok_or(MplCoreError::InvalidAsset)?,
                 _ => unreachable!(),
@@ -745,7 +742,6 @@ pub(crate) fn validate_plugin_checks<'a>(
 /// The STRONGEST result is returned.
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn validate_external_plugin_adapter_checks<'a>(
-    key: Key,
     accounts: &'a [AccountInfo<'a>],
     external_checks: &BTreeMap<
         ExternalPluginAdapterKey,
@@ -769,12 +765,8 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
     for (check_key, check_result, external_registry_record) in external_checks.values() {
-        if *check_key == key
-            && (check_result.can_listen()
-                || check_result.can_approve()
-                || check_result.can_reject())
-        {
-            let account = match key {
+        if check_result.can_listen() || check_result.can_approve() || check_result.can_reject() {
+            let account = match check_key {
                 Key::CollectionV1 => collection.ok_or(MplCoreError::InvalidCollection)?,
                 Key::AssetV1 => asset.ok_or(MplCoreError::InvalidAsset)?,
                 _ => unreachable!(),
