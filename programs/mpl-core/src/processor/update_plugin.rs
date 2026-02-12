@@ -47,6 +47,11 @@ pub(crate) fn update_plugin<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
+    // Groups plugins must be mutated only through dedicated Group instructions.
+    if PluginType::from(&args.plugin) == PluginType::Groups {
+        return Err(MplCoreError::InvalidPlugin.into());
+    }
+
     let (target_plugin_authority, _) =
         fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, None, PluginType::from(&args.plugin))?;
 
