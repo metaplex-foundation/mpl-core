@@ -47,7 +47,7 @@ test('it can add, update, and remove an Autograph plugin on a group', async (t) 
   });
 
   // ---------------------------------------------------------------------------
-  // 2. Update plugin to include a second signature.
+  // 2. Update plugin by clearing signatures.
   // ---------------------------------------------------------------------------
   await updateGroupPlugin(umi, {
     group: group.publicKey,
@@ -55,10 +55,7 @@ test('it can add, update, and remove an Autograph plugin on a group', async (t) 
     logWrapper: LOG_WRAPPER,
     plugin: {
       type: 'Autograph',
-      signatures: [
-        { address: umi.identity.publicKey, message: 'sig-0' },
-        { address: umi.identity.publicKey, message: 'sig-1' },
-      ],
+      signatures: [],
     },
   }).sendAndConfirm(umi);
 
@@ -83,6 +80,44 @@ test('it can add, update, and remove an Autograph plugin on a group', async (t) 
     group: group.publicKey,
     updateAuthority: umi.identity.publicKey,
   });
+});
+
+test('it rejects invalid Autograph updates on a group', async (t) => {
+  const umi = await createUmi();
+  const group = await createGroup(umi);
+
+  await addGroupPlugin(umi, {
+    group: group.publicKey,
+    plugin: {
+      type: 'Autograph',
+      signatures: [
+        {
+          address: umi.identity.publicKey,
+          message: 'Initial signature',
+        },
+      ],
+    },
+    authority: umi.identity,
+    logWrapper: LOG_WRAPPER,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(
+    updateGroupPlugin(umi, {
+      group: group.publicKey,
+      authority: umi.identity,
+      logWrapper: LOG_WRAPPER,
+      plugin: {
+        type: 'Autograph',
+        signatures: [
+          {
+            address: umi.identity.publicKey,
+            message: 'Mutated signature',
+          },
+        ],
+      },
+    }).sendAndConfirm(umi),
+    { name: 'InvalidPluginOperation' }
+  );
 });
 
 // -----------------------------------------------------------------------------

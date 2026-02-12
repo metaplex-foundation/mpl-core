@@ -5,8 +5,11 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::UpdateGroupPluginV1Accounts,
-    plugins::{fetch_wrapped_plugin, Plugin, PluginType},
-    state::{DataBlob, GroupV1, SolanaAccount},
+    plugins::{
+        fetch_wrapped_plugin, CheckResult, Plugin, PluginType, PluginValidationContext,
+        ValidationResult,
+    },
+    state::{Authority, DataBlob, GroupV1, SolanaAccount},
     utils::{
         fetch_core_data, is_valid_group_authority, resize_or_reallocate_account, resolve_authority,
     },
@@ -82,6 +85,54 @@ pub(crate) fn update_group_plugin<'a>(
 
     // Serialize old and new plugin to calculate diff
     let old_plugin = Plugin::load(group_info, registry_record.offset)?;
+
+    let mut resolved_authorities = vec![Authority::Address {
+        address: *authority_info.key,
+    }];
+    if authority_info.key == &core_stub.update_authority {
+        resolved_authorities.push(Authority::Owner);
+        resolved_authorities.push(Authority::UpdateAuthority);
+    } else {
+        // Group delegates can update plugins that are managed by update authority.
+        resolved_authorities.push(Authority::UpdateAuthority);
+    }
+
+    if !matches!(
+        PluginType::check_update_plugin(&incoming_plugin_type),
+        CheckResult::CanApprove | CheckResult::CanReject | CheckResult::CanForceApprove
+    ) {
+        msg!("Error: Update lifecycle checks are disabled for this plugin");
+        return Err(MplCoreError::NoApprovals.into());
+    }
+
+    let validation_ctx = PluginValidationContext {
+        accounts,
+        asset_info: None,
+        collection_info: None,
+        self_authority: &registry_record.authority,
+        authority_info,
+        resolved_authorities: Some(&resolved_authorities),
+        new_owner: None,
+        new_asset_authority: None,
+        new_collection_authority: None,
+        target_plugin: Some(&args.plugin),
+        target_plugin_authority: Some(&registry_record.authority),
+        target_external_plugin: None,
+        target_external_plugin_authority: None,
+    };
+
+    match Plugin::validate_update_plugin(&old_plugin, &validation_ctx)? {
+        ValidationResult::Approved | ValidationResult::ForceApproved => (),
+        ValidationResult::Rejected => {
+            msg!("Error: Group plugin update rejected by lifecycle validation");
+            return Err(MplCoreError::InvalidAuthority.into());
+        }
+        ValidationResult::Pass => {
+            msg!("Error: Group plugin update has no lifecycle approvals");
+            return Err(MplCoreError::NoApprovals.into());
+        }
+    }
+
     let old_data = old_plugin.try_to_vec()?;
     let new_data = args.plugin.try_to_vec()?;
     let size_diff = (new_data.len() as isize) - (old_data.len() as isize);
