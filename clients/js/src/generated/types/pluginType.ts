@@ -27,6 +27,7 @@ export enum PluginType {
   BubblegumV2,
   FreezeExecute,
   PermanentFreezeExecute,
+  Groups,
 }
 
 export type PluginTypeArgs = PluginType;

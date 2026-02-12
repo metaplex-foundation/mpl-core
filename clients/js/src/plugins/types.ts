@@ -238,3 +238,27 @@ export type CollectionPluginsList = {
 } & CommonPluginsList;
 
 export type PluginsList = AssetPluginsList & CollectionPluginsList;
+
+export type GroupAddablePluginArgsV2 =
+  | ({
+      type: 'Attributes';
+    } & AttributesArgs)
+  | ({
+      type: 'Autograph';
+    } & AutographArgs)
+  | ({
+      type: 'VerifiedCreators';
+    } & VerifiedCreatorsArgs);
+
+export type GroupAllPluginArgsV2 = GroupAddablePluginArgsV2;
+export type GroupPluginAuthorityPairArgsV2 = GroupAllPluginArgsV2 &
+  AuthorityArgsV2;
+
+export type GroupAddablePluginAuthorityPairArgsV2 = GroupAddablePluginArgsV2 &
+  AuthorityArgsV2;
+
+export type GroupPluginsList = {
+  attributes?: AttributesPlugin;
+  autograph?: AutographPlugin;
+  verifiedCreators?: VerifiedCreatorsPlugin;
+};

@@ -1,5 +1,6 @@
 mod add_blocker;
 mod attributes;
+mod groups;
 mod immutable_metadata;
 mod master_edition;
 mod royalties;
@@ -8,6 +9,7 @@ mod verified_creators;
 
 pub use add_blocker::*;
 pub use attributes::*;
+pub use groups::*;
 pub use immutable_metadata::*;
 pub use master_edition::*;
 pub use royalties::*;

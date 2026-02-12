@@ -163,6 +163,12 @@ pub enum MplCoreError {
     /// 50 (0x32) - Bubblegum V2 Plugin limits other plugins
     #[error("Bubblegum V2 Plugin limits other plugins")]
     BlockedByBubblegumV2,
+    /// 51 (0x33) - Group must be empty to be closed
+    #[error("Group must be empty to be closed")]
+    GroupMustBeEmpty,
+    /// 52 (0x34) - Duplicate entry provided when adding relationships to a group
+    #[error("Duplicate entry provided when adding relationships to a group")]
+    DuplicateEntry,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

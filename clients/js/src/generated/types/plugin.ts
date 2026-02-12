@@ -35,6 +35,8 @@ import {
   FreezeDelegateArgs,
   FreezeExecute,
   FreezeExecuteArgs,
+  Groups,
+  GroupsArgs,
   ImmutableMetadata,
   ImmutableMetadataArgs,
   PermanentBurnDelegate,
@@ -61,6 +63,7 @@ import {
   getEditionSerializer,
   getFreezeDelegateSerializer,
   getFreezeExecuteSerializer,
+  getGroupsSerializer,
   getImmutableMetadataSerializer,
   getPermanentBurnDelegateSerializer,
   getPermanentFreezeDelegateSerializer,
@@ -89,7 +92,8 @@ export type Plugin =
   | { __kind: 'Autograph'; fields: [Autograph] }
   | { __kind: 'BubblegumV2'; fields: [BubblegumV2] }
   | { __kind: 'FreezeExecute'; fields: [FreezeExecute] }
-  | { __kind: 'PermanentFreezeExecute'; fields: [PermanentFreezeExecute] };
+  | { __kind: 'PermanentFreezeExecute'; fields: [PermanentFreezeExecute] }
+  | { __kind: 'Groups'; fields: [Groups] };
 
 export type PluginArgs =
   | { __kind: 'Royalties'; fields: [BaseRoyaltiesArgs] }
@@ -112,7 +116,8 @@ export type PluginArgs =
   | { __kind: 'Autograph'; fields: [AutographArgs] }
   | { __kind: 'BubblegumV2'; fields: [BubblegumV2Args] }
   | { __kind: 'FreezeExecute'; fields: [FreezeExecuteArgs] }
-  | { __kind: 'PermanentFreezeExecute'; fields: [PermanentFreezeExecuteArgs] };
+  | { __kind: 'PermanentFreezeExecute'; fields: [PermanentFreezeExecuteArgs] }
+  | { __kind: 'Groups'; fields: [GroupsArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -225,6 +230,12 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
           ['fields', tuple([getPermanentFreezeExecuteSerializer()])],
         ]),
       ],
+      [
+        'Groups',
+        struct<GetDataEnumKindContent<Plugin, 'Groups'>>([
+          ['fields', tuple([getGroupsSerializer()])],
+        ]),
+      ],
     ],
     { description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
@@ -306,6 +317,10 @@ export function plugin(
   kind: 'PermanentFreezeExecute',
   data: GetDataEnumKindContent<PluginArgs, 'PermanentFreezeExecute'>['fields']
 ): GetDataEnumKind<PluginArgs, 'PermanentFreezeExecute'>;
+export function plugin(
+  kind: 'Groups',
+  data: GetDataEnumKindContent<PluginArgs, 'Groups'>['fields']
+): GetDataEnumKind<PluginArgs, 'Groups'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any
