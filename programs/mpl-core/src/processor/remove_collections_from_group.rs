@@ -174,15 +174,46 @@ fn process_collection_groups_plugin_remove<'a>(
             .ok_or(MplCoreError::NumericalOverflow)?;
 
         if size_diff != 0 {
-            plugin_registry.bump_offsets(record_offset, size_diff)?;
-            let new_registry_offset = (plugin_header.plugin_registry_offset as isize)
-                .checked_add(size_diff)
+            let old_registry_offset = plugin_header.plugin_registry_offset;
+            let next_plugin_offset = record_offset
+                .checked_add(old_plugin_data.len())
                 .ok_or(MplCoreError::NumericalOverflow)?;
-            plugin_header.plugin_registry_offset = new_registry_offset as usize;
-
-            let new_size = (collection_info.data_len() as isize)
+            let new_next_plugin_offset: usize = (next_plugin_offset as isize)
                 .checked_add(size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)? as usize;
+                .ok_or(MplCoreError::NumericalOverflow)?
+                .try_into()
+                .map_err(|_| MplCoreError::NumericalOverflow)?;
+            let copy_len = old_registry_offset
+                .checked_sub(next_plugin_offset)
+                .ok_or(MplCoreError::NumericalOverflow)?;
+
+            plugin_registry.bump_offsets(record_offset, size_diff)?;
+            let new_registry_offset: usize = (old_registry_offset as isize)
+                .checked_add(size_diff)
+                .ok_or(MplCoreError::NumericalOverflow)?
+                .try_into()
+                .map_err(|_| MplCoreError::NumericalOverflow)?;
+            plugin_header.plugin_registry_offset = new_registry_offset;
+
+            let new_size: usize = (collection_info.data_len() as isize)
+                .checked_add(size_diff)
+                .ok_or(MplCoreError::NumericalOverflow)?
+                .try_into()
+                .map_err(|_| MplCoreError::NumericalOverflow)?;
+
+            // When shrinking, move trailing bytes before resizing so the source
+            // region remains valid.
+            if size_diff < 0 && copy_len > 0 {
+                unsafe {
+                    let base_ptr = collection_info.data.borrow_mut().as_mut_ptr();
+                    sol_memmove(
+                        base_ptr.add(new_next_plugin_offset),
+                        base_ptr.add(next_plugin_offset),
+                        copy_len,
+                    );
+                }
+            }
+
             resize_or_reallocate_account(
                 collection_info,
                 payer_info,
@@ -190,19 +221,13 @@ fn process_collection_groups_plugin_remove<'a>(
                 new_size,
             )?;
 
-            let next_plugin_offset = (record_offset + old_plugin_data.len()) as isize;
-            let new_next_plugin_offset = next_plugin_offset + size_diff;
-
-            let copy_len = plugin_header
-                .plugin_registry_offset
-                .saturating_sub(next_plugin_offset as usize);
-
-            if copy_len > 0 {
+            // When growing, reallocate first so the destination region is valid.
+            if size_diff > 0 && copy_len > 0 {
                 unsafe {
                     let base_ptr = collection_info.data.borrow_mut().as_mut_ptr();
                     sol_memmove(
-                        base_ptr.add(new_next_plugin_offset as usize),
-                        base_ptr.add(next_plugin_offset as usize),
+                        base_ptr.add(new_next_plugin_offset),
+                        base_ptr.add(next_plugin_offset),
                         copy_len,
                     );
                 }
