@@ -138,7 +138,7 @@ pub enum ExternalPluginAdapter {
 
 impl ExternalPluginAdapter {
     /// Update the plugin from the update info.
-    pub fn update(&mut self, update_info: &ExternalPluginAdapterUpdateInfo) {
+    pub fn update(&mut self, update_info: &ExternalPluginAdapterUpdateInfo) -> ProgramResult {
         match (self, update_info) {
             (
                 ExternalPluginAdapter::LifecycleHook(lifecycle_hook),
@@ -170,8 +170,10 @@ impl ExternalPluginAdapter {
             ) => {
                 linked_app_data.update(update_info);
             }
-            _ => unreachable!(),
+            _ => return Err(MplCoreError::InvalidPlugin.into()),
         }
+
+        Ok(())
     }
 
     /// Check if a plugin is permitted to approve or deny a create action.
@@ -833,5 +835,43 @@ mod test {
                 fixture
             );
         }
+    }
+
+    #[test]
+    fn test_external_plugin_adapter_update_rejects_mismatched_variant() {
+        let mut plugin = ExternalPluginAdapter::AppData(AppData {
+            data_authority: Authority::UpdateAuthority,
+            schema: ExternalPluginAdapterSchema::Binary,
+        });
+        let update_info = ExternalPluginAdapterUpdateInfo::Oracle(OracleUpdateInfo {
+            lifecycle_checks: None,
+            base_address_config: None,
+            results_offset: None,
+        });
+
+        let error = plugin.update(&update_info).unwrap_err();
+
+        assert_eq!(error, MplCoreError::InvalidPlugin.into());
+    }
+
+    #[test]
+    fn test_external_plugin_adapter_update_applies_matching_variant() {
+        let mut plugin = ExternalPluginAdapter::AppData(AppData {
+            data_authority: Authority::UpdateAuthority,
+            schema: ExternalPluginAdapterSchema::Binary,
+        });
+        let update_info = ExternalPluginAdapterUpdateInfo::AppData(AppDataUpdateInfo {
+            schema: Some(ExternalPluginAdapterSchema::Json),
+        });
+
+        plugin.update(&update_info).unwrap();
+
+        assert_eq!(
+            plugin,
+            ExternalPluginAdapter::AppData(AppData {
+                data_authority: Authority::UpdateAuthority,
+                schema: ExternalPluginAdapterSchema::Json,
+            })
+        );
     }
 }

@@ -62,6 +62,8 @@ pub(crate) fn update_external_plugin_adapter<'a>(
         resolve_pubkey_to_authorities(authority, ctx.accounts.collection, &asset)?;
     let (external_registry_record, external_plugin_adapter) =
         fetch_wrapped_external_plugin_adapter::<AssetV1>(ctx.accounts.asset, None, &args.key)?;
+    let mut incoming_external_plugin_adapter = external_plugin_adapter.clone();
+    incoming_external_plugin_adapter.update(&args.update_info)?;
 
     let validation_ctx = PluginValidationContext {
         accounts,
@@ -75,7 +77,7 @@ pub(crate) fn update_external_plugin_adapter<'a>(
         new_collection_authority: None,
         target_plugin: None,
         target_plugin_authority: None,
-        target_external_plugin: Some(&external_plugin_adapter),
+        target_external_plugin: Some(&incoming_external_plugin_adapter),
         target_external_plugin_authority: Some(&external_registry_record.authority),
     };
 
@@ -143,6 +145,8 @@ pub(crate) fn update_collection_external_plugin_adapter<'a>(
             None,
             &args.key,
         )?;
+    let mut incoming_external_plugin_adapter = external_plugin_adapter.clone();
+    incoming_external_plugin_adapter.update(&args.update_info)?;
 
     let validation_ctx = PluginValidationContext {
         accounts,
@@ -156,7 +160,7 @@ pub(crate) fn update_collection_external_plugin_adapter<'a>(
         new_collection_authority: None,
         target_plugin: None,
         target_plugin_authority: None,
-        target_external_plugin: Some(&external_plugin_adapter),
+        target_external_plugin: Some(&incoming_external_plugin_adapter),
         target_external_plugin_authority: Some(&external_registry_record.authority),
     };
 
@@ -211,7 +215,7 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     let registry_record = registry_record.clone();
 
     let mut new_plugin = plugin.clone();
-    new_plugin.update(&update_info);
+    new_plugin.update(&update_info)?;
 
     let plugin_data = plugin.try_to_vec()?;
     let new_plugin_data = new_plugin.try_to_vec()?;
