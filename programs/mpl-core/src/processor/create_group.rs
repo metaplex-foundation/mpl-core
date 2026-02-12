@@ -364,9 +364,11 @@ fn process_asset_groups_plugin_add<'a>(
                 .ok_or(MplCoreError::NumericalOverflow)?;
 
             if size_diff != 0 {
+                let old_registry_offset = plugin_header.plugin_registry_offset;
+
                 // Bump offsets for subsequent registry entries and header.
                 plugin_registry.bump_offsets(record.offset, size_diff)?;
-                let new_registry_offset = (plugin_header.plugin_registry_offset as isize)
+                let new_registry_offset = (old_registry_offset as isize)
                     .checked_add(size_diff)
                     .ok_or(MplCoreError::NumericalOverflow)?;
                 plugin_header.plugin_registry_offset = new_registry_offset as usize;
@@ -387,9 +389,7 @@ fn process_asset_groups_plugin_add<'a>(
                 let next_plugin_offset = (record.offset + old_plugin_data.len()) as isize;
                 let new_next_plugin_offset = next_plugin_offset + size_diff;
 
-                let copy_len = plugin_header
-                    .plugin_registry_offset
-                    .saturating_sub(next_plugin_offset as usize);
+                let copy_len = old_registry_offset.saturating_sub(next_plugin_offset as usize);
 
                 if copy_len > 0 {
                     unsafe {

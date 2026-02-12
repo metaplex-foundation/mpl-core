@@ -154,9 +154,11 @@ fn process_asset_groups_plugin_add<'a>(
             let new_data = plugin.try_to_vec()?;
             let size_diff = new_data.len() as isize - old_data.len() as isize;
             if size_diff != 0 {
+                let old_registry_offset = plugin_header.plugin_registry_offset;
+
                 plugin_registry.bump_offsets(record.offset, size_diff)?;
                 plugin_header.plugin_registry_offset =
-                    (plugin_header.plugin_registry_offset as isize + size_diff) as usize;
+                    (old_registry_offset as isize + size_diff) as usize;
 
                 let new_size = (asset_info.data_len() as isize + size_diff) as usize;
                 resize_or_reallocate_account(
@@ -168,9 +170,7 @@ fn process_asset_groups_plugin_add<'a>(
 
                 let next_offset = (record.offset + old_data.len()) as isize;
                 let new_next_offset = next_offset + size_diff;
-                let copy_len = plugin_header
-                    .plugin_registry_offset
-                    .saturating_sub(next_offset as usize);
+                let copy_len = old_registry_offset.saturating_sub(next_offset as usize);
 
                 if copy_len > 0 {
                     unsafe {
