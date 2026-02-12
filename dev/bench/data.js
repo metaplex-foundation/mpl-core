@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1770854346707,
+  "lastUpdate": 1770857547026,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -9247,6 +9247,120 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/metaplex-foundation/mpl-core/commit/1a681147131a1d8ef8931bb803ecaed846f92324"
         },
         "date": 1770854345851,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 7628,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 15706,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 25922,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 30830,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 19019,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 24206,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 23516,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 31593,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 22906,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 34644,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 3611,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 5171,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 7048,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 8608,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "90809591+blockiosaurus@users.noreply.github.com",
+            "name": "blockiosaurus",
+            "username": "blockiosaurus"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e021ca45e55285bb1f95789f010ac62e64caad1b",
+          "message": "Add tests for PR 253: UpdateDelegate revoke authority operator precedence bug (#254)\n\n* Add tests for PR 253: UpdateDelegate revoke authority operator precedence bug\n\nThese tests validate the security vulnerability where UpdateDelegate's\nvalidate_revoke_plugin_authority function has incorrect operator precedence,\nallowing UpdateDelegate to revoke authority on owner-managed plugins\n(FreezeDelegate, TransferDelegate) when it should only be able to revoke\nauthority on UpdateAuthority-managed plugins.\n\nThe tests are designed to:\n- FAIL with the current buggy code (revoke succeeds incorrectly)\n- PASS after PR 253 fix is applied (revoke correctly throws NoApprovals)\n\nSlack thread: https://metaplexfoundation.slack.com/archives/C08DQ50FBC2/p1770843548886539?thread_ts=1770840905.712979&cid=C08DQ50FBC2\n\nhttps://claude.ai/code/session_01QVjAFPaMwv5T4NK3Y3DJYW\n\n* Fix tests: separate owner from update authority to correctly test the bug\n\nThe previous tests used umi.identity as both owner and update authority.\nThis caused the revoke to succeed via owner permissions rather than testing\nthe UpdateDelegate bug path.\n\nNow each test uses a separate owner signer distinct from the update authority,\nensuring the signer acts ONLY as update authority when attempting to revoke.\n\nhttps://claude.ai/code/session_01QVjAFPaMwv5T4NK3Y3DJYW\n\n* Remove redundant t.pass() call\n\nhttps://claude.ai/code/session_01QVjAFPaMwv5T4NK3Y3DJYW\n\n* Add positive test\n\n---------\n\nCo-authored-by: Claude <noreply@anthropic.com>\nCo-authored-by: Michael Danenberg <56533526+danenbm@users.noreply.github.com>",
+          "timestamp": "2026-02-11T16:48:16-08:00",
+          "tree_id": "49ec111c0428a6be87530c93130a0d0b6aac00fb",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/e021ca45e55285bb1f95789f010ac62e64caad1b"
+        },
+        "date": 1770857546466,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
