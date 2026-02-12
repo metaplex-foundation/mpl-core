@@ -2976,6 +2976,243 @@ test('it can update oracle to larger registry record', async (t) => {
   t.is(afterLength - beforeLength, 15);
 });
 
+test('it can shrink a leading oracle without corrupting trailing oracle metadata', async (t) => {
+  const umi = await createUmi();
+  const firstOracleSigner = generateSigner(umi);
+  const secondOracleSigner = generateSigner(umi);
+
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: firstOracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: secondOracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const asset = generateSigner(umi);
+  await create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Custom',
+          offset: 48n,
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: firstOracleSigner.publicKey,
+      },
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: secondOracleSigner.publicKey,
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: firstOracleSigner.publicKey,
+      },
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Anchor',
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_REJECT],
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: firstOracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+      {
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: secondOracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+});
+
+test('it can grow a leading oracle without corrupting trailing oracle metadata', async (t) => {
+  const umi = await createUmi();
+  const firstOracleSigner = generateSigner(umi);
+  const secondOracleSigner = generateSigner(umi);
+
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: firstOracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await fixedAccountInit(umi, {
+    signer: umi.identity,
+    account: secondOracleSigner,
+    args: {
+      oracleData: {
+        __kind: 'V1',
+        create: ExternalValidationResult.Pass,
+        transfer: ExternalValidationResult.Pass,
+        burn: ExternalValidationResult.Pass,
+        update: ExternalValidationResult.Pass,
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  const asset = generateSigner(umi);
+  await create(umi, {
+    asset,
+    name: 'Test name',
+    uri: 'https://example.com',
+    plugins: [
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: firstOracleSigner.publicKey,
+      },
+      {
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: secondOracleSigner.publicKey,
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  await updatePlugin(umi, {
+    asset: asset.publicKey,
+    plugin: {
+      key: {
+        type: 'Oracle',
+        baseAddress: firstOracleSigner.publicKey,
+      },
+      type: 'Oracle',
+      resultsOffset: {
+        type: 'Custom',
+        offset: 48n,
+      },
+      lifecycleChecks: {
+        transfer: [CheckResult.CAN_REJECT],
+      },
+    },
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    uri: 'https://example.com',
+    name: 'Test name',
+    owner: umi.identity.publicKey,
+    asset: asset.publicKey,
+    oracles: [
+      {
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Custom',
+          offset: 48n,
+        },
+        lifecycleChecks: {
+          transfer: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: firstOracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+      {
+        authority: {
+          type: 'UpdateAuthority',
+        },
+        type: 'Oracle',
+        resultsOffset: {
+          type: 'Anchor',
+        },
+        lifecycleChecks: {
+          burn: [CheckResult.CAN_REJECT],
+        },
+        baseAddress: secondOracleSigner.publicKey,
+        baseAddressConfig: undefined,
+      },
+    ],
+  });
+});
+
 test('it create fails but does not panic when oracle account does not exist', async (t) => {
   const umi = await createUmi();
   const oracleSigner = generateSigner(umi);
