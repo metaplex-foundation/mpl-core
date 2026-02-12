@@ -345,3 +345,85 @@ test('it should NOT allow delegated update delegate to revoke authority on owner
 
   await t.throwsAsync(result, { name: 'NoApprovals' });
 });
+
+/**
+ * Positive test: verify that the owner CAN revoke authority on owner-managed plugins.
+ *
+ * This is the complement to the negative tests above. While UpdateDelegate/UpdateAuthority
+ * should NOT be able to revoke authority on owner-managed plugins, the actual owner should
+ * still be able to do so. Uses a distinct owner (separate from update authority) to isolate
+ * the owner role.
+ */
+test('it should allow the owner to revoke authority on owner-managed plugins', async (t) => {
+  const umi = await createUmi();
+  const owner = generateSigner(umi);
+  const freezeDelegateAuthority = generateSigner(umi);
+
+  // Create an asset with FreezeDelegate (owner-managed) and a distinct owner
+  const asset = await createAsset(umi, {
+    owner: owner.publicKey,
+    plugins: [
+      {
+        type: 'FreezeDelegate',
+        frozen: false,
+      },
+    ],
+  });
+
+  // Verify initial state: FreezeDelegate is owner-managed
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: { type: 'Owner' },
+      frozen: false,
+    },
+  });
+
+  // As the owner, approve a new delegate authority for FreezeDelegate
+  await approvePluginAuthority(umi, {
+    asset: asset.publicKey,
+    plugin: { type: 'FreezeDelegate' },
+    newAuthority: {
+      type: 'Address',
+      address: freezeDelegateAuthority.publicKey,
+    },
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  // Verify the FreezeDelegate authority was changed to the delegate
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: {
+        type: 'Address',
+        address: freezeDelegateAuthority.publicKey,
+      },
+      frozen: false,
+    },
+  });
+
+  // Owner revokes the delegate authority on FreezeDelegate
+  await revokePluginAuthority(umi, {
+    asset: asset.publicKey,
+    plugin: { type: 'FreezeDelegate' },
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  // FreezeDelegate should revert to owner-managed
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    freezeDelegate: {
+      authority: { type: 'Owner' },
+      frozen: false,
+    },
+  });
+});
