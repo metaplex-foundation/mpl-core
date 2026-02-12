@@ -23,6 +23,7 @@ programs: &programs
 client_common: &client_common
   - *programs
   - ".github/workflows/test-js.yml"
+  - ".github/workflows/test-js-kit-client.yml"
   - ".github/workflows/test-rust-client.yml"
   - ".github/workflows/build-rust-client.yml"
   - ".github/workflows/main.yml"
@@ -30,10 +31,15 @@ client_common: &client_common
   - ".github/.env"
   - "configs/shank.cjs"
   - "configs/kinobi.cjs"
+  - "configs/codama.cjs"
 
 js_client: &js_client
   - *client_common
   - "clients/js/**"
+
+js_kit_client: &js_kit_client
+  - *client_common
+  - "clients/js-kit/**"
 
 rust_client: &rust_client
   - *client_common
@@ -41,6 +47,7 @@ rust_client: &rust_client
 
 clients: &clients
   - *js_client
+  - *js_kit_client
   - *rust_client
 
 # Any.

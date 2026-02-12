@@ -39,7 +39,7 @@ jobs:
       - name: Start validator
         uses: metaplex-foundation/actions/start-validator@v1
         with:
-          node: 18.x
+          node: 20.x
           solana: ${{ env.SOLANA_VERSION }}
           cache: ${{ env.CACHE }}
           artifacts: program-builds-${{ steps.sanitize.outputs.sanitized }}
