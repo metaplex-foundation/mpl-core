@@ -478,42 +478,72 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
     let data_offset = record.data_offset.ok_or(MplCoreError::InvalidPlugin)?;
     let data_len = record.data_len.ok_or(MplCoreError::InvalidPlugin)?;
     let new_data_len = data.len();
+    let old_registry_offset = plugin_header.plugin_registry_offset;
     let size_diff = (new_data_len as isize)
         .checked_sub(data_len as isize)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
+    let next_plugin_offset = data_offset
+        .checked_add(data_len)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+    let new_next_plugin_offset: usize = (next_plugin_offset as isize)
+        .checked_add(size_diff)
+        .ok_or(MplCoreError::NumericalOverflow)?
+        .try_into()
+        .map_err(|_| MplCoreError::NumericalOverflow)?;
+    let data_to_move = old_registry_offset
+        .checked_sub(next_plugin_offset)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
     // Update any offsets that will change.
     plugin_registry.bump_offsets(record.offset, size_diff)?;
 
-    let new_registry_offset = (plugin_header.plugin_registry_offset as isize)
+    let new_registry_offset: usize = (old_registry_offset as isize)
         .checked_add(size_diff)
-        .ok_or(MplCoreError::NumericalOverflow)?;
-    plugin_header.plugin_registry_offset = new_registry_offset as usize;
+        .ok_or(MplCoreError::NumericalOverflow)?
+        .try_into()
+        .map_err(|_| MplCoreError::NumericalOverflow)?;
+    plugin_header.plugin_registry_offset = new_registry_offset;
 
-    let new_size = (account.data_len() as isize)
+    let new_size: usize = (account.data_len() as isize)
         .checked_add(size_diff)
-        .ok_or(MplCoreError::NumericalOverflow)?;
+        .ok_or(MplCoreError::NumericalOverflow)?
+        .try_into()
+        .map_err(|_| MplCoreError::NumericalOverflow)?;
 
-    resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
+    // When shrinking, shift trailing plugin bytes before reallocation so the source
+    // region remains fully addressable.
+    if size_diff < 0 && data_to_move > 0 {
+        // SAFETY: `borrow_mut` will always return a valid pointer.
+        // Offsets and lengths are derived with checked arithmetic from valid account
+        // layout boundaries, so both ranges are inside account data.
+        unsafe {
+            let base = account.data.borrow_mut().as_mut_ptr();
+            sol_memmove(
+                base.add(new_next_plugin_offset),
+                base.add(next_plugin_offset),
+                data_to_move,
+            )
+        }
+    }
 
-    let next_plugin_offset = data_offset
-        .checked_add(data_len)
-        .ok_or(MplCoreError::NumericalOverflow)?;
-    let new_next_plugin_offset = (next_plugin_offset as isize)
-        .checked_add(size_diff)
-        .ok_or(MplCoreError::NumericalOverflow)?;
+    if size_diff != 0 {
+        resize_or_reallocate_account(account, payer, system_program, new_size)?;
+    }
 
-    // SAFETY: `borrow_mut` will always return a valid pointer.
-    // new_next_plugin_offset is derived from next_plugin_offset and size_diff using
-    // checked arithmetic, so it will always be less than or equal to account.data_len().
-    // This will fail and revert state if there is a memory violation.
-    unsafe {
-        let base = account.data.borrow_mut().as_mut_ptr();
-        sol_memmove(
-            base.add(new_next_plugin_offset as usize),
-            base.add(next_plugin_offset),
-            account.data_len().saturating_sub(next_plugin_offset),
-        )
+    // When growing, reallocate first so the destination region is available.
+    if size_diff > 0 && data_to_move > 0 {
+        // SAFETY: `borrow_mut` will always return a valid pointer.
+        // Offsets and lengths are derived with checked arithmetic from valid account
+        // layout boundaries, so both ranges are inside account data.
+        unsafe {
+            let base = account.data.borrow_mut().as_mut_ptr();
+            sol_memmove(
+                base.add(new_next_plugin_offset),
+                base.add(next_plugin_offset),
+                data_to_move,
+            )
+        }
     }
 
     sol_memcpy(
@@ -530,7 +560,7 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::InvalidPlugin)?;
     plugin_registry.external_registry[record_index].data_len = Some(new_data_len);
 
-    plugin_registry.save(account, new_registry_offset as usize)?;
+    plugin_registry.save(account, new_registry_offset)?;
     plugin_header.save(account, core.map_or(0, |core| core.len()))?;
 
     Ok(())
