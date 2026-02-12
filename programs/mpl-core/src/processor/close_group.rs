@@ -38,8 +38,11 @@ pub(crate) fn close_group_v1<'a>(
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
-    // Ensure the group has no children or parents.
-    if !(group.collections.is_empty() && group.groups.is_empty() && group.parent_groups.is_empty())
+    // Ensure the group has no children, parents, or assets.
+    if !(group.collections.is_empty()
+        && group.groups.is_empty()
+        && group.parent_groups.is_empty()
+        && group.assets.is_empty())
     {
         return Err(MplCoreError::GroupMustBeEmpty.into());
     }
