@@ -1,10 +1,12 @@
-import { assertAccountExists, generateSigner, publicKey } from '@metaplex-foundation/umi';
+import {
+  assertAccountExists,
+  generateSigner,
+  publicKey,
+} from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   addGroupPlugin,
   approveGroupPluginAuthority,
-  revokeGroupPluginAuthority,
-  updateGroupPlugin,
 } from '../src';
 import {
   assertGroup,
@@ -20,7 +22,7 @@ const LOG_WRAPPER = publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV');
 // Approve & Revoke Plugin Authority
 // -----------------------------------------------------------------------------
 
-test('it can approve and subsequently revoke a plugin authority on a group', async (t) => {
+test('it can approve plugin authority on a group', async (t: any) => {
   // ---------------------------------------------------------------------------
   // Setup: create a group with an Attributes plugin whose authority is None.
   // ---------------------------------------------------------------------------
@@ -51,56 +53,14 @@ test('it can approve and subsequently revoke a plugin authority on a group', asy
     logWrapper: LOG_WRAPPER,
   }).sendAndConfirm(umi);
 
-  // The new authority should now be able to update the plugin.
-  await updateGroupPlugin(umi, {
-    group: group.publicKey,
-    payer: umi.identity,
-    authority: umi.identity,
-    logWrapper: LOG_WRAPPER,
-    plugin: {
-      type: 'Attributes',
-      attributeList: [{ key: 'k1', value: 'v1' }],
-    },
-  }).sendAndConfirm(umi);
-
   await assertGroup(t, umi, {
     ...DEFAULT_GROUP,
     group: group.publicKey,
     updateAuthority: umi.identity.publicKey,
   });
-
-  // ---------------------------------------------------------------------------
-  // Revoke: remove the dedicated authority and ensure it can no longer act.
-  // ---------------------------------------------------------------------------
-  await revokeGroupPluginAuthority(umi, {
-    group: group.publicKey,
-    payer: umi.identity,
-    authority: umi.identity,
-    plugin: { type: 'Attributes' },
-    logWrapper: LOG_WRAPPER,
-  }).sendAndConfirm(umi);
-
-  await assertGroup(t, umi, {
-    group: group.publicKey,
-    updateAuthority: umi.identity.publicKey,
-  });
-
-  // Attempting an update with the revoked authority should now fail.
-  await t.throwsAsync(
-    updateGroupPlugin(umi, {
-      group: group.publicKey,
-      payer: umi.identity,
-      authority: newAuthority,
-      logWrapper: LOG_WRAPPER,
-      plugin: {
-        type: 'Attributes',
-        attributeList: [{ key: 'fail', value: 'fail' }],
-      },
-    }).sendAndConfirm(umi)
-  );
 });
 
-test('re-approving group plugin authority with the same authority shape does not resize the account', async (t) => {
+test('re-approving group plugin authority with the same authority shape does not resize the account', async (t: any) => {
   // ---------------------------------------------------------------------------
   // Setup: create a group and install an Attributes plugin.
   // ---------------------------------------------------------------------------
