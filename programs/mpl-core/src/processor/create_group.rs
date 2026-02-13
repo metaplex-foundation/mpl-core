@@ -17,8 +17,11 @@ use super::group_collection_plugin::process_collection_groups_plugin_add;
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateGroupV1Accounts,
-    plugins::{create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginType},
-    state::{AssetV1, GroupV1, SolanaAccount},
+    plugins::{
+        create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginHeaderV1,
+        PluginRegistryV1, PluginType,
+    },
+    state::{AssetV1, DataBlob, GroupV1, SolanaAccount},
     utils::{
         is_valid_asset_authority, is_valid_collection_authority, is_valid_group_authority,
         resize_or_reallocate_account, resolve_authority,
@@ -202,6 +205,7 @@ pub(crate) fn create_group_v1<'a>(
         }
 
         let mut child_group = GroupV1::load(child_info, 0)?;
+        let old_child_core_len = child_group.len();
 
         if !is_valid_group_authority(child_info, authority_info)? {
             msg!("Error: Signer is not child group update authority/delegate");
@@ -210,21 +214,13 @@ pub(crate) fn create_group_v1<'a>(
 
         if !child_group.parent_groups.contains(ctx.accounts.group.key) {
             child_group.parent_groups.push(*ctx.accounts.group.key);
-
-            let serialized_child = child_group.try_to_vec()?;
-            if serialized_child.len() != child_info.data_len() {
-                resize_or_reallocate_account(
-                    child_info,
-                    ctx.accounts.payer,
-                    ctx.accounts.system_program,
-                    serialized_child.len(),
-                )?;
-            }
-            sol_memcpy(
-                &mut child_info.try_borrow_mut_data()?,
-                &serialized_child,
-                serialized_child.len(),
-            );
+            save_group_core_and_plugins(
+                child_info,
+                &child_group,
+                old_child_core_len,
+                ctx.accounts.payer,
+                ctx.accounts.system_program,
+            )?;
         }
     }
 
@@ -245,6 +241,7 @@ pub(crate) fn create_group_v1<'a>(
         }
 
         let mut parent_group = GroupV1::load(parent_info, 0)?;
+        let old_parent_core_len = parent_group.len();
 
         if !is_valid_group_authority(parent_info, authority_info)? {
             msg!("Error: Signer is not parent group update authority/delegate");
@@ -253,21 +250,13 @@ pub(crate) fn create_group_v1<'a>(
 
         if !parent_group.groups.contains(ctx.accounts.group.key) {
             parent_group.groups.push(*ctx.accounts.group.key);
-
-            let serialized_parent = parent_group.try_to_vec()?;
-            if serialized_parent.len() != parent_info.data_len() {
-                resize_or_reallocate_account(
-                    parent_info,
-                    ctx.accounts.payer,
-                    ctx.accounts.system_program,
-                    serialized_parent.len(),
-                )?;
-            }
-            sol_memcpy(
-                &mut parent_info.try_borrow_mut_data()?,
-                &serialized_parent,
-                serialized_parent.len(),
-            );
+            save_group_core_and_plugins(
+                parent_info,
+                &parent_group,
+                old_parent_core_len,
+                ctx.accounts.payer,
+                ctx.accounts.system_program,
+            )?;
         }
     }
 
@@ -301,6 +290,105 @@ pub(crate) fn create_group_v1<'a>(
             ctx.accounts.system_program,
         )?;
     }
+
+    Ok(())
+}
+
+/// Persist a mutated `GroupV1` while preserving and re-indexing any existing plugin metadata.
+fn save_group_core_and_plugins<'a>(
+    group_info: &AccountInfo<'a>,
+    group: &GroupV1,
+    old_core_len: usize,
+    payer_info: &AccountInfo<'a>,
+    system_program_info: &AccountInfo<'a>,
+) -> ProgramResult {
+    let serialized_group = group.try_to_vec()?;
+    let new_core_len = serialized_group.len();
+
+    // Fast path: no plugin metadata appended.
+    if old_core_len == group_info.data_len() {
+        if new_core_len != group_info.data_len() {
+            resize_or_reallocate_account(
+                group_info,
+                payer_info,
+                system_program_info,
+                new_core_len,
+            )?;
+        }
+
+        sol_memcpy(
+            &mut group_info.try_borrow_mut_data()?,
+            &serialized_group,
+            new_core_len,
+        );
+
+        return Ok(());
+    }
+
+    // Plugin metadata exists; update offsets and physically shift the metadata
+    // region so header/plugins/registry remain contiguous after core resize.
+    let mut plugin_header = PluginHeaderV1::load(group_info, old_core_len)?;
+    let mut plugin_registry =
+        PluginRegistryV1::load(group_info, plugin_header.plugin_registry_offset)?;
+
+    let size_diff = (new_core_len as isize)
+        .checked_sub(old_core_len as isize)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
+    if size_diff != 0 {
+        let old_data_len = group_info.data_len();
+        let plugin_data_len = old_data_len
+            .checked_sub(old_core_len)
+            .ok_or(MplCoreError::NumericalOverflow)?;
+        let old_registry_offset = plugin_header.plugin_registry_offset;
+
+        let new_data_len: usize = (old_data_len as isize)
+            .checked_add(size_diff)
+            .ok_or(MplCoreError::NumericalOverflow)?
+            .try_into()
+            .map_err(|_| MplCoreError::NumericalOverflow)?;
+
+        plugin_registry.bump_offsets(old_core_len, size_diff)?;
+        plugin_header.plugin_registry_offset = (old_registry_offset as isize)
+            .checked_add(size_diff)
+            .ok_or(MplCoreError::NumericalOverflow)?
+            .try_into()
+            .map_err(|_| MplCoreError::NumericalOverflow)?;
+
+        // When shrinking, move metadata first while the full source region is still valid.
+        if size_diff < 0 && plugin_data_len > 0 {
+            unsafe {
+                let base_ptr = group_info.data.borrow_mut().as_mut_ptr();
+                sol_memmove(
+                    base_ptr.add(new_core_len),
+                    base_ptr.add(old_core_len),
+                    plugin_data_len,
+                );
+            }
+        }
+
+        resize_or_reallocate_account(group_info, payer_info, system_program_info, new_data_len)?;
+
+        // When growing, move metadata after reallocation so destination exists.
+        if size_diff > 0 && plugin_data_len > 0 {
+            unsafe {
+                let base_ptr = group_info.data.borrow_mut().as_mut_ptr();
+                sol_memmove(
+                    base_ptr.add(new_core_len),
+                    base_ptr.add(old_core_len),
+                    plugin_data_len,
+                );
+            }
+        }
+    }
+
+    sol_memcpy(
+        &mut group_info.try_borrow_mut_data()?,
+        &serialized_group,
+        new_core_len,
+    );
+    plugin_header.save(group_info, new_core_len)?;
+    plugin_registry.save(group_info, plugin_header.plugin_registry_offset)?;
 
     Ok(())
 }
