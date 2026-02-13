@@ -16,6 +16,7 @@ mod create_collection;
 mod create_group;
 mod decompress;
 mod execute;
+mod group_collection_plugin;
 mod remove_assets_from_group;
 mod remove_collections_from_group;
 mod remove_external_plugin_adapter;

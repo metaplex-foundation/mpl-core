@@ -1,16 +1,15 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
+    instruction::accounts::AddGroupExternalPluginAdapterV1Accounts,
     plugins::{
         create_meta_idempotent, initialize_external_plugin_adapter, ExternalPluginAdapter,
         ExternalPluginAdapterInitInfo, PluginValidationContext, ValidationResult,
     },
-    state::{Authority, DataBlob, GroupV1, SolanaAccount},
+    state::{Authority, GroupV1},
     utils::{is_valid_group_authority, resolve_authority},
 };
 
@@ -34,16 +33,12 @@ pub(crate) fn add_group_external_plugin_adapter<'a>(
     // 2. [signer] Optional authority (update authority or update delegate of group)
     // 3. [] System program
     // 4. [] Optional SPL Noop (log wrapper)
-
-    if accounts.len() < 4 {
-        return Err(ProgramError::NotEnoughAccountKeys);
-    }
-
-    let group_info = &accounts[0];
-    let payer_info = &accounts[1];
-    let authority_info_opt = accounts.get(2);
-    let system_program_info = &accounts[3];
-    let log_wrapper_info_opt = accounts.get(4);
+    let ctx = AddGroupExternalPluginAdapterV1Accounts::context(accounts)?;
+    let group_info = ctx.accounts.group;
+    let payer_info = ctx.accounts.payer;
+    let authority_info_opt = ctx.accounts.authority;
+    let system_program_info = ctx.accounts.system_program;
+    let log_wrapper_info_opt = ctx.accounts.log_wrapper;
 
     // Basic guards.
     assert_signer(payer_info)?;
@@ -66,7 +61,6 @@ pub(crate) fn add_group_external_plugin_adapter<'a>(
     }
 
     // Authority check against the group's update authority or update delegate.
-    let group = GroupV1::load(group_info, 0)?;
     if !is_valid_group_authority(group_info, authority_info)? {
         msg!("Error: Invalid authority for group account");
         return Err(MplCoreError::InvalidAuthority.into());

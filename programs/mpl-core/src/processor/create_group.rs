@@ -13,22 +13,20 @@ use solana_program::{
     sysvar::Sysvar,
 };
 
+use super::group_collection_plugin::process_collection_groups_plugin_add;
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateGroupV1Accounts,
     plugins::{
-        create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginHeaderV1,
-        PluginRegistryV1, PluginType,
+        create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginType,
     },
-    state::{AssetV1, CollectionV1, DataBlob, SolanaAccount},
-    state::{GroupV1, Key},
+    state::{AssetV1, DataBlob, GroupV1, SolanaAccount},
     utils::{
-        is_valid_collection_authority, is_valid_group_authority, resize_or_reallocate_account,
-        resolve_authority,
+        is_valid_asset_authority, is_valid_collection_authority, is_valid_group_authority,
+        resize_or_reallocate_account, resolve_authority, save_group_core_and_plugins,
     },
 };
 
-use crate::plugins::fetch_wrapped_plugin;
 use crate::state::RelationshipKind;
 use std::collections::HashSet;
 
@@ -42,42 +40,6 @@ pub(crate) struct CreateGroupV1Args {
     pub(crate) uri: String,
     /// Relationships (collections, child groups, parent groups, assets) to link at creation.
     pub(crate) relationships: Vec<crate::state::RelationshipEntry>,
-}
-
-/// Returns true if the `authority_info` represents either the update authority of the asset
-/// or a valid update delegate of the asset.
-fn is_valid_asset_authority(
-    asset_info: &AccountInfo,
-    authority_info: &AccountInfo,
-) -> Result<bool, ProgramError> {
-    use crate::plugins::PluginType;
-    use crate::state::UpdateAuthority;
-
-    // Load asset core data
-    let asset_core = AssetV1::load(asset_info, 0)?;
-
-    // Fast path: signer is the update authority address (when address type)
-    if let UpdateAuthority::Address(addr) = asset_core.update_authority.clone() {
-        if addr == *authority_info.key {
-            return Ok(true);
-        }
-    }
-
-    // Attempt to locate an UpdateDelegate plugin on the asset.
-    if let Ok((_plugin_authority, plugin)) =
-        fetch_wrapped_plugin::<AssetV1>(asset_info, Some(&asset_core), PluginType::UpdateDelegate)
-    {
-        if let crate::plugins::Plugin::UpdateDelegate(update_delegate) = plugin {
-            if update_delegate
-                .additional_delegates
-                .contains(authority_info.key)
-            {
-                return Ok(true);
-            }
-        }
-    }
-
-    Ok(false)
 }
 
 /// Processor for the `CreateGroupV1` instruction.
@@ -120,6 +82,16 @@ pub(crate) fn create_group_v1<'a>(
         // If insert returns false, the value was already present – duplicate detected.
         if !seen.insert(rel.key) {
             return Err(MplCoreError::DuplicateEntry.into());
+        }
+
+        if rel.key == *ctx.accounts.group.key
+            && matches!(
+                rel.kind,
+                RelationshipKind::ChildGroup | RelationshipKind::ParentGroup
+            )
+        {
+            msg!("Error: Group cannot reference itself as child or parent group");
+            return Err(MplCoreError::IncorrectAccount.into());
         }
 
         match rel.kind {
@@ -232,6 +204,7 @@ pub(crate) fn create_group_v1<'a>(
         }
 
         let mut child_group = GroupV1::load(child_info, 0)?;
+        let old_child_core_len = child_group.len();
 
         if !is_valid_group_authority(child_info, authority_info)? {
             msg!("Error: Signer is not child group update authority/delegate");
@@ -240,21 +213,13 @@ pub(crate) fn create_group_v1<'a>(
 
         if !child_group.parent_groups.contains(ctx.accounts.group.key) {
             child_group.parent_groups.push(*ctx.accounts.group.key);
-
-            let serialized_child = child_group.try_to_vec()?;
-            if serialized_child.len() != child_info.data_len() {
-                resize_or_reallocate_account(
-                    child_info,
-                    ctx.accounts.payer,
-                    ctx.accounts.system_program,
-                    serialized_child.len(),
-                )?;
-            }
-            sol_memcpy(
-                &mut child_info.try_borrow_mut_data()?,
-                &serialized_child,
-                serialized_child.len(),
-            );
+            save_group_core_and_plugins(
+                child_info,
+                &child_group,
+                old_child_core_len,
+                ctx.accounts.payer,
+                ctx.accounts.system_program,
+            )?;
         }
     }
 
@@ -275,6 +240,7 @@ pub(crate) fn create_group_v1<'a>(
         }
 
         let mut parent_group = GroupV1::load(parent_info, 0)?;
+        let old_parent_core_len = parent_group.len();
 
         if !is_valid_group_authority(parent_info, authority_info)? {
             msg!("Error: Signer is not parent group update authority/delegate");
@@ -283,21 +249,13 @@ pub(crate) fn create_group_v1<'a>(
 
         if !parent_group.groups.contains(ctx.accounts.group.key) {
             parent_group.groups.push(*ctx.accounts.group.key);
-
-            let serialized_parent = parent_group.try_to_vec()?;
-            if serialized_parent.len() != parent_info.data_len() {
-                resize_or_reallocate_account(
-                    parent_info,
-                    ctx.accounts.payer,
-                    ctx.accounts.system_program,
-                    serialized_parent.len(),
-                )?;
-            }
-            sol_memcpy(
-                &mut parent_info.try_borrow_mut_data()?,
-                &serialized_parent,
-                serialized_parent.len(),
-            );
+            save_group_core_and_plugins(
+                parent_info,
+                &parent_group,
+                old_parent_core_len,
+                ctx.accounts.payer,
+                ctx.accounts.system_program,
+            )?;
         }
     }
 
@@ -330,114 +288,6 @@ pub(crate) fn create_group_v1<'a>(
             ctx.accounts.payer,
             ctx.accounts.system_program,
         )?;
-    }
-
-    Ok(())
-}
-
-/// Add the parent group pubkey to the collection's Groups plugin, creating the plugin if necessary.
-fn process_collection_groups_plugin_add<'a>(
-    collection_info: &AccountInfo<'a>,
-    parent_group: Pubkey,
-    payer_info: &AccountInfo<'a>,
-    system_program_info: &AccountInfo<'a>,
-) -> ProgramResult {
-    // Ensure plugin metadata exists or create.
-    let (_collection_core, header_offset, mut plugin_header, mut plugin_registry) =
-        create_meta_idempotent::<CollectionV1>(collection_info, payer_info, system_program_info)?;
-
-    // Attempt to fetch existing Groups plugin.
-    let plugin_record_opt = plugin_registry
-        .registry
-        .iter()
-        .find(|r| r.plugin_type == PluginType::Groups)
-        .cloned();
-
-    match plugin_record_opt {
-        None => {
-            // Plugin does not exist; create it.
-            let groups_plugin = Groups {
-                groups: vec![parent_group],
-            };
-            let plugin = Plugin::Groups(groups_plugin);
-            initialize_plugin::<CollectionV1>(
-                &plugin,
-                &plugin.manager(),
-                header_offset,
-                &mut plugin_header,
-                &mut plugin_registry,
-                collection_info,
-                payer_info,
-                system_program_info,
-            )?
-        }
-        Some(record) => {
-            // Plugin exists, load, modify, and update.
-            let mut plugin = Plugin::load(collection_info, record.offset)?;
-            if let Plugin::Groups(inner) = &mut plugin {
-                if inner.groups.contains(&parent_group) {
-                    // Already present, nothing to do.
-                    return Ok(());
-                }
-                inner.groups.push(parent_group);
-            } else {
-                return Err(MplCoreError::InvalidPlugin.into());
-            }
-
-            // Serialize old and new plugin to compute size diff.
-            let old_plugin_data =
-                Plugin::deserialize(&mut &collection_info.data.borrow()[record.offset..])?
-                    .try_to_vec()?;
-            let new_plugin_data = plugin.try_to_vec()?;
-            let size_diff = (new_plugin_data.len() as isize)
-                .checked_sub(old_plugin_data.len() as isize)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-
-            if size_diff != 0 {
-                // Bump offsets for subsequent registry entries and header.
-                plugin_registry.bump_offsets(record.offset, size_diff)?;
-                let new_registry_offset = (plugin_header.plugin_registry_offset as isize)
-                    .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?;
-                plugin_header.plugin_registry_offset = new_registry_offset as usize;
-
-                // Resize account.
-                let new_size = (collection_info.data_len() as isize)
-                    .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?
-                    as usize;
-                resize_or_reallocate_account(
-                    collection_info,
-                    payer_info,
-                    system_program_info,
-                    new_size,
-                )?;
-
-                // Move trailing data to accommodate new plugin size.
-                let next_plugin_offset = (record.offset + old_plugin_data.len()) as isize;
-                let new_next_plugin_offset = next_plugin_offset + size_diff;
-
-                let copy_len = plugin_header
-                    .plugin_registry_offset
-                    .saturating_sub(next_plugin_offset as usize);
-
-                if copy_len > 0 {
-                    unsafe {
-                        let base_ptr = collection_info.data.borrow_mut().as_mut_ptr();
-                        sol_memmove(
-                            base_ptr.add(new_next_plugin_offset as usize),
-                            base_ptr.add(next_plugin_offset as usize),
-                            copy_len,
-                        );
-                    }
-                }
-            }
-
-            // Save header, registry and new plugin.
-            plugin_header.save(collection_info, header_offset)?;
-            plugin_registry.save(collection_info, plugin_header.plugin_registry_offset)?;
-            plugin.save(collection_info, record.offset)?;
-        }
     }
 
     Ok(())
@@ -502,9 +352,11 @@ fn process_asset_groups_plugin_add<'a>(
                 .ok_or(MplCoreError::NumericalOverflow)?;
 
             if size_diff != 0 {
+                let old_registry_offset = plugin_header.plugin_registry_offset;
+
                 // Bump offsets for subsequent registry entries and header.
                 plugin_registry.bump_offsets(record.offset, size_diff)?;
-                let new_registry_offset = (plugin_header.plugin_registry_offset as isize)
+                let new_registry_offset = (old_registry_offset as isize)
                     .checked_add(size_diff)
                     .ok_or(MplCoreError::NumericalOverflow)?;
                 plugin_header.plugin_registry_offset = new_registry_offset as usize;
@@ -525,9 +377,7 @@ fn process_asset_groups_plugin_add<'a>(
                 let next_plugin_offset = (record.offset + old_plugin_data.len()) as isize;
                 let new_next_plugin_offset = next_plugin_offset + size_diff;
 
-                let copy_len = plugin_header
-                    .plugin_registry_offset
-                    .saturating_sub(next_plugin_offset as usize);
+                let copy_len = old_registry_offset.saturating_sub(next_plugin_offset as usize);
 
                 if copy_len > 0 {
                     unsafe {

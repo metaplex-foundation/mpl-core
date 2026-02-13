@@ -1,19 +1,15 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 
 use crate::{
     error::MplCoreError,
+    instruction::accounts::WriteGroupExternalPluginAdapterDataV1Accounts,
     plugins::{
-        create_meta_idempotent, fetch_wrapped_external_plugin_adapter,
-        initialize_external_plugin_adapter, update_external_plugin_adapter_data, AppData,
-        DataSectionInitInfo, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
-        ExternalPluginAdapterKey, ExternalRegistryRecord, LinkedDataKey, PluginHeaderV1,
-        PluginRegistryV1,
+        fetch_wrapped_external_plugin_adapter, update_external_plugin_adapter_data, AppData,
+        ExternalPluginAdapter, ExternalPluginAdapterKey,
     },
-    state::{Authority, DataBlob, GroupV1, SolanaAccount},
+    state::{Authority, GroupV1},
     utils::{fetch_core_data, is_valid_group_authority, resolve_authority},
 };
 
@@ -38,17 +34,13 @@ pub(crate) fn write_group_external_plugin_adapter_data<'a>(
     // 3. [optional] Buffer account containing data
     // 4. [] System program
     // 5. [] Optional SPL Noop
-
-    if accounts.len() < 5 {
-        return Err(ProgramError::NotEnoughAccountKeys);
-    }
-
-    let group_info = &accounts[0];
-    let payer_info = &accounts[1];
-    let authority_info_opt = accounts.get(2);
-    let buffer_info_opt = accounts.get(3);
-    let system_program_info = &accounts[4];
-    let log_wrapper_info_opt = accounts.get(5);
+    let ctx = WriteGroupExternalPluginAdapterDataV1Accounts::context(accounts)?;
+    let group_info = ctx.accounts.group;
+    let payer_info = ctx.accounts.payer;
+    let authority_info_opt = ctx.accounts.authority;
+    let buffer_info_opt = ctx.accounts.buffer;
+    let system_program_info = ctx.accounts.system_program;
+    let log_wrapper_info_opt = ctx.accounts.log_wrapper;
 
     // Guards.
     assert_signer(payer_info)?;

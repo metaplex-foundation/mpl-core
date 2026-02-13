@@ -7,13 +7,19 @@ import {
 } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
+  addGroupPlugin,
   createExternalPluginAdapterInitInfo,
   ExternalPluginAdapterSchema,
   writeGroupData,
 } from '../src';
 import { addGroupExternalPluginAdapterV1 } from '../src/generated';
 import { getGroupV1AccountDataSerializer } from '../src/hooked';
-import { createGroup, createUmi } from './_setupRaw';
+import {
+  assertGroup,
+  createGroup,
+  createUmi,
+  DEFAULT_GROUP,
+} from './_setupRaw';
 
 // Re-use the SPL Noop log wrapper program used elsewhere in the suite.
 const LOG_WRAPPER = publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV');
@@ -80,4 +86,101 @@ test('it can write JSON data to an AppData external plugin adapter on a group', 
   if (decoded.appDatas) {
     t.is(decoded.appDatas[0].dataLen, BigInt(dataBytes.length));
   }
+});
+
+test('it preserves trailing group plugins when app data grows and shrinks', async (t) => {
+  const umi = await createUmi();
+  const group = await createGroup(umi);
+
+  const initInfo = createExternalPluginAdapterInitInfo({
+    type: 'AppData',
+    dataAuthority: { type: 'UpdateAuthority' },
+    schema: ExternalPluginAdapterSchema.Binary,
+  });
+
+  await addGroupExternalPluginAdapterV1(umi, {
+    group: group.publicKey,
+    payer: umi.identity,
+    authority: umi.identity,
+    logWrapper: LOG_WRAPPER,
+    initInfo,
+  }).sendAndConfirm(umi);
+
+  await addGroupPlugin(umi, {
+    group: group.publicKey,
+    authority: umi.identity,
+    logWrapper: LOG_WRAPPER,
+    plugin: {
+      type: 'Attributes',
+      attributeList: [{ key: 'stage', value: 'initial' }],
+    },
+  }).sendAndConfirm(umi);
+
+  const initialData = new Uint8Array([1, 2, 3, 4]);
+  await writeGroupData(umi, {
+    group: group.publicKey,
+    payer: umi.identity,
+    authority: umi.identity,
+    logWrapper: LOG_WRAPPER,
+    key: { type: 'AppData', dataAuthority: { type: 'UpdateAuthority' } },
+    data: initialData,
+  }).sendAndConfirm(umi);
+
+  const largerData = Uint8Array.from(Array.from({ length: 96 }, (_, i) => i));
+  await writeGroupData(umi, {
+    group: group.publicKey,
+    payer: umi.identity,
+    authority: umi.identity,
+    logWrapper: LOG_WRAPPER,
+    key: { type: 'AppData', dataAuthority: { type: 'UpdateAuthority' } },
+    data: largerData,
+  }).sendAndConfirm(umi);
+
+  await assertGroup(t, umi, {
+    ...DEFAULT_GROUP,
+    group: group.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    attributes: {
+      authority: { type: 'UpdateAuthority' },
+      attributeList: [{ key: 'stage', value: 'initial' }],
+    },
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: largerData,
+      },
+    ],
+  });
+
+  const smallerData = new Uint8Array([9]);
+  await writeGroupData(umi, {
+    group: group.publicKey,
+    payer: umi.identity,
+    authority: umi.identity,
+    logWrapper: LOG_WRAPPER,
+    key: { type: 'AppData', dataAuthority: { type: 'UpdateAuthority' } },
+    data: smallerData,
+  }).sendAndConfirm(umi);
+
+  await assertGroup(t, umi, {
+    ...DEFAULT_GROUP,
+    group: group.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    attributes: {
+      authority: { type: 'UpdateAuthority' },
+      attributeList: [{ key: 'stage', value: 'initial' }],
+    },
+    appDatas: [
+      {
+        type: 'AppData',
+        authority: { type: 'UpdateAuthority' },
+        dataAuthority: { type: 'UpdateAuthority' },
+        schema: ExternalPluginAdapterSchema.Binary,
+        data: smallerData,
+      },
+    ],
+  });
 });

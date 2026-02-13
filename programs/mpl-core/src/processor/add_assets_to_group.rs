@@ -4,8 +4,7 @@ use solana_program::{
     account_info::AccountInfo,
     entrypoint::ProgramResult,
     msg,
-    program_error::ProgramError,
-    program_memory::{sol_memcpy, sol_memmove},
+    program_memory::sol_memmove,
     pubkey::Pubkey,
 };
 
@@ -13,53 +12,18 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::AddAssetsToGroupV1Accounts,
     instruction::accounts::Context,
-    plugins::{
-        create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginHeaderV1,
-        PluginRegistryV1, PluginType,
-    },
+    plugins::{create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginType},
     state::{AssetV1, DataBlob, GroupV1, SolanaAccount},
-    utils::{is_valid_group_authority, resize_or_reallocate_account, resolve_authority},
+    utils::{
+        is_valid_asset_authority, is_valid_group_authority, resize_or_reallocate_account,
+        resolve_authority, save_group_core_and_plugins,
+    },
 };
 
 /// Arguments for the `AddAssetsToGroupV1` instruction.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub(crate) struct AddAssetsToGroupV1Args {}
-
-/// Returns true if the authority is allowed to mutate the asset (update authority or delegate).
-fn is_valid_asset_authority(
-    asset_info: &AccountInfo,
-    authority_info: &AccountInfo,
-) -> ProgramResult {
-    use crate::plugins::fetch_wrapped_plugin;
-    use crate::plugins::PluginType;
-    use crate::state::UpdateAuthority;
-
-    let asset_core = AssetV1::load(asset_info, 0)?;
-
-    // Direct update authority address.
-    if let UpdateAuthority::Address(addr) = asset_core.update_authority.clone() {
-        if addr == *authority_info.key {
-            return Ok(());
-        }
-    }
-
-    // Check UpdateDelegate plugin.
-    if let Ok((_pa, plugin)) =
-        fetch_wrapped_plugin::<AssetV1>(asset_info, Some(&asset_core), PluginType::UpdateDelegate)
-    {
-        if let crate::plugins::Plugin::UpdateDelegate(update_delegate) = plugin {
-            if update_delegate
-                .additional_delegates
-                .contains(authority_info.key)
-            {
-                return Ok(());
-            }
-        }
-    }
-
-    Err(MplCoreError::InvalidAuthority.into())
-}
 
 /// Processor for the `AddAssetsToGroupV1` instruction.
 #[allow(clippy::too_many_arguments)]
@@ -92,6 +56,7 @@ pub(crate) fn add_assets_to_group_v1<'a>(
 
     // Load group
     let mut group = GroupV1::load(group_info, 0)?;
+    let old_group_core_len = group.len();
 
     // Ensure authority for group
     if !is_valid_group_authority(group_info, authority_info)? {
@@ -102,7 +67,9 @@ pub(crate) fn add_assets_to_group_v1<'a>(
     // Iterate over each asset account in remaining_accounts.
     for asset_info in remaining_accounts.iter() {
         // authority must be valid for asset
-        is_valid_asset_authority(asset_info, authority_info)?;
+        if !is_valid_asset_authority(asset_info, authority_info)? {
+            return Err(MplCoreError::InvalidAuthority.into());
+        }
 
         // Update group.assets vector
         if !group.assets.contains(asset_info.key) {
@@ -120,21 +87,14 @@ pub(crate) fn add_assets_to_group_v1<'a>(
         )?;
     }
 
-    // Save group changes
-    let serialized_group = group.try_to_vec()?;
-    if serialized_group.len() != group_info.data_len() {
-        resize_or_reallocate_account(
-            group_info,
-            payer_info,
-            system_program_info,
-            serialized_group.len(),
-        )?;
-    }
-    sol_memcpy(
-        &mut group_info.try_borrow_mut_data()?,
-        &serialized_group,
-        serialized_group.len(),
-    );
+    // Save group changes while preserving any existing plugin metadata.
+    save_group_core_and_plugins(
+        group_info,
+        &group,
+        old_group_core_len,
+        payer_info,
+        system_program_info,
+    )?;
 
     Ok(())
 }
@@ -188,9 +148,11 @@ fn process_asset_groups_plugin_add<'a>(
             let new_data = plugin.try_to_vec()?;
             let size_diff = new_data.len() as isize - old_data.len() as isize;
             if size_diff != 0 {
+                let old_registry_offset = plugin_header.plugin_registry_offset;
+
                 plugin_registry.bump_offsets(record.offset, size_diff)?;
                 plugin_header.plugin_registry_offset =
-                    (plugin_header.plugin_registry_offset as isize + size_diff) as usize;
+                    (old_registry_offset as isize + size_diff) as usize;
 
                 let new_size = (asset_info.data_len() as isize + size_diff) as usize;
                 resize_or_reallocate_account(
@@ -202,9 +164,7 @@ fn process_asset_groups_plugin_add<'a>(
 
                 let next_offset = (record.offset + old_data.len()) as isize;
                 let new_next_offset = next_offset + size_diff;
-                let copy_len = plugin_header
-                    .plugin_registry_offset
-                    .saturating_sub(next_offset as usize);
+                let copy_len = old_registry_offset.saturating_sub(next_offset as usize);
 
                 if copy_len > 0 {
                     unsafe {

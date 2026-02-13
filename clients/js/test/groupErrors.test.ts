@@ -1,4 +1,4 @@
-import { generateSigner, publicKey } from '@metaplex-foundation/umi';
+import { generateSigner, publicKey, sol } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   createExternalPluginAdapterInitInfo,
@@ -66,6 +66,8 @@ test('writeGroupData fails when signer is not the plugin data authority', async 
   const group = await createGroup(umi);
 
   const externalSigner = generateSigner(umi);
+  const unauthorizedSigner = generateSigner(umi);
+  await umi.rpc.airdrop(unauthorizedSigner.publicKey, sol(0.1));
 
   // Add adapter with an explicit external signer set as data authority.
   const initInfo = createExternalPluginAdapterInitInfo({
@@ -84,13 +86,13 @@ test('writeGroupData fails when signer is not the plugin data authority', async 
 
   const bytes = new Uint8Array([1, 2, 3]);
 
-  // Attempt to write using the update authority (umi.identity) instead of the
-  // designated data authority.
+  // Attempt to write using a signer that is neither the group update authority
+  // nor the designated plugin data authority.
   await t.throwsAsync(
     writeGroupData(umi, {
       group: group.publicKey,
       payer: umi.identity,
-      authority: umi.identity, // Not authorised
+      authority: unauthorizedSigner, // Not authorised
       key: {
         type: 'AppData',
         dataAuthority: { type: 'Address', address: externalSigner.publicKey },

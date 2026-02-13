@@ -2910,7 +2910,7 @@
         {
           "name": "updateAuthority",
           "isMut": false,
-          "isSigner": false,
+          "isSigner": true,
           "isOptional": true,
           "docs": [
             "The authority of the new group"
