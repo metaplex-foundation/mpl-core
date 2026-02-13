@@ -2,17 +2,16 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-    program_memory::sol_memcpy,
 };
 
 use super::group_collection_plugin::process_collection_groups_plugin_add;
 use crate::{
     error::MplCoreError,
     instruction::accounts::{AddCollectionsToGroupV1Accounts, Context},
-    state::{CollectionV1, GroupV1, SolanaAccount},
+    state::{CollectionV1, DataBlob, GroupV1, SolanaAccount},
     utils::{
-        is_valid_collection_authority, is_valid_group_authority, resize_or_reallocate_account,
-        resolve_authority,
+        is_valid_collection_authority, is_valid_group_authority, resolve_authority,
+        save_group_core_and_plugins,
     },
 };
 
@@ -49,6 +48,7 @@ pub(crate) fn add_collections_to_group_v1<'a>(
 
     // Deserialize group.
     let mut group = GroupV1::load(group_info, 0)?;
+    let old_group_core_len = group.len();
 
     // Authority check: must be group's update authority or delegate.
     if !is_valid_group_authority(group_info, authority_info)? {
@@ -91,22 +91,14 @@ pub(crate) fn add_collections_to_group_v1<'a>(
         // The collection core itself does not change; no reserialization needed.
     }
 
-    // Persist group changes.
-    let serialized_group = group.try_to_vec()?;
-    if serialized_group.len() != group_info.data_len() {
-        resize_or_reallocate_account(
-            group_info,
-            payer_info,
-            system_program_info,
-            serialized_group.len(),
-        )?;
-    }
-
-    sol_memcpy(
-        &mut group_info.try_borrow_mut_data()?,
-        &serialized_group,
-        serialized_group.len(),
-    );
+    // Persist group changes while preserving any existing plugin metadata.
+    save_group_core_and_plugins(
+        group_info,
+        &group,
+        old_group_core_len,
+        payer_info,
+        system_program_info,
+    )?;
 
     Ok(())
 }
