@@ -9,7 +9,7 @@ use crate::{
     },
     plugins::{
         delete_external_plugin_adapter, fetch_wrapped_external_plugin_adapter,
-        ExternalPluginAdapterKey, Plugin, PluginType,
+        ExternalPluginAdapterKey, RemoveExternalPluginAdapterLifecycle,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key},
     utils::{
@@ -64,7 +64,7 @@ pub(crate) fn remove_external_plugin_adapter<'a>(
     )?;
 
     // Validate asset permissions.
-    let _ = validate_asset_permissions(
+    let _ = validate_asset_permissions::<RemoveExternalPluginAdapterLifecycle>(
         accounts,
         authority,
         ctx.accounts.asset,
@@ -75,14 +75,6 @@ pub(crate) fn remove_external_plugin_adapter<'a>(
         None,
         Some(&plugin_to_remove),
         Some(&record.authority),
-        AssetV1::check_remove_external_plugin_adapter,
-        CollectionV1::check_remove_external_plugin_adapter,
-        PluginType::check_remove_external_plugin_adapter,
-        AssetV1::validate_remove_external_plugin_adapter,
-        CollectionV1::validate_remove_external_plugin_adapter,
-        Plugin::validate_remove_external_plugin_adapter,
-        None,
-        None,
     )?;
 
     process_remove_external_plugin_adapter(
@@ -135,8 +127,8 @@ pub(crate) fn remove_collection_external_plugin_adapter<'a>(
         &args.key,
     )?;
 
-    // Validate asset permissions.
-    let _ = validate_collection_permissions(
+    // Validate collection permissions.
+    let _ = validate_collection_permissions::<RemoveExternalPluginAdapterLifecycle>(
         accounts,
         authority,
         ctx.accounts.collection,
@@ -145,12 +137,6 @@ pub(crate) fn remove_collection_external_plugin_adapter<'a>(
         None,
         Some(&plugin_to_remove),
         Some(&record.authority),
-        CollectionV1::check_remove_external_plugin_adapter,
-        PluginType::check_remove_external_plugin_adapter,
-        CollectionV1::validate_remove_external_plugin_adapter,
-        Plugin::validate_remove_external_plugin_adapter,
-        None,
-        None,
     )?;
 
     process_remove_external_plugin_adapter(

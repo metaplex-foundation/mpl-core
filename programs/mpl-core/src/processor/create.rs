@@ -10,8 +10,8 @@ use crate::{
     instruction::accounts::CreateV2Accounts,
     plugins::{
         create_meta_idempotent, create_plugin_meta, initialize_external_plugin_adapter,
-        initialize_plugin, CheckResult, ExternalCheckResultBits, ExternalPluginAdapter,
-        ExternalPluginAdapterInitInfo, HookableLifecycleEvent, Plugin, PluginAuthorityPair,
+        initialize_plugin, CheckResult, CreateLifecycle, ExternalCheckResultBits,
+        ExternalPluginAdapter, ExternalPluginAdapterInitInfo, Plugin, PluginAuthorityPair,
         PluginType, PluginValidationContext, ValidationResult,
     },
     state::{
@@ -148,7 +148,7 @@ pub(crate) fn process_create<'a>(
 
     if args.data_state == DataState::AccountState {
         // Validate asset permissions.
-        let _ = validate_asset_permissions(
+        let _ = validate_asset_permissions::<CreateLifecycle>(
             accounts,
             authority,
             ctx.accounts.asset,
@@ -159,14 +159,6 @@ pub(crate) fn process_create<'a>(
             None,
             None,
             None,
-            AssetV1::check_create,
-            CollectionV1::check_create,
-            PluginType::check_create,
-            AssetV1::validate_create,
-            CollectionV1::validate_create,
-            Plugin::validate_create,
-            Some(ExternalPluginAdapter::validate_create),
-            Some(HookableLifecycleEvent::Create),
         )?;
 
         // Validate permissions for the created asset.

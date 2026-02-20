@@ -5,7 +5,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{RemoveCollectionPluginV1Accounts, RemovePluginV1Accounts},
-    plugins::{delete_plugin, fetch_wrapped_plugin, Plugin, PluginType},
+    plugins::{delete_plugin, fetch_wrapped_plugin, PluginType, RemovePluginLifecycle},
     state::{AssetV1, CollectionV1, DataBlob, Key},
     utils::{
         fetch_core_data, load_key, resolve_authority, validate_asset_permissions,
@@ -56,7 +56,7 @@ pub(crate) fn remove_plugin<'a>(
         fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, Some(&asset), args.plugin_type)?;
 
     // Validate asset permissions.
-    let _ = validate_asset_permissions(
+    let _ = validate_asset_permissions::<RemovePluginLifecycle>(
         accounts,
         authority,
         ctx.accounts.asset,
@@ -65,14 +65,6 @@ pub(crate) fn remove_plugin<'a>(
         None,
         Some(&plugin_to_remove),
         Some(&plugin_authority),
-        None,
-        None,
-        AssetV1::check_remove_plugin,
-        CollectionV1::check_remove_plugin,
-        PluginType::check_remove_plugin,
-        AssetV1::validate_remove_plugin,
-        CollectionV1::validate_remove_plugin,
-        Plugin::validate_remove_plugin,
         None,
         None,
     )?;
@@ -130,19 +122,13 @@ pub(crate) fn remove_collection_plugin<'a>(
     )?;
 
     // Validate collection permissions.
-    let _ = validate_collection_permissions(
+    let _ = validate_collection_permissions::<RemovePluginLifecycle>(
         accounts,
         authority,
         ctx.accounts.collection,
         None,
         Some(&plugin_to_remove),
         Some(&plugin_authority),
-        None,
-        None,
-        CollectionV1::check_remove_plugin,
-        PluginType::check_remove_plugin,
-        CollectionV1::validate_remove_plugin,
-        Plugin::validate_remove_plugin,
         None,
         None,
     )?;

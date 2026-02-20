@@ -11,10 +11,10 @@ use crate::{
         Context, UpdateCollectionV1Accounts, UpdateV1Accounts, UpdateV2Accounts,
     },
     plugins::{
-        fetch_plugin, list_plugins, ExternalPluginAdapter, HookableLifecycleEvent, Plugin,
-        PluginHeaderV1, PluginRegistryV1, PluginType, UpdateDelegate, PERMANENT_DELEGATES,
+        fetch_plugin, list_plugins, PluginHeaderV1, PluginRegistryV1, PluginType, UpdateDelegate,
+        UpdateLifecycle, PERMANENT_DELEGATES,
     },
-    state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
+    state::{CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
         assert_collection_authority, load_key, resize_or_reallocate_account, resolve_authority,
         validate_asset_permissions, validate_collection_permissions,
@@ -107,26 +107,19 @@ fn update<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
-        accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        args.new_update_authority.as_ref(),
-        None,
-        None,
-        None,
-        None,
-        AssetV1::check_update,
-        CollectionV1::check_update,
-        PluginType::check_update,
-        AssetV1::validate_update,
-        CollectionV1::validate_update,
-        Plugin::validate_update,
-        Some(ExternalPluginAdapter::validate_update),
-        Some(HookableLifecycleEvent::Update),
-    )?;
+    let (mut asset, plugin_header, plugin_registry) =
+        validate_asset_permissions::<UpdateLifecycle>(
+            accounts,
+            authority,
+            ctx.accounts.asset,
+            ctx.accounts.collection,
+            None,
+            args.new_update_authority.as_ref(),
+            None,
+            None,
+            None,
+            None,
+        )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
     asset.increment_seq_and_save(ctx.accounts.asset)?;
@@ -295,22 +288,17 @@ pub(crate) fn update_collection<'a>(
         }
     }
 
-    let (mut collection, plugin_header, plugin_registry) = validate_collection_permissions(
-        accounts,
-        authority,
-        ctx.accounts.collection,
-        ctx.accounts.new_update_authority.map(|a| a.key),
-        None,
-        None,
-        None,
-        None,
-        CollectionV1::check_update,
-        PluginType::check_update,
-        CollectionV1::validate_update,
-        Plugin::validate_update,
-        Some(ExternalPluginAdapter::validate_update),
-        Some(HookableLifecycleEvent::Update),
-    )?;
+    let (mut collection, plugin_header, plugin_registry) =
+        validate_collection_permissions::<UpdateLifecycle>(
+            accounts,
+            authority,
+            ctx.accounts.collection,
+            ctx.accounts.new_update_authority.map(|a| a.key),
+            None,
+            None,
+            None,
+            None,
+        )?;
 
     let collection_size = collection.len() as isize;
 

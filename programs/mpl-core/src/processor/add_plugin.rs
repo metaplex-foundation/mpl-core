@@ -6,8 +6,8 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{AddCollectionPluginV1Accounts, AddPluginV1Accounts},
     plugins::{
-        create_meta_idempotent, initialize_plugin, Plugin, PluginType, PluginValidationContext,
-        ValidationResult,
+        create_meta_idempotent, initialize_plugin, AddPluginLifecycle, Plugin, PluginType,
+        PluginValidationContext, ValidationResult,
     },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -77,7 +77,7 @@ pub(crate) fn add_plugin<'a>(
     }
 
     // Validate asset permissions.
-    let (mut asset, _, _) = validate_asset_permissions(
+    let (mut asset, _, _) = validate_asset_permissions::<AddPluginLifecycle>(
         accounts,
         authority,
         ctx.accounts.asset,
@@ -86,14 +86,6 @@ pub(crate) fn add_plugin<'a>(
         None,
         Some(&args.plugin),
         Some(&target_plugin_authority),
-        None,
-        None,
-        AssetV1::check_add_plugin,
-        CollectionV1::check_add_plugin,
-        PluginType::check_add_plugin,
-        AssetV1::validate_add_plugin,
-        CollectionV1::validate_add_plugin,
-        Plugin::validate_add_plugin,
         None,
         None,
     )?;
@@ -163,19 +155,13 @@ pub(crate) fn add_collection_plugin<'a>(
     }
 
     // Validate collection permissions.
-    let _ = validate_collection_permissions(
+    let _ = validate_collection_permissions::<AddPluginLifecycle>(
         accounts,
         authority,
         ctx.accounts.collection,
         None,
         Some(&args.plugin),
         Some(&target_plugin_authority),
-        None,
-        None,
-        CollectionV1::check_add_plugin,
-        PluginType::check_add_plugin,
-        CollectionV1::validate_add_plugin,
-        Plugin::validate_add_plugin,
         None,
         None,
     )?;
