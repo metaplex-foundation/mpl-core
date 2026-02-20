@@ -6,10 +6,10 @@ use std::collections::BTreeMap;
 use crate::{
     error::MplCoreError,
     plugins::{
-        ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalRegistryRecord, Plugin,
-        PluginType, RegistryRecord,
+        ExternalPluginAdapter, ExternalPluginAdapterKey, ExternalRegistryRecord,
+        HookableLifecycleEvent, Plugin, PluginType, RegistryRecord,
     },
-    state::{Authority, DataBlob, Key, UpdateAuthority},
+    state::{AssetV1, Authority, CollectionV1, DataBlob, Key, UpdateAuthority},
 };
 
 /// Lifecycle permissions
@@ -663,29 +663,234 @@ pub(crate) trait PluginValidation {
     }
 }
 
+/// Context describing what is being changed or targeted by a lifecycle event.
+///
+/// All fields default to `None` — callers only set the fields relevant to their
+/// specific lifecycle event. This eliminates long chains of `None` parameters
+/// at call sites.
+///
+/// # Examples
+/// ```ignore
+/// // Transfer only needs new_owner:
+/// let ctx = LifecycleContext { new_owner: Some(new_owner), ..Default::default() };
+///
+/// // Plugin operations need plugin + authority:
+/// let ctx = LifecycleContext {
+///     new_plugin: Some(&plugin),
+///     new_plugin_authority: Some(&authority),
+///     ..Default::default()
+/// };
+/// ```
+pub(crate) struct LifecycleContext<'a, 'b> {
+    /// The new owner account for transfers.
+    pub new_owner: Option<&'a AccountInfo<'a>>,
+    /// The new asset update authority.
+    pub new_asset_authority: Option<&'b UpdateAuthority>,
+    /// The new collection update authority.
+    pub new_collection_authority: Option<&'b Pubkey>,
+    /// The plugin being acted upon (added, removed, updated, etc.).
+    pub new_plugin: Option<&'b Plugin>,
+    /// The authority of the target plugin.
+    pub new_plugin_authority: Option<&'b Authority>,
+    /// The external plugin adapter being acted upon.
+    pub new_external_plugin_adapter: Option<&'b ExternalPluginAdapter>,
+    /// The authority of the target external plugin adapter.
+    pub new_external_plugin_adapter_authority: Option<&'b Authority>,
+}
+
+impl Default for LifecycleContext<'_, '_> {
+    fn default() -> Self {
+        Self {
+            new_owner: None,
+            new_asset_authority: None,
+            new_collection_authority: None,
+            new_plugin: None,
+            new_plugin_authority: None,
+            new_external_plugin_adapter: None,
+            new_external_plugin_adapter_authority: None,
+        }
+    }
+}
+
+/// Trait that bundles all check/validate function pointers for a specific lifecycle event
+/// (e.g. Transfer, Burn, Update) into a single generic type parameter.
+///
+/// Instead of passing 6-8 function pointers to validation functions, callers specify the
+/// lifecycle event as a type parameter: `validate_asset_permissions::<TransferLifecycle>(...)`.
+pub(crate) trait LifecycleEvent {
+    /// Check whether the asset type itself can approve/reject this event.
+    fn check_asset() -> CheckResult;
+
+    /// Check whether the collection type itself can approve/reject this event.
+    fn check_collection() -> CheckResult;
+
+    /// Check whether a given plugin type can approve/reject this event.
+    fn check_plugin(plugin_type: &PluginType) -> CheckResult;
+
+    /// Validate the event against the asset.
+    fn validate_asset(
+        asset: &AssetV1,
+        authority_info: &AccountInfo,
+        new_plugin: Option<&Plugin>,
+        new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
+    ) -> Result<ValidationResult, ProgramError>;
+
+    /// Validate the event against the collection.
+    fn validate_collection(
+        collection: &CollectionV1,
+        authority_info: &AccountInfo,
+        new_plugin: Option<&Plugin>,
+        new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
+    ) -> Result<ValidationResult, ProgramError>;
+
+    /// Validate the event against a plugin.
+    fn validate_plugin(
+        plugin: &Plugin,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError>;
+
+    /// Validate the event against an external plugin adapter.
+    /// Default implementation abstains (for events that don't use external plugins).
+    fn validate_external_plugin_adapter(
+        _adapter: &ExternalPluginAdapter,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        abstain!()
+    }
+
+    /// The hookable lifecycle event for external plugins, if applicable.
+    /// Returns `None` for events that don't support external plugin validation.
+    fn hookable_lifecycle_event() -> Option<HookableLifecycleEvent> {
+        None
+    }
+}
+
+/// Macro to define a lifecycle event type and its `LifecycleEvent` implementation.
+///
+/// For events without external plugin adapter support:
+///   `define_lifecycle!(TypeName, check_fn, validate_fn);`
+///
+/// For events with external plugin adapter support:
+///   `define_lifecycle!(TypeName, check_fn, validate_fn, ext_validate_fn, HookableLifecycleEvent::Variant);`
+macro_rules! define_lifecycle {
+    // Without external plugin adapter validation
+    ($name:ident, $check:ident, $validate:ident) => {
+        pub(crate) struct $name;
+
+        impl LifecycleEvent for $name {
+            fn check_asset() -> CheckResult {
+                AssetV1::$check()
+            }
+            fn check_collection() -> CheckResult {
+                CollectionV1::$check()
+            }
+            fn check_plugin(plugin_type: &PluginType) -> CheckResult {
+                PluginType::$check(plugin_type)
+            }
+            fn validate_asset(
+                asset: &AssetV1,
+                authority_info: &AccountInfo,
+                new_plugin: Option<&Plugin>,
+                new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
+            ) -> Result<ValidationResult, ProgramError> {
+                asset.$validate(authority_info, new_plugin, new_external_plugin_adapter)
+            }
+            fn validate_collection(
+                collection: &CollectionV1,
+                authority_info: &AccountInfo,
+                new_plugin: Option<&Plugin>,
+                new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
+            ) -> Result<ValidationResult, ProgramError> {
+                collection.$validate(authority_info, new_plugin, new_external_plugin_adapter)
+            }
+            fn validate_plugin(
+                plugin: &Plugin,
+                ctx: &PluginValidationContext,
+            ) -> Result<ValidationResult, ProgramError> {
+                Plugin::$validate(plugin, ctx)
+            }
+        }
+    };
+    // With external plugin adapter validation
+    ($name:ident, $check:ident, $validate:ident, $ext_validate:ident, $hookable:expr) => {
+        pub(crate) struct $name;
+
+        impl LifecycleEvent for $name {
+            fn check_asset() -> CheckResult {
+                AssetV1::$check()
+            }
+            fn check_collection() -> CheckResult {
+                CollectionV1::$check()
+            }
+            fn check_plugin(plugin_type: &PluginType) -> CheckResult {
+                PluginType::$check(plugin_type)
+            }
+            fn validate_asset(
+                asset: &AssetV1,
+                authority_info: &AccountInfo,
+                new_plugin: Option<&Plugin>,
+                new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
+            ) -> Result<ValidationResult, ProgramError> {
+                asset.$validate(authority_info, new_plugin, new_external_plugin_adapter)
+            }
+            fn validate_collection(
+                collection: &CollectionV1,
+                authority_info: &AccountInfo,
+                new_plugin: Option<&Plugin>,
+                new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
+            ) -> Result<ValidationResult, ProgramError> {
+                collection.$validate(authority_info, new_plugin, new_external_plugin_adapter)
+            }
+            fn validate_plugin(
+                plugin: &Plugin,
+                ctx: &PluginValidationContext,
+            ) -> Result<ValidationResult, ProgramError> {
+                Plugin::$validate(plugin, ctx)
+            }
+            fn validate_external_plugin_adapter(
+                adapter: &ExternalPluginAdapter,
+                ctx: &PluginValidationContext,
+            ) -> Result<ValidationResult, ProgramError> {
+                ExternalPluginAdapter::$ext_validate(adapter, ctx)
+            }
+            fn hookable_lifecycle_event() -> Option<HookableLifecycleEvent> {
+                Some($hookable)
+            }
+        }
+    };
+}
+
+// Events WITH external plugin adapter validation
+define_lifecycle!(CreateLifecycle, check_create, validate_create, validate_create, HookableLifecycleEvent::Create);
+define_lifecycle!(TransferLifecycle, check_transfer, validate_transfer, validate_transfer, HookableLifecycleEvent::Transfer);
+define_lifecycle!(BurnLifecycle, check_burn, validate_burn, validate_burn, HookableLifecycleEvent::Burn);
+define_lifecycle!(UpdateLifecycle, check_update, validate_update, validate_update, HookableLifecycleEvent::Update);
+
+// Events WITHOUT external plugin adapter validation
+define_lifecycle!(AddPluginLifecycle, check_add_plugin, validate_add_plugin);
+define_lifecycle!(RemovePluginLifecycle, check_remove_plugin, validate_remove_plugin);
+define_lifecycle!(UpdatePluginLifecycle, check_update_plugin, validate_update_plugin);
+define_lifecycle!(ApprovePluginAuthorityLifecycle, check_approve_plugin_authority, validate_approve_plugin_authority);
+define_lifecycle!(RevokePluginAuthorityLifecycle, check_revoke_plugin_authority, validate_revoke_plugin_authority);
+define_lifecycle!(CompressLifecycle, check_compress, validate_compress);
+define_lifecycle!(DecompressLifecycle, check_decompress, validate_decompress);
+define_lifecycle!(ExecuteLifecycle, check_execute, validate_execute);
+define_lifecycle!(AddExternalPluginAdapterLifecycle, check_add_external_plugin_adapter, validate_add_external_plugin_adapter);
+define_lifecycle!(RemoveExternalPluginAdapterLifecycle, check_remove_external_plugin_adapter, validate_remove_external_plugin_adapter);
+
 /// This function iterates through all plugin checks passed in and performs the validation
 /// by deserializing and calling validate on the plugin.
 /// The STRONGEST result is returned.
-#[allow(clippy::too_many_arguments, clippy::type_complexity)]
-pub(crate) fn validate_plugin_checks<'a>(
+#[allow(clippy::type_complexity)]
+pub(crate) fn validate_plugin_checks<'a, E: LifecycleEvent>(
     key: Key,
     accounts: &'a [AccountInfo<'a>],
     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &'a AccountInfo<'a>,
-    new_owner: Option<&'a AccountInfo<'a>>,
-    new_asset_authority: Option<&UpdateAuthority>,
-    new_collection_authority: Option<&Pubkey>,
-    new_plugin: Option<&Plugin>,
-    new_plugin_authority: Option<&Authority>,
-    new_external_plugin: Option<&ExternalPluginAdapter>,
-    new_external_plugin_authority: Option<&Authority>,
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
-    plugin_validate_fp: fn(
-        &Plugin,
-        &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError>,
+    ctx: &LifecycleContext<'a, '_>,
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
     let mut rejected = false;
@@ -709,16 +914,16 @@ pub(crate) fn validate_plugin_checks<'a>(
                 self_authority: &registry_record.authority,
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),
-                new_owner,
-                new_asset_authority,
-                new_collection_authority,
-                target_plugin: new_plugin,
-                target_plugin_authority: new_plugin_authority,
-                target_external_plugin: new_external_plugin,
-                target_external_plugin_authority: new_external_plugin_authority,
+                new_owner: ctx.new_owner,
+                new_asset_authority: ctx.new_asset_authority,
+                new_collection_authority: ctx.new_collection_authority,
+                target_plugin: ctx.new_plugin,
+                target_plugin_authority: ctx.new_plugin_authority,
+                target_external_plugin: ctx.new_external_plugin_adapter,
+                target_external_plugin_authority: ctx.new_external_plugin_adapter_authority,
             };
 
-            let result = plugin_validate_fp(
+            let result = E::validate_plugin(
                 &Plugin::load(account, registry_record.offset)?,
                 &validation_ctx,
             )?;
@@ -743,8 +948,8 @@ pub(crate) fn validate_plugin_checks<'a>(
 /// This function iterates through all external plugin adapter checks passed in and performs the validation
 /// by deserializing and calling validate on the plugin.
 /// The STRONGEST result is returned.
-#[allow(clippy::too_many_arguments, clippy::type_complexity)]
-pub(crate) fn validate_external_plugin_adapter_checks<'a>(
+#[allow(clippy::type_complexity)]
+pub(crate) fn validate_external_plugin_adapter_checks<'a, E: LifecycleEvent>(
     key: Key,
     accounts: &'a [AccountInfo<'a>],
     external_checks: &BTreeMap<
@@ -752,20 +957,10 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
         (Key, ExternalCheckResultBits, ExternalRegistryRecord),
     >,
     authority: &'a AccountInfo<'a>,
-    new_owner: Option<&'a AccountInfo<'a>>,
-    new_asset_authority: Option<&UpdateAuthority>,
-    new_collection_authority: Option<&Pubkey>,
-    new_plugin: Option<&Plugin>,
-    new_plugin_authority: Option<&Authority>,
-    new_external_plugin: Option<&ExternalPluginAdapter>,
-    new_external_plugin_authority: Option<&Authority>,
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
-    external_plugin_adapter_validate_fp: fn(
-        &ExternalPluginAdapter,
-        &PluginValidationContext,
-    ) -> Result<ValidationResult, ProgramError>,
+    ctx: &LifecycleContext<'a, '_>,
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
     for (check_key, check_result, external_registry_record) in external_checks.values() {
@@ -787,16 +982,16 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
                 self_authority: &external_registry_record.authority,
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),
-                new_owner,
-                new_asset_authority,
-                new_collection_authority,
-                target_plugin: new_plugin,
-                target_plugin_authority: new_plugin_authority,
-                target_external_plugin: new_external_plugin,
-                target_external_plugin_authority: new_external_plugin_authority,
+                new_owner: ctx.new_owner,
+                new_asset_authority: ctx.new_asset_authority,
+                new_collection_authority: ctx.new_collection_authority,
+                target_plugin: ctx.new_plugin,
+                target_plugin_authority: ctx.new_plugin_authority,
+                target_external_plugin: ctx.new_external_plugin_adapter,
+                target_external_plugin_authority: ctx.new_external_plugin_adapter_authority,
             };
 
-            let result = external_plugin_adapter_validate_fp(
+            let result = E::validate_external_plugin_adapter(
                 &ExternalPluginAdapter::load(account, external_registry_record.offset)?,
                 &validation_ctx,
             )?;

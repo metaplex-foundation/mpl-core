@@ -13,8 +13,8 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::ExecuteV1Accounts,
-    plugins::{Plugin, PluginType},
-    state::{get_execute_fee, AssetV1, CollectionV1, Key},
+    plugins::ExecuteLifecycle,
+    state::{get_execute_fee, Key},
     utils::{load_key, resolve_authority, validate_asset_permissions},
 };
 
@@ -47,25 +47,12 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    let (mut asset, _, _) = validate_asset_permissions(
+    let (mut asset, _, _) = validate_asset_permissions::<ExecuteLifecycle>(
         accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        AssetV1::check_execute,
-        CollectionV1::check_execute,
-        PluginType::check_execute,
-        AssetV1::validate_execute,
-        CollectionV1::validate_execute,
-        Plugin::validate_execute,
-        None,
-        None,
+        &Default::default(),
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.

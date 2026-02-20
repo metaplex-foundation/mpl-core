@@ -5,8 +5,8 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, 
 use crate::{
     error::MplCoreError,
     instruction::accounts::DecompressV1Accounts,
-    plugins::{Plugin, PluginType},
-    state::{AssetV1, CollectionV1, CompressionProof, Key},
+    plugins::DecompressLifecycle,
+    state::{CompressionProof, Key},
     utils::{
         load_key, rebuild_account_state_from_proof_data, resolve_authority,
         validate_asset_permissions, verify_proof,
@@ -59,25 +59,12 @@ pub(crate) fn decompress<'a>(
             )?;
 
             // Validate asset permissions.
-            let _ = validate_asset_permissions(
+            let _ = validate_asset_permissions::<DecompressLifecycle>(
                 accounts,
                 authority,
                 ctx.accounts.asset,
                 ctx.accounts.collection,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                AssetV1::check_decompress,
-                CollectionV1::check_decompress,
-                PluginType::check_decompress,
-                AssetV1::validate_decompress,
-                CollectionV1::validate_decompress,
-                Plugin::validate_decompress,
-                None,
-                None,
+                &Default::default(),
             )?;
 
             // TODO Enable compression.

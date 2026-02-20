@@ -7,7 +7,10 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionPluginV1Accounts, UpdatePluginV1Accounts},
-    plugins::{fetch_wrapped_plugin, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType},
+    plugins::{
+        fetch_wrapped_plugin, LifecycleContext, Plugin, PluginHeaderV1, PluginRegistryV1,
+        PluginType, UpdatePluginLifecycle,
+    },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
         load_key, resize_or_reallocate_account, resolve_authority, validate_asset_permissions,
@@ -50,26 +53,18 @@ pub(crate) fn update_plugin<'a>(
     let (target_plugin_authority, _) =
         fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, None, PluginType::from(&args.plugin))?;
 
-    let (mut asset, plugin_header, plugin_registry) = validate_asset_permissions(
-        accounts,
-        authority,
-        ctx.accounts.asset,
-        ctx.accounts.collection,
-        None,
-        None,
-        Some(&args.plugin),
-        Some(&target_plugin_authority),
-        None,
-        None,
-        AssetV1::check_update_plugin,
-        CollectionV1::check_update_plugin,
-        PluginType::check_update_plugin,
-        AssetV1::validate_update_plugin,
-        CollectionV1::validate_update_plugin,
-        Plugin::validate_update_plugin,
-        None,
-        None,
-    )?;
+    let (mut asset, plugin_header, plugin_registry) =
+        validate_asset_permissions::<UpdatePluginLifecycle>(
+            accounts,
+            authority,
+            ctx.accounts.asset,
+            ctx.accounts.collection,
+            &LifecycleContext {
+                new_plugin: Some(&args.plugin),
+                new_plugin_authority: Some(&target_plugin_authority),
+                ..Default::default()
+            },
+        )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
     asset.increment_seq_and_save(ctx.accounts.asset)?;
@@ -119,22 +114,17 @@ pub(crate) fn update_collection_plugin<'a>(
     )?;
 
     // Validate collection permissions.
-    let (collection, plugin_header, plugin_registry) = validate_collection_permissions(
-        accounts,
-        authority,
-        ctx.accounts.collection,
-        None,
-        Some(&args.plugin),
-        Some(&target_plugin_authority),
-        None,
-        None,
-        CollectionV1::check_update_plugin,
-        PluginType::check_update_plugin,
-        CollectionV1::validate_update_plugin,
-        Plugin::validate_update_plugin,
-        None,
-        None,
-    )?;
+    let (collection, plugin_header, plugin_registry) =
+        validate_collection_permissions::<UpdatePluginLifecycle>(
+            accounts,
+            authority,
+            ctx.accounts.collection,
+            &LifecycleContext {
+                new_plugin: Some(&args.plugin),
+                new_plugin_authority: Some(&target_plugin_authority),
+                ..Default::default()
+            },
+        )?;
 
     process_update_plugin(
         collection,

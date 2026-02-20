@@ -8,8 +8,8 @@ use crate::{
         RevokeCollectionPluginAuthorityV1Accounts, RevokePluginAuthorityV1Accounts,
     },
     plugins::{
-        fetch_wrapped_plugin, revoke_authority_on_plugin, Plugin, PluginHeaderV1, PluginRegistryV1,
-        PluginType,
+        fetch_wrapped_plugin, revoke_authority_on_plugin, LifecycleContext, PluginHeaderV1,
+        PluginRegistryV1, PluginType, RevokePluginAuthorityLifecycle,
     },
     state::{AssetV1, CollectionV1, Key},
     utils::{
@@ -57,25 +57,16 @@ pub(crate) fn revoke_plugin_authority<'a>(
         fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, Some(&asset), args.plugin_type)?;
 
     // Validate asset permissions.
-    let _ = validate_asset_permissions(
+    let _ = validate_asset_permissions::<RevokePluginAuthorityLifecycle>(
         accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
-        None,
-        None,
-        Some(&plugin),
-        Some(&plugin_authority),
-        None,
-        None,
-        AssetV1::check_revoke_plugin_authority,
-        CollectionV1::check_revoke_plugin_authority,
-        PluginType::check_revoke_plugin_authority,
-        AssetV1::validate_revoke_plugin_authority,
-        CollectionV1::validate_revoke_plugin_authority,
-        Plugin::validate_revoke_plugin_authority,
-        None,
-        None,
+        &LifecycleContext {
+            new_plugin: Some(&plugin),
+            new_plugin_authority: Some(&plugin_authority),
+            ..Default::default()
+        },
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -135,21 +126,15 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
     )?;
 
     // Validate collection permissions.
-    let _ = validate_collection_permissions(
+    let _ = validate_collection_permissions::<RevokePluginAuthorityLifecycle>(
         accounts,
         authority,
         ctx.accounts.collection,
-        None,
-        Some(&plugin),
-        Some(&plugin_authority),
-        None,
-        None,
-        CollectionV1::check_revoke_plugin_authority,
-        PluginType::check_revoke_plugin_authority,
-        CollectionV1::validate_revoke_plugin_authority,
-        Plugin::validate_revoke_plugin_authority,
-        None,
-        None,
+        &LifecycleContext {
+            new_plugin: Some(&plugin),
+            new_plugin_authority: Some(&plugin_authority),
+            ..Default::default()
+        },
     )?;
 
     let resolved_authorities =

@@ -7,7 +7,10 @@ use crate::{
     instruction::accounts::{
         ApproveCollectionPluginAuthorityV1Accounts, ApprovePluginAuthorityV1Accounts,
     },
-    plugins::{approve_authority_on_plugin, fetch_wrapped_plugin, Plugin, PluginType},
+    plugins::{
+        approve_authority_on_plugin, fetch_wrapped_plugin, ApprovePluginAuthorityLifecycle,
+        LifecycleContext, PluginType,
+    },
     state::{AssetV1, Authority, CollectionV1, CoreAsset, DataBlob, Key, SolanaAccount},
     utils::{
         fetch_core_data, load_key, resolve_authority, validate_asset_permissions,
@@ -51,25 +54,16 @@ pub(crate) fn approve_plugin_authority<'a>(
         fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, None, args.plugin_type)?;
 
     // Validate asset permissions.
-    let (mut asset, _, _) = validate_asset_permissions(
+    let (mut asset, _, _) = validate_asset_permissions::<ApprovePluginAuthorityLifecycle>(
         accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
-        None,
-        None,
-        Some(&plugin),
-        Some(&plugin_authority),
-        None,
-        None,
-        AssetV1::check_approve_plugin_authority,
-        CollectionV1::check_approve_plugin_authority,
-        PluginType::check_approve_plugin_authority,
-        AssetV1::validate_approve_plugin_authority,
-        CollectionV1::validate_approve_plugin_authority,
-        Plugin::validate_approve_plugin_authority,
-        None,
-        None,
+        &LifecycleContext {
+            new_plugin: Some(&plugin),
+            new_plugin_authority: Some(&plugin_authority),
+            ..Default::default()
+        },
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -115,21 +109,15 @@ pub(crate) fn approve_collection_plugin_authority<'a>(
         fetch_wrapped_plugin::<CollectionV1>(ctx.accounts.collection, None, args.plugin_type)?;
 
     // Validate collection permissions.
-    let _ = validate_collection_permissions(
+    let _ = validate_collection_permissions::<ApprovePluginAuthorityLifecycle>(
         accounts,
         authority,
         ctx.accounts.collection,
-        None,
-        Some(&plugin),
-        Some(&plugin_authority),
-        None,
-        None,
-        CollectionV1::check_approve_plugin_authority,
-        PluginType::check_approve_plugin_authority,
-        CollectionV1::validate_approve_plugin_authority,
-        Plugin::validate_approve_plugin_authority,
-        None,
-        None,
+        &LifecycleContext {
+            new_plugin: Some(&plugin),
+            new_plugin_authority: Some(&plugin_authority),
+            ..Default::default()
+        },
     )?;
 
     process_approve_plugin_authority::<CollectionV1>(

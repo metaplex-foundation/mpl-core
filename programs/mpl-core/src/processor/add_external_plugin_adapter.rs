@@ -8,9 +8,9 @@ use crate::{
         AddCollectionExternalPluginAdapterV1Accounts, AddExternalPluginAdapterV1Accounts,
     },
     plugins::{
-        create_meta_idempotent, initialize_external_plugin_adapter, ExternalPluginAdapter,
-        ExternalPluginAdapterInitInfo, Plugin, PluginType, PluginValidationContext,
-        ValidationResult,
+        create_meta_idempotent, initialize_external_plugin_adapter,
+        AddExternalPluginAdapterLifecycle, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
+        LifecycleContext, PluginValidationContext, ValidationResult,
     },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -101,26 +101,16 @@ pub(crate) fn add_external_plugin_adapter<'a>(
     }
 
     // Validate asset permissions.
-    // Validate asset permissions.
-    let (mut asset, _, _) = validate_asset_permissions(
+    let (mut asset, _, _) = validate_asset_permissions::<AddExternalPluginAdapterLifecycle>(
         accounts,
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
-        None,
-        None,
-        None,
-        None,
-        Some(&external_plugin_adapter),
-        Some(&external_plugin_adapter_authority),
-        AssetV1::check_add_external_plugin_adapter,
-        CollectionV1::check_add_external_plugin_adapter,
-        PluginType::check_add_external_plugin_adapter,
-        AssetV1::validate_add_external_plugin_adapter,
-        CollectionV1::validate_add_external_plugin_adapter,
-        Plugin::validate_add_external_plugin_adapter,
-        None,
-        None,
+        &LifecycleContext {
+            new_external_plugin_adapter: Some(&external_plugin_adapter),
+            new_external_plugin_adapter_authority: Some(&external_plugin_adapter_authority),
+            ..Default::default()
+        },
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -206,21 +196,15 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
     let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
 
     // Validate collection permissions.
-    let _ = validate_collection_permissions(
+    let _ = validate_collection_permissions::<AddExternalPluginAdapterLifecycle>(
         accounts,
         authority,
         ctx.accounts.collection,
-        None,
-        None,
-        None,
-        Some(&external_plugin_adapter),
-        Some(&external_plugin_adapter_authority),
-        CollectionV1::check_add_external_plugin_adapter,
-        PluginType::check_add_external_plugin_adapter,
-        CollectionV1::validate_add_external_plugin_adapter,
-        Plugin::validate_add_external_plugin_adapter,
-        None,
-        None,
+        &LifecycleContext {
+            new_external_plugin_adapter: Some(&external_plugin_adapter),
+            new_external_plugin_adapter_authority: Some(&external_plugin_adapter_authority),
+            ..Default::default()
+        },
     )?;
 
     process_add_external_plugin_adapter::<CollectionV1>(
