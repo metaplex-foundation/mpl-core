@@ -5,7 +5,9 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::{RemoveCollectionPluginV1Accounts, RemovePluginV1Accounts},
-    plugins::{delete_plugin, fetch_wrapped_plugin, PluginType, RemovePluginLifecycle},
+    plugins::{
+        delete_plugin, fetch_wrapped_plugin, LifecycleContext, PluginType, RemovePluginLifecycle,
+    },
     state::{AssetV1, CollectionV1, DataBlob, Key},
     utils::{
         fetch_core_data, load_key, resolve_authority, validate_asset_permissions,
@@ -61,12 +63,11 @@ pub(crate) fn remove_plugin<'a>(
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
-        None,
-        None,
-        Some(&plugin_to_remove),
-        Some(&plugin_authority),
-        None,
-        None,
+        &LifecycleContext {
+            new_plugin: Some(&plugin_to_remove),
+            new_plugin_authority: Some(&plugin_authority),
+            ..Default::default()
+        },
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -126,11 +127,11 @@ pub(crate) fn remove_collection_plugin<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
-        None,
-        Some(&plugin_to_remove),
-        Some(&plugin_authority),
-        None,
-        None,
+        &LifecycleContext {
+            new_plugin: Some(&plugin_to_remove),
+            new_plugin_authority: Some(&plugin_authority),
+            ..Default::default()
+        },
     )?;
 
     process_remove_plugin(

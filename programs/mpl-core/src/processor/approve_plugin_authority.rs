@@ -9,7 +9,7 @@ use crate::{
     },
     plugins::{
         approve_authority_on_plugin, fetch_wrapped_plugin, ApprovePluginAuthorityLifecycle,
-        PluginType,
+        LifecycleContext, PluginType,
     },
     state::{AssetV1, Authority, CollectionV1, CoreAsset, DataBlob, Key, SolanaAccount},
     utils::{
@@ -59,12 +59,11 @@ pub(crate) fn approve_plugin_authority<'a>(
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
-        None,
-        None,
-        Some(&plugin),
-        Some(&plugin_authority),
-        None,
-        None,
+        &LifecycleContext {
+            new_plugin: Some(&plugin),
+            new_plugin_authority: Some(&plugin_authority),
+            ..Default::default()
+        },
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -114,11 +113,11 @@ pub(crate) fn approve_collection_plugin_authority<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
-        None,
-        Some(&plugin),
-        Some(&plugin_authority),
-        None,
-        None,
+        &LifecycleContext {
+            new_plugin: Some(&plugin),
+            new_plugin_authority: Some(&plugin_authority),
+            ..Default::default()
+        },
     )?;
 
     process_approve_plugin_authority::<CollectionV1>(

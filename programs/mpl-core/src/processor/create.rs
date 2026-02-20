@@ -153,12 +153,7 @@ pub(crate) fn process_create<'a>(
             authority,
             ctx.accounts.asset,
             ctx.accounts.collection,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
+            &Default::default(),
         )?;
 
         // Validate permissions for the created asset.

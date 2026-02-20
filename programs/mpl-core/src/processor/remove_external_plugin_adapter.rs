@@ -9,7 +9,7 @@ use crate::{
     },
     plugins::{
         delete_external_plugin_adapter, fetch_wrapped_external_plugin_adapter,
-        ExternalPluginAdapterKey, RemoveExternalPluginAdapterLifecycle,
+        ExternalPluginAdapterKey, LifecycleContext, RemoveExternalPluginAdapterLifecycle,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key},
     utils::{
@@ -69,12 +69,11 @@ pub(crate) fn remove_external_plugin_adapter<'a>(
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
-        None,
-        None,
-        None,
-        None,
-        Some(&plugin_to_remove),
-        Some(&record.authority),
+        &LifecycleContext {
+            new_external_plugin_adapter: Some(&plugin_to_remove),
+            new_external_plugin_adapter_authority: Some(&record.authority),
+            ..Default::default()
+        },
     )?;
 
     process_remove_external_plugin_adapter(
@@ -132,11 +131,11 @@ pub(crate) fn remove_collection_external_plugin_adapter<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
-        None,
-        None,
-        None,
-        Some(&plugin_to_remove),
-        Some(&record.authority),
+        &LifecycleContext {
+            new_external_plugin_adapter: Some(&plugin_to_remove),
+            new_external_plugin_adapter_authority: Some(&record.authority),
+            ..Default::default()
+        },
     )?;
 
     process_remove_external_plugin_adapter(

@@ -48,12 +48,7 @@ pub(crate) fn compress<'a>(
                 authority,
                 ctx.accounts.asset,
                 ctx.accounts.collection,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
+                &Default::default(),
             )?;
 
             // Compress the asset and plugin registry into account space.

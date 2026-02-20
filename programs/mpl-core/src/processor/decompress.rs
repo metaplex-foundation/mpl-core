@@ -64,12 +64,7 @@ pub(crate) fn decompress<'a>(
                 authority,
                 ctx.accounts.asset,
                 ctx.accounts.collection,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
+                &Default::default(),
             )?;
 
             // TODO Enable compression.

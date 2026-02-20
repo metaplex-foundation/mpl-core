@@ -8,8 +8,8 @@ use crate::{
         RevokeCollectionPluginAuthorityV1Accounts, RevokePluginAuthorityV1Accounts,
     },
     plugins::{
-        fetch_wrapped_plugin, revoke_authority_on_plugin, PluginHeaderV1, PluginRegistryV1,
-        PluginType, RevokePluginAuthorityLifecycle,
+        fetch_wrapped_plugin, revoke_authority_on_plugin, LifecycleContext, PluginHeaderV1,
+        PluginRegistryV1, PluginType, RevokePluginAuthorityLifecycle,
     },
     state::{AssetV1, CollectionV1, Key},
     utils::{
@@ -62,12 +62,11 @@ pub(crate) fn revoke_plugin_authority<'a>(
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
-        None,
-        None,
-        Some(&plugin),
-        Some(&plugin_authority),
-        None,
-        None,
+        &LifecycleContext {
+            new_plugin: Some(&plugin),
+            new_plugin_authority: Some(&plugin_authority),
+            ..Default::default()
+        },
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -131,11 +130,11 @@ pub(crate) fn revoke_collection_plugin_authority<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
-        None,
-        Some(&plugin),
-        Some(&plugin_authority),
-        None,
-        None,
+        &LifecycleContext {
+            new_plugin: Some(&plugin),
+            new_plugin_authority: Some(&plugin_authority),
+            ..Default::default()
+        },
     )?;
 
     let resolved_authorities =

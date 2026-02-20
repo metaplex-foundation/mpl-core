@@ -10,7 +10,7 @@ use crate::{
     plugins::{
         create_meta_idempotent, initialize_external_plugin_adapter,
         AddExternalPluginAdapterLifecycle, ExternalPluginAdapter, ExternalPluginAdapterInitInfo,
-        PluginValidationContext, ValidationResult,
+        LifecycleContext, PluginValidationContext, ValidationResult,
     },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -106,12 +106,11 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
-        None,
-        None,
-        None,
-        None,
-        Some(&external_plugin_adapter),
-        Some(&external_plugin_adapter_authority),
+        &LifecycleContext {
+            new_external_plugin_adapter: Some(&external_plugin_adapter),
+            new_external_plugin_adapter_authority: Some(&external_plugin_adapter_authority),
+            ..Default::default()
+        },
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -201,11 +200,11 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
-        None,
-        None,
-        None,
-        Some(&external_plugin_adapter),
-        Some(&external_plugin_adapter_authority),
+        &LifecycleContext {
+            new_external_plugin_adapter: Some(&external_plugin_adapter),
+            new_external_plugin_adapter_authority: Some(&external_plugin_adapter_authority),
+            ..Default::default()
+        },
     )?;
 
     process_add_external_plugin_adapter::<CollectionV1>(

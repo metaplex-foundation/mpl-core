@@ -52,12 +52,7 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        &Default::default(),
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.

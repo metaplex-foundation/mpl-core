@@ -88,12 +88,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        &Default::default(),
     )?;
 
     process_burn(ctx.accounts.asset, ctx.accounts.payer)?;

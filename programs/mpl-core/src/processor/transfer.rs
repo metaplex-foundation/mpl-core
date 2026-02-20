@@ -5,7 +5,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
 use crate::{
     error::MplCoreError,
     instruction::accounts::TransferV1Accounts,
-    plugins::TransferLifecycle,
+    plugins::{LifecycleContext, TransferLifecycle},
     state::{Authority, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         compress_into_account_space, load_key, rebuild_account_state_from_proof_data,
@@ -82,12 +82,10 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
             authority,
             ctx.accounts.asset,
             ctx.accounts.collection,
-            Some(ctx.accounts.new_owner),
-            None,
-            None,
-            None,
-            None,
-            None,
+            &LifecycleContext {
+                new_owner: Some(ctx.accounts.new_owner),
+                ..Default::default()
+            },
         )?;
 
     // Reset every owner-managed plugin in the registry.

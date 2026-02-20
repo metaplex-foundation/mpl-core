@@ -6,8 +6,8 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{AddCollectionPluginV1Accounts, AddPluginV1Accounts},
     plugins::{
-        create_meta_idempotent, initialize_plugin, AddPluginLifecycle, Plugin, PluginType,
-        PluginValidationContext, ValidationResult,
+        create_meta_idempotent, initialize_plugin, AddPluginLifecycle, LifecycleContext, Plugin,
+        PluginType, PluginValidationContext, ValidationResult,
     },
     state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -82,12 +82,11 @@ pub(crate) fn add_plugin<'a>(
         authority,
         ctx.accounts.asset,
         ctx.accounts.collection,
-        None,
-        None,
-        Some(&args.plugin),
-        Some(&target_plugin_authority),
-        None,
-        None,
+        &LifecycleContext {
+            new_plugin: Some(&args.plugin),
+            new_plugin_authority: Some(&target_plugin_authority),
+            ..Default::default()
+        },
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -159,11 +158,11 @@ pub(crate) fn add_collection_plugin<'a>(
         accounts,
         authority,
         ctx.accounts.collection,
-        None,
-        Some(&args.plugin),
-        Some(&target_plugin_authority),
-        None,
-        None,
+        &LifecycleContext {
+            new_plugin: Some(&args.plugin),
+            new_plugin_authority: Some(&target_plugin_authority),
+            ..Default::default()
+        },
     )?;
 
     process_add_plugin::<CollectionV1>(

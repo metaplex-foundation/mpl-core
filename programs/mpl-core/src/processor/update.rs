@@ -11,8 +11,8 @@ use crate::{
         Context, UpdateCollectionV1Accounts, UpdateV1Accounts, UpdateV2Accounts,
     },
     plugins::{
-        fetch_plugin, list_plugins, PluginHeaderV1, PluginRegistryV1, PluginType, UpdateDelegate,
-        UpdateLifecycle, PERMANENT_DELEGATES,
+        fetch_plugin, list_plugins, LifecycleContext, PluginHeaderV1, PluginRegistryV1, PluginType,
+        UpdateDelegate, UpdateLifecycle, PERMANENT_DELEGATES,
     },
     state::{CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
@@ -113,12 +113,10 @@ fn update<'a>(
             authority,
             ctx.accounts.asset,
             ctx.accounts.collection,
-            None,
-            args.new_update_authority.as_ref(),
-            None,
-            None,
-            None,
-            None,
+            &LifecycleContext {
+                new_asset_authority: args.new_update_authority.as_ref(),
+                ..Default::default()
+            },
         )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -293,11 +291,10 @@ pub(crate) fn update_collection<'a>(
             accounts,
             authority,
             ctx.accounts.collection,
-            ctx.accounts.new_update_authority.map(|a| a.key),
-            None,
-            None,
-            None,
-            None,
+            &LifecycleContext {
+                new_collection_authority: ctx.accounts.new_update_authority.map(|a| a.key),
+                ..Default::default()
+            },
         )?;
 
     let collection_size = collection.len() as isize;

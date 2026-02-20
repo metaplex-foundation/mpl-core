@@ -8,8 +8,8 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{UpdateCollectionPluginV1Accounts, UpdatePluginV1Accounts},
     plugins::{
-        fetch_wrapped_plugin, Plugin, PluginHeaderV1, PluginRegistryV1, PluginType,
-        UpdatePluginLifecycle,
+        fetch_wrapped_plugin, LifecycleContext, Plugin, PluginHeaderV1, PluginRegistryV1,
+        PluginType, UpdatePluginLifecycle,
     },
     state::{AssetV1, CollectionV1, DataBlob, Key, SolanaAccount},
     utils::{
@@ -59,12 +59,11 @@ pub(crate) fn update_plugin<'a>(
             authority,
             ctx.accounts.asset,
             ctx.accounts.collection,
-            None,
-            None,
-            Some(&args.plugin),
-            Some(&target_plugin_authority),
-            None,
-            None,
+            &LifecycleContext {
+                new_plugin: Some(&args.plugin),
+                new_plugin_authority: Some(&target_plugin_authority),
+                ..Default::default()
+            },
         )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -120,11 +119,11 @@ pub(crate) fn update_collection_plugin<'a>(
             accounts,
             authority,
             ctx.accounts.collection,
-            None,
-            Some(&args.plugin),
-            Some(&target_plugin_authority),
-            None,
-            None,
+            &LifecycleContext {
+                new_plugin: Some(&args.plugin),
+                new_plugin_authority: Some(&target_plugin_authority),
+                ..Default::default()
+            },
         )?;
 
     process_update_plugin(

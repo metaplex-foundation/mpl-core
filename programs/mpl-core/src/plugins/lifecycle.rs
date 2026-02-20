@@ -663,6 +663,55 @@ pub(crate) trait PluginValidation {
     }
 }
 
+/// Context describing what is being changed or targeted by a lifecycle event.
+///
+/// All fields default to `None` — callers only set the fields relevant to their
+/// specific lifecycle event. This eliminates long chains of `None` parameters
+/// at call sites.
+///
+/// # Examples
+/// ```ignore
+/// // Transfer only needs new_owner:
+/// let ctx = LifecycleContext { new_owner: Some(new_owner), ..Default::default() };
+///
+/// // Plugin operations need plugin + authority:
+/// let ctx = LifecycleContext {
+///     new_plugin: Some(&plugin),
+///     new_plugin_authority: Some(&authority),
+///     ..Default::default()
+/// };
+/// ```
+pub(crate) struct LifecycleContext<'a, 'b> {
+    /// The new owner account for transfers.
+    pub new_owner: Option<&'a AccountInfo<'a>>,
+    /// The new asset update authority.
+    pub new_asset_authority: Option<&'b UpdateAuthority>,
+    /// The new collection update authority.
+    pub new_collection_authority: Option<&'b Pubkey>,
+    /// The plugin being acted upon (added, removed, updated, etc.).
+    pub new_plugin: Option<&'b Plugin>,
+    /// The authority of the target plugin.
+    pub new_plugin_authority: Option<&'b Authority>,
+    /// The external plugin adapter being acted upon.
+    pub new_external_plugin_adapter: Option<&'b ExternalPluginAdapter>,
+    /// The authority of the target external plugin adapter.
+    pub new_external_plugin_adapter_authority: Option<&'b Authority>,
+}
+
+impl Default for LifecycleContext<'_, '_> {
+    fn default() -> Self {
+        Self {
+            new_owner: None,
+            new_asset_authority: None,
+            new_collection_authority: None,
+            new_plugin: None,
+            new_plugin_authority: None,
+            new_external_plugin_adapter: None,
+            new_external_plugin_adapter_authority: None,
+        }
+    }
+}
+
 /// Trait that bundles all check/validate function pointers for a specific lifecycle event
 /// (e.g. Transfer, Burn, Update) into a single generic type parameter.
 ///
@@ -832,22 +881,16 @@ define_lifecycle!(RemoveExternalPluginAdapterLifecycle, check_remove_external_pl
 /// This function iterates through all plugin checks passed in and performs the validation
 /// by deserializing and calling validate on the plugin.
 /// The STRONGEST result is returned.
-#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+#[allow(clippy::type_complexity)]
 pub(crate) fn validate_plugin_checks<'a, E: LifecycleEvent>(
     key: Key,
     accounts: &'a [AccountInfo<'a>],
     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &'a AccountInfo<'a>,
-    new_owner: Option<&'a AccountInfo<'a>>,
-    new_asset_authority: Option<&UpdateAuthority>,
-    new_collection_authority: Option<&Pubkey>,
-    new_plugin: Option<&Plugin>,
-    new_plugin_authority: Option<&Authority>,
-    new_external_plugin: Option<&ExternalPluginAdapter>,
-    new_external_plugin_authority: Option<&Authority>,
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
+    ctx: &LifecycleContext<'a, '_>,
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
     let mut rejected = false;
@@ -871,13 +914,13 @@ pub(crate) fn validate_plugin_checks<'a, E: LifecycleEvent>(
                 self_authority: &registry_record.authority,
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),
-                new_owner,
-                new_asset_authority,
-                new_collection_authority,
-                target_plugin: new_plugin,
-                target_plugin_authority: new_plugin_authority,
-                target_external_plugin: new_external_plugin,
-                target_external_plugin_authority: new_external_plugin_authority,
+                new_owner: ctx.new_owner,
+                new_asset_authority: ctx.new_asset_authority,
+                new_collection_authority: ctx.new_collection_authority,
+                target_plugin: ctx.new_plugin,
+                target_plugin_authority: ctx.new_plugin_authority,
+                target_external_plugin: ctx.new_external_plugin_adapter,
+                target_external_plugin_authority: ctx.new_external_plugin_adapter_authority,
             };
 
             let result = E::validate_plugin(
@@ -905,7 +948,7 @@ pub(crate) fn validate_plugin_checks<'a, E: LifecycleEvent>(
 /// This function iterates through all external plugin adapter checks passed in and performs the validation
 /// by deserializing and calling validate on the plugin.
 /// The STRONGEST result is returned.
-#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+#[allow(clippy::type_complexity)]
 pub(crate) fn validate_external_plugin_adapter_checks<'a, E: LifecycleEvent>(
     key: Key,
     accounts: &'a [AccountInfo<'a>],
@@ -914,16 +957,10 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a, E: LifecycleEvent>(
         (Key, ExternalCheckResultBits, ExternalRegistryRecord),
     >,
     authority: &'a AccountInfo<'a>,
-    new_owner: Option<&'a AccountInfo<'a>>,
-    new_asset_authority: Option<&UpdateAuthority>,
-    new_collection_authority: Option<&Pubkey>,
-    new_plugin: Option<&Plugin>,
-    new_plugin_authority: Option<&Authority>,
-    new_external_plugin: Option<&ExternalPluginAdapter>,
-    new_external_plugin_authority: Option<&Authority>,
     asset: Option<&'a AccountInfo<'a>>,
     collection: Option<&'a AccountInfo<'a>>,
     resolved_authorities: &[Authority],
+    ctx: &LifecycleContext<'a, '_>,
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
     for (check_key, check_result, external_registry_record) in external_checks.values() {
@@ -945,13 +982,13 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a, E: LifecycleEvent>(
                 self_authority: &external_registry_record.authority,
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),
-                new_owner,
-                new_asset_authority,
-                new_collection_authority,
-                target_plugin: new_plugin,
-                target_plugin_authority: new_plugin_authority,
-                target_external_plugin: new_external_plugin,
-                target_external_plugin_authority: new_external_plugin_authority,
+                new_owner: ctx.new_owner,
+                new_asset_authority: ctx.new_asset_authority,
+                new_collection_authority: ctx.new_collection_authority,
+                target_plugin: ctx.new_plugin,
+                target_plugin_authority: ctx.new_plugin_authority,
+                target_external_plugin: ctx.new_external_plugin_adapter,
+                target_external_plugin_authority: ctx.new_external_plugin_adapter_authority,
             };
 
             let result = E::validate_external_plugin_adapter(

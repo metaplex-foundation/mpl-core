@@ -8,9 +8,9 @@ use crate::{
     error::MplCoreError,
     plugins::{
         validate_external_plugin_adapter_checks, validate_plugin_checks, CheckResult,
-        ExternalCheckResultBits, ExternalPluginAdapter, ExternalPluginAdapterKey,
-        ExternalRegistryRecord, LifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
-        PluginType, RegistryRecord, ValidationResult,
+        ExternalCheckResultBits, ExternalPluginAdapterKey, ExternalRegistryRecord,
+        LifecycleContext, LifecycleEvent, PluginHeaderV1, PluginRegistryV1, PluginType,
+        RegistryRecord, ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority,
@@ -20,7 +20,6 @@ use mpl_utils::assert_signer;
 use num_traits::FromPrimitive;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
-    pubkey::Pubkey,
 };
 use std::collections::BTreeMap;
 
@@ -100,23 +99,22 @@ pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
     }
 }
 
-#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+#[allow(clippy::type_complexity)]
 /// Validate asset permissions using lifecycle validations for asset, collection, and plugins.
 ///
 /// The type parameter `E` specifies the lifecycle event being validated (e.g.
 /// `TransferLifecycle`, `BurnLifecycle`), which determines which check/validate
 /// methods are called on assets, collections, and plugins.
+///
+/// The `ctx` parameter carries lifecycle-specific context (new owner, plugin
+/// targets, etc.). Use `Default::default()` when no lifecycle-specific context
+/// is needed.
 pub(crate) fn validate_asset_permissions<'a, E: LifecycleEvent>(
     accounts: &'a [AccountInfo<'a>],
     authority_info: &'a AccountInfo<'a>,
     asset: &'a AccountInfo<'a>,
     collection: Option<&'a AccountInfo<'a>>,
-    new_owner: Option<&'a AccountInfo<'a>>,
-    new_authority: Option<&UpdateAuthority>,
-    new_plugin: Option<&Plugin>,
-    new_plugin_authority: Option<&Authority>,
-    new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
-    new_external_plugin_adapter_authority: Option<&Authority>,
+    ctx: &LifecycleContext<'a, '_>,
 ) -> Result<(AssetV1, Option<PluginHeaderV1>, Option<PluginRegistryV1>), ProgramError> {
     let (deserialized_asset, plugin_header, plugin_registry) = fetch_core_data::<AssetV1>(asset)?;
     let resolved_authorities =
@@ -188,8 +186,8 @@ pub(crate) fn validate_asset_permissions<'a, E: LifecycleEvent>(
         match E::validate_asset(
             &deserialized_asset,
             authority_info,
-            new_plugin,
-            new_external_plugin_adapter,
+            ctx.new_plugin,
+            ctx.new_external_plugin_adapter,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
@@ -204,8 +202,8 @@ pub(crate) fn validate_asset_permissions<'a, E: LifecycleEvent>(
         match E::validate_collection(
             &CollectionV1::load(collection.ok_or(MplCoreError::MissingCollection)?, 0)?,
             authority_info,
-            new_plugin,
-            new_external_plugin_adapter,
+            ctx.new_plugin,
+            ctx.new_external_plugin_adapter,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
@@ -221,16 +219,10 @@ pub(crate) fn validate_asset_permissions<'a, E: LifecycleEvent>(
         accounts,
         &checks,
         authority_info,
-        new_owner,
-        new_authority,
-        None,
-        new_plugin,
-        new_plugin_authority,
-        new_external_plugin_adapter,
-        new_external_plugin_adapter_authority,
         Some(asset),
         collection,
         &resolved_authorities,
+        ctx,
     )? {
         ValidationResult::Approved => approved = true,
         ValidationResult::Rejected => rejected = true,
@@ -245,16 +237,10 @@ pub(crate) fn validate_asset_permissions<'a, E: LifecycleEvent>(
         accounts,
         &checks,
         authority_info,
-        new_owner,
-        new_authority,
-        None,
-        new_plugin,
-        new_plugin_authority,
-        new_external_plugin_adapter,
-        new_external_plugin_adapter_authority,
         Some(asset),
         collection,
         &resolved_authorities,
+        ctx,
     )? {
         ValidationResult::Approved => approved = true,
         ValidationResult::Rejected => rejected = true,
@@ -270,16 +256,10 @@ pub(crate) fn validate_asset_permissions<'a, E: LifecycleEvent>(
             accounts,
             &external_checks,
             authority_info,
-            new_owner,
-            new_authority,
-            None,
-            new_plugin,
-            new_plugin_authority,
-            new_external_plugin_adapter,
-            new_external_plugin_adapter_authority,
             Some(asset),
             collection,
             &resolved_authorities,
+            ctx,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
@@ -293,16 +273,10 @@ pub(crate) fn validate_asset_permissions<'a, E: LifecycleEvent>(
             accounts,
             &external_checks,
             authority_info,
-            new_owner,
-            new_authority,
-            None,
-            new_plugin,
-            new_plugin_authority,
-            new_external_plugin_adapter,
-            new_external_plugin_adapter_authority,
             Some(asset),
             collection,
             &resolved_authorities,
+            ctx,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
@@ -326,16 +300,15 @@ pub(crate) fn validate_asset_permissions<'a, E: LifecycleEvent>(
 /// The type parameter `E` specifies the lifecycle event being validated (e.g.
 /// `UpdateLifecycle`, `AddPluginLifecycle`), which determines which check/validate
 /// methods are called on collections and plugins.
-#[allow(clippy::type_complexity, clippy::too_many_arguments)]
+///
+/// The `ctx` parameter carries lifecycle-specific context (plugin targets, etc.).
+/// Use `Default::default()` when no lifecycle-specific context is needed.
+#[allow(clippy::type_complexity)]
 pub(crate) fn validate_collection_permissions<'a, E: LifecycleEvent>(
     accounts: &'a [AccountInfo<'a>],
     authority_info: &'a AccountInfo<'a>,
     collection: &'a AccountInfo<'a>,
-    new_authority: Option<&Pubkey>,
-    new_plugin: Option<&Plugin>,
-    new_plugin_authority: Option<&Authority>,
-    new_external_plugin_adapter: Option<&ExternalPluginAdapter>,
-    new_external_plugin_adapter_authority: Option<&Authority>,
+    ctx: &LifecycleContext<'a, '_>,
 ) -> Result<
     (
         CollectionV1,
@@ -380,8 +353,8 @@ pub(crate) fn validate_collection_permissions<'a, E: LifecycleEvent>(
         match E::validate_collection(
             &deserialized_collection,
             authority_info,
-            new_plugin,
-            new_external_plugin_adapter,
+            ctx.new_plugin,
+            ctx.new_external_plugin_adapter,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
@@ -398,15 +371,9 @@ pub(crate) fn validate_collection_permissions<'a, E: LifecycleEvent>(
         &checks,
         authority_info,
         None,
-        None,
-        new_authority,
-        new_plugin,
-        new_plugin_authority,
-        new_external_plugin_adapter,
-        new_external_plugin_adapter_authority,
-        None,
         Some(collection),
         &resolved_authorities,
+        ctx,
     )? {
         ValidationResult::Approved => approved = true,
         ValidationResult::Rejected => rejected = true,
@@ -423,15 +390,9 @@ pub(crate) fn validate_collection_permissions<'a, E: LifecycleEvent>(
             &external_checks,
             authority_info,
             None,
-            None,
-            new_authority,
-            new_plugin,
-            new_plugin_authority,
-            new_external_plugin_adapter,
-            new_external_plugin_adapter_authority,
-            None,
             Some(collection),
             &resolved_authorities,
+            ctx,
         )? {
             ValidationResult::Approved => approved = true,
             ValidationResult::Rejected => rejected = true,
