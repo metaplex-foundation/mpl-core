@@ -179,6 +179,8 @@ pub struct LifecycleChecks {
     pub transfer: Vec<IndexableCheckResult>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
     pub burn: Vec<IndexableCheckResult>,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
+    pub execute: Vec<IndexableCheckResult>,
 }
 
 impl LifecycleChecks {
@@ -187,6 +189,7 @@ impl LifecycleChecks {
             && self.update.is_empty()
             && self.transfer.is_empty()
             && self.burn.is_empty()
+            && self.execute.is_empty()
     }
 }
 
@@ -246,6 +249,7 @@ impl ProcessedExternalPlugin {
                             known_lifecycle_checks.transfer = checks
                         }
                         HookableLifecycleEvent::Burn => known_lifecycle_checks.burn = checks,
+                        HookableLifecycleEvent::Execute => known_lifecycle_checks.execute = checks,
                     },
                     None => unknown_lifecycle_checks.push((event, checks)),
                 }
@@ -273,6 +277,10 @@ impl ProcessedExternalPlugin {
                         ExternalPluginAdapter::DataSection(data_section) => &data_section.schema,
                         // Assume binary for `Oracle`, but this should never happen.
                         ExternalPluginAdapter::Oracle(_) => &ExternalPluginAdapterSchema::Binary,
+                        // AgentIdentity has no data section.
+                        ExternalPluginAdapter::AgentIdentity(_) => {
+                            &ExternalPluginAdapterSchema::Binary
+                        }
                     };
 
                     (

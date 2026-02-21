@@ -414,6 +414,9 @@ pub(crate) fn registry_records_to_external_plugin_adapter_list(
                             data_len,
                         })
                     }
+                    ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                        acc.agent_identities.push(agent_identity)
+                    }
                 }
             }
             Ok(acc)
@@ -517,6 +520,8 @@ pub(crate) fn find_external_plugin_adapter<'b>(
                             }
                         }
                 }
+                // AgentIdentity is a unit variant key (only one per asset).
+                ExternalPluginAdapterKey::AgentIdentity => true,
             })
         {
             result = (Some(i), Some(record));

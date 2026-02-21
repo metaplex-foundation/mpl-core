@@ -2,7 +2,12 @@
 import { ExternalCheckResult, HookableLifecycleEvent } from '../generated';
 import { capitalizeFirstLetter } from '../utils';
 
-export type LifecycleEvent = 'create' | 'update' | 'transfer' | 'burn';
+export type LifecycleEvent =
+  | 'create'
+  | 'update'
+  | 'transfer'
+  | 'burn'
+  | 'execute';
 
 //  ExternalCheckResult is a bit array
 export enum CheckResult {

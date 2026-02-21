@@ -60,6 +60,13 @@ import {
   linkedLifecycleHookFromBase,
   linkedLifecycleHookManifest,
 } from './linkedLifecycleHook';
+import {
+  AgentIdentityInitInfoArgs,
+  AgentIdentityPlugin,
+  AgentIdentityUpdateInfoArgs,
+  agentIdentityFromBase,
+  agentIdentityManifest,
+} from './agentIdentity';
 
 export type ExternalPluginAdapterTypeString =
   BaseExternalPluginAdapterKey['__kind'];
@@ -74,7 +81,8 @@ export type ExternalPluginAdapters =
   | AppDataPlugin
   | LinkedLifecycleHookPlugin
   | LinkedAppDataPlugin
-  | DataSectionPlugin;
+  | DataSectionPlugin
+  | AgentIdentityPlugin;
 
 export type ExternalPluginAdaptersList = {
   lifecycleHooks?: LifecycleHookPlugin[];
@@ -83,6 +91,7 @@ export type ExternalPluginAdaptersList = {
   linkedLifecycleHooks?: LinkedLifecycleHookPlugin[];
   linkedAppDatas?: LinkedAppDataPlugin[];
   dataSections?: DataSectionPlugin[];
+  agentIdentities?: AgentIdentityPlugin[];
 };
 
 export type ExternalPluginAdapterInitInfoArgs =
@@ -103,7 +112,10 @@ export type ExternalPluginAdapterInitInfoArgs =
     } & LinkedAppDataInitInfoArgs)
   | ({
       type: 'DataSection';
-    } & AppDataInitInfoArgs);
+    } & AppDataInitInfoArgs)
+  | ({
+      type: 'AgentIdentity';
+    } & AgentIdentityInitInfoArgs);
 
 export type ExternalPluginAdapterUpdateInfoArgs =
   | ({
@@ -120,7 +132,10 @@ export type ExternalPluginAdapterUpdateInfoArgs =
     } & LinkedLifecycleHookUpdateInfoArgs)
   | ({
       type: 'LinkedAppData';
-    } & LinkedAppDataUpdateInfoArgs);
+    } & LinkedAppDataUpdateInfoArgs)
+  | ({
+      type: 'AgentIdentity';
+    } & AgentIdentityUpdateInfoArgs);
 
 export const externalPluginAdapterManifests = {
   LifecycleHook: lifecycleHookManifest,
@@ -129,6 +144,7 @@ export const externalPluginAdapterManifests = {
   LinkedLifecycleHook: linkedLifecycleHookManifest,
   LinkedAppData: linkedAppDataManifest,
   DataSection: dataSectionManifest,
+  AgentIdentity: agentIdentityManifest,
 };
 
 export type ExternalPluginAdapterData = {
@@ -240,6 +256,19 @@ export function externalRegistryRecordsToExternalPluginAdapterList(
           accountData
         ),
       });
+    } else if (deserializedPlugin.__kind === 'AgentIdentity') {
+      if (!result.agentIdentities) {
+        result.agentIdentities = [];
+      }
+      result.agentIdentities.push({
+        type: 'AgentIdentity',
+        ...mappedPlugin,
+        ...agentIdentityFromBase(
+          deserializedPlugin.fields[0],
+          record,
+          accountData
+        ),
+      });
     }
   });
 
@@ -253,7 +282,8 @@ export const isExternalPluginAdapterType = (plugin: { type: string }) => {
     plugin.type === 'AppData' ||
     plugin.type === 'LinkedLifecycleHook' ||
     plugin.type === 'DataSection' ||
-    plugin.type === 'LinkedAppData'
+    plugin.type === 'LinkedAppData' ||
+    plugin.type === 'AgentIdentity'
   ) {
     return true;
   }

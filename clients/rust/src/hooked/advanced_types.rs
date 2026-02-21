@@ -8,12 +8,13 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, AppData, Attributes, Autograph, BubblegumV2, BurnDelegate, DataSection,
-        Edition, ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey,
+        AddBlocker, AgentIdentity, AppData, Attributes, Autograph, BubblegumV2, BurnDelegate,
+        DataSection, Edition, ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey,
         ExternalPluginAdapterType, FreezeDelegate, FreezeExecute, ImmutableMetadata, Key,
         LifecycleHook, LinkedAppData, LinkedLifecycleHook, MasterEdition, Oracle,
-        PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate, PluginAuthority,
-        Royalties, TransferDelegate, UpdateDelegate, VerifiedCreators,
+        PermanentBurnDelegate, PermanentFreezeDelegate, PermanentFreezeExecute,
+        PermanentTransferDelegate, PluginAuthority, Royalties, TransferDelegate, UpdateDelegate,
+        VerifiedCreators,
     },
 };
 
@@ -202,6 +203,7 @@ pub struct ExternalPluginAdaptersList {
     pub app_data: Vec<AppDataWithData>,
     pub linked_app_data: Vec<LinkedAppData>,
     pub data_sections: Vec<DataSectionWithData>,
+    pub agent_identities: Vec<AgentIdentity>,
 }
 
 #[derive(Debug)]
@@ -360,6 +362,7 @@ impl From<&ExternalPluginAdapter> for ExternalPluginAdapterKey {
                 ExternalPluginAdapterKey::LifecycleHook(lifecycle_hook.hooked_program)
             }
             ExternalPluginAdapter::DataSection(_) => todo!(),
+            ExternalPluginAdapter::AgentIdentity(_) => ExternalPluginAdapterKey::AgentIdentity,
         }
     }
 }

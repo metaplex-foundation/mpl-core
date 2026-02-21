@@ -74,6 +74,9 @@ pub(crate) fn add_external_plugin_adapter<'a>(
         }
         ExternalPluginAdapterInitInfo::LinkedAppData(app_data) => app_data.init_plugin_authority,
         ExternalPluginAdapterInitInfo::DataSection(_) => unreachable!(),
+        ExternalPluginAdapterInitInfo::AgentIdentity(agent_identity) => {
+            agent_identity.init_plugin_authority
+        }
     }
     .unwrap_or(Authority::UpdateAuthority);
     let validation_ctx = PluginValidationContext {
@@ -161,8 +164,14 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         }
     }
 
-    if let ExternalPluginAdapterInitInfo::DataSection(_) = args.init_info {
-        return Err(MplCoreError::CannotAddDataSection.into());
+    match args.init_info {
+        ExternalPluginAdapterInitInfo::DataSection(_) => {
+            return Err(MplCoreError::CannotAddDataSection.into());
+        }
+        ExternalPluginAdapterInitInfo::AgentIdentity(_) => {
+            return Err(MplCoreError::InvalidPluginAdapterTarget.into());
+        }
+        _ => {}
     }
 
     let external_plugin_adapter = ExternalPluginAdapter::from(&args.init_info);
@@ -176,7 +185,8 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
             lifecycle_hook.init_plugin_authority
         }
         ExternalPluginAdapterInitInfo::LinkedAppData(app_data) => app_data.init_plugin_authority,
-        ExternalPluginAdapterInitInfo::DataSection(_) => unreachable!(),
+        ExternalPluginAdapterInitInfo::DataSection(_)
+        | ExternalPluginAdapterInitInfo::AgentIdentity(_) => unreachable!(),
     }
     .unwrap_or(Authority::UpdateAuthority);
     let validation_ctx = PluginValidationContext {

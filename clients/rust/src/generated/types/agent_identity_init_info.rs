@@ -5,22 +5,20 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::ExternalCheckResult;
+use crate::generated::types::HookableLifecycleEvent;
+use crate::generated::types::PluginAuthority;
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize, BorshSerialize};
-use num_derive::FromPrimitive;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(not(feature = "anchor"), derive(BorshSerialize, BorshDeserialize))]
 #[cfg_attr(feature = "anchor", derive(AnchorSerialize, AnchorDeserialize))]
-#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Hash, FromPrimitive)]
-pub enum ExternalPluginAdapterType {
-    LifecycleHook,
-    Oracle,
-    AppData,
-    LinkedLifecycleHook,
-    LinkedAppData,
-    DataSection,
-    AgentIdentity,
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct AgentIdentityInitInfo {
+    pub uri: String,
+    pub init_plugin_authority: Option<PluginAuthority>,
+    pub lifecycle_checks: Vec<(HookableLifecycleEvent, ExternalCheckResult)>,
 }

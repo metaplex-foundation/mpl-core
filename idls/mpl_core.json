@@ -2285,6 +2285,84 @@
       }
     },
     {
+      "name": "AgentIdentity",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgentIdentityInitInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "initPluginAuthority",
+            "type": {
+              "option": {
+                "defined": "Authority"
+              }
+            }
+          },
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "vec": {
+                "tuple": [
+                  {
+                    "defined": "HookableLifecycleEvent"
+                  },
+                  {
+                    "defined": "ExternalCheckResult"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgentIdentityUpdateInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "lifecycleChecks",
+            "type": {
+              "option": {
+                "vec": {
+                  "tuple": [
+                    {
+                      "defined": "HookableLifecycleEvent"
+                    },
+                    {
+                      "defined": "ExternalCheckResult"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "AppData",
       "type": {
         "kind": "struct",
@@ -4215,6 +4293,9 @@
           },
           {
             "name": "DataSection"
+          },
+          {
+            "name": "AgentIdentity"
           }
         ]
       }
@@ -4271,6 +4352,14 @@
                 "defined": "DataSection"
               }
             ]
+          },
+          {
+            "name": "AgentIdentity",
+            "fields": [
+              {
+                "defined": "AgentIdentity"
+              }
+            ]
           }
         ]
       }
@@ -4291,6 +4380,9 @@
           },
           {
             "name": "Update"
+          },
+          {
+            "name": "Execute"
           }
         ]
       }
@@ -4513,6 +4605,14 @@
                 "defined": "DataSectionInitInfo"
               }
             ]
+          },
+          {
+            "name": "AgentIdentity",
+            "fields": [
+              {
+                "defined": "AgentIdentityInitInfo"
+              }
+            ]
           }
         ]
       }
@@ -4559,6 +4659,14 @@
             "fields": [
               {
                 "defined": "LinkedAppDataUpdateInfo"
+              }
+            ]
+          },
+          {
+            "name": "AgentIdentity",
+            "fields": [
+              {
+                "defined": "AgentIdentityUpdateInfo"
               }
             ]
           }
@@ -4611,6 +4719,9 @@
                 "defined": "LinkedDataKey"
               }
             ]
+          },
+          {
+            "name": "AgentIdentity"
           }
         ]
       }

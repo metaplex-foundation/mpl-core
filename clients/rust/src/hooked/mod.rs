@@ -274,6 +274,7 @@ impl From<&ExternalPluginAdapterKey> for ExternalPluginAdapterType {
             ExternalPluginAdapterKey::AppData(_) => ExternalPluginAdapterType::AppData,
             ExternalPluginAdapterKey::LinkedAppData(_) => ExternalPluginAdapterType::LinkedAppData,
             ExternalPluginAdapterKey::DataSection(_) => ExternalPluginAdapterType::DataSection,
+            ExternalPluginAdapterKey::AgentIdentity => ExternalPluginAdapterType::AgentIdentity,
         }
     }
 }
