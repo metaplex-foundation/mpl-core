@@ -51,7 +51,7 @@ pub(crate) fn add_external_plugin_adapter<'a>(
     }
 
     // TODO: This should be handled in the validate call.
-    match args.init_info {
+    match &args.init_info {
         ExternalPluginAdapterInitInfo::LinkedLifecycleHook(_)
         | ExternalPluginAdapterInitInfo::LinkedAppData(_) => {
             return Err(MplCoreError::InvalidPluginAdapterTarget.into())
@@ -164,7 +164,7 @@ pub(crate) fn add_collection_external_plugin_adapter<'a>(
         }
     }
 
-    match args.init_info {
+    match &args.init_info {
         ExternalPluginAdapterInitInfo::DataSection(_) => {
             return Err(MplCoreError::CannotAddDataSection.into());
         }
