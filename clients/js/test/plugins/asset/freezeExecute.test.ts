@@ -13,8 +13,8 @@ import {
   execute,
   fetchAssetV1,
   findAssetSignerPda,
-} from '../src';
-import { assertAsset, assertBurned, createUmi } from './_setupRaw';
+} from '../../../src';
+import { assertAsset, assertBurned, createUmi } from '../../_setupRaw';
 
 test('it covers the freeze execute backed NFT flow', async (t) => {
   // ----------------------------------
