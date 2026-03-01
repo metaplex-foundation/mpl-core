@@ -28,9 +28,10 @@ export type AgentIdentityInitInfoArgs = Omit<
 
 export type AgentIdentityUpdateInfoArgs = Omit<
   BaseAgentIdentityUpdateInfoArgs,
-  'lifecycleChecks'
+  'uri' | 'lifecycleChecks'
 > & {
   key: ExternalPluginAdapterKey;
+  uri?: string;
   lifecycleChecks?: LifecycleChecks;
 };
 

@@ -200,7 +200,7 @@ impl ExternalRegistryRecord {
             }
             ExternalPluginAdapterUpdateInfo::AgentIdentity(update_info) => {
                 if let Some(checks) = &update_info.lifecycle_checks {
-                    validate_lifecycle_checks(checks, true)?;
+                    validate_lifecycle_checks(checks, false)?;
                     self.lifecycle_checks
                         .clone_from(&update_info.lifecycle_checks)
                 }
