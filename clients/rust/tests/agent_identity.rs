@@ -15,11 +15,47 @@ use mpl_core::{
 };
 pub use setup::*;
 
+use mpl_core::PluginRegistryV1Safe;
 use solana_program::{pubkey::Pubkey, system_instruction, system_program};
 use solana_program_test::tokio;
 use solana_sdk::{signature::Keypair, signer::Signer, transaction::Transaction};
 
 const EXECUTE_PREFIX: &str = "mpl-core-execute";
+
+/// Read the external plugin registry for an asset and assert the lifecycle check
+/// flags for the first external plugin adapter's given event discriminant.
+async fn assert_external_plugin_lifecycle_flags(
+    context: &mut solana_program_test::ProgramTestContext,
+    asset_pubkey: Pubkey,
+    event_discriminant: u8,
+    expected_flags: u32,
+) {
+    let account = context
+        .banks_client
+        .get_account(asset_pubkey)
+        .await
+        .unwrap()
+        .unwrap();
+
+    let asset = mpl_core::Asset::from_bytes(&account.data).unwrap();
+    let header = asset.plugin_header.as_ref().unwrap();
+    let registry =
+        PluginRegistryV1Safe::from_bytes(&account.data[header.plugin_registry_offset as usize..])
+            .unwrap();
+
+    assert_eq!(registry.external_registry.len(), 1);
+    let record = &registry.external_registry[0];
+    let checks = record.lifecycle_checks.as_ref().unwrap();
+    let check = checks
+        .iter()
+        .find(|(event, _)| *event == event_discriminant)
+        .expect("Expected lifecycle event not found in registry");
+    assert_eq!(
+        check.1.flags, expected_flags,
+        "lifecycle check flags mismatch: expected {expected_flags}, got {}",
+        check.1.flags
+    );
+}
 
 // ---------------------------------------------------------------------------
 // Create asset with AgentIdentity
@@ -680,6 +716,9 @@ async fn test_update_agent_identity_lifecycle_checks() {
     )
     .await;
 
+    // Assert initial flags: Execute(4) = CAN_LISTEN(1)
+    assert_external_plugin_lifecycle_flags(&mut context, asset.pubkey(), 4, 1).await;
+
     // Update lifecycle checks from CAN_LISTEN to CAN_LISTEN | CAN_APPROVE
     let update_ix = UpdateExternalPluginAdapterV1Builder::new()
         .asset(asset.pubkey())
@@ -721,6 +760,9 @@ async fn test_update_agent_identity_lifecycle_checks() {
         },
     )
     .await;
+
+    // Assert updated flags: Execute(4) = CAN_LISTEN | CAN_APPROVE(3)
+    assert_external_plugin_lifecycle_flags(&mut context, asset.pubkey(), 4, 3).await;
 }
 
 // ---------------------------------------------------------------------------
@@ -801,6 +843,9 @@ async fn test_update_agent_identity_uri_and_lifecycle_checks() {
         },
     )
     .await;
+
+    // Assert updated flags: Execute(4) = CAN_LISTEN | CAN_APPROVE | CAN_REJECT(7)
+    assert_external_plugin_lifecycle_flags(&mut context, asset.pubkey(), 4, 7).await;
 }
 
 // ---------------------------------------------------------------------------

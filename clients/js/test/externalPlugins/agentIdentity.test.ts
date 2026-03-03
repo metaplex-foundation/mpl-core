@@ -17,21 +17,33 @@ import {
   findAssetSignerPda,
   removePlugin,
   updatePlugin,
+  PluginAuthority,
 } from '../../src';
+
+type AgentIdentityPluginOverrides = {
+  uri?: string;
+  lifecycleChecks?: { execute: CheckResult[] };
+  initPluginAuthority?: PluginAuthority;
+};
+
+function agentIdentityPlugin(overrides: AgentIdentityPluginOverrides = {}) {
+  return {
+    type: 'AgentIdentity' as const,
+    uri: overrides.uri ?? 'https://example.com/agent.json',
+    lifecycleChecks: overrides.lifecycleChecks ?? {
+      execute: [CheckResult.CAN_LISTEN],
+    },
+    ...(overrides.initPluginAuthority
+      ? { initPluginAuthority: overrides.initPluginAuthority }
+      : {}),
+  };
+}
 
 test('it can create an asset with an agent identity', async (t) => {
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [
-      {
-        type: 'AgentIdentity',
-        uri: 'https://example.com/agent.json',
-        lifecycleChecks: {
-          execute: [CheckResult.CAN_LISTEN],
-        },
-      },
-    ],
+    plugins: [agentIdentityPlugin()],
   });
 
   await assertAsset(t, umi, {
@@ -60,13 +72,7 @@ test('it can add an agent identity to an existing asset', async (t) => {
 
   await addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: {
-      type: 'AgentIdentity',
-      uri: 'https://example.com/agent.json',
-      lifecycleChecks: {
-        execute: [CheckResult.CAN_LISTEN],
-      },
-    },
+    plugin: agentIdentityPlugin(),
   }).sendAndConfirm(umi);
 
   await assertAsset(t, umi, {
@@ -92,15 +98,7 @@ test('it cannot create a collection with an agent identity', async (t) => {
   const umi = await createUmi();
 
   const result = createCollection(umi, {
-    plugins: [
-      {
-        type: 'AgentIdentity',
-        uri: 'https://example.com/agent.json',
-        lifecycleChecks: {
-          execute: [CheckResult.CAN_LISTEN],
-        },
-      },
-    ],
+    plugins: [agentIdentityPlugin()],
   });
 
   await t.throwsAsync(result, { name: 'InvalidPluginAdapterTarget' });
@@ -113,13 +111,7 @@ test('it cannot add an agent identity to a collection', async (t) => {
 
   const result = addCollectionPlugin(umi, {
     collection: collection.publicKey,
-    plugin: {
-      type: 'AgentIdentity',
-      uri: 'https://example.com/agent.json',
-      lifecycleChecks: {
-        execute: [CheckResult.CAN_LISTEN],
-      },
-    },
+    plugin: agentIdentityPlugin(),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidPluginAdapterTarget' });
@@ -129,26 +121,12 @@ test('it cannot add a duplicate agent identity', async (t) => {
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [
-      {
-        type: 'AgentIdentity',
-        uri: 'https://example.com/agent.json',
-        lifecycleChecks: {
-          execute: [CheckResult.CAN_LISTEN],
-        },
-      },
-    ],
+    plugins: [agentIdentityPlugin()],
   });
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: {
-      type: 'AgentIdentity',
-      uri: 'https://example.com/agent2.json',
-      lifecycleChecks: {
-        execute: [CheckResult.CAN_LISTEN],
-      },
-    },
+    plugin: agentIdentityPlugin({ uri: 'https://example.com/agent2.json' }),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'ExternalPluginAdapterAlreadyExists' });
@@ -158,15 +136,7 @@ test('it can update an agent identity uri', async (t) => {
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [
-      {
-        type: 'AgentIdentity',
-        uri: 'https://example.com/agent.json',
-        lifecycleChecks: {
-          execute: [CheckResult.CAN_LISTEN],
-        },
-      },
-    ],
+    plugins: [agentIdentityPlugin()],
   });
 
   await updatePlugin(umi, {
@@ -203,15 +173,7 @@ test('it can remove an agent identity', async (t) => {
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [
-      {
-        type: 'AgentIdentity',
-        uri: 'https://example.com/agent.json',
-        lifecycleChecks: {
-          execute: [CheckResult.CAN_LISTEN],
-        },
-      },
-    ],
+    plugins: [agentIdentityPlugin()],
   });
 
   await removePlugin(umi, {
@@ -237,13 +199,7 @@ test('it cannot add an agent identity as non-authority', async (t) => {
 
   const result = addPlugin(umi, {
     asset: asset.publicKey,
-    plugin: {
-      type: 'AgentIdentity',
-      uri: 'https://example.com/agent.json',
-      lifecycleChecks: {
-        execute: [CheckResult.CAN_LISTEN],
-      },
-    },
+    plugin: agentIdentityPlugin(),
     authority: nonAuthority,
   }).sendAndConfirm(umi);
 
@@ -255,13 +211,11 @@ test('it can create an agent identity with multiple lifecycle checks', async (t)
 
   const asset = await createAsset(umi, {
     plugins: [
-      {
-        type: 'AgentIdentity',
-        uri: 'https://example.com/agent.json',
+      agentIdentityPlugin({
         lifecycleChecks: {
           execute: [CheckResult.CAN_LISTEN, CheckResult.CAN_APPROVE],
         },
-      },
+      }),
     ],
   });
 
@@ -290,17 +244,12 @@ test('it can create an agent identity with a specific plugin authority', async (
 
   const asset = await createAsset(umi, {
     plugins: [
-      {
-        type: 'AgentIdentity',
-        uri: 'https://example.com/agent.json',
-        lifecycleChecks: {
-          execute: [CheckResult.CAN_LISTEN],
-        },
+      agentIdentityPlugin({
         initPluginAuthority: {
           type: 'Address',
           address: pluginAuthority.publicKey,
         },
-      },
+      }),
     ],
   });
 
@@ -328,15 +277,7 @@ test('it can update agent identity lifecycle checks', async (t) => {
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [
-      {
-        type: 'AgentIdentity',
-        uri: 'https://example.com/agent.json',
-        lifecycleChecks: {
-          execute: [CheckResult.CAN_LISTEN],
-        },
-      },
-    ],
+    plugins: [agentIdentityPlugin()],
   });
 
   await updatePlugin(umi, {
@@ -375,15 +316,7 @@ test('it can update agent identity uri and lifecycle checks simultaneously', asy
   const umi = await createUmi();
 
   const asset = await createAsset(umi, {
-    plugins: [
-      {
-        type: 'AgentIdentity',
-        uri: 'https://example.com/agent.json',
-        lifecycleChecks: {
-          execute: [CheckResult.CAN_LISTEN],
-        },
-      },
-    ],
+    plugins: [agentIdentityPlugin()],
   });
 
   await updatePlugin(umi, {
@@ -432,15 +365,7 @@ test('it can execute on an asset with agent identity', async (t) => {
   const recipient = generateSigner(umi);
 
   const asset = await createAsset(umi, {
-    plugins: [
-      {
-        type: 'AgentIdentity',
-        uri: 'https://example.com/agent.json',
-        lifecycleChecks: {
-          execute: [CheckResult.CAN_LISTEN],
-        },
-      },
-    ],
+    plugins: [agentIdentityPlugin()],
   });
 
   const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
