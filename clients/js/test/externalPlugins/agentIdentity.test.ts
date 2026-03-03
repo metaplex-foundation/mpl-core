@@ -88,6 +88,24 @@ test('it can add an agent identity to an existing asset', async (t) => {
   });
 });
 
+test('it cannot create a collection with an agent identity', async (t) => {
+  const umi = await createUmi();
+
+  const result = createCollection(umi, {
+    plugins: [
+      {
+        type: 'AgentIdentity',
+        uri: 'https://example.com/agent.json',
+        lifecycleChecks: {
+          execute: [CheckResult.CAN_LISTEN],
+        },
+      },
+    ],
+  });
+
+  await t.throwsAsync(result, { name: 'InvalidPluginAdapterTarget' });
+});
+
 test('it cannot add an agent identity to a collection', async (t) => {
   const umi = await createUmi();
 

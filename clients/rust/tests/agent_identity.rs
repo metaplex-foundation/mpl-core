@@ -161,6 +161,41 @@ async fn test_add_agent_identity() {
 }
 
 // ---------------------------------------------------------------------------
+// Cannot create a collection with an AgentIdentity
+// ---------------------------------------------------------------------------
+#[tokio::test]
+async fn test_cannot_create_collection_with_agent_identity() {
+    let mut context = program_test().start_with_context().await;
+
+    let collection = Keypair::new();
+    let error = create_collection(
+        &mut context,
+        CreateCollectionHelperArgs {
+            collection: &collection,
+            update_authority: None,
+            payer: None,
+            name: None,
+            uri: None,
+            plugins: vec![],
+            external_plugin_adapters: vec![ExternalPluginAdapterInitInfo::AgentIdentity(
+                AgentIdentityInitInfo {
+                    uri: String::from("https://example.com/agent.json"),
+                    init_plugin_authority: Some(PluginAuthority::UpdateAuthority),
+                    lifecycle_checks: vec![(
+                        HookableLifecycleEvent::Execute,
+                        ExternalCheckResult { flags: 1 }, // CAN_LISTEN
+                    )],
+                },
+            )],
+        },
+    )
+    .await
+    .unwrap_err();
+
+    assert_custom_instruction_error!(0, error, MplCoreError::InvalidPluginAdapterTarget);
+}
+
+// ---------------------------------------------------------------------------
 // Cannot add AgentIdentity to a collection
 // ---------------------------------------------------------------------------
 #[tokio::test]
