@@ -1,37 +1,42 @@
 import {
-  BurnDelegate,
-  FreezeDelegate,
-  PermanentFreezeDelegate,
-  TransferDelegate,
-  UpdateDelegate,
+  AddBlocker,
   Attributes,
-  PermanentTransferDelegate,
-  PermanentBurnDelegate,
-  Edition,
-  basePluginAuthority as pluginAuthority,
-  baseUpdateAuthority as updateAuthority,
-  baseRuleSet as ruleSet,
-  FreezeDelegateArgs,
-  UpdateDelegateArgs,
   AttributesArgs,
-  PermanentFreezeDelegateArgs,
-  EditionArgs,
+  Autograph,
+  AutographArgs,
+  BaseMasterEditionArgs,
   BasePluginAuthority,
   BaseRoyaltiesArgs,
-  BaseMasterEditionArgs,
-  AddBlocker,
+  BubblegumV2,
+  BurnDelegate,
+  Edition,
+  EditionArgs,
+  FreezeDelegate,
+  FreezeDelegateArgs,
+  FreezeExecute,
+  FreezeExecuteArgs,
   ImmutableMetadata,
-  AutographArgs,
-  VerifiedCreatorsArgs,
-  Autograph,
+  PermanentBurnDelegate,
+  PermanentFreezeDelegate,
+  PermanentFreezeDelegateArgs,
+  PermanentFreezeExecute,
+  PermanentFreezeExecuteArgs,
+  PermanentTransferDelegate,
+  basePluginAuthority as pluginAuthority,
+  baseRuleSet as ruleSet,
+  TransferDelegate,
+  baseUpdateAuthority as updateAuthority,
+  UpdateDelegate,
+  UpdateDelegateArgs,
   VerifiedCreators,
+  VerifiedCreatorsArgs,
 } from '../generated';
-import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
-import { PluginAuthority } from './pluginAuthority';
 import { MasterEdition, MasterEditionArgs } from './masterEdition';
+import { PluginAuthority } from './pluginAuthority';
+import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
 
 // for backwards compatibility
-export { pluginAuthority, updateAuthority, ruleSet };
+export { pluginAuthority, ruleSet, updateAuthority };
 
 export type BasePlugin = {
   authority: PluginAuthority;
@@ -88,6 +93,17 @@ export type CreatePluginArgs =
     }
   | {
       type: 'AddBlocker';
+    }
+  | {
+      type: 'BubblegumV2';
+    }
+  | {
+      type: 'FreezeExecute';
+      data: FreezeExecuteArgs;
+    }
+  | {
+      type: 'PermanentFreezeExecute';
+      data: PermanentFreezeExecuteArgs;
     };
 
 export type AuthorityArgsV2 = {
@@ -106,7 +122,13 @@ export type CreateOnlyPluginArgsV2 =
     }
   | ({
       type: 'Edition';
-    } & EditionArgs);
+    } & EditionArgs)
+  | {
+      type: 'BubblegumV2';
+    }
+  | ({
+      type: 'PermanentFreezeExecute';
+    } & PermanentFreezeExecuteArgs);
 
 export type OwnerManagedPluginArgsV2 =
   | ({
@@ -120,7 +142,10 @@ export type OwnerManagedPluginArgsV2 =
     }
   | ({
       type: 'Autograph';
-    } & AutographArgs);
+    } & AutographArgs)
+  | ({
+      type: 'FreezeExecute';
+    } & FreezeExecuteArgs);
 
 export type AuthorityManagedPluginArgsV2 =
   | ({
@@ -181,6 +206,9 @@ export type AddBlockerPlugin = BasePlugin & AddBlocker;
 export type ImmutableMetadataPlugin = BasePlugin & ImmutableMetadata;
 export type VerifiedCreatorsPlugin = BasePlugin & VerifiedCreators;
 export type AutographPlugin = BasePlugin & Autograph;
+export type BubblegumV2Plugin = BasePlugin & BubblegumV2;
+export type FreezeExecutePlugin = BasePlugin & FreezeExecute;
+export type PermanentFreezeExecutePlugin = BasePlugin & PermanentFreezeExecute;
 
 export type CommonPluginsList = {
   attributes?: AttributesPlugin;
@@ -193,6 +221,8 @@ export type CommonPluginsList = {
   immutableMetadata?: ImmutableMetadataPlugin;
   autograph?: AutographPlugin;
   verifiedCreators?: VerifiedCreatorsPlugin;
+  freezeExecute?: FreezeExecutePlugin;
+  permanentFreezeExecute?: PermanentFreezeExecutePlugin;
 };
 
 export type AssetPluginsList = {
@@ -204,6 +234,7 @@ export type AssetPluginsList = {
 
 export type CollectionPluginsList = {
   masterEdition?: MasterEditionPlugin;
+  bubblegumV2?: BubblegumV2Plugin;
 } & CommonPluginsList;
 
 export type PluginsList = AssetPluginsList & CollectionPluginsList;

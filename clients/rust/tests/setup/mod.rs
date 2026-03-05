@@ -119,6 +119,16 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
                 assert_eq!(plugin.freeze_delegate, freeze);
             }
             PluginAuthorityPair {
+                plugin: Plugin::FreezeExecute(freeze_execute),
+                authority,
+            } => {
+                let plugin = asset.plugin_list.freeze_execute.clone().unwrap();
+                if let Some(authority) = authority {
+                    assert_eq!(plugin.base.authority, authority.into());
+                }
+                assert_eq!(plugin.freeze_execute, freeze_execute);
+            }
+            PluginAuthorityPair {
                 plugin: Plugin::Royalties(royalties),
                 authority,
             } => {
@@ -271,6 +281,16 @@ pub async fn assert_collection(
                     assert_eq!(plugin.base.authority, authority.into());
                 }
                 assert_eq!(plugin.freeze_delegate, freeze);
+            }
+            PluginAuthorityPair {
+                plugin: Plugin::FreezeExecute(freeze_execute),
+                authority,
+            } => {
+                let plugin = collection.plugin_list.freeze_execute.clone().unwrap();
+                if let Some(authority) = authority {
+                    assert_eq!(plugin.base.authority, authority.into());
+                }
+                assert_eq!(plugin.freeze_execute, freeze_execute);
             }
             PluginAuthorityPair {
                 plugin: Plugin::Royalties(royalties),

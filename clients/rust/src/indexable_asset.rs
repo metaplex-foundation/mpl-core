@@ -498,6 +498,10 @@ impl IndexableAsset {
     /// Fetch the base `Asset`` or `Collection`` and all the plugins and store in an
     /// `IndexableAsset`.
     pub fn fetch(key: Key, account: &[u8]) -> Result<Self, std::io::Error> {
+        if Key::from_slice(account, 0)? != key {
+            return Err(ErrorKind::InvalidInput.into());
+        }
+
         let (mut indexable_asset, base_size) = match key {
             Key::AssetV1 => {
                 let asset = BaseAssetV1::from_bytes(account)?;

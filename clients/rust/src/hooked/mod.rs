@@ -5,10 +5,8 @@ pub mod advanced_types;
 pub use advanced_types::*;
 
 pub mod asset;
-pub use asset::*;
 
 pub mod collection;
-pub use collection::*;
 
 #[cfg(feature = "anchor")]
 use anchor_lang::prelude::{
@@ -34,6 +32,8 @@ use solana_program::account_info::AccountInfo;
 impl From<&Plugin> for PluginType {
     fn from(plugin: &Plugin) -> Self {
         match plugin {
+            Plugin::AddBlocker(_) => PluginType::AddBlocker,
+            Plugin::ImmutableMetadata(_) => PluginType::ImmutableMetadata,
             Plugin::Royalties(_) => PluginType::Royalties,
             Plugin::FreezeDelegate(_) => PluginType::FreezeDelegate,
             Plugin::BurnDelegate(_) => PluginType::BurnDelegate,
@@ -45,10 +45,11 @@ impl From<&Plugin> for PluginType {
             Plugin::PermanentBurnDelegate(_) => PluginType::PermanentBurnDelegate,
             Plugin::Edition(_) => PluginType::Edition,
             Plugin::MasterEdition(_) => PluginType::MasterEdition,
-            Plugin::AddBlocker(_) => PluginType::AddBlocker,
-            Plugin::ImmutableMetadata(_) => PluginType::ImmutableMetadata,
             Plugin::VerifiedCreators(_) => PluginType::VerifiedCreators,
             Plugin::Autograph(_) => PluginType::Autograph,
+            Plugin::BubblegumV2(_) => PluginType::BubblegumV2,
+            Plugin::FreezeExecute(_) => PluginType::FreezeExecute,
+            Plugin::PermanentFreezeExecute(_) => PluginType::PermanentFreezeExecute,
         }
     }
 }
@@ -96,7 +97,7 @@ mod anchor_impl {
 
     // Not used but needed for Anchor.
     impl Discriminator for BaseAssetV1 {
-        const DISCRIMINATOR: [u8; 8] = [0; 8];
+        const DISCRIMINATOR: &'static [u8] = &[Key::AssetV1 as u8];
     }
 
     impl Owner for BaseAssetV1 {
@@ -118,7 +119,7 @@ mod anchor_impl {
 
     // Not used but needed for Anchor.
     impl Discriminator for BaseCollectionV1 {
-        const DISCRIMINATOR: [u8; 8] = [0; 8];
+        const DISCRIMINATOR: &'static [u8] = &[Key::CollectionV1 as u8];
     }
 
     impl Owner for BaseCollectionV1 {
@@ -174,14 +175,29 @@ impl SolanaAccount for PluginHeaderV1 {
     }
 }
 
+impl Key {
+    /// Load the one byte key from a slice of data at the given offset.
+    pub fn from_slice(data: &[u8], offset: usize) -> Result<Self, std::io::Error> {
+        let key_byte = *data.get(offset).ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::Other,
+                MplCoreError::DeserializationError.to_string(),
+            )
+        })?;
+
+        Self::from_u8(key_byte).ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::Other,
+                MplCoreError::DeserializationError.to_string(),
+            )
+        })
+    }
+}
+
 /// Load the one byte key from the account data at the given offset.
 pub fn load_key(account: &AccountInfo, offset: usize) -> Result<Key, std::io::Error> {
-    let key = Key::from_u8((*account.data).borrow()[offset]).ok_or(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        MplCoreError::DeserializationError.to_string(),
-    ))?;
-
-    Ok(key)
+    let data = account.data.borrow();
+    Key::from_slice(&data, offset)
 }
 
 /// A trait for generic blobs of data that have size.

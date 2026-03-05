@@ -25,18 +25,24 @@ import {
   BaseMasterEditionArgs,
   BaseRoyalties,
   BaseRoyaltiesArgs,
+  BubblegumV2,
+  BubblegumV2Args,
   BurnDelegate,
   BurnDelegateArgs,
   Edition,
   EditionArgs,
   FreezeDelegate,
   FreezeDelegateArgs,
+  FreezeExecute,
+  FreezeExecuteArgs,
   ImmutableMetadata,
   ImmutableMetadataArgs,
   PermanentBurnDelegate,
   PermanentBurnDelegateArgs,
   PermanentFreezeDelegate,
   PermanentFreezeDelegateArgs,
+  PermanentFreezeExecute,
+  PermanentFreezeExecuteArgs,
   PermanentTransferDelegate,
   PermanentTransferDelegateArgs,
   TransferDelegate,
@@ -50,12 +56,15 @@ import {
   getAutographSerializer,
   getBaseMasterEditionSerializer,
   getBaseRoyaltiesSerializer,
+  getBubblegumV2Serializer,
   getBurnDelegateSerializer,
   getEditionSerializer,
   getFreezeDelegateSerializer,
+  getFreezeExecuteSerializer,
   getImmutableMetadataSerializer,
   getPermanentBurnDelegateSerializer,
   getPermanentFreezeDelegateSerializer,
+  getPermanentFreezeExecuteSerializer,
   getPermanentTransferDelegateSerializer,
   getTransferDelegateSerializer,
   getUpdateDelegateSerializer,
@@ -77,7 +86,10 @@ export type Plugin =
   | { __kind: 'AddBlocker'; fields: [AddBlocker] }
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadata] }
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreators] }
-  | { __kind: 'Autograph'; fields: [Autograph] };
+  | { __kind: 'Autograph'; fields: [Autograph] }
+  | { __kind: 'BubblegumV2'; fields: [BubblegumV2] }
+  | { __kind: 'FreezeExecute'; fields: [FreezeExecute] }
+  | { __kind: 'PermanentFreezeExecute'; fields: [PermanentFreezeExecute] };
 
 export type PluginArgs =
   | { __kind: 'Royalties'; fields: [BaseRoyaltiesArgs] }
@@ -97,7 +109,10 @@ export type PluginArgs =
   | { __kind: 'AddBlocker'; fields: [AddBlockerArgs] }
   | { __kind: 'ImmutableMetadata'; fields: [ImmutableMetadataArgs] }
   | { __kind: 'VerifiedCreators'; fields: [VerifiedCreatorsArgs] }
-  | { __kind: 'Autograph'; fields: [AutographArgs] };
+  | { __kind: 'Autograph'; fields: [AutographArgs] }
+  | { __kind: 'BubblegumV2'; fields: [BubblegumV2Args] }
+  | { __kind: 'FreezeExecute'; fields: [FreezeExecuteArgs] }
+  | { __kind: 'PermanentFreezeExecute'; fields: [PermanentFreezeExecuteArgs] };
 
 export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
   return dataEnum<Plugin>(
@@ -192,6 +207,24 @@ export function getPluginSerializer(): Serializer<PluginArgs, Plugin> {
           ['fields', tuple([getAutographSerializer()])],
         ]),
       ],
+      [
+        'BubblegumV2',
+        struct<GetDataEnumKindContent<Plugin, 'BubblegumV2'>>([
+          ['fields', tuple([getBubblegumV2Serializer()])],
+        ]),
+      ],
+      [
+        'FreezeExecute',
+        struct<GetDataEnumKindContent<Plugin, 'FreezeExecute'>>([
+          ['fields', tuple([getFreezeExecuteSerializer()])],
+        ]),
+      ],
+      [
+        'PermanentFreezeExecute',
+        struct<GetDataEnumKindContent<Plugin, 'PermanentFreezeExecute'>>([
+          ['fields', tuple([getPermanentFreezeExecuteSerializer()])],
+        ]),
+      ],
     ],
     { description: 'Plugin' }
   ) as Serializer<PluginArgs, Plugin>;
@@ -261,6 +294,18 @@ export function plugin(
   kind: 'Autograph',
   data: GetDataEnumKindContent<PluginArgs, 'Autograph'>['fields']
 ): GetDataEnumKind<PluginArgs, 'Autograph'>;
+export function plugin(
+  kind: 'BubblegumV2',
+  data: GetDataEnumKindContent<PluginArgs, 'BubblegumV2'>['fields']
+): GetDataEnumKind<PluginArgs, 'BubblegumV2'>;
+export function plugin(
+  kind: 'FreezeExecute',
+  data: GetDataEnumKindContent<PluginArgs, 'FreezeExecute'>['fields']
+): GetDataEnumKind<PluginArgs, 'FreezeExecute'>;
+export function plugin(
+  kind: 'PermanentFreezeExecute',
+  data: GetDataEnumKindContent<PluginArgs, 'PermanentFreezeExecute'>['fields']
+): GetDataEnumKind<PluginArgs, 'PermanentFreezeExecute'>;
 export function plugin<K extends PluginArgs['__kind']>(
   kind: K,
   data?: any
