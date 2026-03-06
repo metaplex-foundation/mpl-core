@@ -179,24 +179,6 @@ export const createGroup = async (
     }).sendAndConfirm(umi);
   }
 
-  // If we have a signer for the update authority, delegate permissions to the payer
-  if (updateAuthoritySigner) {
-    const { plugin } = await import('../src/generated/types/plugin');
-    const { addGroupPluginV1 } = await import('../src/generated');
-
-    await addGroupPluginV1(umi, {
-      group: group.publicKey,
-      payer,
-      authority: updateAuthoritySigner,
-      plugin: plugin('UpdateDelegate', [
-        {
-          additionalDelegates: [publicKey(payer)],
-        },
-      ] as any),
-      initAuthority: null,
-    }).sendAndConfirm(umi);
-  }
-
   return fetchGroupV1(umi, publicKey(group));
 };
 

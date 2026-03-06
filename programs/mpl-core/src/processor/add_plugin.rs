@@ -49,7 +49,7 @@ pub(crate) fn add_plugin<'a>(
 
     // TODO move into plugin validation when asset/collection is part of validation context
     let plugin_type = PluginType::from(&args.plugin);
-    if plugin_type == PluginType::MasterEdition || plugin_type == PluginType::Groups {
+    if plugin_type == PluginType::MasterEdition {
         return Err(MplCoreError::InvalidPlugin.into());
     }
 
@@ -138,12 +138,6 @@ pub(crate) fn add_collection_plugin<'a>(
     }
 
     let target_plugin_authority = args.init_authority.unwrap_or(args.plugin.manager());
-    // Reject attempts to add a Groups plugin via the generic collection plugin pathway.
-    // Groups plugins must be managed exclusively by the dedicated Group instructions
-    // (Add/Remove Collections To/From Group, etc.).
-    if PluginType::from(&args.plugin) == PluginType::Groups {
-        return Err(MplCoreError::InvalidPlugin.into());
-    }
     let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: None,

@@ -8,8 +8,8 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::{Context, RemoveGroupsFromGroupV1Accounts},
-    state::{DataBlob, GroupV1, SolanaAccount},
-    utils::{is_valid_group_authority, resolve_authority, save_group_core_and_plugins},
+    state::{GroupV1, SolanaAccount},
+    utils::{is_valid_group_authority, resolve_authority, save_flat_group},
 };
 
 /// Arguments for the `RemoveGroupsFromGroupV1` instruction.
@@ -60,7 +60,6 @@ pub(crate) fn remove_groups_from_group_v1<'a>(
 
     // Deserialize parent group.
     let mut parent_group = GroupV1::load(parent_group_info, 0)?;
-    let old_parent_core_len = parent_group.len();
 
     // Authority check: must be parent group's update authority or delegate.
     if !is_valid_group_authority(parent_group_info, authority_info)? {
@@ -84,7 +83,6 @@ pub(crate) fn remove_groups_from_group_v1<'a>(
         }
 
         let mut child_group = GroupV1::load(child_info, 0)?;
-        let old_child_core_len = child_group.len();
 
         // Authority must also be update authority or delegate for the child group.
         if !is_valid_group_authority(child_info, authority_info)? {
@@ -111,23 +109,13 @@ pub(crate) fn remove_groups_from_group_v1<'a>(
             .position(|pk| pk == parent_group_info.key)
         {
             child_group.parent_groups.remove(pos);
-
-            // Persist child changes while preserving plugin metadata.
-            save_group_core_and_plugins(
-                child_info,
-                &child_group,
-                old_child_core_len,
-                payer_info,
-                system_program_info,
-            )?;
+            save_flat_group(child_info, &child_group, payer_info, system_program_info)?;
         }
     }
 
-    // Persist parent group changes while preserving plugin metadata.
-    save_group_core_and_plugins(
+    save_flat_group(
         parent_group_info,
         &parent_group,
-        old_parent_core_len,
         payer_info,
         system_program_info,
     )?;

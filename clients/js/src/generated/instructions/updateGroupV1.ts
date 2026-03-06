@@ -36,7 +36,7 @@ export type UpdateGroupV1InstructionAccounts = {
   group: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The update authority or update delegate of the group */
+  /** The update authority of the group */
   authority?: Signer;
   /** The new update authority of the group */
   newUpdateAuthority?: PublicKey | Pda;
@@ -73,7 +73,7 @@ export function getUpdateGroupV1InstructionDataSerializer(): Serializer<
       ],
       { description: 'UpdateGroupV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 49 })
+    (value) => ({ ...value, discriminator: 41 })
   ) as Serializer<
     UpdateGroupV1InstructionDataArgs,
     UpdateGroupV1InstructionData

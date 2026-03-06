@@ -13,10 +13,10 @@ use crate::{
     instruction::accounts::AddAssetsToGroupV1Accounts,
     instruction::accounts::Context,
     plugins::{create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginType},
-    state::{AssetV1, DataBlob, GroupV1, SolanaAccount},
+    state::{AssetV1, GroupV1, SolanaAccount},
     utils::{
         is_valid_asset_authority, is_valid_group_authority, resize_or_reallocate_account,
-        resolve_authority, save_group_core_and_plugins,
+        resolve_authority, save_flat_group,
     },
 };
 
@@ -56,7 +56,6 @@ pub(crate) fn add_assets_to_group_v1<'a>(
 
     // Load group
     let mut group = GroupV1::load(group_info, 0)?;
-    let old_group_core_len = group.len();
 
     // Ensure authority for group
     if !is_valid_group_authority(group_info, authority_info)? {
@@ -87,14 +86,7 @@ pub(crate) fn add_assets_to_group_v1<'a>(
         )?;
     }
 
-    // Save group changes while preserving any existing plugin metadata.
-    save_group_core_and_plugins(
-        group_info,
-        &group,
-        old_group_core_len,
-        payer_info,
-        system_program_info,
-    )?;
+    save_flat_group(group_info, &group, payer_info, system_program_info)?;
 
     Ok(())
 }

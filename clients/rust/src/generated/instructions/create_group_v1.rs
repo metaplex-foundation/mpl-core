@@ -79,7 +79,7 @@ pub struct CreateGroupV1InstructionData {
 
 impl CreateGroupV1InstructionData {
     pub fn new() -> Self {
-        Self { discriminator: 47 }
+        Self { discriminator: 39 }
     }
 }
 

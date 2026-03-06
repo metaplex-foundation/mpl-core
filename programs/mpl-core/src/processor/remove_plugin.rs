@@ -44,11 +44,6 @@ pub(crate) fn remove_plugin<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
-    // Groups plugins can only be removed via specialized Group instructions.
-    if args.plugin_type == PluginType::Groups {
-        return Err(MplCoreError::InvalidPlugin.into());
-    }
-
     let (mut asset, plugin_header, plugin_registry) =
         fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
 
@@ -118,11 +113,6 @@ pub(crate) fn remove_collection_plugin<'a>(
         if log_wrapper.key != &spl_noop::ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
-    }
-
-    // Groups plugins can only be removed via specialized Group instructions.
-    if args.plugin_type == PluginType::Groups {
-        return Err(MplCoreError::InvalidPlugin.into());
     }
 
     let (collection, plugin_header, plugin_registry) =

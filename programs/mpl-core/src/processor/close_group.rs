@@ -33,7 +33,7 @@ pub(crate) fn close_group_v1<'a>(
     // Deserialize the group account.
     let group = GroupV1::load(ctx.accounts.group, 0)?;
 
-    // Ensure the signer is the update authority or delegate of the group.
+    // Ensure the signer is the update authority of the group.
     if !is_valid_group_authority(ctx.accounts.group, authority)? {
         return Err(MplCoreError::InvalidAuthority.into());
     }

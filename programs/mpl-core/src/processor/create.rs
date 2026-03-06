@@ -187,7 +187,6 @@ pub(crate) fn process_create<'a>(
                     let plugin_type = PluginType::from(&plugin.plugin);
                     if plugin_type == PluginType::MasterEdition
                         || plugin_type == PluginType::BubblegumV2
-                        || plugin_type == PluginType::Groups
                     {
                         return Err(MplCoreError::InvalidPlugin.into());
                     }

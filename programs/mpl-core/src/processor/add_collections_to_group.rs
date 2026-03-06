@@ -8,10 +8,10 @@ use super::group_collection_plugin::process_collection_groups_plugin_add;
 use crate::{
     error::MplCoreError,
     instruction::accounts::{AddCollectionsToGroupV1Accounts, Context},
-    state::{CollectionV1, DataBlob, GroupV1, SolanaAccount},
+    state::{CollectionV1, GroupV1, SolanaAccount},
     utils::{
         is_valid_collection_authority, is_valid_group_authority, resolve_authority,
-        save_group_core_and_plugins,
+        save_flat_group,
     },
 };
 
@@ -48,7 +48,6 @@ pub(crate) fn add_collections_to_group_v1<'a>(
 
     // Deserialize group.
     let mut group = GroupV1::load(group_info, 0)?;
-    let old_group_core_len = group.len();
 
     // Authority check: must be group's update authority or delegate.
     if !is_valid_group_authority(group_info, authority_info)? {
@@ -91,14 +90,7 @@ pub(crate) fn add_collections_to_group_v1<'a>(
         // The collection core itself does not change; no reserialization needed.
     }
 
-    // Persist group changes while preserving any existing plugin metadata.
-    save_group_core_and_plugins(
-        group_info,
-        &group,
-        old_group_core_len,
-        payer_info,
-        system_program_info,
-    )?;
+    save_flat_group(group_info, &group, payer_info, system_program_info)?;
 
     Ok(())
 }
