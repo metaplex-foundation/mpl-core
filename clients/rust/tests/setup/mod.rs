@@ -147,6 +147,7 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
         asset.external_plugin_adapter_list.lifecycle_hooks.len()
             + asset.external_plugin_adapter_list.oracles.len()
             + asset.external_plugin_adapter_list.app_data.len()
+            + asset.external_plugin_adapter_list.agent_identities.len()
     );
     for plugin in input.external_plugin_adapters {
         match plugin {
@@ -185,6 +186,12 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
                     .data_sections
                     .iter()
                     .any(|data_sections_with_data| data_sections_with_data.base == data))
+            }
+            ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .agent_identities
+                    .contains(&agent_identity))
             }
         }
     }
@@ -314,6 +321,10 @@ pub async fn assert_collection(
             .len()
             + collection.external_plugin_adapter_list.oracles.len()
             + collection.external_plugin_adapter_list.app_data.len()
+            + collection
+                .external_plugin_adapter_list
+                .agent_identities
+                .len()
     );
     for plugin in input.external_plugin_adapters {
         match plugin {
@@ -355,6 +366,12 @@ pub async fn assert_collection(
                     .data_sections
                     .iter()
                     .any(|data_sections_with_data| data_sections_with_data.base == data))
+            }
+            ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                assert!(collection
+                    .external_plugin_adapter_list
+                    .agent_identities
+                    .contains(&agent_identity))
             }
         }
     }

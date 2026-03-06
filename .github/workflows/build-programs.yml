@@ -1,81 +1,84 @@
 name: Build Programs
 
 on:
-  workflow_call:
-    inputs:
-      rust:
-        type: string
-      solana:
-        type: string
-      git_ref:
-        type: string
-  workflow_dispatch:
-    inputs:
-      rust:
-        description: Rust version
-        default: 1.70.0
-        required: true
-        type: string
-      solana:
-        description: Solana version
-        default: 1.16.17
-        required: true
-        type: string
+    workflow_call:
+        inputs:
+            rust:
+                type: string
+            solana:
+                type: string
+            git_ref:
+                type: string
+    workflow_dispatch:
+        inputs:
+            rust:
+                description: Rust version
+                default: 1.83.0
+                required: true
+                type: string
+            solana:
+                description: Solana version
+                default: 2.2.1
+                required: true
+                type: string
 
 env:
-  CACHE: true
+    CACHE: true
 
 jobs:
-  build_programs:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.git_ref }}
+    build_programs:
+        name: Build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Git checkout
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.git_ref }}
 
-      - name: Load environment variables
-        run: cat .github/.env >> $GITHUB_ENV
+            - name: Load environment variables
+              run: cat .github/.env >> $GITHUB_ENV
 
-      - name: Install Rust
-        uses: metaplex-foundation/actions/install-rust@v1
-        with:
-          toolchain: ${{ inputs.rust || env.RUST_VERSION }}
+            - name: Install Rust
+              uses: metaplex-foundation/actions/install-rust@v1
+              with:
+                  toolchain: ${{ inputs.rust || env.RUST_VERSION }}
 
-      - name: Install Solana
-        uses: metaplex-foundation/actions/install-solana@v1
-        with:
-          version: ${{ inputs.solana || env.SOLANA_VERSION }}
-          cache: ${{ env.CACHE }}
+            - name: Install Solana
+              uses: metaplex-foundation/actions/install-solana@v1
+              with:
+                  version: ${{ inputs.solana || env.SOLANA_VERSION }}
+                  cache: ${{ env.CACHE }}
 
-      - name: Cache program dependencies
-        if: env.CACHE == 'true'
-        uses: metaplex-foundation/actions/cache-programs@v1
+            - name: Install Protobuf Compiler
+              run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
 
-      - name: Build programs
-        shell: bash
-        working-directory: configs/scripts/program
-        run: ./build.sh
-        env:
-          PROGRAMS: ${{ env.PROGRAMS }}
+            - name: Cache program dependencies
+              if: env.CACHE == 'true'
+              uses: metaplex-foundation/actions/cache-programs@v1
 
-      - name: Sanitize Ref
-        id: sanitize
-        shell: bash
-        run: |
-          REF="${{ inputs.git_ref }}"
-          if [ -z "$REF" ]; then
-            REF="default"
-          fi
-          SANITIZED=${REF//\//-}
-          echo "sanitized=$SANITIZED" >> "$GITHUB_OUTPUT"
-      
-      - name: Upload program builds
-        uses: actions/upload-artifact@v4
-        with:
-          name: program-builds-${{ steps.sanitize.outputs.sanitized }}
-          # First wildcard ensures exported paths are consistently under the programs folder.
-          path: ./program*/.bin/*.so
-          include-hidden-files: true
-          if-no-files-found: error
+            - name: Build programs
+              shell: bash
+              working-directory: configs/scripts/program
+              run: ./build.sh
+              env:
+                  PROGRAMS: ${{ env.PROGRAMS }}
+
+            - name: Sanitize Ref
+              id: sanitize
+              shell: bash
+              run: |
+                  REF="${{ inputs.git_ref }}"
+                  if [ -z "$REF" ]; then
+                    REF="default"
+                  fi
+                  SANITIZED=${REF//\//-}
+                  echo "sanitized=$SANITIZED" >> "$GITHUB_OUTPUT"
+
+            - name: Upload program builds
+              uses: actions/upload-artifact@v4
+              with:
+                  name: program-builds-${{ steps.sanitize.outputs.sanitized }}
+                  # First wildcard ensures exported paths are consistently under the programs folder.
+                  path: ./program*/.bin/*.so
+                  include-hidden-files: true
+                  if-no-files-found: error

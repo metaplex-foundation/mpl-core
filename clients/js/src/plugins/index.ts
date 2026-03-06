@@ -18,3 +18,4 @@ export * from './linkedAppData';
 export * from './dataSection';
 export * from './linkedDataKey';
 export * from './masterEdition';
+export * from './agentIdentity';

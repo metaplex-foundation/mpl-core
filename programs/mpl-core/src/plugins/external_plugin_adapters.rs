@@ -12,11 +12,12 @@ use crate::{
 };
 
 use super::{
-    AppData, AppDataInitInfo, AppDataUpdateInfo, Authority, DataSection, DataSectionInitInfo,
-    ExternalCheckResult, ExternalRegistryRecord, LifecycleHook, LifecycleHookInitInfo,
-    LifecycleHookUpdateInfo, LinkedAppData, LinkedAppDataInitInfo, LinkedAppDataUpdateInfo,
-    LinkedLifecycleHook, LinkedLifecycleHookInitInfo, LinkedLifecycleHookUpdateInfo, Oracle,
-    OracleInitInfo, OracleUpdateInfo, PluginValidation, PluginValidationContext, ValidationResult,
+    AgentIdentity, AgentIdentityInitInfo, AgentIdentityUpdateInfo, AppData, AppDataInitInfo,
+    AppDataUpdateInfo, Authority, DataSection, DataSectionInitInfo, ExternalCheckResult,
+    ExternalRegistryRecord, LifecycleHook, LifecycleHookInitInfo, LifecycleHookUpdateInfo,
+    LinkedAppData, LinkedAppDataInitInfo, LinkedAppDataUpdateInfo, LinkedLifecycleHook,
+    LinkedLifecycleHookInitInfo, LinkedLifecycleHookUpdateInfo, Oracle, OracleInitInfo,
+    OracleUpdateInfo, PluginValidation, PluginValidationContext, ValidationResult,
 };
 
 /// List of third party plugin types.
@@ -47,6 +48,8 @@ pub enum ExternalPluginAdapterType {
     LinkedAppData,
     /// Data Section.
     DataSection,
+    /// Agent Identity.
+    AgentIdentity,
 }
 
 impl ExternalPluginAdapterType {
@@ -71,6 +74,7 @@ impl From<&ExternalPluginAdapterKey> for ExternalPluginAdapterType {
             ExternalPluginAdapterKey::AppData(_) => ExternalPluginAdapterType::AppData,
             ExternalPluginAdapterKey::LinkedAppData(_) => ExternalPluginAdapterType::LinkedAppData,
             ExternalPluginAdapterKey::DataSection(_) => ExternalPluginAdapterType::DataSection,
+            ExternalPluginAdapterKey::AgentIdentity => ExternalPluginAdapterType::AgentIdentity,
         }
     }
 }
@@ -90,6 +94,9 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapterType {
                 ExternalPluginAdapterType::LinkedAppData
             }
             ExternalPluginAdapterInitInfo::DataSection(_) => ExternalPluginAdapterType::DataSection,
+            ExternalPluginAdapterInitInfo::AgentIdentity(_) => {
+                ExternalPluginAdapterType::AgentIdentity
+            }
         }
     }
 }
@@ -105,6 +112,7 @@ impl From<&ExternalPluginAdapter> for ExternalPluginAdapterType {
             }
             ExternalPluginAdapter::LinkedAppData(_) => ExternalPluginAdapterType::LinkedAppData,
             ExternalPluginAdapter::DataSection(_) => ExternalPluginAdapterType::DataSection,
+            ExternalPluginAdapter::AgentIdentity(_) => ExternalPluginAdapterType::AgentIdentity,
         }
     }
 }
@@ -134,6 +142,8 @@ pub enum ExternalPluginAdapter {
     /// Data Section.  This is a special plugin that is used to contain the data of other external
     /// plugins.
     DataSection(DataSection),
+    /// Asset only: Agent Identity plugin that links to an ERC-8004 spec registration file via a URI.
+    AgentIdentity(AgentIdentity),
 }
 
 impl ExternalPluginAdapter {
@@ -169,6 +179,12 @@ impl ExternalPluginAdapter {
                 ExternalPluginAdapterUpdateInfo::LinkedAppData(update_info),
             ) => {
                 linked_app_data.update(update_info);
+            }
+            (
+                ExternalPluginAdapter::AgentIdentity(agent_identity),
+                ExternalPluginAdapterUpdateInfo::AgentIdentity(update_info),
+            ) => {
+                agent_identity.update(update_info);
             }
             _ => unreachable!(),
         }
@@ -213,6 +229,17 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapterInitInfo::LinkedAppData(_) => ExternalCheckResult::none(),
             ExternalPluginAdapterInitInfo::DataSection(_) => ExternalCheckResult::none(),
+            ExternalPluginAdapterInitInfo::AgentIdentity(init_info) => {
+                if let Some(checks) = init_info
+                    .lifecycle_checks
+                    .iter()
+                    .find(|event| event.0 == HookableLifecycleEvent::Create)
+                {
+                    checks.1
+                } else {
+                    ExternalCheckResult::none()
+                }
+            }
         }
     }
 
@@ -234,6 +261,9 @@ impl ExternalPluginAdapter {
             ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_create(ctx),
             // Here we block the creation of a DataSection plugin because this is only done internally.
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
+            ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                agent_identity.validate_create(ctx)
+            }
         }
     }
 
@@ -253,6 +283,9 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_update(ctx),
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Pass),
+            ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                agent_identity.validate_update(ctx)
+            }
         }
     }
 
@@ -272,6 +305,9 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_burn(ctx),
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Pass),
+            ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                agent_identity.validate_burn(ctx)
+            }
         }
     }
 
@@ -291,6 +327,9 @@ impl ExternalPluginAdapter {
             }
             ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_transfer(ctx),
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Pass),
+            ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                agent_identity.validate_transfer(ctx)
+            }
         }
     }
 
@@ -317,6 +356,9 @@ impl ExternalPluginAdapter {
             }
             // Here we block the creation of a DataSection plugin because this is only done internally.
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
+            ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                agent_identity.validate_add_external_plugin_adapter(ctx)
+            }
         }
     }
 
@@ -358,6 +400,9 @@ impl ExternalPluginAdapter {
             }
             // Here we block the update of a DataSection plugin because this is only done internally.
             ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Rejected),
+            ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                agent_identity.validate_update_external_plugin_adapter(ctx)
+            }
         }?;
 
         match (&base_result, &result) {
@@ -377,6 +422,81 @@ impl ExternalPluginAdapter {
             (ValidationResult::ForceApproved, _) => unreachable!(),
             (_, ValidationResult::Pass) => Ok(base_result),
             (_, ValidationResult::ForceApproved) => unreachable!(),
+        }
+    }
+
+    /// Check if a plugin is permitted to approve or deny an execute action.
+    pub fn check_execute(plugin: &ExternalPluginAdapterInitInfo) -> ExternalCheckResult {
+        match plugin {
+            ExternalPluginAdapterInitInfo::LifecycleHook(init_info) => {
+                if let Some(checks) = init_info
+                    .lifecycle_checks
+                    .iter()
+                    .find(|event| event.0 == HookableLifecycleEvent::Execute)
+                {
+                    checks.1
+                } else {
+                    ExternalCheckResult::none()
+                }
+            }
+            ExternalPluginAdapterInitInfo::Oracle(init_info) => {
+                if let Some(checks) = init_info
+                    .lifecycle_checks
+                    .iter()
+                    .find(|event| event.0 == HookableLifecycleEvent::Execute)
+                {
+                    checks.1
+                } else {
+                    ExternalCheckResult::none()
+                }
+            }
+            ExternalPluginAdapterInitInfo::AppData(_) => ExternalCheckResult::none(),
+            ExternalPluginAdapterInitInfo::LinkedLifecycleHook(init_info) => {
+                if let Some(checks) = init_info
+                    .lifecycle_checks
+                    .iter()
+                    .find(|event| event.0 == HookableLifecycleEvent::Execute)
+                {
+                    checks.1
+                } else {
+                    ExternalCheckResult::none()
+                }
+            }
+            ExternalPluginAdapterInitInfo::LinkedAppData(_) => ExternalCheckResult::none(),
+            ExternalPluginAdapterInitInfo::DataSection(_) => ExternalCheckResult::none(),
+            ExternalPluginAdapterInitInfo::AgentIdentity(init_info) => {
+                if let Some(checks) = init_info
+                    .lifecycle_checks
+                    .iter()
+                    .find(|event| event.0 == HookableLifecycleEvent::Execute)
+                {
+                    checks.1
+                } else {
+                    ExternalCheckResult::none()
+                }
+            }
+        }
+    }
+
+    /// Route the validation of the execute action to the appropriate external plugin adapter.
+    pub(crate) fn validate_execute(
+        external_plugin_adapter: &ExternalPluginAdapter,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        match external_plugin_adapter {
+            ExternalPluginAdapter::LifecycleHook(lifecycle_hook) => {
+                lifecycle_hook.validate_execute(ctx)
+            }
+            ExternalPluginAdapter::Oracle(oracle) => oracle.validate_execute(ctx),
+            ExternalPluginAdapter::AppData(app_data) => app_data.validate_execute(ctx),
+            ExternalPluginAdapter::LinkedLifecycleHook(lifecycle_hook) => {
+                lifecycle_hook.validate_execute(ctx)
+            }
+            ExternalPluginAdapter::LinkedAppData(app_data) => app_data.validate_execute(ctx),
+            ExternalPluginAdapter::DataSection(_) => Ok(ValidationResult::Pass),
+            ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                agent_identity.validate_execute(ctx)
+            }
         }
     }
 
@@ -419,6 +539,9 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapter {
             ExternalPluginAdapterInitInfo::DataSection(init_info) => {
                 ExternalPluginAdapter::DataSection(DataSection::from(init_info))
             }
+            ExternalPluginAdapterInitInfo::AgentIdentity(init_info) => {
+                ExternalPluginAdapter::AgentIdentity(AgentIdentity::from(init_info))
+            }
         }
     }
 }
@@ -439,6 +562,8 @@ pub enum HookableLifecycleEvent {
     Burn,
     /// Update an Asset or a Collection.
     Update,
+    /// Execute an instruction on behalf of the Asset.
+    Execute,
 }
 
 impl HookableLifecycleEvent {
@@ -679,6 +804,8 @@ pub enum ExternalPluginAdapterInitInfo {
     LinkedAppData(LinkedAppDataInitInfo),
     /// Data Section.
     DataSection(DataSectionInitInfo),
+    /// Agent Identity.
+    AgentIdentity(AgentIdentityInitInfo),
 }
 
 /// Information needed to update an external plugin adapter.
@@ -695,6 +822,8 @@ pub enum ExternalPluginAdapterUpdateInfo {
     LinkedLifecycleHook(LinkedLifecycleHookUpdateInfo),
     /// Linked App Data.
     LinkedAppData(LinkedAppDataUpdateInfo),
+    /// Agent Identity.
+    AgentIdentity(AgentIdentityUpdateInfo),
 }
 
 /// Key used to uniquely specify an external plugin adapter after it is created.
@@ -715,6 +844,8 @@ pub enum ExternalPluginAdapterKey {
     LinkedAppData(Authority),
     /// Data Section.
     DataSection(LinkedDataKey),
+    /// Agent Identity.  Only one per asset so no discriminator needed.
+    AgentIdentity,
 }
 
 /// Key to point to the plugin that manages this data section.
@@ -773,6 +904,7 @@ impl ExternalPluginAdapterKey {
                 )?;
                 Ok(Self::DataSection(linked_data_key))
             }
+            ExternalPluginAdapterType::AgentIdentity => Ok(Self::AgentIdentity),
         }
     }
 }
@@ -797,6 +929,9 @@ impl From<&ExternalPluginAdapterInitInfo> for ExternalPluginAdapterKey {
             }
             ExternalPluginAdapterInitInfo::DataSection(init_info) => {
                 ExternalPluginAdapterKey::DataSection(init_info.parent_key)
+            }
+            ExternalPluginAdapterInitInfo::AgentIdentity(_) => {
+                ExternalPluginAdapterKey::AgentIdentity
             }
         }
     }

@@ -16,9 +16,10 @@ use crate::{
     BasePlugin, BubblegumV2Plugin, BurnDelegatePlugin, DataBlob, DataSectionWithData,
     EditionPlugin, ExternalPluginAdaptersList, ExternalRegistryRecordSafe, FreezeDelegatePlugin,
     FreezeExecutePlugin, ImmutableMetadataPlugin, LifecycleHookWithData, MasterEditionPlugin,
-    PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin,
-    PluginRegistryV1Safe, PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount,
-    TransferDelegatePlugin, UpdateDelegatePlugin, VerifiedCreatorsPlugin,
+    PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin, PermanentFreezeExecutePlugin,
+    PermanentTransferDelegatePlugin, PluginRegistryV1Safe, PluginsList, RegistryRecordSafe,
+    RoyaltiesPlugin, SolanaAccount, TransferDelegatePlugin, UpdateDelegatePlugin,
+    VerifiedCreatorsPlugin,
 };
 
 /// Fetch the plugin from the registry.
@@ -354,6 +355,12 @@ pub(crate) fn registry_records_to_plugin_list(
                             freeze_execute,
                         })
                     }
+                    Plugin::PermanentFreezeExecute(permanent_freeze_execute) => {
+                        acc.permanent_freeze_execute = Some(PermanentFreezeExecutePlugin {
+                            base,
+                            permanent_freeze_execute,
+                        })
+                    }
                 }
             }
             Ok(acc)
@@ -413,6 +420,9 @@ pub(crate) fn registry_records_to_external_plugin_adapter_list(
                             data_offset,
                             data_len,
                         })
+                    }
+                    ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                        acc.agent_identities.push(agent_identity)
                     }
                 }
             }
@@ -517,6 +527,8 @@ pub(crate) fn find_external_plugin_adapter<'b>(
                             }
                         }
                 }
+                // AgentIdentity is a unit variant key (only one per asset).
+                ExternalPluginAdapterKey::AgentIdentity => true,
             })
         {
             result = (Some(i), Some(record));
