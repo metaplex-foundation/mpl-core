@@ -24,7 +24,8 @@ export type ExternalPluginAdapterKey =
       type: 'LinkedAppData';
       dataAuthority: PluginAuthority;
     }
-  | { type: 'DataSection'; parentKey: LinkedDataKey };
+  | { type: 'DataSection'; parentKey: LinkedDataKey }
+  | { type: 'AgentIdentity' };
 
 export function externalPluginAdapterKeyToBase(
   e: ExternalPluginAdapterKey
@@ -50,6 +51,10 @@ export function externalPluginAdapterKeyToBase(
       return {
         __kind: e.type,
         fields: [linkedDataKeyToBase(e.parentKey)],
+      };
+    case 'AgentIdentity':
+      return {
+        __kind: e.type,
       };
     default:
       throw new Error('Unknown ExternalPluginAdapterKey type');

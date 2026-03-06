@@ -13,7 +13,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::ExecuteV1Accounts,
-    plugins::{Plugin, PluginType},
+    plugins::{ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginType},
     state::{get_execute_fee, AssetV1, CollectionV1, Key},
     utils::{load_key, resolve_authority, validate_asset_permissions},
 };
@@ -64,8 +64,8 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
         AssetV1::validate_execute,
         CollectionV1::validate_execute,
         Plugin::validate_execute,
-        None,
-        None,
+        Some(ExternalPluginAdapter::validate_execute),
+        Some(HookableLifecycleEvent::Execute),
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.

@@ -116,6 +116,7 @@ impl Oracle {
                 HookableLifecycleEvent::Transfer => Ok(ValidationResult::from(transfer)),
                 HookableLifecycleEvent::Burn => Ok(ValidationResult::from(burn)),
                 HookableLifecycleEvent::Update => Ok(ValidationResult::from(update)),
+                HookableLifecycleEvent::Execute => Ok(ValidationResult::Pass),
             },
         }
     }
