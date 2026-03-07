@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::AgentIdentity;
 use crate::generated::types::AppData;
 use crate::generated::types::DataSection;
 use crate::generated::types::LifecycleHook;
@@ -27,4 +28,5 @@ pub enum ExternalPluginAdapter {
     LinkedLifecycleHook(LinkedLifecycleHook),
     LinkedAppData(LinkedAppData),
     DataSection(DataSection),
+    AgentIdentity(AgentIdentity),
 }

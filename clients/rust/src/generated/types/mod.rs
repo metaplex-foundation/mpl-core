@@ -6,6 +6,9 @@
 //!
 
 pub(crate) mod r#add_blocker;
+pub(crate) mod r#agent_identity;
+pub(crate) mod r#agent_identity_init_info;
+pub(crate) mod r#agent_identity_update_info;
 pub(crate) mod r#app_data;
 pub(crate) mod r#app_data_init_info;
 pub(crate) mod r#app_data_update_info;
@@ -56,6 +59,7 @@ pub(crate) mod r#oracle_update_info;
 pub(crate) mod r#oracle_validation;
 pub(crate) mod r#permanent_burn_delegate;
 pub(crate) mod r#permanent_freeze_delegate;
+pub(crate) mod r#permanent_freeze_execute;
 pub(crate) mod r#permanent_transfer_delegate;
 pub(crate) mod r#plugin;
 pub(crate) mod r#plugin_authority;
@@ -75,6 +79,9 @@ pub(crate) mod r#verified_creators;
 pub(crate) mod r#verified_creators_signature;
 
 pub use self::r#add_blocker::*;
+pub use self::r#agent_identity::*;
+pub use self::r#agent_identity_init_info::*;
+pub use self::r#agent_identity_update_info::*;
 pub use self::r#app_data::*;
 pub use self::r#app_data_init_info::*;
 pub use self::r#app_data_update_info::*;
@@ -125,6 +132,7 @@ pub use self::r#oracle_update_info::*;
 pub use self::r#oracle_validation::*;
 pub use self::r#permanent_burn_delegate::*;
 pub use self::r#permanent_freeze_delegate::*;
+pub use self::r#permanent_freeze_execute::*;
 pub use self::r#permanent_transfer_delegate::*;
 pub use self::r#plugin::*;
 pub use self::r#plugin_authority::*;

@@ -141,15 +141,19 @@ impl PluginValidation for UpdateDelegate {
     ) -> Result<ValidationResult, ProgramError> {
         let plugin = ctx.target_plugin.ok_or(MplCoreError::InvalidPlugin)?;
 
-        // If the plugin authority is the authority signing.
-        if (ctx.resolved_authorities.is_some()
+        // SECURITY FIX: Added explicit parentheses to fix operator precedence.
+        // Previously, `&& plugin.manager() == Authority::UpdateAuthority` only bound
+        // to the additional_delegates branch due to && having higher precedence than ||.
+        // This allowed UpdateDelegate to revoke authority on owner-managed plugins
+        // (FreezeDelegate, TransferDelegate) which it should not control.
+        if ((ctx.resolved_authorities.is_some()
         && ctx
             .resolved_authorities
             .unwrap()
             .contains(ctx.self_authority))
             // Or the authority is one of the additional delegates.
-            || (self.additional_delegates.contains(ctx.authority_info.key) && PluginType::from(plugin) != PluginType::UpdateDelegate)
-            // And it's an authority-managed plugin.
+            || (self.additional_delegates.contains(ctx.authority_info.key) && PluginType::from(plugin) != PluginType::UpdateDelegate))
+            // And it's an authority-managed plugin (applies to BOTH branches).
             && plugin.manager() == Authority::UpdateAuthority
         {
             approve!()

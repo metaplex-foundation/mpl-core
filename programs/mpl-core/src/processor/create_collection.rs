@@ -218,8 +218,14 @@ pub(crate) fn process_create_collection<'a>(
                     ctx.accounts.system_program,
                 )?;
             for plugin_init_info in &plugins {
-                if let ExternalPluginAdapterInitInfo::DataSection(_) = plugin_init_info {
-                    return Err(MplCoreError::CannotAddDataSection.into());
+                match plugin_init_info {
+                    ExternalPluginAdapterInitInfo::DataSection(_) => {
+                        return Err(MplCoreError::CannotAddDataSection.into());
+                    }
+                    ExternalPluginAdapterInitInfo::AgentIdentity(_) => {
+                        return Err(MplCoreError::InvalidPluginAdapterTarget.into());
+                    }
+                    _ => (),
                 }
 
                 initialize_external_plugin_adapter::<CollectionV1>(
