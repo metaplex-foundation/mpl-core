@@ -15,18 +15,6 @@
  *    non-matching first bytes, which is the case for any account not initialized
  *    by mpl-core.
  * 3. The explicit owner check adds a belt-and-suspenders layer for safety.
- *
- * ATTACK SCENARIO (theoretical):
- * An attacker could deploy a program that creates accounts with data mimicking
- * mpl-core's serialization format (correct Key discriminator, valid Borsh data).
- * Without the owner check, such an account could theoretically be passed to
- * mpl-core instructions where accounts are read-only (e.g., the collection
- * account in transfer). The discriminator key check alone would pass if the
- * first byte matched. However, this was never practically exploitable because:
- *   - The attacker's fake account address would not match the collection address
- *     stored in the asset's update_authority field.
- *   - All mutable accounts must be owned by the executing program per runtime rules.
- *   - PDA derivation and address matching provide additional validation layers.
  */
 
 import { generateSigner, publicKey, sol } from '@metaplex-foundation/umi';
@@ -332,9 +320,9 @@ test('discriminator: burn rejects fake collection with uninitialized key', async
     collection: fakeCollection.publicKey,
   }).sendAndConfirm(umi);
 
-  // Fails because the fake collection's key discriminator doesn't match
-  // Key::CollectionV1, or because it's the wrong collection address.
-  await t.throwsAsync(result);
+  // Fails because the burn handler loads the collection first via
+  // CollectionV1::load, and the zeroed data has Key::Uninitialized.
+  await t.throwsAsync(result, { name: 'DeserializationError' });
 });
 
 // ============================================================================
@@ -370,8 +358,8 @@ test('wrong owner: transfer rejects asset account owned by system program', asyn
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
-  // Rejected: the account is not owned by mpl-core and/or has wrong discriminator.
-  await t.throwsAsync(result);
+  // Rejected: zeroed data has Key::Uninitialized, caught by explicit load_key check.
+  await t.throwsAsync(result, { name: 'IncorrectAccount' });
 });
 
 test('wrong owner: burn rejects asset account owned by system program', async (t) => {
@@ -389,7 +377,7 @@ test('wrong owner: burn rejects asset account owned by system program', async (t
     asset: fakeAsset.publicKey,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result);
+  await t.throwsAsync(result, { name: 'IncorrectAccount' });
 });
 
 test('wrong owner: update rejects asset account owned by system program', async (t) => {
@@ -408,7 +396,7 @@ test('wrong owner: update rejects asset account owned by system program', async 
     newName: 'Hacked',
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result);
+  await t.throwsAsync(result, { name: 'DeserializationError' });
 });
 
 test('wrong owner: add plugin rejects asset account owned by system program', async (t) => {
@@ -427,7 +415,7 @@ test('wrong owner: add plugin rejects asset account owned by system program', as
     plugin: createPlugin({ type: 'FreezeDelegate', data: { frozen: true } }),
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result);
+  await t.throwsAsync(result, { name: 'DeserializationError' });
 });
 
 test('wrong owner: transfer rejects collection account owned by system program', async (t) => {
@@ -451,8 +439,8 @@ test('wrong owner: transfer rejects collection account owned by system program',
   }).sendAndConfirm(umi);
 
   // Rejected because the fake collection address doesn't match what's stored
-  // in the asset's update_authority, AND the account isn't owned by mpl-core.
-  await t.throwsAsync(result);
+  // in the asset's update_authority (address check in validate_asset_permissions).
+  await t.throwsAsync(result, { name: 'InvalidCollection' });
 });
 
 test('wrong owner: burn rejects collection account owned by system program', async (t) => {
@@ -473,7 +461,9 @@ test('wrong owner: burn rejects collection account owned by system program', asy
     collection: fakeCollection.publicKey,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result);
+  // Burn loads the collection via CollectionV1::load BEFORE the address check,
+  // so the zeroed data (Key::Uninitialized) fails the key check first.
+  await t.throwsAsync(result, { name: 'DeserializationError' });
 });
 
 // ============================================================================
@@ -699,7 +689,7 @@ test('combined defense: an account owned by a random program as asset is rejecte
     newOwner: newOwner.publicKey,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result);
+  await t.throwsAsync(result, { name: 'IncorrectAccount' });
 });
 
 test('combined defense: transfer with wrong-program collection and mismatched address fails', async (t) => {
@@ -726,7 +716,7 @@ test('combined defense: transfer with wrong-program collection and mismatched ad
     collection: fakeCollection.publicKey,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result);
+  await t.throwsAsync(result, { name: 'InvalidCollection' });
 
   // Verify the asset remains unchanged.
   await assertAsset(t, umi, {
@@ -754,7 +744,7 @@ test('combined defense: burn with wrong-program asset does not drain lamports', 
     asset: fakeAsset.publicKey,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result);
+  await t.throwsAsync(result, { name: 'IncorrectAccount' });
 
   // Verify the fake asset still has its lamports (not drained).
   const account = await umi.rpc.getAccount(fakeAsset.publicKey);
@@ -779,7 +769,7 @@ test('combined defense: update with wrong-program asset cannot modify data', asy
     newName: 'Hacked',
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result);
+  await t.throwsAsync(result, { name: 'DeserializationError' });
 });
 
 // ============================================================================
@@ -805,7 +795,7 @@ test('wrong owner: burn collection rejects non-program-owned collection', async 
     compressionProof: null,
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result);
+  await t.throwsAsync(result, { name: 'DeserializationError' });
 });
 
 test('wrong owner: update collection rejects non-program-owned collection', async (t) => {
@@ -824,7 +814,7 @@ test('wrong owner: update collection rejects non-program-owned collection', asyn
     newName: 'Hacked Collection',
   }).sendAndConfirm(umi);
 
-  await t.throwsAsync(result);
+  await t.throwsAsync(result, { name: 'DeserializationError' });
 });
 
 test('discriminator: burn collection rejects uninitialized account owned by mpl-core', async (t) => {
