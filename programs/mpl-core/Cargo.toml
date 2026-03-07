@@ -7,7 +7,7 @@ license-file = "../../LICENSE"
 publish = false
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "lib"]
 
 [dependencies]
 borsh = "^0.10"
