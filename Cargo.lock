@@ -2761,9 +2761,9 @@ dependencies = [
 
 [[package]]
 name = "mpl-agent-identity"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "603d108832da84988b1ee5dc853f30efed8002a837ecbe210c09bb6741da743e"
+checksum = "5eeb975e047fd56cb730873d5f3ecfeff1a36f184517ef1c47b2a5ed03ae7e77"
 dependencies = [
  "borsh 0.10.4",
  "num-derive 0.4.2",
@@ -2776,6 +2776,8 @@ dependencies = [
 [[package]]
 name = "mpl-agent-tools"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eda6369852c60946a33454b9e114af52f19c70bcbb77af08f8120e60fffcfebd"
 dependencies = [
  "borsh 0.10.4",
  "num-derive 0.4.2",
