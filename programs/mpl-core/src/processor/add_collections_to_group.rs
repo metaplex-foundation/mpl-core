@@ -10,8 +10,7 @@ use crate::{
     instruction::accounts::{AddCollectionsToGroupV1Accounts, Context},
     state::{CollectionV1, GroupV1, SolanaAccount},
     utils::{
-        is_valid_collection_authority, is_valid_group_authority, resolve_authority,
-        save_flat_group,
+        is_valid_collection_authority, is_valid_group_authority, resolve_authority, save_flat_group,
     },
 };
 

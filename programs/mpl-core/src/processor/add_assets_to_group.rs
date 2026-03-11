@@ -1,10 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo,
-    entrypoint::ProgramResult,
-    msg,
-    program_memory::sol_memmove,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_memory::sol_memmove,
     pubkey::Pubkey,
 };
 
@@ -138,15 +135,33 @@ fn process_asset_groups_plugin_add<'a>(
             let old_data = Plugin::deserialize(&mut &asset_info.data.borrow()[record.offset..])?
                 .try_to_vec()?;
             let new_data = plugin.try_to_vec()?;
-            let size_diff = new_data.len() as isize - old_data.len() as isize;
+            let size_diff = (new_data.len() as isize)
+                .checked_sub(old_data.len() as isize)
+                .ok_or(MplCoreError::NumericalOverflow)?;
             if size_diff != 0 {
                 let old_registry_offset = plugin_header.plugin_registry_offset;
+                let next_offset = record
+                    .offset
+                    .checked_add(old_data.len())
+                    .ok_or(MplCoreError::NumericalOverflow)?;
+                let new_next_offset: usize = (next_offset as isize)
+                    .checked_add(size_diff)
+                    .ok_or(MplCoreError::NumericalOverflow)?
+                    .try_into()
+                    .map_err(|_| MplCoreError::NumericalOverflow)?;
 
                 plugin_registry.bump_offsets(record.offset, size_diff)?;
-                plugin_header.plugin_registry_offset =
-                    (old_registry_offset as isize + size_diff) as usize;
+                plugin_header.plugin_registry_offset = (old_registry_offset as isize)
+                    .checked_add(size_diff)
+                    .ok_or(MplCoreError::NumericalOverflow)?
+                    .try_into()
+                    .map_err(|_| MplCoreError::NumericalOverflow)?;
 
-                let new_size = (asset_info.data_len() as isize + size_diff) as usize;
+                let new_size: usize = (asset_info.data_len() as isize)
+                    .checked_add(size_diff)
+                    .ok_or(MplCoreError::NumericalOverflow)?
+                    .try_into()
+                    .map_err(|_| MplCoreError::NumericalOverflow)?;
                 resize_or_reallocate_account(
                     asset_info,
                     payer_info,
@@ -154,16 +169,16 @@ fn process_asset_groups_plugin_add<'a>(
                     new_size,
                 )?;
 
-                let next_offset = (record.offset + old_data.len()) as isize;
-                let new_next_offset = next_offset + size_diff;
-                let copy_len = old_registry_offset.saturating_sub(next_offset as usize);
+                let copy_len = old_registry_offset
+                    .checked_sub(next_offset)
+                    .ok_or(MplCoreError::NumericalOverflow)?;
 
                 if copy_len > 0 {
                     unsafe {
                         let base_ptr = asset_info.data.borrow_mut().as_mut_ptr();
                         sol_memmove(
-                            base_ptr.add(new_next_offset as usize),
-                            base_ptr.add(next_offset as usize),
+                            base_ptr.add(new_next_offset),
+                            base_ptr.add(next_offset),
                             copy_len,
                         );
                     }

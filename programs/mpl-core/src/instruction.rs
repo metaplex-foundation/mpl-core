@@ -4,19 +4,18 @@ use shank::{ShankContext, ShankInstruction};
 
 use crate::processor::{
     AddAssetsToGroupV1Args, AddCollectionExternalPluginAdapterV1Args, AddCollectionPluginV1Args,
-    AddCollectionsToGroupV1Args, AddExternalPluginAdapterV1Args,
-    AddGroupsToGroupV1Args, AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args,
-    ApprovePluginAuthorityV1Args, BurnCollectionV1Args, BurnV1Args, CloseGroupV1Args,
-    CompressV1Args, CreateCollectionV1Args, CreateCollectionV2Args, CreateGroupV1Args,
-    CreateV1Args, CreateV2Args, DecompressV1Args, ExecuteV1Args, RemoveAssetsFromGroupV1Args,
-    RemoveCollectionExternalPluginAdapterV1Args, RemoveCollectionPluginV1Args,
-    RemoveCollectionsFromGroupV1Args, RemoveExternalPluginAdapterV1Args,
-    RemoveGroupsFromGroupV1Args, RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args,
-    RevokePluginAuthorityV1Args, TransferV1Args, UpdateCollectionExternalPluginAdapterV1Args,
-    UpdateCollectionInfoV1Args, UpdateCollectionPluginV1Args, UpdateCollectionV1Args,
-    UpdateExternalPluginAdapterV1Args, UpdateGroupV1Args, UpdatePluginV1Args, UpdateV1Args,
-    UpdateV2Args, WriteCollectionExternalPluginAdapterDataV1Args,
-    WriteExternalPluginAdapterDataV1Args,
+    AddCollectionsToGroupV1Args, AddExternalPluginAdapterV1Args, AddGroupsToGroupV1Args,
+    AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args, ApprovePluginAuthorityV1Args,
+    BurnCollectionV1Args, BurnV1Args, CloseGroupV1Args, CompressV1Args, CreateCollectionV1Args,
+    CreateCollectionV2Args, CreateGroupV1Args, CreateV1Args, CreateV2Args, DecompressV1Args,
+    ExecuteV1Args, RemoveAssetsFromGroupV1Args, RemoveCollectionExternalPluginAdapterV1Args,
+    RemoveCollectionPluginV1Args, RemoveCollectionsFromGroupV1Args,
+    RemoveExternalPluginAdapterV1Args, RemoveGroupsFromGroupV1Args, RemovePluginV1Args,
+    RevokeCollectionPluginAuthorityV1Args, RevokePluginAuthorityV1Args, TransferV1Args,
+    UpdateCollectionExternalPluginAdapterV1Args, UpdateCollectionInfoV1Args,
+    UpdateCollectionPluginV1Args, UpdateCollectionV1Args, UpdateExternalPluginAdapterV1Args,
+    UpdateGroupV1Args, UpdatePluginV1Args, UpdateV1Args, UpdateV2Args,
+    WriteCollectionExternalPluginAdapterDataV1Args, WriteExternalPluginAdapterDataV1Args,
 };
 
 /// Instructions supported by the mpl-core program.

@@ -1,25 +1,16 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo,
-    entrypoint::ProgramResult,
-    msg,
-    program::invoke,
-    program_error::ProgramError,
-    program_memory::sol_memmove,
-    pubkey::Pubkey,
-    rent::Rent,
-    system_instruction, system_program,
-    sysvar::Sysvar,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke,
+    program_error::ProgramError, program_memory::sol_memmove, pubkey::Pubkey, rent::Rent,
+    system_instruction, system_program, sysvar::Sysvar,
 };
 
 use super::group_collection_plugin::process_collection_groups_plugin_add;
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateGroupV1Accounts,
-    plugins::{
-        create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginType,
-    },
+    plugins::{create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginType},
     state::{AssetV1, GroupV1, SolanaAccount},
     utils::{
         is_valid_asset_authority, is_valid_collection_authority, is_valid_group_authority,
