@@ -2,12 +2,11 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{
-    error::MplCoreError,
-    plugins::{abstain, approve, CheckResult, ExternalPluginAdapter, Plugin, ValidationResult},
+use crate::plugins::{
+    abstain, approve, CheckResult, ExternalPluginAdapter, Plugin, ValidationResult,
 };
 
-use super::{Authority, CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
+use super::{CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
 
 /// The representation of a taxonomy group which can reference collections and other groups.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]

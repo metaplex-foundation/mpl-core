@@ -17,7 +17,7 @@ pub struct RemoveAssetsFromGroupV1 {
     pub group: solana_program::pubkey::Pubkey,
     /// The account paying for storage fees
     pub payer: solana_program::pubkey::Pubkey,
-    /// The update authority or delegate of the group/assets
+    /// The group update authority and asset update authority or delegate
     pub authority: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
@@ -127,7 +127,7 @@ impl RemoveAssetsFromGroupV1Builder {
         self
     }
     /// `[optional account]`
-    /// The update authority or delegate of the group/assets
+    /// The group update authority and asset update authority or delegate
     #[inline(always)]
     pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.authority = authority;
@@ -187,7 +187,7 @@ pub struct RemoveAssetsFromGroupV1CpiAccounts<'a, 'b> {
     pub group: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The update authority or delegate of the group/assets
+    /// The group update authority and asset update authority or delegate
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -201,7 +201,7 @@ pub struct RemoveAssetsFromGroupV1Cpi<'a, 'b> {
     pub group: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The update authority or delegate of the group/assets
+    /// The group update authority and asset update authority or delegate
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -357,7 +357,7 @@ impl<'a, 'b> RemoveAssetsFromGroupV1CpiBuilder<'a, 'b> {
         self
     }
     /// `[optional account]`
-    /// The update authority or delegate of the group/assets
+    /// The group update authority and asset update authority or delegate
     #[inline(always)]
     pub fn authority(
         &mut self,

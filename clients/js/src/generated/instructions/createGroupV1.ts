@@ -77,7 +77,7 @@ export function getCreateGroupV1InstructionDataSerializer(): Serializer<
       ],
       { description: 'CreateGroupV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 47 })
+    (value) => ({ ...value, discriminator: 39 })
   ) as Serializer<
     CreateGroupV1InstructionDataArgs,
     CreateGroupV1InstructionData

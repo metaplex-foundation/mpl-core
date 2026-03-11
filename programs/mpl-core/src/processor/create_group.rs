@@ -1,29 +1,20 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo,
-    entrypoint::ProgramResult,
-    msg,
-    program::invoke,
-    program_error::ProgramError,
-    program_memory::{sol_memcpy, sol_memmove},
-    pubkey::Pubkey,
-    rent::Rent,
-    system_instruction, system_program,
-    sysvar::Sysvar,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke,
+    program_error::ProgramError, program_memory::sol_memmove, pubkey::Pubkey, rent::Rent,
+    system_instruction, system_program, sysvar::Sysvar,
 };
 
 use super::group_collection_plugin::process_collection_groups_plugin_add;
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateGroupV1Accounts,
-    plugins::{
-        create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginType,
-    },
-    state::{AssetV1, DataBlob, GroupV1, SolanaAccount},
+    plugins::{create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginType},
+    state::{AssetV1, GroupV1, SolanaAccount},
     utils::{
         is_valid_asset_authority, is_valid_collection_authority, is_valid_group_authority,
-        resize_or_reallocate_account, resolve_authority, save_group_core_and_plugins,
+        resize_or_reallocate_account, resolve_authority, save_flat_group,
     },
 };
 
@@ -131,12 +122,12 @@ pub(crate) fn create_group_v1<'a>(
         ],
     )?;
 
-    // Persist the serialized group data into the new account.
-    sol_memcpy(
-        &mut ctx.accounts.group.try_borrow_mut_data()?,
-        &serialized_data,
-        serialized_data.len(),
-    );
+    save_flat_group(
+        ctx.accounts.group,
+        &new_group,
+        ctx.accounts.payer,
+        ctx.accounts.system_program,
+    )?;
 
     // ----------------------------------------------------------------------
     // POST-CREATION LINKING LOGIC
@@ -204,7 +195,6 @@ pub(crate) fn create_group_v1<'a>(
         }
 
         let mut child_group = GroupV1::load(child_info, 0)?;
-        let old_child_core_len = child_group.len();
 
         if !is_valid_group_authority(child_info, authority_info)? {
             msg!("Error: Signer is not child group update authority/delegate");
@@ -213,10 +203,9 @@ pub(crate) fn create_group_v1<'a>(
 
         if !child_group.parent_groups.contains(ctx.accounts.group.key) {
             child_group.parent_groups.push(*ctx.accounts.group.key);
-            save_group_core_and_plugins(
+            save_flat_group(
                 child_info,
                 &child_group,
-                old_child_core_len,
                 ctx.accounts.payer,
                 ctx.accounts.system_program,
             )?;
@@ -240,7 +229,6 @@ pub(crate) fn create_group_v1<'a>(
         }
 
         let mut parent_group = GroupV1::load(parent_info, 0)?;
-        let old_parent_core_len = parent_group.len();
 
         if !is_valid_group_authority(parent_info, authority_info)? {
             msg!("Error: Signer is not parent group update authority/delegate");
@@ -249,10 +237,9 @@ pub(crate) fn create_group_v1<'a>(
 
         if !parent_group.groups.contains(ctx.accounts.group.key) {
             parent_group.groups.push(*ctx.accounts.group.key);
-            save_group_core_and_plugins(
+            save_flat_group(
                 parent_info,
                 &parent_group,
-                old_parent_core_len,
                 ctx.accounts.payer,
                 ctx.accounts.system_program,
             )?;
