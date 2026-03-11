@@ -1,9 +1,16 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::program_error::ProgramError;
+use mpl_utils::{assert_derivation, assert_signer};
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+    pubkey::Pubkey,
+};
 
-use crate::plugins::{
-    abstain, reject, Authority, ExternalCheckResult, HookableLifecycleEvent, PluginValidation,
-    PluginValidationContext, ValidationResult,
+use crate::{
+    error::MplCoreError,
+    plugins::{
+        abstain, reject, Authority, ExternalCheckResult, HookableLifecycleEvent, PluginValidation,
+        PluginValidationContext, ValidationResult,
+    },
 };
 
 /// Agent Identity plugin that links to an ERC-8004 spec registration file via a URI.
@@ -22,6 +29,22 @@ impl AgentIdentity {
             self.uri = uri.clone();
         }
     }
+
+    /// Check that the agent identity program is signing off on the addition.
+    pub fn verify_identity_registry(
+        identity_account: &AccountInfo,
+        asset: &Pubkey,
+    ) -> ProgramResult {
+        assert_signer(identity_account)?;
+        let _ = assert_derivation(
+            &mpl_agent_identity::ID,
+            identity_account,
+            &[b"agent_identity", asset.as_ref()],
+            MplCoreError::AgentIdentityMustSign,
+        )?;
+
+        Ok(())
+    }
 }
 
 impl PluginValidation for AgentIdentity {
@@ -30,18 +53,29 @@ impl PluginValidation for AgentIdentity {
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
         // Reject if being added to a collection (asset_info is None for collections).
-        if ctx.asset_info.is_none() {
-            reject!()
-        } else {
+        if let Some(asset_info) = ctx.asset_info {
+            // Verify that the agent identity program is signing off on the addition.
+            // Accounts cannot be empty so the unwrap is safe.
+            Self::verify_identity_registry(ctx.accounts.last().unwrap(), asset_info.key)?;
             abstain!()
+        } else {
+            reject!()
         }
     }
 
     fn validate_add_external_plugin_adapter(
         &self,
-        _ctx: &PluginValidationContext,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        abstain!()
+        // Reject if being added to a collection (asset_info is None for collections).
+        if let Some(asset_info) = ctx.asset_info {
+            // Verify that the agent identity program is signing off on the addition.
+            // Accounts cannot be empty so the unwrap is safe.
+            Self::verify_identity_registry(ctx.accounts.last().unwrap(), asset_info.key)?;
+            abstain!()
+        } else {
+            reject!()
+        }
     }
 
     fn validate_transfer(

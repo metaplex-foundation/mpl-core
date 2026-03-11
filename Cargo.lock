@@ -2684,13 +2684,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "mpl-agent-identity"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "603d108832da84988b1ee5dc853f30efed8002a837ecbe210c09bb6741da743e"
+dependencies = [
+ "borsh 0.10.4",
+ "num-derive 0.4.2",
+ "num-traits",
+ "solana-program",
+ "solana-program-error 3.0.0",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "mpl-agent-tools"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d9eace17c10b19ff53ab67b54327e12cd27bc911f60386c5341d2774393b4ba"
+dependencies = [
+ "borsh 0.10.4",
+ "num-derive 0.4.2",
+ "num-traits",
+ "solana-program",
+ "solana-program-error 3.0.0",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "mpl-bubblegum"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "efb15ed313a27388083eb66b824c9c1e8030d5a81c1b6205eeae010426565adc"
 dependencies = [
  "borsh 0.10.4",
- "kaigan 0.2.6",
+ "kaigan 0.3.0",
  "modular-bitfield",
  "num-derive 0.3.3",
  "num-traits",
@@ -2727,6 +2755,8 @@ dependencies = [
  "borsh 0.10.4",
  "bytemuck",
  "modular-bitfield",
+ "mpl-agent-identity",
+ "mpl-agent-tools",
  "mpl-bubblegum",
  "mpl-utils",
  "num-derive 0.3.3",
@@ -4245,7 +4275,7 @@ checksum = "c8f5152a288ef1912300fc6efa6c2d1f9bb55d9398eb6c72326360b8063987da"
 dependencies = [
  "bincode",
  "serde",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-program-memory",
  "solana-pubkey",
 ]
@@ -4812,7 +4842,7 @@ dependencies = [
  "solana-account-info",
  "solana-define-syscall",
  "solana-instruction",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-pubkey",
  "solana-stable-layout",
 ]
@@ -4953,7 +4983,7 @@ dependencies = [
  "solana-account",
  "solana-account-info",
  "solana-instruction",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-pubkey",
  "solana-rent",
  "solana-sdk-ids",
@@ -5103,7 +5133,7 @@ dependencies = [
  "bitflags",
  "solana-account-info",
  "solana-instruction",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-pubkey",
  "solana-sanitize",
  "solana-sdk-ids",
@@ -5547,7 +5577,7 @@ dependencies = [
  "solana-native-token",
  "solana-nonce",
  "solana-program-entrypoint",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-program-memory",
  "solana-program-option",
  "solana-program-pack",
@@ -5581,7 +5611,7 @@ checksum = "32ce041b1a0ed275290a5008ee1a4a6c48f5054c8a3d78d313c08958a06aedbd"
 dependencies = [
  "solana-account-info",
  "solana-msg",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-pubkey",
 ]
 
@@ -5600,6 +5630,12 @@ dependencies = [
  "solana-msg",
  "solana-pubkey",
 ]
+
+[[package]]
+name = "solana-program-error"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1af32c995a7b692a915bb7414d5f8e838450cf7c70414e763d8abcae7b51f28"
 
 [[package]]
 name = "solana-program-memory"
@@ -5622,7 +5658,7 @@ version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "319f0ef15e6e12dc37c597faccb7d62525a509fec5f6975ecb9419efddeb277b"
 dependencies = [
- "solana-program-error",
+ "solana-program-error 2.2.2",
 ]
 
 [[package]]
@@ -5707,7 +5743,7 @@ dependencies = [
  "solana-native-token",
  "solana-poh-config",
  "solana-program-entrypoint",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-program-runtime",
  "solana-pubkey",
  "solana-rent",
@@ -6509,7 +6545,7 @@ dependencies = [
  "solana-cpi",
  "solana-decode-error",
  "solana-instruction",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-pubkey",
  "solana-system-interface",
  "solana-sysvar-id",
@@ -6769,7 +6805,7 @@ dependencies = [
  "solana-instructions-sysvar",
  "solana-last-restart-slot",
  "solana-program-entrypoint",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-program-memory",
  "solana-pubkey",
  "solana-rent",
@@ -7273,7 +7309,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a7398da23554a31660f17718164e31d31900956054f54f52d5ec1be51cb4f4b3"
 dependencies = [
  "bytemuck",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-sha256-hasher",
  "spl-discriminator-derive",
 ]
@@ -7335,7 +7371,7 @@ dependencies = [
  "solana-instruction",
  "solana-msg",
  "solana-program-entrypoint",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-pubkey",
 ]
 
@@ -7361,7 +7397,7 @@ dependencies = [
  "num-traits",
  "solana-decode-error",
  "solana-msg",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-program-option",
  "solana-pubkey",
  "solana-zk-sdk",
@@ -7406,7 +7442,7 @@ dependencies = [
  "solana-decode-error",
  "solana-instruction",
  "solana-msg",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-pubkey",
  "spl-discriminator",
  "spl-pod",
@@ -7507,7 +7543,7 @@ dependencies = [
  "solana-decode-error",
  "solana-instruction",
  "solana-msg",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-pubkey",
  "spl-discriminator",
  "spl-pod",
@@ -7527,7 +7563,7 @@ dependencies = [
  "solana-decode-error",
  "solana-instruction",
  "solana-msg",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-pubkey",
  "spl-discriminator",
  "spl-pod",
@@ -7550,7 +7586,7 @@ dependencies = [
  "solana-decode-error",
  "solana-instruction",
  "solana-msg",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "solana-pubkey",
  "spl-discriminator",
  "spl-pod",
@@ -7572,7 +7608,7 @@ dependencies = [
  "solana-account-info",
  "solana-decode-error",
  "solana-msg",
- "solana-program-error",
+ "solana-program-error 2.2.2",
  "spl-discriminator",
  "spl-pod",
  "thiserror 1.0.69",

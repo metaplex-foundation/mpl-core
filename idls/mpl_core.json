@@ -5197,6 +5197,11 @@
       "code": 50,
       "name": "BlockedByBubblegumV2",
       "msg": "Bubblegum V2 Plugin limits other plugins"
+    },
+    {
+      "code": 51,
+      "name": "AgentIdentityMustSign",
+      "msg": "Agent Identity Program must sign"
     }
   ],
   "metadata": {

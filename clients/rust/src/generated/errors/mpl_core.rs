@@ -163,6 +163,9 @@ pub enum MplCoreError {
     /// 50 (0x32) - Bubblegum V2 Plugin limits other plugins
     #[error("Bubblegum V2 Plugin limits other plugins")]
     BlockedByBubblegumV2,
+    /// 51 (0x33) - Agent Identity Program must sign
+    #[error("Agent Identity Program must sign")]
+    AgentIdentityMustSign,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {
