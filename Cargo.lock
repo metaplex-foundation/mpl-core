@@ -2775,9 +2775,7 @@ dependencies = [
 
 [[package]]
 name = "mpl-agent-tools"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d9eace17c10b19ff53ab67b54327e12cd27bc911f60386c5341d2774393b4ba"
+version = "0.2.0"
 dependencies = [
  "borsh 0.10.4",
  "num-derive 0.4.2",

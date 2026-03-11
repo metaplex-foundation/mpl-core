@@ -24,7 +24,7 @@ spl-noop = { version = "1.0.0", features = ["cpi"] }
 podded = "0.5.1"
 strum = { version = "0.26.1", features = ["derive"] }
 mpl-agent-identity = "0.1.0"
-mpl-agent-tools = "0.1.0"
+mpl-agent-tools = {path = "../../../8004/clients/rust-tools"}
 
 [dev-dependencies]
 mollusk-svm = "0.5.0"
