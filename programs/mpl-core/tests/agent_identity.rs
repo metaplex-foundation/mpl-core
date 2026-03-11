@@ -20,6 +20,7 @@ use {
         state::{AssetV1, Authority, CollectionV1, DataBlob, Key, UpdateAuthority},
         ID as MPL_CORE_ID,
     },
+    solana_program::program_error::ProgramError,
     solana_sdk::{
         account::Account,
         instruction::{AccountMeta, Instruction},
@@ -90,14 +91,31 @@ fn assert_success(result: &mollusk_svm::result::InstructionResult) {
     );
 }
 
-fn assert_failure(result: &mollusk_svm::result::InstructionResult) {
-    assert!(
-        !matches!(
-            result.program_result,
-            mollusk_svm::result::ProgramResult::Success
-        ),
-        "Expected instruction to fail, but it succeeded"
-    );
+fn assert_failure(
+    result: &mollusk_svm::result::InstructionResult,
+    expected: solana_program::program_error::ProgramError,
+) {
+    match &result.program_result {
+        mollusk_svm::result::ProgramResult::Success => {
+            panic!(
+                "Expected instruction to fail with {:?}, but it succeeded",
+                expected
+            );
+        }
+        mollusk_svm::result::ProgramResult::Failure(err) => {
+            assert_eq!(
+                *err, expected,
+                "Expected error {:?}, got {:?}",
+                expected, err
+            );
+        }
+        mollusk_svm::result::ProgramResult::UnknownError(err) => {
+            panic!(
+                "Expected ProgramError {:?}, got UnknownError({:?})",
+                expected, err
+            );
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -711,7 +729,8 @@ fn cannot_create_collection_with_agent_identity() {
     ]);
 
     let result = mollusk.process_instruction(&instruction, &accounts);
-    assert_failure(&result);
+    // AgentIdentity rejects collections via validate_create → InvalidPluginAdapterTarget (46).
+    assert_failure(&result, ProgramError::Custom(46));
 }
 
 #[test]
@@ -749,7 +768,8 @@ fn cannot_add_agent_identity_to_collection() {
     ]);
 
     let result = mollusk.process_instruction(&instruction, &accounts);
-    assert_failure(&result);
+    // AgentIdentity rejects collections via validate_add_external_plugin_adapter → InvalidPluginAdapterTarget (46).
+    assert_failure(&result, ProgramError::Custom(46));
 }
 
 #[test]
@@ -784,7 +804,8 @@ fn cannot_add_agent_identity_without_pda_remaining_account() {
     ]);
 
     let result = mollusk.process_instruction(&instruction, &accounts);
-    assert_failure(&result);
+    // Last account is the log_wrapper placeholder (not a signer) → MissingRequiredSignature.
+    assert_failure(&result, ProgramError::MissingRequiredSignature);
 }
 
 #[test]
@@ -811,7 +832,8 @@ fn cannot_add_agent_identity_with_wrong_pda() {
     ]);
 
     let result = mollusk.process_instruction(&instruction, &accounts);
-    assert_failure(&result);
+    // PDA doesn't match derivation for asset_key → AgentIdentityMustSign (51).
+    assert_failure(&result, ProgramError::Custom(51));
 }
 
 #[test]
@@ -822,7 +844,7 @@ fn cannot_add_agent_identity_with_unsigned_pda() {
     let (pda, _) = agent_identity_pda(&asset_key);
 
     // Build instruction with PDA present but NOT marked as signer.
-    let mut data = vec![21u8];
+    let mut data = vec![22u8]; // AddExternalPluginAdapterV1 discriminator
     ExternalPluginAdapterInitInfo::AgentIdentity(default_agent_identity_init_info())
         .serialize(&mut data)
         .unwrap();
@@ -848,7 +870,8 @@ fn cannot_add_agent_identity_with_unsigned_pda() {
     ]);
 
     let result = mollusk.process_instruction(&instruction, &accounts);
-    assert_failure(&result);
+    // PDA is present but not a signer → MissingRequiredSignature.
+    assert_failure(&result, ProgramError::MissingRequiredSignature);
 }
 
 #[test]
@@ -890,5 +913,6 @@ fn cannot_add_duplicate_agent_identity() {
     ]);
 
     let result = mollusk.process_instruction(&instruction, &accounts);
-    assert_failure(&result);
+    // Plugin already exists → ExternalPluginAdapterAlreadyExists (32).
+    assert_failure(&result, ProgramError::Custom(32));
 }
