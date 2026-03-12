@@ -62,3 +62,26 @@ test("it can transfer a group's update authority", async (t) => {
     }).sendAndConfirm(umi)
   );
 });
+
+test('it can updateGroup with both name and URI simultaneously', async (t) => {
+  const umi = await createUmi();
+  const group = await createGroup(umi, {
+    name: 'original',
+    uri: 'https://original.com',
+  });
+
+  await updateGroup(umi, {
+    group: group.publicKey,
+    payer: umi.identity,
+    authority: umi.identity,
+    newName: 'updated',
+    newUri: 'https://updated.com',
+  }).sendAndConfirm(umi);
+
+  await assertGroup(t, umi, {
+    group: group.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    name: 'updated',
+    uri: 'https://updated.com',
+  });
+});
