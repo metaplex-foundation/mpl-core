@@ -120,8 +120,9 @@ pub(crate) fn process_asset_groups_plugin_add<'a>(
 
 /// Shared helper that persists a modified Groups plugin back to an account,
 /// handling the resize, memmove, and registry offset bump when the serialized
-/// size changes.
-fn save_updated_groups_plugin<'a>(
+/// size changes. Uses shrink-before-move / grow-after-move ordering so that
+/// source bytes are always valid during `sol_memmove`.
+pub(crate) fn save_updated_groups_plugin<'a>(
     account_info: &AccountInfo<'a>,
     payer_info: &AccountInfo<'a>,
     system_program_info: &AccountInfo<'a>,
@@ -163,6 +164,24 @@ fn save_updated_groups_plugin<'a>(
             .ok_or(MplCoreError::NumericalOverflow)?
             .try_into()
             .map_err(|_| MplCoreError::NumericalOverflow)?;
+
+        let copy_len = old_registry_offset
+            .checked_sub(next_plugin_offset)
+            .ok_or(MplCoreError::NumericalOverflow)?;
+
+        // When shrinking, move data first while the full source region is still valid.
+        if size_diff < 0 && copy_len > 0 {
+            unsafe {
+                let mut data = account_info.data.borrow_mut();
+                let base_ptr = data.as_mut_ptr();
+                sol_memmove(
+                    base_ptr.add(new_next_plugin_offset),
+                    base_ptr.add(next_plugin_offset),
+                    copy_len,
+                );
+            }
+        }
+
         resize_or_reallocate_account(
             account_info,
             payer_info,
@@ -170,11 +189,8 @@ fn save_updated_groups_plugin<'a>(
             new_size,
         )?;
 
-        let copy_len = old_registry_offset
-            .checked_sub(next_plugin_offset)
-            .ok_or(MplCoreError::NumericalOverflow)?;
-
-        if copy_len > 0 {
+        // When growing, move data after reallocation so the destination region exists.
+        if size_diff > 0 && copy_len > 0 {
             unsafe {
                 let mut data = account_info.data.borrow_mut();
                 let base_ptr = data.as_mut_ptr();

@@ -2,17 +2,17 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-    program_memory::sol_memmove, pubkey::Pubkey,
+    pubkey::Pubkey,
 };
 
+use super::groups_plugin_utils::save_updated_groups_plugin;
 use crate::{
     error::MplCoreError,
     instruction::accounts::{Context, RemoveCollectionsFromGroupV1Accounts},
     plugins::{create_meta_idempotent, Plugin, PluginType},
     state::{CollectionV1, GroupV1, SolanaAccount},
     utils::{
-        is_valid_collection_authority, is_valid_group_authority, resize_or_reallocate_account,
-        resolve_authority, save_flat_group,
+        is_valid_collection_authority, is_valid_group_authority, resolve_authority, save_flat_group,
     },
 };
 
@@ -136,93 +136,28 @@ fn process_collection_groups_plugin_remove<'a>(
         .position(|r| r.plugin_type == PluginType::Groups);
 
     if let Some(index) = record_index_opt {
-        let record_offset = plugin_registry.registry[index].offset;
-
-        let mut plugin = Plugin::load(collection_info, record_offset)?;
+        let record = plugin_registry.registry[index].clone();
+        let mut plugin = Plugin::load(collection_info, record.offset)?;
         if let Plugin::Groups(inner) = &mut plugin {
             if let Some(pos) = inner.groups.iter().position(|pk| pk == &parent_group) {
                 inner.groups.remove(pos);
             } else {
-                // Group not present, nothing to remove.
                 return Ok(());
             }
         } else {
             return Err(MplCoreError::InvalidPlugin.into());
         }
 
-        // Serialize sizes.
-        let old_plugin_data =
-            Plugin::deserialize(&mut &collection_info.data.borrow()[record_offset..])?
-                .try_to_vec()?;
-        let new_plugin_data = plugin.try_to_vec()?;
-        let size_diff = (new_plugin_data.len() as isize)
-            .checked_sub(old_plugin_data.len() as isize)
-            .ok_or(MplCoreError::NumericalOverflow)?;
-
-        if size_diff != 0 {
-            let old_registry_offset = plugin_header.plugin_registry_offset;
-            let next_plugin_offset = record_offset
-                .checked_add(old_plugin_data.len())
-                .ok_or(MplCoreError::NumericalOverflow)?;
-            let new_next_plugin_offset: usize = (next_plugin_offset as isize)
-                .checked_add(size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)?
-                .try_into()
-                .map_err(|_| MplCoreError::NumericalOverflow)?;
-            let copy_len = old_registry_offset
-                .checked_sub(next_plugin_offset)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-
-            plugin_registry.bump_offsets(record_offset, size_diff)?;
-            let new_registry_offset: usize = (old_registry_offset as isize)
-                .checked_add(size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)?
-                .try_into()
-                .map_err(|_| MplCoreError::NumericalOverflow)?;
-            plugin_header.plugin_registry_offset = new_registry_offset;
-
-            let new_size: usize = (collection_info.data_len() as isize)
-                .checked_add(size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)?
-                .try_into()
-                .map_err(|_| MplCoreError::NumericalOverflow)?;
-
-            if size_diff < 0 && copy_len > 0 {
-                unsafe {
-                    let mut data = collection_info.data.borrow_mut();
-                    let base_ptr = data.as_mut_ptr();
-                    sol_memmove(
-                        base_ptr.add(new_next_plugin_offset),
-                        base_ptr.add(next_plugin_offset),
-                        copy_len,
-                    );
-                }
-            }
-
-            resize_or_reallocate_account(
-                collection_info,
-                payer_info,
-                system_program_info,
-                new_size,
-            )?;
-
-            if size_diff > 0 && copy_len > 0 {
-                unsafe {
-                    let mut data = collection_info.data.borrow_mut();
-                    let base_ptr = data.as_mut_ptr();
-                    sol_memmove(
-                        base_ptr.add(new_next_plugin_offset),
-                        base_ptr.add(next_plugin_offset),
-                        copy_len,
-                    );
-                }
-            }
-        }
-
-        // Save changes.
-        plugin_header.save(collection_info, header_offset)?;
-        plugin_registry.save(collection_info, plugin_header.plugin_registry_offset)?;
-        plugin.save(collection_info, record_offset)?;
+        save_updated_groups_plugin(
+            collection_info,
+            payer_info,
+            system_program_info,
+            &plugin,
+            &record,
+            &mut plugin_header,
+            &mut plugin_registry,
+            header_offset,
+        )?;
     }
 
     Ok(())
