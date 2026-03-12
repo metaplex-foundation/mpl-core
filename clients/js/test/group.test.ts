@@ -1,7 +1,14 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { getGroupV1GpaBuilder, Key } from '../src';
-import { createGroup, createUmi } from './_setupRaw';
+import {
+  addAssetsToGroup,
+  addCollectionsToGroup,
+  getGroupV1GpaBuilder,
+  Key,
+  removeAssetsFromGroup,
+  removeCollectionsFromGroup,
+} from '../src';
+import { createAsset, createCollection, createGroup, createUmi } from './_setupRaw';
 
 test('it can gpa fetch groups by updateAuthority', async (t) => {
   // Given a Umi instance and a new signer.
@@ -28,5 +35,193 @@ test('it can gpa fetch groups by updateAuthority', async (t) => {
   t.assert(groups.every((g) => names.includes(g.name)));
   t.assert(
     groups.every((g) => g.updateAuthority === updateAuthority.publicKey)
+  );
+});
+
+test('it rejects addAssetsToGroup when signer is not group authority', async (t) => {
+  const umi = await createUmi();
+  const attacker = generateSigner(umi);
+
+  const group = await createGroup(umi);
+  const asset = await createAsset(umi);
+
+  const builder = addAssetsToGroup(umi, {
+    group: group.publicKey,
+    authority: attacker,
+  }).addRemainingAccounts([
+    { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+  ]);
+
+  await t.throwsAsync(builder.sendAndConfirm(umi), {
+    name: 'InvalidAuthority',
+  });
+});
+
+test('it rejects removeAssetsFromGroup when signer is not group authority', async (t) => {
+  const umi = await createUmi();
+  const attacker = generateSigner(umi);
+
+  const group = await createGroup(umi);
+  const asset = await createAsset(umi);
+
+  await addAssetsToGroup(umi, {
+    group: group.publicKey,
+    authority: umi.identity,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  const builder = removeAssetsFromGroup(umi, {
+    group: group.publicKey,
+    authority: attacker,
+    assets: [asset.publicKey],
+  }).addRemainingAccounts([
+    { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+  ]);
+
+  await t.throwsAsync(builder.sendAndConfirm(umi), {
+    name: 'InvalidAuthority',
+  });
+});
+
+test('it rejects addCollectionsToGroup when signer is not group authority', async (t) => {
+  const umi = await createUmi();
+  const attacker = generateSigner(umi);
+
+  const group = await createGroup(umi);
+  const collection = await createCollection(umi);
+
+  const builder = addCollectionsToGroup(umi, {
+    group: group.publicKey,
+    authority: attacker,
+  }).addRemainingAccounts([
+    { isSigner: false, isWritable: true, pubkey: collection.publicKey },
+  ]);
+
+  await t.throwsAsync(builder.sendAndConfirm(umi), {
+    name: 'InvalidAuthority',
+  });
+});
+
+test('it rejects removeCollectionsFromGroup when signer is not group authority', async (t) => {
+  const umi = await createUmi();
+  const attacker = generateSigner(umi);
+
+  const group = await createGroup(umi);
+  const collection = await createCollection(umi);
+
+  await addCollectionsToGroup(umi, {
+    group: group.publicKey,
+    authority: umi.identity,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  const builder = removeCollectionsFromGroup(umi, {
+    group: group.publicKey,
+    authority: attacker,
+    collections: [collection.publicKey],
+  }).addRemainingAccounts([
+    { isSigner: false, isWritable: true, pubkey: collection.publicKey },
+  ]);
+
+  await t.throwsAsync(builder.sendAndConfirm(umi), {
+    name: 'InvalidAuthority',
+  });
+});
+
+test('it rejects adding an already-member asset (duplicate entry)', async (t) => {
+  const umi = await createUmi();
+  const group = await createGroup(umi);
+  const asset = await createAsset(umi);
+
+  await addAssetsToGroup(umi, {
+    group: group.publicKey,
+    authority: umi.identity,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await t.throwsAsync(
+    addAssetsToGroup(umi, {
+      group: group.publicKey,
+      authority: umi.identity,
+    })
+      .addRemainingAccounts([
+        { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+      ])
+      .sendAndConfirm(umi),
+    { name: 'DuplicateEntry' }
+  );
+});
+
+test('it rejects adding an already-member collection (duplicate entry)', async (t) => {
+  const umi = await createUmi();
+  const group = await createGroup(umi);
+  const collection = await createCollection(umi);
+
+  await addCollectionsToGroup(umi, {
+    group: group.publicKey,
+    authority: umi.identity,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await t.throwsAsync(
+    addCollectionsToGroup(umi, {
+      group: group.publicKey,
+      authority: umi.identity,
+    })
+      .addRemainingAccounts([
+        { isSigner: false, isWritable: true, pubkey: collection.publicKey },
+      ])
+      .sendAndConfirm(umi),
+    { name: 'DuplicateEntry' }
+  );
+});
+
+test('it rejects duplicate asset in remaining accounts for addAssetsToGroup', async (t) => {
+  const umi = await createUmi();
+  const group = await createGroup(umi);
+  const asset = await createAsset(umi);
+
+  await t.throwsAsync(
+    addAssetsToGroup(umi, {
+      group: group.publicKey,
+      authority: umi.identity,
+    })
+      .addRemainingAccounts([
+        { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+        { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+      ])
+      .sendAndConfirm(umi),
+    { name: 'DuplicateEntry' }
+  );
+});
+
+test('it rejects duplicate collection in remaining accounts for addCollectionsToGroup', async (t) => {
+  const umi = await createUmi();
+  const group = await createGroup(umi);
+  const collection = await createCollection(umi);
+
+  await t.throwsAsync(
+    addCollectionsToGroup(umi, {
+      group: group.publicKey,
+      authority: umi.identity,
+    })
+      .addRemainingAccounts([
+        { isSigner: false, isWritable: true, pubkey: collection.publicKey },
+        { isSigner: false, isWritable: true, pubkey: collection.publicKey },
+      ])
+      .sendAndConfirm(umi),
+    { name: 'DuplicateEntry' }
   );
 });

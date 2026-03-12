@@ -49,7 +49,7 @@ pub(crate) fn add_plugin<'a>(
 
     // TODO move into plugin validation when asset/collection is part of validation context
     let plugin_type = PluginType::from(&args.plugin);
-    if plugin_type == PluginType::MasterEdition {
+    if plugin_type == PluginType::MasterEdition || plugin_type == PluginType::Groups {
         return Err(MplCoreError::InvalidPlugin.into());
     }
 

@@ -34,7 +34,7 @@ export type AddGroupsToGroupV1InstructionAccounts = {
   parentGroup: PublicKey | Pda;
   /** The account paying for storage fees */
   payer?: Signer;
-  /** The update authority or delegate of the groups */
+  /** The update authority of the parent and child groups */
   authority?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;
@@ -47,7 +47,7 @@ export type AddGroupsToGroupV1InstructionData = {
 };
 
 export type AddGroupsToGroupV1InstructionDataArgs = {
-  groups: Array<PublicKey>;
+  groups?: Array<PublicKey>;
 };
 
 export function getAddGroupsToGroupV1InstructionDataSerializer(): Serializer<
@@ -66,7 +66,7 @@ export function getAddGroupsToGroupV1InstructionDataSerializer(): Serializer<
       ],
       { description: 'AddGroupsToGroupV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 37 })
+    (value) => ({ ...value, discriminator: 37, groups: value.groups ?? [] })
   ) as Serializer<
     AddGroupsToGroupV1InstructionDataArgs,
     AddGroupsToGroupV1InstructionData

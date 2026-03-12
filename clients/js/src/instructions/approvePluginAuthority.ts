@@ -3,7 +3,7 @@ import { approvePluginAuthorityV1, PluginType } from '../generated';
 import { PluginAuthority, pluginAuthorityToBase } from '../plugins';
 
 export type ApprovePluginAuthorityArgsPlugin = {
-  type: keyof typeof PluginType;
+  type: Exclude<keyof typeof PluginType, 'Groups'>;
 };
 
 export type ApprovePluginAuthorityArgs = Omit<

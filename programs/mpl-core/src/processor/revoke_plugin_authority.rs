@@ -50,6 +50,11 @@ pub(crate) fn revoke_plugin_authority<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
+    // Groups plugins must be managed only via Group-specific instructions; revoke is not allowed.
+    if args.plugin_type == PluginType::Groups {
+        return Err(MplCoreError::InvalidPlugin.into());
+    }
+
     let (mut asset, plugin_header, mut plugin_registry) =
         fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
 

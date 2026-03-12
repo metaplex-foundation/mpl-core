@@ -17,11 +17,12 @@ use crate::{
         UpdateAuthority,
     },
 };
+use borsh::BorshSerialize;
 use mpl_utils::assert_signer;
 use num_traits::FromPrimitive;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
-    pubkey::Pubkey,
+    program_memory::sol_memcpy, pubkey::Pubkey,
 };
 use std::collections::BTreeMap;
 
@@ -99,6 +100,33 @@ pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
     } else {
         Ok((asset, None, None))
     }
+}
+
+/// Persist a mutated `GroupV1` as flat Borsh data only.
+pub(crate) fn save_flat_group<'a>(
+    group_info: &AccountInfo<'a>,
+    group: &GroupV1,
+    payer_info: &AccountInfo<'a>,
+    system_program_info: &AccountInfo<'a>,
+) -> ProgramResult {
+    let serialized_group = group.try_to_vec()?;
+
+    if serialized_group.len() != group_info.data_len() {
+        resize_or_reallocate_account(
+            group_info,
+            payer_info,
+            system_program_info,
+            serialized_group.len(),
+        )?;
+    }
+
+    sol_memcpy(
+        &mut group_info.try_borrow_mut_data()?,
+        &serialized_group,
+        serialized_group.len(),
+    );
+
+    Ok(())
 }
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
@@ -577,24 +605,27 @@ pub(crate) fn resolve_authority<'a>(
     }
 }
 
-/// Returns true if the `authority_info` represents either the update authority of the group
-/// or a valid update delegate (defined by an `UpdateDelegate` plugin on the group).
-pub fn is_valid_group_authority(
-    group_info: &AccountInfo,
+/// Returns true if the `authority_info` represents either the update authority of the asset
+/// or a valid update delegate (defined by an `UpdateDelegate` plugin on the asset).
+pub fn is_valid_asset_authority(
+    asset_info: &AccountInfo,
     authority_info: &AccountInfo,
 ) -> Result<bool, ProgramError> {
-    // Fast path: signer is the canonical update authority.
-    let group_core = GroupV1::load(group_info, 0)?;
-    if authority_info.key == &group_core.update_authority {
-        return Ok(true);
+    // Load asset core data.
+    let asset_core = AssetV1::load(asset_info, 0)?;
+
+    // Fast path: signer is the update authority address (when address type).
+    if let UpdateAuthority::Address(addr) = asset_core.update_authority.clone() {
+        if addr == *authority_info.key {
+            return Ok(true);
+        }
     }
 
-    // Attempt to locate an UpdateDelegate plugin on the group.
+    // Attempt to locate an UpdateDelegate plugin on the asset.
     if let Ok((_plugin_authority, plugin)) =
-        fetch_wrapped_plugin::<GroupV1>(group_info, Some(&group_core), PluginType::UpdateDelegate)
+        fetch_wrapped_plugin::<AssetV1>(asset_info, Some(&asset_core), PluginType::UpdateDelegate)
     {
         if let crate::plugins::Plugin::UpdateDelegate(update_delegate) = plugin {
-            // Accept if the signer is listed in additional delegates.
             if update_delegate
                 .additional_delegates
                 .contains(authority_info.key)
@@ -605,6 +636,15 @@ pub fn is_valid_group_authority(
     }
 
     Ok(false)
+}
+
+/// Returns true if the `authority_info` represents the group's update authority.
+pub fn is_valid_group_authority(
+    group_info: &AccountInfo,
+    authority_info: &AccountInfo,
+) -> Result<bool, ProgramError> {
+    let group_core = GroupV1::load(group_info, 0)?;
+    Ok(authority_info.key == &group_core.update_authority)
 }
 
 /// Returns true if the `authority_info` represents either the update authority of the collection

@@ -20,56 +20,17 @@ import {
   publicKey as toPublicKey,
 } from '@metaplex-foundation/umi';
 import {
-  Serializer,
   array,
   publicKey as publicKeySerializer,
   string,
-  struct,
 } from '@metaplex-foundation/umi/serializers';
+import {
+  GroupV1AccountData,
+  getGroupV1AccountDataSerializer,
+} from '../../hooked';
 import { Key, KeyArgs, getKeySerializer } from '../types';
 
 export type GroupV1 = Account<GroupV1AccountData>;
-
-export type GroupV1AccountData = {
-  key: Key;
-  updateAuthority: PublicKey;
-  name: string;
-  uri: string;
-  collections: Array<PublicKey>;
-  groups: Array<PublicKey>;
-  parentGroups: Array<PublicKey>;
-  assets: Array<PublicKey>;
-};
-
-export type GroupV1AccountDataArgs = {
-  key: KeyArgs;
-  updateAuthority: PublicKey;
-  name: string;
-  uri: string;
-  collections: Array<PublicKey>;
-  groups: Array<PublicKey>;
-  parentGroups: Array<PublicKey>;
-  assets: Array<PublicKey>;
-};
-
-export function getGroupV1AccountDataSerializer(): Serializer<
-  GroupV1AccountDataArgs,
-  GroupV1AccountData
-> {
-  return struct<GroupV1AccountData>(
-    [
-      ['key', getKeySerializer()],
-      ['updateAuthority', publicKeySerializer()],
-      ['name', string()],
-      ['uri', string()],
-      ['collections', array(publicKeySerializer())],
-      ['groups', array(publicKeySerializer())],
-      ['parentGroups', array(publicKeySerializer())],
-      ['assets', array(publicKeySerializer())],
-    ],
-    { description: 'GroupV1AccountData' }
-  ) as Serializer<GroupV1AccountDataArgs, GroupV1AccountData>;
-}
 
 export function deserializeGroupV1(rawAccount: RpcAccount): GroupV1 {
   return deserializeAccount(rawAccount, getGroupV1AccountDataSerializer());
@@ -156,5 +117,6 @@ export function getGroupV1GpaBuilder(
       parentGroups: [null, array(publicKeySerializer())],
       assets: [null, array(publicKeySerializer())],
     })
-    .deserializeUsing<GroupV1>((account) => deserializeGroupV1(account));
+    .deserializeUsing<GroupV1>((account) => deserializeGroupV1(account))
+    .whereField('key', Key.GroupV1);
 }

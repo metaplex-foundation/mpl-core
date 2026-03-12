@@ -17,7 +17,7 @@ pub struct RemoveCollectionsFromGroupV1 {
     pub group: solana_program::pubkey::Pubkey,
     /// The account paying for storage fees
     pub payer: solana_program::pubkey::Pubkey,
-    /// The update authority or delegate of the group/collections
+    /// The group update authority and collection update authority or delegate
     pub authority: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
@@ -127,7 +127,7 @@ impl RemoveCollectionsFromGroupV1Builder {
         self
     }
     /// `[optional account]`
-    /// The update authority or delegate of the group/collections
+    /// The group update authority and collection update authority or delegate
     #[inline(always)]
     pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.authority = authority;
@@ -140,6 +140,7 @@ impl RemoveCollectionsFromGroupV1Builder {
         self.system_program = Some(system_program);
         self
     }
+    /// `[optional argument, defaults to '[]']`
     #[inline(always)]
     pub fn collections(&mut self, collections: Vec<Pubkey>) -> &mut Self {
         self.collections = Some(collections);
@@ -174,7 +175,7 @@ impl RemoveCollectionsFromGroupV1Builder {
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
         };
         let args = RemoveCollectionsFromGroupV1InstructionArgs {
-            collections: self.collections.clone().expect("collections is not set"),
+            collections: self.collections.clone().unwrap_or([]),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -187,7 +188,7 @@ pub struct RemoveCollectionsFromGroupV1CpiAccounts<'a, 'b> {
     pub group: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The update authority or delegate of the group/collections
+    /// The group update authority and collection update authority or delegate
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -201,7 +202,7 @@ pub struct RemoveCollectionsFromGroupV1Cpi<'a, 'b> {
     pub group: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The update authority or delegate of the group/collections
+    /// The group update authority and collection update authority or delegate
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -357,7 +358,7 @@ impl<'a, 'b> RemoveCollectionsFromGroupV1CpiBuilder<'a, 'b> {
         self
     }
     /// `[optional account]`
-    /// The update authority or delegate of the group/collections
+    /// The group update authority and collection update authority or delegate
     #[inline(always)]
     pub fn authority(
         &mut self,
@@ -375,6 +376,7 @@ impl<'a, 'b> RemoveCollectionsFromGroupV1CpiBuilder<'a, 'b> {
         self.instruction.system_program = Some(system_program);
         self
     }
+    /// `[optional argument, defaults to '[]']`
     #[inline(always)]
     pub fn collections(&mut self, collections: Vec<Pubkey>) -> &mut Self {
         self.instruction.collections = Some(collections);
@@ -422,11 +424,7 @@ impl<'a, 'b> RemoveCollectionsFromGroupV1CpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = RemoveCollectionsFromGroupV1InstructionArgs {
-            collections: self
-                .instruction
-                .collections
-                .clone()
-                .expect("collections is not set"),
+            collections: self.instruction.collections.clone().unwrap_or([]),
         };
         let instruction = RemoveCollectionsFromGroupV1Cpi {
             __program: self.instruction.__program,

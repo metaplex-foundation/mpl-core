@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import {
   assertAccountExists,
+  deserializeAccount,
   generateSigner,
   PublicKey,
   publicKey,
@@ -30,6 +31,7 @@ import {
   PluginAuthorityPairArgs,
   UpdateAuthority,
 } from '../src';
+import { getGroupV1AccountDataSerializer } from '../src/hooked';
 
 export const createUmi = async () => (await basecreateUmi()).use(mplCore());
 
@@ -177,24 +179,6 @@ export const createGroup = async (
     }).sendAndConfirm(umi);
   }
 
-  // If we have a signer for the update authority, delegate permissions to the payer
-  if (updateAuthoritySigner) {
-    const { plugin } = await import('../src/generated/types/plugin');
-    const { addGroupPluginV1 } = await import('../src/generated');
-
-    await addGroupPluginV1(umi, {
-      group: group.publicKey,
-      payer,
-      authority: updateAuthoritySigner,
-      plugin: plugin('UpdateDelegate', [
-        {
-          additionalDelegates: [publicKey(payer)],
-        },
-      ] as any),
-      initAuthority: null,
-    }).sendAndConfirm(umi);
-  }
-
   return fetchGroupV1(umi, publicKey(group));
 };
 
@@ -321,7 +305,12 @@ export const assertGroup = async (
   const { group, name, uri, updateAuthority, ...rest } = input;
 
   const groupAddress = publicKey(group);
-  const groupWithPlugins = await fetchGroupV1(umi, groupAddress);
+  const maybeGroupAccount = await umi.rpc.getAccount(groupAddress);
+  assertAccountExists(maybeGroupAccount, 'GroupV1');
+  const groupWithPlugins = deserializeAccount(
+    maybeGroupAccount,
+    getGroupV1AccountDataSerializer()
+  );
 
   // Name.
   if (typeof name === 'string') t.is(groupWithPlugins.name, name);

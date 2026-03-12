@@ -17,7 +17,7 @@ pub struct RemoveGroupsFromGroupV1 {
     pub parent_group: solana_program::pubkey::Pubkey,
     /// The account paying for storage fees
     pub payer: solana_program::pubkey::Pubkey,
-    /// The update authority or delegate of the groups
+    /// The update authority of the parent and child groups
     pub authority: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
@@ -128,7 +128,7 @@ impl RemoveGroupsFromGroupV1Builder {
         self
     }
     /// `[optional account]`
-    /// The update authority or delegate of the groups
+    /// The update authority of the parent and child groups
     #[inline(always)]
     pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.authority = authority;
@@ -141,6 +141,7 @@ impl RemoveGroupsFromGroupV1Builder {
         self.system_program = Some(system_program);
         self
     }
+    /// `[optional argument, defaults to '[]']`
     #[inline(always)]
     pub fn groups(&mut self, groups: Vec<Pubkey>) -> &mut Self {
         self.groups = Some(groups);
@@ -175,7 +176,7 @@ impl RemoveGroupsFromGroupV1Builder {
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
         };
         let args = RemoveGroupsFromGroupV1InstructionArgs {
-            groups: self.groups.clone().expect("groups is not set"),
+            groups: self.groups.clone().unwrap_or([]),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -188,7 +189,7 @@ pub struct RemoveGroupsFromGroupV1CpiAccounts<'a, 'b> {
     pub parent_group: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The update authority or delegate of the groups
+    /// The update authority of the parent and child groups
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -202,7 +203,7 @@ pub struct RemoveGroupsFromGroupV1Cpi<'a, 'b> {
     pub parent_group: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The update authority or delegate of the groups
+    /// The update authority of the parent and child groups
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -361,7 +362,7 @@ impl<'a, 'b> RemoveGroupsFromGroupV1CpiBuilder<'a, 'b> {
         self
     }
     /// `[optional account]`
-    /// The update authority or delegate of the groups
+    /// The update authority of the parent and child groups
     #[inline(always)]
     pub fn authority(
         &mut self,
@@ -379,6 +380,7 @@ impl<'a, 'b> RemoveGroupsFromGroupV1CpiBuilder<'a, 'b> {
         self.instruction.system_program = Some(system_program);
         self
     }
+    /// `[optional argument, defaults to '[]']`
     #[inline(always)]
     pub fn groups(&mut self, groups: Vec<Pubkey>) -> &mut Self {
         self.instruction.groups = Some(groups);
@@ -426,7 +428,7 @@ impl<'a, 'b> RemoveGroupsFromGroupV1CpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = RemoveGroupsFromGroupV1InstructionArgs {
-            groups: self.instruction.groups.clone().expect("groups is not set"),
+            groups: self.instruction.groups.clone().unwrap_or([]),
         };
         let instruction = RemoveGroupsFromGroupV1Cpi {
             __program: self.instruction.__program,

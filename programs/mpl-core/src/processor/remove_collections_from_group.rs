@@ -1,24 +1,18 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo,
-    entrypoint::ProgramResult,
-    msg,
-    program_error::ProgramError,
-    program_memory::{sol_memcpy, sol_memmove},
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey,
 };
 
+use super::groups_plugin_utils::save_updated_groups_plugin;
 use crate::{
     error::MplCoreError,
-    plugins::{
-        create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginHeaderV1,
-        PluginRegistryV1, PluginType,
-    },
-    state::{CollectionV1, DataBlob, GroupV1, SolanaAccount},
+    instruction::accounts::{Context, RemoveCollectionsFromGroupV1Accounts},
+    plugins::{create_meta_idempotent, Plugin, PluginType},
+    state::{CollectionV1, GroupV1, SolanaAccount},
     utils::{
-        is_valid_collection_authority, is_valid_group_authority, resize_or_reallocate_account,
-        resolve_authority,
+        is_valid_collection_authority, is_valid_group_authority, resolve_authority, save_flat_group,
     },
 };
 
@@ -42,17 +36,13 @@ pub(crate) fn remove_collections_from_group_v1<'a>(
     //   2. [signer] Optional authority (update auth/delegate)
     //   3. [] System program
     //   4..N [writable] Collection accounts, one for each pubkey in args.collections
-
-    if accounts.len() < 4 {
-        return Err(ProgramError::NotEnoughAccountKeys);
-    }
-
-    let group_info = &accounts[0];
-    let payer_info = &accounts[1];
-    let authority_info_opt = accounts.get(2);
-    let system_program_info = &accounts[3];
-
-    let collection_accounts = &accounts[4..];
+    let ctx: Context<RemoveCollectionsFromGroupV1Accounts> =
+        RemoveCollectionsFromGroupV1Accounts::context(accounts)?;
+    let group_info = ctx.accounts.group;
+    let payer_info = ctx.accounts.payer;
+    let authority_info_opt = ctx.accounts.authority;
+    let system_program_info = ctx.accounts.system_program;
+    let collection_accounts = ctx.remaining_accounts;
 
     // Basic guards
     assert_signer(payer_info)?;
@@ -60,6 +50,10 @@ pub(crate) fn remove_collections_from_group_v1<'a>(
 
     if system_program_info.key != &solana_program::system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
+    }
+
+    if !group_info.is_writable {
+        return Err(ProgramError::InvalidAccountData);
     }
 
     if collection_accounts.len() != args.collections.len() {
@@ -109,8 +103,8 @@ pub(crate) fn remove_collections_from_group_v1<'a>(
         {
             group.collections.remove(pos);
         } else {
-            // If collection not present, skip plugin update.
-            continue;
+            msg!("Error: Collection is not a child of the provided group");
+            return Err(MplCoreError::IncorrectAccount.into());
         }
 
         // Remove group from collection's Groups plugin.
@@ -122,21 +116,7 @@ pub(crate) fn remove_collections_from_group_v1<'a>(
         )?;
     }
 
-    // Persist group changes.
-    let serialized_group = group.try_to_vec()?;
-    if serialized_group.len() != group_info.data_len() {
-        resize_or_reallocate_account(
-            group_info,
-            payer_info,
-            system_program_info,
-            serialized_group.len(),
-        )?;
-    }
-    sol_memcpy(
-        &mut group_info.try_borrow_mut_data()?,
-        &serialized_group,
-        serialized_group.len(),
-    );
+    save_flat_group(group_info, &group, payer_info, system_program_info)?;
 
     Ok(())
 }
@@ -156,69 +136,28 @@ fn process_collection_groups_plugin_remove<'a>(
         .position(|r| r.plugin_type == PluginType::Groups);
 
     if let Some(index) = record_index_opt {
-        let record_offset = plugin_registry.registry[index].offset;
-
-        let mut plugin = Plugin::load(collection_info, record_offset)?;
+        let record = plugin_registry.registry[index].clone();
+        let mut plugin = Plugin::load(collection_info, record.offset)?;
         if let Plugin::Groups(inner) = &mut plugin {
             if let Some(pos) = inner.groups.iter().position(|pk| pk == &parent_group) {
                 inner.groups.remove(pos);
             } else {
-                // Group not present, nothing to remove.
                 return Ok(());
             }
         } else {
             return Err(MplCoreError::InvalidPlugin.into());
         }
 
-        // Serialize sizes.
-        let old_plugin_data =
-            Plugin::deserialize(&mut &collection_info.data.borrow()[record_offset..])?
-                .try_to_vec()?;
-        let new_plugin_data = plugin.try_to_vec()?;
-        let size_diff = (new_plugin_data.len() as isize)
-            .checked_sub(old_plugin_data.len() as isize)
-            .ok_or(MplCoreError::NumericalOverflow)?;
-
-        if size_diff != 0 {
-            plugin_registry.bump_offsets(record_offset, size_diff)?;
-            let new_registry_offset = (plugin_header.plugin_registry_offset as isize)
-                .checked_add(size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-            plugin_header.plugin_registry_offset = new_registry_offset as usize;
-
-            let new_size = (collection_info.data_len() as isize)
-                .checked_add(size_diff)
-                .ok_or(MplCoreError::NumericalOverflow)? as usize;
-            resize_or_reallocate_account(
-                collection_info,
-                payer_info,
-                system_program_info,
-                new_size,
-            )?;
-
-            let next_plugin_offset = (record_offset + old_plugin_data.len()) as isize;
-            let new_next_plugin_offset = next_plugin_offset + size_diff;
-
-            let copy_len = plugin_header
-                .plugin_registry_offset
-                .saturating_sub(next_plugin_offset as usize);
-
-            if copy_len > 0 {
-                unsafe {
-                    let base_ptr = collection_info.data.borrow_mut().as_mut_ptr();
-                    sol_memmove(
-                        base_ptr.add(new_next_plugin_offset as usize),
-                        base_ptr.add(next_plugin_offset as usize),
-                        copy_len,
-                    );
-                }
-            }
-        }
-
-        // Save changes.
-        plugin_header.save(collection_info, header_offset)?;
-        plugin_registry.save(collection_info, plugin_header.plugin_registry_offset)?;
-        plugin.save(collection_info, record_offset)?;
+        save_updated_groups_plugin(
+            collection_info,
+            payer_info,
+            system_program_info,
+            &plugin,
+            &record,
+            &mut plugin_header,
+            &mut plugin_registry,
+            header_offset,
+        )?;
     }
 
     Ok(())

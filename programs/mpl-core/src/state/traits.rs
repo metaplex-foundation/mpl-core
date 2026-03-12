@@ -21,6 +21,10 @@ pub trait SolanaAccount: BorshSerialize + BorshDeserialize {
 
     /// Load the account from the given account info starting at the offset.
     fn load(account: &AccountInfo, offset: usize) -> Result<Self, ProgramError> {
+        if account.owner != &crate::ID {
+            return Err(ProgramError::IllegalOwner);
+        }
+
         let key = load_key(account, offset)?;
 
         if key != Self::key() {

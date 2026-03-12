@@ -43,7 +43,7 @@ impl CreateGroupV1 {
         if let Some(update_authority) = self.update_authority {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 update_authority,
-                false,
+                true,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -79,7 +79,7 @@ pub struct CreateGroupV1InstructionData {
 
 impl CreateGroupV1InstructionData {
     pub fn new() -> Self {
-        Self { discriminator: 47 }
+        Self { discriminator: 39 }
     }
 }
 
@@ -98,7 +98,7 @@ pub struct CreateGroupV1InstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` group
-///   1. `[optional]` update_authority
+///   1. `[signer, optional]` update_authority
 ///   2. `[writable, signer]` payer
 ///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Default)]
@@ -156,6 +156,7 @@ impl CreateGroupV1Builder {
         self.uri = Some(uri);
         self
     }
+    /// `[optional argument, defaults to '[]']`
     #[inline(always)]
     pub fn relationships(&mut self, relationships: Vec<RelationshipEntry>) -> &mut Self {
         self.relationships = Some(relationships);
@@ -192,10 +193,7 @@ impl CreateGroupV1Builder {
         let args = CreateGroupV1InstructionArgs {
             name: self.name.clone().expect("name is not set"),
             uri: self.uri.clone().expect("uri is not set"),
-            relationships: self
-                .relationships
-                .clone()
-                .expect("relationships is not set"),
+            relationships: self.relationships.clone().unwrap_or([]),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -286,7 +284,7 @@ impl<'a, 'b> CreateGroupV1Cpi<'a, 'b> {
         if let Some(update_authority) = self.update_authority {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 *update_authority.key,
-                false,
+                true,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -343,7 +341,7 @@ impl<'a, 'b> CreateGroupV1Cpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` group
-///   1. `[optional]` update_authority
+///   1. `[signer, optional]` update_authority
 ///   2. `[writable, signer]` payer
 ///   3. `[]` system_program
 pub struct CreateGroupV1CpiBuilder<'a, 'b> {
@@ -406,6 +404,7 @@ impl<'a, 'b> CreateGroupV1CpiBuilder<'a, 'b> {
         self.instruction.uri = Some(uri);
         self
     }
+    /// `[optional argument, defaults to '[]']`
     #[inline(always)]
     pub fn relationships(&mut self, relationships: Vec<RelationshipEntry>) -> &mut Self {
         self.instruction.relationships = Some(relationships);
@@ -455,11 +454,7 @@ impl<'a, 'b> CreateGroupV1CpiBuilder<'a, 'b> {
         let args = CreateGroupV1InstructionArgs {
             name: self.instruction.name.clone().expect("name is not set"),
             uri: self.instruction.uri.clone().expect("uri is not set"),
-            relationships: self
-                .instruction
-                .relationships
-                .clone()
-                .expect("relationships is not set"),
+            relationships: self.instruction.relationships.clone().unwrap_or([]),
         };
         let instruction = CreateGroupV1Cpi {
             __program: self.instruction.__program,

@@ -38,7 +38,7 @@ export type CreateGroupV1InstructionAccounts = {
   /** The address of the new group */
   group: Signer;
   /** The authority of the new group */
-  updateAuthority?: PublicKey | Pda;
+  updateAuthority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -56,7 +56,7 @@ export type CreateGroupV1InstructionData = {
 export type CreateGroupV1InstructionDataArgs = {
   name: string;
   uri: string;
-  relationships: Array<RelationshipEntryArgs>;
+  relationships?: Array<RelationshipEntryArgs>;
 };
 
 export function getCreateGroupV1InstructionDataSerializer(): Serializer<
@@ -77,7 +77,11 @@ export function getCreateGroupV1InstructionDataSerializer(): Serializer<
       ],
       { description: 'CreateGroupV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 47 })
+    (value) => ({
+      ...value,
+      discriminator: 39,
+      relationships: value.relationships ?? [],
+    })
   ) as Serializer<
     CreateGroupV1InstructionDataArgs,
     CreateGroupV1InstructionData

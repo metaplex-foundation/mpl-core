@@ -1,6 +1,9 @@
-use crate::{plugins::PluginValidation, state::DataBlob};
+use crate::{
+    plugins::{abstain, reject, PluginValidation, PluginValidationContext, ValidationResult},
+    state::DataBlob,
+};
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::pubkey::Pubkey;
+use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 /// Groups plugin for collections. Stores the immediate parent group accounts this collection
 /// belongs to. Validation is deferred to specialized group instructions, so the plugin itself has
@@ -22,4 +25,15 @@ impl DataBlob for Groups {
     }
 }
 
-impl PluginValidation for Groups {}
+impl PluginValidation for Groups {
+    fn validate_burn(
+        &self,
+        _ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        if !self.groups.is_empty() {
+            reject!()
+        } else {
+            abstain!()
+        }
+    }
+}

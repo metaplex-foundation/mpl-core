@@ -34,7 +34,7 @@ export type RemoveGroupsFromGroupV1InstructionAccounts = {
   parentGroup: PublicKey | Pda;
   /** The account paying for storage fees */
   payer?: Signer;
-  /** The update authority or delegate of the groups */
+  /** The update authority of the parent and child groups */
   authority?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;
@@ -47,7 +47,7 @@ export type RemoveGroupsFromGroupV1InstructionData = {
 };
 
 export type RemoveGroupsFromGroupV1InstructionDataArgs = {
-  groups: Array<PublicKey>;
+  groups?: Array<PublicKey>;
 };
 
 export function getRemoveGroupsFromGroupV1InstructionDataSerializer(): Serializer<
@@ -66,7 +66,7 @@ export function getRemoveGroupsFromGroupV1InstructionDataSerializer(): Serialize
       ],
       { description: 'RemoveGroupsFromGroupV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 38 })
+    (value) => ({ ...value, discriminator: 38, groups: value.groups ?? [] })
   ) as Serializer<
     RemoveGroupsFromGroupV1InstructionDataArgs,
     RemoveGroupsFromGroupV1InstructionData

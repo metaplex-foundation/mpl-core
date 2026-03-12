@@ -1,14 +1,14 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program_memory::sol_memcpy,
+    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
 };
 
 use crate::{
     error::MplCoreError,
     instruction::accounts::UpdateGroupV1Accounts,
     state::{GroupV1, SolanaAccount},
-    utils::{is_valid_group_authority, resize_or_reallocate_account, resolve_authority},
+    utils::{is_valid_group_authority, resolve_authority, save_flat_group},
 };
 
 /// Arguments for the `UpdateGroupV1` instruction.
@@ -39,10 +39,14 @@ pub(crate) fn update_group_v1<'a>(
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
+    if !ctx.accounts.group.is_writable {
+        return Err(ProgramError::InvalidAccountData);
+    }
+
     // Deserialize the group account.
     let mut group = GroupV1::load(ctx.accounts.group, 0)?;
 
-    // Ensure the signer is the update authority or update delegate of the group.
+    // Ensure the signer is the update authority of the group.
     if !is_valid_group_authority(ctx.accounts.group, authority)? {
         return Err(MplCoreError::InvalidAuthority.into());
     }
@@ -69,24 +73,12 @@ pub(crate) fn update_group_v1<'a>(
 
     // Persist state changes if anything was updated.
     if dirty {
-        let serialized = group.try_to_vec()?;
-
-        // Resize the account if the serialized length differs.
-        if serialized.len() != ctx.accounts.group.data_len() {
-            resize_or_reallocate_account(
-                ctx.accounts.group,
-                ctx.accounts.payer,
-                ctx.accounts.system_program,
-                serialized.len(),
-            )?;
-        }
-
-        // Write the updated data into the account.
-        sol_memcpy(
-            &mut ctx.accounts.group.try_borrow_mut_data()?,
-            &serialized,
-            serialized.len(),
-        );
+        save_flat_group(
+            ctx.accounts.group,
+            &group,
+            ctx.accounts.payer,
+            ctx.accounts.system_program,
+        )?;
     }
 
     Ok(())

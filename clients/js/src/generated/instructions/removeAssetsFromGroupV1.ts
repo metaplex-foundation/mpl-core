@@ -34,7 +34,7 @@ export type RemoveAssetsFromGroupV1InstructionAccounts = {
   group: PublicKey | Pda;
   /** The account paying for storage fees */
   payer?: Signer;
-  /** The update authority or delegate of the group/assets */
+  /** The group update authority and asset update authority or delegate */
   authority?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;
@@ -47,7 +47,7 @@ export type RemoveAssetsFromGroupV1InstructionData = {
 };
 
 export type RemoveAssetsFromGroupV1InstructionDataArgs = {
-  assets: Array<PublicKey>;
+  assets?: Array<PublicKey>;
 };
 
 export function getRemoveAssetsFromGroupV1InstructionDataSerializer(): Serializer<
@@ -66,7 +66,7 @@ export function getRemoveAssetsFromGroupV1InstructionDataSerializer(): Serialize
       ],
       { description: 'RemoveAssetsFromGroupV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 36 })
+    (value) => ({ ...value, discriminator: 36, assets: value.assets ?? [] })
   ) as Serializer<
     RemoveAssetsFromGroupV1InstructionDataArgs,
     RemoveAssetsFromGroupV1InstructionData
