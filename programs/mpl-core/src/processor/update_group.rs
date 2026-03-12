@@ -1,6 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+};
 
 use crate::{
     error::MplCoreError,
@@ -35,6 +37,10 @@ pub(crate) fn update_group_v1<'a>(
     // Ensure the canonical system program is provided.
     if ctx.accounts.system_program.key != &solana_program::system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
+    }
+
+    if !ctx.accounts.group.is_writable {
+        return Err(ProgramError::InvalidAccountData);
     }
 
     // Deserialize the group account.

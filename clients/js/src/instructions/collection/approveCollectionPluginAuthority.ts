@@ -10,7 +10,7 @@ export type ApproveCollectionPluginAuthorityArgs = Omit<
   'pluginType' | 'newAuthority'
 > & {
   plugin: {
-    type: keyof typeof PluginType;
+    type: Exclude<keyof typeof PluginType, 'Groups'>;
   };
   newAuthority: PluginAuthority;
 };

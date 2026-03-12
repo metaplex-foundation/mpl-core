@@ -8,7 +8,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::{AddGroupsToGroupV1Accounts, Context},
-    state::{GroupV1, SolanaAccount},
+    state::{GroupV1, SolanaAccount, MAX_GROUP_NESTING_DEPTH, MAX_GROUP_VECTOR_SIZE},
     utils::{is_valid_group_authority, resolve_authority, save_flat_group},
 };
 
@@ -45,6 +45,10 @@ pub(crate) fn add_groups_to_group_v1<'a>(
 
     if system_program_info.key != &solana_program::system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
+    }
+
+    if !parent_group_info.is_writable {
+        return Err(ProgramError::InvalidAccountData);
     }
 
     // Validate arg count matches remaining accounts.
@@ -97,12 +101,21 @@ pub(crate) fn add_groups_to_group_v1<'a>(
             return Err(MplCoreError::InvalidAuthority.into());
         }
 
-        // 1. Update parent group's child list if not already present.
-        if !parent_group.groups.contains(child_info.key) {
-            parent_group.groups.push(*child_info.key);
+        if parent_group.groups.contains(child_info.key) {
+            return Err(MplCoreError::DuplicateEntry.into());
         }
 
-        // 2. Update child's parent_groups list if not already present.
+        if parent_group.groups.len() >= MAX_GROUP_VECTOR_SIZE {
+            return Err(MplCoreError::GroupVectorFull.into());
+        }
+
+        if child_group.parent_groups.len() >= MAX_GROUP_NESTING_DEPTH {
+            msg!("Error: Child group has reached maximum nesting depth");
+            return Err(MplCoreError::GroupNestingDepthExceeded.into());
+        }
+
+        parent_group.groups.push(*child_info.key);
+
         if !child_group.parent_groups.contains(parent_group_info.key) {
             child_group.parent_groups.push(*parent_group_info.key);
             save_flat_group(child_info, &child_group, payer_info, system_program_info)?;

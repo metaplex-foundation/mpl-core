@@ -154,6 +154,51 @@ kinobi.update(
                 },
             },
         },
+        createGroupV1: {
+            arguments: {
+                relationships: {
+                    defaultValue: k.arrayValueNode([]),
+                },
+            },
+        },
+        addGroupsToGroupV1: {
+            arguments: {
+                groups: {
+                    defaultValue: k.arrayValueNode([]),
+                },
+            },
+        },
+        removeGroupsFromGroupV1: {
+            arguments: {
+                groups: {
+                    defaultValue: k.arrayValueNode([]),
+                },
+            },
+        },
+        removeAssetsFromGroupV1: {
+            arguments: {
+                assets: {
+                    defaultValue: k.arrayValueNode([]),
+                },
+            },
+        },
+        removeCollectionsFromGroupV1: {
+            arguments: {
+                collections: {
+                    defaultValue: k.arrayValueNode([]),
+                },
+            },
+        },
+        updateGroupV1: {
+            arguments: {
+                newName: {
+                    defaultValue: k.noneValueNode(),
+                },
+                newUri: {
+                    defaultValue: k.noneValueNode(),
+                },
+            },
+        },
         collect: {
             accounts: {
                 recipient1: {
@@ -220,6 +265,7 @@ kinobi.update(
     k.setAccountDiscriminatorFromFieldVisitor({
         assetV1: key("AssetV1"),
         collectionV1: key("CollectionV1"),
+        groupV1: key("GroupV1"),
     })
 );
 
@@ -354,6 +400,10 @@ kinobi.accept(
             },
             {
                 name: "collectionV1",
+                extract: true,
+            },
+            {
+                name: "groupV1",
                 extract: true,
             },
             {

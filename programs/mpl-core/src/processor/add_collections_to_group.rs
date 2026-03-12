@@ -8,7 +8,7 @@ use super::group_collection_plugin::process_collection_groups_plugin_add;
 use crate::{
     error::MplCoreError,
     instruction::accounts::{AddCollectionsToGroupV1Accounts, Context},
-    state::{CollectionV1, GroupV1, SolanaAccount},
+    state::{CollectionV1, GroupV1, SolanaAccount, MAX_GROUP_VECTOR_SIZE},
     utils::{
         is_valid_collection_authority, is_valid_group_authority, resolve_authority, save_flat_group,
     },
@@ -45,6 +45,10 @@ pub(crate) fn add_collections_to_group_v1<'a>(
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
+    if !group_info.is_writable {
+        return Err(ProgramError::InvalidAccountData);
+    }
+
     // Deserialize group.
     let mut group = GroupV1::load(group_info, 0)?;
 
@@ -71,11 +75,14 @@ pub(crate) fn add_collections_to_group_v1<'a>(
             return Err(MplCoreError::InvalidAuthority.into());
         }
 
-        // 1. Update Group account collections vector.
         if group.collections.contains(collection_info.key) {
-            // Already present, skip to next.
-            continue;
+            return Err(MplCoreError::DuplicateEntry.into());
         }
+
+        if group.collections.len() >= MAX_GROUP_VECTOR_SIZE {
+            return Err(MplCoreError::GroupVectorFull.into());
+        }
+
         group.collections.push(*collection_info.key);
 
         // 2. Update or create Groups plugin on the collection.

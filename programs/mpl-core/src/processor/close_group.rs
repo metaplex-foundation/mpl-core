@@ -1,6 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+};
 
 use crate::{
     error::MplCoreError,
@@ -29,6 +31,10 @@ pub(crate) fn close_group_v1<'a>(
     // Basic guards.
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
+
+    if !ctx.accounts.group.is_writable {
+        return Err(ProgramError::InvalidAccountData);
+    }
 
     // Deserialize the group account.
     let group = GroupV1::load(ctx.accounts.group, 0)?;

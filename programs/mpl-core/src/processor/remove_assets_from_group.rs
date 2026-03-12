@@ -41,6 +41,11 @@ pub(crate) fn remove_assets_from_group_v1<'a>(
     if system_program_info.key != &solana_program::system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
+
+    if !group_info.is_writable {
+        return Err(ProgramError::InvalidAccountData);
+    }
+
     if asset_accounts.len() != args.assets.len() {
         msg!("Error: account/pubkey mismatch");
         return Err(ProgramError::NotEnoughAccountKeys);
@@ -153,11 +158,10 @@ fn process_asset_groups_plugin_remove<'a>(
                 .checked_sub(next_offset)
                 .ok_or(MplCoreError::NumericalOverflow)?;
 
-            // When shrinking, shift trailing bytes before reallocation so the
-            // source region remains fully addressable.
             if size_diff < 0 && copy_len > 0 {
                 unsafe {
-                    let base_ptr = asset_info.data.borrow_mut().as_mut_ptr();
+                    let mut data = asset_info.data.borrow_mut();
+                    let base_ptr = data.as_mut_ptr();
                     sol_memmove(
                         base_ptr.add(new_next_offset),
                         base_ptr.add(next_offset),
@@ -168,11 +172,10 @@ fn process_asset_groups_plugin_remove<'a>(
 
             resize_or_reallocate_account(asset_info, payer_info, system_program_info, new_size)?;
 
-            // When growing, reallocate first so the destination region is
-            // available for the move.
             if size_diff > 0 && copy_len > 0 {
                 unsafe {
-                    let base_ptr = asset_info.data.borrow_mut().as_mut_ptr();
+                    let mut data = asset_info.data.borrow_mut();
+                    let base_ptr = data.as_mut_ptr();
                     sol_memmove(
                         base_ptr.add(new_next_offset),
                         base_ptr.add(next_offset),

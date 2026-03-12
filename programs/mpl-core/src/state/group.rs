@@ -1,12 +1,18 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
-use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
-
-use crate::plugins::{
-    abstain, approve, CheckResult, ExternalPluginAdapter, Plugin, ValidationResult,
-};
+use solana_program::pubkey::Pubkey;
 
 use super::{CoreAsset, DataBlob, Key, SolanaAccount, UpdateAuthority};
+
+/// Maximum number of entries per vector in a `GroupV1` account (collections, groups,
+/// parent_groups, assets). Prevents unbounded growth that could cause compute
+/// budget exhaustion on subsequent operations.
+pub const MAX_GROUP_VECTOR_SIZE: usize = 256;
+
+/// Maximum number of parent groups a single group may belong to. Acts as a
+/// practical depth limit for group nesting since on-chain traversal is not
+/// feasible.
+pub const MAX_GROUP_NESTING_DEPTH: usize = 8;
 
 /// The representation of a taxonomy group which can reference collections and other groups.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
@@ -60,33 +66,6 @@ impl GroupV1 {
             groups,
             parent_groups,
             assets,
-        }
-    }
-
-    /*
-        Permission & validation helpers.
-        Group accounts are meant to be lightweight; they do not impose permissions on
-        asset/collection lifecycle events. They only enforce that the update authority
-        (or its delegate) is the signer when the group itself is mutated.
-    */
-
-    /// Check permissions for mutating the group (add/remove/update parent/children, etc.).
-    pub fn check_update() -> CheckResult {
-        CheckResult::CanApprove
-    }
-
-    /// Validate the authority for mutating the group.  Approves when the authority
-    /// matches the group's update authority.
-    pub fn validate_update(
-        &self,
-        authority_info: &AccountInfo,
-        _plugin: Option<&Plugin>,
-        _: Option<&ExternalPluginAdapter>,
-    ) -> Result<ValidationResult, ProgramError> {
-        if authority_info.key == &self.update_authority {
-            approve!()
-        } else {
-            abstain!()
         }
     }
 }

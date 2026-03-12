@@ -13,7 +13,7 @@ import { isExternalPluginAdapterType } from '../../plugins/externalPluginAdapter
 
 export type RemoveCollectionPluginArgsPlugin =
   | {
-      type: Exclude<keyof typeof PluginType, 'Edition'>;
+      type: Exclude<keyof typeof PluginType, 'Edition' | 'Groups'>;
     }
   | ExternalPluginAdapterKey;
 

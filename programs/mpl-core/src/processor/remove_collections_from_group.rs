@@ -52,6 +52,10 @@ pub(crate) fn remove_collections_from_group_v1<'a>(
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
+    if !group_info.is_writable {
+        return Err(ProgramError::InvalidAccountData);
+    }
+
     if collection_accounts.len() != args.collections.len() {
         msg!(
             "Error: Number of collection accounts ({}) does not match number of pubkeys in args ({}).",
@@ -183,11 +187,10 @@ fn process_collection_groups_plugin_remove<'a>(
                 .try_into()
                 .map_err(|_| MplCoreError::NumericalOverflow)?;
 
-            // When shrinking, move trailing bytes before resizing so the source
-            // region remains valid.
             if size_diff < 0 && copy_len > 0 {
                 unsafe {
-                    let base_ptr = collection_info.data.borrow_mut().as_mut_ptr();
+                    let mut data = collection_info.data.borrow_mut();
+                    let base_ptr = data.as_mut_ptr();
                     sol_memmove(
                         base_ptr.add(new_next_plugin_offset),
                         base_ptr.add(next_plugin_offset),
@@ -203,10 +206,10 @@ fn process_collection_groups_plugin_remove<'a>(
                 new_size,
             )?;
 
-            // When growing, reallocate first so the destination region is valid.
             if size_diff > 0 && copy_len > 0 {
                 unsafe {
-                    let base_ptr = collection_info.data.borrow_mut().as_mut_ptr();
+                    let mut data = collection_info.data.borrow_mut();
+                    let base_ptr = data.as_mut_ptr();
                     sol_memmove(
                         base_ptr.add(new_next_plugin_offset),
                         base_ptr.add(next_plugin_offset),

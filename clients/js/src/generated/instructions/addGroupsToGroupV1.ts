@@ -47,7 +47,7 @@ export type AddGroupsToGroupV1InstructionData = {
 };
 
 export type AddGroupsToGroupV1InstructionDataArgs = {
-  groups: Array<PublicKey>;
+  groups?: Array<PublicKey>;
 };
 
 export function getAddGroupsToGroupV1InstructionDataSerializer(): Serializer<
@@ -66,7 +66,7 @@ export function getAddGroupsToGroupV1InstructionDataSerializer(): Serializer<
       ],
       { description: 'AddGroupsToGroupV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 37 })
+    (value) => ({ ...value, discriminator: 37, groups: value.groups ?? [] })
   ) as Serializer<
     AddGroupsToGroupV1InstructionDataArgs,
     AddGroupsToGroupV1InstructionData

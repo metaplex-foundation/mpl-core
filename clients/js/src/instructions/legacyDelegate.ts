@@ -5,11 +5,7 @@ import {
 } from '@metaplex-foundation/umi';
 import { ERR_CANNOT_DELEGATE } from './errors';
 import { addPluginV1, AssetV1 } from '../generated';
-import {
-  AssetPluginsList,
-  createPlugin,
-  pluginKeyToPluginType,
-} from '../plugins';
+import { createPlugin } from '../plugins';
 import { addressPluginAuthority } from '../authority';
 import { approvePluginAuthority } from './approvePluginAuthority';
 
@@ -47,10 +43,15 @@ export function legacyDelegate(
 
   let txBuilder = transactionBuilder();
   const definedPluginsKeys = Object.keys(definedPlugins);
+  const pluginTypeByKey = {
+    freezeDelegate: 'FreezeDelegate',
+    transferDelegate: 'TransferDelegate',
+    burnDelegate: 'BurnDelegate',
+  } as const;
 
   // Change the plugin authority of the defined plugins.
   definedPluginsKeys.forEach((pluginKey) => {
-    const plugType = pluginKeyToPluginType(pluginKey as keyof AssetPluginsList);
+    const plugType = pluginTypeByKey[pluginKey as keyof typeof pluginTypeByKey];
 
     txBuilder = txBuilder.add(
       approvePluginAuthority(context, {

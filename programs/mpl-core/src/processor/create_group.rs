@@ -2,19 +2,19 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke,
-    program_error::ProgramError, program_memory::sol_memmove, pubkey::Pubkey, rent::Rent,
-    system_instruction, system_program, sysvar::Sysvar,
+    program_error::ProgramError, pubkey::Pubkey, rent::Rent, system_instruction, system_program,
+    sysvar::Sysvar,
 };
 
+use super::add_assets_to_group::process_asset_groups_plugin_add;
 use super::group_collection_plugin::process_collection_groups_plugin_add;
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateGroupV1Accounts,
-    plugins::{create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginType},
-    state::{AssetV1, GroupV1, SolanaAccount},
+    state::{GroupV1, SolanaAccount, MAX_GROUP_NESTING_DEPTH, MAX_GROUP_VECTOR_SIZE},
     utils::{
         is_valid_asset_authority, is_valid_collection_authority, is_valid_group_authority,
-        resize_or_reallocate_account, resolve_authority, save_flat_group,
+        resolve_authority, save_flat_group,
     },
 };
 
@@ -50,6 +50,10 @@ pub(crate) fn create_group_v1<'a>(
     // Ensure the canonical system program is provided.
     if *ctx.accounts.system_program.key != system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
+    }
+
+    if !ctx.accounts.group.is_writable {
+        return Err(ProgramError::InvalidAccountData);
     }
 
     // --- PREP INPUT VECTORS -------------------------------------------------
@@ -91,6 +95,17 @@ pub(crate) fn create_group_v1<'a>(
             RelationshipKind::ParentGroup => parent_groups_vec.push(rel.key),
             RelationshipKind::Asset => assets_vec.push(rel.key),
         }
+    }
+
+    if collections_vec.len() > MAX_GROUP_VECTOR_SIZE
+        || child_groups_vec.len() > MAX_GROUP_VECTOR_SIZE
+        || assets_vec.len() > MAX_GROUP_VECTOR_SIZE
+    {
+        return Err(MplCoreError::GroupVectorFull.into());
+    }
+
+    if parent_groups_vec.len() > MAX_GROUP_NESTING_DEPTH {
+        return Err(MplCoreError::GroupNestingDepthExceeded.into());
     }
 
     let new_group = GroupV1::new(
@@ -275,114 +290,6 @@ pub(crate) fn create_group_v1<'a>(
             ctx.accounts.payer,
             ctx.accounts.system_program,
         )?;
-    }
-
-    Ok(())
-}
-
-/// Add the asset pubkey to the group's Assets plugin, creating the plugin if necessary.
-fn process_asset_groups_plugin_add<'a>(
-    asset_info: &AccountInfo<'a>,
-    group: Pubkey,
-    payer_info: &AccountInfo<'a>,
-    system_program_info: &AccountInfo<'a>,
-) -> ProgramResult {
-    // Ensure plugin metadata exists or create.
-    let (_asset_core, header_offset, mut plugin_header, mut plugin_registry) =
-        create_meta_idempotent::<AssetV1>(asset_info, payer_info, system_program_info)?;
-
-    // Attempt to fetch existing Assets plugin.
-    let plugin_record_opt = plugin_registry
-        .registry
-        .iter()
-        .find(|r| r.plugin_type == PluginType::Groups)
-        .cloned();
-
-    match plugin_record_opt {
-        None => {
-            // Plugin does not exist; create it.
-            let assets_plugin = Groups {
-                groups: vec![group],
-            };
-            let plugin = Plugin::Groups(assets_plugin);
-            initialize_plugin::<AssetV1>(
-                &plugin,
-                &plugin.manager(),
-                header_offset,
-                &mut plugin_header,
-                &mut plugin_registry,
-                asset_info,
-                payer_info,
-                system_program_info,
-            )?
-        }
-        Some(record) => {
-            // Plugin exists, load, modify, and update.
-            let mut plugin = Plugin::load(asset_info, record.offset)?;
-            if let Plugin::Groups(inner) = &mut plugin {
-                if inner.groups.contains(&group) {
-                    // Already present, nothing to do.
-                    return Ok(());
-                }
-                inner.groups.push(group);
-            } else {
-                return Err(MplCoreError::InvalidPlugin.into());
-            }
-
-            // Serialize old and new plugin to compute size diff.
-            let old_plugin_data =
-                Plugin::deserialize(&mut &asset_info.data.borrow()[record.offset..])?
-                    .try_to_vec()?;
-            let new_plugin_data = plugin.try_to_vec()?;
-            let size_diff = (new_plugin_data.len() as isize)
-                .checked_sub(old_plugin_data.len() as isize)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-
-            if size_diff != 0 {
-                let old_registry_offset = plugin_header.plugin_registry_offset;
-
-                // Bump offsets for subsequent registry entries and header.
-                plugin_registry.bump_offsets(record.offset, size_diff)?;
-                let new_registry_offset = (old_registry_offset as isize)
-                    .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?;
-                plugin_header.plugin_registry_offset = new_registry_offset as usize;
-
-                // Resize account.
-                let new_size = (asset_info.data_len() as isize)
-                    .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?
-                    as usize;
-                resize_or_reallocate_account(
-                    asset_info,
-                    payer_info,
-                    system_program_info,
-                    new_size,
-                )?;
-
-                // Move trailing data to accommodate new plugin size.
-                let next_plugin_offset = (record.offset + old_plugin_data.len()) as isize;
-                let new_next_plugin_offset = next_plugin_offset + size_diff;
-
-                let copy_len = old_registry_offset.saturating_sub(next_plugin_offset as usize);
-
-                if copy_len > 0 {
-                    unsafe {
-                        let base_ptr = asset_info.data.borrow_mut().as_mut_ptr();
-                        sol_memmove(
-                            base_ptr.add(new_next_plugin_offset as usize),
-                            base_ptr.add(next_plugin_offset as usize),
-                            copy_len,
-                        );
-                    }
-                }
-            }
-
-            // Save header, registry and new plugin.
-            plugin_header.save(asset_info, header_offset)?;
-            plugin_registry.save(asset_info, plugin_header.plugin_registry_offset)?;
-            plugin.save(asset_info, record.offset)?;
-        }
     }
 
     Ok(())

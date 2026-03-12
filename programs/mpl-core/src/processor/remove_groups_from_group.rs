@@ -48,6 +48,10 @@ pub(crate) fn remove_groups_from_group_v1<'a>(
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
+    if !parent_group_info.is_writable {
+        return Err(ProgramError::InvalidAccountData);
+    }
+
     // Validate arg count.
     if child_group_accounts.len() != args.groups.len() {
         msg!(
@@ -102,7 +106,6 @@ pub(crate) fn remove_groups_from_group_v1<'a>(
             return Err(MplCoreError::IncorrectAccount.into());
         }
 
-        // Remove parent from child's parent_groups if present.
         if let Some(pos) = child_group
             .parent_groups
             .iter()
@@ -110,6 +113,9 @@ pub(crate) fn remove_groups_from_group_v1<'a>(
         {
             child_group.parent_groups.remove(pos);
             save_flat_group(child_info, &child_group, payer_info, system_program_info)?;
+        } else {
+            msg!("Error: Bidirectional relationship inconsistent — parent not found in child's parent_groups");
+            return Err(MplCoreError::InconsistentGroupRelationship.into());
         }
     }
 

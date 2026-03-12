@@ -220,6 +220,18 @@ pub enum MplCoreError {
     /// 52 - Duplicate entry provided when adding relationships to a group
     #[error("Duplicate entry provided when adding relationships to a group")]
     DuplicateEntry,
+
+    /// 53 - Group vector is at maximum capacity
+    #[error("Group vector is at maximum capacity")]
+    GroupVectorFull,
+
+    /// 54 - Group nesting depth exceeded
+    #[error("Group nesting depth exceeded")]
+    GroupNestingDepthExceeded,
+
+    /// 55 - Bidirectional group relationship is inconsistent
+    #[error("Bidirectional group relationship is inconsistent")]
+    InconsistentGroupRelationship,
 }
 
 impl PrintProgramError for MplCoreError {

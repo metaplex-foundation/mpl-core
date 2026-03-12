@@ -2,7 +2,7 @@ import { Context } from '@metaplex-foundation/umi';
 import { revokePluginAuthorityV1, PluginType } from '../generated';
 
 export type RevokePluginAuthorityArgsPlugin = {
-  type: keyof typeof PluginType;
+  type: Exclude<keyof typeof PluginType, 'Groups'>;
 };
 
 export type RevokePluginAuthorityArgs = Omit<

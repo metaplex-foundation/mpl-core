@@ -47,7 +47,7 @@ export type RemoveGroupsFromGroupV1InstructionData = {
 };
 
 export type RemoveGroupsFromGroupV1InstructionDataArgs = {
-  groups: Array<PublicKey>;
+  groups?: Array<PublicKey>;
 };
 
 export function getRemoveGroupsFromGroupV1InstructionDataSerializer(): Serializer<
@@ -66,7 +66,7 @@ export function getRemoveGroupsFromGroupV1InstructionDataSerializer(): Serialize
       ],
       { description: 'RemoveGroupsFromGroupV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 38 })
+    (value) => ({ ...value, discriminator: 38, groups: value.groups ?? [] })
   ) as Serializer<
     RemoveGroupsFromGroupV1InstructionDataArgs,
     RemoveGroupsFromGroupV1InstructionData

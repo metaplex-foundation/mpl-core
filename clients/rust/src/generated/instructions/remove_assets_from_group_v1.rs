@@ -140,6 +140,7 @@ impl RemoveAssetsFromGroupV1Builder {
         self.system_program = Some(system_program);
         self
     }
+    /// `[optional argument, defaults to '[]']`
     #[inline(always)]
     pub fn assets(&mut self, assets: Vec<Pubkey>) -> &mut Self {
         self.assets = Some(assets);
@@ -174,7 +175,7 @@ impl RemoveAssetsFromGroupV1Builder {
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
         };
         let args = RemoveAssetsFromGroupV1InstructionArgs {
-            assets: self.assets.clone().expect("assets is not set"),
+            assets: self.assets.clone().unwrap_or([]),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -375,6 +376,7 @@ impl<'a, 'b> RemoveAssetsFromGroupV1CpiBuilder<'a, 'b> {
         self.instruction.system_program = Some(system_program);
         self
     }
+    /// `[optional argument, defaults to '[]']`
     #[inline(always)]
     pub fn assets(&mut self, assets: Vec<Pubkey>) -> &mut Self {
         self.instruction.assets = Some(assets);
@@ -422,7 +424,7 @@ impl<'a, 'b> RemoveAssetsFromGroupV1CpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = RemoveAssetsFromGroupV1InstructionArgs {
-            assets: self.instruction.assets.clone().expect("assets is not set"),
+            assets: self.instruction.assets.clone().unwrap_or([]),
         };
         let instruction = RemoveAssetsFromGroupV1Cpi {
             __program: self.instruction.__program,
