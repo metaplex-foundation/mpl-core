@@ -1,4 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use mpl_agent_tools::accounts::ExecutionDelegateRecordV1;
 use mpl_utils::{assert_derivation, assert_signer};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
@@ -8,8 +9,8 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     plugins::{
-        abstain, reject, Authority, ExternalCheckResult, HookableLifecycleEvent, PluginValidation,
-        PluginValidationContext, ValidationResult,
+        abstain, approve, reject, Authority, ExternalCheckResult, HookableLifecycleEvent,
+        PluginValidation, PluginValidationContext, ValidationResult,
     },
 };
 
@@ -44,6 +45,30 @@ impl AgentIdentity {
         )?;
 
         Ok(())
+    }
+
+    /// Verify that the Execution Delegate is valid for the asset.
+    pub fn verify_execution_delegate(
+        asset: &Pubkey,
+        authority: &Pubkey,
+        maybe_execution_delegate_record: &AccountInfo,
+    ) -> Result<ValidationResult, ProgramError> {
+        // If the account there is owned by the mpl-agent-tools program, then it's probably an execution delegate record.
+        if maybe_execution_delegate_record.owner == &mpl_agent_tools::ID
+            && maybe_execution_delegate_record.data_len() > 0
+            && maybe_execution_delegate_record.data.borrow()[0]
+                == mpl_agent_tools::types::Key::ExecutionDelegateRecordV1 as u8
+        {
+            let execution_delegate_record =
+                ExecutionDelegateRecordV1::try_from(maybe_execution_delegate_record)?;
+            if execution_delegate_record.agent_asset == *asset
+                && execution_delegate_record.authority == *authority
+            {
+                return approve!();
+            }
+        }
+
+        abstain!()
     }
 }
 
@@ -101,9 +126,17 @@ impl PluginValidation for AgentIdentity {
 
     fn validate_execute(
         &self,
-        _ctx: &PluginValidationContext,
+        ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        abstain!()
+        if ctx.asset_info.is_some() && ctx.accounts.len() > 7 {
+            Self::verify_execution_delegate(
+                ctx.asset_info.unwrap().key,
+                ctx.authority_info.key,
+                ctx.accounts.get(7).unwrap(),
+            )
+        } else {
+            abstain!()
+        }
     }
 }
 
