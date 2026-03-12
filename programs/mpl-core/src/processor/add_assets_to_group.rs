@@ -9,9 +9,10 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::AddAssetsToGroupV1Accounts,
     instruction::accounts::Context,
-    state::{GroupV1, SolanaAccount, MAX_GROUP_VECTOR_SIZE},
+    state::{GroupV1, Key, SolanaAccount, MAX_GROUP_VECTOR_SIZE},
     utils::{
-        is_valid_asset_authority, is_valid_group_authority, resolve_authority, save_flat_group,
+        is_valid_asset_authority, is_valid_group_authority, load_key, resolve_authority,
+        save_flat_group,
     },
 };
 
@@ -21,6 +22,12 @@ use crate::{
 pub(crate) struct AddAssetsToGroupV1Args {}
 
 /// Processor for the `AddAssetsToGroupV1` instruction.
+///
+/// Remaining accounts: one or more `AssetV1` accounts to add, optionally
+/// followed by (or interleaved with) read-only `CollectionV1` accounts that
+/// are needed for authority resolution when an asset's update authority is
+/// `UpdateAuthority::Collection`.  Accounts are classified by their on-chain
+/// key discriminator; only `AssetV1` accounts are processed as group members.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn add_assets_to_group_v1<'a>(
     accounts: &'a [AccountInfo<'a>],
@@ -52,13 +59,31 @@ pub(crate) fn add_assets_to_group_v1<'a>(
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
-    for asset_info in remaining_accounts.iter() {
+    // Remaining accounts may include supplemental collection accounts used for
+    // authority resolution when assets are collection-managed.
+    let mut asset_accounts: Vec<&AccountInfo> = Vec::with_capacity(remaining_accounts.len());
+    for account_info in remaining_accounts.iter() {
+        match load_key(account_info, 0)? {
+            Key::AssetV1 => asset_accounts.push(account_info),
+            Key::CollectionV1 => {}
+            _ => {
+                msg!("Error: Expected remaining account to be AssetV1 or CollectionV1");
+                return Err(MplCoreError::IncorrectAccount.into());
+            }
+        }
+    }
+    if asset_accounts.is_empty() && !remaining_accounts.is_empty() {
+        msg!("Error: No asset accounts provided in remaining accounts");
+        return Err(MplCoreError::IncorrectAccount.into());
+    }
+
+    for asset_info in asset_accounts {
         if !asset_info.is_writable {
             msg!("Error: Asset account must be writable");
             return Err(ProgramError::InvalidAccountData);
         }
 
-        if !is_valid_asset_authority(asset_info, authority_info)? {
+        if !is_valid_asset_authority(asset_info, authority_info, accounts)? {
             return Err(MplCoreError::InvalidAuthority.into());
         }
 
@@ -84,4 +109,3 @@ pub(crate) fn add_assets_to_group_v1<'a>(
 
     Ok(())
 }
-

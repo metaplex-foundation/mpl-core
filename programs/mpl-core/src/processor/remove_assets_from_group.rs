@@ -10,8 +10,11 @@ use crate::{
     error::MplCoreError,
     instruction::accounts::{Context, RemoveAssetsFromGroupV1Accounts},
     plugins::{create_meta_idempotent, Plugin, PluginType},
-    state::{AssetV1, GroupV1, SolanaAccount},
-    utils::{is_valid_asset_authority, is_valid_group_authority, resolve_authority, save_flat_group},
+    state::{AssetV1, GroupV1, Key, SolanaAccount},
+    utils::{
+        is_valid_asset_authority, is_valid_group_authority, load_key, resolve_authority,
+        save_flat_group,
+    },
 };
 
 /// Args for RemoveAssetsFromGroupV1
@@ -21,6 +24,9 @@ pub(crate) struct RemoveAssetsFromGroupV1Args {
     pub(crate) assets: Vec<Pubkey>,
 }
 
+/// Remaining accounts: first the `AssetV1` accounts matching `args.assets` in
+/// order, then optionally any read-only `CollectionV1` accounts needed for
+/// authority resolution of collection-managed assets.
 pub(crate) fn remove_assets_from_group_v1<'a>(
     accounts: &'a [AccountInfo<'a>],
     args: RemoveAssetsFromGroupV1Args,
@@ -44,9 +50,19 @@ pub(crate) fn remove_assets_from_group_v1<'a>(
         return Err(ProgramError::InvalidAccountData);
     }
 
-    if asset_accounts.len() != args.assets.len() {
+    if asset_accounts.len() < args.assets.len() {
         msg!("Error: account/pubkey mismatch");
         return Err(ProgramError::NotEnoughAccountKeys);
+    }
+
+    // Supplemental remaining accounts (after the explicit asset list) are
+    // allowed, but they must be collections. These are used when validating
+    // collection-managed asset authority.
+    for supplemental_info in asset_accounts.iter().skip(args.assets.len()) {
+        if load_key(supplemental_info, 0)? != Key::CollectionV1 {
+            msg!("Error: unexpected supplemental remaining account");
+            return Err(MplCoreError::IncorrectAccount.into());
+        }
     }
 
     let mut group = GroupV1::load(group_info, 0)?;
@@ -54,15 +70,17 @@ pub(crate) fn remove_assets_from_group_v1<'a>(
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
-    for (i, asset_info) in asset_accounts.iter().enumerate() {
-        if asset_info.key != &args.assets[i] {
+    for (i, asset_key) in args.assets.iter().enumerate() {
+        let asset_info = &asset_accounts[i];
+
+        if asset_info.key != asset_key {
             return Err(MplCoreError::IncorrectAccount.into());
         }
         if !asset_info.is_writable {
             return Err(ProgramError::InvalidAccountData);
         }
 
-        if !is_valid_asset_authority(asset_info, authority_info)? {
+        if !is_valid_asset_authority(asset_info, authority_info, accounts)? {
             return Err(MplCoreError::InvalidAuthority.into());
         }
 

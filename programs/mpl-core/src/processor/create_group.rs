@@ -6,14 +6,16 @@ use solana_program::{
     sysvar::Sysvar,
 };
 
-use super::groups_plugin_utils::{process_asset_groups_plugin_add, process_collection_groups_plugin_add};
+use super::groups_plugin_utils::{
+    process_asset_groups_plugin_add, process_collection_groups_plugin_add,
+};
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateGroupV1Accounts,
-    state::{GroupV1, SolanaAccount, MAX_GROUP_NESTING_DEPTH, MAX_GROUP_VECTOR_SIZE},
+    state::{GroupV1, Key, SolanaAccount, MAX_GROUP_NESTING_DEPTH, MAX_GROUP_VECTOR_SIZE},
     utils::{
         is_valid_asset_authority, is_valid_collection_authority, is_valid_group_authority,
-        resolve_authority, save_flat_group,
+        load_key, resolve_authority, save_flat_group,
     },
 };
 
@@ -33,6 +35,11 @@ pub(crate) struct CreateGroupV1Args {
 }
 
 /// Processor for the `CreateGroupV1` instruction.
+///
+/// Remaining accounts: relationship accounts in category order (collections,
+/// child groups, parent groups, assets), then optionally any read-only
+/// `CollectionV1` accounts needed for authority resolution of
+/// collection-managed assets.
 pub(crate) fn create_group_v1<'a>(
     accounts: &'a [AccountInfo<'a>],
     args: CreateGroupV1Args,
@@ -150,13 +157,23 @@ pub(crate) fn create_group_v1<'a>(
     let expected_accounts =
         collections_vec.len() + child_groups_vec.len() + parent_groups_vec.len() + assets_vec.len();
 
-    if remaining_accounts.len() != expected_accounts {
+    if remaining_accounts.len() < expected_accounts {
         msg!(
             "Error: Incorrect number of remaining accounts (expected {}, got {}).",
             expected_accounts,
             remaining_accounts.len()
         );
         return Err(ProgramError::NotEnoughAccountKeys);
+    }
+
+    // Extra accounts are allowed so collection-managed assets can provide the
+    // referenced collection account for authority checks. Restrict extras to
+    // collections only.
+    for supplemental_info in remaining_accounts.iter().skip(expected_accounts) {
+        if load_key(supplemental_info, 0)? != Key::CollectionV1 {
+            msg!("Error: unexpected supplemental remaining account");
+            return Err(MplCoreError::IncorrectAccount.into());
+        }
     }
 
     // Offsets into remaining_accounts slice
@@ -277,7 +294,7 @@ pub(crate) fn create_group_v1<'a>(
         }
 
         // Authority check (asset update authority or delegate)
-        if !is_valid_asset_authority(asset_info, authority_info)? {
+        if !is_valid_asset_authority(asset_info, authority_info, accounts)? {
             msg!("Error: Signer is not asset update authority/delegate");
             return Err(MplCoreError::InvalidAuthority.into());
         }

@@ -389,6 +389,7 @@ test('it rejects burning an asset in a collection that belongs to a group', asyn
   })
     .addRemainingAccounts([
       { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+      { isSigner: false, isWritable: false, pubkey: collection.publicKey },
     ])
     .sendAndConfirm(umi);
 

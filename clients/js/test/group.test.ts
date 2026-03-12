@@ -8,7 +8,14 @@ import {
   removeAssetsFromGroup,
   removeCollectionsFromGroup,
 } from '../src';
-import { createAsset, createCollection, createGroup, createUmi } from './_setupRaw';
+import {
+  assertGroup,
+  createAsset,
+  createAssetWithCollection,
+  createCollection,
+  createGroup,
+  createUmi,
+} from './_setupRaw';
 
 test('it can gpa fetch groups by updateAuthority', async (t) => {
   // Given a Umi instance and a new signer.
@@ -83,6 +90,70 @@ test('it rejects removeAssetsFromGroup when signer is not group authority', asyn
 
   await t.throwsAsync(builder.sendAndConfirm(umi), {
     name: 'InvalidAuthority',
+  });
+});
+
+test('it allows collection update authority to add collection-managed assets to a group', async (t) => {
+  const umi = await createUmi();
+  const sharedAuthority = generateSigner(umi);
+
+  const group = await createGroup(umi, { updateAuthority: sharedAuthority });
+  const { asset, collection } = await createAssetWithCollection(umi, {
+    updateAuthority: sharedAuthority,
+  });
+
+  await addAssetsToGroup(umi, {
+    group: group.publicKey,
+    authority: sharedAuthority,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+      // Supplemental collection account used for collection-authority resolution.
+      { isSigner: false, isWritable: false, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await assertGroup(t, umi, {
+    group: group.publicKey,
+    updateAuthority: sharedAuthority.publicKey,
+    assets: [asset.publicKey],
+  });
+});
+
+test('it allows collection update authority to remove collection-managed assets from a group', async (t) => {
+  const umi = await createUmi();
+  const sharedAuthority = generateSigner(umi);
+
+  const group = await createGroup(umi, { updateAuthority: sharedAuthority });
+  const { asset, collection } = await createAssetWithCollection(umi, {
+    updateAuthority: sharedAuthority,
+  });
+
+  await addAssetsToGroup(umi, {
+    group: group.publicKey,
+    authority: sharedAuthority,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+      { isSigner: false, isWritable: false, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await removeAssetsFromGroup(umi, {
+    group: group.publicKey,
+    authority: sharedAuthority,
+    assets: [asset.publicKey],
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+      { isSigner: false, isWritable: false, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await assertGroup(t, umi, {
+    group: group.publicKey,
+    updateAuthority: sharedAuthority.publicKey,
+    assets: [],
   });
 });
 

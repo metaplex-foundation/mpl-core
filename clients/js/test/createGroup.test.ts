@@ -6,6 +6,7 @@ import {
   assertCollection,
   assertGroup,
   createAsset,
+  createAssetWithCollection,
   createCollection,
   createGroup,
   createUmi,
@@ -140,6 +141,52 @@ test('it can createGroupV1 with all four relationship kinds in one call', async 
     updateAuthority: {
       type: 'Address',
       address: umi.identity.publicKey,
+    },
+    groups: {
+      authority: { type: 'UpdateAuthority' },
+      groups: [group.publicKey],
+    },
+  });
+});
+
+test('it allows collection authority to link collection-managed assets in createGroupV1', async (t) => {
+  const umi = await createUmi();
+  const sharedAuthority = generateSigner(umi);
+  const group = generateSigner(umi);
+  const { asset, collection } = await createAssetWithCollection(umi, {
+    updateAuthority: sharedAuthority,
+  });
+
+  await createGroupV1(umi, {
+    name: 'collection-managed-asset-group',
+    uri: 'https://example.com/collection-managed-asset-group',
+    group,
+    payer: umi.identity,
+    updateAuthority: sharedAuthority,
+    relationships: [{ kind: RelationshipKind.Asset, key: asset.publicKey }],
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+      // Supplemental collection account used for collection-authority resolution.
+      { isSigner: false, isWritable: false, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await assertGroup(t, umi, {
+    group: group.publicKey,
+    updateAuthority: sharedAuthority.publicKey,
+    name: 'collection-managed-asset-group',
+    uri: 'https://example.com/collection-managed-asset-group',
+    assets: [asset.publicKey],
+  });
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: {
+      type: 'Collection',
+      address: collection.publicKey,
     },
     groups: {
       authority: { type: 'UpdateAuthority' },

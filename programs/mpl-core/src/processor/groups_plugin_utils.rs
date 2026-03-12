@@ -7,8 +7,8 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     plugins::{
-        create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginHeaderV1, PluginType,
-        PluginRegistryV1, RegistryRecord,
+        create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginHeaderV1,
+        PluginRegistryV1, PluginType, RegistryRecord,
     },
     state::{AssetV1, CollectionV1, SolanaAccount},
     utils::resize_or_reallocate_account,
@@ -62,7 +62,16 @@ pub(crate) fn process_collection_groups_plugin_add<'a>(
                 return Err(MplCoreError::InvalidPlugin.into());
             }
 
-            save_updated_groups_plugin(collection_info, payer_info, system_program_info, &plugin, &record, &mut plugin_header, &mut plugin_registry, header_offset)?;
+            save_updated_groups_plugin(
+                collection_info,
+                payer_info,
+                system_program_info,
+                &plugin,
+                &record,
+                &mut plugin_header,
+                &mut plugin_registry,
+                header_offset,
+            )?;
         }
     }
 
@@ -112,7 +121,16 @@ pub(crate) fn process_asset_groups_plugin_add<'a>(
                 return Err(MplCoreError::InvalidPlugin.into());
             }
 
-            save_updated_groups_plugin(asset_info, payer_info, system_program_info, &plugin, &record, &mut plugin_header, &mut plugin_registry, header_offset)?;
+            save_updated_groups_plugin(
+                asset_info,
+                payer_info,
+                system_program_info,
+                &plugin,
+                &record,
+                &mut plugin_header,
+                &mut plugin_registry,
+                header_offset,
+            )?;
         }
     }
     Ok(())
@@ -133,8 +151,7 @@ pub(crate) fn save_updated_groups_plugin<'a>(
     header_offset: usize,
 ) -> ProgramResult {
     let old_plugin_data =
-        Plugin::deserialize(&mut &account_info.data.borrow()[record.offset..])?
-            .try_to_vec()?;
+        Plugin::deserialize(&mut &account_info.data.borrow()[record.offset..])?.try_to_vec()?;
     let new_plugin_data = plugin.try_to_vec()?;
     let size_diff = (new_plugin_data.len() as isize)
         .checked_sub(old_plugin_data.len() as isize)
@@ -182,12 +199,7 @@ pub(crate) fn save_updated_groups_plugin<'a>(
             }
         }
 
-        resize_or_reallocate_account(
-            account_info,
-            payer_info,
-            system_program_info,
-            new_size,
-        )?;
+        resize_or_reallocate_account(account_info, payer_info, system_program_info, new_size)?;
 
         // When growing, move data after reallocation so the destination region exists.
         if size_diff > 0 && copy_len > 0 {

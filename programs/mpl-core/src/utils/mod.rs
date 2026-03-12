@@ -21,7 +21,7 @@ use borsh::BorshSerialize;
 use mpl_utils::assert_signer;
 use num_traits::FromPrimitive;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     program_memory::sol_memcpy, pubkey::Pubkey,
 };
 use std::collections::BTreeMap;
@@ -607,21 +607,45 @@ pub(crate) fn resolve_authority<'a>(
 
 /// Returns true if the `authority_info` represents either the update authority of the asset
 /// or a valid update delegate (defined by an `UpdateDelegate` plugin on the asset).
-pub fn is_valid_asset_authority(
-    asset_info: &AccountInfo,
-    authority_info: &AccountInfo,
+///
+/// When the asset's update authority is `UpdateAuthority::Collection`, the signer is
+/// validated against the collection's update authority (and its update delegates) by
+/// locating the collection `AccountInfo` in `all_accounts`.  Callers must ensure the
+/// collection account is present in the transaction when operating on collection-bound
+/// assets.
+pub fn is_valid_asset_authority<'a>(
+    asset_info: &AccountInfo<'a>,
+    authority_info: &AccountInfo<'a>,
+    all_accounts: &'a [AccountInfo<'a>],
 ) -> Result<bool, ProgramError> {
-    // Load asset core data.
     let asset_core = AssetV1::load(asset_info, 0)?;
 
-    // Fast path: signer is the update authority address (when address type).
-    if let UpdateAuthority::Address(addr) = asset_core.update_authority.clone() {
-        if addr == *authority_info.key {
-            return Ok(true);
+    match &asset_core.update_authority {
+        UpdateAuthority::Address(addr) => {
+            if addr == authority_info.key {
+                return Ok(true);
+            }
         }
+        UpdateAuthority::Collection(collection_addr) => {
+            match all_accounts.iter().find(|a| a.key == collection_addr) {
+                Some(collection_info) => {
+                    if is_valid_collection_authority(collection_info, authority_info)? {
+                        return Ok(true);
+                    }
+                }
+                None => {
+                    msg!(
+                        "Asset has UpdateAuthority::Collection but the collection \
+                         account {} was not provided in the transaction",
+                        collection_addr
+                    );
+                }
+            }
+        }
+        UpdateAuthority::None => {}
     }
 
-    // Attempt to locate an UpdateDelegate plugin on the asset.
+    // Attempt to locate an UpdateDelegate plugin on the asset itself.
     if let Ok((_plugin_authority, plugin)) =
         fetch_wrapped_plugin::<AssetV1>(asset_info, Some(&asset_core), PluginType::UpdateDelegate)
     {
