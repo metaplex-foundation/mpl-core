@@ -6,8 +6,7 @@ use solana_program::{
     sysvar::Sysvar,
 };
 
-use super::add_assets_to_group::process_asset_groups_plugin_add;
-use super::group_collection_plugin::process_collection_groups_plugin_add;
+use super::groups_plugin_utils::{process_asset_groups_plugin_add, process_collection_groups_plugin_add};
 use crate::{
     error::MplCoreError,
     instruction::accounts::CreateGroupV1Accounts,

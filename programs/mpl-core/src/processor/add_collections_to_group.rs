@@ -4,7 +4,7 @@ use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
 };
 
-use super::group_collection_plugin::process_collection_groups_plugin_add;
+use super::groups_plugin_utils::process_collection_groups_plugin_add;
 use crate::{
     error::MplCoreError,
     instruction::accounts::{AddCollectionsToGroupV1Accounts, Context},

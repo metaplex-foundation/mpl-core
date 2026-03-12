@@ -2,18 +2,16 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-    program_memory::sol_memmove, pubkey::Pubkey,
 };
 
+use super::groups_plugin_utils::process_asset_groups_plugin_add;
 use crate::{
     error::MplCoreError,
     instruction::accounts::AddAssetsToGroupV1Accounts,
     instruction::accounts::Context,
-    plugins::{create_meta_idempotent, initialize_plugin, Groups, Plugin, PluginType},
-    state::{AssetV1, GroupV1, SolanaAccount, MAX_GROUP_VECTOR_SIZE},
+    state::{GroupV1, SolanaAccount, MAX_GROUP_VECTOR_SIZE},
     utils::{
-        is_valid_asset_authority, is_valid_group_authority, resize_or_reallocate_account,
-        resolve_authority, save_flat_group,
+        is_valid_asset_authority, is_valid_group_authority, resolve_authority, save_flat_group,
     },
 };
 
@@ -87,107 +85,3 @@ pub(crate) fn add_assets_to_group_v1<'a>(
     Ok(())
 }
 
-pub(super) fn process_asset_groups_plugin_add<'a>(
-    asset_info: &AccountInfo<'a>,
-    parent_group: Pubkey,
-    payer_info: &AccountInfo<'a>,
-    system_program_info: &AccountInfo<'a>,
-) -> ProgramResult {
-    let (_asset_core, header_offset, mut plugin_header, mut plugin_registry) =
-        create_meta_idempotent::<AssetV1>(asset_info, payer_info, system_program_info)?;
-
-    let plugin_record_opt = plugin_registry
-        .registry
-        .iter()
-        .find(|r| r.plugin_type == PluginType::Groups)
-        .cloned();
-
-    match plugin_record_opt {
-        None => {
-            let plugin = Plugin::Groups(Groups {
-                groups: vec![parent_group],
-            });
-            initialize_plugin::<AssetV1>(
-                &plugin,
-                &plugin.manager(),
-                header_offset,
-                &mut plugin_header,
-                &mut plugin_registry,
-                asset_info,
-                payer_info,
-                system_program_info,
-            )?;
-        }
-        Some(record) => {
-            let mut plugin = Plugin::load(asset_info, record.offset)?;
-            if let Plugin::Groups(inner) = &mut plugin {
-                if !inner.groups.contains(&parent_group) {
-                    inner.groups.push(parent_group);
-                } else {
-                    return Ok(());
-                }
-            } else {
-                return Err(MplCoreError::InvalidPlugin.into());
-            }
-
-            // serialize adjustments
-            let old_data = Plugin::deserialize(&mut &asset_info.data.borrow()[record.offset..])?
-                .try_to_vec()?;
-            let new_data = plugin.try_to_vec()?;
-            let size_diff = (new_data.len() as isize)
-                .checked_sub(old_data.len() as isize)
-                .ok_or(MplCoreError::NumericalOverflow)?;
-            if size_diff != 0 {
-                let old_registry_offset = plugin_header.plugin_registry_offset;
-                let next_offset = record
-                    .offset
-                    .checked_add(old_data.len())
-                    .ok_or(MplCoreError::NumericalOverflow)?;
-                let new_next_offset: usize = (next_offset as isize)
-                    .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?
-                    .try_into()
-                    .map_err(|_| MplCoreError::NumericalOverflow)?;
-
-                plugin_registry.bump_offsets(record.offset, size_diff)?;
-                plugin_header.plugin_registry_offset = (old_registry_offset as isize)
-                    .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?
-                    .try_into()
-                    .map_err(|_| MplCoreError::NumericalOverflow)?;
-
-                let new_size: usize = (asset_info.data_len() as isize)
-                    .checked_add(size_diff)
-                    .ok_or(MplCoreError::NumericalOverflow)?
-                    .try_into()
-                    .map_err(|_| MplCoreError::NumericalOverflow)?;
-                resize_or_reallocate_account(
-                    asset_info,
-                    payer_info,
-                    system_program_info,
-                    new_size,
-                )?;
-
-                let copy_len = old_registry_offset
-                    .checked_sub(next_offset)
-                    .ok_or(MplCoreError::NumericalOverflow)?;
-
-                if copy_len > 0 {
-                    unsafe {
-                        let mut data = asset_info.data.borrow_mut();
-                        let base_ptr = data.as_mut_ptr();
-                        sol_memmove(
-                            base_ptr.add(new_next_offset),
-                            base_ptr.add(next_offset),
-                            copy_len,
-                        );
-                    }
-                }
-            }
-            plugin_header.save(asset_info, header_offset)?;
-            plugin_registry.save(asset_info, plugin_header.plugin_registry_offset)?;
-            plugin.save(asset_info, record.offset)?;
-        }
-    }
-    Ok(())
-}
