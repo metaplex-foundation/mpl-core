@@ -15,6 +15,8 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseAgentIdentityInitInfo,
+  BaseAgentIdentityInitInfoArgs,
   BaseAppDataInitInfo,
   BaseAppDataInitInfoArgs,
   BaseDataSectionInitInfo,
@@ -27,6 +29,7 @@ import {
   BaseLinkedLifecycleHookInitInfoArgs,
   BaseOracleInitInfo,
   BaseOracleInitInfoArgs,
+  getBaseAgentIdentityInitInfoSerializer,
   getBaseAppDataInitInfoSerializer,
   getBaseDataSectionInitInfoSerializer,
   getBaseLifecycleHookInitInfoSerializer,
@@ -41,7 +44,8 @@ export type BaseExternalPluginAdapterInitInfo =
   | { __kind: 'AppData'; fields: [BaseAppDataInitInfo] }
   | { __kind: 'LinkedLifecycleHook'; fields: [BaseLinkedLifecycleHookInitInfo] }
   | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataInitInfo] }
-  | { __kind: 'DataSection'; fields: [BaseDataSectionInitInfo] };
+  | { __kind: 'DataSection'; fields: [BaseDataSectionInitInfo] }
+  | { __kind: 'AgentIdentity'; fields: [BaseAgentIdentityInitInfo] };
 
 export type BaseExternalPluginAdapterInitInfoArgs =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookInitInfoArgs] }
@@ -52,7 +56,8 @@ export type BaseExternalPluginAdapterInitInfoArgs =
       fields: [BaseLinkedLifecycleHookInitInfoArgs];
     }
   | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataInitInfoArgs] }
-  | { __kind: 'DataSection'; fields: [BaseDataSectionInitInfoArgs] };
+  | { __kind: 'DataSection'; fields: [BaseDataSectionInitInfoArgs] }
+  | { __kind: 'AgentIdentity'; fields: [BaseAgentIdentityInitInfoArgs] };
 
 export function getBaseExternalPluginAdapterInitInfoSerializer(): Serializer<
   BaseExternalPluginAdapterInitInfoArgs,
@@ -110,6 +115,15 @@ export function getBaseExternalPluginAdapterInitInfoSerializer(): Serializer<
           >
         >([['fields', tuple([getBaseDataSectionInitInfoSerializer()])]]),
       ],
+      [
+        'AgentIdentity',
+        struct<
+          GetDataEnumKindContent<
+            BaseExternalPluginAdapterInitInfo,
+            'AgentIdentity'
+          >
+        >([['fields', tuple([getBaseAgentIdentityInitInfoSerializer()])]]),
+      ],
     ],
     { description: 'BaseExternalPluginAdapterInitInfo' }
   ) as Serializer<
@@ -164,6 +178,13 @@ export function baseExternalPluginAdapterInitInfo(
     'DataSection'
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'DataSection'>;
+export function baseExternalPluginAdapterInitInfo(
+  kind: 'AgentIdentity',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterInitInfoArgs,
+    'AgentIdentity'
+  >['fields']
+): GetDataEnumKind<BaseExternalPluginAdapterInitInfoArgs, 'AgentIdentity'>;
 export function baseExternalPluginAdapterInitInfo<
   K extends BaseExternalPluginAdapterInitInfoArgs['__kind'],
 >(

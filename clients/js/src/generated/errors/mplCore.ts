@@ -739,24 +739,37 @@ export class BlockedByBubblegumV2Error extends ProgramError {
 codeToErrorMap.set(0x32, BlockedByBubblegumV2Error);
 nameToErrorMap.set('BlockedByBubblegumV2', BlockedByBubblegumV2Error);
 
+/** AgentIdentityMustSign: Agent Identity Program must sign */
+export class AgentIdentityMustSignError extends ProgramError {
+  override readonly name: string = 'AgentIdentityMustSign';
+
+  readonly code: number = 0x33; // 51
+
+  constructor(program: Program, cause?: Error) {
+    super('Agent Identity Program must sign', program, cause);
+  }
+}
+codeToErrorMap.set(0x33, AgentIdentityMustSignError);
+nameToErrorMap.set('AgentIdentityMustSign', AgentIdentityMustSignError);
+
 /** GroupMustBeEmpty: Group must be empty to be closed */
 export class GroupMustBeEmptyError extends ProgramError {
   override readonly name: string = 'GroupMustBeEmpty';
 
-  readonly code: number = 0x33; // 51
+  readonly code: number = 0x34; // 52
 
   constructor(program: Program, cause?: Error) {
     super('Group must be empty to be closed', program, cause);
   }
 }
-codeToErrorMap.set(0x33, GroupMustBeEmptyError);
+codeToErrorMap.set(0x34, GroupMustBeEmptyError);
 nameToErrorMap.set('GroupMustBeEmpty', GroupMustBeEmptyError);
 
 /** DuplicateEntry: Duplicate entry provided when adding relationships to a group */
 export class DuplicateEntryError extends ProgramError {
   override readonly name: string = 'DuplicateEntry';
 
-  readonly code: number = 0x34; // 52
+  readonly code: number = 0x35; // 53
 
   constructor(program: Program, cause?: Error) {
     super(
@@ -766,7 +779,7 @@ export class DuplicateEntryError extends ProgramError {
     );
   }
 }
-codeToErrorMap.set(0x34, DuplicateEntryError);
+codeToErrorMap.set(0x35, DuplicateEntryError);
 nameToErrorMap.set('DuplicateEntry', DuplicateEntryError);
 
 /**

@@ -12,6 +12,7 @@ import { AppDataPlugin } from '../plugins/appData';
 import { LifecycleHookPlugin } from '../plugins/lifecycleHook';
 import { DataSectionPlugin } from '../plugins/dataSection';
 import { LinkedAppDataPlugin } from '../plugins/linkedAppData';
+import { AgentIdentityPlugin } from '../plugins/agentIdentity';
 
 /**
  * Find the collection address for the given asset if it is part of a collection.
@@ -32,6 +33,7 @@ const externalPluginAdapterKeys: (keyof ExternalPluginAdaptersList)[] = [
   'lifecycleHooks',
   'dataSections',
   'linkedAppDatas',
+  'agentIdentities',
 ];
 export const getExternalPluginAdapterKeyAsString = (
   plugin:
@@ -41,6 +43,7 @@ export const getExternalPluginAdapterKeyAsString = (
     | Pick<LinkedAppDataPlugin, 'type' | 'dataAuthority'>
     | Pick<LinkedLifecycleHookPlugin, 'type' | 'hookedProgram'>
     | Pick<DataSectionPlugin, 'type' | 'parentKey'>
+    | Pick<AgentIdentityPlugin, 'type'>
 ): string => {
   switch (plugin.type) {
     case 'Oracle':
@@ -57,6 +60,8 @@ export const getExternalPluginAdapterKeyAsString = (
       }`;
     case 'DataSection':
       return `${plugin.type}-${getExternalPluginAdapterKeyAsString(plugin.parentKey)}`;
+    case 'AgentIdentity':
+      return plugin.type;
     default:
       throw new Error('Unknown ExternalPluginAdapter type');
   }

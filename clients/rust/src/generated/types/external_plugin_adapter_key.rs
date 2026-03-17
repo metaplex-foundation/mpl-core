@@ -36,4 +36,5 @@ pub enum ExternalPluginAdapterKey {
     LinkedLifecycleHook(Pubkey),
     LinkedAppData(PluginAuthority),
     DataSection(LinkedDataKey),
+    AgentIdentity,
 }
