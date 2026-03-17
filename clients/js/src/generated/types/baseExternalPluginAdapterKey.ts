@@ -15,6 +15,7 @@ import {
   publicKey as publicKeySerializer,
   struct,
   tuple,
+  unit,
 } from '@metaplex-foundation/umi/serializers';
 import {
   BaseLinkedDataKey,
@@ -31,7 +32,8 @@ export type BaseExternalPluginAdapterKey =
   | { __kind: 'AppData'; fields: [BasePluginAuthority] }
   | { __kind: 'LinkedLifecycleHook'; fields: [PublicKey] }
   | { __kind: 'LinkedAppData'; fields: [BasePluginAuthority] }
-  | { __kind: 'DataSection'; fields: [BaseLinkedDataKey] };
+  | { __kind: 'DataSection'; fields: [BaseLinkedDataKey] }
+  | { __kind: 'AgentIdentity' };
 
 export type BaseExternalPluginAdapterKeyArgs =
   | { __kind: 'LifecycleHook'; fields: [PublicKey] }
@@ -39,7 +41,8 @@ export type BaseExternalPluginAdapterKeyArgs =
   | { __kind: 'AppData'; fields: [BasePluginAuthorityArgs] }
   | { __kind: 'LinkedLifecycleHook'; fields: [PublicKey] }
   | { __kind: 'LinkedAppData'; fields: [BasePluginAuthorityArgs] }
-  | { __kind: 'DataSection'; fields: [BaseLinkedDataKeyArgs] };
+  | { __kind: 'DataSection'; fields: [BaseLinkedDataKeyArgs] }
+  | { __kind: 'AgentIdentity' };
 
 export function getBaseExternalPluginAdapterKeySerializer(): Serializer<
   BaseExternalPluginAdapterKeyArgs,
@@ -86,6 +89,7 @@ export function getBaseExternalPluginAdapterKeySerializer(): Serializer<
           GetDataEnumKindContent<BaseExternalPluginAdapterKey, 'DataSection'>
         >([['fields', tuple([getBaseLinkedDataKeySerializer()])]]),
       ],
+      ['AgentIdentity', unit()],
     ],
     { description: 'BaseExternalPluginAdapterKey' }
   ) as Serializer<
@@ -137,6 +141,9 @@ export function baseExternalPluginAdapterKey(
     'DataSection'
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'DataSection'>;
+export function baseExternalPluginAdapterKey(
+  kind: 'AgentIdentity'
+): GetDataEnumKind<BaseExternalPluginAdapterKeyArgs, 'AgentIdentity'>;
 export function baseExternalPluginAdapterKey<
   K extends BaseExternalPluginAdapterKeyArgs['__kind'],
 >(

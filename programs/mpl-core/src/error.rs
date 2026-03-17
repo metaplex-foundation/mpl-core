@@ -213,11 +213,15 @@ pub enum MplCoreError {
     #[error("Bubblegum V2 Plugin limits other plugins")]
     BlockedByBubblegumV2,
 
-    /// 51 - Group must be empty to be closed
+    /// 51 - Agent Identity Program must sign
+    #[error("Agent Identity Program must sign")]
+    AgentIdentityMustSign,
+
+    /// 52 - Group must be empty to be closed
     #[error("Group must be empty to be closed")]
     GroupMustBeEmpty,
 
-    /// 52 - Duplicate entry provided when adding relationships to a group
+    /// 53 - Duplicate entry provided when adding relationships to a group
     #[error("Duplicate entry provided when adding relationships to a group")]
     DuplicateEntry,
 

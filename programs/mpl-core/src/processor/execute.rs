@@ -13,7 +13,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::ExecuteV1Accounts,
-    plugins::{Plugin, PluginType},
+    plugins::{ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginType},
     state::{get_execute_fee, AssetV1, CollectionV1, Key},
     utils::{load_key, resolve_authority, validate_asset_permissions},
 };
@@ -64,8 +64,8 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
         AssetV1::validate_execute,
         CollectionV1::validate_execute,
         Plugin::validate_execute,
-        None,
-        None,
+        Some(ExternalPluginAdapter::validate_execute),
+        Some(HookableLifecycleEvent::Execute),
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
@@ -80,12 +80,28 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
         &[ctx.accounts.payer.clone(), ctx.accounts.asset.clone()],
     )?;
 
+    // If the first remaining account is an ExecutionDelegateRecordV1, strip it
+    // before passing to the CPI -- it was only needed for plugin validation.
+    let cpi_accounts = if let Some(first) = ctx.remaining_accounts.first() {
+        if first.owner == &mpl_agent_tools::ID
+            && first.data_len() > 0
+            && first.data.borrow()[0]
+                == mpl_agent_tools::types::Key::ExecutionDelegateRecordV1 as u8
+        {
+            &ctx.remaining_accounts[1..]
+        } else {
+            ctx.remaining_accounts
+        }
+    } else {
+        ctx.remaining_accounts
+    };
+
     process_execute(
         ctx.accounts.asset.key,
         ctx.accounts.asset_signer.key,
         ctx.accounts.program_id.key,
         args.instruction_data,
-        ctx.remaining_accounts,
+        cpi_accounts,
     )
 }
 

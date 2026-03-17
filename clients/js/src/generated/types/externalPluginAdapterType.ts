@@ -15,6 +15,7 @@ export enum ExternalPluginAdapterType {
   LinkedLifecycleHook,
   LinkedAppData,
   DataSection,
+  AgentIdentity,
 }
 
 export type ExternalPluginAdapterTypeArgs = ExternalPluginAdapterType;
