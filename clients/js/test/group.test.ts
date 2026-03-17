@@ -1,4 +1,4 @@
-import { generateSigner } from '@metaplex-foundation/umi';
+import { generateSigner, PublicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   addAssetsToGroup,
@@ -296,3 +296,139 @@ test('it rejects duplicate collection in remaining accounts for addCollectionsTo
     { name: 'DuplicateEntry' }
   );
 });
+
+test.serial(
+  'it rejects addAssetsToGroup when the group asset vector is already at max size',
+  async (t) => {
+    const umi = await createUmi();
+    const group = await createGroup(umi);
+
+    const maxGroupVectorSize = 256;
+    const batchSize = 8;
+    let batch: PublicKey[] = [];
+
+    for (let i = 0; i < maxGroupVectorSize; i += 1) {
+      const asset = await createAsset(umi);
+      batch.push(asset.publicKey);
+
+      if (batch.length === batchSize) {
+        await addAssetsToGroup(umi, {
+          group: group.publicKey,
+          authority: umi.identity,
+        })
+          .addRemainingAccounts(
+            batch.map((pubkey) => ({
+              isSigner: false,
+              isWritable: true,
+              pubkey,
+            }))
+          )
+          .sendAndConfirm(umi);
+
+        batch = [];
+      }
+    }
+
+    if (batch.length > 0) {
+      await addAssetsToGroup(umi, {
+        group: group.publicKey,
+        authority: umi.identity,
+      })
+        .addRemainingAccounts(
+          batch.map((pubkey) => ({
+            isSigner: false,
+            isWritable: true,
+            pubkey,
+          }))
+        )
+        .sendAndConfirm(umi);
+    }
+
+    const overflowAsset = await createAsset(umi);
+    const error = await t.throwsAsync(
+      addAssetsToGroup(umi, {
+        group: group.publicKey,
+        authority: umi.identity,
+      })
+        .addRemainingAccounts([
+          {
+            isSigner: false,
+            isWritable: true,
+            pubkey: overflowAsset.publicKey,
+          },
+        ])
+        .sendAndConfirm(umi)
+    );
+
+    t.truthy(error);
+    t.regex((error as Error).message, /Group vector is at maximum capacity/);
+  }
+);
+
+test.serial(
+  'it rejects addCollectionsToGroup when the group collection vector is already at max size',
+  async (t) => {
+    const umi = await createUmi();
+    const group = await createGroup(umi);
+
+    const maxGroupVectorSize = 256;
+    const batchSize = 8;
+    let batch: PublicKey[] = [];
+
+    for (let i = 0; i < maxGroupVectorSize; i += 1) {
+      const collection = await createCollection(umi);
+      batch.push(collection.publicKey);
+
+      if (batch.length === batchSize) {
+        await addCollectionsToGroup(umi, {
+          group: group.publicKey,
+          authority: umi.identity,
+        })
+          .addRemainingAccounts(
+            batch.map((pubkey) => ({
+              isSigner: false,
+              isWritable: true,
+              pubkey,
+            }))
+          )
+          .sendAndConfirm(umi);
+
+        batch = [];
+      }
+    }
+
+    if (batch.length > 0) {
+      await addCollectionsToGroup(umi, {
+        group: group.publicKey,
+        authority: umi.identity,
+      })
+        .addRemainingAccounts(
+          batch.map((pubkey) => ({
+            isSigner: false,
+            isWritable: true,
+            pubkey,
+          }))
+        )
+        .sendAndConfirm(umi);
+    }
+
+    const overflowCollection = await createCollection(umi);
+    const error = await t.throwsAsync(
+      addCollectionsToGroup(umi, {
+        group: group.publicKey,
+        authority: umi.identity,
+      })
+        .addRemainingAccounts([
+          {
+            isSigner: false,
+            isWritable: true,
+            pubkey: overflowCollection.publicKey,
+          },
+        ])
+        .sendAndConfirm(umi)
+    );
+
+    t.truthy(error);
+    t.regex((error as Error).message, /Group vector is at maximum capacity/);
+  }
+);

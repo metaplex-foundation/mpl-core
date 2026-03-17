@@ -1,6 +1,6 @@
 import test from 'ava';
 import { generateSigner } from '@metaplex-foundation/umi';
-import { createGroupV1, RelationshipKind } from '../src';
+import { addGroupsToGroup, createGroupV1, RelationshipKind } from '../src';
 import {
   assertAsset,
   assertCollection,
@@ -204,14 +204,58 @@ test('it rejects createGroupV1 when parent relationships exceed nesting depth', 
     key: generateSigner(umi).publicKey,
   }));
 
-  await t.throwsAsync(
+  const error = await t.throwsAsync(
     createGroupV1(umi, {
       name: 'too-many-parents',
       uri: 'https://example.com/too-many-parents',
       group,
       payer: umi.identity,
       relationships: tooManyParentRelationships,
-    }).sendAndConfirm(umi),
-    { name: 'GroupNestingDepthExceeded' }
+    }).sendAndConfirm(umi)
   );
+
+  t.truthy(error);
+  t.regex((error as Error).message, /Group nesting depth exceeded/);
 });
+
+test.serial(
+  'it rejects createGroupV1 when linking a child group that is already at max nesting depth',
+  async (t) => {
+    const umi = await createUmi();
+    const child = await createGroup(umi, { name: 'max-depth-child' });
+
+    const maxDepth = 8;
+    for (let i = 0; i < maxDepth; i += 1) {
+      const parent = await createGroup(umi, { name: `depth-parent-${i}` });
+      await addGroupsToGroup(umi, {
+        parentGroup: parent.publicKey,
+        groups: [child.publicKey],
+        authority: umi.identity,
+      })
+        .addRemainingAccounts([
+          { isSigner: false, isWritable: true, pubkey: child.publicKey },
+        ])
+        .sendAndConfirm(umi);
+    }
+
+    const newGroup = generateSigner(umi);
+    const error = await t.throwsAsync(
+      createGroupV1(umi, {
+        name: 'would-exceed-child-depth',
+        uri: 'https://example.com/would-exceed-child-depth',
+        group: newGroup,
+        payer: umi.identity,
+        relationships: [
+          { kind: RelationshipKind.ChildGroup, key: child.publicKey },
+        ],
+      })
+        .addRemainingAccounts([
+          { isSigner: false, isWritable: true, pubkey: child.publicKey },
+        ])
+        .sendAndConfirm(umi)
+    );
+
+    t.truthy(error);
+    t.regex((error as Error).message, /Group nesting depth exceeded/);
+  }
+);

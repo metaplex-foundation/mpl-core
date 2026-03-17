@@ -52,7 +52,7 @@ pub(crate) fn add_collections_to_group_v1<'a>(
     // Deserialize group.
     let mut group = GroupV1::load(group_info, 0)?;
 
-    // Authority check: must be group's update authority or delegate.
+    // Authority check: must be the group's update authority.
     if !is_valid_group_authority(group_info, authority_info)? {
         msg!("Error: Invalid authority for group account");
         return Err(MplCoreError::InvalidAuthority.into());

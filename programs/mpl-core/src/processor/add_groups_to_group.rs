@@ -29,7 +29,7 @@ pub(crate) fn add_groups_to_group_v1<'a>(
     // Expected account layout:
     //   0. [writable] Parent group account
     //   1. [writable, signer] Payer account (also default authority)
-    //   2. [signer] Optional authority (update auth/delegate)
+    //   2. [signer] Optional authority (group update authority)
     //   3. [] System program
     //   4..N [writable] Child group accounts, one for each pubkey in args.groups
     let ctx: Context<AddGroupsToGroupV1Accounts> = AddGroupsToGroupV1Accounts::context(accounts)?;
@@ -64,7 +64,7 @@ pub(crate) fn add_groups_to_group_v1<'a>(
     // Deserialize parent group.
     let mut parent_group = GroupV1::load(parent_group_info, 0)?;
 
-    // Authority check: must be update authority or delegate of the parent group.
+    // Authority check: must be the parent group's update authority.
     if !is_valid_group_authority(parent_group_info, authority_info)? {
         msg!("Error: Invalid authority for parent group account");
         return Err(MplCoreError::InvalidAuthority.into());
@@ -95,9 +95,9 @@ pub(crate) fn add_groups_to_group_v1<'a>(
         // Deserialize child group.
         let mut child_group = GroupV1::load(child_info, 0)?;
 
-        // Authority must also be update authority or delegate for the child group.
+        // Authority must also be the child group's update authority.
         if !is_valid_group_authority(child_info, authority_info)? {
-            msg!("Error: Signer is not child group update authority/delegate");
+            msg!("Error: Signer is not child group update authority");
             return Err(MplCoreError::InvalidAuthority.into());
         }
 

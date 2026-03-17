@@ -5784,6 +5784,21 @@
       "code": 52,
       "name": "DuplicateEntry",
       "msg": "Duplicate entry provided when adding relationships to a group"
+    },
+    {
+      "code": 53,
+      "name": "GroupVectorFull",
+      "msg": "Group vector is at maximum capacity"
+    },
+    {
+      "code": 54,
+      "name": "GroupNestingDepthExceeded",
+      "msg": "Group nesting depth exceeded"
+    },
+    {
+      "code": 55,
+      "name": "InconsistentGroupRelationship",
+      "msg": "Bidirectional group relationship is inconsistent"
     }
   ],
   "metadata": {

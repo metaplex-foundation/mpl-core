@@ -169,6 +169,15 @@ pub enum MplCoreError {
     /// 52 (0x34) - Duplicate entry provided when adding relationships to a group
     #[error("Duplicate entry provided when adding relationships to a group")]
     DuplicateEntry,
+    /// 53 (0x35) - Group vector is at maximum capacity
+    #[error("Group vector is at maximum capacity")]
+    GroupVectorFull,
+    /// 54 (0x36) - Group nesting depth exceeded
+    #[error("Group nesting depth exceeded")]
+    GroupNestingDepthExceeded,
+    /// 55 (0x37) - Bidirectional group relationship is inconsistent
+    #[error("Bidirectional group relationship is inconsistent")]
+    InconsistentGroupRelationship,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

@@ -17,12 +17,11 @@ use crate::{
         UpdateAuthority,
     },
 };
-use borsh::BorshSerialize;
 use mpl_utils::assert_signer;
 use num_traits::FromPrimitive;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-    program_memory::sol_memcpy, pubkey::Pubkey,
+    pubkey::Pubkey,
 };
 use std::collections::BTreeMap;
 
@@ -109,22 +108,13 @@ pub(crate) fn save_flat_group<'a>(
     payer_info: &AccountInfo<'a>,
     system_program_info: &AccountInfo<'a>,
 ) -> ProgramResult {
-    let serialized_group = group.try_to_vec()?;
+    let serialized_len = group.len();
 
-    if serialized_group.len() != group_info.data_len() {
-        resize_or_reallocate_account(
-            group_info,
-            payer_info,
-            system_program_info,
-            serialized_group.len(),
-        )?;
+    if serialized_len != group_info.data_len() {
+        resize_or_reallocate_account(group_info, payer_info, system_program_info, serialized_len)?;
     }
 
-    sol_memcpy(
-        &mut group_info.try_borrow_mut_data()?,
-        &serialized_group,
-        serialized_group.len(),
-    );
+    group.save(group_info, 0)?;
 
     Ok(())
 }

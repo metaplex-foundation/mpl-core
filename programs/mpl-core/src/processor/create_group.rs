@@ -228,11 +228,16 @@ pub(crate) fn create_group_v1<'a>(
         let mut child_group = GroupV1::load(child_info, 0)?;
 
         if !is_valid_group_authority(child_info, authority_info)? {
-            msg!("Error: Signer is not child group update authority/delegate");
+            msg!("Error: Signer is not child group update authority");
             return Err(MplCoreError::InvalidAuthority.into());
         }
 
         if !child_group.parent_groups.contains(ctx.accounts.group.key) {
+            if child_group.parent_groups.len() >= MAX_GROUP_NESTING_DEPTH {
+                msg!("Error: Child group has reached maximum nesting depth");
+                return Err(MplCoreError::GroupNestingDepthExceeded.into());
+            }
+
             child_group.parent_groups.push(*ctx.accounts.group.key);
             save_flat_group(
                 child_info,
@@ -262,11 +267,16 @@ pub(crate) fn create_group_v1<'a>(
         let mut parent_group = GroupV1::load(parent_info, 0)?;
 
         if !is_valid_group_authority(parent_info, authority_info)? {
-            msg!("Error: Signer is not parent group update authority/delegate");
+            msg!("Error: Signer is not parent group update authority");
             return Err(MplCoreError::InvalidAuthority.into());
         }
 
         if !parent_group.groups.contains(ctx.accounts.group.key) {
+            if parent_group.groups.len() >= MAX_GROUP_VECTOR_SIZE {
+                msg!("Error: Parent group has reached maximum child groups");
+                return Err(MplCoreError::GroupVectorFull.into());
+            }
+
             parent_group.groups.push(*ctx.accounts.group.key);
             save_flat_group(
                 parent_info,

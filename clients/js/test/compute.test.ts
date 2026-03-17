@@ -2,7 +2,9 @@ import test from 'ava';
 import { addAssetsToGroup, removeAssetsFromGroup } from '../src';
 import { createAsset, createGroup, createUmi } from './_setupRaw';
 
-const MAX_COMPUTE_UNITS = 1_400_000; // 1.4M Compute Units – Solana TX limit.
+const MAX_COMPUTE_UNITS = 1_400_000;
+const STRESS_ADD_ASSET_COUNT = 20;
+const STRESS_REMOVE_ASSET_COUNT = 10;
 
 /**
  * Utility to fetch compute units consumed by a confirmed transaction signature.
@@ -15,53 +17,73 @@ async function getComputeUnits(
   return Number(txInfo?.meta.computeUnitsConsumed ?? 0);
 }
 
-// Ensure we stay within Solana's 1.4M CU per-TX hard limit.
-// NOTE: This benchmark has been moved to the dedicated `/bench` folder to
-// keep the deterministic unit‐test suite lightweight. See
-// `clients/js/bench/compute.ts` for the performance check.
+const toWritableRemainingAccounts = (
+  assets: Awaited<ReturnType<typeof createAsset>>[]
+) =>
+  assets.map((asset) => ({
+    isSigner: false,
+    isWritable: true,
+    pubkey: asset.publicKey,
+  }));
 
-test('compute units: removing 1 asset from a group stays below the 1.4M limit', async (t) => {
-  const umi = await createUmi();
-  const group = await createGroup(umi);
+test.serial(
+  `compute units: adding ${STRESS_ADD_ASSET_COUNT} assets to a group stays below the 1.4M limit`,
+  async (t) => {
+    const umi = await createUmi();
+    const group = await createGroup(umi);
 
-  // Create and add 1 asset to ensure it is a member of the group first.
-  const assets = await Promise.all(
-    Array.from({ length: 1 }).map(() => createAsset(umi))
-  );
+    const assets = await Promise.all(
+      Array.from({ length: STRESS_ADD_ASSET_COUNT }).map(() => createAsset(umi))
+    );
 
-  // Initial add so that we can remove afterwards.
-  await addAssetsToGroup(umi, {
-    group: group.publicKey,
-    authority: umi.identity,
-  })
-    .addRemainingAccounts(
-      assets.map((asset) => ({
-        isSigner: false,
-        isWritable: true,
-        pubkey: asset.publicKey,
-      }))
-    )
-    .sendAndConfirm(umi);
+    const addTx = await addAssetsToGroup(umi, {
+      group: group.publicKey,
+      authority: umi.identity,
+    })
+      .addRemainingAccounts(toWritableRemainingAccounts(assets))
+      .sendAndConfirm(umi);
 
-  // Now remove those same assets in a single instruction.
-  const removeTx = await removeAssetsFromGroup(umi, {
-    group: group.publicKey,
-    assets: assets.map((a) => a.publicKey),
-    authority: umi.identity,
-  })
-    .addRemainingAccounts(
-      assets.map((asset) => ({
-        isSigner: false,
-        isWritable: true,
-        pubkey: asset.publicKey,
-      }))
-    )
-    .sendAndConfirm(umi);
+    const computeUnits = await getComputeUnits(umi, addTx.signature);
 
-  const computeUnits = await getComputeUnits(umi, removeTx.signature);
+    t.true(
+      computeUnits <= MAX_COMPUTE_UNITS,
+      `Adding ${STRESS_ADD_ASSET_COUNT} assets used ${computeUnits} CUs which exceeds the 1.4M limit.`
+    );
+  }
+);
 
-  t.true(
-    computeUnits <= MAX_COMPUTE_UNITS,
-    `Removing 1 asset used ${computeUnits} CUs which exceeds the 1.4M limit.`
-  );
-});
+test.serial(
+  `compute units: removing ${STRESS_REMOVE_ASSET_COUNT} assets from a group stays below the 1.4M limit`,
+  async (t) => {
+    const umi = await createUmi();
+    const group = await createGroup(umi);
+
+    const assets = await Promise.all(
+      Array.from({ length: STRESS_REMOVE_ASSET_COUNT }).map(() =>
+        createAsset(umi)
+      )
+    );
+
+    await addAssetsToGroup(umi, {
+      group: group.publicKey,
+      authority: umi.identity,
+    })
+      .addRemainingAccounts(toWritableRemainingAccounts(assets))
+      .sendAndConfirm(umi);
+
+    const removeTx = await removeAssetsFromGroup(umi, {
+      group: group.publicKey,
+      assets: assets.map((a) => a.publicKey),
+      authority: umi.identity,
+    })
+      .addRemainingAccounts(toWritableRemainingAccounts(assets))
+      .sendAndConfirm(umi);
+
+    const computeUnits = await getComputeUnits(umi, removeTx.signature);
+
+    t.true(
+      computeUnits <= MAX_COMPUTE_UNITS,
+      `Removing ${STRESS_REMOVE_ASSET_COUNT} assets used ${computeUnits} CUs which exceeds the 1.4M limit.`
+    );
+  }
+);

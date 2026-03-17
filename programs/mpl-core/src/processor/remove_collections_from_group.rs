@@ -33,7 +33,7 @@ pub(crate) fn remove_collections_from_group_v1<'a>(
     // Expected account layout:
     //   0. [writable] Group account
     //   1. [writable, signer] Payer account (also default authority)
-    //   2. [signer] Optional authority (update auth/delegate)
+    //   2. [signer] Optional authority (group update authority)
     //   3. [] System program
     //   4..N [writable] Collection accounts, one for each pubkey in args.collections
     let ctx: Context<RemoveCollectionsFromGroupV1Accounts> =
@@ -68,7 +68,7 @@ pub(crate) fn remove_collections_from_group_v1<'a>(
     // Deserialize group.
     let mut group = GroupV1::load(group_info, 0)?;
 
-    // Authority check: must be the group's update authority or delegate.
+    // Authority check: must be the group's update authority.
     if !is_valid_group_authority(group_info, authority_info)? {
         msg!("Error: Invalid authority for group account");
         return Err(MplCoreError::InvalidAuthority.into());

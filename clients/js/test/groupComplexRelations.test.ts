@@ -198,7 +198,7 @@ test.serial(
     }
 
     const overflowChild = await createGroup(umi, { name: 'child-overflow' });
-    await t.throwsAsync(
+    const error = await t.throwsAsync(
       addGroupsToGroup(umi, {
         parentGroup: parent.publicKey,
         groups: [overflowChild.publicKey],
@@ -211,8 +211,10 @@ test.serial(
             pubkey: overflowChild.publicKey,
           },
         ])
-        .sendAndConfirm(umi),
-      { name: 'GroupVectorFull' }
+        .sendAndConfirm(umi)
     );
+
+    t.truthy(error);
+    t.regex((error as Error).message, /Group vector is at maximum capacity/);
   }
 );
