@@ -322,6 +322,15 @@ kinobi.update(
     },
     masterEdition: {
       name: "baseMasterEdition"
+    },
+    agentIdentity: {
+      name: "baseAgentIdentity"
+    },
+    agentIdentityInitInfo: {
+      name: "baseAgentIdentityInitInfo"
+    },
+    agentIdentityUpdateInfo: {
+      name: "baseAgentIdentityUpdateInfo"
     }
   })
 )

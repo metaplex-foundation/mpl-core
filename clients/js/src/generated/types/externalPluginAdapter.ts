@@ -15,6 +15,8 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseAgentIdentity,
+  BaseAgentIdentityArgs,
   BaseAppData,
   BaseAppDataArgs,
   BaseDataSection,
@@ -27,6 +29,7 @@ import {
   BaseLinkedLifecycleHookArgs,
   BaseOracle,
   BaseOracleArgs,
+  getBaseAgentIdentitySerializer,
   getBaseAppDataSerializer,
   getBaseDataSectionSerializer,
   getBaseLifecycleHookSerializer,
@@ -41,7 +44,8 @@ export type ExternalPluginAdapter =
   | { __kind: 'AppData'; fields: [BaseAppData] }
   | { __kind: 'LinkedLifecycleHook'; fields: [BaseLinkedLifecycleHook] }
   | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppData] }
-  | { __kind: 'DataSection'; fields: [BaseDataSection] };
+  | { __kind: 'DataSection'; fields: [BaseDataSection] }
+  | { __kind: 'AgentIdentity'; fields: [BaseAgentIdentity] };
 
 export type ExternalPluginAdapterArgs =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookArgs] }
@@ -49,7 +53,8 @@ export type ExternalPluginAdapterArgs =
   | { __kind: 'AppData'; fields: [BaseAppDataArgs] }
   | { __kind: 'LinkedLifecycleHook'; fields: [BaseLinkedLifecycleHookArgs] }
   | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataArgs] }
-  | { __kind: 'DataSection'; fields: [BaseDataSectionArgs] };
+  | { __kind: 'DataSection'; fields: [BaseDataSectionArgs] }
+  | { __kind: 'AgentIdentity'; fields: [BaseAgentIdentityArgs] };
 
 export function getExternalPluginAdapterSerializer(): Serializer<
   ExternalPluginAdapterArgs,
@@ -91,6 +96,12 @@ export function getExternalPluginAdapterSerializer(): Serializer<
         'DataSection',
         struct<GetDataEnumKindContent<ExternalPluginAdapter, 'DataSection'>>([
           ['fields', tuple([getBaseDataSectionSerializer()])],
+        ]),
+      ],
+      [
+        'AgentIdentity',
+        struct<GetDataEnumKindContent<ExternalPluginAdapter, 'AgentIdentity'>>([
+          ['fields', tuple([getBaseAgentIdentitySerializer()])],
         ]),
       ],
     ],
@@ -135,6 +146,13 @@ export function externalPluginAdapter(
     'DataSection'
   >['fields']
 ): GetDataEnumKind<ExternalPluginAdapterArgs, 'DataSection'>;
+export function externalPluginAdapter(
+  kind: 'AgentIdentity',
+  data: GetDataEnumKindContent<
+    ExternalPluginAdapterArgs,
+    'AgentIdentity'
+  >['fields']
+): GetDataEnumKind<ExternalPluginAdapterArgs, 'AgentIdentity'>;
 export function externalPluginAdapter<
   K extends ExternalPluginAdapterArgs['__kind'],
 >(kind: K, data?: any): Extract<ExternalPluginAdapterArgs, { __kind: K }> {

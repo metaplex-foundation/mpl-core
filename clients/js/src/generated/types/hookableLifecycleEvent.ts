@@ -13,6 +13,7 @@ export enum HookableLifecycleEvent {
   Transfer,
   Burn,
   Update,
+  Execute,
 }
 
 export type HookableLifecycleEventArgs = HookableLifecycleEvent;

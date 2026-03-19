@@ -383,6 +383,13 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         }) => (*init_plugin_authority, None),
         // The DataSection is only updated via its managing plugin so it has no authority.
         ExternalPluginAdapterInitInfo::DataSection(_) => (Some(Authority::None), None),
+        ExternalPluginAdapterInitInfo::AgentIdentity(init_info) => {
+            validate_lifecycle_checks(&init_info.lifecycle_checks, false)?;
+            (
+                init_info.init_plugin_authority,
+                Some(init_info.lifecycle_checks.clone()),
+            )
+        }
     };
 
     let old_registry_offset = plugin_header.plugin_registry_offset;
@@ -873,6 +880,8 @@ fn check_plugin_key(
                         Err(_) => return Err(MplCoreError::DeserializationError.into()),
                     }
             }
+            // AgentIdentity is a unit variant - only one per asset, so type match is sufficient.
+            ExternalPluginAdapterKey::AgentIdentity => true,
         })
     {
         Ok(true)

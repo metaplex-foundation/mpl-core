@@ -739,6 +739,19 @@ export class BlockedByBubblegumV2Error extends ProgramError {
 codeToErrorMap.set(0x32, BlockedByBubblegumV2Error);
 nameToErrorMap.set('BlockedByBubblegumV2', BlockedByBubblegumV2Error);
 
+/** AgentIdentityMustSign: Agent Identity Program must sign */
+export class AgentIdentityMustSignError extends ProgramError {
+  override readonly name: string = 'AgentIdentityMustSign';
+
+  readonly code: number = 0x33; // 51
+
+  constructor(program: Program, cause?: Error) {
+    super('Agent Identity Program must sign', program, cause);
+  }
+}
+codeToErrorMap.set(0x33, AgentIdentityMustSignError);
+nameToErrorMap.set('AgentIdentityMustSign', AgentIdentityMustSignError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

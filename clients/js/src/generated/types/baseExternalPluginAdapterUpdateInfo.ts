@@ -15,6 +15,8 @@ import {
   tuple,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  BaseAgentIdentityUpdateInfo,
+  BaseAgentIdentityUpdateInfoArgs,
   BaseAppDataUpdateInfo,
   BaseAppDataUpdateInfoArgs,
   BaseLifecycleHookUpdateInfo,
@@ -25,6 +27,7 @@ import {
   BaseLinkedLifecycleHookUpdateInfoArgs,
   BaseOracleUpdateInfo,
   BaseOracleUpdateInfoArgs,
+  getBaseAgentIdentityUpdateInfoSerializer,
   getBaseAppDataUpdateInfoSerializer,
   getBaseLifecycleHookUpdateInfoSerializer,
   getBaseLinkedAppDataUpdateInfoSerializer,
@@ -40,7 +43,8 @@ export type BaseExternalPluginAdapterUpdateInfo =
       __kind: 'LinkedLifecycleHook';
       fields: [BaseLinkedLifecycleHookUpdateInfo];
     }
-  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataUpdateInfo] };
+  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataUpdateInfo] }
+  | { __kind: 'AgentIdentity'; fields: [BaseAgentIdentityUpdateInfo] };
 
 export type BaseExternalPluginAdapterUpdateInfoArgs =
   | { __kind: 'LifecycleHook'; fields: [BaseLifecycleHookUpdateInfoArgs] }
@@ -50,7 +54,8 @@ export type BaseExternalPluginAdapterUpdateInfoArgs =
       __kind: 'LinkedLifecycleHook';
       fields: [BaseLinkedLifecycleHookUpdateInfoArgs];
     }
-  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataUpdateInfoArgs] };
+  | { __kind: 'LinkedAppData'; fields: [BaseLinkedAppDataUpdateInfoArgs] }
+  | { __kind: 'AgentIdentity'; fields: [BaseAgentIdentityUpdateInfoArgs] };
 
 export function getBaseExternalPluginAdapterUpdateInfoSerializer(): Serializer<
   BaseExternalPluginAdapterUpdateInfoArgs,
@@ -99,6 +104,15 @@ export function getBaseExternalPluginAdapterUpdateInfoSerializer(): Serializer<
           >
         >([['fields', tuple([getBaseLinkedAppDataUpdateInfoSerializer()])]]),
       ],
+      [
+        'AgentIdentity',
+        struct<
+          GetDataEnumKindContent<
+            BaseExternalPluginAdapterUpdateInfo,
+            'AgentIdentity'
+          >
+        >([['fields', tuple([getBaseAgentIdentityUpdateInfoSerializer()])]]),
+      ],
     ],
     { description: 'BaseExternalPluginAdapterUpdateInfo' }
   ) as Serializer<
@@ -146,6 +160,13 @@ export function baseExternalPluginAdapterUpdateInfo(
     'LinkedAppData'
   >['fields']
 ): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'LinkedAppData'>;
+export function baseExternalPluginAdapterUpdateInfo(
+  kind: 'AgentIdentity',
+  data: GetDataEnumKindContent<
+    BaseExternalPluginAdapterUpdateInfoArgs,
+    'AgentIdentity'
+  >['fields']
+): GetDataEnumKind<BaseExternalPluginAdapterUpdateInfoArgs, 'AgentIdentity'>;
 export function baseExternalPluginAdapterUpdateInfo<
   K extends BaseExternalPluginAdapterUpdateInfoArgs['__kind'],
 >(

@@ -212,6 +212,10 @@ pub enum MplCoreError {
     /// 50 - Bubblegum V2 Plugin limits other plugins
     #[error("Bubblegum V2 Plugin limits other plugins")]
     BlockedByBubblegumV2,
+
+    /// 51 - Agent Identity Program must sign
+    #[error("Agent Identity Program must sign")]
+    AgentIdentityMustSign,
 }
 
 impl PrintProgramError for MplCoreError {

@@ -223,6 +223,13 @@ pub trait SolanaAccount: CrateSerialize + CrateDeserialize {
             ));
         }
 
+        if account.owner != &crate::ID {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                MplCoreError::IncorrectAccount.to_string(),
+            ));
+        }
+
         let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
         Self::deserialize(&mut bytes)
     }
@@ -275,6 +282,7 @@ impl From<&ExternalPluginAdapterKey> for ExternalPluginAdapterType {
             ExternalPluginAdapterKey::AppData(_) => ExternalPluginAdapterType::AppData,
             ExternalPluginAdapterKey::LinkedAppData(_) => ExternalPluginAdapterType::LinkedAppData,
             ExternalPluginAdapterKey::DataSection(_) => ExternalPluginAdapterType::DataSection,
+            ExternalPluginAdapterKey::AgentIdentity => ExternalPluginAdapterType::AgentIdentity,
         }
     }
 }
