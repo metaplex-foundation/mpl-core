@@ -2038,7 +2038,8 @@
         {
           "name": "payer",
           "isMut": true,
-          "isSigner": true,
+          "isSigner": false,
+          "isOptionalSigner": true,
           "docs": [
             "The account paying for the storage fees"
           ]

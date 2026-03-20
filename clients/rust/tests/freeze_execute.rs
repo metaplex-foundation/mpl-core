@@ -106,7 +106,7 @@ async fn test_freeze_execute_backed_nft_flow() {
         .asset(asset.pubkey())
         .collection(None)
         .asset_signer(asset_signer)
-        .payer(payer_key)
+        .payer(payer_key, true)
         .authority(Some(payer_key))
         .system_program(system_program::ID)
         .program_id(system_program::ID) // use system program as harmless target
