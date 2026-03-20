@@ -44,12 +44,17 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
 
     let payer_is_pda = ctx.accounts.payer.key == ctx.accounts.asset_signer.key;
 
-    // If payer is not the asset signer PDA, it must be a signer.
-    if !payer_is_pda {
+    let authority = if payer_is_pda {
+        let authority = ctx
+            .accounts
+            .authority
+            .ok_or(MplCoreError::MissingSigner)?;
+        assert_signer(authority)?;
+        authority
+    } else {
         assert_signer(ctx.accounts.payer)?;
-    }
-
-    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
+        resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?
+    };
 
     if *ctx.accounts.system_program.key != system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
