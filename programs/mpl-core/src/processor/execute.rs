@@ -45,10 +45,7 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
     let payer_is_pda = ctx.accounts.payer.key == ctx.accounts.asset_signer.key;
 
     let authority = if payer_is_pda {
-        let authority = ctx
-            .accounts
-            .authority
-            .ok_or(MplCoreError::MissingSigner)?;
+        let authority = ctx.accounts.authority.ok_or(MplCoreError::MissingSigner)?;
         assert_signer(authority)?;
         authority
     } else {
