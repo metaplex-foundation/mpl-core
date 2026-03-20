@@ -1,6 +1,9 @@
 import {
   Context,
   Instruction,
+  Pda,
+  publicKey,
+  PublicKey,
   Signer,
   TransactionBuilder,
 } from '@metaplex-foundation/umi';
@@ -22,6 +25,8 @@ export type ExecuteArgs = Omit<
   collection?: Pick<CollectionV1, 'publicKey'>;
   instructions: ExecuteInput;
   signers?: Signer[];
+  /** Optional execution delegate record account to pass as the first remaining account. */
+  executionDelegateRecord?: PublicKey | Pda;
 };
 
 export const execute = (
@@ -67,7 +72,7 @@ const executeCommon = (
     const [assetSigner] = findAssetSignerPda(context, {
       asset: args.asset.publicKey,
     });
-    const baseBuilder = executeV1(context, {
+    let baseBuilder = executeV1(context, {
       ...args,
       asset: args.asset.publicKey,
       collection: args.collection?.publicKey,
@@ -77,6 +82,18 @@ const executeCommon = (
       // Forward the data of the instruction being executed.
       instructionData: ix.instruction.data,
     });
+
+    // If an executionDelegateRecord is provided, prepend it as the first
+    // remaining account so the on-chain program can read it during validation.
+    if (args.executionDelegateRecord) {
+      baseBuilder = baseBuilder.addRemainingAccounts([
+        {
+          pubkey: publicKey(args.executionDelegateRecord),
+          isSigner: false,
+          isWritable: false,
+        },
+      ]);
+    }
 
     executeBuilder = executeBuilder.add(
       baseBuilder
