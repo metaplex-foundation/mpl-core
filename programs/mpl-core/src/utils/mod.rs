@@ -262,32 +262,6 @@ pub(crate) fn validate_asset_permissions<'a>(
     };
 
     match validate_plugin_checks(
-        Key::CollectionV1,
-        accounts,
-        &checks,
-        authority_info,
-        new_owner,
-        new_authority,
-        None,
-        new_plugin,
-        new_plugin_authority,
-        new_external_plugin_adapter,
-        new_external_plugin_adapter_authority,
-        Some(asset),
-        collection,
-        &resolved_authorities,
-        plugin_validate_fp,
-    )? {
-        ValidationResult::Approved => approved = true,
-        ValidationResult::Rejected => rejected = true,
-        ValidationResult::Pass => (),
-        ValidationResult::ForceApproved => {
-            return Ok((deserialized_asset, plugin_header, plugin_registry))
-        }
-    };
-
-    match validate_plugin_checks(
-        Key::AssetV1,
         accounts,
         &checks,
         authority_info,
@@ -313,31 +287,6 @@ pub(crate) fn validate_asset_permissions<'a>(
 
     if let Some(external_plugin_adapter_validate_fp) = external_plugin_adapter_validate_fp {
         match validate_external_plugin_adapter_checks(
-            Key::CollectionV1,
-            accounts,
-            &external_checks,
-            authority_info,
-            new_owner,
-            new_authority,
-            None,
-            new_plugin,
-            new_plugin_authority,
-            new_external_plugin_adapter,
-            new_external_plugin_adapter_authority,
-            Some(asset),
-            collection,
-            &resolved_authorities,
-            external_plugin_adapter_validate_fp,
-        )? {
-            ValidationResult::Approved => approved = true,
-            ValidationResult::Rejected => rejected = true,
-            ValidationResult::Pass => (),
-            // Force approved will not be possible from external plugin adapters.
-            ValidationResult::ForceApproved => unreachable!(),
-        };
-
-        match validate_external_plugin_adapter_checks(
-            Key::AssetV1,
             accounts,
             &external_checks,
             authority_info,
@@ -469,7 +418,6 @@ pub(crate) fn validate_collection_permissions<'a>(
     };
 
     match validate_plugin_checks(
-        Key::CollectionV1,
         accounts,
         &checks,
         authority_info,
@@ -495,7 +443,6 @@ pub(crate) fn validate_collection_permissions<'a>(
 
     if let Some(external_plugin_adapter_validate_fp) = external_plugin_adapter_validate_fp {
         match validate_external_plugin_adapter_checks(
-            Key::CollectionV1,
             accounts,
             &external_checks,
             authority_info,
