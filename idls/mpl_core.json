@@ -5902,17 +5902,17 @@
       "msg": "Duplicate entry provided when adding relationships to a group"
     },
     {
-      "code": 53,
+      "code": 54,
       "name": "GroupVectorFull",
       "msg": "Group vector is at maximum capacity"
     },
     {
-      "code": 54,
+      "code": 55,
       "name": "GroupNestingDepthExceeded",
       "msg": "Group nesting depth exceeded"
     },
     {
-      "code": 55,
+      "code": 56,
       "name": "InconsistentGroupRelationship",
       "msg": "Bidirectional group relationship is inconsistent"
     }

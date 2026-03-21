@@ -47,7 +47,7 @@ export type RemoveAssetsFromGroupV1InstructionData = {
 };
 
 export type RemoveAssetsFromGroupV1InstructionDataArgs = {
-  assets?: Array<PublicKey>;
+  assets: Array<PublicKey>;
 };
 
 export function getRemoveAssetsFromGroupV1InstructionDataSerializer(): Serializer<
@@ -66,7 +66,7 @@ export function getRemoveAssetsFromGroupV1InstructionDataSerializer(): Serialize
       ],
       { description: 'RemoveAssetsFromGroupV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 36, assets: value.assets ?? [] })
+    (value) => ({ ...value, discriminator: 36 })
   ) as Serializer<
     RemoveAssetsFromGroupV1InstructionDataArgs,
     RemoveAssetsFromGroupV1InstructionData

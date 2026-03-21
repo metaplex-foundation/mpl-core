@@ -157,35 +157,35 @@ kinobi.update(
         createGroupV1: {
             arguments: {
                 relationships: {
-                    defaultValue: k.arrayValueNode([]),
+                    // defaultValue: k.arrayValueNode([]),
                 },
             },
         },
         addGroupsToGroupV1: {
             arguments: {
                 groups: {
-                    defaultValue: k.arrayValueNode([]),
+                    // defaultValue: k.arrayValueNode([]),
                 },
             },
         },
         removeGroupsFromGroupV1: {
             arguments: {
                 groups: {
-                    defaultValue: k.arrayValueNode([]),
+                    // defaultValue: k.arrayValueNode([]),
                 },
             },
         },
         removeAssetsFromGroupV1: {
             arguments: {
                 assets: {
-                    defaultValue: k.arrayValueNode([]),
+                    // defaultValue: k.arrayValueNode([]),
                 },
             },
         },
         removeCollectionsFromGroupV1: {
             arguments: {
                 collections: {
-                    defaultValue: k.arrayValueNode([]),
+                    // defaultValue: k.arrayValueNode([]),
                 },
             },
         },

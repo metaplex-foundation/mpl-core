@@ -47,7 +47,7 @@ export type RemoveCollectionsFromGroupV1InstructionData = {
 };
 
 export type RemoveCollectionsFromGroupV1InstructionDataArgs = {
-  collections?: Array<PublicKey>;
+  collections: Array<PublicKey>;
 };
 
 export function getRemoveCollectionsFromGroupV1InstructionDataSerializer(): Serializer<
@@ -66,11 +66,7 @@ export function getRemoveCollectionsFromGroupV1InstructionDataSerializer(): Seri
       ],
       { description: 'RemoveCollectionsFromGroupV1InstructionData' }
     ),
-    (value) => ({
-      ...value,
-      discriminator: 34,
-      collections: value.collections ?? [],
-    })
+    (value) => ({ ...value, discriminator: 34 })
   ) as Serializer<
     RemoveCollectionsFromGroupV1InstructionDataArgs,
     RemoveCollectionsFromGroupV1InstructionData

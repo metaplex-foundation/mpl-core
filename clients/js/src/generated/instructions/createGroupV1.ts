@@ -56,7 +56,7 @@ export type CreateGroupV1InstructionData = {
 export type CreateGroupV1InstructionDataArgs = {
   name: string;
   uri: string;
-  relationships?: Array<RelationshipEntryArgs>;
+  relationships: Array<RelationshipEntryArgs>;
 };
 
 export function getCreateGroupV1InstructionDataSerializer(): Serializer<
@@ -77,11 +77,7 @@ export function getCreateGroupV1InstructionDataSerializer(): Serializer<
       ],
       { description: 'CreateGroupV1InstructionData' }
     ),
-    (value) => ({
-      ...value,
-      discriminator: 39,
-      relationships: value.relationships ?? [],
-    })
+    (value) => ({ ...value, discriminator: 39 })
   ) as Serializer<
     CreateGroupV1InstructionDataArgs,
     CreateGroupV1InstructionData

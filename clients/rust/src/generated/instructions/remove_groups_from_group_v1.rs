@@ -141,7 +141,6 @@ impl RemoveGroupsFromGroupV1Builder {
         self.system_program = Some(system_program);
         self
     }
-    /// `[optional argument, defaults to '[]']`
     #[inline(always)]
     pub fn groups(&mut self, groups: Vec<Pubkey>) -> &mut Self {
         self.groups = Some(groups);
@@ -176,7 +175,7 @@ impl RemoveGroupsFromGroupV1Builder {
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
         };
         let args = RemoveGroupsFromGroupV1InstructionArgs {
-            groups: self.groups.clone().unwrap_or([]),
+            groups: self.groups.clone().expect("groups is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -380,7 +379,6 @@ impl<'a, 'b> RemoveGroupsFromGroupV1CpiBuilder<'a, 'b> {
         self.instruction.system_program = Some(system_program);
         self
     }
-    /// `[optional argument, defaults to '[]']`
     #[inline(always)]
     pub fn groups(&mut self, groups: Vec<Pubkey>) -> &mut Self {
         self.instruction.groups = Some(groups);
@@ -428,7 +426,7 @@ impl<'a, 'b> RemoveGroupsFromGroupV1CpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = RemoveGroupsFromGroupV1InstructionArgs {
-            groups: self.instruction.groups.clone().unwrap_or([]),
+            groups: self.instruction.groups.clone().expect("groups is not set"),
         };
         let instruction = RemoveGroupsFromGroupV1Cpi {
             __program: self.instruction.__program,

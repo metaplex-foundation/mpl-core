@@ -786,39 +786,39 @@ nameToErrorMap.set('DuplicateEntry', DuplicateEntryError);
 export class GroupVectorFullError extends ProgramError {
   override readonly name: string = 'GroupVectorFull';
 
-  readonly code: number = 0x35; // 53
+  readonly code: number = 0x36; // 54
 
   constructor(program: Program, cause?: Error) {
     super('Group vector is at maximum capacity', program, cause);
   }
 }
-codeToErrorMap.set(0x35, GroupVectorFullError);
+codeToErrorMap.set(0x36, GroupVectorFullError);
 nameToErrorMap.set('GroupVectorFull', GroupVectorFullError);
 
 /** GroupNestingDepthExceeded: Group nesting depth exceeded */
 export class GroupNestingDepthExceededError extends ProgramError {
   override readonly name: string = 'GroupNestingDepthExceeded';
 
-  readonly code: number = 0x36; // 54
+  readonly code: number = 0x37; // 55
 
   constructor(program: Program, cause?: Error) {
     super('Group nesting depth exceeded', program, cause);
   }
 }
-codeToErrorMap.set(0x36, GroupNestingDepthExceededError);
+codeToErrorMap.set(0x37, GroupNestingDepthExceededError);
 nameToErrorMap.set('GroupNestingDepthExceeded', GroupNestingDepthExceededError);
 
 /** InconsistentGroupRelationship: Bidirectional group relationship is inconsistent */
 export class InconsistentGroupRelationshipError extends ProgramError {
   override readonly name: string = 'InconsistentGroupRelationship';
 
-  readonly code: number = 0x37; // 55
+  readonly code: number = 0x38; // 56
 
   constructor(program: Program, cause?: Error) {
     super('Bidirectional group relationship is inconsistent', program, cause);
   }
 }
-codeToErrorMap.set(0x37, InconsistentGroupRelationshipError);
+codeToErrorMap.set(0x38, InconsistentGroupRelationshipError);
 nameToErrorMap.set(
   'InconsistentGroupRelationship',
   InconsistentGroupRelationshipError
