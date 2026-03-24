@@ -2,7 +2,10 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
 use crate::{
-    plugins::{abstain, reject, PluginValidation, PluginValidationContext, ValidationResult},
+    plugins::{
+        abstain, approve, reject, Plugin, PluginValidation, PluginValidationContext,
+        ValidationResult,
+    },
     state::DataBlob,
 };
 
@@ -48,6 +51,56 @@ impl PluginValidation for FreezeExecute {
         } else {
             abstain!()
         }
+    }
+
+    /// Validate the approve plugin authority lifecycle action.
+    /// If the target FreezeExecute is frozen, reject authority changes.
+    fn validate_approve_plugin_authority(
+        &self,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        if let Some(Plugin::FreezeExecute(freeze)) = ctx.target_plugin {
+            if freeze.frozen {
+                return reject!();
+            }
+        }
+        abstain!()
+    }
+
+    /// Validate the revoke plugin authority lifecycle action.
+    /// If the target FreezeExecute is frozen, reject revocation.
+    /// If unfrozen and the caller is a resolved authority, approve.
+    fn validate_revoke_plugin_authority(
+        &self,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        if let Some(Plugin::FreezeExecute(freeze)) = ctx.target_plugin {
+            if freeze.frozen {
+                return reject!();
+            } else if ctx.resolved_authorities.is_some()
+                && ctx
+                    .resolved_authorities
+                    .unwrap()
+                    .contains(ctx.self_authority)
+            {
+                return approve!();
+            }
+        }
+        abstain!()
+    }
+
+    /// Validate the remove plugin lifecycle action.
+    /// If the target FreezeExecute is frozen, reject its removal.
+    fn validate_remove_plugin(
+        &self,
+        ctx: &PluginValidationContext,
+    ) -> Result<ValidationResult, ProgramError> {
+        if let Some(Plugin::FreezeExecute(freeze)) = ctx.target_plugin {
+            if freeze.frozen {
+                return reject!();
+            }
+        }
+        abstain!()
     }
 }
 
