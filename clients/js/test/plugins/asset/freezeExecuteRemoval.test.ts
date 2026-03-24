@@ -10,12 +10,14 @@ import test from 'ava';
 import {
   approvePluginAuthorityV1,
   create,
+  createPlugin,
   execute,
   fetchAssetV1,
   findAssetSignerPda,
   PluginType,
   removePluginV1,
   revokePluginAuthorityV1,
+  updatePluginV1,
 } from '../../../src';
 import { assertAsset, createUmi, DEFAULT_ASSET } from '../../_setupRaw';
 
@@ -212,4 +214,158 @@ test('Protocol-delegated FreezeExecute cannot be removed by owner despite freeze
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidAuthority' });
+});
+
+test('owner cannot unfreeze delegate-frozen FreezeExecute', async (t) => {
+  const umi = await createUmi();
+  const owner = umi.identity;
+  const updateAuth = generateSigner(umi);
+  const delegate = generateSigner(umi);
+  const assetSigner = generateSigner(umi);
+
+  // 1. Create asset with FreezeExecute delegated to a third party and frozen.
+  await create(umi, {
+    asset: assetSigner,
+    owner: owner.publicKey,
+    updateAuthority: updateAuth.publicKey,
+    name: 'Test Asset',
+    uri: 'https://example.com/asset',
+    plugins: [
+      {
+        type: 'FreezeExecute',
+        frozen: true,
+        authority: { type: 'Address', address: delegate.publicKey },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  const asset = await fetchAssetV1(umi, publicKey(assetSigner));
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: updateAuth.publicKey },
+    freezeExecute: {
+      authority: { type: 'Address', address: delegate.publicKey },
+      frozen: true,
+    },
+  });
+
+  // 2. Owner attempts to unfreeze — should be rejected (not the delegate).
+  const unfreezeResult = updatePluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({ type: 'FreezeExecute', data: { frozen: false } }),
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(unfreezeResult, { name: 'NoApprovals' });
+
+  // Plugin is still frozen.
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: updateAuth.publicKey },
+    freezeExecute: {
+      authority: { type: 'Address', address: delegate.publicKey },
+      frozen: true,
+    },
+  });
+});
+
+test('delegate can unfreeze FreezeExecute', async (t) => {
+  const umi = await createUmi();
+  const owner = umi.identity;
+  const updateAuth = generateSigner(umi);
+  const delegate = generateSigner(umi);
+  const assetSigner = generateSigner(umi);
+
+  // 1. Create asset with FreezeExecute delegated and frozen.
+  await create(umi, {
+    asset: assetSigner,
+    owner: owner.publicKey,
+    updateAuthority: updateAuth.publicKey,
+    name: 'Test Asset',
+    uri: 'https://example.com/asset',
+    plugins: [
+      {
+        type: 'FreezeExecute',
+        frozen: true,
+        authority: { type: 'Address', address: delegate.publicKey },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  const asset = await fetchAssetV1(umi, publicKey(assetSigner));
+
+  // 2. Delegate unfreezes — should succeed.
+  await updatePluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({ type: 'FreezeExecute', data: { frozen: false } }),
+    authority: delegate,
+  }).sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: owner.publicKey,
+    updateAuthority: { type: 'Address', address: updateAuth.publicKey },
+    freezeExecute: {
+      authority: { type: 'Address', address: delegate.publicKey },
+      frozen: false,
+    },
+  });
+});
+
+test('owner can remove FreezeExecute after delegate unfreezes it', async (t) => {
+  const umi = await createUmi();
+  const owner = umi.identity;
+  const updateAuth = generateSigner(umi);
+  const delegate = generateSigner(umi);
+  const assetSigner = generateSigner(umi);
+
+  // 1. Create asset with FreezeExecute delegated and frozen.
+  await create(umi, {
+    asset: assetSigner,
+    owner: owner.publicKey,
+    updateAuthority: updateAuth.publicKey,
+    name: 'Test Asset',
+    uri: 'https://example.com/asset',
+    plugins: [
+      {
+        type: 'FreezeExecute',
+        frozen: true,
+        authority: { type: 'Address', address: delegate.publicKey },
+      },
+    ],
+  }).sendAndConfirm(umi);
+
+  const asset = await fetchAssetV1(umi, publicKey(assetSigner));
+
+  // 2. Removal while frozen — should fail.
+  const blockedResult = removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.FreezeExecute,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(blockedResult, { name: 'InvalidAuthority' });
+
+  // 3. Delegate unfreezes.
+  await updatePluginV1(umi, {
+    asset: asset.publicKey,
+    plugin: createPlugin({ type: 'FreezeExecute', data: { frozen: false } }),
+    authority: delegate,
+  }).sendAndConfirm(umi);
+
+  // 4. Owner removes now that it's unfrozen — should succeed.
+  await removePluginV1(umi, {
+    asset: asset.publicKey,
+    pluginType: PluginType.FreezeExecute,
+    authority: owner,
+  }).sendAndConfirm(umi);
+
+  const assetAfter = await fetchAssetV1(umi, asset.publicKey);
+  t.is(assetAfter.freezeExecute, undefined);
 });
