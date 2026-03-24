@@ -39,7 +39,7 @@ export type ExecuteV1InstructionAccounts = {
   /** The signing PDA for the asset */
   assetSigner?: PublicKey | Pda;
   /** The account paying for the storage fees */
-  payer?: Signer;
+  payer?: PublicKey | Pda | Signer;
   /** The owner or delegate of the asset */
   authority?: Signer;
   /** The system program */

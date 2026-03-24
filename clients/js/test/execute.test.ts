@@ -374,6 +374,140 @@ test('it cannot transfer asset in collection with the wrong collection', async (
   await t.throwsAsync(result, { name: 'InvalidCollection' });
 });
 
+test('it can execute so the asset signer PDA pays the fee', async (t) => {
+  const umi = await createUmi();
+  const recipient = generateSigner(umi);
+
+  const asset = await createAsset(umi);
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(1));
+
+  const beforeAssetSignerBalance = await umi.rpc.getBalance(
+    publicKey(assetSigner)
+  );
+  const beforePayerBalance = await umi.rpc.getBalance(umi.identity.publicKey);
+
+  t.deepEqual(beforeAssetSignerBalance, sol(1));
+
+  await execute(umi, {
+    asset,
+    authority: umi.identity,
+    payer: assetSigner,
+    instructions: transferSol(umi, {
+      source: createNoopSigner(publicKey(assetSigner)),
+      destination: recipient.publicKey,
+      amount: sol(0.5),
+    }),
+  }).sendAndConfirm(umi);
+
+  const afterAssetSignerBalance = await umi.rpc.getBalance(
+    publicKey(assetSigner)
+  );
+  const afterRecipientBalance = await umi.rpc.getBalance(publicKey(recipient));
+  const afterPayerBalance = await umi.rpc.getBalance(umi.identity.publicKey);
+  const afterAssetBalance = await umi.rpc.getBalance(
+    publicKey(asset.publicKey)
+  );
+
+  // The asset signer PDA should have lost 0.5 SOL (transfer) + the execute fee.
+  // 1 SOL - 0.5 SOL transfer - 48720 lamports fee = 0.5 SOL - 48720 lamports
+  t.deepEqual(afterAssetSignerBalance, lamports(sol(0.5).basisPoints - 48720n));
+  t.deepEqual(afterRecipientBalance, sol(0.5));
+  // The asset account should have gained the execute fee.
+  t.deepEqual(afterAssetBalance, addAmounts(sol(0.00315648), lamports(48720)));
+  // The payer's balance should only decrease by the transaction fee, NOT the
+  // execute fee (since the wallet paid it).
+  const payerDiff =
+    BigInt(beforePayerBalance.basisPoints.toString()) -
+    BigInt(afterPayerBalance.basisPoints.toString());
+  // The payer only paid the transaction fee (5000 lamports), not the execute fee.
+  t.true(payerDiff < 10000n);
+});
+
+test('it can execute for an asset in a collection so the asset signer PDA pays the fee', async (t) => {
+  const umi = await createUmi();
+  const recipient = generateSigner(umi);
+
+  const { asset, collection } = await createAssetWithCollection(umi, {});
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(1));
+
+  const beforeAssetSignerBalance = await umi.rpc.getBalance(
+    publicKey(assetSigner)
+  );
+
+  t.deepEqual(beforeAssetSignerBalance, sol(1));
+
+  await execute(umi, {
+    asset,
+    collection,
+    authority: umi.identity,
+    payer: assetSigner,
+    instructions: transferSol(umi, {
+      source: createNoopSigner(publicKey(assetSigner)),
+      destination: recipient.publicKey,
+      amount: sol(0.5),
+    }),
+  }).sendAndConfirm(umi);
+
+  const afterAssetSignerBalance = await umi.rpc.getBalance(
+    publicKey(assetSigner)
+  );
+  const afterRecipientBalance = await umi.rpc.getBalance(publicKey(recipient));
+  const afterAssetBalance = await umi.rpc.getBalance(
+    publicKey(asset.publicKey)
+  );
+
+  t.deepEqual(afterAssetSignerBalance, lamports(sol(0.5).basisPoints - 48720n));
+  t.deepEqual(afterRecipientBalance, sol(0.5));
+  t.deepEqual(afterAssetBalance, addAmounts(sol(0.00315648), lamports(48720)));
+});
+
+test('it can execute multiple instructions so the asset signer PDA pays the fee', async (t) => {
+  const umi = await createUmi();
+  const recipient = generateSigner(umi);
+
+  const asset = await createAsset(umi);
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(1));
+
+  await execute(umi, {
+    asset,
+    authority: umi.identity,
+    payer: assetSigner,
+    instructions: transferSol(umi, {
+      source: createNoopSigner(publicKey(assetSigner)),
+      destination: recipient.publicKey,
+      amount: sol(0.25),
+    }).add(
+      transferSol(umi, {
+        source: createNoopSigner(publicKey(assetSigner)),
+        destination: recipient.publicKey,
+        amount: sol(0.25),
+      })
+    ),
+  }).sendAndConfirm(umi);
+
+  const afterAssetSignerBalance = await umi.rpc.getBalance(
+    publicKey(assetSigner)
+  );
+  const afterRecipientBalance = await umi.rpc.getBalance(publicKey(recipient));
+  const afterAssetBalance = await umi.rpc.getBalance(
+    publicKey(asset.publicKey)
+  );
+
+  // Two execute calls, each with a fee of 48720 lamports.
+  t.deepEqual(
+    afterAssetSignerBalance,
+    lamports(sol(0.5).basisPoints - 48720n * 2n)
+  );
+  t.deepEqual(afterRecipientBalance, sol(0.5));
+  t.deepEqual(
+    afterAssetBalance,
+    addAmounts(sol(0.00315648), lamports(48720 * 2))
+  );
+});
+
 test('it cannot use an invalid system program', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();

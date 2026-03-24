@@ -19,7 +19,7 @@ pub struct ExecuteV1 {
     /// The signing PDA for the asset
     pub asset_signer: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
-    pub payer: solana_program::pubkey::Pubkey,
+    pub payer: (solana_program::pubkey::Pubkey, bool),
     /// The owner or delegate of the asset
     pub authority: Option<solana_program::pubkey::Pubkey>,
     /// The system program
@@ -60,7 +60,8 @@ impl ExecuteV1 {
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.payer, true,
+            self.payer.0,
+            self.payer.1,
         ));
         if let Some(authority) = self.authority {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -129,7 +130,7 @@ pub struct ExecuteV1Builder {
     asset: Option<solana_program::pubkey::Pubkey>,
     collection: Option<solana_program::pubkey::Pubkey>,
     asset_signer: Option<solana_program::pubkey::Pubkey>,
-    payer: Option<solana_program::pubkey::Pubkey>,
+    payer: Option<(solana_program::pubkey::Pubkey, bool)>,
     authority: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     program_id: Option<solana_program::pubkey::Pubkey>,
@@ -162,8 +163,8 @@ impl ExecuteV1Builder {
     }
     /// The account paying for the storage fees
     #[inline(always)]
-    pub fn payer(&mut self, payer: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.payer = Some(payer);
+    pub fn payer(&mut self, payer: solana_program::pubkey::Pubkey, as_signer: bool) -> &mut Self {
+        self.payer = Some((payer, as_signer));
         self
     }
     /// `[optional account]`
@@ -242,7 +243,7 @@ pub struct ExecuteV1CpiAccounts<'a, 'b> {
     /// The signing PDA for the asset
     pub asset_signer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
-    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    pub payer: (&'b solana_program::account_info::AccountInfo<'a>, bool),
     /// The owner or delegate of the asset
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
@@ -262,7 +263,7 @@ pub struct ExecuteV1Cpi<'a, 'b> {
     /// The signing PDA for the asset
     pub asset_signer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
-    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    pub payer: (&'b solana_program::account_info::AccountInfo<'a>, bool),
     /// The owner or delegate of the asset
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
@@ -345,8 +346,8 @@ impl<'a, 'b> ExecuteV1Cpi<'a, 'b> {
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.payer.key,
-            true,
+            *self.payer.0.key,
+            self.payer.1,
         ));
         if let Some(authority) = self.authority {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -390,7 +391,7 @@ impl<'a, 'b> ExecuteV1Cpi<'a, 'b> {
             account_infos.push(collection.clone());
         }
         account_infos.push(self.asset_signer.clone());
-        account_infos.push(self.payer.clone());
+        account_infos.push(self.payer.0.clone());
         if let Some(authority) = self.authority {
             account_infos.push(authority.clone());
         }
@@ -466,8 +467,12 @@ impl<'a, 'b> ExecuteV1CpiBuilder<'a, 'b> {
     }
     /// The account paying for the storage fees
     #[inline(always)]
-    pub fn payer(&mut self, payer: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.payer = Some(payer);
+    pub fn payer(
+        &mut self,
+        payer: &'b solana_program::account_info::AccountInfo<'a>,
+        as_signer: bool,
+    ) -> &mut Self {
+        self.instruction.payer = Some((payer, as_signer));
         self
     }
     /// `[optional account]`
@@ -587,7 +592,7 @@ struct ExecuteV1CpiBuilderInstruction<'a, 'b> {
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     asset_signer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    payer: Option<(&'b solana_program::account_info::AccountInfo<'a>, bool)>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     program_id: Option<&'b solana_program::account_info::AccountInfo<'a>>,

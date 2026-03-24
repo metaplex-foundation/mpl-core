@@ -297,7 +297,7 @@ pub(crate) enum MplAssetInstruction {
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, name="asset_signer", desc = "The signing PDA for the asset")]
-    #[account(3, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, writable, optional_signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(5, name="system_program", desc = "The system program")]
     #[account(6, name="program_id", desc = "The program id of the instruction")]
