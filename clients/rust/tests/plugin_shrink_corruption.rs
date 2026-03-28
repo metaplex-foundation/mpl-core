@@ -11,9 +11,9 @@ use mpl_core::{
         WriteExternalPluginAdapterDataV1Builder,
     },
     types::{
-        AppDataInitInfo, Attribute, Attributes,
-        ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey, ExternalPluginAdapterSchema,
-        FreezeDelegate, Plugin, PluginAuthority, PluginAuthorityPair,
+        AppDataInitInfo, Attribute, Attributes, ExternalPluginAdapterInitInfo,
+        ExternalPluginAdapterKey, ExternalPluginAdapterSchema, FreezeDelegate, Plugin,
+        PluginAuthority, PluginAuthorityPair,
     },
     Asset,
 };
@@ -114,9 +114,7 @@ async fn test_write_external_plugin_adapter_data_shrink_corrupts_second_plugin()
         .asset(asset.pubkey())
         .payer(context.payer.pubkey())
         .authority(Some(owner.pubkey()))
-        .key(ExternalPluginAdapterKey::AppData(
-            PluginAuthority::Owner,
-        ))
+        .key(ExternalPluginAdapterKey::AppData(PluginAuthority::Owner))
         .data(second_plugin_data.clone())
         .instruction();
 
@@ -322,7 +320,11 @@ async fn test_update_plugin_shrink_attributes_with_trailing_plugins() {
     let large_attributes: Vec<Attribute> = (0..30)
         .map(|i| Attribute {
             key: format!("key_{:03}", i),
-            value: format!("value_{:03}_padding_to_make_this_larger_{}", i, "x".repeat(20)),
+            value: format!(
+                "value_{:03}_padding_to_make_this_larger_{}",
+                i,
+                "x".repeat(20)
+            ),
         })
         .collect();
 
@@ -425,9 +427,7 @@ async fn test_update_plugin_shrink_attributes_with_trailing_plugins() {
                     assert_eq!(a.attributes.attribute_list[0].value, "y");
                 }
                 None => {
-                    panic!(
-                        "VULNERABILITY CONFIRMED: Attributes plugin lost after shrink update!"
-                    );
+                    panic!("VULNERABILITY CONFIRMED: Attributes plugin lost after shrink update!");
                 }
             }
 
@@ -605,7 +605,9 @@ async fn test_write_external_plugin_adapter_data_shrink_corrupts_registry() {
                         panic!(
                             "VULNERABILITY CONFIRMED: Data region out of bounds after shrink! \
                              offset={} len={} account_size={}",
-                            data_offset, data_len, account_after.data.len()
+                            data_offset,
+                            data_len,
+                            account_after.data.len()
                         );
                     }
                     let actual = &account_after.data[data_offset..data_offset + data_len];
@@ -647,11 +649,7 @@ async fn test_update_plugin_shrink_attributes_corrupts_external_plugin() {
     let large_attributes: Vec<Attribute> = (0..25)
         .map(|i| Attribute {
             key: format!("attr_{:03}", i),
-            value: format!(
-                "val_{:03}_{}",
-                i,
-                "abcdefghijklmnopqrstuvwxyz".repeat(2)
-            ),
+            value: format!("val_{:03}_{}", i, "abcdefghijklmnopqrstuvwxyz".repeat(2)),
         })
         .collect();
 
@@ -751,10 +749,7 @@ async fn test_update_plugin_shrink_attributes_corrupts_external_plugin() {
         .unwrap();
     let size_after = account_after.data.len();
     println!("Account size after shrink: {}", size_after);
-    println!(
-        "Shrunk by {} bytes",
-        size_before as i64 - size_after as i64
-    );
+    println!("Shrunk by {} bytes", size_before as i64 - size_after as i64);
 
     let parse_result = Asset::from_bytes(&account_after.data);
     match &parse_result {
@@ -804,7 +799,9 @@ async fn test_update_plugin_shrink_attributes_corrupts_external_plugin() {
                         panic!(
                             "VULNERABILITY CONFIRMED: AppData data region out of bounds! \
                              offset={} len={} account_size={}",
-                            data_offset, data_len, account_after.data.len()
+                            data_offset,
+                            data_len,
+                            account_after.data.len()
                         );
                     }
                     let actual = &account_after.data[data_offset..data_offset + data_len];
