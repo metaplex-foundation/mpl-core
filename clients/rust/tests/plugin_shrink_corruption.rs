@@ -194,9 +194,7 @@ async fn test_write_external_plugin_adapter_data_shrink_corrupts_second_plugin()
     let shrink_result = context.banks_client.process_transaction(tx).await;
     println!("Shrink transaction result: {:?}", shrink_result);
 
-    // Step 5: Verify corruption.
-    // Try to deserialize the asset. If the registry is corrupted, this will
-    // fail. If it parses, check the second plugin's data integrity.
+    // Step 5: Verify the asset is still intact after shrink.
     let account_after = context
         .banks_client
         .get_account(asset.pubkey())
@@ -210,90 +208,53 @@ async fn test_write_external_plugin_adapter_data_shrink_corrupts_second_plugin()
         size_before as i64 - size_after as i64
     );
 
-    // Attempt to deserialize. If it returns an error, the registry is corrupted.
-    // If it parses, check the second plugin's data integrity.
-    let parse_result = Asset::from_bytes(&account_after.data);
+    // Deserialize the asset — should not fail.
+    let asset_after = Asset::from_bytes(&account_after.data)
+        .expect("Asset deserialization should succeed after shrink — registry must remain intact");
 
-    // We expect corruption: either deserialization fails, the second plugin is
-    // missing, its data is out of bounds, or its data is wrong.
-    let mut corruption_detected = false;
-    let mut corruption_description = String::new();
-
-    match &parse_result {
-        Ok(asset_after) => {
-            if asset_after.external_plugin_adapter_list.app_data.len() < 2 {
-                corruption_detected = true;
-                corruption_description = format!(
-                    "Second AppData plugin lost after shrink! Expected 2, found {}",
-                    asset_after.external_plugin_adapter_list.app_data.len()
-                );
-            } else {
-                // Try to read the second plugin's data.
-                let mut account_copy = account_after.clone();
-                let binding = asset.pubkey();
-                let account_info = AccountInfo::new(
-                    &binding,
-                    false,
-                    false,
-                    &mut account_copy.lamports,
-                    account_copy.data.borrow_mut(),
-                    &account_copy.owner,
-                    false,
-                    0,
-                );
-
-                let data_result = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
-                    &account_info,
-                    None,
-                    &ExternalPluginAdapterKey::AppData(PluginAuthority::Owner),
-                );
-
-                match data_result {
-                    Ok((data_offset, data_len)) => {
-                        if data_offset + data_len > account_after.data.len() {
-                            corruption_detected = true;
-                            corruption_description = format!(
-                                "Second plugin data out of bounds: offset={} len={} account_size={}",
-                                data_offset, data_len, account_after.data.len()
-                            );
-                        } else {
-                            let actual_data =
-                                &account_after.data[data_offset..data_offset + data_len];
-                            if actual_data != &second_plugin_data {
-                                corruption_detected = true;
-                                corruption_description = format!(
-                                    "Second plugin data corrupted: expected {:?}, got {:?}",
-                                    second_plugin_data, actual_data
-                                );
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        corruption_detected = true;
-                        corruption_description =
-                            format!("Cannot fetch second plugin data after shrink: {:?}", e);
-                    }
-                }
-            }
-        }
-        Err(e) => {
-            corruption_detected = true;
-            corruption_description = format!(
-                "Asset deserialization failed — PluginRegistryV1 corrupted: {:?}",
-                e
-            );
-        }
-    }
-
-    println!("Corruption detected: {}", corruption_detected);
-    println!("Details: {}", corruption_description);
-
-    // The test PASSES if corruption is detected, proving the vulnerability.
-    assert!(
-        corruption_detected,
-        "Expected corruption after shrinking first AppData plugin from 500 to 5 bytes, \
-         but the asset appears intact. The bug may have been fixed."
+    // Both AppData plugins should still be present.
+    assert_eq!(
+        asset_after.external_plugin_adapter_list.app_data.len(),
+        2,
+        "Both AppData plugins should survive the shrink"
     );
+
+    // Second plugin's data should be readable and unchanged.
+    {
+        let mut account_copy = account_after.clone();
+        let binding = asset.pubkey();
+        let account_info = AccountInfo::new(
+            &binding,
+            false,
+            false,
+            &mut account_copy.lamports,
+            account_copy.data.borrow_mut(),
+            &account_copy.owner,
+            false,
+            0,
+        );
+
+        let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
+            &account_info,
+            None,
+            &ExternalPluginAdapterKey::AppData(PluginAuthority::Owner),
+        )
+        .expect("Should be able to fetch second plugin data after shrink");
+
+        assert!(
+            data_offset + data_len <= account_after.data.len(),
+            "Second plugin data out of bounds: offset={} len={} account_size={}",
+            data_offset,
+            data_len,
+            account_after.data.len()
+        );
+
+        let actual_data = &account_after.data[data_offset..data_offset + data_len];
+        assert_eq!(
+            actual_data, &second_plugin_data,
+            "Second plugin data must be unchanged after shrinking the first plugin"
+        );
+    }
 }
 
 // ============================================================================
@@ -547,18 +508,11 @@ async fn test_write_external_plugin_adapter_data_shrink_corrupts_registry() {
         context.last_blockhash,
     );
 
-    let shrink_result = context.banks_client.process_transaction(tx).await;
-    println!("Shrink transaction result: {:?}", shrink_result);
-
-    if shrink_result.is_err() {
-        println!(
-            "Shrink transaction failed (possible corruption caught at runtime): {:?}",
-            shrink_result.unwrap_err()
-        );
-        // A failure here also indicates the issue — the program should handle
-        // shrinking gracefully, not error out.
-        return;
-    }
+    context
+        .banks_client
+        .process_transaction(tx)
+        .await
+        .expect("Shrink transaction should succeed — program must handle shrinking gracefully");
 
     // Verify post-shrink: can we still deserialize and read the data?
     let account_after = context
