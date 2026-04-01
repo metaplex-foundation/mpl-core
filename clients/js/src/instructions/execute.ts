@@ -40,21 +40,17 @@ const executeCommon = (
 ) => {
   // Create a new builder to store the translated Execute instructions.
   let executeBuilder = new TransactionBuilder();
-  // We want to track the signers from the original IXes so they can be added to the Execute instructions.
-  const signers: Signer[] = [...(args.signers || [])];
+  // Caller-level signers provided via args.signers (used for Instruction[] path).
+  const callerSigners: Signer[] = [...(args.signers || [])];
 
   let builder: TransactionBuilder = new TransactionBuilder();
   if (args.instructions instanceof TransactionBuilder) {
     builder = args.instructions;
-    // Extract signers from the TransactionBuilder items.
-    builder.items.forEach((item) => {
-      signers.push(...item.signers);
-    });
   } else if (args.instructions) {
     args.instructions.forEach((instruction) => {
       const ixSigners: Signer[] = [];
       instruction.keys.forEach((key) => {
-        const signer = signers.find(
+        const signer = callerSigners.find(
           (signerKey) => signerKey.publicKey === key.pubkey
         );
         if (signer) {
@@ -120,11 +116,11 @@ const executeCommon = (
 
     // Capture the builder items so they can be modified.
     const executeBuilderItems = executeBuilder.items;
-    // Add the signers to the Execute instruction.
-    executeBuilderItems[0].signers.push(
-      // Add the signers to the Execute instruction, filtering out the asset signer.
-      ...signers.filter((signer) => signer.publicKey !== assetSigner)
+    // Merge caller-level signers with this item's signers, filtering out the asset signer.
+    const itemSigners = [...callerSigners, ...ix.signers].filter(
+      (signer) => signer.publicKey !== assetSigner
     );
+    executeBuilderItems[0].signers.push(...itemSigners);
     // Set the modified builder items.
     executeBuilder = executeBuilder.setItems(executeBuilderItems);
   }

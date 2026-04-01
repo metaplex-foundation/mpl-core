@@ -569,3 +569,52 @@ test('it can execute a create instruction via the asset signer PDA', async (t) =
   t.is(createdAsset.name, 'Execute Created Asset');
   t.is(createdAsset.uri, 'https://example.com/execute-created');
 });
+
+test('it can execute multiple create instructions with distinct signers via a TransactionBuilder', async (t) => {
+  const umi = await createUmi();
+
+  // Create an asset whose assetSigner PDA will pay for the new assets.
+  const asset = await createAsset(umi);
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(2));
+
+  // Build two create instructions, each with its own distinct mint signer.
+  // The execute wrapper must preserve per-item signers so that each
+  // execute instruction carries only its own mint signer.
+  const newAssetA = generateSigner(umi);
+  const newAssetB = generateSigner(umi);
+
+  const multiCreateBuilder = create(umi, {
+    asset: newAssetA,
+    name: 'Asset A',
+    uri: 'https://example.com/a',
+    owner: umi.identity.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    payer: createNoopSigner(publicKey(assetSigner)),
+  }).add(
+    create(umi, {
+      asset: newAssetB,
+      name: 'Asset B',
+      uri: 'https://example.com/b',
+      owner: umi.identity.publicKey,
+      updateAuthority: umi.identity.publicKey,
+      payer: createNoopSigner(publicKey(assetSigner)),
+    })
+  );
+
+  await execute(umi, {
+    asset,
+    instructions: multiCreateBuilder,
+  }).sendAndConfirm(umi);
+
+  // Both assets should exist on-chain with the correct data.
+  const createdA = await fetchAssetV1(umi, newAssetA.publicKey);
+  t.is(createdA.owner, umi.identity.publicKey);
+  t.is(createdA.name, 'Asset A');
+  t.is(createdA.uri, 'https://example.com/a');
+
+  const createdB = await fetchAssetV1(umi, newAssetB.publicKey);
+  t.is(createdB.owner, umi.identity.publicKey);
+  t.is(createdB.name, 'Asset B');
+  t.is(createdB.uri, 'https://example.com/b');
+});
