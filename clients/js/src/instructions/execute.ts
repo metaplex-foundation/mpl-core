@@ -41,11 +41,15 @@ const executeCommon = (
   // Create a new builder to store the translated Execute instructions.
   let executeBuilder = new TransactionBuilder();
   // We want to track the signers from the original IXes so they can be added to the Execute instructions.
-  const signers: Signer[] = [];
+  const signers: Signer[] = [...(args.signers || [])];
 
   let builder: TransactionBuilder = new TransactionBuilder();
   if (args.instructions instanceof TransactionBuilder) {
     builder = args.instructions;
+    // Extract signers from the TransactionBuilder items.
+    builder.items.forEach((item) => {
+      signers.push(...item.signers);
+    });
   } else if (args.instructions) {
     args.instructions.forEach((instruction) => {
       const ixSigners: Signer[] = [];
