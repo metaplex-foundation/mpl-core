@@ -392,8 +392,11 @@ async fn test_update_plugin_shrink_attributes_preserves_trailing_plugins() {
         context.last_blockhash,
     );
 
-    let update_result = context.banks_client.process_transaction(tx).await;
-    println!("Update (shrink) transaction result: {:?}", update_result);
+    context
+        .banks_client
+        .process_transaction(tx)
+        .await
+        .expect("Attributes shrink transaction should succeed");
 
     // Step 3: Verify the asset is still fully readable and FreezeDelegate intact.
     let account_after = context
@@ -710,8 +713,11 @@ async fn test_update_plugin_shrink_attributes_preserves_external_plugin() {
         context.last_blockhash,
     );
 
-    let update_result = context.banks_client.process_transaction(tx).await;
-    println!("Attributes shrink result: {:?}", update_result);
+    context
+        .banks_client
+        .process_transaction(tx)
+        .await
+        .expect("Attributes shrink transaction should succeed");
 
     // Verify post-shrink.
     let account_after = context
