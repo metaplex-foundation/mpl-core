@@ -202,10 +202,11 @@ async fn test_write_external_plugin_adapter_data_shrink_corrupts_second_plugin()
         .unwrap()
         .unwrap();
     let size_after = account_after.data.len();
-    println!("Account size after shrink: {}", size_after);
-    println!(
-        "Size difference: {} bytes shrunk",
-        size_before as i64 - size_after as i64
+    assert!(
+        size_after < size_before,
+        "Expected account to shrink from {} to {}, but it did not",
+        size_before,
+        size_after
     );
 
     // Deserialize the asset — should not fail.
@@ -366,10 +367,11 @@ async fn test_update_plugin_shrink_attributes_with_trailing_plugins() {
         .unwrap()
         .unwrap();
     let size_after = account_after.data.len();
-    println!("Account size after shrink: {}", size_after);
-    println!(
-        "Size difference: {} bytes shrunk",
-        size_before as i64 - size_after as i64
+    assert!(
+        size_after < size_before,
+        "Expected account to shrink from {} to {}, but it did not",
+        size_before,
+        size_after
     );
 
     let parse_result = Asset::from_bytes(&account_after.data);
@@ -525,7 +527,12 @@ async fn test_write_external_plugin_adapter_data_shrink_corrupts_registry() {
         .unwrap()
         .unwrap();
     let size_after = account_after.data.len();
-    println!("Account size after shrink: {}", size_after);
+    assert!(
+        size_after < size_before,
+        "Expected account to shrink from {} to {}, but it did not",
+        size_before,
+        size_after
+    );
 
     let parse_result = Asset::from_bytes(&account_after.data);
     match &parse_result {
@@ -705,8 +712,12 @@ async fn test_update_plugin_shrink_attributes_corrupts_external_plugin() {
         .unwrap()
         .unwrap();
     let size_after = account_after.data.len();
-    println!("Account size after shrink: {}", size_after);
-    println!("Shrunk by {} bytes", size_before as i64 - size_after as i64);
+    assert!(
+        size_after < size_before,
+        "Expected account to shrink from {} to {}, but it did not",
+        size_before,
+        size_after
+    );
 
     let parse_result = Asset::from_bytes(&account_after.data);
     match &parse_result {
