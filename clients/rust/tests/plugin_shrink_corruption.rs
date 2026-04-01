@@ -24,18 +24,20 @@ use solana_program_test::tokio;
 use solana_sdk::{signature::Keypair, signer::Signer, transaction::Transaction};
 
 // ============================================================================
-// Test 1: WriteExternalPluginAdapterDataV1 — shrink first AppData corrupts
-// second AppData's data and/or the PluginRegistryV1.
+// Test 1: WriteExternalPluginAdapterDataV1 — regression test for shrinking the
+// first of two AppData plugins.
 //
-// Bug location: plugins/utils.rs, update_external_plugin_adapter_data()
-//   - Line 504: resize_or_reallocate_account() shrinks the account FIRST
-//   - Line 522: sol_memmove uses account.data_len().saturating_sub(next_plugin_offset)
-//     After realloc, data_len() returns the NEW smaller size.
-//     When shrinkage > tail_size, saturating_sub yields 0 → nothing is moved.
-//     Result: tail plugins' data and/or the registry are lost/corrupted.
+// Previously, update_external_plugin_adapter_data() in plugins/utils.rs called
+// resize_or_reallocate_account() before sol_memmove, so shrinking caused
+// data_len() to return the new (smaller) size and saturating_sub yielded 0,
+// moving nothing and corrupting trailing plugin data and/or the registry.
+//
+// The fix reorders: memmove first (while the buffer is full-size), then realloc.
+// This test verifies the shrunk plugin, the trailing plugin, and the registry
+// all survive intact.
 // ============================================================================
 #[tokio::test]
-async fn test_write_external_plugin_adapter_data_shrink_corrupts_second_plugin() {
+async fn test_write_external_plugin_adapter_data_shrink_preserves_second_plugin() {
     let mut context = program_test().start_with_context().await;
 
     // Step 1: Create an asset with TWO AppData plugins (different data authorities).
@@ -169,9 +171,9 @@ async fn test_write_external_plugin_adapter_data_shrink_corrupts_second_plugin()
     }
 
     // Step 4: SHRINK the first AppData from 500 bytes to 5 bytes.
-    // This is where the bug triggers: shrinkage (495) >> tail data size,
-    // so sol_memmove moves 0 bytes, corrupting the second plugin's data
-    // and/or the PluginRegistryV1.
+    // This exercises the memmove-before-realloc path for a large shrink (495
+    // bytes). The trailing plugin data and registry must be shifted left before
+    // the account is truncated.
     let small_data: Vec<u8> = vec![0x01, 0x02, 0x03, 0x04, 0x05];
     let ix = WriteExternalPluginAdapterDataV1Builder::new()
         .asset(asset.pubkey())
@@ -189,10 +191,7 @@ async fn test_write_external_plugin_adapter_data_shrink_corrupts_second_plugin()
         context.last_blockhash,
     );
 
-    // The shrink transaction itself may succeed (no runtime panic) because
-    // sol_memmove with length 0 is a no-op. But the state is now corrupt.
-    let shrink_result = context.banks_client.process_transaction(tx).await;
-    println!("Shrink transaction result: {:?}", shrink_result);
+    context.banks_client.process_transaction(tx).await.unwrap();
 
     // Step 5: Verify the asset is still intact after shrink.
     let account_after = context
@@ -256,22 +255,59 @@ async fn test_write_external_plugin_adapter_data_shrink_corrupts_second_plugin()
             "Second plugin data must be unchanged after shrinking the first plugin"
         );
     }
+
+    // First plugin's data should now equal the shrunk payload.
+    {
+        let mut account_copy = account_after.clone();
+        let binding = asset.pubkey();
+        let account_info = AccountInfo::new(
+            &binding,
+            false,
+            false,
+            &mut account_copy.lamports,
+            account_copy.data.borrow_mut(),
+            &account_copy.owner,
+            false,
+            0,
+        );
+
+        let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
+            &account_info,
+            None,
+            &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
+        )
+        .expect("Should be able to fetch first plugin data after shrink");
+
+        assert!(
+            data_offset + data_len <= account_after.data.len(),
+            "First plugin data out of bounds: offset={} len={} account_size={}",
+            data_offset,
+            data_len,
+            account_after.data.len()
+        );
+
+        let actual_data = &account_after.data[data_offset..data_offset + data_len];
+        assert_eq!(
+            actual_data, &small_data,
+            "First plugin data must equal the shrunk payload"
+        );
+    }
 }
 
 // ============================================================================
-// Test 2: UpdatePluginV1 — shrink an Attributes plugin when there are other
-// plugins after it. The realloc happens before sol_memmove, reading from
-// memory beyond the new account size (UB on Solana).
+// Test 2: UpdatePluginV1 — regression test for shrinking an Attributes plugin
+// when a FreezeDelegate plugin follows it.
 //
-// Bug location: processor/update_plugin.rs
-//   - Line 201: resize_or_reallocate_account() shrinks the account FIRST
-//   - Lines 207-214: sol_memmove reads from [next_plugin_offset, registry_offset)
-//     When registry_offset > new_size, the source extends beyond the official
-//     account boundary. On current Solana runtime the memory is physically
-//     preserved, but this is undefined behavior.
+// Previously, process_update_plugin() in processor/update_plugin.rs called
+// resize_or_reallocate_account() before sol_memmove, so on shrink the memmove
+// source region could extend beyond the new (truncated) account boundary.
+//
+// The fix reorders: memmove first (reads from the full-size buffer), then
+// realloc. This test verifies the Attributes content, the trailing
+// FreezeDelegate, and the registry all survive intact.
 // ============================================================================
 #[tokio::test]
-async fn test_update_plugin_shrink_attributes_with_trailing_plugins() {
+async fn test_update_plugin_shrink_attributes_preserves_trailing_plugins() {
     let mut context = program_test().start_with_context().await;
 
     // Step 1: Create an asset with a LARGE Attributes plugin and a FreezeDelegate.
@@ -374,52 +410,34 @@ async fn test_update_plugin_shrink_attributes_with_trailing_plugins() {
         size_after
     );
 
-    let parse_result = Asset::from_bytes(&account_after.data);
-    match &parse_result {
-        Ok(asset_after) => {
-            // Check Attributes was updated.
-            let attrs_after = asset_after.plugin_list.attributes.as_ref();
-            match attrs_after {
-                Some(a) => {
-                    assert_eq!(
-                        a.attributes.attribute_list.len(),
-                        1,
-                        "Attributes should have 1 entry after update"
-                    );
-                    assert_eq!(a.attributes.attribute_list[0].key, "x");
-                    assert_eq!(a.attributes.attribute_list[0].value, "y");
-                }
-                None => {
-                    panic!("VULNERABILITY CONFIRMED: Attributes plugin lost after shrink update!");
-                }
-            }
+    let asset_after = Asset::from_bytes(&account_after.data)
+        .expect("Asset deserialization should succeed after Attributes shrink");
 
-            // Check FreezeDelegate is still intact.
-            match &asset_after.plugin_list.freeze_delegate {
-                Some(fd) => {
-                    assert_eq!(
-                        fd.freeze_delegate,
-                        FreezeDelegate { frozen: false },
-                        "FreezeDelegate should be unchanged"
-                    );
-                    println!("FreezeDelegate intact after shrink.");
-                }
-                None => {
-                    panic!(
-                        "VULNERABILITY CONFIRMED: FreezeDelegate plugin lost after Attributes \
-                         shrink! Trailing plugin data was corrupted by realloc-before-memmove."
-                    );
-                }
-            }
-        }
-        Err(e) => {
-            panic!(
-                "VULNERABILITY CONFIRMED: Asset deserialization failed after Attributes shrink \
-                 — PluginRegistryV1 is corrupted: {:?}",
-                e
-            );
-        }
-    }
+    // Check Attributes has the exact expected content.
+    let attrs_after = asset_after
+        .plugin_list
+        .attributes
+        .as_ref()
+        .expect("Attributes plugin must still be present after shrink");
+    assert_eq!(
+        attrs_after.attributes.attribute_list.len(),
+        1,
+        "Attributes should have exactly 1 entry after update"
+    );
+    assert_eq!(attrs_after.attributes.attribute_list[0].key, "x");
+    assert_eq!(attrs_after.attributes.attribute_list[0].value, "y");
+
+    // Check FreezeDelegate is still intact.
+    let fd = asset_after
+        .plugin_list
+        .freeze_delegate
+        .as_ref()
+        .expect("FreezeDelegate must still be present after Attributes shrink");
+    assert_eq!(
+        fd.freeze_delegate,
+        FreezeDelegate { frozen: false },
+        "FreezeDelegate should be unchanged"
+    );
 }
 
 // ============================================================================
@@ -434,7 +452,7 @@ async fn test_update_plugin_shrink_attributes_with_trailing_plugins() {
 // (e.g. incorrect new_size, data_offset math, or registry save errors).
 // ============================================================================
 #[tokio::test]
-async fn test_write_external_plugin_adapter_data_shrink_corrupts_registry() {
+async fn test_write_external_plugin_adapter_data_single_plugin_shrink() {
     let mut context = program_test().start_with_context().await;
 
     let asset = Keypair::new();
@@ -534,77 +552,68 @@ async fn test_write_external_plugin_adapter_data_shrink_corrupts_registry() {
         size_after
     );
 
-    let parse_result = Asset::from_bytes(&account_after.data);
-    match &parse_result {
-        Ok(asset_after) => {
-            if asset_after.external_plugin_adapter_list.app_data.is_empty() {
-                panic!(
-                    "VULNERABILITY CONFIRMED: AppData plugin lost after shrink — registry corrupted"
-                );
-            }
+    let asset_after = Asset::from_bytes(&account_after.data)
+        .expect("Asset deserialization should succeed after single-plugin shrink");
 
-            // Verify the data is what we wrote.
-            let mut account_copy = account_after.clone();
-            let binding = asset.pubkey();
-            let account_info = AccountInfo::new(
-                &binding,
-                false,
-                false,
-                &mut account_copy.lamports,
-                account_copy.data.borrow_mut(),
-                &account_copy.owner,
-                false,
-                0,
-            );
+    assert_eq!(
+        asset_after.external_plugin_adapter_list.app_data.len(),
+        1,
+        "AppData plugin must still be present after shrink"
+    );
 
-            let data_result = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
-                &account_info,
-                None,
-                &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
-            );
+    // Verify the data content matches what we wrote.
+    {
+        let mut account_copy = account_after.clone();
+        let binding = asset.pubkey();
+        let account_info = AccountInfo::new(
+            &binding,
+            false,
+            false,
+            &mut account_copy.lamports,
+            account_copy.data.borrow_mut(),
+            &account_copy.owner,
+            false,
+            0,
+        );
 
-            match data_result {
-                Ok((data_offset, data_len)) => {
-                    if data_offset + data_len > account_after.data.len() {
-                        panic!(
-                            "VULNERABILITY CONFIRMED: Data region out of bounds after shrink! \
-                             offset={} len={} account_size={}",
-                            data_offset,
-                            data_len,
-                            account_after.data.len()
-                        );
-                    }
-                    let actual = &account_after.data[data_offset..data_offset + data_len];
-                    assert_eq!(
-                        actual, &small_data,
-                        "Data should match what was written after shrink"
-                    );
-                    println!("Single-plugin shrink: data appears intact.");
-                }
-                Err(e) => {
-                    panic!(
-                        "VULNERABILITY CONFIRMED: Cannot read data after shrink: {:?}",
-                        e
-                    );
-                }
-            }
-        }
-        Err(e) => {
-            panic!(
-                "VULNERABILITY CONFIRMED: Asset deserialization failed after shrink: {:?}",
-                e
-            );
-        }
+        let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
+            &account_info,
+            None,
+            &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
+        )
+        .expect("Should be able to fetch AppData after single-plugin shrink");
+
+        assert!(
+            data_offset + data_len <= account_after.data.len(),
+            "AppData region out of bounds: offset={} len={} account_size={}",
+            data_offset,
+            data_len,
+            account_after.data.len()
+        );
+
+        let actual = &account_after.data[data_offset..data_offset + data_len];
+        assert_eq!(
+            actual, &small_data,
+            "AppData content must match the shrunk payload"
+        );
     }
 }
 
 // ============================================================================
-// Test 4: UpdatePluginV1 — shrink Attributes with an AppData external plugin
-// also present. This tests cross-plugin-type corruption: internal plugin
-// shrink affecting external plugin data stored after it.
+// Test 4: UpdatePluginV1 — regression test for shrinking an Attributes plugin
+// when an AppData external plugin is also present.
+//
+// Previously, process_update_plugin() in processor/update_plugin.rs called
+// resize_or_reallocate_account() before sol_memmove, so on shrink the
+// memmove's source region could extend beyond the truncated account boundary,
+// corrupting the external plugin data stored after Attributes.
+//
+// The fix reorders: memmove first, then realloc. This test verifies the
+// Attributes content, the trailing AppData plugin, and the registry all
+// survive intact.
 // ============================================================================
 #[tokio::test]
-async fn test_update_plugin_shrink_attributes_corrupts_external_plugin() {
+async fn test_update_plugin_shrink_attributes_preserves_external_plugin() {
     let mut context = program_test().start_with_context().await;
 
     let asset = Keypair::new();
@@ -719,83 +728,64 @@ async fn test_update_plugin_shrink_attributes_corrupts_external_plugin() {
         size_after
     );
 
-    let parse_result = Asset::from_bytes(&account_after.data);
-    match &parse_result {
-        Ok(asset_after) => {
-            // Verify Attributes updated.
-            let attrs = asset_after.plugin_list.attributes.as_ref();
-            match attrs {
-                Some(a) => {
-                    assert_eq!(a.attributes.attribute_list.len(), 1);
-                }
-                None => {
-                    panic!("VULNERABILITY CONFIRMED: Attributes plugin lost after shrink!");
-                }
-            }
+    let asset_after = Asset::from_bytes(&account_after.data)
+        .expect("Asset deserialization should succeed after Attributes shrink");
 
-            // Verify AppData external plugin and its data are intact.
-            if asset_after.external_plugin_adapter_list.app_data.is_empty() {
-                panic!(
-                    "VULNERABILITY CONFIRMED: AppData external plugin lost after Attributes \
-                     shrink! The realloc-before-memmove corrupted the external plugin registry."
-                );
-            }
+    // Check Attributes has the exact expected content.
+    let attrs_after = asset_after
+        .plugin_list
+        .attributes
+        .as_ref()
+        .expect("Attributes plugin must still be present after shrink");
+    assert_eq!(
+        attrs_after.attributes.attribute_list.len(),
+        1,
+        "Attributes should have exactly 1 entry after update"
+    );
+    assert_eq!(attrs_after.attributes.attribute_list[0].key, "a");
+    assert_eq!(attrs_after.attributes.attribute_list[0].value, "b");
 
-            // Verify the actual data content.
-            let mut account_copy = account_after.clone();
-            let binding = asset.pubkey();
-            let account_info = AccountInfo::new(
-                &binding,
-                false,
-                false,
-                &mut account_copy.lamports,
-                account_copy.data.borrow_mut(),
-                &account_copy.owner,
-                false,
-                0,
-            );
+    // Verify AppData external plugin is still present.
+    assert_eq!(
+        asset_after.external_plugin_adapter_list.app_data.len(),
+        1,
+        "AppData plugin must still be present after Attributes shrink"
+    );
 
-            let data_result = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
-                &account_info,
-                None,
-                &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
-            );
+    // Verify the AppData content is unchanged.
+    {
+        let mut account_copy = account_after.clone();
+        let binding = asset.pubkey();
+        let account_info = AccountInfo::new(
+            &binding,
+            false,
+            false,
+            &mut account_copy.lamports,
+            account_copy.data.borrow_mut(),
+            &account_copy.owner,
+            false,
+            0,
+        );
 
-            match data_result {
-                Ok((data_offset, data_len)) => {
-                    if data_offset + data_len > account_after.data.len() {
-                        panic!(
-                            "VULNERABILITY CONFIRMED: AppData data region out of bounds! \
-                             offset={} len={} account_size={}",
-                            data_offset,
-                            data_len,
-                            account_after.data.len()
-                        );
-                    }
-                    let actual = &account_after.data[data_offset..data_offset + data_len];
-                    if actual != &app_data_content {
-                        panic!(
-                            "VULNERABILITY CONFIRMED: AppData content corrupted after Attributes \
-                             shrink!\nExpected: {:?}\nActual:   {:?}",
-                            app_data_content, actual
-                        );
-                    }
-                    println!("AppData content intact after Attributes shrink.");
-                }
-                Err(e) => {
-                    panic!(
-                        "VULNERABILITY CONFIRMED: Cannot read AppData after Attributes shrink: {:?}",
-                        e
-                    );
-                }
-            }
-        }
-        Err(e) => {
-            panic!(
-                "VULNERABILITY CONFIRMED: Asset deserialization failed after Attributes shrink \
-                 — registry corrupted: {:?}",
-                e
-            );
-        }
+        let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
+            &account_info,
+            None,
+            &ExternalPluginAdapterKey::AppData(PluginAuthority::UpdateAuthority),
+        )
+        .expect("Should be able to fetch AppData after Attributes shrink");
+
+        assert!(
+            data_offset + data_len <= account_after.data.len(),
+            "AppData region out of bounds: offset={} len={} account_size={}",
+            data_offset,
+            data_len,
+            account_after.data.len()
+        );
+
+        let actual = &account_after.data[data_offset..data_offset + data_len];
+        assert_eq!(
+            actual, &app_data_content,
+            "AppData content must be unchanged after Attributes shrink"
+        );
     }
 }
