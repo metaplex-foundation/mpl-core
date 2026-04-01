@@ -422,11 +422,14 @@ async fn test_update_plugin_shrink_attributes_with_trailing_plugins() {
 
 // ============================================================================
 // Test 3: WriteExternalPluginAdapterDataV1 — shrink with a single AppData
-// plugin to verify registry corruption even without a second plugin.
+// plugin (regression/coverage guard).
 //
-// When shrinkage > registry_size, the registry itself is partially lost
-// after realloc, and the re-save writes at a new offset that may overlap
-// with stale data, potentially leading to deserialization failures.
+// With only one AppData plugin, sol_memmove has no trailing plugin data to
+// shift — the tail length is just the registry, which is re-serialized from
+// the in-memory PluginRegistryV1 after the move anyway. So this case does
+// not exercise the specific realloc-before-memmove corruption path that
+// multi-plugin layouts hit. It still guards against shrink-related regressions
+// (e.g. incorrect new_size, data_offset math, or registry save errors).
 // ============================================================================
 #[tokio::test]
 async fn test_write_external_plugin_adapter_data_shrink_corrupts_registry() {
