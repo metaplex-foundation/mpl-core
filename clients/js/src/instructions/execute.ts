@@ -46,15 +46,8 @@ const executeCommon = (
   let builder: TransactionBuilder = new TransactionBuilder();
   // Duck-type check instead of instanceof to avoid cross-realm/bundler breakage
   // when multiple copies of the umi package are resolved.
-  const isBuilder =
-    !Array.isArray(args.instructions) &&
-    typeof args.instructions === 'object' &&
-    'items' in args.instructions &&
-    typeof (args.instructions as TransactionBuilder).getInstructions ===
-      'function';
-
-  if (isBuilder) {
-    builder = args.instructions as TransactionBuilder;
+  if ('getInstructions' in args.instructions) {
+    builder = args.instructions;
   } else if (Array.isArray(args.instructions)) {
     args.instructions.forEach((instruction: Instruction) => {
       const ixSigners: Signer[] = [];
