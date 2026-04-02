@@ -198,7 +198,10 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
         .checked_add(size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
-    resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
+    if size_diff > 0 {
+        // Growing: realloc first to make room for the rightward shift.
+        resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
+    }
 
     // SAFETY: `borrow_mut` will always return a valid pointer.
     // new_next_plugin_offset is derived from next_plugin_offset and size_diff using
@@ -211,6 +214,11 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
             base.add(next_plugin_offset as usize),
             registry_offset - (next_plugin_offset as usize),
         );
+    }
+
+    if size_diff < 0 {
+        // Shrinking: realloc after memmove to preserve data before truncation.
+        resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
     }
 
     plugin_header.save(account, core.len())?;

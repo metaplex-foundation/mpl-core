@@ -501,14 +501,20 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         .checked_add(size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
-    resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
-
     let next_plugin_offset = data_offset
         .checked_add(data_len)
         .ok_or(MplCoreError::NumericalOverflow)?;
     let new_next_plugin_offset = (next_plugin_offset as isize)
         .checked_add(size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
+
+    // Capture old data length before any realloc, as realloc changes data_len().
+    let old_data_len = account.data_len();
+
+    if size_diff > 0 {
+        // Growing: realloc first to make room for the rightward shift.
+        resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
+    }
 
     // SAFETY: `borrow_mut` will always return a valid pointer.
     // new_next_plugin_offset is derived from next_plugin_offset and size_diff using
@@ -519,8 +525,13 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         sol_memmove(
             base.add(new_next_plugin_offset as usize),
             base.add(next_plugin_offset),
-            account.data_len().saturating_sub(next_plugin_offset),
+            old_data_len.saturating_sub(next_plugin_offset),
         )
+    }
+
+    if size_diff < 0 {
+        // Shrinking: realloc after memmove to preserve data before truncation.
+        resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
     }
 
     sol_memcpy(
