@@ -58,14 +58,16 @@ const executeCommon = (
   } else if (Array.isArray(args.instructions)) {
     args.instructions.forEach((instruction: Instruction) => {
       const ixSigners: Signer[] = [];
-      instruction.keys.forEach((key) => {
-        const signer = callerSigners.find(
-          (signerKey) => signerKey.publicKey === key.pubkey
-        );
-        if (signer) {
-          ixSigners.push(signer);
-        }
-      });
+      instruction.keys
+        .filter((key) => key.isSigner)
+        .forEach((key) => {
+          const signer = callerSigners.find(
+            (signerKey) => signerKey.publicKey === key.pubkey
+          );
+          if (signer) {
+            ixSigners.push(signer);
+          }
+        });
       builder = builder.add({
         instruction,
         signers: ixSigners,
