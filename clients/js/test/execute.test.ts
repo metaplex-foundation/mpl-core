@@ -9,7 +9,7 @@ import {
 import test from 'ava';
 
 import { transferSol } from '@metaplex-foundation/mpl-toolbox';
-import { execute, findAssetSignerPda } from '../src';
+import { create, execute, fetchAssetV1, findAssetSignerPda } from '../src';
 import { assertAsset, createAsset, createUmi } from './_setupRaw';
 import { createAssetWithCollection, createCollection } from './_setupSdk';
 
@@ -534,4 +534,119 @@ test('it cannot use an invalid system program', async (t) => {
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
+});
+
+test('it can execute a create instruction via the asset signer PDA', async (t) => {
+  const umi = await createUmi();
+
+  // Create an asset whose assetSigner PDA will be used to create a new asset.
+  const asset = await createAsset(umi);
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(1));
+
+  // Build a create instruction for a brand new asset.
+  // The assetSigner PDA pays for the new asset, and the newAsset keypair
+  // must sign the transaction. The execute wrapper should preserve
+  // the newAsset signer, but currently drops it.
+  const newAsset = generateSigner(umi);
+  const createBuilder = create(umi, {
+    asset: newAsset,
+    name: 'Execute Created Asset',
+    uri: 'https://example.com/execute-created',
+    owner: umi.identity.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    payer: createNoopSigner(publicKey(assetSigner)),
+  });
+
+  await execute(umi, {
+    asset,
+    instructions: createBuilder,
+  }).sendAndConfirm(umi);
+
+  // If the signer was preserved, the new asset should exist on-chain.
+  const createdAsset = await fetchAssetV1(umi, newAsset.publicKey);
+  t.is(createdAsset.owner, umi.identity.publicKey);
+  t.is(createdAsset.name, 'Execute Created Asset');
+  t.is(createdAsset.uri, 'https://example.com/execute-created');
+});
+
+test('it can execute multiple create instructions with distinct signers via a TransactionBuilder', async (t) => {
+  const umi = await createUmi();
+
+  // Create an asset whose assetSigner PDA will pay for the new assets.
+  const asset = await createAsset(umi);
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(2));
+
+  // Build two create instructions, each with its own distinct mint signer.
+  // The execute wrapper must preserve per-item signers so that each
+  // execute instruction carries only its own mint signer.
+  const newAssetA = generateSigner(umi);
+  const newAssetB = generateSigner(umi);
+
+  const multiCreateBuilder = create(umi, {
+    asset: newAssetA,
+    name: 'Asset A',
+    uri: 'https://example.com/a',
+    owner: umi.identity.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    payer: createNoopSigner(publicKey(assetSigner)),
+  }).add(
+    create(umi, {
+      asset: newAssetB,
+      name: 'Asset B',
+      uri: 'https://example.com/b',
+      owner: umi.identity.publicKey,
+      updateAuthority: umi.identity.publicKey,
+      payer: createNoopSigner(publicKey(assetSigner)),
+    })
+  );
+
+  await execute(umi, {
+    asset,
+    instructions: multiCreateBuilder,
+  }).sendAndConfirm(umi);
+
+  // Both assets should exist on-chain with the correct data.
+  const createdA = await fetchAssetV1(umi, newAssetA.publicKey);
+  t.is(createdA.owner, umi.identity.publicKey);
+  t.is(createdA.name, 'Asset A');
+  t.is(createdA.uri, 'https://example.com/a');
+
+  const createdB = await fetchAssetV1(umi, newAssetB.publicKey);
+  t.is(createdB.owner, umi.identity.publicKey);
+  t.is(createdB.name, 'Asset B');
+  t.is(createdB.uri, 'https://example.com/b');
+});
+
+test('it can execute a create Instruction[] with explicit signers', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi);
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(1));
+
+  // Build a create instruction, then extract raw Instruction[] from it.
+  // Raw instructions don't carry Signer objects, so the newAsset signer
+  // must be passed explicitly via args.signers.
+  const newAsset = generateSigner(umi);
+  const instructions = create(umi, {
+    asset: newAsset,
+    name: 'Instruction Array Asset',
+    uri: 'https://example.com/ix-array',
+    owner: umi.identity.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    payer: createNoopSigner(publicKey(assetSigner)),
+  }).getInstructions();
+
+  await execute(umi, {
+    asset,
+    instructions,
+    signers: [newAsset],
+  }).sendAndConfirm(umi);
+
+  const createdAsset = await fetchAssetV1(umi, newAsset.publicKey);
+  t.is(createdAsset.owner, umi.identity.publicKey);
+  t.is(createdAsset.name, 'Instruction Array Asset');
+  t.is(createdAsset.uri, 'https://example.com/ix-array');
 });
