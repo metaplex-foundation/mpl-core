@@ -44,10 +44,19 @@ const executeCommon = (
   const callerSigners: Signer[] = [...(args.signers || [])];
 
   let builder: TransactionBuilder = new TransactionBuilder();
-  if (args.instructions instanceof TransactionBuilder) {
-    builder = args.instructions;
-  } else if (args.instructions) {
-    args.instructions.forEach((instruction) => {
+  // Duck-type check instead of instanceof to avoid cross-realm/bundler breakage
+  // when multiple copies of the umi package are resolved.
+  const isBuilder =
+    !Array.isArray(args.instructions) &&
+    typeof args.instructions === 'object' &&
+    'items' in args.instructions &&
+    typeof (args.instructions as TransactionBuilder).getInstructions ===
+      'function';
+
+  if (isBuilder) {
+    builder = args.instructions as TransactionBuilder;
+  } else if (Array.isArray(args.instructions)) {
+    args.instructions.forEach((instruction: Instruction) => {
       const ixSigners: Signer[] = [];
       instruction.keys.forEach((key) => {
         const signer = callerSigners.find(
@@ -120,7 +129,9 @@ const executeCommon = (
     const itemSigners = [...callerSigners, ...ix.signers].filter(
       (signer) => signer.publicKey !== assetSigner
     );
-    executeBuilderItems[0].signers.push(...itemSigners);
+    executeBuilderItems[executeBuilderItems.length - 1].signers.push(
+      ...itemSigners
+    );
     // Set the modified builder items.
     executeBuilder = executeBuilder.setItems(executeBuilderItems);
   }

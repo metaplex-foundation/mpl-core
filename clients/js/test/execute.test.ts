@@ -618,3 +618,35 @@ test('it can execute multiple create instructions with distinct signers via a Tr
   t.is(createdB.name, 'Asset B');
   t.is(createdB.uri, 'https://example.com/b');
 });
+
+test('it can execute a create Instruction[] with explicit signers', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi);
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(1));
+
+  // Build a create instruction, then extract raw Instruction[] from it.
+  // Raw instructions don't carry Signer objects, so the newAsset signer
+  // must be passed explicitly via args.signers.
+  const newAsset = generateSigner(umi);
+  const instructions = create(umi, {
+    asset: newAsset,
+    name: 'Instruction Array Asset',
+    uri: 'https://example.com/ix-array',
+    owner: umi.identity.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    payer: createNoopSigner(publicKey(assetSigner)),
+  }).getInstructions();
+
+  await execute(umi, {
+    asset,
+    instructions,
+    signers: [newAsset],
+  }).sendAndConfirm(umi);
+
+  const createdAsset = await fetchAssetV1(umi, newAsset.publicKey);
+  t.is(createdAsset.owner, umi.identity.publicKey);
+  t.is(createdAsset.name, 'Instruction Array Asset');
+  t.is(createdAsset.uri, 'https://example.com/ix-array');
+});
