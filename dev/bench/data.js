@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1774373849190,
+  "lastUpdate": 1775146762244,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -10273,6 +10273,120 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/metaplex-foundation/mpl-core/commit/ebe710ea9452cedbf8f35b195cd1afac2329344d"
         },
         "date": 1774373848798,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 8149,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 16916,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 27613,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 32934,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 20665,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 26010,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 25609,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 34137,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 24746,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 37131,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 3829,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 5552,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 7362,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 9085,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "90809591+blockiosaurus@users.noreply.github.com",
+            "name": "blockiosaurus",
+            "username": "blockiosaurus"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f367f401b34e3baf8dd3d2dde2b87e993eb9e6c3",
+          "message": "Fixing execute helper dropping signers (#267)\n\n* Fixing execute helper dropping signers\n\n* Addressing CR feedback\n\n* Adding tests, replacing instanceof with duck-type checks, fixing errors\n\n* Fixing signer filter\n\n* Simplifying type check",
+          "timestamp": "2026-04-02T12:14:02-04:00",
+          "tree_id": "570975eb552f68f2707c9603871d3f2ae228b68f",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/f367f401b34e3baf8dd3d2dde2b87e993eb9e6c3"
+        },
+        "date": 1775146761632,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
