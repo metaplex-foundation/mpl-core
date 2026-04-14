@@ -210,7 +210,9 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
 
     resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
 
-    let copy_len = (registry_offset as usize).saturating_sub(next_plugin_offset as usize);
+    let copy_len = (registry_offset as usize)
+        .checked_sub(next_plugin_offset as usize)
+        .ok_or(MplCoreError::NumericalOverflow)?;
     if copy_len > 0 {
         unsafe {
             let base = account.data.borrow_mut().as_mut_ptr();

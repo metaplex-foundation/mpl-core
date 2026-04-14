@@ -34,8 +34,15 @@ export const removePlugin = (
     });
   }
 
+  const pluginType = plugin.type as keyof typeof PluginType;
+  if (pluginType === 'Groups') {
+    throw new Error(
+      'PluginType.Groups must be managed via group-specific instructions.'
+    );
+  }
+
   return removePluginV1(context, {
     ...args,
-    pluginType: PluginType[plugin.type as keyof typeof PluginType],
+    pluginType: PluginType[pluginType],
   });
 };

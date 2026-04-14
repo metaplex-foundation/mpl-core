@@ -225,15 +225,15 @@ pub enum MplCoreError {
     #[error("Duplicate entry provided when adding relationships to a group")]
     DuplicateEntry,
 
-    /// 53 - Group vector is at maximum capacity
+    /// 54 - Group vector is at maximum capacity
     #[error("Group vector is at maximum capacity")]
     GroupVectorFull,
 
-    /// 54 - Group nesting depth exceeded
+    /// 55 - Group nesting depth exceeded
     #[error("Group nesting depth exceeded")]
     GroupNestingDepthExceeded,
 
-    /// 55 - Bidirectional group relationship is inconsistent
+    /// 56 - Bidirectional group relationship is inconsistent
     #[error("Bidirectional group relationship is inconsistent")]
     InconsistentGroupRelationship,
 }

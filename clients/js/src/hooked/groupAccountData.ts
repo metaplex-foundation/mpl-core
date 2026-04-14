@@ -48,6 +48,12 @@ export const getGroupV1AccountDataSerializer = (): Serializer<
     buffer: Uint8Array,
     offset = 0
   ): [GroupV1AccountData, number] => {
+    const pluginHeaderSerializer = getPluginHeaderV1AccountDataSerializer();
+    const pluginHeaderSize = pluginHeaderSerializer.fixedSize;
+    if (pluginHeaderSize === null) {
+      throw new Error('Invalid plugin header serializer configuration.');
+    }
+
     // Deserialize base group data
     const [group, groupOffset] =
       genGetGroupV1AccountDataSerializer().deserialize(buffer, offset);
@@ -62,17 +68,35 @@ export const getGroupV1AccountDataSerializer = (): Serializer<
     let externalPluginAdaptersList: ExternalPluginAdaptersList | undefined;
     let finalOffset = groupOffset;
 
-    if (buffer.length !== groupOffset) {
-      [pluginHeader] = getPluginHeaderV1AccountDataSerializer().deserialize(
-        buffer,
-        groupOffset
-      );
+    const hasTrailingData = buffer.length > groupOffset;
+    if (hasTrailingData && buffer.length < groupOffset + pluginHeaderSize) {
+      throw new Error('Invalid Group account data: truncated plugin header.');
+    }
+
+    if (buffer.length >= groupOffset + pluginHeaderSize) {
+      [pluginHeader] = pluginHeaderSerializer.deserialize(buffer, groupOffset);
+
+      const pluginRegistryOffset = Number(pluginHeader.pluginRegistryOffset);
+      if (
+        !Number.isSafeInteger(pluginRegistryOffset) ||
+        pluginRegistryOffset < groupOffset + pluginHeaderSize ||
+        pluginRegistryOffset >= buffer.length
+      ) {
+        throw new Error(
+          'Invalid Group account data: plugin registry offset is out of bounds.'
+        );
+      }
 
       [pluginRegistry, finalOffset] =
         getPluginRegistryV1AccountDataSerializer().deserialize(
           buffer,
-          Number(pluginHeader.pluginRegistryOffset)
+          pluginRegistryOffset
         );
+      if (finalOffset > buffer.length) {
+        throw new Error(
+          'Invalid Group account data: plugin registry exceeds buffer length.'
+        );
+      }
 
       pluginsList = registryRecordsToPluginsList(
         pluginRegistry.registry,

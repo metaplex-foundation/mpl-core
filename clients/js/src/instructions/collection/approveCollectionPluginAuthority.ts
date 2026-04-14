@@ -18,9 +18,17 @@ export type ApproveCollectionPluginAuthorityArgs = Omit<
 export const approveCollectionPluginAuthority = (
   context: Pick<Context, 'payer' | 'programs'>,
   { plugin, newAuthority, ...args }: ApproveCollectionPluginAuthorityArgs
-) =>
-  approveCollectionPluginAuthorityV1(context, {
+) => {
+  const pluginType = plugin.type as keyof typeof PluginType;
+  if (pluginType === 'Groups') {
+    throw new Error(
+      'PluginType.Groups must be managed via group-specific instructions.'
+    );
+  }
+
+  return approveCollectionPluginAuthorityV1(context, {
     ...args,
-    pluginType: PluginType[plugin.type as keyof typeof PluginType],
+    pluginType: PluginType[pluginType],
     newAuthority: pluginAuthorityToBase(newAuthority),
   });
+};

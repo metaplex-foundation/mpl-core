@@ -14,7 +14,14 @@ async function getComputeUnits(
   signature: Uint8Array
 ) {
   const txInfo = await umi.rpc.getTransaction(signature);
-  return Number(txInfo?.meta.computeUnitsConsumed ?? 0);
+  const computeUnitsConsumed = txInfo?.meta?.computeUnitsConsumed;
+  if (computeUnitsConsumed == null) {
+    throw new Error(
+      'Unable to read compute units for the confirmed transaction'
+    );
+  }
+
+  return Number(computeUnitsConsumed);
 }
 
 const toWritableRemainingAccounts = (

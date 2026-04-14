@@ -6,8 +6,8 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 /// Groups plugin for collections. Stores the immediate parent group accounts this collection
-/// belongs to. Validation is deferred to specialized group instructions, so the plugin itself has
-/// no special lifecycle behaviour beyond the default `PluginValidation` implementation.
+/// belongs to. Relationship updates are handled by specialized group instructions, and this
+/// plugin overrides `validate_burn` to reject burns while the group set is non-empty.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Default)]
 pub struct Groups {

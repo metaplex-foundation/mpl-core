@@ -52,7 +52,7 @@ test("it can transfer a group's update authority", async (t) => {
   });
 
   // 3. Old authority attempting further updates should fail.
-  await t.throwsAsync(
+  const error = await t.throwsAsync(
     updateGroup(umi, {
       group: group.publicKey,
       payer: umi.identity,
@@ -61,6 +61,7 @@ test("it can transfer a group's update authority", async (t) => {
       newUri: null,
     }).sendAndConfirm(umi)
   );
+  t.is(error?.name, 'InvalidAuthority');
 });
 
 test('it can updateGroup with both name and URI simultaneously', async (t) => {

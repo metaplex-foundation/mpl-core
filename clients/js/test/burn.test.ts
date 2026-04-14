@@ -383,16 +383,6 @@ test('it rejects burning an asset in a collection that belongs to a group', asyn
     ])
     .sendAndConfirm(umi);
 
-  await addAssetsToGroup(umi, {
-    group: group.publicKey,
-    authority: umi.identity,
-  })
-    .addRemainingAccounts([
-      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
-      { isSigner: false, isWritable: false, pubkey: collection.publicKey },
-    ])
-    .sendAndConfirm(umi);
-
   await t.throwsAsync(burn(umi, { asset, collection }).sendAndConfirm(umi), {
     name: 'InvalidAuthority',
   });

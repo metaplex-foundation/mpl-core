@@ -583,10 +583,9 @@ pub fn is_valid_asset_authority<'a>(
     }
 
     // Attempt to locate an UpdateDelegate plugin on the asset itself.
-    if let Ok((_plugin_authority, plugin)) =
-        fetch_wrapped_plugin::<AssetV1>(asset_info, Some(&asset_core), PluginType::UpdateDelegate)
+    match fetch_wrapped_plugin::<AssetV1>(asset_info, Some(&asset_core), PluginType::UpdateDelegate)
     {
-        if let crate::plugins::Plugin::UpdateDelegate(update_delegate) = plugin {
+        Ok((_plugin_authority, Plugin::UpdateDelegate(update_delegate))) => {
             if update_delegate
                 .additional_delegates
                 .contains(authority_info.key)
@@ -594,6 +593,11 @@ pub fn is_valid_asset_authority<'a>(
                 return Ok(true);
             }
         }
+        Ok(_) => return Err(MplCoreError::InvalidPlugin.into()),
+        Err(ProgramError::Custom(code))
+            if code == MplCoreError::PluginNotFound as u32
+                || code == MplCoreError::PluginsNotInitialized as u32 => {}
+        Err(err) => return Err(err),
     }
 
     Ok(false)
@@ -620,12 +624,12 @@ pub fn is_valid_collection_authority(
     }
 
     // Attempt to locate an UpdateDelegate plugin on the collection.
-    if let Ok((_plugin_authority, plugin)) = fetch_wrapped_plugin::<CollectionV1>(
+    match fetch_wrapped_plugin::<CollectionV1>(
         collection_info,
         Some(&collection_core),
         PluginType::UpdateDelegate,
     ) {
-        if let crate::plugins::Plugin::UpdateDelegate(update_delegate) = plugin {
+        Ok((_plugin_authority, Plugin::UpdateDelegate(update_delegate))) => {
             if update_delegate
                 .additional_delegates
                 .contains(authority_info.key)
@@ -633,6 +637,11 @@ pub fn is_valid_collection_authority(
                 return Ok(true);
             }
         }
+        Ok(_) => return Err(MplCoreError::InvalidPlugin.into()),
+        Err(ProgramError::Custom(code))
+            if code == MplCoreError::PluginNotFound as u32
+                || code == MplCoreError::PluginsNotInitialized as u32 => {}
+        Err(err) => return Err(err),
     }
 
     Ok(false)
