@@ -2804,7 +2804,7 @@ dependencies = [
 
 [[package]]
 name = "mpl-core"
-version = "0.10.1-alpha.2"
+version = "0.11.1"
 dependencies = [
  "anchor-lang",
  "assert_matches",

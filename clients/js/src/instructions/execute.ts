@@ -1,6 +1,9 @@
 import {
   Context,
   Instruction,
+  Pda,
+  publicKey,
+  PublicKey,
   Signer,
   TransactionBuilder,
 } from '@metaplex-foundation/umi';
@@ -22,6 +25,8 @@ export type ExecuteArgs = Omit<
   collection?: Pick<CollectionV1, 'publicKey'>;
   instructions: ExecuteInput;
   signers?: Signer[];
+  /** Optional execution delegate record account to pass as the first remaining account. */
+  executionDelegateRecord?: PublicKey | Pda;
 };
 
 export const execute = (
@@ -35,23 +40,27 @@ const executeCommon = (
 ) => {
   // Create a new builder to store the translated Execute instructions.
   let executeBuilder = new TransactionBuilder();
-  // We want to track the signers from the original IXes so they can be added to the Execute instructions.
-  const signers: Signer[] = [];
+  // Caller-level signers provided via args.signers (used for Instruction[] path).
+  const callerSigners: Signer[] = [...(args.signers || [])];
 
   let builder: TransactionBuilder = new TransactionBuilder();
-  if (args.instructions instanceof TransactionBuilder) {
+  // Duck-type check instead of instanceof to avoid cross-realm/bundler breakage
+  // when multiple copies of the umi package are resolved.
+  if ('getInstructions' in args.instructions) {
     builder = args.instructions;
-  } else if (args.instructions) {
-    args.instructions.forEach((instruction) => {
+  } else if (Array.isArray(args.instructions)) {
+    args.instructions.forEach((instruction: Instruction) => {
       const ixSigners: Signer[] = [];
-      instruction.keys.forEach((key) => {
-        const signer = signers.find(
-          (signerKey) => signerKey.publicKey === key.pubkey
-        );
-        if (signer) {
-          ixSigners.push(signer);
-        }
-      });
+      instruction.keys
+        .filter((key) => key.isSigner)
+        .forEach((key) => {
+          const signer = callerSigners.find(
+            (signerKey) => signerKey.publicKey === key.pubkey
+          );
+          if (signer) {
+            ixSigners.push(signer);
+          }
+        });
       builder = builder.add({
         instruction,
         signers: ixSigners,
@@ -67,7 +76,7 @@ const executeCommon = (
     const [assetSigner] = findAssetSignerPda(context, {
       asset: args.asset.publicKey,
     });
-    const baseBuilder = executeV1(context, {
+    let baseBuilder = executeV1(context, {
       ...args,
       asset: args.asset.publicKey,
       collection: args.collection?.publicKey,
@@ -77,6 +86,18 @@ const executeCommon = (
       // Forward the data of the instruction being executed.
       instructionData: ix.instruction.data,
     });
+
+    // If an executionDelegateRecord is provided, prepend it as the first
+    // remaining account so the on-chain program can read it during validation.
+    if (args.executionDelegateRecord) {
+      baseBuilder = baseBuilder.addRemainingAccounts([
+        {
+          pubkey: publicKey(args.executionDelegateRecord),
+          isSigner: false,
+          isWritable: false,
+        },
+      ]);
+    }
 
     executeBuilder = executeBuilder.add(
       baseBuilder
@@ -99,10 +120,12 @@ const executeCommon = (
 
     // Capture the builder items so they can be modified.
     const executeBuilderItems = executeBuilder.items;
-    // Add the signers to the Execute instruction.
-    executeBuilderItems[0].signers.push(
-      // Add the signers to the Execute instruction, filtering out the asset signer.
-      ...signers.filter((signer) => signer.publicKey !== assetSigner)
+    // Merge caller-level signers with this item's signers, filtering out the asset signer.
+    const itemSigners = [...callerSigners, ...ix.signers].filter(
+      (signer) => signer.publicKey !== assetSigner
+    );
+    executeBuilderItems[executeBuilderItems.length - 1].signers.push(
+      ...itemSigners
     );
     // Set the modified builder items.
     executeBuilder = executeBuilder.setItems(executeBuilderItems);
