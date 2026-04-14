@@ -6,7 +6,7 @@ export type RevokeCollectionPluginAuthorityArgs = Omit<
   'pluginType'
 > & {
   plugin: {
-    type: keyof typeof PluginType;
+    type: Exclude<keyof typeof PluginType, 'Groups'>;
   };
 };
 

@@ -44,6 +44,11 @@ pub(crate) fn remove_plugin<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
+    // Groups plugins can only be removed via specialized Group instructions.
+    if args.plugin_type == PluginType::Groups {
+        return Err(MplCoreError::InvalidPlugin.into());
+    }
+
     let (mut asset, plugin_header, plugin_registry) =
         fetch_core_data::<AssetV1>(ctx.accounts.asset)?;
 

@@ -34,7 +34,7 @@ export type AddGroupsToGroupV1InstructionAccounts = {
   parentGroup: PublicKey | Pda;
   /** The account paying for storage fees */
   payer?: Signer;
-  /** The update authority or delegate of the groups */
+  /** The update authority of the parent and child groups */
   authority?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;

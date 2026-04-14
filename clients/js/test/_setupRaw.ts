@@ -1,7 +1,9 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import {
   assertAccountExists,
+  deserializeAccount,
   generateSigner,
+  isSigner,
   PublicKey,
   publicKey,
   Signer,
@@ -30,6 +32,7 @@ import {
   PluginAuthorityPairArgs,
   UpdateAuthority,
 } from '../src';
+import { getGroupV1AccountDataSerializer } from '../src/hooked';
 
 export const createUmi = async () => (await basecreateUmi()).use(mplCore());
 
@@ -136,13 +139,9 @@ export const createGroup = async (
   let updateAuthorityPubkey: PublicKey | undefined;
 
   if (providedUpdateAuth) {
-    // Heuristic: If the value has a `secretKey` property, we treat it as a Signer.
-    if (
-      typeof providedUpdateAuth === 'object' &&
-      'secretKey' in providedUpdateAuth
-    ) {
-      updateAuthoritySigner = providedUpdateAuth as Signer;
-      updateAuthorityPubkey = publicKey(updateAuthoritySigner);
+    if (isSigner(providedUpdateAuth)) {
+      updateAuthoritySigner = providedUpdateAuth;
+      updateAuthorityPubkey = updateAuthoritySigner.publicKey;
     } else {
       updateAuthorityPubkey = publicKey(providedUpdateAuth);
     }
@@ -157,8 +156,7 @@ export const createGroup = async (
     relationships: [],
   };
   if (updateAuthoritySigner) {
-    // Account field type now allows Signer.
-    (createGroupArgs as any).updateAuthority = updateAuthoritySigner;
+    createGroupArgs.updateAuthority = updateAuthoritySigner;
   }
 
   await createGroupV1(umi, createGroupArgs).sendAndConfirm(umi);
@@ -174,24 +172,6 @@ export const createGroup = async (
       newUpdateAuthority: updateAuthorityPubkey,
       newName: null,
       newUri: null,
-    }).sendAndConfirm(umi);
-  }
-
-  // If we have a signer for the update authority, delegate permissions to the payer
-  if (updateAuthoritySigner) {
-    const { plugin } = await import('../src/generated/types/plugin');
-    const { addGroupPluginV1 } = await import('../src/generated');
-
-    await addGroupPluginV1(umi, {
-      group: group.publicKey,
-      payer,
-      authority: updateAuthoritySigner,
-      plugin: plugin('UpdateDelegate', [
-        {
-          additionalDelegates: [publicKey(payer)],
-        },
-      ] as any),
-      initAuthority: null,
     }).sendAndConfirm(umi);
   }
 
@@ -214,9 +194,22 @@ export const createAssetWithCollection: (
         ...collectionInput,
       });
 
+  const {
+    updateAuthority: _assetUpdateAuthority,
+    collection: _assetCollection,
+    ...assetArgs
+  } = assetInput;
+
+  const collectionAuthority =
+    assetInput.authority ||
+    (assetInput.updateAuthority && isSigner(assetInput.updateAuthority)
+      ? assetInput.updateAuthority
+      : undefined);
+
   const asset = await createAsset(umi, {
-    ...assetInput,
+    ...assetArgs,
     collection: collection.publicKey,
+    authority: collectionAuthority,
   });
 
   return {
@@ -321,7 +314,12 @@ export const assertGroup = async (
   const { group, name, uri, updateAuthority, ...rest } = input;
 
   const groupAddress = publicKey(group);
-  const groupWithPlugins = await fetchGroupV1(umi, groupAddress);
+  const maybeGroupAccount = await umi.rpc.getAccount(groupAddress);
+  assertAccountExists(maybeGroupAccount, 'GroupV1');
+  const groupWithPlugins = deserializeAccount(
+    maybeGroupAccount,
+    getGroupV1AccountDataSerializer()
+  );
 
   // Name.
   if (typeof name === 'string') t.is(groupWithPlugins.name, name);

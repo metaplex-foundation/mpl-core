@@ -15,6 +15,8 @@ import {
   FreezeDelegateArgs,
   FreezeExecute,
   FreezeExecuteArgs,
+  Groups,
+  GroupsArgs,
   ImmutableMetadata,
   PermanentBurnDelegate,
   PermanentFreezeDelegate,
@@ -102,6 +104,10 @@ export type CreatePluginArgs =
       data: FreezeExecuteArgs;
     }
   | {
+      type: 'Groups';
+      data: GroupsArgs;
+    }
+  | {
       type: 'PermanentFreezeExecute';
       data: PermanentFreezeExecuteArgs;
     };
@@ -158,6 +164,9 @@ export type AuthorityManagedPluginArgsV2 =
       type: 'Attributes';
     } & AttributesArgs)
   | ({
+      type: 'Groups';
+    } & GroupsArgs)
+  | ({
       type: 'MasterEdition';
     } & MasterEditionArgs)
   | {
@@ -208,10 +217,12 @@ export type VerifiedCreatorsPlugin = BasePlugin & VerifiedCreators;
 export type AutographPlugin = BasePlugin & Autograph;
 export type BubblegumV2Plugin = BasePlugin & BubblegumV2;
 export type FreezeExecutePlugin = BasePlugin & FreezeExecute;
+export type GroupsPlugin = BasePlugin & Groups;
 export type PermanentFreezeExecutePlugin = BasePlugin & PermanentFreezeExecute;
 
 export type CommonPluginsList = {
   attributes?: AttributesPlugin;
+  groups?: GroupsPlugin;
   royalties?: RoyaltiesPlugin;
   updateDelegate?: UpdateDelegatePlugin;
   permanentFreezeDelegate?: PermanentFreezeDelegatePlugin;
@@ -238,24 +249,6 @@ export type CollectionPluginsList = {
 } & CommonPluginsList;
 
 export type PluginsList = AssetPluginsList & CollectionPluginsList;
-
-export type GroupAddablePluginArgsV2 =
-  | ({
-      type: 'Attributes';
-    } & AttributesArgs)
-  | ({
-      type: 'Autograph';
-    } & AutographArgs)
-  | ({
-      type: 'VerifiedCreators';
-    } & VerifiedCreatorsArgs);
-
-export type GroupAllPluginArgsV2 = GroupAddablePluginArgsV2;
-export type GroupPluginAuthorityPairArgsV2 = GroupAllPluginArgsV2 &
-  AuthorityArgsV2;
-
-export type GroupAddablePluginAuthorityPairArgsV2 = GroupAddablePluginArgsV2 &
-  AuthorityArgsV2;
 
 export type GroupPluginsList = {
   attributes?: AttributesPlugin;

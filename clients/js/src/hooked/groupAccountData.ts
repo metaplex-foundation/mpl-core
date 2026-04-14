@@ -11,7 +11,7 @@ import {
   GroupV1AccountData as GenGroupV1AccountData,
   GroupV1AccountDataArgs as GenGroupV1AccountDataArgs,
   getGroupV1AccountDataSerializer as genGetGroupV1AccountDataSerializer,
-} from '../generated/accounts/groupV1';
+} from '../generated/types/groupV1AccountData';
 
 import {
   ExternalPluginAdaptersList,
@@ -89,9 +89,9 @@ export const getGroupV1AccountDataSerializer = (): Serializer<
     return [
       {
         pluginHeader,
+        ...group,
         ...pluginsList,
         ...externalPluginAdaptersList,
-        ...group,
       },
       finalOffset,
     ];

@@ -17,7 +17,7 @@ pub struct AddGroupsToGroupV1 {
     pub parent_group: solana_program::pubkey::Pubkey,
     /// The account paying for storage fees
     pub payer: solana_program::pubkey::Pubkey,
-    /// The update authority or delegate of the groups
+    /// The update authority of the parent and child groups
     pub authority: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: solana_program::pubkey::Pubkey,
@@ -128,7 +128,7 @@ impl AddGroupsToGroupV1Builder {
         self
     }
     /// `[optional account]`
-    /// The update authority or delegate of the groups
+    /// The update authority of the parent and child groups
     #[inline(always)]
     pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.authority = authority;
@@ -188,7 +188,7 @@ pub struct AddGroupsToGroupV1CpiAccounts<'a, 'b> {
     pub parent_group: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The update authority or delegate of the groups
+    /// The update authority of the parent and child groups
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -202,7 +202,7 @@ pub struct AddGroupsToGroupV1Cpi<'a, 'b> {
     pub parent_group: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The update authority or delegate of the groups
+    /// The update authority of the parent and child groups
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -361,7 +361,7 @@ impl<'a, 'b> AddGroupsToGroupV1CpiBuilder<'a, 'b> {
         self
     }
     /// `[optional account]`
-    /// The update authority or delegate of the groups
+    /// The update authority of the parent and child groups
     #[inline(always)]
     pub fn authority(
         &mut self,

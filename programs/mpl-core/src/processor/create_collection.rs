@@ -144,7 +144,7 @@ pub(crate) fn process_create_collection<'a>(
 
                 // TODO move into plugin validation when asset/collection is part of validation context
                 let plugin_type = PluginType::from(&plugin.plugin);
-                if plugin_type == PluginType::Edition {
+                if plugin_type == PluginType::Edition || plugin_type == PluginType::Groups {
                     return Err(MplCoreError::InvalidPlugin.into());
                 }
 

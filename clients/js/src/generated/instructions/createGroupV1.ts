@@ -38,7 +38,7 @@ export type CreateGroupV1InstructionAccounts = {
   /** The address of the new group */
   group: Signer;
   /** The authority of the new group */
-  updateAuthority?: PublicKey | Pda;
+  updateAuthority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -77,7 +77,7 @@ export function getCreateGroupV1InstructionDataSerializer(): Serializer<
       ],
       { description: 'CreateGroupV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 47 })
+    (value) => ({ ...value, discriminator: 39 })
   ) as Serializer<
     CreateGroupV1InstructionDataArgs,
     CreateGroupV1InstructionData

@@ -14,6 +14,7 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
+  none,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -36,7 +37,7 @@ export type UpdateGroupV1InstructionAccounts = {
   group: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
-  /** The update authority or update delegate of the group */
+  /** The update authority of the group */
   authority?: Signer;
   /** The new update authority of the group */
   newUpdateAuthority?: PublicKey | Pda;
@@ -52,8 +53,8 @@ export type UpdateGroupV1InstructionData = {
 };
 
 export type UpdateGroupV1InstructionDataArgs = {
-  newName: OptionOrNullable<string>;
-  newUri: OptionOrNullable<string>;
+  newName?: OptionOrNullable<string>;
+  newUri?: OptionOrNullable<string>;
 };
 
 export function getUpdateGroupV1InstructionDataSerializer(): Serializer<
@@ -73,7 +74,12 @@ export function getUpdateGroupV1InstructionDataSerializer(): Serializer<
       ],
       { description: 'UpdateGroupV1InstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 49 })
+    (value) => ({
+      ...value,
+      discriminator: 41,
+      newName: value.newName ?? none(),
+      newUri: value.newUri ?? none(),
+    })
   ) as Serializer<
     UpdateGroupV1InstructionDataArgs,
     UpdateGroupV1InstructionData

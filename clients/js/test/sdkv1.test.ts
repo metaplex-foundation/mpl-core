@@ -519,10 +519,12 @@ serial(
     });
 
     for (const plugin of plugins) {
-      await removePlugin(umi, {
-        asset: asset.publicKey,
-        plugin,
-      }).sendAndConfirm(umi);
+      if (plugin.type !== 'Groups') {
+        await removePlugin(umi, {
+          asset: asset.publicKey,
+          plugin: { type: plugin.type },
+        }).sendAndConfirm(umi);
+      }
     }
 
     await assertAsset(t, umi, {
@@ -882,10 +884,12 @@ serial(
     });
 
     for (const plugin of plugins) {
-      await removeCollectionPlugin(umi, {
-        collection: collection.publicKey,
-        plugin,
-      }).sendAndConfirm(umi);
+      if (plugin.type !== 'Groups') {
+        await removeCollectionPlugin(umi, {
+          collection: collection.publicKey,
+          plugin: { type: plugin.type },
+        }).sendAndConfirm(umi);
+      }
     }
 
     await assertCollection(t, umi, {

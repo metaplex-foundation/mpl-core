@@ -47,6 +47,11 @@ pub(crate) fn approve_plugin_authority<'a>(
         return Err(MplCoreError::NotAvailable.into());
     }
 
+    // Groups plugins must be managed only via Group-specific instructions; approve is not allowed.
+    if args.plugin_type == PluginType::Groups {
+        return Err(MplCoreError::InvalidPlugin.into());
+    }
+
     let (plugin_authority, plugin) =
         fetch_wrapped_plugin::<AssetV1>(ctx.accounts.asset, None, args.plugin_type)?;
 

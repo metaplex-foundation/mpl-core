@@ -32,7 +32,7 @@ export type AddAssetsToGroupV1InstructionAccounts = {
   group: PublicKey | Pda;
   /** The account paying for storage fees */
   payer?: Signer;
-  /** The update authority or delegate of the group/assets */
+  /** The group update authority and asset update authority or delegate */
   authority?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;

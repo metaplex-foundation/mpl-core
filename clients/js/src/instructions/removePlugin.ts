@@ -12,7 +12,7 @@ import {
 
 export type RemovePluginArgsPlugin =
   | {
-      type: Exclude<keyof typeof PluginType, 'Edition'>;
+      type: Exclude<keyof typeof PluginType, 'Edition' | 'Groups'>;
     }
   | ExternalPluginAdapterKey;
 

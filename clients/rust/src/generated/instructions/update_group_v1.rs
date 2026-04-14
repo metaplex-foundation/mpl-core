@@ -16,7 +16,7 @@ pub struct UpdateGroupV1 {
     pub group: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
     pub payer: solana_program::pubkey::Pubkey,
-    /// The update authority or update delegate of the group
+    /// The update authority of the group
     pub authority: Option<solana_program::pubkey::Pubkey>,
     /// The new update authority of the group
     pub new_update_authority: Option<solana_program::pubkey::Pubkey>,
@@ -90,7 +90,7 @@ pub struct UpdateGroupV1InstructionData {
 
 impl UpdateGroupV1InstructionData {
     pub fn new() -> Self {
-        Self { discriminator: 49 }
+        Self { discriminator: 41 }
     }
 }
 
@@ -141,7 +141,7 @@ impl UpdateGroupV1Builder {
         self
     }
     /// `[optional account]`
-    /// The update authority or update delegate of the group
+    /// The update authority of the group
     #[inline(always)]
     pub fn authority(&mut self, authority: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.authority = authority;
@@ -220,7 +220,7 @@ pub struct UpdateGroupV1CpiAccounts<'a, 'b> {
     pub group: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The update authority or update delegate of the group
+    /// The update authority of the group
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The new update authority of the group
     pub new_update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -236,7 +236,7 @@ pub struct UpdateGroupV1Cpi<'a, 'b> {
     pub group: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The update authority or update delegate of the group
+    /// The update authority of the group
     pub authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The new update authority of the group
     pub new_update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -410,7 +410,7 @@ impl<'a, 'b> UpdateGroupV1CpiBuilder<'a, 'b> {
         self
     }
     /// `[optional account]`
-    /// The update authority or update delegate of the group
+    /// The update authority of the group
     #[inline(always)]
     pub fn authority(
         &mut self,

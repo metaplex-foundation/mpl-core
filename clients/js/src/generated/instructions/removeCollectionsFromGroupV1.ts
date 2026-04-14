@@ -34,7 +34,7 @@ export type RemoveCollectionsFromGroupV1InstructionAccounts = {
   group: PublicKey | Pda;
   /** The account paying for storage fees */
   payer?: Signer;
-  /** The update authority or delegate of the group/collections */
+  /** The group update authority and collection update authority or delegate */
   authority?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;

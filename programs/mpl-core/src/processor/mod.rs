@@ -1,11 +1,8 @@
 mod add_assets_to_group;
 mod add_collections_to_group;
 mod add_external_plugin_adapter;
-mod add_group_external_plugin_adapter;
-mod add_group_plugin;
 mod add_groups_to_group;
 mod add_plugin;
-mod approve_group_plugin_authority;
 mod approve_plugin_authority;
 mod burn;
 mod close_group;
@@ -16,33 +13,26 @@ mod create_collection;
 mod create_group;
 mod decompress;
 mod execute;
+mod groups_plugin_utils;
 mod remove_assets_from_group;
 mod remove_collections_from_group;
 mod remove_external_plugin_adapter;
-mod remove_group_external_plugin_adapter;
-mod remove_group_plugin;
 mod remove_groups_from_group;
 mod remove_plugin;
-mod revoke_group_plugin_authority;
 mod revoke_plugin_authority;
 mod transfer;
 mod update;
 mod update_collection_info;
 mod update_external_plugin_adapter;
 mod update_group;
-mod update_group_plugin;
 mod update_plugin;
 mod write_external_plugin_adapter_data;
-mod write_group_external_plugin_adapter_data;
 
 pub(crate) use add_assets_to_group::*;
 pub(crate) use add_collections_to_group::*;
 pub(crate) use add_external_plugin_adapter::*;
-pub(crate) use add_group_external_plugin_adapter::*;
-pub(crate) use add_group_plugin::*;
 pub(crate) use add_groups_to_group::*;
 pub(crate) use add_plugin::*;
-pub(crate) use approve_group_plugin_authority::*;
 pub(crate) use approve_plugin_authority::*;
 pub(crate) use burn::*;
 pub(crate) use close_group::*;
@@ -56,21 +46,16 @@ pub(crate) use execute::*;
 pub(crate) use remove_assets_from_group::*;
 pub(crate) use remove_collections_from_group::*;
 pub(crate) use remove_external_plugin_adapter::*;
-pub(crate) use remove_group_external_plugin_adapter::*;
-pub(crate) use remove_group_plugin::*;
 pub(crate) use remove_groups_from_group::*;
 pub(crate) use remove_plugin::*;
-pub(crate) use revoke_group_plugin_authority::*;
 pub(crate) use revoke_plugin_authority::*;
 pub(crate) use transfer::*;
 pub(crate) use update::*;
 pub(crate) use update_collection_info::*;
 pub(crate) use update_external_plugin_adapter::*;
 pub(crate) use update_group::*;
-pub(crate) use update_group_plugin::*;
 pub(crate) use update_plugin::*;
 pub(crate) use write_external_plugin_adapter_data::*;
-pub(crate) use write_group_external_plugin_adapter_data::*;
 
 use borsh::BorshDeserialize;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, pubkey::Pubkey};
@@ -244,38 +229,6 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::UpdateCollectionExternalPluginAdapterV1(args) => {
             msg!("Instruction: UpdateCollectionExternalPluginAdapter");
             update_collection_external_plugin_adapter(accounts, args)
-        }
-        MplAssetInstruction::AddGroupPluginV1(args) => {
-            msg!("Instruction: AddGroupPlugin");
-            add_group_plugin(accounts, args)
-        }
-        MplAssetInstruction::RemoveGroupPluginV1(args) => {
-            msg!("Instruction: RemoveGroupPlugin");
-            remove_group_plugin(accounts, args)
-        }
-        MplAssetInstruction::UpdateGroupPluginV1(args) => {
-            msg!("Instruction: UpdateGroupPlugin");
-            update_group_plugin(accounts, args)
-        }
-        MplAssetInstruction::ApproveGroupPluginAuthorityV1(args) => {
-            msg!("Instruction: ApproveGroupPluginAuthority");
-            approve_group_plugin_authority(accounts, args)
-        }
-        MplAssetInstruction::RevokeGroupPluginAuthorityV1(args) => {
-            msg!("Instruction: RevokeGroupPluginAuthority");
-            revoke_group_plugin_authority(accounts, args)
-        }
-        MplAssetInstruction::AddGroupExternalPluginAdapterV1(args) => {
-            msg!("Instruction: AddGroupExternalPluginAdapter");
-            add_group_external_plugin_adapter(accounts, args)
-        }
-        MplAssetInstruction::RemoveGroupExternalPluginAdapterV1(args) => {
-            msg!("Instruction: RemoveGroupExternalPluginAdapter");
-            remove_group_external_plugin_adapter(accounts, args)
-        }
-        MplAssetInstruction::WriteGroupExternalPluginAdapterDataV1(args) => {
-            msg!("Instruction: WriteGroupExternalPluginAdapterDataV1");
-            write_group_external_plugin_adapter_data(accounts, args)
         }
         MplAssetInstruction::AddAssetsToGroupV1(args) => {
             msg!("Instruction: AddAssetsToGroup");

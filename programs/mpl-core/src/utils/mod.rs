@@ -20,7 +20,7 @@ use crate::{
 use mpl_utils::assert_signer;
 use num_traits::FromPrimitive;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey,
 };
 use std::collections::BTreeMap;
@@ -99,6 +99,24 @@ pub fn fetch_core_data<T: DataBlob + SolanaAccount>(
     } else {
         Ok((asset, None, None))
     }
+}
+
+/// Persist a mutated `GroupV1` as flat Borsh data only.
+pub(crate) fn save_flat_group<'a>(
+    group_info: &AccountInfo<'a>,
+    group: &GroupV1,
+    payer_info: &AccountInfo<'a>,
+    system_program_info: &AccountInfo<'a>,
+) -> ProgramResult {
+    let serialized_len = group.len();
+
+    if serialized_len != group_info.data_len() {
+        resize_or_reallocate_account(group_info, payer_info, system_program_info, serialized_len)?;
+    }
+
+    group.save(group_info, 0)?;
+
+    Ok(())
 }
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
@@ -244,32 +262,6 @@ pub(crate) fn validate_asset_permissions<'a>(
     };
 
     match validate_plugin_checks(
-        Key::CollectionV1,
-        accounts,
-        &checks,
-        authority_info,
-        new_owner,
-        new_authority,
-        None,
-        new_plugin,
-        new_plugin_authority,
-        new_external_plugin_adapter,
-        new_external_plugin_adapter_authority,
-        Some(asset),
-        collection,
-        &resolved_authorities,
-        plugin_validate_fp,
-    )? {
-        ValidationResult::Approved => approved = true,
-        ValidationResult::Rejected => rejected = true,
-        ValidationResult::Pass => (),
-        ValidationResult::ForceApproved => {
-            return Ok((deserialized_asset, plugin_header, plugin_registry))
-        }
-    };
-
-    match validate_plugin_checks(
-        Key::AssetV1,
         accounts,
         &checks,
         authority_info,
@@ -295,31 +287,6 @@ pub(crate) fn validate_asset_permissions<'a>(
 
     if let Some(external_plugin_adapter_validate_fp) = external_plugin_adapter_validate_fp {
         match validate_external_plugin_adapter_checks(
-            Key::CollectionV1,
-            accounts,
-            &external_checks,
-            authority_info,
-            new_owner,
-            new_authority,
-            None,
-            new_plugin,
-            new_plugin_authority,
-            new_external_plugin_adapter,
-            new_external_plugin_adapter_authority,
-            Some(asset),
-            collection,
-            &resolved_authorities,
-            external_plugin_adapter_validate_fp,
-        )? {
-            ValidationResult::Approved => approved = true,
-            ValidationResult::Rejected => rejected = true,
-            ValidationResult::Pass => (),
-            // Force approved will not be possible from external plugin adapters.
-            ValidationResult::ForceApproved => unreachable!(),
-        };
-
-        match validate_external_plugin_adapter_checks(
-            Key::AssetV1,
             accounts,
             &external_checks,
             authority_info,
@@ -451,7 +418,6 @@ pub(crate) fn validate_collection_permissions<'a>(
     };
 
     match validate_plugin_checks(
-        Key::CollectionV1,
         accounts,
         &checks,
         authority_info,
@@ -477,7 +443,6 @@ pub(crate) fn validate_collection_permissions<'a>(
 
     if let Some(external_plugin_adapter_validate_fp) = external_plugin_adapter_validate_fp {
         match validate_external_plugin_adapter_checks(
-            Key::CollectionV1,
             accounts,
             &external_checks,
             authority_info,
@@ -577,24 +542,51 @@ pub(crate) fn resolve_authority<'a>(
     }
 }
 
-/// Returns true if the `authority_info` represents either the update authority of the group
-/// or a valid update delegate (defined by an `UpdateDelegate` plugin on the group).
-pub fn is_valid_group_authority(
-    group_info: &AccountInfo,
-    authority_info: &AccountInfo,
+/// Returns true if the `authority_info` represents either the update authority of the asset
+/// or a valid update delegate (defined by an `UpdateDelegate` plugin on the asset).
+///
+/// When the asset's update authority is `UpdateAuthority::Collection`, the signer is
+/// validated against the collection's update authority (and its update delegates) by
+/// locating the collection `AccountInfo` in `all_accounts`.  Callers must ensure the
+/// collection account is present in the transaction when operating on collection-bound
+/// assets.
+pub fn is_valid_asset_authority<'a>(
+    asset_info: &AccountInfo<'a>,
+    authority_info: &AccountInfo<'a>,
+    all_accounts: &'a [AccountInfo<'a>],
 ) -> Result<bool, ProgramError> {
-    // Fast path: signer is the canonical update authority.
-    let group_core = GroupV1::load(group_info, 0)?;
-    if authority_info.key == &group_core.update_authority {
-        return Ok(true);
+    let asset_core = AssetV1::load(asset_info, 0)?;
+
+    match &asset_core.update_authority {
+        UpdateAuthority::Address(addr) => {
+            if addr == authority_info.key {
+                return Ok(true);
+            }
+        }
+        UpdateAuthority::Collection(collection_addr) => {
+            match all_accounts.iter().find(|a| a.key == collection_addr) {
+                Some(collection_info) => {
+                    if is_valid_collection_authority(collection_info, authority_info)? {
+                        return Ok(true);
+                    }
+                }
+                None => {
+                    msg!(
+                        "Asset has UpdateAuthority::Collection but the collection \
+                         account {} was not provided in the transaction",
+                        collection_addr
+                    );
+                }
+            }
+        }
+        UpdateAuthority::None => {}
     }
 
-    // Attempt to locate an UpdateDelegate plugin on the group.
+    // Attempt to locate an UpdateDelegate plugin on the asset itself.
     if let Ok((_plugin_authority, plugin)) =
-        fetch_wrapped_plugin::<GroupV1>(group_info, Some(&group_core), PluginType::UpdateDelegate)
+        fetch_wrapped_plugin::<AssetV1>(asset_info, Some(&asset_core), PluginType::UpdateDelegate)
     {
         if let crate::plugins::Plugin::UpdateDelegate(update_delegate) = plugin {
-            // Accept if the signer is listed in additional delegates.
             if update_delegate
                 .additional_delegates
                 .contains(authority_info.key)
@@ -605,6 +597,15 @@ pub fn is_valid_group_authority(
     }
 
     Ok(false)
+}
+
+/// Returns true if the `authority_info` represents the group's update authority.
+pub fn is_valid_group_authority(
+    group_info: &AccountInfo,
+    authority_info: &AccountInfo,
+) -> Result<bool, ProgramError> {
+    let group_core = GroupV1::load(group_info, 0)?;
+    Ok(authority_info.key == &group_core.update_authority)
 }
 
 /// Returns true if the `authority_info` represents either the update authority of the collection

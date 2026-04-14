@@ -1,6 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+};
 
 use crate::{
     error::MplCoreError,
@@ -30,16 +32,23 @@ pub(crate) fn close_group_v1<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
+    if !ctx.accounts.group.is_writable {
+        return Err(ProgramError::InvalidAccountData);
+    }
+
     // Deserialize the group account.
     let group = GroupV1::load(ctx.accounts.group, 0)?;
 
-    // Ensure the signer is the update authority or delegate of the group.
+    // Ensure the signer is the update authority of the group.
     if !is_valid_group_authority(ctx.accounts.group, authority)? {
         return Err(MplCoreError::InvalidAuthority.into());
     }
 
-    // Ensure the group has no children or parents.
-    if !(group.collections.is_empty() && group.groups.is_empty() && group.parent_groups.is_empty())
+    // Ensure the group has no children, parents, or assets.
+    if !(group.collections.is_empty()
+        && group.groups.is_empty()
+        && group.parent_groups.is_empty()
+        && group.assets.is_empty())
     {
         return Err(MplCoreError::GroupMustBeEmpty.into());
     }

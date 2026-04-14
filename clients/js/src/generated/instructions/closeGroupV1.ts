@@ -32,7 +32,7 @@ export type CloseGroupV1InstructionAccounts = {
   group: PublicKey | Pda;
   /** The account receiving reclaimed lamports */
   payer?: Signer;
-  /** The update authority or update delegate of the group */
+  /** The update authority of the group */
   authority?: Signer;
 };
 
@@ -53,7 +53,7 @@ export function getCloseGroupV1InstructionDataSerializer(): Serializer<
     struct<CloseGroupV1InstructionData>([['discriminator', u8()]], {
       description: 'CloseGroupV1InstructionData',
     }),
-    (value) => ({ ...value, discriminator: 48 })
+    (value) => ({ ...value, discriminator: 40 })
   ) as Serializer<CloseGroupV1InstructionDataArgs, CloseGroupV1InstructionData>;
 }
 
