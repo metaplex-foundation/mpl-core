@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1775146762244,
+  "lastUpdate": 1776286146027,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -10477,6 +10477,120 @@ window.BENCHMARK_DATA = {
           {
             "name": "CU: transfer an asset with plugins and empty collection",
             "value": 9085,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "16522636+stranzhay@users.noreply.github.com",
+            "name": "stranzhay",
+            "username": "stranzhay"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3939d71add71e42a5c209269ab510cd92cf06175",
+          "message": "Groups final (1) (#231)\n\n* feat: more consise pass\n\n* feat: pr review 1\n\n* feat: pr review 2\n\n* feat: js client, rust client, tests\n\n* chore: downgrade lock\n\n* feat: pr review changes\n\n* feat: adding more tests for groups\n\n* chore: Release mpl-core version 0.10.1-alpha.1\n\n* update mpl-core rust client to register groups plugin as known\n\n* revert changes to cargo.lock, enfore rust toolchain version instead\n\n* chore: Release mpl-core version 0.10.1-alpha.2\n\n* update toolchain to proper version\n\n* stranzhay/audit report (#255)\n\n* refactor: [I-04] Duplicated code snippet\n\n* fix: [I-03] Mark update_authority a signer in CreateGroupV1 metadata\n\n* fix: [I-02] Reject non-child assets/collections/groups removal from parent groups\n\n* fix: [I-01] Missing self-reference checks lets groups link to themselves\n\n* fix: [L-05] Incorrect account resize on plugin authority approval\n\n* fix: [L-04] Unvalidated incoming adapters in external plugin updates\n\n* fix: [L-03] Memory violations in WriteGroupExternalPluginAdapterDataV1\n\n* fix: [L-02] Accounts loaded from raw slice are inconsistent with schema\n\n* fix: [L-01] Wrong memmove length when adding parent groups to assets/collections\n\n* fix: [M-03] Block Groups plugins when creating assets/collections\n\n* fix: [M-02] UpdateGroupPluginV1 arbitrarily alters installed plugins\n\n* fix: [M-01] CloseGroupV1 closes group without checking child assets\n\n* fix: [H-05] External adapter update may corrupt plugin metadata\n\n* fix: [H-04] Child asset/collection plugin corruption from group removal\n\n* fix: [H-03] CreateGroupV1 may corrupt parent/child group account\n\n* fix: [H-02] Multiple IXs incorrectly truncate plugin data in GroupV1 accounts\n\n* fix: [H-01] UpdateGroupPluginV1 corrupts group account plugin data\n\n* fix: fixing tests\n\n* fix: fixing tests\n\n* feat: adding group to indexable asset\n\n* stranzhay/audit report slim (#259)\n\n* refactor: remove plugins\n\n* feat: add in rest of group blocking\n\n* chore: linting\n\n* feat: further audit\n\n* refactor: distribute audit coverage tests into their respective test files\n\n* consolidate Groups plugin helpers into shared groups_plugin_utils module\n\n* refactor: deduplicate plugin resize logic into save_updated_groups_plugin\n\n* feat: pr review/more audit finalizing\n\n* feat: final audit changes\n\n* Removing double validation (#220)\n\n* Removing double validation.\n\n* Add some plugin validation override tests\n\n---------\n\nCo-authored-by: Michael Danenberg <56533526+danenbm@users.noreply.github.com>\n\n* Fix lockfile and errors\n\n* Removing duplicate check\n\n---------\n\nCo-authored-by: stranzhay <stranzhay@users.noreply.github.com>\nCo-authored-by: blockiosaurus <90809591+blockiosaurus@users.noreply.github.com>\nCo-authored-by: Michael Danenberg <56533526+danenbm@users.noreply.github.com>\nCo-authored-by: Blockiosaurus <blockiosaurus@gmail.com>\n\n* chore: code rabbit\n\n* chore: ci\n\n---------\n\nCo-authored-by: pileks <pileks@users.noreply.github.com>\nCo-authored-by: Pileks <jure@amber-it.co>\nCo-authored-by: stranzhay <stranzhay@users.noreply.github.com>\nCo-authored-by: blockiosaurus <90809591+blockiosaurus@users.noreply.github.com>\nCo-authored-by: Michael Danenberg <56533526+danenbm@users.noreply.github.com>\nCo-authored-by: Blockiosaurus <blockiosaurus@gmail.com>",
+          "timestamp": "2026-04-15T13:42:19-07:00",
+          "tree_id": "f5eda27536a8527ba269af47bffe5f35145ecf1f",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/3939d71add71e42a5c209269ab510cd92cf06175"
+        },
+        "date": 1776286145015,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 8178,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 16974,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 27797,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 33147,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 20774,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 26176,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 25718,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 34303,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 24895,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 37340,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 3865,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 5588,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 7454,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 9177,
             "unit": "Compute Units"
           }
         ]
