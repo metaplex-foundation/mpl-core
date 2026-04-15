@@ -216,6 +216,26 @@ pub enum MplCoreError {
     /// 51 - Agent Identity Program must sign
     #[error("Agent Identity Program must sign")]
     AgentIdentityMustSign,
+
+    /// 52 - Group must be empty to be closed
+    #[error("Group must be empty to be closed")]
+    GroupMustBeEmpty,
+
+    /// 53 - Duplicate entry provided when adding relationships to a group
+    #[error("Duplicate entry provided when adding relationships to a group")]
+    DuplicateEntry,
+
+    /// 54 - Group vector is at maximum capacity
+    #[error("Group vector is at maximum capacity")]
+    GroupVectorFull,
+
+    /// 55 - Group nesting depth exceeded
+    #[error("Group nesting depth exceeded")]
+    GroupNestingDepthExceeded,
+
+    /// 56 - Bidirectional group relationship is inconsistent
+    #[error("Bidirectional group relationship is inconsistent")]
+    InconsistentGroupRelationship,
 }
 
 impl PrintProgramError for MplCoreError {

@@ -34,4 +34,5 @@ pub enum PluginType {
     BubblegumV2,
     FreezeExecute,
     PermanentFreezeExecute,
+    Groups,
 }

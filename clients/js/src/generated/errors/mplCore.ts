@@ -752,6 +752,78 @@ export class AgentIdentityMustSignError extends ProgramError {
 codeToErrorMap.set(0x33, AgentIdentityMustSignError);
 nameToErrorMap.set('AgentIdentityMustSign', AgentIdentityMustSignError);
 
+/** GroupMustBeEmpty: Group must be empty to be closed */
+export class GroupMustBeEmptyError extends ProgramError {
+  override readonly name: string = 'GroupMustBeEmpty';
+
+  readonly code: number = 0x34; // 52
+
+  constructor(program: Program, cause?: Error) {
+    super('Group must be empty to be closed', program, cause);
+  }
+}
+codeToErrorMap.set(0x34, GroupMustBeEmptyError);
+nameToErrorMap.set('GroupMustBeEmpty', GroupMustBeEmptyError);
+
+/** DuplicateEntry: Duplicate entry provided when adding relationships to a group */
+export class DuplicateEntryError extends ProgramError {
+  override readonly name: string = 'DuplicateEntry';
+
+  readonly code: number = 0x35; // 53
+
+  constructor(program: Program, cause?: Error) {
+    super(
+      'Duplicate entry provided when adding relationships to a group',
+      program,
+      cause
+    );
+  }
+}
+codeToErrorMap.set(0x35, DuplicateEntryError);
+nameToErrorMap.set('DuplicateEntry', DuplicateEntryError);
+
+/** GroupVectorFull: Group vector is at maximum capacity */
+export class GroupVectorFullError extends ProgramError {
+  override readonly name: string = 'GroupVectorFull';
+
+  readonly code: number = 0x36; // 54
+
+  constructor(program: Program, cause?: Error) {
+    super('Group vector is at maximum capacity', program, cause);
+  }
+}
+codeToErrorMap.set(0x36, GroupVectorFullError);
+nameToErrorMap.set('GroupVectorFull', GroupVectorFullError);
+
+/** GroupNestingDepthExceeded: Group nesting depth exceeded */
+export class GroupNestingDepthExceededError extends ProgramError {
+  override readonly name: string = 'GroupNestingDepthExceeded';
+
+  readonly code: number = 0x37; // 55
+
+  constructor(program: Program, cause?: Error) {
+    super('Group nesting depth exceeded', program, cause);
+  }
+}
+codeToErrorMap.set(0x37, GroupNestingDepthExceededError);
+nameToErrorMap.set('GroupNestingDepthExceeded', GroupNestingDepthExceededError);
+
+/** InconsistentGroupRelationship: Bidirectional group relationship is inconsistent */
+export class InconsistentGroupRelationshipError extends ProgramError {
+  override readonly name: string = 'InconsistentGroupRelationship';
+
+  readonly code: number = 0x38; // 56
+
+  constructor(program: Program, cause?: Error) {
+    super('Bidirectional group relationship is inconsistent', program, cause);
+  }
+}
+codeToErrorMap.set(0x38, InconsistentGroupRelationshipError);
+nameToErrorMap.set(
+  'InconsistentGroupRelationship',
+  InconsistentGroupRelationshipError
+);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

@@ -1,40 +1,59 @@
+mod add_assets_to_group;
+mod add_collections_to_group;
 mod add_external_plugin_adapter;
+mod add_groups_to_group;
 mod add_plugin;
 mod approve_plugin_authority;
 mod burn;
+mod close_group;
 mod collect;
 mod compress;
 mod create;
 mod create_collection;
+mod create_group;
 mod decompress;
 mod execute;
+mod groups_plugin_utils;
+mod remove_assets_from_group;
+mod remove_collections_from_group;
 mod remove_external_plugin_adapter;
+mod remove_groups_from_group;
 mod remove_plugin;
 mod revoke_plugin_authority;
 mod transfer;
 mod update;
 mod update_collection_info;
 mod update_external_plugin_adapter;
+mod update_group;
 mod update_plugin;
 mod write_external_plugin_adapter_data;
 
+pub(crate) use add_assets_to_group::*;
+pub(crate) use add_collections_to_group::*;
 pub(crate) use add_external_plugin_adapter::*;
+pub(crate) use add_groups_to_group::*;
 pub(crate) use add_plugin::*;
 pub(crate) use approve_plugin_authority::*;
 pub(crate) use burn::*;
+pub(crate) use close_group::*;
 pub(crate) use collect::*;
 pub(crate) use compress::*;
 pub(crate) use create::*;
 pub(crate) use create_collection::*;
+pub(crate) use create_group::*;
 pub(crate) use decompress::*;
 pub(crate) use execute::*;
+pub(crate) use remove_assets_from_group::*;
+pub(crate) use remove_collections_from_group::*;
 pub(crate) use remove_external_plugin_adapter::*;
+pub(crate) use remove_groups_from_group::*;
 pub(crate) use remove_plugin::*;
 pub(crate) use revoke_plugin_authority::*;
 pub(crate) use transfer::*;
 pub(crate) use update::*;
 pub(crate) use update_collection_info::*;
 pub(crate) use update_external_plugin_adapter::*;
+pub(crate) use update_group::*;
 pub(crate) use update_plugin::*;
 pub(crate) use write_external_plugin_adapter_data::*;
 
@@ -152,14 +171,6 @@ pub fn process_instruction<'a>(
             msg!("Instruction: RemoveCollectionExternalPluginAdapter");
             remove_collection_external_plugin_adapter(accounts, args)
         }
-        MplAssetInstruction::UpdateExternalPluginAdapterV1(args) => {
-            msg!("Instruction: UpdateExternalPluginAdapter");
-            update_external_plugin_adapter(accounts, args)
-        }
-        MplAssetInstruction::UpdateCollectionExternalPluginAdapterV1(args) => {
-            msg!("Instruction: UpdateCollectionExternalPluginAdapter");
-            update_collection_external_plugin_adapter(accounts, args)
-        }
         MplAssetInstruction::WriteExternalPluginAdapterDataV1(args) => {
             msg!("Instruction: WriteExternalPluginAdapterDataV1");
             write_external_plugin_adapter_data(accounts, args)
@@ -181,6 +192,51 @@ pub fn process_instruction<'a>(
         MplAssetInstruction::UpdateCollectionInfoV1(args) => {
             msg!("Instruction: UpdateCollectionInfoV1");
             update_collection_info(accounts, args)
+        }
+
+        MplAssetInstruction::CreateGroupV1(args) => {
+            msg!("Instruction: CreateGroup");
+            create_group_v1(accounts, args)
+        }
+        MplAssetInstruction::CloseGroupV1(args) => {
+            msg!("Instruction: CloseGroup");
+            close_group_v1(accounts, args)
+        }
+        MplAssetInstruction::UpdateGroupV1(args) => {
+            msg!("Instruction: UpdateGroup");
+            update_group_v1(accounts, args)
+        }
+        MplAssetInstruction::AddCollectionsToGroupV1(args) => {
+            msg!("Instruction: AddCollectionsToGroup");
+            add_collections_to_group_v1(accounts, args)
+        }
+        MplAssetInstruction::RemoveCollectionsFromGroupV1(args) => {
+            msg!("Instruction: RemoveCollectionsFromGroup");
+            remove_collections_from_group_v1(accounts, args)
+        }
+        MplAssetInstruction::AddGroupsToGroupV1(args) => {
+            msg!("Instruction: AddGroupsToGroup");
+            add_groups_to_group_v1(accounts, args)
+        }
+        MplAssetInstruction::RemoveGroupsFromGroupV1(args) => {
+            msg!("Instruction: RemoveGroupsFromGroup");
+            remove_groups_from_group_v1(accounts, args)
+        }
+        MplAssetInstruction::UpdateExternalPluginAdapterV1(args) => {
+            msg!("Instruction: UpdateExternalPluginAdapter");
+            update_external_plugin_adapter(accounts, args)
+        }
+        MplAssetInstruction::UpdateCollectionExternalPluginAdapterV1(args) => {
+            msg!("Instruction: UpdateCollectionExternalPluginAdapter");
+            update_collection_external_plugin_adapter(accounts, args)
+        }
+        MplAssetInstruction::AddAssetsToGroupV1(args) => {
+            msg!("Instruction: AddAssetsToGroup");
+            add_assets_to_group_v1(accounts, args)
+        }
+        MplAssetInstruction::RemoveAssetsFromGroupV1(args) => {
+            msg!("Instruction: RemoveAssetsFromGroup");
+            remove_assets_from_group_v1(accounts, args)
         }
     }
 }

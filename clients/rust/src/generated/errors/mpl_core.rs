@@ -166,6 +166,21 @@ pub enum MplCoreError {
     /// 51 (0x33) - Agent Identity Program must sign
     #[error("Agent Identity Program must sign")]
     AgentIdentityMustSign,
+    /// 52 (0x34) - Group must be empty to be closed
+    #[error("Group must be empty to be closed")]
+    GroupMustBeEmpty,
+    /// 53 (0x35) - Duplicate entry provided when adding relationships to a group
+    #[error("Duplicate entry provided when adding relationships to a group")]
+    DuplicateEntry,
+    /// 54 (0x36) - Group vector is at maximum capacity
+    #[error("Group vector is at maximum capacity")]
+    GroupVectorFull,
+    /// 55 (0x37) - Group nesting depth exceeded
+    #[error("Group nesting depth exceeded")]
+    GroupNestingDepthExceeded,
+    /// 56 (0x38) - Bidirectional group relationship is inconsistent
+    #[error("Bidirectional group relationship is inconsistent")]
+    InconsistentGroupRelationship,
 }
 
 impl solana_program::program_error::PrintProgramError for MplCoreError {

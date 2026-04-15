@@ -167,6 +167,7 @@ impl PluginType {
             PluginType::BurnDelegate => CheckResult::CanApprove,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentBurnDelegate => CheckResult::CanApprove,
+            PluginType::Groups => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
