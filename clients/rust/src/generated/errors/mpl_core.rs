@@ -182,9 +182,3 @@ pub enum MplCoreError {
     #[error("Bidirectional group relationship is inconsistent")]
     InconsistentGroupRelationship,
 }
-
-impl solana_program::program_error::PrintProgramError for MplCoreError {
-    fn print<E>(&self) {
-        solana_program::msg!(&self.to_string());
-    }
-}

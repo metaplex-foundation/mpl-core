@@ -475,7 +475,7 @@ impl IndexableAsset {
         data_offset: Option<u64>,
         data_len: Option<u64>,
         account: &[u8],
-    ) -> Result<Option<ExternalPluginDataInfo>, std::io::Error> {
+    ) -> Result<Option<ExternalPluginDataInfo<'_>>, std::io::Error> {
         if data_offset.is_some() && data_len.is_some() {
             let data_offset = data_offset.unwrap() as usize;
             let data_len = data_len.unwrap() as usize;

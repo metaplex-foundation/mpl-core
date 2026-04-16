@@ -37,7 +37,7 @@ impl Collect {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = CollectInstructionData::new().try_to_vec().unwrap();
+        let data = borsh::to_vec(&CollectInstructionData::new()).unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::MPL_CORE_ID,
@@ -201,7 +201,7 @@ impl<'a, 'b> CollectCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = CollectInstructionData::new().try_to_vec().unwrap();
+        let data = borsh::to_vec(&CollectInstructionData::new()).unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::MPL_CORE_ID,

@@ -78,7 +78,7 @@ impl CompressV1 {
             ));
         }
         accounts.extend_from_slice(remaining_accounts);
-        let data = CompressV1InstructionData::new().try_to_vec().unwrap();
+        let data = borsh::to_vec(&CompressV1InstructionData::new()).unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::MPL_CORE_ID,
@@ -338,7 +338,7 @@ impl<'a, 'b> CompressV1Cpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = CompressV1InstructionData::new().try_to_vec().unwrap();
+        let data = borsh::to_vec(&CompressV1InstructionData::new()).unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::MPL_CORE_ID,
