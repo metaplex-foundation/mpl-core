@@ -47,7 +47,7 @@ pub(crate) fn remove_groups_from_group_v1<'a>(
         assert_signer(authority_info)?;
     }
 
-    if system_program_info.key != &solana_program::system_program::ID {
+    if system_program_info.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 

@@ -51,7 +51,7 @@ pub trait SolanaAccount: BorshSerialize + BorshDeserialize {
 pub trait Compressible: BorshSerialize + BorshDeserialize {
     /// Get the hash of the compressed data.
     fn hash(&self) -> Result<[u8; 32], ProgramError> {
-        let serialized_data = self.try_to_vec()?;
+        let serialized_data = borsh::to_vec(&self)?;
         Ok(keccak::hash(serialized_data.as_slice()).to_bytes())
     }
 }
@@ -60,7 +60,7 @@ pub trait Compressible: BorshSerialize + BorshDeserialize {
 pub trait Wrappable: BorshSerialize + BorshDeserialize {
     /// Write the data to ledger state by wrapping it in a noop instruction.
     fn wrap(&self) -> ProgramResult {
-        let serialized_data = self.try_to_vec()?;
+        let serialized_data = borsh::to_vec(&self)?;
         invoke(&spl_noop::instruction(serialized_data), &[])
     }
 }

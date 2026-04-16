@@ -10,6 +10,7 @@ use crate::generated::types::CompressionProof;
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize, BorshSerialize};
+use crate::borsh_compat::BorshSerializeExt;
 
 /// Accounts.
 pub struct BurnV1 {

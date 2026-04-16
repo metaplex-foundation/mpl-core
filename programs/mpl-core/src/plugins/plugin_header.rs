@@ -41,7 +41,7 @@ mod tests {
             key: Key::PluginHeaderV1,
             plugin_registry_offset: 0,
         };
-        let serialized = header.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&header).unwrap();
         assert_eq!(serialized.len(), header.len());
     }
 }

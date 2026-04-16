@@ -1,8 +1,6 @@
 use num_traits::ToPrimitive;
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke, rent::Rent,
-    system_instruction, sysvar::Sysvar,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, program::invoke, rent::Rent, sysvar::Sysvar};
+use solana_system_interface::instruction as system_instruction;
 
 use crate::{error::MplCoreError, state::Key};
 

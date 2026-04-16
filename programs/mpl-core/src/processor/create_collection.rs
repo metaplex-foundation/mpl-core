@@ -2,8 +2,9 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
-    program_memory::sol_memcpy, rent::Rent, system_instruction, system_program, sysvar::Sysvar,
+    program_memory::sol_memcpy, rent::Rent, sysvar::Sysvar,
 };
+use solana_system_interface::{instruction as system_instruction, program as system_program};
 use std::collections::HashSet;
 
 use crate::{
@@ -84,7 +85,7 @@ pub(crate) fn process_create_collection<'a>(
         current_size: 0,
     };
 
-    let serialized_data = new_collection.try_to_vec()?;
+    let serialized_data = borsh::to_vec(&new_collection)?;
 
     let lamports = rent.minimum_balance(serialized_data.len());
 

@@ -1,4 +1,5 @@
-use solana_program::{rent::Rent, system_program, sysvar::Sysvar};
+use solana_program::{rent::Rent, sysvar::Sysvar};
+use solana_system_interface::program as system_program;
 
 use super::*;
 use crate::state::{COLLECT_RECIPIENT1, COLLECT_RECIPIENT2};

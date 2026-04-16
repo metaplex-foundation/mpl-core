@@ -278,7 +278,7 @@ impl PluginType {
             PluginType::VerifiedCreators => Authority::UpdateAuthority,
             PluginType::Autograph => Authority::Owner,
             PluginType::BubblegumV2 => Authority::Address {
-                address: mpl_bubblegum::ID,
+                address: solana_program::pubkey::Pubkey::new_from_array(mpl_bubblegum::ID.to_bytes()),
             },
             PluginType::FreezeExecute => Authority::Owner,
             PluginType::PermanentFreezeExecute => Authority::UpdateAuthority,
@@ -346,7 +346,7 @@ mod test {
         );
 
         for fixture in plugins {
-            let serialized = fixture.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&fixture).unwrap();
             assert_eq!(
                 serialized.len(),
                 fixture.len(),
@@ -470,7 +470,7 @@ mod test {
 
         for fixtures in plugins {
             for fixture in fixtures {
-                let serialized = fixture.try_to_vec().unwrap();
+                let serialized = borsh::to_vec(&fixture).unwrap();
                 assert_eq!(
                     serialized.len(),
                     fixture.len(),
@@ -484,7 +484,7 @@ mod test {
     #[test]
     fn test_plugin_type_size() {
         for fixture in PluginType::iter() {
-            let serialized = fixture.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&fixture).unwrap();
             assert_eq!(
                 serialized.len(),
                 fixture.len(),

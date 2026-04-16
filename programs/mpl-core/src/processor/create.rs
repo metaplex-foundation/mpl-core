@@ -2,8 +2,9 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
-    program_memory::sol_memcpy, rent::Rent, system_instruction, system_program, sysvar::Sysvar,
+    program_memory::sol_memcpy, rent::Rent, sysvar::Sysvar,
 };
+use solana_system_interface::{instruction as system_instruction, program as system_program};
 
 use crate::{
     error::MplCoreError,
@@ -76,7 +77,7 @@ pub(crate) fn process_create<'a>(
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &solana_program::pubkey::Pubkey::new_from_array(spl_noop::ID.to_bytes()) {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -111,7 +112,7 @@ pub(crate) fn process_create<'a>(
         args.uri.clone(),
     );
 
-    let serialized_data = new_asset.try_to_vec()?;
+    let serialized_data = borsh::to_vec(&new_asset)?;
 
     let serialized_data = match args.data_state {
         DataState::AccountState => serialized_data,

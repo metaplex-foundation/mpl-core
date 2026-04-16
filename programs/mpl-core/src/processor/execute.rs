@@ -7,8 +7,8 @@ use solana_program::{
     msg,
     program::{invoke, invoke_signed},
     pubkey::Pubkey,
-    system_instruction, system_program,
 };
+use solana_system_interface::{instruction as system_instruction, program as system_program};
 
 use crate::{
     error::MplCoreError,
@@ -108,7 +108,7 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
     // If the first remaining account is an ExecutionDelegateRecordV1, strip it
     // before passing to the CPI -- it was only needed for plugin validation.
     let cpi_accounts = if let Some(first) = ctx.remaining_accounts.first() {
-        if first.owner == &mpl_agent_tools::ID
+        if first.owner == &solana_program::pubkey::Pubkey::new_from_array(mpl_agent_tools::ID.to_bytes())
             && first.data_len() > 0
             && first.data.borrow()[0]
                 == mpl_agent_tools::types::Key::ExecutionDelegateRecordV1 as u8

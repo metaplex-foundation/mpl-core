@@ -9,6 +9,7 @@
 use anchor_lang::prelude::{AnchorDeserialize, AnchorSerialize};
 #[cfg(not(feature = "anchor"))]
 use borsh::{BorshDeserialize, BorshSerialize};
+use crate::borsh_compat::BorshSerializeExt;
 use solana_program::pubkey::Pubkey;
 
 /// Accounts.

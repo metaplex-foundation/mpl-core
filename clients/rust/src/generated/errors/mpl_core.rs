@@ -183,8 +183,9 @@ pub enum MplCoreError {
     InconsistentGroupRelationship,
 }
 
-impl solana_program::program_error::PrintProgramError for MplCoreError {
-    fn print<E>(&self) {
+impl MplCoreError {
+    #[inline(always)]
+    pub fn print(&self) {
         solana_program::msg!(&self.to_string());
     }
 }

@@ -1,9 +1,5 @@
 use num_derive::FromPrimitive;
-use solana_program::{
-    decode_error::DecodeError,
-    msg,
-    program_error::{PrintProgramError, ProgramError},
-};
+use solana_program::{msg, program_error::ProgramError};
 use thiserror::Error;
 
 /// Errors that may be returned by the Mpl Core program.
@@ -238,20 +234,8 @@ pub enum MplCoreError {
     InconsistentGroupRelationship,
 }
 
-impl PrintProgramError for MplCoreError {
-    fn print<E>(&self) {
-        msg!(&self.to_string());
-    }
-}
-
 impl From<MplCoreError> for ProgramError {
     fn from(e: MplCoreError) -> Self {
         ProgramError::Custom(e as u32)
-    }
-}
-
-impl<T> DecodeError<T> for MplCoreError {
-    fn type_of() -> &'static str {
-        "Mpl Core Error"
     }
 }

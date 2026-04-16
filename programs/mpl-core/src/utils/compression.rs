@@ -25,7 +25,7 @@ pub(crate) fn rebuild_account_state_from_proof_data<'a>(
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
-    let serialized_data = asset.try_to_vec()?;
+    let serialized_data = borsh::to_vec(&asset)?;
     resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
 
     sol_memcpy(
@@ -99,7 +99,7 @@ pub(crate) fn compress_into_account_space<'a>(
     };
 
     let hashed_asset = HashedAssetV1::new(hashed_asset_schema.hash()?);
-    let serialized_data = hashed_asset.try_to_vec()?;
+    let serialized_data = borsh::to_vec(&hashed_asset)?;
 
     resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
 

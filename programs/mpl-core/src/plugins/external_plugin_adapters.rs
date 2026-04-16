@@ -949,7 +949,7 @@ mod test {
     #[test]
     fn test_external_plugin_adapter_type_size() {
         for fixture in ExternalPluginAdapterType::iter() {
-            let serialized = fixture.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&fixture).unwrap();
             assert_eq!(
                 serialized.len(),
                 fixture.len(),
@@ -962,7 +962,7 @@ mod test {
     #[test]
     fn test_hookable_lifecycle_event_size() {
         for fixture in HookableLifecycleEvent::iter() {
-            let serialized = fixture.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&fixture).unwrap();
             assert_eq!(
                 serialized.len(),
                 fixture.len(),

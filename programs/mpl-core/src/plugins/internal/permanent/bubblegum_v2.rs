@@ -94,7 +94,7 @@ mod tests {
     #[test]
     fn test_bubblegum_v2_len() {
         let bubblegum_v2 = BubblegumV2::default();
-        let serialized = bubblegum_v2.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&bubblegum_v2).unwrap();
         assert_eq!(serialized.len(), bubblegum_v2.len());
     }
 }

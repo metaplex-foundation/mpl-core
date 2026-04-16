@@ -32,12 +32,12 @@ pub(crate) fn update_plugin<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+    if ctx.accounts.system_program.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &solana_program::pubkey::Pubkey::new_from_array(spl_noop::ID.to_bytes()) {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -107,12 +107,12 @@ pub(crate) fn update_collection_plugin<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+    if ctx.accounts.system_program.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &solana_program::pubkey::Pubkey::new_from_array(spl_noop::ID.to_bytes()) {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -178,8 +178,8 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::PluginNotFound)?;
 
     let plugin = Plugin::load(account, registry_record.offset)?;
-    let plugin_data = plugin.try_to_vec()?;
-    let new_plugin_data = new_plugin.try_to_vec()?;
+    let plugin_data = borsh::to_vec(&plugin)?;
+    let new_plugin_data = borsh::to_vec(&new_plugin)?;
 
     // The difference in size between the new and old account which is used to calculate the new size of the account.
     let plugin_size = plugin_data.len() as isize;

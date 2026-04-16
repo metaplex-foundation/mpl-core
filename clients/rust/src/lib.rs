@@ -1,3 +1,4 @@
+mod borsh_compat;
 mod generated;
 mod hooked;
 mod indexable_asset;

@@ -253,7 +253,7 @@ mod tests {
             registry: vec![],
             external_registry: vec![],
         };
-        let serialized = registry.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&registry).unwrap();
         assert_eq!(serialized.len(), registry.len());
     }
 
@@ -312,7 +312,7 @@ mod tests {
                 },
             ],
         };
-        let serialized = registry.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&registry).unwrap();
         assert_eq!(serialized.len(), registry.len());
     }
 
@@ -339,7 +339,7 @@ mod tests {
         ];
 
         for record in records {
-            let serialized = record.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&record).unwrap();
             assert_eq!(serialized.len(), record.len());
         }
     }
@@ -379,7 +379,7 @@ mod tests {
         ];
 
         for record in records {
-            let serialized = record.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&record).unwrap();
             assert_eq!(serialized.len(), record.len());
         }
     }

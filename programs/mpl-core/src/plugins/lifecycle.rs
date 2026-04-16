@@ -825,7 +825,7 @@ mod test {
     #[test]
     fn test_external_check_result_size() {
         let fixture = ExternalCheckResult { flags: 0 };
-        let serialized = fixture.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&fixture).unwrap();
         assert_eq!(
             serialized.len(),
             fixture.len(),

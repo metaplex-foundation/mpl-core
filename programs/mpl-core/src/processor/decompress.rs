@@ -1,6 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, system_program};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg};
+use solana_system_interface::program as system_program;
 
 use crate::{
     error::MplCoreError,
@@ -35,7 +36,7 @@ pub(crate) fn decompress<'a>(
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &solana_program::pubkey::Pubkey::new_from_array(spl_noop::ID.to_bytes()) {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
