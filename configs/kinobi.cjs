@@ -1,9 +1,61 @@
+const fs = require("fs");
 const path = require("path");
+const { spawnSync } = require("child_process");
 const k = require("@metaplex-foundation/kinobi");
 
 // Paths.
 const clientDir = path.join(__dirname, "..", "clients");
 const idlDir = path.join(__dirname, "..", "idls");
+
+const printProgramErrorRegex =
+    /\nimpl solana_program::program_error::PrintProgramError for [A-Za-z0-9_]+ \{\n    fn print<[^>]+>\(&self\) \{\n        solana_program::msg!\(&self\.to_string\(\)\);\n    \}\n\}\n?/g;
+
+function rewriteRustGeneratedFile(filePath) {
+    const original = fs.readFileSync(filePath, "utf8");
+    const rewritten = original
+        .replace(printProgramErrorRegex, "\n")
+        .replace(
+            /let (mut )?data = ([A-Za-z0-9_:()]+)\n(\s*)\.try_to_vec\(\)\n\3\.unwrap\(\);/g,
+            "let $1data = borsh::to_vec(&$2).unwrap();"
+        )
+        .replace(
+            /let (mut )?data = ([A-Za-z0-9_:()]+)\.try_to_vec\(\)\.unwrap\(\);/g,
+            "let $1data = borsh::to_vec(&$2).unwrap();"
+        )
+        .replace(
+            /let (mut )?args = ([A-Za-z0-9_.]+)\.try_to_vec\(\)\.unwrap\(\);/g,
+            "let $1args = borsh::to_vec(&$2).unwrap();"
+        );
+
+    if (rewritten !== original) {
+        fs.writeFileSync(filePath, rewritten, "utf8");
+    }
+}
+
+function rewriteRustGeneratedCompat(rustDir) {
+    const stack = [rustDir];
+    while (stack.length > 0) {
+        const dir = stack.pop();
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            const fullPath = path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+                stack.push(fullPath);
+                continue;
+            }
+            if (entry.isFile() && fullPath.endsWith(".rs")) {
+                rewriteRustGeneratedFile(fullPath);
+            }
+        }
+    }
+}
+
+function formatRust(crateDir) {
+    spawnSync(
+        "cargo-fmt",
+        ["--manifest-path", path.join(crateDir, "Cargo.toml")],
+        { stdio: "inherit" }
+    );
+}
 
 // Instantiate Kinobi.
 const kinobi = k.createFromIdls([path.join(idlDir, "mpl_core.json")]);
@@ -278,6 +330,8 @@ kinobi.accept(
         crateFolder: crateDir,
     })
 );
+rewriteRustGeneratedCompat(rustDir);
+formatRust(crateDir);
 
 // rewrite the account names for custom account data
 kinobi.update(
