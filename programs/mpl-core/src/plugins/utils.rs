@@ -498,9 +498,6 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::NumericalOverflow)?
         .try_into()
         .map_err(|_| MplCoreError::NumericalOverflow)?;
-    let data_to_move = old_registry_offset
-        .checked_sub(next_plugin_offset)
-        .ok_or(MplCoreError::NumericalOverflow)?;
 
     // Update any offsets that will change.
     plugin_registry.bump_offsets(record.offset, size_diff)?;
@@ -518,39 +515,30 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         .try_into()
         .map_err(|_| MplCoreError::NumericalOverflow)?;
 
-    // When shrinking, shift trailing plugin bytes before reallocation so the source
-    // region remains fully addressable.
-    if size_diff < 0 && data_to_move > 0 {
-        // SAFETY: `borrow_mut` will always return a valid pointer.
-        // Offsets and lengths are derived with checked arithmetic from valid account
-        // layout boundaries, so both ranges are inside account data.
-        unsafe {
-            let base = account.data.borrow_mut().as_mut_ptr();
-            sol_memmove(
-                base.add(new_next_plugin_offset),
-                base.add(next_plugin_offset),
-                data_to_move,
-            )
-        }
-    }
+    // Capture old data length before any realloc, as realloc changes data_len().
+    let old_data_len = account.data_len();
 
-    if size_diff != 0 {
+    if size_diff > 0 {
+        // Growing: realloc first to make room for the rightward shift.
         resize_or_reallocate_account(account, payer, system_program, new_size)?;
     }
 
-    // When growing, reallocate first so the destination region is available.
-    if size_diff > 0 && data_to_move > 0 {
-        // SAFETY: `borrow_mut` will always return a valid pointer.
-        // Offsets and lengths are derived with checked arithmetic from valid account
-        // layout boundaries, so both ranges are inside account data.
-        unsafe {
-            let base = account.data.borrow_mut().as_mut_ptr();
-            sol_memmove(
-                base.add(new_next_plugin_offset),
-                base.add(next_plugin_offset),
-                data_to_move,
-            )
-        }
+    // SAFETY: `borrow_mut` will always return a valid pointer.
+    // new_next_plugin_offset is derived from next_plugin_offset and size_diff using
+    // checked arithmetic, so it will always be less than or equal to account.data_len().
+    // This will fail and revert state if there is a memory violation.
+    unsafe {
+        let base = account.data.borrow_mut().as_mut_ptr();
+        sol_memmove(
+            base.add(new_next_plugin_offset),
+            base.add(next_plugin_offset),
+            old_data_len.saturating_sub(next_plugin_offset),
+        )
+    }
+
+    if size_diff < 0 {
+        // Shrinking: realloc after memmove to preserve data before truncation.
+        resize_or_reallocate_account(account, payer, system_program, new_size)?;
     }
 
     sol_memcpy(
