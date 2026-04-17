@@ -3602,7 +3602,7 @@ dependencies = [
  "num-derive 0.4.2",
  "num-traits",
  "solana-program 2.3.0",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "thiserror 1.0.69",
 ]
 
@@ -3616,7 +3616,7 @@ dependencies = [
  "num-derive 0.4.2",
  "num-traits",
  "solana-program 2.3.0",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "thiserror 1.0.69",
 ]
 
@@ -3652,6 +3652,7 @@ dependencies = [
  "serde_json",
  "serde_with",
  "solana-program 3.0.0",
+ "solana-program-error 3.0.0",
  "solana-program-test",
  "solana-sdk 3.0.0",
  "solana-system-interface 2.0.0",
@@ -5290,7 +5291,7 @@ dependencies = [
  "bincode",
  "serde_core",
  "solana-address 2.6.0",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "solana-program-memory 3.1.0",
 ]
 
@@ -5386,7 +5387,7 @@ dependencies = [
  "sha2-const-stable",
  "solana-atomic-u64 3.0.1",
  "solana-define-syscall 5.1.0",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "solana-sanitize 3.0.1",
  "solana-sha256-hasher 3.1.0",
  "wincode",
@@ -6096,7 +6097,7 @@ dependencies = [
  "solana-account-info 3.1.1",
  "solana-define-syscall 4.0.1",
  "solana-instruction 3.4.0",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "solana-pubkey 4.2.0",
  "solana-stable-layout 3.0.1",
 ]
@@ -6390,7 +6391,7 @@ dependencies = [
  "solana-account 3.4.0",
  "solana-account-info 3.1.1",
  "solana-instruction 3.4.0",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "solana-pubkey 4.2.0",
  "solana-rent 4.2.0",
  "solana-sdk-ids 3.1.0",
@@ -6652,7 +6653,7 @@ dependencies = [
  "num-traits",
  "serde",
  "serde_derive",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
 ]
 
 [[package]]
@@ -6682,7 +6683,7 @@ dependencies = [
  "solana-account-info 3.1.1",
  "solana-instruction 3.4.0",
  "solana-instruction-error",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "solana-pubkey 3.0.0",
  "solana-sanitize 3.0.1",
  "solana-sdk-ids 3.1.0",
@@ -7448,7 +7449,7 @@ dependencies = [
  "solana-msg 3.1.0",
  "solana-native-token 3.0.0",
  "solana-program-entrypoint 3.1.1",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "solana-program-memory 3.1.0",
  "solana-program-option 3.1.0",
  "solana-program-pack 3.1.0",
@@ -7487,7 +7488,7 @@ checksum = "84c9b0a1ff494e05f503a08b3d51150b73aa639544631e510279d6375f290997"
 dependencies = [
  "solana-account-info 3.1.1",
  "solana-define-syscall 4.0.1",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "solana-pubkey 4.2.0",
 ]
 
@@ -7509,9 +7510,9 @@ dependencies = [
 
 [[package]]
 name = "solana-program-error"
-version = "3.0.1"
+version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f04fa578707b3612b095f0c8e19b66a1233f7c42ca8082fcb3b745afcc0add6"
+checksum = "a1af32c995a7b692a915bb7414d5f8e838450cf7c70414e763d8abcae7b51f28"
 dependencies = [
  "borsh 1.6.1",
  "serde",
@@ -7563,7 +7564,7 @@ version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d7701cb15b90667ae1c89ef4ac35a59c61e66ce58ddee13d729472af7f41d59"
 dependencies = [
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
 ]
 
 [[package]]
@@ -7690,7 +7691,7 @@ dependencies = [
  "solana-native-token 3.0.0",
  "solana-poh-config 3.0.0",
  "solana-program-entrypoint 3.1.1",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "solana-program-runtime 3.0.0",
  "solana-pubkey 3.0.0",
  "solana-rent 3.1.0",
@@ -8835,7 +8836,7 @@ dependencies = [
  "solana-clock 3.0.1",
  "solana-cpi 3.1.0",
  "solana-instruction 3.4.0",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "solana-pubkey 3.0.0",
  "solana-system-interface 2.0.0",
  "solana-sysvar 3.1.1",
@@ -9091,7 +9092,7 @@ dependencies = [
  "serde_derive",
  "solana-instruction 3.4.0",
  "solana-msg 3.1.0",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "solana-pubkey 3.0.0",
 ]
 
@@ -9107,7 +9108,7 @@ dependencies = [
  "solana-address 2.6.0",
  "solana-instruction 3.4.0",
  "solana-msg 3.1.0",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
 ]
 
 [[package]]
@@ -9254,7 +9255,7 @@ dependencies = [
  "solana-instruction 3.4.0",
  "solana-last-restart-slot 3.0.0",
  "solana-program-entrypoint 3.1.1",
- "solana-program-error 3.0.1",
+ "solana-program-error 3.0.0",
  "solana-program-memory 3.1.0",
  "solana-pubkey 4.2.0",
  "solana-rent 3.1.0",
