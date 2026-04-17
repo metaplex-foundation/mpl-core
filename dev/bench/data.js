@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776360407126,
+  "lastUpdate": 1776451092649,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -10705,6 +10705,120 @@ window.BENCHMARK_DATA = {
           {
             "name": "CU: transfer an asset with plugins and empty collection",
             "value": 9177,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "16522636+stranzhay@users.noreply.github.com",
+            "name": "stranzhay",
+            "username": "stranzhay"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6f2f577013e9c577d7a3969fc849881b5c5e98d1",
+          "message": "chore: bump rust client version to solana 3.0 (#272)\n\n* chore: bump rust client version to solana 3.0\n\n* chore: update lock\n\n* chore: ci still failing\n\n* chore: bump cargo build-sbp in ci\n\n* chore: fmt\n\n* chore: temp workaround for ci\n\n* chore: oml the last ci fix for this pr\n\n* chore: ok last one for real\n\n* chore: apply rustfmt output in rust test setup\n\n* chore: format only generated rust files in kinobi\n\n* chore: fix kinobi\n\n* chore: undo lockfile changes\n\n* Relax Rust client Solana pins to 3.0.0",
+          "timestamp": "2026-04-17T14:30:54-04:00",
+          "tree_id": "99a55170f4d2c7ea484fccc4f0a8f6011092b6aa",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/6f2f577013e9c577d7a3969fc849881b5c5e98d1"
+        },
+        "date": 1776451091620,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 8022,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 16839,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 26608,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 31936,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 20043,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 25233,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 24993,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 33304,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 24276,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 36089,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 3785,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 5498,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 7213,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 8926,
             "unit": "Compute Units"
           }
         ]
