@@ -49,12 +49,39 @@ function rewriteRustGeneratedCompat(rustDir) {
     }
 }
 
-function formatRust(crateDir) {
-    spawnSync(
-        "cargo-fmt",
-        ["--manifest-path", path.join(crateDir, "Cargo.toml")],
-        { stdio: "inherit" }
-    );
+function collectRustFiles(rootDir) {
+    const files = [];
+    const stack = [rootDir];
+    while (stack.length > 0) {
+        const dir = stack.pop();
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            const fullPath = path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+                stack.push(fullPath);
+                continue;
+            }
+            if (entry.isFile() && fullPath.endsWith(".rs")) {
+                files.push(fullPath);
+            }
+        }
+    }
+    return files.sort();
+}
+
+function formatRustGenerated(rustDir) {
+    const files = collectRustFiles(rustDir);
+    const chunkSize = 200;
+
+    for (let i = 0; i < files.length; i += chunkSize) {
+        const chunk = files.slice(i, i + chunkSize);
+        const result = spawnSync("rustfmt", ["--edition", "2021", ...chunk], {
+            stdio: "inherit",
+        });
+
+        if (result.status !== 0) {
+            process.exit(result.status ?? 1);
+        }
+    }
 }
 
 // Instantiate Kinobi.
@@ -331,7 +358,7 @@ kinobi.accept(
     })
 );
 rewriteRustGeneratedCompat(rustDir);
-formatRust(crateDir);
+formatRustGenerated(rustDir);
 
 // rewrite the account names for custom account data
 kinobi.update(
