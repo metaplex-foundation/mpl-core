@@ -6,6 +6,7 @@
 //!
 
 use num_derive::FromPrimitive;
+use solana_program_error::{ProgramError, ToStr};
 use thiserror::Error;
 
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
@@ -183,8 +184,168 @@ pub enum MplCoreError {
     InconsistentGroupRelationship,
 }
 
-impl solana_program::program_error::PrintProgramError for MplCoreError {
-    fn print<E>(&self) {
-        solana_program::msg!(&self.to_string());
+impl From<MplCoreError> for ProgramError {
+    fn from(e: MplCoreError) -> Self {
+        ProgramError::Custom(e as u32)
+    }
+}
+
+impl TryFrom<u32> for MplCoreError {
+    type Error = ProgramError;
+    fn try_from(error: u32) -> Result<Self, Self::Error> {
+        match error {
+            0 => Ok(MplCoreError::InvalidSystemProgram),
+            1 => Ok(MplCoreError::DeserializationError),
+            2 => Ok(MplCoreError::SerializationError),
+            3 => Ok(MplCoreError::PluginsNotInitialized),
+            4 => Ok(MplCoreError::PluginNotFound),
+            5 => Ok(MplCoreError::NumericalOverflow),
+            6 => Ok(MplCoreError::IncorrectAccount),
+            7 => Ok(MplCoreError::IncorrectAssetHash),
+            8 => Ok(MplCoreError::InvalidPlugin),
+            9 => Ok(MplCoreError::InvalidAuthority),
+            10 => Ok(MplCoreError::AssetIsFrozen),
+            11 => Ok(MplCoreError::MissingCompressionProof),
+            12 => Ok(MplCoreError::CannotMigrateMasterWithSupply),
+            13 => Ok(MplCoreError::CannotMigratePrints),
+            14 => Ok(MplCoreError::CannotBurnCollection),
+            15 => Ok(MplCoreError::PluginAlreadyExists),
+            16 => Ok(MplCoreError::NumericalOverflowError),
+            17 => Ok(MplCoreError::AlreadyCompressed),
+            18 => Ok(MplCoreError::AlreadyDecompressed),
+            19 => Ok(MplCoreError::InvalidCollection),
+            20 => Ok(MplCoreError::MissingUpdateAuthority),
+            21 => Ok(MplCoreError::MissingNewOwner),
+            22 => Ok(MplCoreError::MissingSystemProgram),
+            23 => Ok(MplCoreError::NotAvailable),
+            24 => Ok(MplCoreError::InvalidAsset),
+            25 => Ok(MplCoreError::MissingCollection),
+            26 => Ok(MplCoreError::NoApprovals),
+            27 => Ok(MplCoreError::CannotRedelegate),
+            28 => Ok(MplCoreError::InvalidPluginSetting),
+            29 => Ok(MplCoreError::ConflictingAuthority),
+            30 => Ok(MplCoreError::InvalidLogWrapperProgram),
+            31 => Ok(MplCoreError::ExternalPluginAdapterNotFound),
+            32 => Ok(MplCoreError::ExternalPluginAdapterAlreadyExists),
+            33 => Ok(MplCoreError::MissingAsset),
+            34 => Ok(MplCoreError::MissingExternalPluginAdapterAccount),
+            35 => Ok(MplCoreError::OracleCanRejectOnly),
+            36 => Ok(MplCoreError::RequiresLifecycleCheck),
+            37 => Ok(MplCoreError::DuplicateLifecycleChecks),
+            38 => Ok(MplCoreError::InvalidOracleAccountData),
+            39 => Ok(MplCoreError::UninitializedOracleAccount),
+            40 => Ok(MplCoreError::MissingSigner),
+            41 => Ok(MplCoreError::InvalidPluginOperation),
+            42 => Ok(MplCoreError::CollectionMustBeEmpty),
+            43 => Ok(MplCoreError::TwoDataSources),
+            44 => Ok(MplCoreError::UnsupportedOperation),
+            45 => Ok(MplCoreError::NoDataSources),
+            46 => Ok(MplCoreError::InvalidPluginAdapterTarget),
+            47 => Ok(MplCoreError::CannotAddDataSection),
+            48 => Ok(MplCoreError::PermanentDelegatesPreventMove),
+            49 => Ok(MplCoreError::InvalidExecutePda),
+            50 => Ok(MplCoreError::BlockedByBubblegumV2),
+            51 => Ok(MplCoreError::AgentIdentityMustSign),
+            52 => Ok(MplCoreError::GroupMustBeEmpty),
+            53 => Ok(MplCoreError::DuplicateEntry),
+            54 => Ok(MplCoreError::GroupVectorFull),
+            55 => Ok(MplCoreError::GroupNestingDepthExceeded),
+            56 => Ok(MplCoreError::InconsistentGroupRelationship),
+            _ => Err(ProgramError::InvalidArgument),
+        }
+    }
+}
+
+impl ToStr for MplCoreError {
+    fn to_str(&self) -> &'static str {
+        match self {
+            MplCoreError::InvalidSystemProgram => "Invalid System Program",
+            MplCoreError::DeserializationError => "Error deserializing account",
+            MplCoreError::SerializationError => "Error serializing account",
+            MplCoreError::PluginsNotInitialized => "Plugins not initialized",
+            MplCoreError::PluginNotFound => "Plugin not found",
+            MplCoreError::NumericalOverflow => "Numerical Overflow",
+            MplCoreError::IncorrectAccount => "Incorrect account",
+            MplCoreError::IncorrectAssetHash => "Incorrect asset hash",
+            MplCoreError::InvalidPlugin => "Invalid Plugin",
+            MplCoreError::InvalidAuthority => "Invalid Authority",
+            MplCoreError::AssetIsFrozen => "Cannot transfer a frozen asset",
+            MplCoreError::MissingCompressionProof => "Missing compression proof",
+            MplCoreError::CannotMigrateMasterWithSupply => {
+                "Cannot migrate a master edition used for prints"
+            }
+            MplCoreError::CannotMigratePrints => "Cannot migrate a print edition",
+            MplCoreError::CannotBurnCollection => "Cannot burn a collection NFT",
+            MplCoreError::PluginAlreadyExists => "Plugin already exists",
+            MplCoreError::NumericalOverflowError => "Numerical overflow",
+            MplCoreError::AlreadyCompressed => "Already compressed account",
+            MplCoreError::AlreadyDecompressed => "Already decompressed account",
+            MplCoreError::InvalidCollection => "Invalid Collection passed in",
+            MplCoreError::MissingUpdateAuthority => "Missing update authority",
+            MplCoreError::MissingNewOwner => "Missing new owner",
+            MplCoreError::MissingSystemProgram => "Missing system program",
+            MplCoreError::NotAvailable => "Feature not available",
+            MplCoreError::InvalidAsset => "Invalid Asset passed in",
+            MplCoreError::MissingCollection => "Missing collection",
+            MplCoreError::NoApprovals => {
+                "Neither the asset or any plugins have approved this operation"
+            }
+            MplCoreError::CannotRedelegate => {
+                "Plugin Manager cannot redelegate a delegated plugin without revoking first"
+            }
+            MplCoreError::InvalidPluginSetting => "Invalid setting for plugin",
+            MplCoreError::ConflictingAuthority => {
+                "Cannot specify both an update authority and collection on an asset"
+            }
+            MplCoreError::InvalidLogWrapperProgram => "Invalid Log Wrapper Program",
+            MplCoreError::ExternalPluginAdapterNotFound => "External Plugin Adapter not found",
+            MplCoreError::ExternalPluginAdapterAlreadyExists => {
+                "External Plugin Adapter already exists"
+            }
+            MplCoreError::MissingAsset => "Missing asset needed for extra account PDA derivation",
+            MplCoreError::MissingExternalPluginAdapterAccount => {
+                "Missing account needed for external plugin adapter"
+            }
+            MplCoreError::OracleCanRejectOnly => {
+                "Oracle external plugin adapter can only be configured to reject"
+            }
+            MplCoreError::RequiresLifecycleCheck => {
+                "External plugin adapter must have at least one lifecycle check"
+            }
+            MplCoreError::DuplicateLifecycleChecks => {
+                "Duplicate lifecycle checks were provided for external plugin adapter "
+            }
+            MplCoreError::InvalidOracleAccountData => "Could not read from oracle account",
+            MplCoreError::UninitializedOracleAccount => "Oracle account is uninitialized",
+            MplCoreError::MissingSigner => "Missing required signer for operation",
+            MplCoreError::InvalidPluginOperation => "Invalid plugin operation",
+            MplCoreError::CollectionMustBeEmpty => "Collection must be empty to be burned",
+            MplCoreError::TwoDataSources => "Two data sources provided, only one is allowed",
+            MplCoreError::UnsupportedOperation => "External Plugin does not support this operation",
+            MplCoreError::NoDataSources => "No data sources provided, one is required",
+            MplCoreError::InvalidPluginAdapterTarget => {
+                "This plugin adapter cannot be added to an Asset"
+            }
+            MplCoreError::CannotAddDataSection => {
+                "Cannot add a Data Section without a linked external plugin"
+            }
+            MplCoreError::PermanentDelegatesPreventMove => {
+                "Cannot move asset to collection with permanent delegates"
+            }
+            MplCoreError::InvalidExecutePda => {
+                "Invalid Signing PDA for Asset or Collection Execute"
+            }
+            MplCoreError::BlockedByBubblegumV2 => "Bubblegum V2 Plugin limits other plugins",
+            MplCoreError::AgentIdentityMustSign => "Agent Identity Program must sign",
+            MplCoreError::GroupMustBeEmpty => "Group must be empty to be closed",
+            MplCoreError::DuplicateEntry => {
+                "Duplicate entry provided when adding relationships to a group"
+            }
+            MplCoreError::GroupVectorFull => "Group vector is at maximum capacity",
+            MplCoreError::GroupNestingDepthExceeded => "Group nesting depth exceeded",
+            MplCoreError::InconsistentGroupRelationship => {
+                "Bidirectional group relationship is inconsistent"
+            }
+        }
     }
 }

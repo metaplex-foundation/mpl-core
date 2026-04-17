@@ -1,8 +1,3 @@
-#[cfg(feature = "anchor")]
-use anchor_lang::prelude::AnchorSerialize;
-#[cfg(not(feature = "anchor"))]
-use borsh::BorshSerialize;
-
 use std::io::ErrorKind;
 
 use crate::{
@@ -19,7 +14,7 @@ impl Asset {
         }
 
         let base = BaseAssetV1::from_bytes(data)?;
-        let base_data = base.try_to_vec()?;
+        let base_data = borsh::to_vec(&base)?;
 
         if base_data.len() != data.len() {
             return Self::deserialize_with_plugins(data, base, base_data);
