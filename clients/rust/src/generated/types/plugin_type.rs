@@ -31,4 +31,8 @@ pub enum PluginType {
     ImmutableMetadata,
     VerifiedCreators,
     Autograph,
+    BubblegumV2,
+    FreezeExecute,
+    PermanentFreezeExecute,
+    Groups,
 }

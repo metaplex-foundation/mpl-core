@@ -7,10 +7,8 @@ use mpl_core::{
     Asset, Collection,
 };
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
-use solana_sdk::{
-    pubkey::Pubkey, signature::Keypair, signer::Signer, system_instruction, system_program,
-    transaction::Transaction,
-};
+use solana_sdk::{pubkey::Pubkey, signature::Keypair, signer::Signer, transaction::Transaction};
+use solana_system_interface::{instruction as system_instruction, program as system_program};
 
 pub fn program_test() -> ProgramTest {
     ProgramTest::new("mpl_core_program", mpl_core::ID, None)
@@ -119,6 +117,16 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
                 assert_eq!(plugin.freeze_delegate, freeze);
             }
             PluginAuthorityPair {
+                plugin: Plugin::FreezeExecute(freeze_execute),
+                authority,
+            } => {
+                let plugin = asset.plugin_list.freeze_execute.clone().unwrap();
+                if let Some(authority) = authority {
+                    assert_eq!(plugin.base.authority, authority.into());
+                }
+                assert_eq!(plugin.freeze_execute, freeze_execute);
+            }
+            PluginAuthorityPair {
                 plugin: Plugin::Royalties(royalties),
                 authority,
             } => {
@@ -137,6 +145,7 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
         asset.external_plugin_adapter_list.lifecycle_hooks.len()
             + asset.external_plugin_adapter_list.oracles.len()
             + asset.external_plugin_adapter_list.app_data.len()
+            + asset.external_plugin_adapter_list.agent_identities.len()
     );
     for plugin in input.external_plugin_adapters {
         match plugin {
@@ -175,6 +184,12 @@ pub async fn assert_asset(context: &mut ProgramTestContext, input: AssertAssetHe
                     .data_sections
                     .iter()
                     .any(|data_sections_with_data| data_sections_with_data.base == data))
+            }
+            ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                assert!(asset
+                    .external_plugin_adapter_list
+                    .agent_identities
+                    .contains(&agent_identity))
             }
         }
     }
@@ -273,6 +288,16 @@ pub async fn assert_collection(
                 assert_eq!(plugin.freeze_delegate, freeze);
             }
             PluginAuthorityPair {
+                plugin: Plugin::FreezeExecute(freeze_execute),
+                authority,
+            } => {
+                let plugin = collection.plugin_list.freeze_execute.clone().unwrap();
+                if let Some(authority) = authority {
+                    assert_eq!(plugin.base.authority, authority.into());
+                }
+                assert_eq!(plugin.freeze_execute, freeze_execute);
+            }
+            PluginAuthorityPair {
                 plugin: Plugin::Royalties(royalties),
                 authority,
             } => {
@@ -294,6 +319,10 @@ pub async fn assert_collection(
             .len()
             + collection.external_plugin_adapter_list.oracles.len()
             + collection.external_plugin_adapter_list.app_data.len()
+            + collection
+                .external_plugin_adapter_list
+                .agent_identities
+                .len()
     );
     for plugin in input.external_plugin_adapters {
         match plugin {
@@ -335,6 +364,12 @@ pub async fn assert_collection(
                     .data_sections
                     .iter()
                     .any(|data_sections_with_data| data_sections_with_data.base == data))
+            }
+            ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                assert!(collection
+                    .external_plugin_adapter_list
+                    .agent_identities
+                    .contains(&agent_identity))
             }
         }
     }

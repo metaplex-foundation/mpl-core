@@ -85,26 +85,27 @@ impl PluginRegistryV1 {
                 record.offset = (record.offset as isize)
                     .checked_add(size_diff)
                     .ok_or(MplCoreError::NumericalOverflow)?
-                    as usize;
+                    .try_into()
+                    .map_err(|_| MplCoreError::NumericalOverflow)?;
             }
         }
 
         for record in &mut self.external_registry {
             if record.offset > offset {
-                solana_program::msg!("Bumping Record: {:?}", record);
                 record.offset = (record.offset as isize)
                     .checked_add(size_diff)
                     .ok_or(MplCoreError::NumericalOverflow)?
-                    as usize;
+                    .try_into()
+                    .map_err(|_| MplCoreError::NumericalOverflow)?;
 
                 if let Some(data_offset) = record.data_offset {
                     if data_offset > offset {
-                        solana_program::msg!("Bumping Data: {:?}", record);
                         record.data_offset = Some(
                             (data_offset as isize)
                                 .checked_add(size_diff)
                                 .ok_or(MplCoreError::NumericalOverflow)?
-                                as usize,
+                                .try_into()
+                                .map_err(|_| MplCoreError::NumericalOverflow)?,
                         );
                     }
                 }
@@ -194,6 +195,13 @@ impl ExternalRegistryRecord {
             ExternalPluginAdapterUpdateInfo::Oracle(update_info) => {
                 if let Some(checks) = &update_info.lifecycle_checks {
                     validate_lifecycle_checks(checks, true)?;
+                    self.lifecycle_checks
+                        .clone_from(&update_info.lifecycle_checks)
+                }
+            }
+            ExternalPluginAdapterUpdateInfo::AgentIdentity(update_info) => {
+                if let Some(checks) = &update_info.lifecycle_checks {
+                    validate_lifecycle_checks(checks, false)?;
                     self.lifecycle_checks
                         .clone_from(&update_info.lifecycle_checks)
                 }

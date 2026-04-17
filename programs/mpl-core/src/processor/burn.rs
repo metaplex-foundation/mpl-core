@@ -9,7 +9,7 @@ use crate::{
     state::{AssetV1, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_authority,
-        validate_asset_permissions, verify_proof,
+        validate_asset_permissions, validate_collection_permissions, verify_proof,
     },
 };
 
@@ -143,6 +143,27 @@ pub(crate) fn burn_collection<'a>(
     if authority.key != &collection.update_authority {
         return Err(MplCoreError::InvalidAuthority.into());
     }
+
+    // Validate collection/plugin permissions for burn. We intentionally keep
+    // the core authority semantics aligned with previous behavior (update
+    // authority only) while enabling burn-time plugin rejection checks such as
+    // the Groups plugin.
+    let _ = validate_collection_permissions(
+        accounts,
+        authority,
+        ctx.accounts.collection,
+        None,
+        None,
+        None,
+        None,
+        None,
+        CollectionV1::check_update,
+        PluginType::check_burn,
+        CollectionV1::validate_update,
+        Plugin::validate_burn,
+        Some(ExternalPluginAdapter::validate_burn),
+        Some(HookableLifecycleEvent::Burn),
+    )?;
 
     process_burn(ctx.accounts.collection, ctx.accounts.payer)
 }

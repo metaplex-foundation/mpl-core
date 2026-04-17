@@ -3,16 +3,19 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
 use crate::processor::{
-    AddCollectionExternalPluginAdapterV1Args, AddCollectionPluginV1Args,
-    AddExternalPluginAdapterV1Args, AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args,
-    ApprovePluginAuthorityV1Args, BurnCollectionV1Args, BurnV1Args, CompressV1Args,
-    CreateCollectionV1Args, CreateCollectionV2Args, CreateV1Args, CreateV2Args, DecompressV1Args,
-    ExecuteV1Args, RemoveCollectionExternalPluginAdapterV1Args, RemoveCollectionPluginV1Args,
-    RemoveExternalPluginAdapterV1Args, RemovePluginV1Args, RevokeCollectionPluginAuthorityV1Args,
-    RevokePluginAuthorityV1Args, TransferV1Args, UpdateCollectionExternalPluginAdapterV1Args,
+    AddAssetsToGroupV1Args, AddCollectionExternalPluginAdapterV1Args, AddCollectionPluginV1Args,
+    AddCollectionsToGroupV1Args, AddExternalPluginAdapterV1Args, AddGroupsToGroupV1Args,
+    AddPluginV1Args, ApproveCollectionPluginAuthorityV1Args, ApprovePluginAuthorityV1Args,
+    BurnCollectionV1Args, BurnV1Args, CloseGroupV1Args, CompressV1Args, CreateCollectionV1Args,
+    CreateCollectionV2Args, CreateGroupV1Args, CreateV1Args, CreateV2Args, DecompressV1Args,
+    ExecuteV1Args, RemoveAssetsFromGroupV1Args, RemoveCollectionExternalPluginAdapterV1Args,
+    RemoveCollectionPluginV1Args, RemoveCollectionsFromGroupV1Args,
+    RemoveExternalPluginAdapterV1Args, RemoveGroupsFromGroupV1Args, RemovePluginV1Args,
+    RevokeCollectionPluginAuthorityV1Args, RevokePluginAuthorityV1Args, TransferV1Args,
+    UpdateCollectionExternalPluginAdapterV1Args, UpdateCollectionInfoV1Args,
     UpdateCollectionPluginV1Args, UpdateCollectionV1Args, UpdateExternalPluginAdapterV1Args,
-    UpdatePluginV1Args, UpdateV1Args, UpdateV2Args, WriteCollectionExternalPluginAdapterDataV1Args,
-    WriteExternalPluginAdapterDataV1Args,
+    UpdateGroupV1Args, UpdatePluginV1Args, UpdateV1Args, UpdateV2Args,
+    WriteCollectionExternalPluginAdapterDataV1Args, WriteExternalPluginAdapterDataV1Args,
 };
 
 /// Instructions supported by the mpl-core program.
@@ -297,9 +300,77 @@ pub(crate) enum MplAssetInstruction {
     #[account(0, writable, name="asset", desc = "The address of the asset")]
     #[account(1, optional, writable, name="collection", desc = "The collection to which the asset belongs")]
     #[account(2, name="asset_signer", desc = "The signing PDA for the asset")]
-    #[account(3, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, writable, optional_signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, optional, signer, name="authority", desc = "The owner or delegate of the asset")]
     #[account(5, name="system_program", desc = "The system program")]
     #[account(6, name="program_id", desc = "The program id of the instruction")]
     ExecuteV1(ExecuteV1Args),
+
+    /// Update mpl-core collection info (can only be called by Bubblegum program).
+    #[account(0, writable, name="collection", desc = "The address of the asset")]
+    #[account(1, signer, name="bubblegum_signer", desc = "Bubblegum PDA signer")]
+    UpdateCollectionInfoV1(UpdateCollectionInfoV1Args),
+
+    /// Add collections to a group.
+    #[account(0, writable, name="group", desc = "The address of the group to modify")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The group update authority and collection update authority or delegate")]
+    #[account(3, name="system_program", desc = "The system program")]
+    AddCollectionsToGroupV1(AddCollectionsToGroupV1Args),
+
+    /// Remove collections from a group.
+    #[account(0, writable, name="group", desc = "The address of the group to modify")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The group update authority and collection update authority or delegate")]
+    #[account(3, name="system_program", desc = "The system program")]
+    RemoveCollectionsFromGroupV1(RemoveCollectionsFromGroupV1Args),
+
+    /// Add assets to a group.
+    #[account(0, writable, name="group", desc = "The address of the group to modify")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The group update authority and asset update authority or delegate")]
+    #[account(3, name="system_program", desc = "The system program")]
+    AddAssetsToGroupV1(AddAssetsToGroupV1Args),
+
+    /// Remove assets from a group.
+    #[account(0, writable, name="group", desc = "The address of the group to modify")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The group update authority and asset update authority or delegate")]
+    #[account(3, name="system_program", desc = "The system program")]
+    RemoveAssetsFromGroupV1(RemoveAssetsFromGroupV1Args),
+
+    /// Add groups to a parent group.
+    #[account(0, writable, name="parent_group", desc = "The address of the parent group to modify")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority of the parent and child groups")]
+    #[account(3, name="system_program", desc = "The system program")]
+    AddGroupsToGroupV1(AddGroupsToGroupV1Args),
+
+    /// Remove groups from a parent group.
+    #[account(0, writable, name="parent_group", desc = "The address of the parent group to modify")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority of the parent and child groups")]
+    #[account(3, name="system_program", desc = "The system program")]
+    RemoveGroupsFromGroupV1(RemoveGroupsFromGroupV1Args),
+
+    /// Create a new Group account.
+    #[account(0, writable, signer, name="group", desc = "The address of the new group")]
+    #[account(1, optional, signer, name="update_authority", desc = "The authority of the new group")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, name="system_program", desc = "The system program")]
+    CreateGroupV1(CreateGroupV1Args),
+
+    /// Close an existing Group account. The group must have no parent or child relationships.
+    #[account(0, writable, name="group", desc = "The address of the group to close")]
+    #[account(1, writable, signer, name="payer", desc = "The account receiving reclaimed lamports")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority of the group")]
+    CloseGroupV1(CloseGroupV1Args),
+
+    /// Update an existing Group account.
+    #[account(0, writable, name="group", desc = "The address of the group to update")]
+    #[account(1, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, signer, name="authority", desc = "The update authority of the group")]
+    #[account(3, optional, name="new_update_authority", desc = "The new update authority of the group")]
+    #[account(4, name="system_program", desc = "The system program")]
+    UpdateGroupV1(UpdateGroupV1Args),
 }

@@ -9,7 +9,7 @@ import {
 import test from 'ava';
 
 import { transferSol } from '@metaplex-foundation/mpl-toolbox';
-import { execute, findAssetSignerPda } from '../src';
+import { create, execute, fetchAssetV1, findAssetSignerPda } from '../src';
 import { assertAsset, createAsset, createUmi } from './_setupRaw';
 import { createAssetWithCollection, createCollection } from './_setupSdk';
 
@@ -374,6 +374,140 @@ test('it cannot transfer asset in collection with the wrong collection', async (
   await t.throwsAsync(result, { name: 'InvalidCollection' });
 });
 
+test('it can execute so the asset signer PDA pays the fee', async (t) => {
+  const umi = await createUmi();
+  const recipient = generateSigner(umi);
+
+  const asset = await createAsset(umi);
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(1));
+
+  const beforeAssetSignerBalance = await umi.rpc.getBalance(
+    publicKey(assetSigner)
+  );
+  const beforePayerBalance = await umi.rpc.getBalance(umi.identity.publicKey);
+
+  t.deepEqual(beforeAssetSignerBalance, sol(1));
+
+  await execute(umi, {
+    asset,
+    authority: umi.identity,
+    payer: assetSigner,
+    instructions: transferSol(umi, {
+      source: createNoopSigner(publicKey(assetSigner)),
+      destination: recipient.publicKey,
+      amount: sol(0.5),
+    }),
+  }).sendAndConfirm(umi);
+
+  const afterAssetSignerBalance = await umi.rpc.getBalance(
+    publicKey(assetSigner)
+  );
+  const afterRecipientBalance = await umi.rpc.getBalance(publicKey(recipient));
+  const afterPayerBalance = await umi.rpc.getBalance(umi.identity.publicKey);
+  const afterAssetBalance = await umi.rpc.getBalance(
+    publicKey(asset.publicKey)
+  );
+
+  // The asset signer PDA should have lost 0.5 SOL (transfer) + the execute fee.
+  // 1 SOL - 0.5 SOL transfer - 48720 lamports fee = 0.5 SOL - 48720 lamports
+  t.deepEqual(afterAssetSignerBalance, lamports(sol(0.5).basisPoints - 48720n));
+  t.deepEqual(afterRecipientBalance, sol(0.5));
+  // The asset account should have gained the execute fee.
+  t.deepEqual(afterAssetBalance, addAmounts(sol(0.00315648), lamports(48720)));
+  // The payer's balance should only decrease by the transaction fee, NOT the
+  // execute fee (since the wallet paid it).
+  const payerDiff =
+    BigInt(beforePayerBalance.basisPoints.toString()) -
+    BigInt(afterPayerBalance.basisPoints.toString());
+  // The payer only paid the transaction fee (5000 lamports), not the execute fee.
+  t.true(payerDiff < 10000n);
+});
+
+test('it can execute for an asset in a collection so the asset signer PDA pays the fee', async (t) => {
+  const umi = await createUmi();
+  const recipient = generateSigner(umi);
+
+  const { asset, collection } = await createAssetWithCollection(umi, {});
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(1));
+
+  const beforeAssetSignerBalance = await umi.rpc.getBalance(
+    publicKey(assetSigner)
+  );
+
+  t.deepEqual(beforeAssetSignerBalance, sol(1));
+
+  await execute(umi, {
+    asset,
+    collection,
+    authority: umi.identity,
+    payer: assetSigner,
+    instructions: transferSol(umi, {
+      source: createNoopSigner(publicKey(assetSigner)),
+      destination: recipient.publicKey,
+      amount: sol(0.5),
+    }),
+  }).sendAndConfirm(umi);
+
+  const afterAssetSignerBalance = await umi.rpc.getBalance(
+    publicKey(assetSigner)
+  );
+  const afterRecipientBalance = await umi.rpc.getBalance(publicKey(recipient));
+  const afterAssetBalance = await umi.rpc.getBalance(
+    publicKey(asset.publicKey)
+  );
+
+  t.deepEqual(afterAssetSignerBalance, lamports(sol(0.5).basisPoints - 48720n));
+  t.deepEqual(afterRecipientBalance, sol(0.5));
+  t.deepEqual(afterAssetBalance, addAmounts(sol(0.00315648), lamports(48720)));
+});
+
+test('it can execute multiple instructions so the asset signer PDA pays the fee', async (t) => {
+  const umi = await createUmi();
+  const recipient = generateSigner(umi);
+
+  const asset = await createAsset(umi);
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(1));
+
+  await execute(umi, {
+    asset,
+    authority: umi.identity,
+    payer: assetSigner,
+    instructions: transferSol(umi, {
+      source: createNoopSigner(publicKey(assetSigner)),
+      destination: recipient.publicKey,
+      amount: sol(0.25),
+    }).add(
+      transferSol(umi, {
+        source: createNoopSigner(publicKey(assetSigner)),
+        destination: recipient.publicKey,
+        amount: sol(0.25),
+      })
+    ),
+  }).sendAndConfirm(umi);
+
+  const afterAssetSignerBalance = await umi.rpc.getBalance(
+    publicKey(assetSigner)
+  );
+  const afterRecipientBalance = await umi.rpc.getBalance(publicKey(recipient));
+  const afterAssetBalance = await umi.rpc.getBalance(
+    publicKey(asset.publicKey)
+  );
+
+  // Two execute calls, each with a fee of 48720 lamports.
+  t.deepEqual(
+    afterAssetSignerBalance,
+    lamports(sol(0.5).basisPoints - 48720n * 2n)
+  );
+  t.deepEqual(afterRecipientBalance, sol(0.5));
+  t.deepEqual(
+    afterAssetBalance,
+    addAmounts(sol(0.00315648), lamports(48720 * 2))
+  );
+});
+
 test('it cannot use an invalid system program', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
@@ -400,4 +534,119 @@ test('it cannot use an invalid system program', async (t) => {
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidSystemProgram' });
+});
+
+test('it can execute a create instruction via the asset signer PDA', async (t) => {
+  const umi = await createUmi();
+
+  // Create an asset whose assetSigner PDA will be used to create a new asset.
+  const asset = await createAsset(umi);
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(1));
+
+  // Build a create instruction for a brand new asset.
+  // The assetSigner PDA pays for the new asset, and the newAsset keypair
+  // must sign the transaction. The execute wrapper should preserve
+  // the newAsset signer, but currently drops it.
+  const newAsset = generateSigner(umi);
+  const createBuilder = create(umi, {
+    asset: newAsset,
+    name: 'Execute Created Asset',
+    uri: 'https://example.com/execute-created',
+    owner: umi.identity.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    payer: createNoopSigner(publicKey(assetSigner)),
+  });
+
+  await execute(umi, {
+    asset,
+    instructions: createBuilder,
+  }).sendAndConfirm(umi);
+
+  // If the signer was preserved, the new asset should exist on-chain.
+  const createdAsset = await fetchAssetV1(umi, newAsset.publicKey);
+  t.is(createdAsset.owner, umi.identity.publicKey);
+  t.is(createdAsset.name, 'Execute Created Asset');
+  t.is(createdAsset.uri, 'https://example.com/execute-created');
+});
+
+test('it can execute multiple create instructions with distinct signers via a TransactionBuilder', async (t) => {
+  const umi = await createUmi();
+
+  // Create an asset whose assetSigner PDA will pay for the new assets.
+  const asset = await createAsset(umi);
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(2));
+
+  // Build two create instructions, each with its own distinct mint signer.
+  // The execute wrapper must preserve per-item signers so that each
+  // execute instruction carries only its own mint signer.
+  const newAssetA = generateSigner(umi);
+  const newAssetB = generateSigner(umi);
+
+  const multiCreateBuilder = create(umi, {
+    asset: newAssetA,
+    name: 'Asset A',
+    uri: 'https://example.com/a',
+    owner: umi.identity.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    payer: createNoopSigner(publicKey(assetSigner)),
+  }).add(
+    create(umi, {
+      asset: newAssetB,
+      name: 'Asset B',
+      uri: 'https://example.com/b',
+      owner: umi.identity.publicKey,
+      updateAuthority: umi.identity.publicKey,
+      payer: createNoopSigner(publicKey(assetSigner)),
+    })
+  );
+
+  await execute(umi, {
+    asset,
+    instructions: multiCreateBuilder,
+  }).sendAndConfirm(umi);
+
+  // Both assets should exist on-chain with the correct data.
+  const createdA = await fetchAssetV1(umi, newAssetA.publicKey);
+  t.is(createdA.owner, umi.identity.publicKey);
+  t.is(createdA.name, 'Asset A');
+  t.is(createdA.uri, 'https://example.com/a');
+
+  const createdB = await fetchAssetV1(umi, newAssetB.publicKey);
+  t.is(createdB.owner, umi.identity.publicKey);
+  t.is(createdB.name, 'Asset B');
+  t.is(createdB.uri, 'https://example.com/b');
+});
+
+test('it can execute a create Instruction[] with explicit signers', async (t) => {
+  const umi = await createUmi();
+
+  const asset = await createAsset(umi);
+  const assetSigner = findAssetSignerPda(umi, { asset: asset.publicKey });
+  await umi.rpc.airdrop(publicKey(assetSigner), sol(1));
+
+  // Build a create instruction, then extract raw Instruction[] from it.
+  // Raw instructions don't carry Signer objects, so the newAsset signer
+  // must be passed explicitly via args.signers.
+  const newAsset = generateSigner(umi);
+  const instructions = create(umi, {
+    asset: newAsset,
+    name: 'Instruction Array Asset',
+    uri: 'https://example.com/ix-array',
+    owner: umi.identity.publicKey,
+    updateAuthority: umi.identity.publicKey,
+    payer: createNoopSigner(publicKey(assetSigner)),
+  }).getInstructions();
+
+  await execute(umi, {
+    asset,
+    instructions,
+    signers: [newAsset],
+  }).sendAndConfirm(umi);
+
+  const createdAsset = await fetchAssetV1(umi, newAsset.publicKey);
+  t.is(createdAsset.owner, umi.identity.publicKey);
+  t.is(createdAsset.name, 'Instruction Array Asset');
+  t.is(createdAsset.uri, 'https://example.com/ix-array');
 });

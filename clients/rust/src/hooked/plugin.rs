@@ -13,12 +13,13 @@ use crate::{
         Plugin, PluginAuthority, PluginType, RegistryRecord,
     },
     AddBlockerPlugin, AppDataWithData, AttributesPlugin, AutographPlugin, BaseAuthority,
-    BasePlugin, BurnDelegatePlugin, DataBlob, DataSectionWithData, EditionPlugin,
-    ExternalPluginAdaptersList, ExternalRegistryRecordSafe, FreezeDelegatePlugin,
-    ImmutableMetadataPlugin, LifecycleHookWithData, MasterEditionPlugin,
-    PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin, PermanentTransferDelegatePlugin,
-    PluginRegistryV1Safe, PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount,
-    TransferDelegatePlugin, UpdateDelegatePlugin, VerifiedCreatorsPlugin,
+    BasePlugin, BubblegumV2Plugin, BurnDelegatePlugin, DataBlob, DataSectionWithData,
+    EditionPlugin, ExternalPluginAdaptersList, ExternalRegistryRecordSafe, FreezeDelegatePlugin,
+    FreezeExecutePlugin, GroupsPlugin, ImmutableMetadataPlugin, LifecycleHookWithData,
+    MasterEditionPlugin, PermanentBurnDelegatePlugin, PermanentFreezeDelegatePlugin,
+    PermanentFreezeExecutePlugin, PermanentTransferDelegatePlugin, PluginRegistryV1Safe,
+    PluginsList, RegistryRecordSafe, RoyaltiesPlugin, SolanaAccount, TransferDelegatePlugin,
+    UpdateDelegatePlugin, VerifiedCreatorsPlugin,
 };
 
 /// Fetch the plugin from the registry.
@@ -345,6 +346,22 @@ pub(crate) fn registry_records_to_plugin_list(
                     Plugin::Autograph(autograph) => {
                         acc.autograph = Some(AutographPlugin { base, autograph })
                     }
+                    Plugin::BubblegumV2(bubblegum_v2) => {
+                        acc.bubblegum_v2 = Some(BubblegumV2Plugin { base, bubblegum_v2 })
+                    }
+                    Plugin::Groups(groups) => acc.groups = Some(GroupsPlugin { base, groups }),
+                    Plugin::FreezeExecute(freeze_execute) => {
+                        acc.freeze_execute = Some(FreezeExecutePlugin {
+                            base,
+                            freeze_execute,
+                        })
+                    }
+                    Plugin::PermanentFreezeExecute(permanent_freeze_execute) => {
+                        acc.permanent_freeze_execute = Some(PermanentFreezeExecutePlugin {
+                            base,
+                            permanent_freeze_execute,
+                        })
+                    }
                 }
             }
             Ok(acc)
@@ -404,6 +421,9 @@ pub(crate) fn registry_records_to_external_plugin_adapter_list(
                             data_offset,
                             data_len,
                         })
+                    }
+                    ExternalPluginAdapter::AgentIdentity(agent_identity) => {
+                        acc.agent_identities.push(agent_identity)
                     }
                 }
             }
@@ -508,6 +528,8 @@ pub(crate) fn find_external_plugin_adapter<'b>(
                             }
                         }
                 }
+                // AgentIdentity is a unit variant key (only one per asset).
+                ExternalPluginAdapterKey::AgentIdentity => true,
             })
         {
             result = (Some(i), Some(record));

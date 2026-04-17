@@ -8,10 +8,11 @@ use std::{cmp::Ordering, io::ErrorKind};
 use crate::{
     accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
     types::{
-        AddBlocker, AppData, Attributes, Autograph, BurnDelegate, DataSection, Edition,
-        ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey, FreezeDelegate,
-        ImmutableMetadata, Key, LifecycleHook, LinkedAppData, LinkedLifecycleHook, MasterEdition,
-        Oracle, PermanentBurnDelegate, PermanentFreezeDelegate, PermanentTransferDelegate,
+        AddBlocker, AgentIdentity, AppData, Attributes, Autograph, BubblegumV2, BurnDelegate,
+        DataSection, Edition, ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterKey,
+        FreezeDelegate, FreezeExecute, Groups, ImmutableMetadata, Key, LifecycleHook,
+        LinkedAppData, LinkedLifecycleHook, MasterEdition, Oracle, PermanentBurnDelegate,
+        PermanentFreezeDelegate, PermanentFreezeExecute, PermanentTransferDelegate,
         PluginAuthority, Royalties, TransferDelegate, UpdateDelegate, VerifiedCreators,
     },
 };
@@ -160,6 +161,30 @@ pub struct AutographPlugin {
     pub autograph: Autograph,
 }
 
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct BubblegumV2Plugin {
+    pub base: BasePlugin,
+    pub bubblegum_v2: BubblegumV2,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct FreezeExecutePlugin {
+    pub base: BasePlugin,
+    pub freeze_execute: FreezeExecute,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct PermanentFreezeExecutePlugin {
+    pub base: BasePlugin,
+    pub permanent_freeze_execute: PermanentFreezeExecute,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct GroupsPlugin {
+    pub base: BasePlugin,
+    pub groups: Groups,
+}
+
 #[derive(Debug, Default)]
 pub struct PluginsList {
     pub royalties: Option<RoyaltiesPlugin>,
@@ -177,6 +202,10 @@ pub struct PluginsList {
     pub immutable_metadata: Option<ImmutableMetadataPlugin>,
     pub verified_creators: Option<VerifiedCreatorsPlugin>,
     pub autograph: Option<AutographPlugin>,
+    pub bubblegum_v2: Option<BubblegumV2Plugin>,
+    pub freeze_execute: Option<FreezeExecutePlugin>,
+    pub permanent_freeze_execute: Option<PermanentFreezeExecutePlugin>,
+    pub groups: Option<GroupsPlugin>,
 }
 
 #[derive(Debug, Default)]
@@ -187,6 +216,7 @@ pub struct ExternalPluginAdaptersList {
     pub app_data: Vec<AppDataWithData>,
     pub linked_app_data: Vec<LinkedAppData>,
     pub data_sections: Vec<DataSectionWithData>,
+    pub agent_identities: Vec<AgentIdentity>,
 }
 
 #[derive(Debug)]
@@ -345,6 +375,7 @@ impl From<&ExternalPluginAdapter> for ExternalPluginAdapterKey {
                 ExternalPluginAdapterKey::LifecycleHook(lifecycle_hook.hooked_program)
             }
             ExternalPluginAdapter::DataSection(_) => todo!(),
+            ExternalPluginAdapter::AgentIdentity(_) => ExternalPluginAdapterKey::AgentIdentity,
         }
     }
 }
