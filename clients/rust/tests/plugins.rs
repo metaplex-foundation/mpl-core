@@ -106,7 +106,6 @@ async fn test_fetch_plugin() {
         &mut asset_account.data,
         &asset_account.owner,
         false,
-        1_000_000_000,
     );
 
     let plugin =

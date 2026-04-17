@@ -8,9 +8,9 @@ use mpl_core::{
 };
 use solana_program_test::{BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
-    pubkey::Pubkey, signature::Keypair, signer::Signer, system_instruction, system_program,
-    transaction::Transaction,
+    pubkey::Pubkey, signature::Keypair, signer::Signer, transaction::Transaction,
 };
+use solana_system_interface::{instruction as system_instruction, program as system_program};
 
 pub fn program_test() -> ProgramTest {
     ProgramTest::new("mpl_core_program", mpl_core::ID, None)

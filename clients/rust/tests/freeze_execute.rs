@@ -10,9 +10,10 @@ use mpl_core::{
 };
 use setup::*;
 
-use solana_program::{pubkey::Pubkey, system_instruction, system_program};
+use solana_program::pubkey::Pubkey;
 use solana_program_test::tokio;
 use solana_sdk::{signature::Keypair, signer::Signer, transaction::Transaction};
+use solana_system_interface::{instruction as system_instruction, program as system_program};
 
 const FREEZE_EXECUTE_PREFIX: &str = "mpl-core-execute";
 
