@@ -3,7 +3,7 @@ import { approvePluginAuthorityV1, PluginType } from '../generated';
 import { PluginAuthority, pluginAuthorityToBase } from '../plugins';
 
 export type ApprovePluginAuthorityArgsPlugin = {
-  type: keyof typeof PluginType;
+  type: Exclude<keyof typeof PluginType, 'Groups'>;
 };
 
 export type ApprovePluginAuthorityArgs = Omit<
@@ -17,9 +17,17 @@ export type ApprovePluginAuthorityArgs = Omit<
 export const approvePluginAuthority = (
   context: Pick<Context, 'payer' | 'programs'>,
   { plugin, newAuthority, ...args }: ApprovePluginAuthorityArgs
-) =>
-  approvePluginAuthorityV1(context, {
+) => {
+  const pluginType = plugin.type as keyof typeof PluginType;
+  if (pluginType === 'Groups') {
+    throw new Error(
+      'PluginType.Groups must be managed via group-specific instructions.'
+    );
+  }
+
+  return approvePluginAuthorityV1(context, {
     ...args,
-    pluginType: PluginType[plugin.type as keyof typeof PluginType],
+    pluginType: PluginType[pluginType],
     newAuthority: pluginAuthorityToBase(newAuthority),
   });
+};

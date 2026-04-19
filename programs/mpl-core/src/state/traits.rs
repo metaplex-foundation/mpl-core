@@ -27,6 +27,10 @@ pub trait SolanaAccount: BorshSerialize + BorshDeserialize {
             return Err(MplCoreError::DeserializationError.into());
         }
 
+        if account.owner != &crate::ID {
+            return Err(ProgramError::InvalidAccountOwner);
+        }
+
         let mut bytes: &[u8] = &(*account.data).borrow()[offset..];
         Self::deserialize(&mut bytes).map_err(|error| {
             msg!("Error: {}", error);

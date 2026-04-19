@@ -9,7 +9,7 @@ use solana_program::pubkey::Pubkey;
 use std::{cmp::Ordering, collections::HashMap, io::ErrorKind};
 
 use crate::{
-    accounts::{BaseAssetV1, BaseCollectionV1, PluginHeaderV1},
+    accounts::{BaseAssetV1, BaseCollectionV1, GroupV1, PluginHeaderV1},
     convert_external_plugin_adapter_data_to_string,
     types::{
         ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterSchema,
@@ -179,6 +179,8 @@ pub struct LifecycleChecks {
     pub transfer: Vec<IndexableCheckResult>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
     pub burn: Vec<IndexableCheckResult>,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
+    pub execute: Vec<IndexableCheckResult>,
 }
 
 impl LifecycleChecks {
@@ -187,6 +189,7 @@ impl LifecycleChecks {
             && self.update.is_empty()
             && self.transfer.is_empty()
             && self.burn.is_empty()
+            && self.execute.is_empty()
     }
 }
 
@@ -246,6 +249,7 @@ impl ProcessedExternalPlugin {
                             known_lifecycle_checks.transfer = checks
                         }
                         HookableLifecycleEvent::Burn => known_lifecycle_checks.burn = checks,
+                        HookableLifecycleEvent::Execute => known_lifecycle_checks.execute = checks,
                     },
                     None => unknown_lifecycle_checks.push((event, checks)),
                 }
@@ -273,6 +277,10 @@ impl ProcessedExternalPlugin {
                         ExternalPluginAdapter::DataSection(data_section) => &data_section.schema,
                         // Assume binary for `Oracle`, but this should never happen.
                         ExternalPluginAdapter::Oracle(_) => &ExternalPluginAdapterSchema::Binary,
+                        // AgentIdentity has no data section.
+                        ExternalPluginAdapter::AgentIdentity(_) => {
+                            &ExternalPluginAdapterSchema::Binary
+                        }
                     };
 
                     (
@@ -331,7 +339,7 @@ impl ProcessedExternalPlugin {
     }
 }
 
-/// A type used to store both Core Assets and Core Collections for indexing.
+/// A type used to store Core Assets, Collections, and Groups for indexing.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct IndexableAsset {
@@ -405,6 +413,40 @@ impl IndexableAsset {
         }
     }
 
+    /// Create a new `IndexableAsset` from a `GroupV1`.
+    pub fn from_group(group: GroupV1) -> Self {
+        Self {
+            owner: Some(group.update_authority),
+            update_authority: UpdateAuthority::Address(group.update_authority),
+            name: group.name,
+            uri: group.uri,
+            seq: 0,
+            num_minted: None,
+            current_size: None,
+            plugins: HashMap::new(),
+            unknown_plugins: vec![],
+            external_plugins: vec![],
+            unknown_external_plugins: vec![],
+        }
+    }
+
+    fn group_len(group: &GroupV1) -> usize {
+        1 // Key
+            + 32 // Update authority
+            + 4 // Name length
+            + group.name.len()
+            + 4 // URI length
+            + group.uri.len()
+            + 4 // collections length
+            + (group.collections.len() * 32)
+            + 4 // groups length
+            + (group.groups.len() * 32)
+            + 4 // parent_groups length
+            + (group.parent_groups.len() * 32)
+            + 4 // assets length
+            + (group.assets.len() * 32)
+    }
+
     // Add a processed plugin to the correct `IndexableAsset` struct member.
     fn add_processed_plugin(&mut self, plugin: ProcessedPlugin) {
         match plugin {
@@ -433,7 +475,7 @@ impl IndexableAsset {
         data_offset: Option<u64>,
         data_len: Option<u64>,
         account: &[u8],
-    ) -> Result<Option<ExternalPluginDataInfo>, std::io::Error> {
+    ) -> Result<Option<ExternalPluginDataInfo<'_>>, std::io::Error> {
         if data_offset.is_some() && data_len.is_some() {
             let data_offset = data_offset.unwrap() as usize;
             let data_len = data_len.unwrap() as usize;
@@ -495,9 +537,13 @@ impl IndexableAsset {
         Ok(())
     }
 
-    /// Fetch the base `Asset`` or `Collection`` and all the plugins and store in an
+    /// Fetch the base `Asset`, `Collection`, or `Group` and all the plugins and store in an
     /// `IndexableAsset`.
     pub fn fetch(key: Key, account: &[u8]) -> Result<Self, std::io::Error> {
+        if Key::from_slice(account, 0)? != key {
+            return Err(ErrorKind::InvalidInput.into());
+        }
+
         let (mut indexable_asset, base_size) = match key {
             Key::AssetV1 => {
                 let asset = BaseAssetV1::from_bytes(account)?;
@@ -509,6 +555,12 @@ impl IndexableAsset {
                 let collection = BaseCollectionV1::from_bytes(account)?;
                 let base_size = collection.len();
                 let indexable_asset = Self::from_collection(collection);
+                (indexable_asset, base_size)
+            }
+            Key::GroupV1 => {
+                let group = GroupV1::from_bytes(account)?;
+                let base_size = Self::group_len(&group);
+                let indexable_asset = Self::from_group(group);
                 (indexable_asset, base_size)
             }
             _ => return Err(ErrorKind::InvalidInput.into()),

@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::AgentIdentityInitInfo;
 use crate::generated::types::AppDataInitInfo;
 use crate::generated::types::DataSectionInitInfo;
 use crate::generated::types::LifecycleHookInitInfo;
@@ -27,4 +28,5 @@ pub enum ExternalPluginAdapterInitInfo {
     LinkedLifecycleHook(LinkedLifecycleHookInitInfo),
     LinkedAppData(LinkedAppDataInitInfo),
     DataSection(DataSectionInitInfo),
+    AgentIdentity(AgentIdentityInitInfo),
 }

@@ -92,6 +92,8 @@ impl PluginType {
             PluginType::Autograph => CheckResult::CanReject,
             PluginType::VerifiedCreators => CheckResult::CanReject,
             PluginType::MasterEdition => CheckResult::CanReject,
+            PluginType::BubblegumV2 => CheckResult::CanReject,
+            PluginType::PermanentFreezeExecute => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -104,6 +106,8 @@ impl PluginType {
             PluginType::FreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::Edition => CheckResult::CanReject,
+            PluginType::BubblegumV2 => CheckResult::CanReject,
+            PluginType::PermanentFreezeExecute => CheckResult::CanReject,
             // We default to CanReject because Plugins with Authority::None cannot be removed.
             _ => CheckResult::CanReject,
         }
@@ -165,6 +169,7 @@ impl PluginType {
             PluginType::BurnDelegate => CheckResult::CanApprove,
             PluginType::PermanentFreezeDelegate => CheckResult::CanReject,
             PluginType::PermanentBurnDelegate => CheckResult::CanApprove,
+            PluginType::Groups => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -201,6 +206,8 @@ impl PluginType {
     pub fn check_execute(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
+            PluginType::FreezeExecute => CheckResult::CanReject,
+            PluginType::PermanentFreezeExecute => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -209,6 +216,7 @@ impl PluginType {
     pub fn check_add_external_plugin_adapter(plugin_type: &PluginType) -> CheckResult {
         #[allow(clippy::match_single_binding)]
         match plugin_type {
+            PluginType::BubblegumV2 => CheckResult::CanReject,
             _ => CheckResult::None,
         }
     }
@@ -663,7 +671,6 @@ pub(crate) trait PluginValidation {
 /// The STRONGEST result is returned.
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn validate_plugin_checks<'a>(
-    key: Key,
     accounts: &'a [AccountInfo<'a>],
     checks: &BTreeMap<PluginType, (Key, CheckResult, RegistryRecord)>,
     authority: &'a AccountInfo<'a>,
@@ -685,13 +692,11 @@ pub(crate) fn validate_plugin_checks<'a>(
     let mut approved = false;
     let mut rejected = false;
     for (check_key, check_result, registry_record) in checks.values() {
-        if *check_key == key
-            && matches!(
-                check_result,
-                CheckResult::CanApprove | CheckResult::CanReject
-            )
-        {
-            let account = match key {
+        if matches!(
+            check_result,
+            CheckResult::CanApprove | CheckResult::CanReject
+        ) {
+            let account = match check_key {
                 Key::CollectionV1 => collection.ok_or(MplCoreError::InvalidCollection)?,
                 Key::AssetV1 => asset.ok_or(MplCoreError::InvalidAsset)?,
                 _ => unreachable!(),
@@ -740,7 +745,6 @@ pub(crate) fn validate_plugin_checks<'a>(
 /// The STRONGEST result is returned.
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn validate_external_plugin_adapter_checks<'a>(
-    key: Key,
     accounts: &'a [AccountInfo<'a>],
     external_checks: &BTreeMap<
         ExternalPluginAdapterKey,
@@ -764,12 +768,8 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
 ) -> Result<ValidationResult, ProgramError> {
     let mut approved = false;
     for (check_key, check_result, external_registry_record) in external_checks.values() {
-        if *check_key == key
-            && (check_result.can_listen()
-                || check_result.can_approve()
-                || check_result.can_reject())
-        {
-            let account = match key {
+        if check_result.can_listen() || check_result.can_approve() || check_result.can_reject() {
+            let account = match check_key {
                 Key::CollectionV1 => collection.ok_or(MplCoreError::InvalidCollection)?,
                 Key::AssetV1 => asset.ok_or(MplCoreError::InvalidAsset)?,
                 _ => unreachable!(),

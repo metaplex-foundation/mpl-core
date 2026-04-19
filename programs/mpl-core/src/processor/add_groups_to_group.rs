@@ -1,0 +1,136 @@
+use borsh::{BorshDeserialize, BorshSerialize};
+use mpl_utils::assert_signer;
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
+    pubkey::Pubkey,
+};
+
+use crate::{
+    error::MplCoreError,
+    instruction::accounts::{AddGroupsToGroupV1Accounts, Context},
+    state::{GroupV1, SolanaAccount, MAX_GROUP_NESTING_DEPTH, MAX_GROUP_VECTOR_SIZE},
+    utils::{is_valid_group_authority, resolve_authority, save_flat_group},
+};
+
+/// Arguments for the `AddGroupsToGroupV1` instruction.
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct AddGroupsToGroupV1Args {
+    /// The list of child groups to add to the parent group.
+    pub(crate) groups: Vec<Pubkey>,
+}
+
+/// Processor for the `AddGroupsToGroupV1` instruction.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn add_groups_to_group_v1<'a>(
+    accounts: &'a [AccountInfo<'a>],
+    args: AddGroupsToGroupV1Args,
+) -> ProgramResult {
+    // Expected account layout:
+    //   0. [writable] Parent group account
+    //   1. [writable, signer] Payer account (also default authority)
+    //   2. [signer] Optional authority (group update authority)
+    //   3. [] System program
+    //   4..N [writable] Child group accounts, one for each pubkey in args.groups
+    let ctx: Context<AddGroupsToGroupV1Accounts> = AddGroupsToGroupV1Accounts::context(accounts)?;
+    let parent_group_info = ctx.accounts.parent_group;
+    let payer_info = ctx.accounts.payer;
+    let authority_info_opt = ctx.accounts.authority;
+    let system_program_info = ctx.accounts.system_program;
+    let child_group_accounts = ctx.remaining_accounts;
+
+    // Basic guards.
+    assert_signer(payer_info)?;
+    let authority_info = resolve_authority(payer_info, authority_info_opt)?;
+    if authority_info.key != payer_info.key {
+        assert_signer(authority_info)?;
+    }
+
+    if system_program_info.key != &solana_program::system_program::ID {
+        return Err(MplCoreError::InvalidSystemProgram.into());
+    }
+
+    if !parent_group_info.is_writable {
+        return Err(ProgramError::InvalidAccountData);
+    }
+
+    // Validate arg count matches remaining accounts.
+    if child_group_accounts.len() != args.groups.len() {
+        msg!(
+            "Error: Number of group accounts ({}) does not match number of pubkeys in args ({}).",
+            child_group_accounts.len(),
+            args.groups.len()
+        );
+        return Err(ProgramError::NotEnoughAccountKeys);
+    }
+
+    // Deserialize parent group.
+    let mut parent_group = GroupV1::load(parent_group_info, 0)?;
+
+    // Authority check: must be the parent group's update authority.
+    if !is_valid_group_authority(parent_group_info, authority_info)? {
+        msg!("Error: Invalid authority for parent group account");
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
+
+    // Process each child group account.
+    for (i, child_info) in child_group_accounts.iter().enumerate() {
+        // Ensure account key matches expected pubkey.
+        if child_info.key != &args.groups[i] {
+            msg!(
+                "Error: Child group account at position {} does not match provided pubkey list",
+                i
+            );
+            return Err(MplCoreError::IncorrectAccount.into());
+        }
+
+        // Ensure child group account is writable.
+        if !child_info.is_writable {
+            msg!("Error: Child group account must be writable");
+            return Err(ProgramError::InvalidAccountData);
+        }
+
+        if child_info.key == parent_group_info.key {
+            msg!("Error: Parent group cannot be added as its own child group");
+            return Err(MplCoreError::IncorrectAccount.into());
+        }
+
+        // Deserialize child group.
+        let mut child_group = GroupV1::load(child_info, 0)?;
+
+        // Authority must also be the child group's update authority.
+        if !is_valid_group_authority(child_info, authority_info)? {
+            msg!("Error: Signer is not child group update authority");
+            return Err(MplCoreError::InvalidAuthority.into());
+        }
+
+        if parent_group.groups.contains(child_info.key) {
+            return Err(MplCoreError::DuplicateEntry.into());
+        }
+
+        if parent_group.groups.len() >= MAX_GROUP_VECTOR_SIZE {
+            return Err(MplCoreError::GroupVectorFull.into());
+        }
+
+        if child_group.parent_groups.len() >= MAX_GROUP_NESTING_DEPTH {
+            msg!("Error: Child group has reached maximum nesting depth");
+            return Err(MplCoreError::GroupNestingDepthExceeded.into());
+        }
+
+        parent_group.groups.push(*child_info.key);
+
+        if !child_group.parent_groups.contains(parent_group_info.key) {
+            child_group.parent_groups.push(*parent_group_info.key);
+            save_flat_group(child_info, &child_group, payer_info, system_program_info)?;
+        }
+    }
+
+    save_flat_group(
+        parent_group_info,
+        &parent_group,
+        payer_info,
+        system_program_info,
+    )?;
+
+    Ok(())
+}

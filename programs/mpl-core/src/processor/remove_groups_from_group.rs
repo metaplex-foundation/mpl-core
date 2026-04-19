@@ -1,0 +1,133 @@
+use borsh::{BorshDeserialize, BorshSerialize};
+use mpl_utils::assert_signer;
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
+    pubkey::Pubkey,
+};
+
+use crate::{
+    error::MplCoreError,
+    instruction::accounts::{Context, RemoveGroupsFromGroupV1Accounts},
+    state::{GroupV1, SolanaAccount},
+    utils::{is_valid_group_authority, resolve_authority, save_flat_group},
+};
+
+/// Arguments for the `RemoveGroupsFromGroupV1` instruction.
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub(crate) struct RemoveGroupsFromGroupV1Args {
+    /// The list of child groups to remove from the parent group.
+    pub(crate) groups: Vec<Pubkey>,
+}
+
+/// Processor for the `RemoveGroupsFromGroupV1` instruction.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn remove_groups_from_group_v1<'a>(
+    accounts: &'a [AccountInfo<'a>],
+    args: RemoveGroupsFromGroupV1Args,
+) -> ProgramResult {
+    // Expected account layout:
+    //   0. [writable] Parent group account
+    //   1. [writable, signer] Payer account (also default authority)
+    //   2. [signer] Optional authority (group update authority)
+    //   3. [] System program
+    //   4..N [writable] Child group accounts, one for each pubkey in args.groups
+    let ctx: Context<RemoveGroupsFromGroupV1Accounts> =
+        RemoveGroupsFromGroupV1Accounts::context(accounts)?;
+    let parent_group_info = ctx.accounts.parent_group;
+    let payer_info = ctx.accounts.payer;
+    let authority_info_opt = ctx.accounts.authority;
+    let system_program_info = ctx.accounts.system_program;
+    let child_group_accounts = ctx.remaining_accounts;
+
+    // Basic guards.
+    assert_signer(payer_info)?;
+    let authority_info = resolve_authority(payer_info, authority_info_opt)?;
+    if authority_info.key != payer_info.key {
+        assert_signer(authority_info)?;
+    }
+
+    if system_program_info.key != &solana_program::system_program::ID {
+        return Err(MplCoreError::InvalidSystemProgram.into());
+    }
+
+    if !parent_group_info.is_writable {
+        return Err(ProgramError::InvalidAccountData);
+    }
+
+    // Validate arg count.
+    if child_group_accounts.len() != args.groups.len() {
+        msg!(
+            "Error: Number of group accounts ({}) does not match number of pubkeys in args ({}).",
+            child_group_accounts.len(),
+            args.groups.len()
+        );
+        return Err(ProgramError::NotEnoughAccountKeys);
+    }
+
+    // Deserialize parent group.
+    let mut parent_group = GroupV1::load(parent_group_info, 0)?;
+
+    // Authority check: must be the parent group's update authority.
+    if !is_valid_group_authority(parent_group_info, authority_info)? {
+        msg!("Error: Invalid authority for parent group account");
+        return Err(MplCoreError::InvalidAuthority.into());
+    }
+
+    // Iterate child groups.
+    for (i, child_info) in child_group_accounts.iter().enumerate() {
+        if child_info.key != &args.groups[i] {
+            msg!(
+                "Error: Child group account at position {} does not match provided pubkey list",
+                i
+            );
+            return Err(MplCoreError::IncorrectAccount.into());
+        }
+
+        if !child_info.is_writable {
+            msg!("Error: Child group account must be writable");
+            return Err(ProgramError::InvalidAccountData);
+        }
+
+        let mut child_group = GroupV1::load(child_info, 0)?;
+
+        // Authority must also be the child group's update authority.
+        if !is_valid_group_authority(child_info, authority_info)? {
+            msg!("Error: Signer is not child group update authority");
+            return Err(MplCoreError::InvalidAuthority.into());
+        }
+
+        // Remove child from parent list if present.
+        if let Some(pos) = parent_group
+            .groups
+            .iter()
+            .position(|pk| pk == child_info.key)
+        {
+            parent_group.groups.remove(pos);
+        } else {
+            msg!("Error: Child group is not linked to the parent group");
+            return Err(MplCoreError::IncorrectAccount.into());
+        }
+
+        if let Some(pos) = child_group
+            .parent_groups
+            .iter()
+            .position(|pk| pk == parent_group_info.key)
+        {
+            child_group.parent_groups.remove(pos);
+            save_flat_group(child_info, &child_group, payer_info, system_program_info)?;
+        } else {
+            msg!("Error: Bidirectional relationship inconsistent — parent not found in child's parent_groups");
+            return Err(MplCoreError::InconsistentGroupRelationship.into());
+        }
+    }
+
+    save_flat_group(
+        parent_group_info,
+        &parent_group,
+        payer_info,
+        system_program_info,
+    )?;
+
+    Ok(())
+}

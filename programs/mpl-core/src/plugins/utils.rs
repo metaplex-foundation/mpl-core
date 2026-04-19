@@ -383,6 +383,13 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         }) => (*init_plugin_authority, None),
         // The DataSection is only updated via its managing plugin so it has no authority.
         ExternalPluginAdapterInitInfo::DataSection(_) => (Some(Authority::None), None),
+        ExternalPluginAdapterInitInfo::AgentIdentity(init_info) => {
+            validate_lifecycle_checks(&init_info.lifecycle_checks, false)?;
+            (
+                init_info.init_plugin_authority,
+                Some(init_info.lifecycle_checks.clone()),
+            )
+        }
     };
 
     let old_registry_offset = plugin_header.plugin_registry_offset;
@@ -478,30 +485,43 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
     let data_offset = record.data_offset.ok_or(MplCoreError::InvalidPlugin)?;
     let data_len = record.data_len.ok_or(MplCoreError::InvalidPlugin)?;
     let new_data_len = data.len();
+    let old_registry_offset = plugin_header.plugin_registry_offset;
     let size_diff = (new_data_len as isize)
         .checked_sub(data_len as isize)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
-    // Update any offsets that will change.
-    plugin_registry.bump_offsets(record.offset, size_diff)?;
-
-    let new_registry_offset = (plugin_header.plugin_registry_offset as isize)
-        .checked_add(size_diff)
-        .ok_or(MplCoreError::NumericalOverflow)?;
-    plugin_header.plugin_registry_offset = new_registry_offset as usize;
-
-    let new_size = (account.data_len() as isize)
-        .checked_add(size_diff)
-        .ok_or(MplCoreError::NumericalOverflow)?;
-
-    resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
-
     let next_plugin_offset = data_offset
         .checked_add(data_len)
         .ok_or(MplCoreError::NumericalOverflow)?;
-    let new_next_plugin_offset = (next_plugin_offset as isize)
+    let new_next_plugin_offset: usize = (next_plugin_offset as isize)
         .checked_add(size_diff)
-        .ok_or(MplCoreError::NumericalOverflow)?;
+        .ok_or(MplCoreError::NumericalOverflow)?
+        .try_into()
+        .map_err(|_| MplCoreError::NumericalOverflow)?;
+
+    // Update any offsets that will change.
+    plugin_registry.bump_offsets(record.offset, size_diff)?;
+
+    let new_registry_offset: usize = (old_registry_offset as isize)
+        .checked_add(size_diff)
+        .ok_or(MplCoreError::NumericalOverflow)?
+        .try_into()
+        .map_err(|_| MplCoreError::NumericalOverflow)?;
+    plugin_header.plugin_registry_offset = new_registry_offset;
+
+    let new_size: usize = (account.data_len() as isize)
+        .checked_add(size_diff)
+        .ok_or(MplCoreError::NumericalOverflow)?
+        .try_into()
+        .map_err(|_| MplCoreError::NumericalOverflow)?;
+
+    // Capture old data length before any realloc, as realloc changes data_len().
+    let old_data_len = account.data_len();
+
+    if size_diff > 0 {
+        // Growing: realloc first to make room for the rightward shift.
+        resize_or_reallocate_account(account, payer, system_program, new_size)?;
+    }
 
     // SAFETY: `borrow_mut` will always return a valid pointer.
     // new_next_plugin_offset is derived from next_plugin_offset and size_diff using
@@ -510,10 +530,15 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
     unsafe {
         let base = account.data.borrow_mut().as_mut_ptr();
         sol_memmove(
-            base.add(new_next_plugin_offset as usize),
+            base.add(new_next_plugin_offset),
             base.add(next_plugin_offset),
-            account.data_len().saturating_sub(next_plugin_offset),
+            old_data_len.saturating_sub(next_plugin_offset),
         )
+    }
+
+    if size_diff < 0 {
+        // Shrinking: realloc after memmove to preserve data before truncation.
+        resize_or_reallocate_account(account, payer, system_program, new_size)?;
     }
 
     sol_memcpy(
@@ -530,7 +555,7 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::InvalidPlugin)?;
     plugin_registry.external_registry[record_index].data_len = Some(new_data_len);
 
-    plugin_registry.save(account, new_registry_offset as usize)?;
+    plugin_registry.save(account, new_registry_offset)?;
     plugin_header.save(account, core.map_or(0, |core| core.len()))?;
 
     Ok(())
@@ -747,15 +772,23 @@ pub fn approve_authority_on_plugin<'a, T: CoreAsset>(
         .find(|record| record.plugin_type == *plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
 
+    let old_authority_bytes = registry_record.authority.try_to_vec()?;
+    let new_authority_bytes = new_authority.try_to_vec()?;
+    let size_diff = (new_authority_bytes.len() as isize)
+        .checked_sub(old_authority_bytes.len() as isize)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+
     registry_record.authority = *new_authority;
 
-    let authority_bytes = new_authority.try_to_vec()?;
-
-    let new_size = account
-        .data_len()
-        .checked_add(authority_bytes.len())
-        .ok_or(MplCoreError::NumericalOverflow)?;
-    resize_or_reallocate_account(account, payer, system_program, new_size)?;
+    if size_diff != 0 {
+        let new_size = (account.data_len() as isize)
+            .checked_add(size_diff)
+            .ok_or(MplCoreError::NumericalOverflow)?;
+        let new_size: usize = new_size
+            .try_into()
+            .map_err(|_| MplCoreError::NumericalOverflow)?;
+        resize_or_reallocate_account(account, payer, system_program, new_size)?;
+    }
 
     plugin_registry.save(account, plugin_header.plugin_registry_offset)?;
 
@@ -873,6 +906,8 @@ fn check_plugin_key(
                         Err(_) => return Err(MplCoreError::DeserializationError.into()),
                     }
             }
+            // AgentIdentity is a unit variant - only one per asset, so type match is sufficient.
+            ExternalPluginAdapterKey::AgentIdentity => true,
         })
     {
         Ok(true)

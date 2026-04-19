@@ -1,5 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use mpl_utils::assert_signer;
+use mpl_utils::{assert_derivation, assert_signer};
 use solana_program::{
     account_info::AccountInfo,
     entrypoint::ProgramResult,
@@ -13,7 +13,7 @@ use solana_program::{
 use crate::{
     error::MplCoreError,
     instruction::accounts::ExecuteV1Accounts,
-    plugins::{Plugin, PluginType},
+    plugins::{ExternalPluginAdapter, HookableLifecycleEvent, Plugin, PluginType},
     state::{get_execute_fee, AssetV1, CollectionV1, Key},
     utils::{load_key, resolve_authority, validate_asset_permissions},
 };
@@ -35,8 +35,23 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
         return Err(MplCoreError::InvalidAsset.into());
     }
 
-    assert_signer(ctx.accounts.payer)?;
-    let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
+    let bump = assert_derivation(
+        &crate::ID,
+        ctx.accounts.asset_signer,
+        &[PREFIX.as_bytes(), ctx.accounts.asset.key.as_ref()],
+        MplCoreError::InvalidExecutePda,
+    )?;
+
+    let payer_is_pda = ctx.accounts.payer.key == ctx.accounts.asset_signer.key;
+
+    let authority = if payer_is_pda {
+        let authority = ctx.accounts.authority.ok_or(MplCoreError::MissingSigner)?;
+        assert_signer(authority)?;
+        authority
+    } else {
+        assert_signer(ctx.accounts.payer)?;
+        resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?
+    };
 
     if *ctx.accounts.system_program.key != system_program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
@@ -64,28 +79,55 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
         AssetV1::validate_execute,
         CollectionV1::validate_execute,
         Plugin::validate_execute,
-        None,
-        None,
+        Some(ExternalPluginAdapter::validate_execute),
+        Some(HookableLifecycleEvent::Execute),
     )?;
 
     // Increment sequence number and save only if it is `Some(_)`.
     asset.increment_seq_and_save(ctx.accounts.asset)?;
 
-    invoke(
-        &system_instruction::transfer(
-            ctx.accounts.payer.key,
-            ctx.accounts.asset.key,
-            get_execute_fee()?,
-        ),
-        &[ctx.accounts.payer.clone(), ctx.accounts.asset.clone()],
-    )?;
+    let fee = get_execute_fee()?;
+    let transfer_ix =
+        system_instruction::transfer(ctx.accounts.payer.key, ctx.accounts.asset.key, fee);
+
+    if payer_is_pda {
+        // Payer is the asset signer PDA -- use invoke_signed so the PDA can
+        // pay the execute fee from its own lamports.
+        invoke_signed(
+            &transfer_ix,
+            &[ctx.accounts.payer.clone(), ctx.accounts.asset.clone()],
+            &[&[PREFIX.as_bytes(), ctx.accounts.asset.key.as_ref(), &[bump]]],
+        )?;
+    } else {
+        invoke(
+            &transfer_ix,
+            &[ctx.accounts.payer.clone(), ctx.accounts.asset.clone()],
+        )?;
+    }
+
+    // If the first remaining account is an ExecutionDelegateRecordV1, strip it
+    // before passing to the CPI -- it was only needed for plugin validation.
+    let cpi_accounts = if let Some(first) = ctx.remaining_accounts.first() {
+        if first.owner == &mpl_agent_tools::ID
+            && first.data_len() > 0
+            && first.data.borrow()[0]
+                == mpl_agent_tools::types::Key::ExecutionDelegateRecordV1 as u8
+        {
+            &ctx.remaining_accounts[1..]
+        } else {
+            ctx.remaining_accounts
+        }
+    } else {
+        ctx.remaining_accounts
+    };
 
     process_execute(
         ctx.accounts.asset.key,
         ctx.accounts.asset_signer.key,
         ctx.accounts.program_id.key,
         args.instruction_data,
-        ctx.remaining_accounts,
+        cpi_accounts,
+        bump,
     )
 }
 
@@ -95,14 +137,8 @@ fn process_execute(
     program_id: &Pubkey,
     instruction_data: Vec<u8>,
     remaining_accounts: &[AccountInfo],
+    bump: u8,
 ) -> ProgramResult {
-    let (pda, bump) =
-        Pubkey::find_program_address(&[PREFIX.as_bytes(), asset_key.as_ref()], &crate::ID);
-
-    if pda != *asset_signer {
-        return Err(MplCoreError::InvalidExecutePda.into());
-    }
-
     invoke_signed(
         &Instruction {
             program_id: *program_id,
