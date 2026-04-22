@@ -208,9 +208,12 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
         .checked_add(size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
 
-    resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
+    if size_diff > 0 {
+        // Growing: realloc first to make room for the rightward shift.
+        resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
+    }
 
-    let copy_len = (registry_offset as usize)
+    let copy_len = (registry_offset)
         .checked_sub(next_plugin_offset as usize)
         .ok_or(MplCoreError::NumericalOverflow)?;
     if copy_len > 0 {
@@ -222,6 +225,11 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
                 copy_len,
             );
         }
+    }
+
+    if size_diff < 0 {
+        // Shrinking: realloc after memmove to preserve data before truncation.
+        resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
     }
 
     plugin_header.save(account, core.len())?;

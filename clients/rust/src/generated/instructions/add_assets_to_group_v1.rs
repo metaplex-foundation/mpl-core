@@ -53,9 +53,7 @@ impl AddAssetsToGroupV1 {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = AddAssetsToGroupV1InstructionData::new()
-            .try_to_vec()
-            .unwrap();
+        let data = borsh::to_vec(&(AddAssetsToGroupV1InstructionData::new())).unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::MPL_CORE_ID,
@@ -256,13 +254,11 @@ impl<'a, 'b> AddAssetsToGroupV1Cpi<'a, 'b> {
         remaining_accounts.iter().for_each(|remaining_account| {
             accounts.push(solana_program::instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
-                is_signer: remaining_account.1,
-                is_writable: remaining_account.2,
+                is_writable: remaining_account.1,
+                is_signer: remaining_account.2,
             })
         });
-        let data = AddAssetsToGroupV1InstructionData::new()
-            .try_to_vec()
-            .unwrap();
+        let data = borsh::to_vec(&(AddAssetsToGroupV1InstructionData::new())).unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::MPL_CORE_ID,

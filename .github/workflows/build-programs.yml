@@ -49,6 +49,11 @@ jobs:
                   version: ${{ inputs.solana || env.SOLANA_VERSION }}
                   cache: ${{ env.CACHE }}
 
+            - name: Install modern SBF build tools
+              run: |
+                  cargo install solana-cargo-build-sbf --version 4.0.0 --locked
+                  echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
             - name: Install Protobuf Compiler
               run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
 
