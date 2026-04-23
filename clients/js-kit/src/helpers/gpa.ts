@@ -38,78 +38,73 @@ const COLLECTION_UPDATE_AUTHORITY_OFFSET = 1;
 // Base58 alphabet
 const BASE58_ALPHABET =
   '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const BASE10_256 = 256n;
+const BASE58 = 58n;
+
+function countLeadingCharacter(str: string, character: string): number {
+  const firstDifferentCharacter = str
+    .split('')
+    .findIndex((char) => char !== character);
+  return firstDifferentCharacter === -1 ? str.length : firstDifferentCharacter;
+}
+
+function countLeadingZeroBytes(bytes: Uint8Array): number {
+  const firstNonZeroByte = bytes.findIndex((byte) => byte !== 0);
+  return firstNonZeroByte === -1 ? bytes.length : firstNonZeroByte;
+}
+
+function encodeBase58Value(value: bigint): string {
+  if (value === 0n) {
+    return '';
+  }
+
+  const quotient = value / BASE58;
+  const remainder = Number(value % BASE58);
+  return `${encodeBase58Value(quotient)}${BASE58_ALPHABET[remainder]}`;
+}
+
+function decodeBase58Value(str: string): bigint {
+  return str.split('').reduce((value, char) => {
+    const nextDigit = BASE58_ALPHABET.indexOf(char);
+    if (nextDigit === -1) {
+      throw new Error(`Invalid base58 character: ${char}`);
+    }
+    return value * BASE58 + BigInt(nextDigit);
+  }, 0n);
+}
+
+function bigintToBytes(value: bigint): number[] {
+  if (value === 0n) {
+    return [];
+  }
+
+  const quotient = value / BASE10_256;
+  const remainder = Number(value % BASE10_256);
+  return [...bigintToBytes(quotient), remainder];
+}
 
 // Simple base58 encoder
 function encodeBase58(bytes: Uint8Array): Base58EncodedBytes {
   if (bytes.length === 0) return '' as Base58EncodedBytes;
 
-  // Count leading zeros
-  let zeros = 0;
-  while (zeros < bytes.length && bytes[zeros] === 0) {
-    zeros++;
-  }
-
-  // Convert to base58
-  const input = Array.from(bytes);
-  const encoded: number[] = [];
-
-  for (const byte of input) {
-    let carry = byte;
-    for (let j = 0; j < encoded.length; j++) {
-      carry += encoded[j] << 8;
-      encoded[j] = carry % 58;
-      carry = Math.floor(carry / 58);
-    }
-    while (carry > 0) {
-      encoded.push(carry % 58);
-      carry = Math.floor(carry / 58);
-    }
-  }
-
-  // Add leading '1's for zero bytes
-  let result = '1'.repeat(zeros);
-  for (let i = encoded.length - 1; i >= 0; i--) {
-    result += BASE58_ALPHABET[encoded[i]];
-  }
-
-  return result as Base58EncodedBytes;
+  const leadingZeroCount = countLeadingZeroBytes(bytes);
+  const encodedValue = bytes.reduce(
+    (value, byte) => value * BASE10_256 + BigInt(byte),
+    0n
+  );
+  return `${'1'.repeat(leadingZeroCount)}${encodeBase58Value(encodedValue)}` as Base58EncodedBytes;
 }
 
 // Simple base58 decoder
 function decodeBase58(str: string): Uint8Array {
   if (str.length === 0) return new Uint8Array(0);
 
-  // Count leading '1's
-  let zeros = 0;
-  while (zeros < str.length && str[zeros] === '1') {
-    zeros++;
-  }
-
-  // Decode from base58
-  const decoded: number[] = [];
-  for (const char of str) {
-    const value = BASE58_ALPHABET.indexOf(char);
-    if (value === -1) throw new Error(`Invalid base58 character: ${char}`);
-
-    let carry = value;
-    for (let j = 0; j < decoded.length; j++) {
-      carry += decoded[j] * 58;
-      decoded[j] = carry & 0xff;
-      carry >>= 8;
-    }
-    while (carry > 0) {
-      decoded.push(carry & 0xff);
-      carry >>= 8;
-    }
-  }
-
-  // Add leading zeros
-  const result = new Uint8Array(zeros + decoded.length);
-  for (let i = zeros + decoded.length - 1, j = 0; j < decoded.length; i--, j++) {
-    result[i] = decoded[j];
-  }
-
-  return result;
+  const leadingZeroCount = countLeadingCharacter(str, '1');
+  const decodedValue = decodeBase58Value(str.slice(leadingZeroCount));
+  return Uint8Array.from([
+    ...Array.from({ length: leadingZeroCount }, () => 0),
+    ...bigintToBytes(decodedValue),
+  ]);
 }
 
 /**
@@ -144,16 +139,26 @@ export async function fetchAssetsByOwner(
     .send();
 
   const decoder = getAssetV1Decoder();
-  return response.map((item: { pubkey: Address; account: { data: [string, string]; executable: boolean; lamports: bigint; owner: Address } }) => {
-    const data = new Uint8Array(Buffer.from(item.account.data[0], 'base64'));
-    return {
-      address: item.pubkey,
-      data: decoder.decode(data),
-      executable: item.account.executable,
-      lamports: item.account.lamports,
-      programAddress: item.account.owner,
-    } as Account<AssetV1>;
-  });
+  return response.map(
+    (item: {
+      pubkey: Address;
+      account: {
+        data: [string, string];
+        executable: boolean;
+        lamports: bigint;
+        owner: Address;
+      };
+    }) => {
+      const data = new Uint8Array(Buffer.from(item.account.data[0], 'base64'));
+      return {
+        address: item.pubkey,
+        data: decoder.decode(data),
+        executable: item.account.executable,
+        lamports: item.account.lamports,
+        programAddress: item.account.owner,
+      } as Account<AssetV1>;
+    }
+  );
 }
 
 /**
@@ -195,16 +200,26 @@ export async function fetchAssetsByCollection(
     .send();
 
   const decoder = getAssetV1Decoder();
-  return response.map((item: { pubkey: Address; account: { data: [string, string]; executable: boolean; lamports: bigint; owner: Address } }) => {
-    const data = new Uint8Array(Buffer.from(item.account.data[0], 'base64'));
-    return {
-      address: item.pubkey,
-      data: decoder.decode(data),
-      executable: item.account.executable,
-      lamports: item.account.lamports,
-      programAddress: item.account.owner,
-    } as Account<AssetV1>;
-  });
+  return response.map(
+    (item: {
+      pubkey: Address;
+      account: {
+        data: [string, string];
+        executable: boolean;
+        lamports: bigint;
+        owner: Address;
+      };
+    }) => {
+      const data = new Uint8Array(Buffer.from(item.account.data[0], 'base64'));
+      return {
+        address: item.pubkey,
+        data: decoder.decode(data),
+        executable: item.account.executable,
+        lamports: item.account.lamports,
+        programAddress: item.account.owner,
+      } as Account<AssetV1>;
+    }
+  );
 }
 
 /**
@@ -246,16 +261,26 @@ export async function fetchAssetsByUpdateAuthority(
     .send();
 
   const decoder = getAssetV1Decoder();
-  return response.map((item: { pubkey: Address; account: { data: [string, string]; executable: boolean; lamports: bigint; owner: Address } }) => {
-    const data = new Uint8Array(Buffer.from(item.account.data[0], 'base64'));
-    return {
-      address: item.pubkey,
-      data: decoder.decode(data),
-      executable: item.account.executable,
-      lamports: item.account.lamports,
-      programAddress: item.account.owner,
-    } as Account<AssetV1>;
-  });
+  return response.map(
+    (item: {
+      pubkey: Address;
+      account: {
+        data: [string, string];
+        executable: boolean;
+        lamports: bigint;
+        owner: Address;
+      };
+    }) => {
+      const data = new Uint8Array(Buffer.from(item.account.data[0], 'base64'));
+      return {
+        address: item.pubkey,
+        data: decoder.decode(data),
+        executable: item.account.executable,
+        lamports: item.account.lamports,
+        programAddress: item.account.owner,
+      } as Account<AssetV1>;
+    }
+  );
 }
 
 /**
@@ -290,14 +315,24 @@ export async function fetchCollectionsByUpdateAuthority(
     .send();
 
   const decoder = getCollectionV1Decoder();
-  return response.map((item: { pubkey: Address; account: { data: [string, string]; executable: boolean; lamports: bigint; owner: Address } }) => {
-    const data = new Uint8Array(Buffer.from(item.account.data[0], 'base64'));
-    return {
-      address: item.pubkey,
-      data: decoder.decode(data),
-      executable: item.account.executable,
-      lamports: item.account.lamports,
-      programAddress: item.account.owner,
-    } as Account<CollectionV1>;
-  });
+  return response.map(
+    (item: {
+      pubkey: Address;
+      account: {
+        data: [string, string];
+        executable: boolean;
+        lamports: bigint;
+        owner: Address;
+      };
+    }) => {
+      const data = new Uint8Array(Buffer.from(item.account.data[0], 'base64'));
+      return {
+        address: item.pubkey,
+        data: decoder.decode(data),
+        executable: item.account.executable,
+        lamports: item.account.lamports,
+        programAddress: item.account.owner,
+      } as Account<CollectionV1>;
+    }
+  );
 }

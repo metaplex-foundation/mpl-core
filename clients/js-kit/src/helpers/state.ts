@@ -1,9 +1,6 @@
 import { type Address, address } from '@solana/addresses';
 import { type AssetV1, type CollectionV1 } from '../generated';
-import {
-  type AssetPluginsList,
-  type CollectionPluginsList,
-} from '../plugins';
+import { type AssetPluginsList, type CollectionPluginsList } from '../plugins';
 
 /**
  * Find the collection address for the given asset if it is part of a collection.
@@ -64,36 +61,44 @@ export function deriveAssetPlugins<T extends AssetV1 & AssetPluginsList>(
   }
 
   // Merge plugins from collection into asset, asset takes precedence
-  const mergedPlugins: Partial<AssetPluginsList> = {};
-
   // List of common plugin keys that can be inherited from collection
   const inheritablePluginKeys: (keyof AssetPluginsList)[] = [
+    'addBlocker',
     'attributes',
+    'autograph',
+    'freezeExecute',
+    'immutableMetadata',
+    'permanentBurnDelegate',
+    'permanentFreezeDelegate',
+    'permanentFreezeExecute',
+    'permanentTransferDelegate',
     'royalties',
     'updateDelegate',
-    'permanentFreezeDelegate',
-    'permanentTransferDelegate',
-    'permanentBurnDelegate',
-    'addBlocker',
-    'immutableMetadata',
-    'autograph',
     'verifiedCreators',
-    'freezeExecute',
-    'permanentFreezeExecute',
   ];
 
-  for (const key of inheritablePluginKeys) {
+  const mergedPlugins = inheritablePluginKeys.reduce((plugins, key) => {
     const assetPlugin = (asset as AssetPluginsList)[key];
     const collectionPlugin = (collection as CollectionPluginsList)[
       key as keyof CollectionPluginsList
     ];
 
     if (assetPlugin) {
-      (mergedPlugins as Record<string, unknown>)[key] = assetPlugin;
-    } else if (collectionPlugin) {
-      (mergedPlugins as Record<string, unknown>)[key] = collectionPlugin;
+      return {
+        ...plugins,
+        [key]: assetPlugin,
+      };
     }
-  }
+
+    if (collectionPlugin) {
+      return {
+        ...plugins,
+        [key]: collectionPlugin,
+      };
+    }
+
+    return plugins;
+  }, {} as Partial<AssetPluginsList>);
 
   return {
     ...asset,
