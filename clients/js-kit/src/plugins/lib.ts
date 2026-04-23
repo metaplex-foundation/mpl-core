@@ -12,7 +12,7 @@ import {
   type RegistryRecord,
 } from '../generated';
 
-import { toWords } from '../utils';
+import { someOrNone, toWords } from '../utils';
 import { masterEditionFromBase, masterEditionToBase } from './masterEdition';
 import {
   type PluginAuthority,
@@ -27,7 +27,6 @@ import {
   type PluginAuthorityPairHelperArgs,
   type PluginsList,
 } from './types';
-import { someOrNone } from '../utils';
 
 export function formPluginHeaderV1(
   pluginRegistryOffset: bigint
@@ -139,7 +138,9 @@ export function pluginAuthorityPairV2({
       type,
       ...args,
     } as AssetAllPluginArgsV2),
-    authority: authority ? someOrNone(pluginAuthorityToBase(authority)) : { __option: 'None' },
+    authority: authority
+      ? someOrNone(pluginAuthorityToBase(authority))
+      : { __option: 'None' },
   };
 }
 
@@ -185,7 +186,9 @@ export function mapPlugin({
     [pluginKey]: {
       authority,
       offset,
-      ...('fields' in plug ? mapPluginFields(plug.fields as unknown as Record<string, unknown>[]) : {}),
+      ...('fields' in plug
+        ? mapPluginFields(plug.fields as unknown as Record<string, unknown>[])
+        : {}),
     },
   };
 }
@@ -230,7 +233,10 @@ export function parseExternalPluginAdapterData(
   account: Uint8Array
 ): unknown {
   let data;
-  if (record.dataOffset.__option === 'Some' && record.dataLen.__option === 'Some') {
+  if (
+    record.dataOffset.__option === 'Some' &&
+    record.dataLen.__option === 'Some'
+  ) {
     const dataSlice = account.slice(
       Number(record.dataOffset.value),
       Number(record.dataOffset.value) + Number(record.dataLen.value)
@@ -245,7 +251,10 @@ export function parseExternalPluginAdapterData(
           data = JSON.parse(new TextDecoder().decode(dataSlice));
         } catch (e) {
           // eslint-disable-next-line no-console
-          console.warn('Invalid JSON in external plugin data', (e as Error).message);
+          console.warn(
+            'Invalid JSON in external plugin data',
+            (e as Error).message
+          );
         }
       }
     } else if (plugin.schema === ExternalPluginAdapterSchema.MsgPack) {
