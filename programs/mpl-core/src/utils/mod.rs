@@ -10,7 +10,7 @@ use crate::{
         fetch_wrapped_plugin, validate_external_plugin_adapter_checks, validate_plugin_checks,
         CheckResult, ExternalCheckResultBits, ExternalPluginAdapter, ExternalPluginAdapterKey,
         ExternalRegistryRecord, HookableLifecycleEvent, Plugin, PluginHeaderV1, PluginRegistryV1,
-        PluginType, PluginValidationContext, RegistryRecord, ValidationResult,
+        PluginType, PluginValidationContext, RegistryRecord, UpdateDelegate, ValidationResult,
     },
     state::{
         AssetV1, Authority, CollectionV1, CoreAsset, DataBlob, GroupV1, Key, SolanaAccount,
@@ -542,20 +542,74 @@ pub(crate) fn resolve_authority<'a>(
     }
 }
 
+fn fetch_update_delegate_plugin<T: DataBlob + SolanaAccount>(
+    account_info: &AccountInfo,
+    core: Option<&T>,
+) -> Result<Option<(Authority, UpdateDelegate)>, ProgramError> {
+    let core_len = match core {
+        Some(core) => core.len(),
+        None => T::load(account_info, 0)?.len(),
+    };
+
+    if account_info.data_len() == core_len {
+        return Ok(None);
+    }
+
+    match fetch_wrapped_plugin::<T>(account_info, core, PluginType::UpdateDelegate) {
+        Ok((plugin_authority, Plugin::UpdateDelegate(update_delegate))) => {
+            Ok(Some((plugin_authority, update_delegate)))
+        }
+        Ok(_) => Err(MplCoreError::InvalidPlugin.into()),
+        Err(ProgramError::Custom(code))
+            if code == MplCoreError::PluginNotFound as u32
+                || code == MplCoreError::PluginsNotInitialized as u32 =>
+        {
+            Ok(None)
+        }
+        Err(err) => Err(err),
+    }
+}
+
+fn update_delegate_approves(
+    plugin_authority: &Authority,
+    update_delegate: &UpdateDelegate,
+    authority_info: &AccountInfo,
+    resolved_authorities: &[Authority],
+) -> bool {
+    resolved_authorities.contains(plugin_authority)
+        || update_delegate
+            .additional_delegates
+            .contains(authority_info.key)
+}
+
 /// Returns true if the `authority_info` represents either the update authority of the asset
-/// or a valid update delegate (defined by an `UpdateDelegate` plugin on the asset).
+/// or a valid update delegate resolved with the same asset-over-collection precedence as
+/// lifecycle validation.
 ///
 /// When the asset's update authority is `UpdateAuthority::Collection`, the signer is
-/// validated against the collection's update authority (and its update delegates) by
-/// locating the collection `AccountInfo` in `all_accounts`.  Callers must ensure the
-/// collection account is present in the transaction when operating on collection-bound
-/// assets.
+/// validated against the collection's update authority by locating the collection
+/// `AccountInfo` in `all_accounts`. If both the asset and collection have an
+/// `UpdateDelegate` plugin, the asset plugin overrides the collection plugin, matching
+/// `validate_asset_permissions`.
 pub fn is_valid_asset_authority<'a>(
     asset_info: &AccountInfo<'a>,
     authority_info: &AccountInfo<'a>,
     all_accounts: &'a [AccountInfo<'a>],
 ) -> Result<bool, ProgramError> {
     let asset_core = AssetV1::load(asset_info, 0)?;
+    let asset_update_delegate =
+        fetch_update_delegate_plugin::<AssetV1>(asset_info, Some(&asset_core))?;
+    let mut resolved_authorities = Vec::with_capacity(2);
+
+    if authority_info.key == &asset_core.owner {
+        resolved_authorities.push(Authority::Owner);
+    }
+
+    resolved_authorities.push(Authority::Address {
+        address: *authority_info.key,
+    });
+
+    let mut collection_account_and_core = None;
 
     match &asset_core.update_authority {
         UpdateAuthority::Address(addr) => {
@@ -566,9 +620,11 @@ pub fn is_valid_asset_authority<'a>(
         UpdateAuthority::Collection(collection_addr) => {
             match all_accounts.iter().find(|a| a.key == collection_addr) {
                 Some(collection_info) => {
-                    if is_valid_collection_authority(collection_info, authority_info)? {
+                    let collection_core = CollectionV1::load(collection_info, 0)?;
+                    if authority_info.key == &collection_core.update_authority {
                         return Ok(true);
                     }
+                    collection_account_and_core = Some((collection_info, collection_core));
                 }
                 None => {
                     msg!(
@@ -582,22 +638,26 @@ pub fn is_valid_asset_authority<'a>(
         UpdateAuthority::None => {}
     }
 
-    // Attempt to locate an UpdateDelegate plugin on the asset itself.
-    match fetch_wrapped_plugin::<AssetV1>(asset_info, Some(&asset_core), PluginType::UpdateDelegate)
-    {
-        Ok((_plugin_authority, Plugin::UpdateDelegate(update_delegate))) => {
-            if update_delegate
-                .additional_delegates
-                .contains(authority_info.key)
-            {
-                return Ok(true);
-            }
+    if let Some((plugin_authority, update_delegate)) = asset_update_delegate {
+        return Ok(update_delegate_approves(
+            &plugin_authority,
+            &update_delegate,
+            authority_info,
+            &resolved_authorities,
+        ));
+    }
+
+    if let Some((collection_info, collection_core)) = collection_account_and_core.as_ref() {
+        if let Some((plugin_authority, update_delegate)) =
+            fetch_update_delegate_plugin::<CollectionV1>(collection_info, Some(collection_core))?
+        {
+            return Ok(update_delegate_approves(
+                &plugin_authority,
+                &update_delegate,
+                authority_info,
+                &resolved_authorities,
+            ));
         }
-        Ok(_) => return Err(MplCoreError::InvalidPlugin.into()),
-        Err(ProgramError::Custom(code))
-            if code == MplCoreError::PluginNotFound as u32
-                || code == MplCoreError::PluginsNotInitialized as u32 => {}
-        Err(err) => return Err(err),
     }
 
     Ok(false)
