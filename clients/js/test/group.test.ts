@@ -5,8 +5,10 @@ import {
   addCollectionsToGroup,
   getGroupV1GpaBuilder,
   Key,
+  pluginAuthorityPair,
   removeAssetsFromGroup,
   removeCollectionsFromGroup,
+  updateGroup,
 } from '../src';
 import {
   assertGroup,
@@ -153,6 +155,143 @@ test('it allows collection update authority to remove collection-managed assets 
   await assertGroup(t, umi, {
     group: group.publicKey,
     updateAuthority: sharedAuthority.publicKey,
+    assets: [],
+  });
+});
+
+test('it resolves asset UpdateDelegate before collection UpdateDelegate for asset group membership', async (t) => {
+  const umi = await createUmi();
+  const collectionDelegate = generateSigner(umi);
+  const assetDelegate = generateSigner(umi);
+
+  const collectionDelegateGroup = await createGroup(umi, {
+    updateAuthority: collectionDelegate,
+  });
+  const assetDelegateGroup = await createGroup(umi, {
+    updateAuthority: assetDelegate,
+  });
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'UpdateDelegate',
+          data: { additionalDelegates: [assetDelegate.publicKey] },
+        }),
+      ],
+    },
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'UpdateDelegate',
+          data: { additionalDelegates: [collectionDelegate.publicKey] },
+        }),
+      ],
+    }
+  );
+
+  await t.throwsAsync(
+    addAssetsToGroup(umi, {
+      group: collectionDelegateGroup.publicKey,
+      authority: collectionDelegate,
+    })
+      .addRemainingAccounts([
+        { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+        { isSigner: false, isWritable: false, pubkey: collection.publicKey },
+      ])
+      .sendAndConfirm(umi),
+    { name: 'InvalidAuthority' }
+  );
+
+  await addAssetsToGroup(umi, {
+    group: assetDelegateGroup.publicKey,
+    authority: assetDelegate,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+      { isSigner: false, isWritable: false, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await updateGroup(umi, {
+    group: assetDelegateGroup.publicKey,
+    authority: assetDelegate,
+    newUpdateAuthority: collectionDelegate.publicKey,
+    newName: null,
+    newUri: null,
+  }).sendAndConfirm(umi);
+
+  await t.throwsAsync(
+    removeAssetsFromGroup(umi, {
+      group: assetDelegateGroup.publicKey,
+      authority: collectionDelegate,
+      assets: [asset.publicKey],
+    })
+      .addRemainingAccounts([
+        { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+        { isSigner: false, isWritable: false, pubkey: collection.publicKey },
+      ])
+      .sendAndConfirm(umi),
+    { name: 'InvalidAuthority' }
+  );
+
+  await assertGroup(t, umi, {
+    group: assetDelegateGroup.publicKey,
+    updateAuthority: collectionDelegate.publicKey,
+    assets: [asset.publicKey],
+  });
+});
+
+test('it allows collection UpdateDelegate to manage asset group membership when the asset has no UpdateDelegate', async (t) => {
+  const umi = await createUmi();
+  const collectionDelegate = generateSigner(umi);
+
+  const group = await createGroup(umi, {
+    updateAuthority: collectionDelegate,
+  });
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'UpdateDelegate',
+          data: { additionalDelegates: [collectionDelegate.publicKey] },
+        }),
+      ],
+    }
+  );
+
+  await addAssetsToGroup(umi, {
+    group: group.publicKey,
+    authority: collectionDelegate,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+      { isSigner: false, isWritable: false, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await assertGroup(t, umi, {
+    group: group.publicKey,
+    updateAuthority: collectionDelegate.publicKey,
+    assets: [asset.publicKey],
+  });
+
+  await removeAssetsFromGroup(umi, {
+    group: group.publicKey,
+    authority: collectionDelegate,
+    assets: [asset.publicKey],
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+      { isSigner: false, isWritable: false, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await assertGroup(t, umi, {
+    group: group.publicKey,
+    updateAuthority: collectionDelegate.publicKey,
     assets: [],
   });
 });
