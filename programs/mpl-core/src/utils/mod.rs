@@ -590,7 +590,8 @@ fn update_delegate_approves(
 /// validated against the collection's update authority by locating the collection
 /// `AccountInfo` in `all_accounts`. If both the asset and collection have an
 /// `UpdateDelegate` plugin, the asset plugin overrides the collection plugin, matching
-/// `validate_asset_permissions`.
+/// `validate_asset_permissions`. Missing collection accounts return `MissingCollection`,
+/// matching lifecycle validation.
 pub fn is_valid_asset_authority<'a>(
     asset_info: &AccountInfo<'a>,
     authority_info: &AccountInfo<'a>,
@@ -599,43 +600,27 @@ pub fn is_valid_asset_authority<'a>(
     let asset_core = AssetV1::load(asset_info, 0)?;
     let asset_update_delegate =
         fetch_update_delegate_plugin::<AssetV1>(asset_info, Some(&asset_core))?;
-    let mut resolved_authorities = Vec::with_capacity(2);
-
-    if authority_info.key == &asset_core.owner {
-        resolved_authorities.push(Authority::Owner);
-    }
-
-    resolved_authorities.push(Authority::Address {
-        address: *authority_info.key,
-    });
-
-    let mut collection_account_and_core = None;
-
-    match &asset_core.update_authority {
-        UpdateAuthority::Address(addr) => {
-            if addr == authority_info.key {
-                return Ok(true);
-            }
-        }
+    let collection_info = match asset_core.update_authority {
         UpdateAuthority::Collection(collection_addr) => {
-            match all_accounts.iter().find(|a| a.key == collection_addr) {
-                Some(collection_info) => {
-                    let collection_core = CollectionV1::load(collection_info, 0)?;
-                    if authority_info.key == &collection_core.update_authority {
-                        return Ok(true);
-                    }
-                    collection_account_and_core = Some((collection_info, collection_core));
-                }
+            match all_accounts.iter().find(|a| a.key == &collection_addr) {
+                Some(collection_info) => Some(collection_info),
                 None => {
                     msg!(
                         "Asset has UpdateAuthority::Collection but the collection \
                          account {} was not provided in the transaction",
                         collection_addr
                     );
+                    return Err(MplCoreError::MissingCollection.into());
                 }
             }
         }
-        UpdateAuthority::None => {}
+        _ => None,
+    };
+    let resolved_authorities =
+        resolve_pubkey_to_authorities(authority_info, collection_info, &asset_core)?;
+
+    if resolved_authorities.contains(&Authority::UpdateAuthority) {
+        return Ok(true);
     }
 
     if let Some((plugin_authority, update_delegate)) = asset_update_delegate {
@@ -647,9 +632,9 @@ pub fn is_valid_asset_authority<'a>(
         ));
     }
 
-    if let Some((collection_info, collection_core)) = collection_account_and_core.as_ref() {
+    if let Some(collection_info) = collection_info {
         if let Some((plugin_authority, update_delegate)) =
-            fetch_update_delegate_plugin::<CollectionV1>(collection_info, Some(collection_core))?
+            fetch_update_delegate_plugin::<CollectionV1>(collection_info, None)?
         {
             return Ok(update_delegate_approves(
                 &plugin_authority,
