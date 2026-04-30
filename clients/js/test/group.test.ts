@@ -242,6 +242,60 @@ test('it resolves asset UpdateDelegate before collection UpdateDelegate for asse
   });
 });
 
+test('it allows collection UpdateDelegate to manage asset group membership when the asset has no UpdateDelegate', async (t) => {
+  const umi = await createUmi();
+  const collectionDelegate = generateSigner(umi);
+
+  const group = await createGroup(umi, {
+    updateAuthority: collectionDelegate,
+  });
+  const { asset, collection } = await createAssetWithCollection(
+    umi,
+    {},
+    {
+      plugins: [
+        pluginAuthorityPair({
+          type: 'UpdateDelegate',
+          data: { additionalDelegates: [collectionDelegate.publicKey] },
+        }),
+      ],
+    }
+  );
+
+  await addAssetsToGroup(umi, {
+    group: group.publicKey,
+    authority: collectionDelegate,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+      { isSigner: false, isWritable: false, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await assertGroup(t, umi, {
+    group: group.publicKey,
+    updateAuthority: collectionDelegate.publicKey,
+    assets: [asset.publicKey],
+  });
+
+  await removeAssetsFromGroup(umi, {
+    group: group.publicKey,
+    authority: collectionDelegate,
+    assets: [asset.publicKey],
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+      { isSigner: false, isWritable: false, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await assertGroup(t, umi, {
+    group: group.publicKey,
+    updateAuthority: collectionDelegate.publicKey,
+    assets: [],
+  });
+});
+
 test('it rejects addCollectionsToGroup when signer is not group authority', async (t) => {
   const umi = await createUmi();
   const attacker = generateSigner(umi);
