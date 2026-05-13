@@ -3677,6 +3677,7 @@ dependencies = [
  "shank",
  "solana-program 2.3.0",
  "solana-sdk 2.3.1",
+ "solana-security-txt",
  "spl-noop",
  "strum 0.26.3",
  "thiserror 1.0.69",
