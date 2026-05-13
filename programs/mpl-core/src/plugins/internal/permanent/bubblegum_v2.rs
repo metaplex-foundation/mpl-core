@@ -43,21 +43,19 @@ impl PluginValidation for BubblegumV2 {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
-        // Only restrict plugins on the collection itself. Assets in the
-        // collection flow through the Core program and are not affected by
-        // BubblegumV2 plugin restrictions.
-        if ctx.asset_info.is_some() {
-            return abstain!();
-        }
-
         if let Some(target_plugin) = ctx.target_plugin {
             let plugin_type = PluginType::from(target_plugin);
-            if Self::ALLOW_LIST.contains(&plugin_type) {
-                abstain!()
-            } else if plugin_type == PluginType::BubblegumV2 {
+            if plugin_type == PluginType::BubblegumV2 {
                 // This plugin can only be added at creation time, so we
-                // always reject it.
+                // always reject it regardless of asset or collection.
                 reject!()
+            } else if ctx.asset_info.is_some() {
+                // Only restrict other plugins on the collection itself.
+                // Assets in the collection flow through the Core program
+                // and are not affected by BubblegumV2 plugin restrictions.
+                abstain!()
+            } else if Self::ALLOW_LIST.contains(&plugin_type) {
+                abstain!()
             } else {
                 // All other plugins are not allowed on Bubblegum
                 // collections.
