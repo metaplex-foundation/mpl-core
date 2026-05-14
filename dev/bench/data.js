@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776451092649,
+  "lastUpdate": 1778788840678,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -10729,6 +10729,120 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/metaplex-foundation/mpl-core/commit/6f2f577013e9c577d7a3969fc849881b5c5e98d1"
         },
         "date": 1776451091620,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 8022,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 16839,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 26608,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 31936,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 20043,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 25233,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 24993,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 33304,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 24276,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 36089,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 3785,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 5498,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 7213,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 8926,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "56533526+danenbm@users.noreply.github.com",
+            "name": "Michael Danenberg",
+            "username": "danenbm"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2398d729d09886cfea9a5c927ac5ed6f119e5b41",
+          "message": "Fix BubblegumV2 to only restrict plugins on collections (#278)\n\n* Fix BubblegumV2 to only restrict plugins on collections\n\nBubblegumV2's allowlist was incorrectly blocking non-allowlisted plugins\nand external plugin adapters from being added to assets in the collection.\nSince regular Core assets flow through the Core program (not Bubblegum),\nonly the collection itself should be restricted. The allowlist exists to\nprevent confusion about which plugins affect bubblegum cNFTs, but should\nnot limit what can be on other assets.\n\n* Fix BubblegumV2 to reject itself before checking asset_info gate",
+          "timestamp": "2026-05-14T12:52:56-07:00",
+          "tree_id": "068d939219d2f9e8820f3c3da110c962d149aa84",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/2398d729d09886cfea9a5c927ac5ed6f119e5b41"
+        },
+        "date": 1778788840249,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
