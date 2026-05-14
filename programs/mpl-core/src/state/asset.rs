@@ -430,6 +430,7 @@ impl CoreAsset for AssetV1 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::plugins::{FreezeDelegate, UpdateDelegate};
 
     fn with_authority_info<T>(key: Pubkey, f: impl FnOnce(&AccountInfo) -> T) -> T {
         let owner = Pubkey::default();
@@ -447,6 +448,26 @@ mod tests {
         );
 
         f(&account_info)
+    }
+
+    fn assert_plugin_authority_validation_result(
+        asset: &AssetV1,
+        authority_info: &AccountInfo,
+        plugin: &Plugin,
+        expected: ValidationResult,
+    ) {
+        assert_eq!(
+            asset
+                .validate_approve_plugin_authority(authority_info, Some(plugin), None)
+                .unwrap(),
+            expected
+        );
+        assert_eq!(
+            asset
+                .validate_revoke_plugin_authority(authority_info, Some(plugin), None)
+                .unwrap(),
+            expected
+        );
     }
 
     #[test]
@@ -507,6 +528,85 @@ mod tests {
                     .validate_revoke_plugin_authority(authority_info, None, None)
                     .unwrap_err(),
                 ProgramError::from(MplCoreError::InvalidPlugin)
+            );
+        });
+    }
+
+    #[test]
+    fn test_plugin_authority_validations_approve_matching_authorities() {
+        let owner = Pubkey::new_unique();
+        let update_authority = Pubkey::new_unique();
+        let asset = AssetV1 {
+            key: Key::AssetV1,
+            owner,
+            update_authority: UpdateAuthority::Address(update_authority),
+            name: "".to_string(),
+            uri: "".to_string(),
+            seq: None,
+        };
+
+        with_authority_info(owner, |authority_info| {
+            assert_plugin_authority_validation_result(
+                &asset,
+                authority_info,
+                &Plugin::FreezeDelegate(FreezeDelegate::default()),
+                ValidationResult::Approved,
+            );
+        });
+
+        with_authority_info(update_authority, |authority_info| {
+            assert_plugin_authority_validation_result(
+                &asset,
+                authority_info,
+                &Plugin::UpdateDelegate(UpdateDelegate::default()),
+                ValidationResult::Approved,
+            );
+        });
+    }
+
+    #[test]
+    fn test_plugin_authority_validations_abstain_for_mismatches() {
+        let owner = Pubkey::new_unique();
+        let update_authority = Pubkey::new_unique();
+        let asset = AssetV1 {
+            key: Key::AssetV1,
+            owner,
+            update_authority: UpdateAuthority::Address(update_authority),
+            name: "".to_string(),
+            uri: "".to_string(),
+            seq: None,
+        };
+
+        with_authority_info(owner, |authority_info| {
+            assert_plugin_authority_validation_result(
+                &asset,
+                authority_info,
+                &Plugin::UpdateDelegate(UpdateDelegate::default()),
+                ValidationResult::Pass,
+            );
+        });
+
+        with_authority_info(update_authority, |authority_info| {
+            assert_plugin_authority_validation_result(
+                &asset,
+                authority_info,
+                &Plugin::FreezeDelegate(FreezeDelegate::default()),
+                ValidationResult::Pass,
+            );
+        });
+
+        with_authority_info(Pubkey::new_unique(), |authority_info| {
+            assert_plugin_authority_validation_result(
+                &asset,
+                authority_info,
+                &Plugin::FreezeDelegate(FreezeDelegate::default()),
+                ValidationResult::Pass,
+            );
+            assert_plugin_authority_validation_result(
+                &asset,
+                authority_info,
+                &Plugin::UpdateDelegate(UpdateDelegate::default()),
+                ValidationResult::Pass,
             );
         });
     }
