@@ -13,4 +13,8 @@ generateIdl({
   idlName: "mpl_core",
   binaryInstallDir,
   programDir: path.join(programDir, "mpl-core"),
+  // Pin the cached shank binary so contributors with newer Rust toolchains
+  // don't trigger a from-source rebuild, which can pick up incompatible
+  // dependency versions and produce a different IDL.
+  rustbin: { locked: true },
 });

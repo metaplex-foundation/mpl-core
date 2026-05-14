@@ -5,6 +5,7 @@
         "programs:test": "RUST_LOG=error ./configs/scripts/program/test.sh",
         "programs:debug": "./configs/scripts/program/test.sh",
         "programs:clean": "./configs/scripts/program/clean.sh",
+        "programs:verify": "./configs/scripts/program/verify-from-repo.sh",
         "clients:rust:test": "./configs/scripts/client/test-rust.sh",
         "clients:js:test": "./configs/scripts/client/test-js.sh",
         "generate": "pnpm generate:idls && pnpm generate:clients",
