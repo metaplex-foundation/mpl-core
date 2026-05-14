@@ -219,15 +219,16 @@ impl AssetV1 {
         plugin: Option<&Plugin>,
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(plugin) = plugin {
-            if (plugin.manager() == Authority::UpdateAuthority
-                && self.update_authority == UpdateAuthority::Address(*authority_info.key))
-                || (plugin.manager() == Authority::Owner && authority_info.key == &self.owner)
-            {
-                approve!()
-            } else {
-                abstain!()
-            }
+        let plugin = match plugin {
+            Some(plugin) => plugin,
+            None => return Err(MplCoreError::InvalidPlugin.into()),
+        };
+
+        if (plugin.manager() == Authority::UpdateAuthority
+            && self.update_authority == UpdateAuthority::Address(*authority_info.key))
+            || (plugin.manager() == Authority::Owner && authority_info.key == &self.owner)
+        {
+            approve!()
         } else {
             abstain!()
         }
@@ -240,15 +241,16 @@ impl AssetV1 {
         plugin: Option<&Plugin>,
         _: Option<&ExternalPluginAdapter>,
     ) -> Result<ValidationResult, ProgramError> {
-        if let Some(plugin) = plugin {
-            if (plugin.manager() == Authority::UpdateAuthority
-                && self.update_authority == UpdateAuthority::Address(*authority_info.key))
-                || (plugin.manager() == Authority::Owner && authority_info.key == &self.owner)
-            {
-                approve!()
-            } else {
-                abstain!()
-            }
+        let plugin = match plugin {
+            Some(plugin) => plugin,
+            None => return Err(MplCoreError::InvalidPlugin.into()),
+        };
+
+        if (plugin.manager() == Authority::UpdateAuthority
+            && self.update_authority == UpdateAuthority::Address(*authority_info.key))
+            || (plugin.manager() == Authority::Owner && authority_info.key == &self.owner)
+        {
+            approve!()
         } else {
             abstain!()
         }
@@ -429,6 +431,24 @@ impl CoreAsset for AssetV1 {
 mod tests {
     use super::*;
 
+    fn with_authority_info<T>(key: Pubkey, f: impl FnOnce(&AccountInfo) -> T) -> T {
+        let owner = Pubkey::default();
+        let mut lamports = 0;
+        let mut data = Vec::new();
+        let account_info = AccountInfo::new(
+            &key,
+            false,
+            false,
+            &mut lamports,
+            &mut data,
+            &owner,
+            false,
+            0,
+        );
+
+        f(&account_info)
+    }
+
     #[test]
     fn test_asset_len() {
         let assets = vec![
@@ -461,5 +481,33 @@ mod tests {
             let serialized = asset.try_to_vec().unwrap();
             assert_eq!(serialized.len(), asset.len());
         }
+    }
+
+    #[test]
+    fn test_plugin_authority_validations_require_plugin() {
+        let owner = Pubkey::default();
+        let asset = AssetV1 {
+            key: Key::AssetV1,
+            owner,
+            update_authority: UpdateAuthority::Address(owner),
+            name: "".to_string(),
+            uri: "".to_string(),
+            seq: None,
+        };
+
+        with_authority_info(owner, |authority_info| {
+            assert_eq!(
+                asset
+                    .validate_approve_plugin_authority(authority_info, None, None)
+                    .unwrap_err(),
+                ProgramError::from(MplCoreError::InvalidPlugin)
+            );
+            assert_eq!(
+                asset
+                    .validate_revoke_plugin_authority(authority_info, None, None)
+                    .unwrap_err(),
+                ProgramError::from(MplCoreError::InvalidPlugin)
+            );
+        });
     }
 }
