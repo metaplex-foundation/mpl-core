@@ -72,6 +72,9 @@ jobs:
           echo PROGRAM_NAME="${PROGRAM_NAME}" >> $GITHUB_ENV
           echo LIBRARY_NAME="${PROGRAM_NAME}_program" >> $GITHUB_ENV
           echo ${{ secrets.CORE_ID }} > ./program-id.json
+          # This keypair must be the program upgrade authority for the verified
+          # build PDA upload. Core mainnet currently uses Squads, so that path
+          # must publish the PDA through a Squads transaction instead.
           echo ${{ secrets.CORE_DEPLOY_KEY }} > ./deployer-key.json
 
       - name: Upload verified-build PDA

@@ -181,8 +181,10 @@ jobs:
             echo SQUADS_VAULT="Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59" >> $GITHUB_ENV
             echo SQUADS_PROGRAM_INDEX="1" >> $GITHUB_ENV
           elif [[ "${{ inputs.cluster }}" == "mainnet-beta" ]]; then
-            echo ${{ secrets.CORE_DEPLOY_KEY }} > ./deployer-key.json
-            echo DEPLOY_TYPE="direct" >> $GITHUB_ENV
+            echo DEPLOY_TYPE="squads" >> $GITHUB_ENV
+            echo SQUADS_MULTISIG="EADFTJ9b6yPAqyRjhz1scirvWhggMSWTt1BgBjKgm5wT" >> $GITHUB_ENV
+            echo SQUADS_VAULT="bfQVv6niKVgEURYqQ1beJmiEQQN7MrvLRvk3mZGFubb" >> $GITHUB_ENV
+            echo SQUADS_PROGRAM_INDEX="1" >> $GITHUB_ENV
           else
             echo "Invalid cluster: ${{ inputs.cluster }}"
             exit 1

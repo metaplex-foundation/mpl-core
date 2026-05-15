@@ -71,7 +71,7 @@ solana-verify remote submit-job \
   --uploader <UPGRADE_AUTHORITY_ADDRESS>
 ```
 
-The GitHub Actions [Verify Program](./.github/workflows/verify-program.yml) workflow performs both steps for one-off mainnet verification when its configured keypair is the program upgrade authority, and [Deploy Program](./.github/workflows/deploy-program.yml) performs them automatically after successful `mainnet-beta` direct deploys.
+The GitHub Actions [Verify Program](./.github/workflows/verify-program.yml) workflow performs both steps for one-off mainnet verification when its configured keypair is the program upgrade authority, and [Deploy Program](./.github/workflows/deploy-program.yml) performs them automatically after successful `mainnet-beta` direct deploys. Core's current `mainnet-beta` deploy path uses Squads, so publishing the verified-build PDA for that authority must be routed through the Squads transaction flow described in the Solana verified-builds guide.
 
 By default the script reads the repo URL from `git remote get-url origin` (normalizing `git@github.com:` and `ssh://git@github.com/` to `https://`) and the commit hash from `HEAD`. Both can be overridden with `--repo-url` and `--commit-hash`. The `--mount-path` and `--library-name` flags default to `.` and `mpl_core_program` respectively, matching this repo's layout for `solana-verify` v0.4.15. Override them when verifying a different program from the same workspace.
 
