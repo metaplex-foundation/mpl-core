@@ -103,6 +103,11 @@ fn payer_account() -> Account {
     }
 }
 
+/// Creates a program account for optional account sentinels that use the mpl-core ID.
+fn core_program_account() -> Account {
+    mollusk_svm::program::create_program_account_loader_v3(&MPL_CORE_ID)
+}
+
 /// Builds a TransferV1 instruction with the collection account set to a real pubkey.
 fn transfer_v1_with_collection_instruction(
     asset: Pubkey,
@@ -121,7 +126,7 @@ fn transfer_v1_with_collection_instruction(
             AccountMeta::new_readonly(payer, true),       // 3: authority (signer)
             AccountMeta::new_readonly(new_owner, false),  // 4: new_owner
             AccountMeta::new_readonly(system_program::ID, false), // 5: system_program
-            AccountMeta::new_readonly(MPL_CORE_ID, false), // 6: log_wrapper (optional)
+            AccountMeta::new_readonly(mpl_noop::ID, false), // 6: log_wrapper (optional)
         ],
     )
 }
@@ -289,7 +294,7 @@ fn transfer_v1_instruction(asset: Pubkey, payer: Pubkey, new_owner: Pubkey) -> I
             AccountMeta::new_readonly(payer, true),        // 3: authority (signer)
             AccountMeta::new_readonly(new_owner, false),   // 4: new_owner
             AccountMeta::new_readonly(system_program::ID, false), // 5: system_program
-            AccountMeta::new_readonly(MPL_CORE_ID, false), // 6: log_wrapper (optional)
+            AccountMeta::new_readonly(mpl_noop::ID, false), // 6: log_wrapper (optional)
         ],
     )
 }
@@ -369,6 +374,14 @@ fn to_mollusk_accounts(accounts: Vec<(Pubkey, Account)>) -> Vec<(Pubkey, Account
     }
     let (sys_key, sys_account) = mollusk_svm::program::keyed_account_for_system_program();
     result.push((sys_key, sys_account));
+
+    if let Some(pos) = result.iter().position(|(k, _)| *k == mpl_noop::ID) {
+        result.remove(pos);
+    }
+    result.push((
+        mpl_noop::ID,
+        mollusk_svm::program::create_program_account_loader_v3(&mpl_noop::ID),
+    ));
 
     result
 }
@@ -657,7 +670,7 @@ fn transfer_succeeds_with_valid_asset() {
 
     let accounts = to_mollusk_accounts(vec![
         (asset_key, asset),
-        (MPL_CORE_ID, Account::default()),
+        (MPL_CORE_ID, core_program_account()),
         (payer, payer_account()),
         (new_owner, Account::default()),
         (system_program::ID, Account::default()),
@@ -1244,7 +1257,7 @@ fn transfer_succeeds_valid_unfrozen_asset_with_freeze_plugin() {
 
     let accounts = to_mollusk_accounts(vec![
         (asset_key, unfrozen_asset),
-        (MPL_CORE_ID, Account::default()),
+        (MPL_CORE_ID, core_program_account()),
         (payer, payer_account()),
         (new_owner, Account::default()),
         (system_program::ID, Account::default()),
