@@ -2620,9 +2620,9 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.17.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f467dd6dccf739c208452f8014c75c18bb8301b050ad1cfb27153803edb0f51"
+checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
 
 [[package]]
 name = "heck"
@@ -3007,12 +3007,12 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.14.0"
+version = "2.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d466e9454f08e4a911e14806c24e16fba1b4c121d1ea474396f396069cf949d9"
+checksum = "7714e70437a7dc3ac8eb7e6f8df75fd8eb422675fc7678aff7364301092b1017"
 dependencies = [
  "equivalent",
- "hashbrown 0.17.0",
+ "hashbrown 0.16.1",
  "serde",
  "serde_core",
 ]
@@ -4997,7 +4997,7 @@ dependencies = [
  "chrono",
  "hex",
  "indexmap 1.9.3",
- "indexmap 2.14.0",
+ "indexmap 2.13.0",
  "schemars 0.9.0",
  "schemars 1.2.1",
  "serde_core",
@@ -5311,7 +5311,7 @@ dependencies = [
  "bzip2",
  "crossbeam-channel",
  "dashmap",
- "indexmap 2.14.0",
+ "indexmap 2.13.0",
  "io-uring",
  "itertools 0.12.1",
  "libc",
@@ -5787,7 +5787,7 @@ dependencies = [
  "dashmap",
  "futures",
  "futures-util",
- "indexmap 2.14.0",
+ "indexmap 2.13.0",
  "indicatif",
  "log",
  "quinn",
@@ -6033,7 +6033,7 @@ dependencies = [
  "bincode",
  "crossbeam-channel",
  "futures-util",
- "indexmap 2.14.0",
+ "indexmap 2.13.0",
  "log",
  "rand 0.8.5",
  "rayon",
@@ -8887,7 +8887,7 @@ dependencies = [
  "futures-util",
  "governor",
  "histogram",
- "indexmap 2.14.0",
+ "indexmap 2.13.0",
  "itertools 0.12.1",
  "libc",
  "log",
@@ -9331,7 +9331,7 @@ dependencies = [
  "async-trait",
  "bincode",
  "futures-util",
- "indexmap 2.14.0",
+ "indexmap 2.13.0",
  "indicatif",
  "log",
  "rayon",
@@ -10622,7 +10622,7 @@ version = "0.22.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "41fe8c660ae4257887cf66394862d21dbca4a6ddd26f04a3560410406a2f819a"
 dependencies = [
- "indexmap 2.14.0",
+ "indexmap 2.13.0",
  "toml_datetime",
  "winnow",
 ]
