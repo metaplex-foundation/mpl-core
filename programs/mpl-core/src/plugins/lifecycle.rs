@@ -1,3 +1,4 @@
+use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use modular_bitfield::{bitfield, specifiers::B29};
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};

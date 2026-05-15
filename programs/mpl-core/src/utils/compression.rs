@@ -1,7 +1,7 @@
+use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
-    program_memory::sol_memcpy,
 };
 
 use crate::{
@@ -28,11 +28,7 @@ pub(crate) fn rebuild_account_state_from_proof_data<'a>(
     let serialized_data = asset.try_to_vec()?;
     resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
 
-    sol_memcpy(
-        &mut asset_info.try_borrow_mut_data()?,
-        &serialized_data,
-        serialized_data.len(),
-    );
+    asset_info.try_borrow_mut_data()?[..serialized_data.len()].copy_from_slice(&serialized_data);
 
     // Add the plugins.
     if !plugins.is_empty() {
@@ -103,11 +99,7 @@ pub(crate) fn compress_into_account_space<'a>(
 
     resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
 
-    sol_memcpy(
-        &mut asset_info.try_borrow_mut_data()?,
-        &serialized_data,
-        serialized_data.len(),
-    );
+    asset_info.try_borrow_mut_data()?[..serialized_data.len()].copy_from_slice(&serialized_data);
 
     Ok(compression_proof)
 }

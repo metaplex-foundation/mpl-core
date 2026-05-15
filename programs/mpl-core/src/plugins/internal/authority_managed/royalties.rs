@@ -1,3 +1,4 @@
+use crate::BorshSerializeExt as _;
 use std::collections::HashSet;
 
 use borsh::{BorshDeserialize, BorshSerialize};

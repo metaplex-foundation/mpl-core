@@ -1,3 +1,4 @@
+use crate::BorshSerializeExt as _;
 mod external;
 mod external_plugin_adapters;
 mod internal;

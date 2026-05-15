@@ -1,5 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use mpl_agent_tools::accounts::ExecutionDelegateRecordV1;
+use mpl_agent_tools::{accounts::ExecutionDelegateRecordV1, types::Key as AgentKey};
 use mpl_utils::{assert_derivation, assert_signer};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
@@ -57,7 +57,7 @@ impl AgentIdentity {
         if maybe_execution_delegate_record.owner == &mpl_agent_tools::ID
             && maybe_execution_delegate_record.data_len() > 0
             && maybe_execution_delegate_record.data.borrow()[0]
-                == mpl_agent_tools::types::Key::ExecutionDelegateRecordV1 as u8
+                == AgentKey::ExecutionDelegateRecordV1 as u8
         {
             let execution_delegate_record =
                 ExecutionDelegateRecordV1::try_from(maybe_execution_delegate_record)?;

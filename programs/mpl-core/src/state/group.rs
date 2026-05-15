@@ -1,3 +1,4 @@
+use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::pubkey::Pubkey;

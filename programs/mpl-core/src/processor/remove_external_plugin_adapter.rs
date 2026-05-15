@@ -35,12 +35,12 @@ pub(crate) fn remove_external_plugin_adapter<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+    if ctx.accounts.system_program.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::noop::ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -111,12 +111,12 @@ pub(crate) fn remove_collection_external_plugin_adapter<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+    if ctx.accounts.system_program.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::noop::ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }

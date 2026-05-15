@@ -1,10 +1,8 @@
+use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
-    account_info::AccountInfo,
-    entrypoint::ProgramResult,
-    program_error::ProgramError,
-    program_memory::{sol_memcpy, sol_memmove},
-    pubkey::Pubkey,
+    account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+    program_memory::sol_memmove, pubkey::Pubkey,
 };
 use std::collections::HashSet;
 
@@ -457,11 +455,7 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     plugin.save(account, old_registry_offset)?;
 
     if let Some(data) = appended_data {
-        sol_memcpy(
-            &mut account.data.borrow_mut()[data_offset..],
-            data,
-            data.len(),
-        );
+        account.data.borrow_mut()[data_offset..data_offset + data.len()].copy_from_slice(data);
     };
 
     plugin_registry.save(account, new_registry_offset)?;
@@ -541,11 +535,7 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         resize_or_reallocate_account(account, payer, system_program, new_size)?;
     }
 
-    sol_memcpy(
-        &mut account.data.borrow_mut()[data_offset..],
-        data,
-        new_data_len,
-    );
+    account.data.borrow_mut()[data_offset..data_offset + new_data_len].copy_from_slice(data);
 
     // Find the record in the registry and update the data length.
     let record_index = plugin_registry

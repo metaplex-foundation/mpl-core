@@ -1,4 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use mpl_agent_tools::types::Key as AgentKey;
 use mpl_utils::{assert_derivation, assert_signer};
 use solana_program::{
     account_info::AccountInfo,
@@ -7,8 +8,8 @@ use solana_program::{
     msg,
     program::{invoke, invoke_signed},
     pubkey::Pubkey,
-    system_instruction, system_program,
 };
+use solana_system_interface::instruction as system_instruction;
 
 use crate::{
     error::MplCoreError,
@@ -53,7 +54,7 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
         resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?
     };
 
-    if *ctx.accounts.system_program.key != system_program::ID {
+    if *ctx.accounts.system_program.key != solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
@@ -110,8 +111,7 @@ pub(crate) fn execute<'a>(accounts: &'a [AccountInfo<'a>], args: ExecuteV1Args) 
     let cpi_accounts = if let Some(first) = ctx.remaining_accounts.first() {
         if first.owner == &mpl_agent_tools::ID
             && first.data_len() > 0
-            && first.data.borrow()[0]
-                == mpl_agent_tools::types::Key::ExecutionDelegateRecordV1 as u8
+            && first.data.borrow()[0] == AgentKey::ExecutionDelegateRecordV1 as u8
         {
             &ctx.remaining_accounts[1..]
         } else {

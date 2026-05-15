@@ -1,4 +1,5 @@
 use crate::state::{DataBlob, Key, SolanaAccount};
+use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 

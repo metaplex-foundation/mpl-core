@@ -1,9 +1,11 @@
+use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
-    program_memory::sol_memcpy, rent::Rent, system_instruction, system_program, sysvar::Sysvar,
+    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke, rent::Rent,
+    sysvar::Sysvar,
 };
+use solana_system_interface::instruction as system_instruction;
 use std::collections::HashSet;
 
 use crate::{
@@ -71,7 +73,7 @@ pub(crate) fn process_create_collection<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer);
 
-    if *ctx.accounts.system_program.key != system_program::ID {
+    if *ctx.accounts.system_program.key != solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
@@ -104,11 +106,8 @@ pub(crate) fn process_create_collection<'a>(
         ],
     )?;
 
-    sol_memcpy(
-        &mut ctx.accounts.collection.try_borrow_mut_data()?,
-        &serialized_data,
-        serialized_data.len(),
-    );
+    ctx.accounts.collection.try_borrow_mut_data()?[..serialized_data.len()]
+        .copy_from_slice(&serialized_data);
 
     let mut approved = true;
     let mut force_approved = false;

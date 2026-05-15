@@ -1,8 +1,9 @@
 use num_traits::ToPrimitive;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program::invoke, rent::Rent,
-    system_instruction, sysvar::Sysvar,
+    sysvar::Sysvar,
 };
+use solana_system_interface::instruction as system_instruction;
 
 use crate::{error::MplCoreError, state::Key};
 
@@ -27,7 +28,7 @@ pub(crate) fn close_program_account<'a>(
         .ok_or(MplCoreError::NumericalOverflowError)?;
     **account_to_close_info.try_borrow_mut_lamports()? -= amount_to_return;
 
-    account_to_close_info.realloc(1, false)?;
+    account_to_close_info.resize(1)?;
     account_to_close_info.data.borrow_mut()[0] = Key::Uninitialized.to_u8().unwrap();
 
     Ok(())
@@ -68,7 +69,7 @@ pub(crate) fn resize_or_reallocate_account<'a>(
         **target_account.try_borrow_mut_lamports()? -= lamports_diff
     }
 
-    target_account.realloc(new_size, false)?;
+    target_account.resize(new_size)?;
 
     Ok(())
 }

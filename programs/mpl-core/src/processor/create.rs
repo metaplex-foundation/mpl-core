@@ -1,9 +1,11 @@
+use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
-    program_memory::sol_memcpy, rent::Rent, system_instruction, system_program, sysvar::Sysvar,
+    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke, rent::Rent,
+    sysvar::Sysvar,
 };
+use solana_system_interface::instruction as system_instruction;
 
 use crate::{
     error::MplCoreError,
@@ -71,12 +73,12 @@ pub(crate) fn process_create<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if *ctx.accounts.system_program.key != system_program::ID {
+    if *ctx.accounts.system_program.key != solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::noop::ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -140,11 +142,8 @@ pub(crate) fn process_create<'a>(
         ],
     )?;
 
-    sol_memcpy(
-        &mut ctx.accounts.asset.try_borrow_mut_data()?,
-        &serialized_data,
-        serialized_data.len(),
-    );
+    ctx.accounts.asset.try_borrow_mut_data()?[..serialized_data.len()]
+        .copy_from_slice(&serialized_data);
 
     if args.data_state == DataState::AccountState {
         // Validate asset permissions.

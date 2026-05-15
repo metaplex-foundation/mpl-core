@@ -1,3 +1,4 @@
+use crate::BorshSerializeExt as _;
 use crate::{error::MplCoreError, state::Key, utils::load_key};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
@@ -61,7 +62,7 @@ pub trait Wrappable: BorshSerialize + BorshDeserialize {
     /// Write the data to ledger state by wrapping it in a noop instruction.
     fn wrap(&self) -> ProgramResult {
         let serialized_data = self.try_to_vec()?;
-        invoke(&spl_noop::instruction(serialized_data), &[])
+        invoke(&crate::noop::instruction(serialized_data), &[])
     }
 }
 

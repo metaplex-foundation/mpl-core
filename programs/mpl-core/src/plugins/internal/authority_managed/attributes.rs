@@ -1,3 +1,4 @@
+use crate::BorshSerializeExt as _;
 use crate::{plugins::PluginValidation, state::DataBlob};
 use borsh::{BorshDeserialize, BorshSerialize};
 
