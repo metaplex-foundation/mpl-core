@@ -18,20 +18,20 @@ use {
             HookableLifecycleEvent, PluginHeaderV1, PluginRegistryV1,
         },
         state::{AssetV1, Authority, CollectionV1, DataBlob, Key, UpdateAuthority},
-        ID as MPL_CORE_ID,
+        BorshSerializeExt, ID as MPL_CORE_ID,
     },
-    solana_program::program_error::ProgramError,
-    solana_sdk::{
-        account::Account,
+    solana_account::Account,
+    solana_program::{
         instruction::{AccountMeta, Instruction},
+        program_error::ProgramError,
         pubkey::Pubkey,
-        system_program,
     },
+    solana_system_interface::program as system_program,
 };
 
 // The mpl-agent-identity program ID used for PDA derivation.
 const AGENT_IDENTITY_PROGRAM_ID: Pubkey =
-    solana_sdk::pubkey!("1DREGFgysWYxLnRnKQnwrxnJQeSMk2HmGaC6whw2B2p");
+    solana_program::pubkey!("1DREGFgysWYxLnRnKQnwrxnJQeSMk2HmGaC6whw2B2p");
 
 /// Minimum lamports for accounts to be rent-exempt-ish in tests.
 const ACCOUNT_LAMPORTS: u64 = 1_000_000_000;

@@ -21,14 +21,14 @@ use {
             RegistryRecord,
         },
         state::{AssetV1, Authority, CollectionV1, DataBlob, Key, UpdateAuthority},
-        ID as MPL_CORE_ID,
+        BorshSerializeExt, ID as MPL_CORE_ID,
     },
-    solana_sdk::{
-        account::Account,
+    solana_account::Account,
+    solana_program::{
         instruction::{AccountMeta, Instruction},
         pubkey::Pubkey,
-        system_program,
     },
+    solana_system_interface::program as system_program,
 };
 
 // ---------------------------------------------------------------------------
