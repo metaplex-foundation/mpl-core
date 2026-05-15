@@ -139,13 +139,6 @@ jobs:
           version: ${{ env.DEPLOY_SOLANA_VERSION }}
           cache: ${{ env.CACHE }}
 
-      - name: Install Solana Verify
-        if: github.event.inputs.dry_run == 'false' && inputs.cluster == 'mainnet-beta'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libudev-dev pkg-config
-          cargo install solana-verify --locked --version "${SOLANA_VERIFY_VERSION}"
-
       - name: Install cargo-release
         uses: metaplex-foundation/actions/install-cargo-release@v1
         if: github.event.inputs.publish_crate == 'true'
@@ -196,6 +189,13 @@ jobs:
             echo "Invalid cluster: ${{ inputs.cluster }}"
             exit 1
           fi          
+
+      - name: Install Solana Verify
+        if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'direct'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libudev-dev pkg-config
+          cargo install solana-verify --locked --version "${SOLANA_VERIFY_VERSION}"
 
       - name: Sanitize Ref
         id: sanitize
@@ -263,7 +263,7 @@ jobs:
             --use-rpc
 
       - name: Upload verified-build PDA
-        if: github.event.inputs.dry_run == 'false' && inputs.cluster == 'mainnet-beta' && env.DEPLOY_TYPE == 'direct'
+        if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'direct'
         run: |
           PROGRAM_ID="$(solana-keygen pubkey ./program-id.json)"
           COMMIT_HASH="$(git rev-parse HEAD)"
@@ -273,14 +273,14 @@ jobs:
             --program-id "${PROGRAM_ID}" \
             --url "${RPC}" \
             --keypair ./deployer-key.json \
-            --library-name mpl_core_program \
+            --library-name "${PROGRAM_NAME}_program" \
             --mount-path . \
             --commit-hash "${COMMIT_HASH}" \
             --skip-prompt \
             https://github.com/metaplex-foundation/mpl-core.git
 
       - name: Submit remote verification job
-        if: github.event.inputs.dry_run == 'false' && inputs.cluster == 'mainnet-beta' && env.DEPLOY_TYPE == 'direct'
+        if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'direct'
         run: |
           PROGRAM_ID="$(solana-keygen pubkey ./program-id.json)"
           UPLOADER="$(solana-keygen pubkey ./deployer-key.json)"

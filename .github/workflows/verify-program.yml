@@ -68,7 +68,9 @@ jobs:
 
       - name: Identify Program
         run: |
-          echo PROGRAM_NAME="mpl_${{ inputs.program }}" >> $GITHUB_ENV
+          PROGRAM_NAME="mpl_${{ inputs.program }}"
+          echo PROGRAM_NAME="${PROGRAM_NAME}" >> $GITHUB_ENV
+          echo LIBRARY_NAME="${PROGRAM_NAME}_program" >> $GITHUB_ENV
           echo ${{ secrets.CORE_ID }} > ./program-id.json
           # This keypair must be the program upgrade authority for the verified
           # build PDA upload. Core mainnet currently uses Squads, so that path
@@ -85,7 +87,7 @@ jobs:
             --program-id "${PROGRAM_ID}" \
             --url "${RPC}" \
             --keypair ./deployer-key.json \
-            --library-name mpl_core_program \
+            --library-name "${LIBRARY_NAME}" \
             --mount-path . \
             --commit-hash "${COMMIT_HASH}" \
             --skip-prompt \
