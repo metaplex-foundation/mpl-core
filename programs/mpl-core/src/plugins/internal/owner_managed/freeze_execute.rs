@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
@@ -112,7 +111,7 @@ mod tests {
     #[test]
     fn test_freeze_execute_len() {
         let freeze_execute = FreezeExecute::default();
-        let serialized = freeze_execute.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&freeze_execute).unwrap();
         assert_eq!(serialized.len(), freeze_execute.len());
     }
 }

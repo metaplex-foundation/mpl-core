@@ -28,16 +28,6 @@ pub mod state;
 /// Program-wide utility functions.
 pub mod utils;
 
-/// Compatibility extension for Borsh 0.10-style `try_to_vec` call sites.
-pub trait BorshSerializeExt: borsh::BorshSerialize {
-    /// Serializes this value into a vector using Borsh.
-    fn try_to_vec(&self) -> std::io::Result<Vec<u8>> {
-        borsh::to_vec(self)
-    }
-}
-
-impl<T: borsh::BorshSerialize> BorshSerializeExt for T {}
-
 pub use mpl_noop as noop;
 pub use solana_program;
 

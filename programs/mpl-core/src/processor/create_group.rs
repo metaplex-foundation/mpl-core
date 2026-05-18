@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
@@ -125,7 +124,7 @@ pub(crate) fn create_group_v1<'a>(
         assets_vec.clone(),
     );
 
-    let serialized_data = new_group.try_to_vec()?;
+    let serialized_data = borsh::to_vec(&new_group)?;
     let lamports = rent.minimum_balance(serialized_data.len());
 
     // Create the on-chain account for the group via CPI to System Program.

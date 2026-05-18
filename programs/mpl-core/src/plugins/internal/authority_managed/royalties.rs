@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use std::collections::HashSet;
 
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -183,14 +182,14 @@ mod tests {
             address: Pubkey::default(),
             percentage: 100,
         };
-        let serialized = creator.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&creator).unwrap();
         assert_eq!(serialized.len(), creator.len());
     }
 
     #[test]
     fn test_rule_set_default_len() {
         let rule_set = RuleSet::None;
-        let serialized = rule_set.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&rule_set).unwrap();
         assert_eq!(serialized.len(), rule_set.len());
     }
 
@@ -201,7 +200,7 @@ mod tests {
             RuleSet::ProgramDenyList(vec![Pubkey::default(), Pubkey::default()]),
         ];
         for rule_set in rule_sets {
-            let serialized = rule_set.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&rule_set).unwrap();
             assert_eq!(serialized.len(), rule_set.len());
         }
     }
@@ -256,7 +255,7 @@ mod tests {
             },
         ];
         for royalty in royalties {
-            let serialized = royalty.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&royalty).unwrap();
             assert_eq!(serialized.len(), royalty.len());
         }
     }

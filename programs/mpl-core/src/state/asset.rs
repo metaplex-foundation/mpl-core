@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::{
@@ -459,7 +458,7 @@ mod tests {
             },
         ];
         for asset in assets {
-            let serialized = asset.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&asset).unwrap();
             assert_eq!(serialized.len(), asset.len());
         }
     }

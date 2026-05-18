@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use std::collections::BTreeSet;
 
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -248,7 +247,7 @@ mod tests {
     #[test]
     fn test_update_delegate_default_len() {
         let update_delegate = UpdateDelegate::default();
-        let serialized = update_delegate.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&update_delegate).unwrap();
         assert_eq!(serialized.len(), update_delegate.len());
     }
 
@@ -263,7 +262,7 @@ mod tests {
             },
         ];
         for update_delegate in update_delegates {
-            let serialized = update_delegate.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&update_delegate).unwrap();
             assert_eq!(serialized.len(), update_delegate.len());
         }
     }

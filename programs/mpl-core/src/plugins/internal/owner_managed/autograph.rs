@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use std::collections::{BTreeMap, HashSet};
 
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -158,14 +157,14 @@ mod tests {
             address: Pubkey::default(),
             message: "test".to_string(),
         };
-        let serialized = autograph_signature.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&autograph_signature).unwrap();
         assert_eq!(serialized.len(), autograph_signature.len());
     }
 
     #[test]
     fn test_autograph_default_len() {
         let autograph = Autograph { signatures: vec![] };
-        let serialized = autograph.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&autograph).unwrap();
         assert_eq!(serialized.len(), autograph.len());
     }
 
@@ -183,7 +182,7 @@ mod tests {
                 },
             ],
         };
-        let serialized = autograph.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&autograph).unwrap();
         assert_eq!(serialized.len(), autograph.len());
     }
 }

@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
@@ -113,7 +112,7 @@ pub(crate) fn process_create<'a>(
         args.uri.clone(),
     );
 
-    let serialized_data = new_asset.try_to_vec()?;
+    let serialized_data = borsh::to_vec(&new_asset)?;
 
     let serialized_data = match args.data_state {
         DataState::AccountState => serialized_data,

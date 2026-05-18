@@ -18,7 +18,7 @@ use {
             HookableLifecycleEvent, PluginHeaderV1, PluginRegistryV1,
         },
         state::{AssetV1, Authority, CollectionV1, DataBlob, Key, UpdateAuthority},
-        BorshSerializeExt, ID as MPL_CORE_ID,
+        ID as MPL_CORE_ID,
     },
     solana_account::Account,
     solana_program::{
@@ -130,7 +130,7 @@ fn valid_asset_account(owner: &Pubkey) -> Account {
         "Test Asset".to_string(),
         "https://example.com/test".to_string(),
     );
-    let data = asset.try_to_vec().unwrap();
+    let data = borsh::to_vec(&asset).unwrap();
     Account {
         lamports: ACCOUNT_LAMPORTS,
         data,
@@ -154,7 +154,7 @@ fn build_asset_with_agent_identity(
         "Test Asset".to_string(),
         "https://example.com/test".to_string(),
     );
-    let asset_data = asset.try_to_vec().unwrap();
+    let asset_data = borsh::to_vec(&asset).unwrap();
     let asset_len = asset.len();
 
     // Plugin header sits immediately after core data.
@@ -166,7 +166,7 @@ fn build_asset_with_agent_identity(
     let plugin = ExternalPluginAdapter::AgentIdentity(AgentIdentity {
         uri: uri.to_string(),
     });
-    let plugin_bytes = plugin.try_to_vec().unwrap();
+    let plugin_bytes = borsh::to_vec(&plugin).unwrap();
 
     // The registry sits after the plugin data.
     let registry_offset = plugin_data_start + plugin_bytes.len();
@@ -191,8 +191,8 @@ fn build_asset_with_agent_identity(
         external_registry: vec![external_record],
     };
 
-    let header_bytes = header.try_to_vec().unwrap();
-    let registry_bytes = registry.try_to_vec().unwrap();
+    let header_bytes = borsh::to_vec(&header).unwrap();
+    let registry_bytes = borsh::to_vec(&registry).unwrap();
 
     let mut data = Vec::new();
     data.extend_from_slice(&asset_data);
@@ -747,7 +747,7 @@ fn cannot_add_agent_identity_to_collection() {
         0,
         0,
     );
-    let data = collection.try_to_vec().unwrap();
+    let data = borsh::to_vec(&collection).unwrap();
     let collection_account = Account {
         lamports: ACCOUNT_LAMPORTS,
         data,

@@ -12,7 +12,6 @@
 
 #[allow(deprecated)]
 use {
-    borsh::BorshSerialize,
     mollusk_svm::Mollusk,
     mpl_core_program::{
         plugins::{
@@ -21,7 +20,7 @@ use {
             RegistryRecord,
         },
         state::{AssetV1, Authority, CollectionV1, DataBlob, Key, UpdateAuthority},
-        BorshSerializeExt, ID as MPL_CORE_ID,
+        ID as MPL_CORE_ID,
     },
     solana_account::Account,
     solana_program::{
@@ -58,7 +57,7 @@ fn fake_asset_account(owner_pubkey: &Pubkey, program_owner: &Pubkey) -> Account 
         "Fake Asset".to_string(),
         "https://example.com/fake".to_string(),
     );
-    let data = asset.try_to_vec().unwrap();
+    let data = borsh::to_vec(&asset).unwrap();
     Account {
         lamports: ACCOUNT_LAMPORTS,
         data,
@@ -77,7 +76,7 @@ fn fake_collection_account(update_authority: &Pubkey, program_owner: &Pubkey) ->
         0,
         0,
     );
-    let data = collection.try_to_vec().unwrap();
+    let data = borsh::to_vec(&collection).unwrap();
     Account {
         lamports: ACCOUNT_LAMPORTS,
         data,
@@ -146,7 +145,7 @@ fn build_asset_with_plugins(
         "Fake Asset".to_string(),
         "https://example.com/fake".to_string(),
     );
-    let asset_data = asset.try_to_vec().unwrap();
+    let asset_data = borsh::to_vec(&asset).unwrap();
     let asset_len = asset.len();
 
     // Build plugin data and registry records.
@@ -158,7 +157,7 @@ fn build_asset_with_plugins(
 
     for (plugin, authority) in plugins {
         let offset = plugins_start + plugin_data.len();
-        let plugin_bytes = plugin.try_to_vec().unwrap();
+        let plugin_bytes = borsh::to_vec(plugin).unwrap();
         plugin_data.extend_from_slice(&plugin_bytes);
 
         let plugin_type = match plugin {
@@ -189,8 +188,8 @@ fn build_asset_with_plugins(
         external_registry: vec![],
     };
 
-    let header_bytes = header.try_to_vec().unwrap();
-    let registry_bytes = registry.try_to_vec().unwrap();
+    let header_bytes = borsh::to_vec(&header).unwrap();
+    let registry_bytes = borsh::to_vec(&registry).unwrap();
 
     let mut data = Vec::new();
     data.extend_from_slice(&asset_data);
@@ -220,7 +219,7 @@ fn build_collection_with_plugins(
         0,
         0,
     );
-    let collection_data = collection.try_to_vec().unwrap();
+    let collection_data = borsh::to_vec(&collection).unwrap();
     let collection_len = collection.len();
 
     let header_offset = collection_len;
@@ -231,7 +230,7 @@ fn build_collection_with_plugins(
 
     for (plugin, authority) in plugins {
         let offset = plugins_start + plugin_data.len();
-        let plugin_bytes = plugin.try_to_vec().unwrap();
+        let plugin_bytes = borsh::to_vec(plugin).unwrap();
         plugin_data.extend_from_slice(&plugin_bytes);
 
         let plugin_type = match plugin {
@@ -262,8 +261,8 @@ fn build_collection_with_plugins(
         external_registry: vec![],
     };
 
-    let header_bytes = header.try_to_vec().unwrap();
-    let registry_bytes = registry.try_to_vec().unwrap();
+    let header_bytes = borsh::to_vec(&header).unwrap();
+    let registry_bytes = borsh::to_vec(&registry).unwrap();
 
     let mut data = Vec::new();
     data.extend_from_slice(&collection_data);
@@ -523,7 +522,7 @@ fn transfer_rejects_account_with_wrong_discriminator() {
         0,
         0,
     );
-    let data = collection.try_to_vec().unwrap();
+    let data = borsh::to_vec(&collection).unwrap();
     let wrong_disc_account = Account {
         lamports: ACCOUNT_LAMPORTS,
         data,
@@ -1113,7 +1112,7 @@ fn transfer_rejects_when_fake_collection_has_permanent_freeze() {
     );
     let asset_account = Account {
         lamports: ACCOUNT_LAMPORTS,
-        data: asset.try_to_vec().unwrap(),
+        data: borsh::to_vec(&asset).unwrap(),
         owner: MPL_CORE_ID,
         executable: false,
         rent_epoch: 0,
@@ -1162,7 +1161,7 @@ fn transfer_rejects_when_fake_collection_has_permanent_transfer_delegate() {
     );
     let asset_account = Account {
         lamports: ACCOUNT_LAMPORTS,
-        data: asset.try_to_vec().unwrap(),
+        data: borsh::to_vec(&asset).unwrap(),
         owner: MPL_CORE_ID,
         executable: false,
         rent_epoch: 0,

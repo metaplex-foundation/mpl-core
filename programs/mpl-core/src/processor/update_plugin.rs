@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
@@ -179,8 +178,8 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::PluginNotFound)?;
 
     let plugin = Plugin::load(account, registry_record.offset)?;
-    let plugin_data = plugin.try_to_vec()?;
-    let new_plugin_data = new_plugin.try_to_vec()?;
+    let plugin_data = borsh::to_vec(&plugin)?;
+    let new_plugin_data = borsh::to_vec(&new_plugin)?;
 
     // The difference in size between the new and old account which is used to calculate the new size of the account.
     let plugin_size = plugin_data.len() as isize;

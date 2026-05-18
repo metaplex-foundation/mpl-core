@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::pubkey::Pubkey;
@@ -154,7 +153,7 @@ mod tests {
             },
         ];
         for group in groups {
-            let serialized = group.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&group).unwrap();
             assert_eq!(serialized.len(), group.len());
         }
     }

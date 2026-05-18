@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use crate::{error::MplCoreError, state::Key, utils::load_key};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
@@ -52,7 +51,7 @@ pub trait SolanaAccount: BorshSerialize + BorshDeserialize {
 pub trait Compressible: BorshSerialize + BorshDeserialize {
     /// Get the hash of the compressed data.
     fn hash(&self) -> Result<[u8; 32], ProgramError> {
-        let serialized_data = self.try_to_vec()?;
+        let serialized_data = borsh::to_vec(self)?;
         Ok(keccak::hash(serialized_data.as_slice()).to_bytes())
     }
 }
@@ -61,7 +60,7 @@ pub trait Compressible: BorshSerialize + BorshDeserialize {
 pub trait Wrappable: BorshSerialize + BorshDeserialize {
     /// Write the data to ledger state by wrapping it in a noop instruction.
     fn wrap(&self) -> ProgramResult {
-        let serialized_data = self.try_to_vec()?;
+        let serialized_data = borsh::to_vec(self)?;
         invoke(&crate::noop::instruction(serialized_data), &[])
     }
 }

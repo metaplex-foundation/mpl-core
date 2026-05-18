@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
@@ -59,7 +58,7 @@ mod tests {
     #[test]
     fn test_transfer_delegate_len() {
         let transfer_delegate = TransferDelegate::default();
-        let serialized = transfer_delegate.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&transfer_delegate).unwrap();
         assert_eq!(serialized.len(), transfer_delegate.len());
     }
 }

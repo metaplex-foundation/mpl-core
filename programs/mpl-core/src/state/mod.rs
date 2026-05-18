@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 mod asset;
 pub use asset::*;
 
@@ -140,7 +139,7 @@ mod tests {
             "Must test all Authority variants"
         );
         for authority in authorities {
-            let serialized = authority.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&authority).unwrap();
             assert_eq!(serialized.len(), authority.len());
         }
     }
@@ -148,7 +147,7 @@ mod tests {
     #[test]
     fn test_key_len() {
         for key in Key::iter() {
-            let serialized = key.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&key).unwrap();
             assert_eq!(serialized.len(), key.len());
         }
     }

@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
@@ -65,7 +64,7 @@ mod tests {
     #[test]
     fn test_edition_len() {
         let edition = Edition { number: 1 };
-        let serialized = edition.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&edition).unwrap();
         assert_eq!(serialized.len(), edition.len());
     }
 }

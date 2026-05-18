@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
@@ -86,7 +85,7 @@ pub(crate) fn process_create_collection<'a>(
         current_size: 0,
     };
 
-    let serialized_data = new_collection.try_to_vec()?;
+    let serialized_data = borsh::to_vec(&new_collection)?;
 
     let lamports = rent.minimum_balance(serialized_data.len());
 

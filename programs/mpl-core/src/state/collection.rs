@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
@@ -418,7 +417,7 @@ mod tests {
             },
         ];
         for collection in collections {
-            let serialized = collection.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&collection).unwrap();
             assert_eq!(serialized.len(), collection.len());
         }
     }

@@ -1,4 +1,3 @@
-use crate::BorshSerializeExt as _;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
@@ -60,7 +59,7 @@ mod tests {
     #[test]
     fn test_permanent_burn_delegate_len() {
         let permanent_burn_delegate = PermanentBurnDelegate::default();
-        let serialized = permanent_burn_delegate.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&permanent_burn_delegate).unwrap();
         assert_eq!(serialized.len(), permanent_burn_delegate.len());
     }
 }
