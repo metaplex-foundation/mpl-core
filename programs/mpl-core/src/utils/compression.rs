@@ -1,6 +1,7 @@
 use borsh::BorshDeserialize;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
+    program_memory::sol_memcpy,
 };
 
 use crate::{
@@ -27,7 +28,15 @@ pub(crate) fn rebuild_account_state_from_proof_data<'a>(
     let serialized_data = borsh::to_vec(&asset)?;
     resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
 
-    asset_info.try_borrow_mut_data()?[..serialized_data.len()].copy_from_slice(&serialized_data);
+    // SAFETY: `serialized_data` cannot alias the account data, and the account was
+    // just resized to fit it.
+    unsafe {
+        sol_memcpy(
+            &mut asset_info.try_borrow_mut_data()?,
+            &serialized_data,
+            serialized_data.len(),
+        );
+    }
 
     // Add the plugins.
     if !plugins.is_empty() {
@@ -98,7 +107,15 @@ pub(crate) fn compress_into_account_space<'a>(
 
     resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
 
-    asset_info.try_borrow_mut_data()?[..serialized_data.len()].copy_from_slice(&serialized_data);
+    // SAFETY: `serialized_data` cannot alias the account data, and the account was
+    // just resized to fit it.
+    unsafe {
+        sol_memcpy(
+            &mut asset_info.try_borrow_mut_data()?,
+            &serialized_data,
+            serialized_data.len(),
+        );
+    }
 
     Ok(compression_proof)
 }

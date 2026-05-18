@@ -1,8 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke, rent::Rent,
-    sysvar::Sysvar,
+    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
+    program_memory::sol_memcpy, rent::Rent, sysvar::Sysvar,
 };
 use solana_system_interface::instruction as system_instruction;
 use std::collections::HashSet;
@@ -105,8 +105,15 @@ pub(crate) fn process_create_collection<'a>(
         ],
     )?;
 
-    ctx.accounts.collection.try_borrow_mut_data()?[..serialized_data.len()]
-        .copy_from_slice(&serialized_data);
+    // SAFETY: `serialized_data` cannot alias the account data, and the collection
+    // account was just created with `serialized_data.len()` bytes.
+    unsafe {
+        sol_memcpy(
+            &mut ctx.accounts.collection.try_borrow_mut_data()?,
+            &serialized_data,
+            serialized_data.len(),
+        );
+    }
 
     let mut approved = true;
     let mut force_approved = false;

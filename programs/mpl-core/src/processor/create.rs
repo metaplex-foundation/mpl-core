@@ -1,8 +1,8 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke, rent::Rent,
-    sysvar::Sysvar,
+    account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
+    program_memory::sol_memcpy, rent::Rent, sysvar::Sysvar,
 };
 use solana_system_interface::instruction as system_instruction;
 
@@ -141,8 +141,15 @@ pub(crate) fn process_create<'a>(
         ],
     )?;
 
-    ctx.accounts.asset.try_borrow_mut_data()?[..serialized_data.len()]
-        .copy_from_slice(&serialized_data);
+    // SAFETY: `serialized_data` cannot alias the account data, and the asset
+    // account was just created with `serialized_data.len()` bytes.
+    unsafe {
+        sol_memcpy(
+            &mut ctx.accounts.asset.try_borrow_mut_data()?,
+            &serialized_data,
+            serialized_data.len(),
+        );
+    }
 
     if args.data_state == DataState::AccountState {
         // Validate asset permissions.
