@@ -34,7 +34,7 @@ pub(crate) fn transfer<'a>(accounts: &'a [AccountInfo<'a>], args: TransferV1Args
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &crate::noop::ID {
+        if log_wrapper.key != &solana_program::pubkey!("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV") {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }

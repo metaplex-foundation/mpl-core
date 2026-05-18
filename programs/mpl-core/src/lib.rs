@@ -28,7 +28,6 @@ pub mod state;
 /// Program-wide utility functions.
 pub mod utils;
 
-pub use mpl_noop as noop;
 pub use solana_program;
 
 solana_program::declare_id!("CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d");

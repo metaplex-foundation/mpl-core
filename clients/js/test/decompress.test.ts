@@ -44,7 +44,7 @@ test.skip('it can decompress a previously compressed asset as the owner', async 
   await compressV1(umi, {
     asset: assetAddress.publicKey,
     authority: umi.identity,
-    logWrapper: publicKey('mnoopTCrg4p8ry25e4bcWA9XZjbNjMTfgYVGGEdRsf3'),
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
   }).sendAndConfirm(umi);
 
   // And the asset is now compressed as a hashed asset.

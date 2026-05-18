@@ -66,7 +66,7 @@ test.skip('it can create a new asset in ledger state', async (t) => {
     asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    logWrapper: publicKey('mnoopTCrg4p8ry25e4bcWA9XZjbNjMTfgYVGGEdRsf3'),
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
   }).sendAndConfirm(umi);
 
   // Then an account was created with the correct data.
@@ -103,7 +103,7 @@ test('it cannot create a new asset in ledger state because it is not available',
     asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    logWrapper: publicKey('mnoopTCrg4p8ry25e4bcWA9XZjbNjMTfgYVGGEdRsf3'),
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'NotAvailable' });

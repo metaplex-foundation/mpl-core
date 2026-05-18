@@ -24,7 +24,7 @@ test.skip('it can compress an asset without any plugins as the owner', async (t)
   await compressV1(umi, {
     asset: asset.publicKey,
     authority: umi.identity,
-    logWrapper: publicKey('mnoopTCrg4p8ry25e4bcWA9XZjbNjMTfgYVGGEdRsf3'),
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
   }).sendAndConfirm(umi);
   // console.log('Compress signature: ', bs58.encode(tx.signature));
 
@@ -115,7 +115,7 @@ test('it cannot compress an asset because it is not available', async (t) => {
   const result = compressV1(umi, {
     asset: assetAddress.publicKey,
     authority: umi.identity,
-    logWrapper: publicKey('mnoopTCrg4p8ry25e4bcWA9XZjbNjMTfgYVGGEdRsf3'),
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'NotAvailable' });
@@ -151,7 +151,7 @@ test('it cannot use an invalid system program', async (t) => {
     asset: assetAddress.publicKey,
     authority: umi.identity,
     systemProgram: fakeSystemProgram.publicKey,
-    logWrapper: publicKey('mnoopTCrg4p8ry25e4bcWA9XZjbNjMTfgYVGGEdRsf3'),
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(result, { name: 'InvalidSystemProgram' });

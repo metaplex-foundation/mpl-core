@@ -40,7 +40,7 @@ test.skip('fetch account info for ledger state', async (t) => {
     asset: assetAddress,
     name: 'Test Bread',
     uri: 'https://example.com/bread',
-    logWrapper: publicKey('mnoopTCrg4p8ry25e4bcWA9XZjbNjMTfgYVGGEdRsf3'),
+    logWrapper: publicKey('noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'),
   }).sendAndConfirm(umi);
 
   // Print the size of the account.

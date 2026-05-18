@@ -34,7 +34,7 @@ pub(crate) fn remove_plugin<'a>(
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &crate::noop::ID {
+        if log_wrapper.key != &solana_program::pubkey!("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV") {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -115,7 +115,7 @@ pub(crate) fn remove_collection_plugin<'a>(
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &crate::noop::ID {
+        if log_wrapper.key != &solana_program::pubkey!("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV") {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }

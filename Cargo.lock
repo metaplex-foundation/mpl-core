@@ -3575,7 +3575,6 @@ dependencies = [
  "mpl-agent-identity",
  "mpl-agent-tools",
  "mpl-bubblegum",
- "mpl-noop",
  "mpl-utils",
  "num-derive 0.3.3",
  "num-traits",
@@ -3587,15 +3586,6 @@ dependencies = [
  "solana-system-interface 2.0.0",
  "strum 0.26.3",
  "thiserror 1.0.69",
-]
-
-[[package]]
-name = "mpl-noop"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36a496d80606ba53f29984ee0c6c8305659de73a3600a466d479b0fb2bd9e119"
-dependencies = [
- "solana-program 3.0.0",
 ]
 
 [[package]]
