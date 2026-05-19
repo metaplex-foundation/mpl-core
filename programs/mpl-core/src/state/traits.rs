@@ -63,7 +63,7 @@ pub trait Wrappable: BorshSerialize + BorshDeserialize {
         let serialized_data = borsh::to_vec(self)?;
         invoke(
             &Instruction {
-                program_id: solana_program::pubkey!("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV"),
+                program_id: crate::SPL_NOOP_ID,
                 accounts: vec![],
                 data: serialized_data,
             },

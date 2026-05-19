@@ -20,7 +20,7 @@ use {
             RegistryRecord,
         },
         state::{AssetV1, Authority, CollectionV1, DataBlob, Key, UpdateAuthority},
-        ID as MPL_CORE_ID,
+        ID as MPL_CORE_ID, SPL_NOOP_ID,
     },
     solana_account::Account,
     solana_program::{
@@ -36,9 +36,6 @@ use {
 
 /// A fake program ID representing an attacker's program.
 const FAKE_PROGRAM_ID: Pubkey = Pubkey::new_from_array([0xAA; 32]);
-
-/// The SPL Noop program ID, used as the V1 log wrapper.
-const NOOP_ID: Pubkey = solana_program::pubkey!("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV");
 
 /// Minimum lamports for accounts to be rent-exempt-ish in tests.
 const ACCOUNT_LAMPORTS: u64 = 1_000_000_000;
@@ -128,7 +125,7 @@ fn transfer_v1_with_collection_instruction(
             AccountMeta::new_readonly(payer, true),       // 3: authority (signer)
             AccountMeta::new_readonly(new_owner, false),  // 4: new_owner
             AccountMeta::new_readonly(system_program::ID, false), // 5: system_program
-            AccountMeta::new_readonly(NOOP_ID, false),    // 6: log_wrapper (optional)
+            AccountMeta::new_readonly(SPL_NOOP_ID, false),    // 6: log_wrapper (optional)
         ],
     )
 }
@@ -296,7 +293,7 @@ fn transfer_v1_instruction(asset: Pubkey, payer: Pubkey, new_owner: Pubkey) -> I
             AccountMeta::new_readonly(payer, true),        // 3: authority (signer)
             AccountMeta::new_readonly(new_owner, false),   // 4: new_owner
             AccountMeta::new_readonly(system_program::ID, false), // 5: system_program
-            AccountMeta::new_readonly(NOOP_ID, false),     // 6: log_wrapper (optional)
+            AccountMeta::new_readonly(SPL_NOOP_ID, false),     // 6: log_wrapper (optional)
         ],
     )
 }
@@ -377,12 +374,12 @@ fn to_mollusk_accounts(accounts: Vec<(Pubkey, Account)>) -> Vec<(Pubkey, Account
     let (sys_key, sys_account) = mollusk_svm::program::keyed_account_for_system_program();
     result.push((sys_key, sys_account));
 
-    if let Some(pos) = result.iter().position(|(k, _)| *k == NOOP_ID) {
+    if let Some(pos) = result.iter().position(|(k, _)| *k == SPL_NOOP_ID) {
         result.remove(pos);
     }
     result.push((
-        NOOP_ID,
-        mollusk_svm::program::create_program_account_loader_v3(&NOOP_ID),
+        SPL_NOOP_ID,
+        mollusk_svm::program::create_program_account_loader_v3(&SPL_NOOP_ID),
     ));
 
     result

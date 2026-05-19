@@ -16,7 +16,7 @@ use {
             ExternalRegistryRecord, HookableLifecycleEvent, PluginHeaderV1, PluginRegistryV1,
         },
         state::{AssetV1, Authority, DataBlob, Key, UpdateAuthority},
-        ID as MPL_CORE_ID,
+        ID as MPL_CORE_ID, SPL_NOOP_ID,
     },
     solana_account::Account,
     solana_program::{
@@ -30,10 +30,6 @@ use {
 /// The mpl-agent-tools program ID (owner of ExecutionDelegateRecordV1 accounts).
 const MPL_AGENT_TOOLS_ID: Pubkey =
     solana_program::pubkey!("TLREGni9ZEyGC3vnPZtqUh95xQ8oPqJSvNjvB7FGK8S");
-
-/// The SPL Noop program ID. Used as a placeholder executable program for
-/// agent-execute CPI targets in these tests.
-const NOOP_ID: Pubkey = solana_program::pubkey!("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV");
 
 /// Minimum lamports for accounts to be rent-exempt-ish in tests.
 const ACCOUNT_LAMPORTS: u64 = 1_000_000_000;
@@ -298,7 +294,7 @@ fn execute_as_owner() {
         asset_signer,
         owner,
         None, // authority = payer (owner)
-        NOOP_ID,
+        SPL_NOOP_ID,
         None,   // no delegate record
         vec![], // no CPI remaining accounts
         vec![], // instruction_data
@@ -309,7 +305,7 @@ fn execute_as_owner() {
         (owner, payer_account()),
         (asset_signer, payer_account()),
         (
-            NOOP_ID,
+            SPL_NOOP_ID,
             Account {
                 lamports: ACCOUNT_LAMPORTS,
                 data: vec![],
@@ -369,7 +365,7 @@ fn execute_with_valid_delegate_record() {
         asset_signer,
         delegate_authority,
         None, // authority = payer
-        NOOP_ID,
+        SPL_NOOP_ID,
         Some((delegate_record_key, delegate_record_account.clone())),
         vec![],
         vec![],
@@ -380,7 +376,7 @@ fn execute_with_valid_delegate_record() {
         (delegate_authority, payer_account()),
         (asset_signer, payer_account()),
         (
-            NOOP_ID,
+            SPL_NOOP_ID,
             Account {
                 lamports: ACCOUNT_LAMPORTS,
                 data: vec![],
@@ -435,7 +431,7 @@ fn execute_with_delegate_as_separate_authority() {
         asset_signer,
         payer,
         Some(delegate_authority), // separate authority
-        NOOP_ID,
+        SPL_NOOP_ID,
         Some((delegate_record_key, delegate_record_account.clone())),
         vec![],
         vec![],
@@ -447,7 +443,7 @@ fn execute_with_delegate_as_separate_authority() {
         (delegate_authority, payer_account()),
         (asset_signer, payer_account()),
         (
-            NOOP_ID,
+            SPL_NOOP_ID,
             Account {
                 lamports: ACCOUNT_LAMPORTS,
                 data: vec![],
@@ -499,7 +495,7 @@ fn execute_non_owner_without_remaining_accounts() {
         asset_signer,
         non_owner,
         None,
-        NOOP_ID,
+        SPL_NOOP_ID,
         None, // no delegate record
         vec![],
         vec![],
@@ -510,7 +506,7 @@ fn execute_non_owner_without_remaining_accounts() {
         (non_owner, payer_account()),
         (asset_signer, payer_account()),
         (
-            NOOP_ID,
+            SPL_NOOP_ID,
             Account {
                 lamports: ACCOUNT_LAMPORTS,
                 data: vec![],
@@ -546,7 +542,7 @@ fn execute_with_invalid_asset_signer_pda() {
         wrong_signer,
         owner,
         None,
-        NOOP_ID,
+        SPL_NOOP_ID,
         None,
         vec![],
         vec![],
@@ -557,7 +553,7 @@ fn execute_with_invalid_asset_signer_pda() {
         (owner, payer_account()),
         (wrong_signer, payer_account()),
         (
-            NOOP_ID,
+            SPL_NOOP_ID,
             Account {
                 lamports: ACCOUNT_LAMPORTS,
                 data: vec![],
@@ -593,7 +589,7 @@ fn execute_non_owner_without_agent_identity_plugin() {
         asset_signer,
         non_owner,
         None,
-        NOOP_ID,
+        SPL_NOOP_ID,
         Some((delegate_record_key, delegate_record_account.clone())),
         vec![],
         vec![],
@@ -604,7 +600,7 @@ fn execute_non_owner_without_agent_identity_plugin() {
         (non_owner, payer_account()),
         (asset_signer, payer_account()),
         (
-            NOOP_ID,
+            SPL_NOOP_ID,
             Account {
                 lamports: ACCOUNT_LAMPORTS,
                 data: vec![],
@@ -648,7 +644,7 @@ fn execute_with_wrong_authority_delegate() {
         asset_signer,
         actual_signer,
         None,
-        NOOP_ID,
+        SPL_NOOP_ID,
         Some((delegate_record_key, delegate_record_account.clone())),
         vec![],
         vec![],
@@ -659,7 +655,7 @@ fn execute_with_wrong_authority_delegate() {
         (actual_signer, payer_account()),
         (asset_signer, payer_account()),
         (
-            NOOP_ID,
+            SPL_NOOP_ID,
             Account {
                 lamports: ACCOUNT_LAMPORTS,
                 data: vec![],
@@ -703,7 +699,7 @@ fn execute_with_wrong_asset_delegate() {
         asset_signer,
         delegate_authority,
         None,
-        NOOP_ID,
+        SPL_NOOP_ID,
         Some((delegate_record_key, delegate_record_account.clone())),
         vec![],
         vec![],
@@ -714,7 +710,7 @@ fn execute_with_wrong_asset_delegate() {
         (delegate_authority, payer_account()),
         (asset_signer, payer_account()),
         (
-            NOOP_ID,
+            SPL_NOOP_ID,
             Account {
                 lamports: ACCOUNT_LAMPORTS,
                 data: vec![],
@@ -758,7 +754,7 @@ fn execute_with_wrong_program_owner_delegate() {
         asset_signer,
         delegate_authority,
         None,
-        NOOP_ID,
+        SPL_NOOP_ID,
         Some((delegate_record_key, delegate_record_account.clone())),
         vec![],
         vec![],
@@ -769,7 +765,7 @@ fn execute_with_wrong_program_owner_delegate() {
         (delegate_authority, payer_account()),
         (asset_signer, payer_account()),
         (
-            NOOP_ID,
+            SPL_NOOP_ID,
             Account {
                 lamports: ACCOUNT_LAMPORTS,
                 data: vec![],
@@ -813,7 +809,7 @@ fn execute_with_invalid_discriminator_delegate() {
         asset_signer,
         delegate_authority,
         None,
-        NOOP_ID,
+        SPL_NOOP_ID,
         Some((delegate_record_key, delegate_record_account.clone())),
         vec![],
         vec![],
@@ -824,7 +820,7 @@ fn execute_with_invalid_discriminator_delegate() {
         (delegate_authority, payer_account()),
         (asset_signer, payer_account()),
         (
-            NOOP_ID,
+            SPL_NOOP_ID,
             Account {
                 lamports: ACCOUNT_LAMPORTS,
                 data: vec![],

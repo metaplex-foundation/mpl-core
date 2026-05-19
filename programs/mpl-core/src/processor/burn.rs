@@ -38,7 +38,7 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &solana_program::pubkey!("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV") {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -129,7 +129,7 @@ pub(crate) fn burn_collection<'a>(
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &solana_program::pubkey!("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV") {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }

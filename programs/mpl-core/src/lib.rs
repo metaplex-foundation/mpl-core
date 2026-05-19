@@ -31,3 +31,7 @@ pub mod utils;
 pub use solana_program;
 
 solana_program::declare_id!("CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d");
+
+/// The SPL Noop program ID, used as the V1 log wrapper.
+pub const SPL_NOOP_ID: solana_program::pubkey::Pubkey =
+    solana_program::pubkey!("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV");
