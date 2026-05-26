@@ -125,7 +125,7 @@ fn transfer_v1_with_collection_instruction(
             AccountMeta::new_readonly(payer, true),       // 3: authority (signer)
             AccountMeta::new_readonly(new_owner, false),  // 4: new_owner
             AccountMeta::new_readonly(system_program::ID, false), // 5: system_program
-            AccountMeta::new_readonly(SPL_NOOP_ID, false),    // 6: log_wrapper (optional)
+            AccountMeta::new_readonly(SPL_NOOP_ID, false), // 6: log_wrapper (optional)
         ],
     )
 }
@@ -293,7 +293,7 @@ fn transfer_v1_instruction(asset: Pubkey, payer: Pubkey, new_owner: Pubkey) -> I
             AccountMeta::new_readonly(payer, true),        // 3: authority (signer)
             AccountMeta::new_readonly(new_owner, false),   // 4: new_owner
             AccountMeta::new_readonly(system_program::ID, false), // 5: system_program
-            AccountMeta::new_readonly(SPL_NOOP_ID, false),     // 6: log_wrapper (optional)
+            AccountMeta::new_readonly(SPL_NOOP_ID, false), // 6: log_wrapper (optional)
         ],
     )
 }
