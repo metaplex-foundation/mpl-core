@@ -37,7 +37,7 @@ impl PluginValidation for Groups {
         // plugin is inherited from the parent collection (`self_key == CollectionV1`) while an
         // asset is the burn target (`asset_info` is set), and burning the asset does not remove
         // the collection from any group, so we abstain.
-        let burning_owner = match ctx.self_key {
+        let member_is_burn_target = match ctx.self_key {
             // Plugin lives on the asset being burned (asset added directly to a group).
             Key::AssetV1 => true,
             // Plugin lives on the collection. This is the burn target only when no asset is
@@ -46,7 +46,7 @@ impl PluginValidation for Groups {
             _ => false,
         };
 
-        if burning_owner && !self.groups.is_empty() {
+        if member_is_burn_target && !self.groups.is_empty() {
             reject!()
         } else {
             abstain!()
