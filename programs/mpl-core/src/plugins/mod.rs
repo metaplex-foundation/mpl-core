@@ -346,7 +346,7 @@ mod test {
         );
 
         for fixture in plugins {
-            let serialized = fixture.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&fixture).unwrap();
             assert_eq!(
                 serialized.len(),
                 fixture.len(),
@@ -470,7 +470,7 @@ mod test {
 
         for fixtures in plugins {
             for fixture in fixtures {
-                let serialized = fixture.try_to_vec().unwrap();
+                let serialized = borsh::to_vec(&fixture).unwrap();
                 assert_eq!(
                     serialized.len(),
                     fixture.len(),
@@ -484,7 +484,7 @@ mod test {
     #[test]
     fn test_plugin_type_size() {
         for fixture in PluginType::iter() {
-            let serialized = fixture.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&fixture).unwrap();
             assert_eq!(
                 serialized.len(),
                 fixture.len(),

@@ -48,7 +48,7 @@ pub(crate) fn remove_collections_from_group_v1<'a>(
     assert_signer(payer_info)?;
     let authority_info = resolve_authority(payer_info, authority_info_opt)?;
 
-    if system_program_info.key != &solana_program::system_program::ID {
+    if system_program_info.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 

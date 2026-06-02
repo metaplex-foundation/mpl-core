@@ -2,9 +2,9 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke,
-    program_error::ProgramError, pubkey::Pubkey, rent::Rent, system_instruction, system_program,
-    sysvar::Sysvar,
+    program_error::ProgramError, pubkey::Pubkey, rent::Rent, sysvar::Sysvar,
 };
+use solana_system_interface::instruction as system_instruction;
 
 use super::groups_plugin_utils::{
     process_asset_groups_plugin_add, process_collection_groups_plugin_add,
@@ -54,7 +54,7 @@ pub(crate) fn create_group_v1<'a>(
     let authority_info = resolve_authority(ctx.accounts.payer, ctx.accounts.update_authority)?;
 
     // Ensure the canonical system program is provided.
-    if *ctx.accounts.system_program.key != system_program::ID {
+    if *ctx.accounts.system_program.key != solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
@@ -124,7 +124,7 @@ pub(crate) fn create_group_v1<'a>(
         assets_vec.clone(),
     );
 
-    let serialized_data = new_group.try_to_vec()?;
+    let serialized_data = borsh::to_vec(&new_group)?;
     let lamports = rent.minimum_balance(serialized_data.len());
 
     // Create the on-chain account for the group via CPI to System Program.

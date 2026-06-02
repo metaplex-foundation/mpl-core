@@ -1,4 +1,4 @@
-use borsh::{BorshDeserialize, BorshSerialize};
+use borsh::BorshDeserialize;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_memory::sol_memmove,
     pubkey::Pubkey,
@@ -150,9 +150,10 @@ pub(crate) fn save_updated_groups_plugin<'a>(
     plugin_registry: &mut PluginRegistryV1,
     header_offset: usize,
 ) -> ProgramResult {
-    let old_plugin_data =
-        Plugin::deserialize(&mut &account_info.data.borrow()[record.offset..])?.try_to_vec()?;
-    let new_plugin_data = plugin.try_to_vec()?;
+    let old_plugin_data = borsh::to_vec(&Plugin::deserialize(
+        &mut &account_info.data.borrow()[record.offset..],
+    )?)?;
+    let new_plugin_data = borsh::to_vec(plugin)?;
     let size_diff = (new_plugin_data.len() as isize)
         .checked_sub(old_plugin_data.len() as isize)
         .ok_or(MplCoreError::NumericalOverflow)?;

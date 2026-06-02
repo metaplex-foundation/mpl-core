@@ -62,14 +62,14 @@ mod tests {
             key: "test".to_string(),
             value: "test".to_string(),
         };
-        let serialized = attribute.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&attribute).unwrap();
         assert_eq!(serialized.len(), attribute.len());
     }
 
     #[test]
     fn test_attributes_default_len() {
         let attributes = Attributes::new();
-        let serialized = attributes.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&attributes).unwrap();
         assert_eq!(serialized.len(), attributes.len());
     }
 
@@ -87,7 +87,7 @@ mod tests {
                 },
             ],
         };
-        let serialized = attributes.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&attributes).unwrap();
         assert_eq!(serialized.len(), attributes.len());
     }
 }

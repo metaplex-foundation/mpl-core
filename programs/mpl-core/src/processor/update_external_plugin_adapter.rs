@@ -41,12 +41,12 @@ pub(crate) fn update_external_plugin_adapter<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+    if ctx.accounts.system_program.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -126,12 +126,12 @@ pub(crate) fn update_collection_external_plugin_adapter<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+    if ctx.accounts.system_program.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -205,10 +205,10 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     // Update the registry record using a mutable reference that ties back to `plugin_registry`.
     let (_, record) = find_external_plugin_adapter_mut(&mut plugin_registry, &key, account)?;
     let registry_record = record.ok_or(MplCoreError::PluginNotFound)?;
-    let old_registry_record_size = registry_record.try_to_vec()?.len() as isize;
+    let old_registry_record_size = borsh::to_vec(registry_record)?.len() as isize;
 
     registry_record.update(&update_info)?;
-    let new_registry_record_size = registry_record.try_to_vec()?.len() as isize;
+    let new_registry_record_size = borsh::to_vec(registry_record)?.len() as isize;
     let registry_record_size_diff = new_registry_record_size
         .checked_sub(old_registry_record_size)
         .ok_or(MplCoreError::NumericalOverflow)?;
@@ -219,8 +219,8 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     let mut new_plugin = plugin.clone();
     new_plugin.update(&update_info)?;
 
-    let plugin_data = plugin.try_to_vec()?;
-    let new_plugin_data = new_plugin.try_to_vec()?;
+    let plugin_data = borsh::to_vec(&plugin)?;
+    let new_plugin_data = borsh::to_vec(&new_plugin)?;
 
     // The difference in size between the new and old account which is used to calculate the new size of the account.
     let plugin_size = plugin_data.len() as isize;

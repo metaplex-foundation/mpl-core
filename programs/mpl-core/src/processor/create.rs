@@ -2,8 +2,9 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
-    program_memory::sol_memcpy, rent::Rent, system_instruction, system_program, sysvar::Sysvar,
+    program_memory::sol_memcpy, rent::Rent, sysvar::Sysvar,
 };
+use solana_system_interface::instruction as system_instruction;
 
 use crate::{
     error::MplCoreError,
@@ -72,12 +73,12 @@ pub(crate) fn process_create<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if *ctx.accounts.system_program.key != system_program::ID {
+    if *ctx.accounts.system_program.key != solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -112,7 +113,7 @@ pub(crate) fn process_create<'a>(
         args.uri.clone(),
     );
 
-    let serialized_data = new_asset.try_to_vec()?;
+    let serialized_data = borsh::to_vec(&new_asset)?;
 
     let serialized_data = match args.data_state {
         DataState::AccountState => serialized_data,
@@ -141,11 +142,15 @@ pub(crate) fn process_create<'a>(
         ],
     )?;
 
-    sol_memcpy(
-        &mut ctx.accounts.asset.try_borrow_mut_data()?,
-        &serialized_data,
-        serialized_data.len(),
-    );
+    // SAFETY: `serialized_data` cannot alias the account data, and the asset
+    // account was just created with `serialized_data.len()` bytes.
+    unsafe {
+        sol_memcpy(
+            &mut ctx.accounts.asset.try_borrow_mut_data()?,
+            &serialized_data,
+            serialized_data.len(),
+        );
+    }
 
     if args.data_state == DataState::AccountState {
         // Validate asset permissions.

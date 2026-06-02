@@ -1,4 +1,4 @@
-use solana_program::{rent::Rent, system_program, sysvar::Sysvar};
+use solana_program::{rent::Rent, sysvar::Sysvar};
 
 use super::*;
 use crate::state::{COLLECT_RECIPIENT1, COLLECT_RECIPIENT2};
@@ -42,7 +42,7 @@ fn collect_from_account(
 
     let (fee_amount, rent_amount) = match load_key(account_info, 0)? {
         Key::Uninitialized => {
-            account_info.assign(&system_program::ID);
+            account_info.assign(&solana_system_interface::program::ID);
 
             let uninitialized_rent = rent.minimum_balance(1);
             let fee_amount = account_info

@@ -458,7 +458,7 @@ mod tests {
             },
         ];
         for asset in assets {
-            let serialized = asset.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&asset).unwrap();
             assert_eq!(serialized.len(), asset.len());
         }
     }

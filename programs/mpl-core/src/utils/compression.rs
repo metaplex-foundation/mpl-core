@@ -1,4 +1,4 @@
-use borsh::{BorshDeserialize, BorshSerialize};
+use borsh::BorshDeserialize;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
     program_memory::sol_memcpy,
@@ -25,14 +25,18 @@ pub(crate) fn rebuild_account_state_from_proof_data<'a>(
     payer: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
 ) -> ProgramResult {
-    let serialized_data = asset.try_to_vec()?;
+    let serialized_data = borsh::to_vec(&asset)?;
     resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
 
-    sol_memcpy(
-        &mut asset_info.try_borrow_mut_data()?,
-        &serialized_data,
-        serialized_data.len(),
-    );
+    // SAFETY: `serialized_data` cannot alias the account data, and the account was
+    // just resized to fit it.
+    unsafe {
+        sol_memcpy(
+            &mut asset_info.try_borrow_mut_data()?,
+            &serialized_data,
+            serialized_data.len(),
+        );
+    }
 
     // Add the plugins.
     if !plugins.is_empty() {
@@ -99,15 +103,19 @@ pub(crate) fn compress_into_account_space<'a>(
     };
 
     let hashed_asset = HashedAssetV1::new(hashed_asset_schema.hash()?);
-    let serialized_data = hashed_asset.try_to_vec()?;
+    let serialized_data = borsh::to_vec(&hashed_asset)?;
 
     resize_or_reallocate_account(asset_info, payer, system_program, serialized_data.len())?;
 
-    sol_memcpy(
-        &mut asset_info.try_borrow_mut_data()?,
-        &serialized_data,
-        serialized_data.len(),
-    );
+    // SAFETY: `serialized_data` cannot alias the account data, and the account was
+    // just resized to fit it.
+    unsafe {
+        sol_memcpy(
+            &mut asset_info.try_borrow_mut_data()?,
+            &serialized_data,
+            serialized_data.len(),
+        );
+    }
 
     Ok(compression_proof)
 }

@@ -1,8 +1,8 @@
 use crate::{error::MplCoreError, state::Key, utils::load_key};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, keccak, msg, program::invoke,
-    program_error::ProgramError, pubkey::Pubkey,
+    account_info::AccountInfo, entrypoint::ProgramResult, instruction::Instruction, keccak, msg,
+    program::invoke, program_error::ProgramError, pubkey::Pubkey,
 };
 
 use super::UpdateAuthority;
@@ -51,17 +51,24 @@ pub trait SolanaAccount: BorshSerialize + BorshDeserialize {
 pub trait Compressible: BorshSerialize + BorshDeserialize {
     /// Get the hash of the compressed data.
     fn hash(&self) -> Result<[u8; 32], ProgramError> {
-        let serialized_data = self.try_to_vec()?;
+        let serialized_data = borsh::to_vec(self)?;
         Ok(keccak::hash(serialized_data.as_slice()).to_bytes())
     }
 }
 
-/// A trait for data that can be wrapped by the spl-noop program.
+/// A trait for data that can be wrapped by the SPL Noop program.
 pub trait Wrappable: BorshSerialize + BorshDeserialize {
     /// Write the data to ledger state by wrapping it in a noop instruction.
     fn wrap(&self) -> ProgramResult {
-        let serialized_data = self.try_to_vec()?;
-        invoke(&spl_noop::instruction(serialized_data), &[])
+        let serialized_data = borsh::to_vec(self)?;
+        invoke(
+            &Instruction {
+                program_id: crate::SPL_NOOP_ID,
+                accounts: vec![],
+                data: serialized_data,
+            },
+            &[],
+        )
     }
 }
 

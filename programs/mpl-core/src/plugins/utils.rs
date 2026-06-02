@@ -1,4 +1,4 @@
-use borsh::{BorshDeserialize, BorshSerialize};
+use borsh::BorshDeserialize;
 use solana_program::{
     account_info::AccountInfo,
     entrypoint::ProgramResult,
@@ -420,11 +420,11 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         _ => {}
     };
 
-    let serialized_plugin = plugin.try_to_vec()?;
+    let serialized_plugin = borsh::to_vec(&plugin)?;
     let plugin_size = serialized_plugin.len();
 
     let size_increase = plugin_size
-        .checked_add(new_registry_record.try_to_vec()?.len())
+        .checked_add(borsh::to_vec(&new_registry_record)?.len())
         .ok_or(MplCoreError::NumericalOverflow)?
         .checked_add(new_registry_record.data_len.unwrap_or(0))
         .ok_or(MplCoreError::NumericalOverflow)?;
@@ -457,11 +457,15 @@ pub fn initialize_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     plugin.save(account, old_registry_offset)?;
 
     if let Some(data) = appended_data {
-        sol_memcpy(
-            &mut account.data.borrow_mut()[data_offset..],
-            data,
-            data.len(),
-        );
+        // SAFETY: `data` cannot alias the account data, and the account was just
+        // resized to fit `data.len()` bytes at `data_offset`.
+        unsafe {
+            sol_memcpy(
+                &mut account.data.borrow_mut()[data_offset..],
+                data,
+                data.len(),
+            );
+        }
     };
 
     plugin_registry.save(account, new_registry_offset)?;
@@ -541,11 +545,15 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         resize_or_reallocate_account(account, payer, system_program, new_size)?;
     }
 
-    sol_memcpy(
-        &mut account.data.borrow_mut()[data_offset..],
-        data,
-        new_data_len,
-    );
+    // SAFETY: `data` cannot alias the account data, and the account is sized to
+    // fit `new_data_len` bytes at `data_offset`.
+    unsafe {
+        sol_memcpy(
+            &mut account.data.borrow_mut()[data_offset..],
+            data,
+            new_data_len,
+        );
+    }
 
     // Find the record in the registry and update the data length.
     let record_index = plugin_registry
@@ -613,12 +621,12 @@ pub fn delete_plugin<'a, T: DataBlob>(
         .position(|record| record.plugin_type == *plugin_type)
     {
         let registry_record = plugin_registry.registry.remove(index);
-        let serialized_registry_record = registry_record.try_to_vec()?;
+        let serialized_registry_record = borsh::to_vec(&registry_record)?;
 
         // Fetch the offset of the plugin to be removed.
         let plugin_offset = registry_record.offset;
         let plugin = Plugin::load(account, plugin_offset)?;
-        let serialized_plugin = plugin.try_to_vec()?;
+        let serialized_plugin = borsh::to_vec(&plugin)?;
 
         // Get the offset of the plugin after the one being removed.
         let next_plugin_offset = plugin_offset
@@ -692,12 +700,12 @@ pub fn delete_external_plugin_adapter<'a, T: DataBlob>(
 
     if let (Some(index), _) = result {
         let registry_record = plugin_registry.external_registry.remove(index);
-        let serialized_registry_record = registry_record.try_to_vec()?;
+        let serialized_registry_record = borsh::to_vec(&registry_record)?;
 
         // Fetch the offset of the plugin to be removed.
         let plugin_offset = registry_record.offset;
         let plugin = ExternalPluginAdapter::load(account, plugin_offset)?;
-        let serialized_plugin = plugin.try_to_vec()?;
+        let serialized_plugin = borsh::to_vec(&plugin)?;
         let serialized_plugin_len = serialized_plugin
             .len()
             .checked_add(registry_record.data_len.unwrap_or(0))
@@ -772,8 +780,8 @@ pub fn approve_authority_on_plugin<'a, T: CoreAsset>(
         .find(|record| record.plugin_type == *plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
 
-    let old_authority_bytes = registry_record.authority.try_to_vec()?;
-    let new_authority_bytes = new_authority.try_to_vec()?;
+    let old_authority_bytes = borsh::to_vec(&registry_record.authority)?;
+    let new_authority_bytes = borsh::to_vec(new_authority)?;
     let size_diff = (new_authority_bytes.len() as isize)
         .checked_sub(old_authority_bytes.len() as isize)
         .ok_or(MplCoreError::NumericalOverflow)?;
@@ -811,9 +819,9 @@ pub fn revoke_authority_on_plugin<'a>(
         .find(|record| record.plugin_type == *plugin_type)
         .ok_or(MplCoreError::PluginNotFound)?;
 
-    let old_authority_bytes = registry_record.authority.try_to_vec()?;
+    let old_authority_bytes = borsh::to_vec(&registry_record.authority)?;
     registry_record.authority = registry_record.plugin_type.manager();
-    let new_authority_bytes = registry_record.authority.try_to_vec()?;
+    let new_authority_bytes = borsh::to_vec(&registry_record.authority)?;
 
     let size_diff = (new_authority_bytes.len() as isize)
         .checked_sub(old_authority_bytes.len() as isize)
