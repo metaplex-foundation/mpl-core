@@ -16,7 +16,8 @@ use crate::{
         PluginType, PluginValidationContext, ValidationResult,
     },
     state::{
-        get_create_fee, AssetV1, Authority, CollectionV1, DataState, SolanaAccount, UpdateAuthority,
+        get_create_fee, AssetV1, Authority, CollectionV1, DataState, Key, SolanaAccount,
+        UpdateAuthority,
     },
     utils::{resolve_authority, validate_asset_permissions},
 };
@@ -203,6 +204,7 @@ pub(crate) fn process_create<'a>(
                             accounts,
                             asset_info: Some(ctx.accounts.asset),
                             collection_info: ctx.accounts.collection,
+                            self_key: Key::AssetV1,
                             self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
                             authority_info: authority,
                             resolved_authorities: None,
@@ -264,6 +266,7 @@ pub(crate) fn process_create<'a>(
                             accounts,
                             asset_info: Some(ctx.accounts.asset),
                             collection_info: ctx.accounts.collection,
+                            self_key: Key::AssetV1,
                             // External plugin adapters are always managed by the update authority.
                             self_authority: &Authority::UpdateAuthority,
                             authority_info: authority,

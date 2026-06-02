@@ -510,6 +510,11 @@ pub(crate) struct PluginValidationContext<'a, 'b> {
     pub asset_info: Option<&'a AccountInfo<'a>>,
     /// The collection account.
     pub collection_info: Option<&'a AccountInfo<'a>>,
+    /// The key of the account the current (self) plugin lives on, i.e. whether
+    /// it is an asset plugin (`Key::AssetV1`) or a collection plugin
+    /// (`Key::CollectionV1`). This lets plugins distinguish a plugin that lives
+    /// on the lifecycle target from one inherited from a parent collection.
+    pub self_key: Key,
     /// The authority of the current (self) plugin
     pub self_authority: &'b Authority,
     /// The authority account info of ix `authority` signer
@@ -704,6 +709,7 @@ pub(crate) fn validate_plugin_checks<'a>(
                 accounts,
                 asset_info: asset,
                 collection_info: collection,
+                self_key: *check_key,
                 self_authority: &registry_record.authority,
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),
@@ -777,6 +783,7 @@ pub(crate) fn validate_external_plugin_adapter_checks<'a>(
                 accounts,
                 asset_info: asset,
                 collection_info: collection,
+                self_key: *check_key,
                 self_authority: &external_registry_record.authority,
                 authority_info: authority,
                 resolved_authorities: Some(resolved_authorities),

@@ -166,6 +166,7 @@ pub(crate) fn process_create_collection<'a>(
                         accounts,
                         asset_info: None,
                         collection_info: Some(ctx.accounts.collection),
+                        self_key: Key::CollectionV1,
                         self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
                         authority_info: ctx.accounts.payer,
                         resolved_authorities: None,
