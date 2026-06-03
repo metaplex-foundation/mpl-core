@@ -237,7 +237,8 @@ pub trait SolanaAccount: CrateSerialize + CrateDeserialize {
 
     /// Save the account to the given account info starting at the offset.
     fn save(&self, account: &AccountInfo, offset: usize) -> Result<(), std::io::Error> {
-        borsh::to_writer(&mut account.data.borrow_mut()[offset..], self)
+        let mut data = account.data.borrow_mut();
+        self.serialize(&mut &mut data[offset..])
     }
 }
 

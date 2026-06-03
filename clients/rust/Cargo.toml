@@ -12,15 +12,25 @@ crate-type = ["cdylib", "lib"]
 
 [features]
 default = ["borsh-v1"]
-anchor = ["dep:anchor-lang", "kaigan/anchor"]
+# Anchor is mutually exclusive with the default `borsh-v1` feature.
+# Consumers should set `default-features = false` when enabling `anchor`.
+anchor = [
+    "dep:anchor-lang-0-31",
+    "dep:borsh",
+    "dep:solana-program",
+    "kaigan/anchor",
+]
+anchor-0-32 = ["dep:anchor-lang-0-32"]
 serde = ["dep:serde", "dep:serde_with"]
 test-sbf = []
 borsh-v1 = ["kaigan/borsh-v1"]
 
 [dependencies]
-anchor-lang = { version = "0.31.1", optional = true }
+anchor-lang-0-31 = { package = "anchor-lang", version = "0.31.1", optional = true }
+anchor-lang-0-32 = { package = "anchor-lang", version = "0.32.1", optional = true }
 base64 = "0.22.0"
-borsh = { version = "1.5", features = ["derive"] }
+borsh = { version = "0.10.4", optional = true }
+borsh1 = { package = "borsh", version = "1.5", features = ["derive"] }
 modular-bitfield = "0.11.2"
 num-derive = "^0.4"
 num-traits = "^0.2"
@@ -28,8 +38,9 @@ rmp-serde = "1.0"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 serde_json = "1.0"
 serde_with = { version = "^3.0", optional = true }
-solana-program = "3.0.0"
+solana-program = { version = "2.3.0", optional = true }
 solana-program-error = "3.0.0"
+solana-program-v3 = { package = "solana-program", version = "3.0.0" }
 thiserror = "^1.0"
 
 kaigan = { version = "0.5.0", features = ["serde"], optional = false }
