@@ -8,6 +8,9 @@ publish = false
 
 [lib]
 crate-type = ["cdylib", "lib"]
+# Explicit lib name so `solana-verify build --library-name mpl_core_program`
+# is unambiguous and isn't subject to package-name normalization rules.
+name = "mpl_core_program"
 
 [dependencies]
 borsh = { version = "1.5", features = ["derive"] }

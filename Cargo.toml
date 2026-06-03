@@ -3,8 +3,19 @@ resolver = "2"
 members = ["clients/rust", "programs/mpl-core"]
 
 [profile.release]
+# Release profile recommended by the Solana verified-builds guide so that
+# `cargo build-sbf` locally produces an artifact close to what `solana-verify
+# build` produces in its docker image. solana-verify itself uses the toolchain
+# baked into the docker image; these settings exist to keep ad-hoc local
+# builds aligned with the verified one.
+# https://solana.com/docs/programs/verified-builds#prepare-project
 overflow-checks = true # Enable integer overflow checks.
 strip = true           # Automatically strip symbols from the binary.
 opt-level = 3          # Optimize for speed.
-lto = true
+lto = "fat"
+codegen-units = 1
+
+[profile.release.build-override]
+opt-level = 3
+incremental = false
 codegen-units = 1

@@ -94,12 +94,28 @@ jobs:
   deploy_program:
     name: Program / Deploy
     runs-on: ubuntu-latest-16-cores
-    needs: [check_tag, test_js, test_programs, test_rust]
+    needs: [check_tag, build_programs, test_js, test_programs, test_rust]
+    # Two valid paths into deploy:
+    #   1. release: download a prebuilt .so from the GitHub release; tests and
+    #      build are intentionally skipped because the artifact is already
+    #      verified upstream.
+    #   2. ref: build_programs, test_js, test_programs, and test_rust must all
+    #      have actually run and succeeded. We don't accept `skipped` for
+    #      these because a skipped test is silent failure (e.g. when
+    #      build_programs fails, the test jobs are skipped via `needs:`, and
+    #      we must not let that pass).
     if: |
       always()
-      && (needs.test_js.result == 'success' || needs.test_js.result == 'skipped')
-      && (needs.test_programs.result == 'success' || needs.test_programs.result == 'skipped')
-      && (needs.test_rust.result == 'success' || needs.test_rust.result == 'skipped')
+      && (
+        needs.check_tag.outputs.type == 'release'
+        || (
+          needs.check_tag.outputs.type == 'ref'
+          && needs.build_programs.result == 'success'
+          && needs.test_js.result == 'success'
+          && needs.test_programs.result == 'success'
+          && needs.test_rust.result == 'success'
+        )
+      )
     permissions:
       contents: write
     steps:
@@ -174,6 +190,13 @@ jobs:
             exit 1
           fi          
 
+      - name: Install Solana Verify
+        if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'direct'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libudev-dev pkg-config
+          cargo install solana-verify --locked --version "${SOLANA_VERIFY_VERSION}"
+
       - name: Sanitize Ref
         id: sanitize
         shell: bash
@@ -239,8 +262,33 @@ jobs:
             --max-sign-attempts 100 \
             --use-rpc
 
-          rm ./deployer-key.json
-          rm ./program-id.json
+      - name: Upload verified-build PDA
+        if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'direct'
+        run: |
+          PROGRAM_ID="$(solana-keygen pubkey ./program-id.json)"
+          COMMIT_HASH="$(git rev-parse HEAD)"
+
+          solana-verify verify-from-repo \
+            --current-dir \
+            --program-id "${PROGRAM_ID}" \
+            --url "${RPC}" \
+            --keypair ./deployer-key.json \
+            --library-name "${PROGRAM_NAME}_program" \
+            --mount-path . \
+            --commit-hash "${COMMIT_HASH}" \
+            --skip-prompt \
+            https://github.com/metaplex-foundation/mpl-core.git
+
+      - name: Submit remote verification job
+        if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'direct'
+        run: |
+          PROGRAM_ID="$(solana-keygen pubkey ./program-id.json)"
+          UPLOADER="$(solana-keygen pubkey ./deployer-key.json)"
+
+          solana-verify remote submit-job \
+            --url "${RPC}" \
+            --program-id "${PROGRAM_ID}" \
+            --uploader "${UPLOADER}"
 
       - name: Deploy squads buffer
         if: github.event.inputs.dry_run == 'false' && env.DEPLOY_TYPE == 'squads'
@@ -255,8 +303,6 @@ jobs:
             --new-buffer-authority ${{ env.SQUADS_VAULT }} \
             -k ./submitter-key.json \
             -u ${{ env.RPC }}
-
-          rm ./submitter-key.json
 
           echo "BUFFER=$BUFFER" >> $GITHUB_ENV
     
@@ -304,3 +350,7 @@ jobs:
                 force: true
               });
             })
+
+      - name: Clean up signer files
+        if: always()
+        run: rm -f ./deployer-key.json ./program-id.json ./submitter-key.json
