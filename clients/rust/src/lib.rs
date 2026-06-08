@@ -4,8 +4,8 @@ extern crate anchor_lang_0_31 as anchor_lang;
 extern crate anchor_lang_0_32 as anchor_lang;
 #[cfg(not(feature = "anchor"))]
 extern crate borsh1 as borsh;
-#[cfg(not(feature = "anchor"))]
-extern crate solana_program_v3 as solana_program;
+#[cfg(feature = "anchor")]
+extern crate solana_program_2 as solana_program;
 
 mod generated;
 mod hooked;

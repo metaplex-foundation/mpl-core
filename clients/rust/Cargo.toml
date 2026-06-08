@@ -17,7 +17,7 @@ default = ["borsh-v1"]
 anchor = [
     "dep:anchor-lang-0-31",
     "dep:borsh",
-    "dep:solana-program",
+    "dep:solana-program-2",
     "kaigan/anchor",
 ]
 anchor-0-32 = ["dep:anchor-lang-0-32"]
@@ -38,9 +38,9 @@ rmp-serde = "1.0"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 serde_json = "1.0"
 serde_with = { version = "^3.0", optional = true }
-solana-program = { version = "2.3.0", optional = true }
+solana-program = "3.0.0"
+solana-program-2 = { package = "solana-program", version = "2.3.0", optional = true }
 solana-program-error = "3.0.0"
-solana-program-v3 = { package = "solana-program", version = "3.0.0" }
 thiserror = "^1.0"
 
 kaigan = { version = "0.5.0", features = ["serde"], optional = false }
