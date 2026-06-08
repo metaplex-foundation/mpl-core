@@ -72,8 +72,11 @@ jobs:
               with:
                   library-name: mpl_core_program
                   package: mpl-core-program
-                  # Verified-build toolchain version; the action resolves it to a
-                  # digest-pinned image via solana-verify-base-images.json.
+                  # Verified-build toolchain version (SOLANA_VERIFY_BUILD_VERSION in
+                  # .github/.env). Pinned to 3.1.14 = platform-tools v1.52, the newest
+                  # official image; mpl-core's native tool is v1.53 but no v1.53 image
+                  # exists yet. The action resolves it to a digest-pinned image via
+                  # solana-verify-base-images.json.
                   solana-version: ${{ env.SOLANA_VERIFY_BUILD_VERSION }}
                   output-dir: programs/.bin
 
