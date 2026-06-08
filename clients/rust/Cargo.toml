@@ -20,7 +20,7 @@ anchor = [
     "dep:solana-program-2",
     "kaigan/anchor",
 ]
-anchor-0-32 = ["dep:anchor-lang-0-32"]
+anchor-0-32 = ["anchor", "dep:anchor-lang-0-32"]
 serde = ["dep:serde", "dep:serde_with"]
 test-sbf = []
 borsh-v1 = ["kaigan/borsh-v1"]
