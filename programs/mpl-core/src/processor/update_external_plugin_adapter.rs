@@ -41,12 +41,12 @@ pub(crate) fn update_external_plugin_adapter<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+    if ctx.accounts.system_program.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -62,11 +62,14 @@ pub(crate) fn update_external_plugin_adapter<'a>(
         resolve_pubkey_to_authorities(authority, ctx.accounts.collection, &asset)?;
     let (external_registry_record, external_plugin_adapter) =
         fetch_wrapped_external_plugin_adapter::<AssetV1>(ctx.accounts.asset, None, &args.key)?;
+    let mut incoming_external_plugin_adapter = external_plugin_adapter.clone();
+    incoming_external_plugin_adapter.update(&args.update_info)?;
 
     let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: Some(ctx.accounts.asset),
         collection_info: ctx.accounts.collection,
+        self_key: Key::AssetV1,
         self_authority: &external_registry_record.authority,
         authority_info: authority,
         resolved_authorities: Some(&resolved_authorities),
@@ -75,7 +78,7 @@ pub(crate) fn update_external_plugin_adapter<'a>(
         new_collection_authority: None,
         target_plugin: None,
         target_plugin_authority: None,
-        target_external_plugin: Some(&external_plugin_adapter),
+        target_external_plugin: Some(&incoming_external_plugin_adapter),
         target_external_plugin_authority: Some(&external_registry_record.authority),
     };
 
@@ -123,12 +126,12 @@ pub(crate) fn update_collection_external_plugin_adapter<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+    if ctx.accounts.system_program.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -143,11 +146,14 @@ pub(crate) fn update_collection_external_plugin_adapter<'a>(
             None,
             &args.key,
         )?;
+    let mut incoming_external_plugin_adapter = external_plugin_adapter.clone();
+    incoming_external_plugin_adapter.update(&args.update_info)?;
 
     let validation_ctx = PluginValidationContext {
         accounts,
         asset_info: None,
         collection_info: Some(ctx.accounts.collection),
+        self_key: Key::CollectionV1,
         self_authority: &external_registry_record.authority,
         authority_info: authority,
         resolved_authorities: Some(&resolved_authorities),
@@ -156,7 +162,7 @@ pub(crate) fn update_collection_external_plugin_adapter<'a>(
         new_collection_authority: None,
         target_plugin: None,
         target_plugin_authority: None,
-        target_external_plugin: Some(&external_plugin_adapter),
+        target_external_plugin: Some(&incoming_external_plugin_adapter),
         target_external_plugin_authority: Some(&external_registry_record.authority),
     };
 
@@ -199,10 +205,10 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     // Update the registry record using a mutable reference that ties back to `plugin_registry`.
     let (_, record) = find_external_plugin_adapter_mut(&mut plugin_registry, &key, account)?;
     let registry_record = record.ok_or(MplCoreError::PluginNotFound)?;
-    let old_registry_record_size = registry_record.try_to_vec()?.len() as isize;
+    let old_registry_record_size = borsh::to_vec(registry_record)?.len() as isize;
 
     registry_record.update(&update_info)?;
-    let new_registry_record_size = registry_record.try_to_vec()?.len() as isize;
+    let new_registry_record_size = borsh::to_vec(registry_record)?.len() as isize;
     let registry_record_size_diff = new_registry_record_size
         .checked_sub(old_registry_record_size)
         .ok_or(MplCoreError::NumericalOverflow)?;
@@ -211,10 +217,10 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
     let registry_record = registry_record.clone();
 
     let mut new_plugin = plugin.clone();
-    new_plugin.update(&update_info);
+    new_plugin.update(&update_info)?;
 
-    let plugin_data = plugin.try_to_vec()?;
-    let new_plugin_data = new_plugin.try_to_vec()?;
+    let plugin_data = borsh::to_vec(&plugin)?;
+    let new_plugin_data = borsh::to_vec(&new_plugin)?;
 
     // The difference in size between the new and old account which is used to calculate the new size of the account.
     let plugin_size = plugin_data.len() as isize;
@@ -228,44 +234,69 @@ fn process_update_external_plugin_adapter<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::NumericalOverflow)?
         .checked_add(registry_record_size_diff)
         .ok_or(MplCoreError::NumericalOverflow)?;
+    let new_size: usize = new_size
+        .try_into()
+        .map_err(|_| MplCoreError::NumericalOverflow)?;
 
     // The new offset of the plugin registry is the old offset plus the size difference.
     let registry_offset = plugin_header.plugin_registry_offset;
-    let new_registry_offset = (registry_offset as isize)
+    let new_registry_offset: usize = (registry_offset as isize)
         .checked_add(plugin_size_diff)
-        .ok_or(MplCoreError::NumericalOverflow)?;
-    plugin_header.plugin_registry_offset = new_registry_offset as usize;
+        .ok_or(MplCoreError::NumericalOverflow)?
+        .try_into()
+        .map_err(|_| MplCoreError::NumericalOverflow)?;
 
     // The offset of the first plugin is the plugin offset plus the size of the plugin.
-    let next_plugin_offset = (registry_record.offset as isize)
+    let next_plugin_offset: usize = (registry_record.offset as isize)
         .checked_add(plugin_size)
-        .ok_or(MplCoreError::NumericalOverflow)?;
+        .ok_or(MplCoreError::NumericalOverflow)?
+        .try_into()
+        .map_err(|_| MplCoreError::NumericalOverflow)?;
 
-    let new_next_plugin_offset = next_plugin_offset
+    let new_next_plugin_offset: usize = (next_plugin_offset as isize)
         .checked_add(plugin_size_diff)
-        .ok_or(MplCoreError::NumericalOverflow)?;
+        .ok_or(MplCoreError::NumericalOverflow)?
+        .try_into()
+        .map_err(|_| MplCoreError::NumericalOverflow)?;
 
-    resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
+    // Move only the bytes between the updated plugin and the original registry start.
+    // This must be computed from the old registry offset, not the new one.
+    let copy_len = registry_offset.saturating_sub(next_plugin_offset);
 
-    // SAFETY: `borrow_mut` will always return a valid pointer.
-    // new_next_plugin_offset is derived from next_plugin_offset and size_diff using
-    // checked arithmetic, so it will always be less than or equal to account.data_len().
-    // This will fail and revert state if there is a memory violation.
-    unsafe {
-        let base = account.data.borrow_mut().as_mut_ptr();
-        sol_memmove(
-            base.add(new_next_plugin_offset as usize),
-            base.add(next_plugin_offset as usize),
-            registry_offset - next_plugin_offset as usize,
-        );
+    // When shrinking, shift trailing bytes before account reallocation so the source
+    // region is still fully available.
+    if plugin_size_diff < 0 && copy_len > 0 {
+        unsafe {
+            let base = account.data.borrow_mut().as_mut_ptr();
+            sol_memmove(
+                base.add(new_next_plugin_offset),
+                base.add(next_plugin_offset),
+                copy_len,
+            );
+        }
     }
 
+    resize_or_reallocate_account(account, payer, system_program, new_size)?;
+
+    // When growing, reallocate first so the destination region exists.
+    if plugin_size_diff > 0 && copy_len > 0 {
+        unsafe {
+            let base = account.data.borrow_mut().as_mut_ptr();
+            sol_memmove(
+                base.add(new_next_plugin_offset),
+                base.add(next_plugin_offset),
+                copy_len,
+            );
+        }
+    }
+
+    plugin_header.plugin_registry_offset = new_registry_offset;
     plugin_header.save(account, core.len())?;
 
     // Move offsets for existing registry records.
     plugin_registry.bump_offsets(registry_record.offset, plugin_size_diff)?;
 
-    plugin_registry.save(account, new_registry_offset as usize)?;
+    plugin_registry.save(account, new_registry_offset)?;
     new_plugin.save(account, registry_record.offset)?;
 
     Ok(())

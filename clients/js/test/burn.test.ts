@@ -2,7 +2,14 @@ import { generateSigner, sol } from '@metaplex-foundation/umi';
 import test from 'ava';
 
 import { generateSignerWithSol } from '@metaplex-foundation/umi-bundle-tests';
-import { burnV1, pluginAuthorityPair } from '../src';
+import {
+  addAssetsToGroup,
+  addCollectionsToGroup,
+  burn,
+  burnV1,
+  pluginAuthorityPair,
+  removeAssetsFromGroup,
+} from '../src';
 import {
   DEFAULT_ASSET,
   DEFAULT_COLLECTION,
@@ -12,6 +19,7 @@ import {
   createAsset,
   createAssetWithCollection,
   createCollection,
+  createGroup,
   createUmi,
 } from './_setupRaw';
 
@@ -300,4 +308,110 @@ test('it can burn asset with different payer', async (t) => {
   const lamportsAfter = await umi.rpc.getBalance(umi.identity.publicKey);
 
   t.true(lamportsAfter.basisPoints > lamportsBefore.basisPoints);
+});
+
+test('it rejects burning an asset that belongs to a group', async (t) => {
+  const umi = await createUmi();
+  const group = await createGroup(umi);
+  const asset = await createAsset(umi);
+
+  await addAssetsToGroup(umi, {
+    group: group.publicKey,
+    authority: umi.identity,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await assertAsset(t, umi, {
+    ...DEFAULT_ASSET,
+    asset: asset.publicKey,
+    owner: umi.identity.publicKey,
+    updateAuthority: { type: 'Address', address: umi.identity.publicKey },
+    groups: {
+      authority: { type: 'UpdateAuthority' },
+      groups: [group.publicKey],
+    },
+  });
+
+  await t.throwsAsync(burn(umi, { asset }).sendAndConfirm(umi), {
+    name: 'InvalidAuthority',
+  });
+});
+
+test('it allows burning an asset after removing it from all groups', async (t) => {
+  const umi = await createUmi();
+  const group = await createGroup(umi);
+  const asset = await createAsset(umi);
+
+  await addAssetsToGroup(umi, {
+    group: group.publicKey,
+    authority: umi.identity,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await removeAssetsFromGroup(umi, {
+    group: group.publicKey,
+    authority: umi.identity,
+    assets: [asset.publicKey],
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: asset.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await burn(umi, { asset }).sendAndConfirm(umi);
+
+  await assertBurned(t, umi, asset.publicKey);
+});
+
+test('it allows burning an asset in a collection that belongs to a group', async (t) => {
+  // The Groups plugin only protects the group member (the collection) from being
+  // burned while it is still in a group. An asset that merely belongs to such a
+  // collection is not itself a group member, so burning it does not break the
+  // group and must be permitted.
+  const umi = await createUmi();
+  const group = await createGroup(umi);
+  const { asset, collection } = await createAssetWithCollection(umi, {});
+
+  await addCollectionsToGroup(umi, {
+    group: group.publicKey,
+    authority: umi.identity,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await burn(umi, { asset, collection }).sendAndConfirm(umi);
+
+  await assertBurned(t, umi, asset.publicKey);
+});
+
+test('it allows a secondary owner to burn an asset in a collection that belongs to a group', async (t) => {
+  // Secondary owners cannot remove an asset from a collection, so the previous
+  // (incorrect) behavior left them unable to burn at all. Ensure they can burn.
+  const umi = await createUmi();
+  const owner = await generateSignerWithSol(umi);
+  const group = await createGroup(umi);
+  const { asset, collection } = await createAssetWithCollection(umi, {
+    owner: owner.publicKey,
+  });
+
+  await addCollectionsToGroup(umi, {
+    group: group.publicKey,
+    authority: umi.identity,
+  })
+    .addRemainingAccounts([
+      { isSigner: false, isWritable: true, pubkey: collection.publicKey },
+    ])
+    .sendAndConfirm(umi);
+
+  await burn(umi, { asset, collection, authority: owner }).sendAndConfirm(umi);
+
+  await assertBurned(t, umi, asset.publicKey);
 });

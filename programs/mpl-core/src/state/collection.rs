@@ -417,7 +417,7 @@ mod tests {
             },
         ];
         for collection in collections {
-            let serialized = collection.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&collection).unwrap();
             assert_eq!(serialized.len(), collection.len());
         }
     }

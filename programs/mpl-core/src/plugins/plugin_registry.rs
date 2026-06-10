@@ -85,26 +85,27 @@ impl PluginRegistryV1 {
                 record.offset = (record.offset as isize)
                     .checked_add(size_diff)
                     .ok_or(MplCoreError::NumericalOverflow)?
-                    as usize;
+                    .try_into()
+                    .map_err(|_| MplCoreError::NumericalOverflow)?;
             }
         }
 
         for record in &mut self.external_registry {
             if record.offset > offset {
-                solana_program::msg!("Bumping Record: {:?}", record);
                 record.offset = (record.offset as isize)
                     .checked_add(size_diff)
                     .ok_or(MplCoreError::NumericalOverflow)?
-                    as usize;
+                    .try_into()
+                    .map_err(|_| MplCoreError::NumericalOverflow)?;
 
                 if let Some(data_offset) = record.data_offset {
                     if data_offset > offset {
-                        solana_program::msg!("Bumping Data: {:?}", record);
                         record.data_offset = Some(
                             (data_offset as isize)
                                 .checked_add(size_diff)
                                 .ok_or(MplCoreError::NumericalOverflow)?
-                                as usize,
+                                .try_into()
+                                .map_err(|_| MplCoreError::NumericalOverflow)?,
                         );
                     }
                 }
@@ -252,7 +253,7 @@ mod tests {
             registry: vec![],
             external_registry: vec![],
         };
-        let serialized = registry.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&registry).unwrap();
         assert_eq!(serialized.len(), registry.len());
     }
 
@@ -311,7 +312,7 @@ mod tests {
                 },
             ],
         };
-        let serialized = registry.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&registry).unwrap();
         assert_eq!(serialized.len(), registry.len());
     }
 
@@ -338,7 +339,7 @@ mod tests {
         ];
 
         for record in records {
-            let serialized = record.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&record).unwrap();
             assert_eq!(serialized.len(), record.len());
         }
     }
@@ -378,7 +379,7 @@ mod tests {
         ];
 
         for record in records {
-            let serialized = record.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&record).unwrap();
             assert_eq!(serialized.len(), record.len());
         }
     }

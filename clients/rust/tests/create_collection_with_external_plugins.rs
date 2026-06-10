@@ -300,7 +300,6 @@ async fn test_create_and_fetch_app_data_on_collection() {
         account.data.borrow_mut(),
         &account.owner,
         false,
-        0,
     );
 
     // Fetch external plugin adapter two ways.

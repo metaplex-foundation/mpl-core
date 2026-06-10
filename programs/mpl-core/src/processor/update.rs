@@ -92,12 +92,12 @@ fn update<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+    if ctx.accounts.system_program.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -285,12 +285,12 @@ pub(crate) fn update_collection<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+    if ctx.accounts.system_program.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -385,17 +385,17 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
 
         resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
 
-        // SAFETY: `borrow_mut` will always return a valid pointer.
-        // new_plugin_offset is derived from plugin_offset and size_diff using
-        // checked arithmetic, so it will always be less than or equal to account.data_len().
-        // This will fail and revert state if there is a memory violation.
-        unsafe {
-            let base = account.data.borrow_mut().as_mut_ptr();
-            sol_memmove(
-                base.add(new_plugin_offset as usize),
-                base.add(plugin_offset as usize),
-                registry_offset - plugin_offset as usize,
-            );
+        let copy_len = (registry_offset as usize).saturating_sub(plugin_offset as usize);
+
+        if copy_len > 0 {
+            unsafe {
+                let base = account.data.borrow_mut().as_mut_ptr();
+                sol_memmove(
+                    base.add(new_plugin_offset as usize),
+                    base.add(plugin_offset as usize),
+                    copy_len,
+                );
+            }
         }
 
         plugin_header.save(account, new_core_size as usize)?;

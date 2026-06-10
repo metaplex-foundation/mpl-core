@@ -1,9 +1,5 @@
 use num_derive::FromPrimitive;
-use solana_program::{
-    decode_error::DecodeError,
-    msg,
-    program_error::{PrintProgramError, ProgramError},
-};
+use solana_program::program_error::ProgramError;
 use thiserror::Error;
 
 /// Errors that may be returned by the Mpl Core program.
@@ -216,22 +212,30 @@ pub enum MplCoreError {
     /// 51 - Agent Identity Program must sign
     #[error("Agent Identity Program must sign")]
     AgentIdentityMustSign,
-}
 
-impl PrintProgramError for MplCoreError {
-    fn print<E>(&self) {
-        msg!(&self.to_string());
-    }
+    /// 52 - Group must be empty to be closed
+    #[error("Group must be empty to be closed")]
+    GroupMustBeEmpty,
+
+    /// 53 - Duplicate entry provided when adding relationships to a group
+    #[error("Duplicate entry provided when adding relationships to a group")]
+    DuplicateEntry,
+
+    /// 54 - Group vector is at maximum capacity
+    #[error("Group vector is at maximum capacity")]
+    GroupVectorFull,
+
+    /// 55 - Group nesting depth exceeded
+    #[error("Group nesting depth exceeded")]
+    GroupNestingDepthExceeded,
+
+    /// 56 - Bidirectional group relationship is inconsistent
+    #[error("Bidirectional group relationship is inconsistent")]
+    InconsistentGroupRelationship,
 }
 
 impl From<MplCoreError> for ProgramError {
     fn from(e: MplCoreError) -> Self {
         ProgramError::Custom(e as u32)
-    }
-}
-
-impl<T> DecodeError<T> for MplCoreError {
-    fn type_of() -> &'static str {
-        "Mpl Core Error"
     }
 }

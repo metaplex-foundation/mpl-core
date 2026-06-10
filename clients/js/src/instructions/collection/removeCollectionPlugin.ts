@@ -13,7 +13,7 @@ import { isExternalPluginAdapterType } from '../../plugins/externalPluginAdapter
 
 export type RemoveCollectionPluginArgsPlugin =
   | {
-      type: Exclude<keyof typeof PluginType, 'Edition'>;
+      type: Exclude<keyof typeof PluginType, 'Edition' | 'Groups'>;
     }
   | ExternalPluginAdapterKey;
 
@@ -35,8 +35,15 @@ export const removeCollectionPlugin = (
     });
   }
 
+  const pluginType = plugin.type as keyof typeof PluginType;
+  if (pluginType === 'Groups') {
+    throw new Error(
+      'PluginType.Groups must be managed via group-specific instructions.'
+    );
+  }
+
   return removeCollectionPluginV1(context, {
     ...args,
-    pluginType: PluginType[plugin.type as keyof typeof PluginType],
+    pluginType: PluginType[pluginType],
   });
 };

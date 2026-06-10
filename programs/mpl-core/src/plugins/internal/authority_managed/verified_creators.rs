@@ -234,14 +234,14 @@ mod tests {
             address: Pubkey::default(),
             verified: false,
         };
-        let serialized = verified_creators_signature.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&verified_creators_signature).unwrap();
         assert_eq!(serialized.len(), verified_creators_signature.len());
     }
 
     #[test]
     fn test_verified_creators_default_len() {
         let verified_creators = VerifiedCreators { signatures: vec![] };
-        let serialized = verified_creators.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&verified_creators).unwrap();
         assert_eq!(serialized.len(), verified_creators.len());
     }
 
@@ -259,7 +259,7 @@ mod tests {
                 },
             ],
         };
-        let serialized = verified_creators.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&verified_creators).unwrap();
         assert_eq!(serialized.len(), verified_creators.len());
     }
 }

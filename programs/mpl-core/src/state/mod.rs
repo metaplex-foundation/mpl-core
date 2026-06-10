@@ -26,6 +26,9 @@ pub use traits::*;
 mod update_authority;
 pub use update_authority::*;
 
+mod group;
+pub use group::*;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 use num_derive::{FromPrimitive, ToPrimitive};
 use solana_program::pubkey::Pubkey;
@@ -100,6 +103,8 @@ pub enum Key {
     PluginRegistryV1,
     /// A discriminator indicating the collection.
     CollectionV1,
+    /// A discriminator indicating the group.
+    GroupV1,
 }
 
 impl Key {
@@ -134,7 +139,7 @@ mod tests {
             "Must test all Authority variants"
         );
         for authority in authorities {
-            let serialized = authority.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&authority).unwrap();
             assert_eq!(serialized.len(), authority.len());
         }
     }
@@ -142,7 +147,7 @@ mod tests {
     #[test]
     fn test_key_len() {
         for key in Key::iter() {
-            let serialized = key.try_to_vec().unwrap();
+            let serialized = borsh::to_vec(&key).unwrap();
             assert_eq!(serialized.len(), key.len());
         }
     }

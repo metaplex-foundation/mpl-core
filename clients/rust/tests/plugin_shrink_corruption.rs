@@ -153,7 +153,6 @@ async fn test_write_external_plugin_adapter_data_shrink_preserves_second_plugin(
             account_copy.data.borrow_mut(),
             &account_copy.owner,
             false,
-            0,
         );
 
         let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
@@ -231,7 +230,6 @@ async fn test_write_external_plugin_adapter_data_shrink_preserves_second_plugin(
             account_copy.data.borrow_mut(),
             &account_copy.owner,
             false,
-            0,
         );
 
         let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
@@ -268,7 +266,6 @@ async fn test_write_external_plugin_adapter_data_shrink_preserves_second_plugin(
             account_copy.data.borrow_mut(),
             &account_copy.owner,
             false,
-            0,
         );
 
         let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
@@ -576,7 +573,6 @@ async fn test_write_external_plugin_adapter_data_single_plugin_shrink() {
             account_copy.data.borrow_mut(),
             &account_copy.owner,
             false,
-            0,
         );
 
         let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(
@@ -770,7 +766,6 @@ async fn test_update_plugin_shrink_attributes_preserves_external_plugin() {
             account_copy.data.borrow_mut(),
             &account_copy.owner,
             false,
-            0,
         );
 
         let (data_offset, data_len) = fetch_external_plugin_adapter_data_info::<BaseAssetV1>(

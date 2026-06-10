@@ -39,7 +39,7 @@ mod tests {
     #[test]
     fn test_master_edition_default_len() {
         let master_edition = MasterEdition::default();
-        let serialized = master_edition.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&master_edition).unwrap();
         assert_eq!(serialized.len(), master_edition.len());
     }
 
@@ -50,7 +50,7 @@ mod tests {
             name: Some("test".to_string()),
             uri: Some("test".to_string()),
         };
-        let serialized = master_edition.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&master_edition).unwrap();
         assert_eq!(serialized.len(), master_edition.len());
     }
 }

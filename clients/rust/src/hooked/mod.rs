@@ -50,6 +50,7 @@ impl From<&Plugin> for PluginType {
             Plugin::BubblegumV2(_) => PluginType::BubblegumV2,
             Plugin::FreezeExecute(_) => PluginType::FreezeExecute,
             Plugin::PermanentFreezeExecute(_) => PluginType::PermanentFreezeExecute,
+            Plugin::Groups(_) => PluginType::Groups,
         }
     }
 }
@@ -236,7 +237,14 @@ pub trait SolanaAccount: CrateSerialize + CrateDeserialize {
 
     /// Save the account to the given account info starting at the offset.
     fn save(&self, account: &AccountInfo, offset: usize) -> Result<(), std::io::Error> {
-        borsh::to_writer(&mut account.data.borrow_mut()[offset..], self)
+        let mut data = account.data.borrow_mut();
+        let data = data.get_mut(offset..).ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::Other,
+                MplCoreError::SerializationError.to_string(),
+            )
+        })?;
+        self.serialize(&mut &mut data[..])
     }
 }
 

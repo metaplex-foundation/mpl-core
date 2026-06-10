@@ -9,7 +9,7 @@ use crate::{
     state::{AssetV1, CollectionV1, CompressionProof, Key, SolanaAccount, Wrappable},
     utils::{
         close_program_account, load_key, rebuild_account_state_from_proof_data, resolve_authority,
-        validate_asset_permissions, verify_proof,
+        validate_asset_permissions, validate_collection_permissions, verify_proof,
     },
 };
 
@@ -32,13 +32,13 @@ pub(crate) fn burn<'a>(accounts: &'a [AccountInfo<'a>], args: BurnV1Args) -> Pro
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     if let Some(system_program) = ctx.accounts.system_program {
-        if system_program.key != &solana_program::system_program::ID {
+        if system_program.key != &solana_system_interface::program::ID {
             return Err(MplCoreError::InvalidSystemProgram.into());
         }
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -129,7 +129,7 @@ pub(crate) fn burn_collection<'a>(
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -143,6 +143,27 @@ pub(crate) fn burn_collection<'a>(
     if authority.key != &collection.update_authority {
         return Err(MplCoreError::InvalidAuthority.into());
     }
+
+    // Validate collection/plugin permissions for burn. We intentionally keep
+    // the core authority semantics aligned with previous behavior (update
+    // authority only) while enabling burn-time plugin rejection checks such as
+    // the Groups plugin.
+    let _ = validate_collection_permissions(
+        accounts,
+        authority,
+        ctx.accounts.collection,
+        None,
+        None,
+        None,
+        None,
+        None,
+        CollectionV1::check_update,
+        PluginType::check_burn,
+        CollectionV1::validate_update,
+        Plugin::validate_burn,
+        Some(ExternalPluginAdapter::validate_burn),
+        Some(HookableLifecycleEvent::Burn),
+    )?;
 
     process_burn(ctx.accounts.collection, ctx.accounts.payer)
 }

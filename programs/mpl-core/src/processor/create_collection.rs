@@ -2,8 +2,9 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use mpl_utils::assert_signer;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program::invoke,
-    program_memory::sol_memcpy, rent::Rent, system_instruction, system_program, sysvar::Sysvar,
+    program_memory::sol_memcpy, rent::Rent, sysvar::Sysvar,
 };
+use solana_system_interface::instruction as system_instruction;
 use std::collections::HashSet;
 
 use crate::{
@@ -71,7 +72,7 @@ pub(crate) fn process_create_collection<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = ctx.accounts.update_authority.unwrap_or(ctx.accounts.payer);
 
-    if *ctx.accounts.system_program.key != system_program::ID {
+    if *ctx.accounts.system_program.key != solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
@@ -84,7 +85,7 @@ pub(crate) fn process_create_collection<'a>(
         current_size: 0,
     };
 
-    let serialized_data = new_collection.try_to_vec()?;
+    let serialized_data = borsh::to_vec(&new_collection)?;
 
     let lamports = rent.minimum_balance(serialized_data.len());
 
@@ -104,11 +105,15 @@ pub(crate) fn process_create_collection<'a>(
         ],
     )?;
 
-    sol_memcpy(
-        &mut ctx.accounts.collection.try_borrow_mut_data()?,
-        &serialized_data,
-        serialized_data.len(),
-    );
+    // SAFETY: `serialized_data` cannot alias the account data, and the collection
+    // account was just created with `serialized_data.len()` bytes.
+    unsafe {
+        sol_memcpy(
+            &mut ctx.accounts.collection.try_borrow_mut_data()?,
+            &serialized_data,
+            serialized_data.len(),
+        );
+    }
 
     let mut approved = true;
     let mut force_approved = false;
@@ -144,7 +149,7 @@ pub(crate) fn process_create_collection<'a>(
 
                 // TODO move into plugin validation when asset/collection is part of validation context
                 let plugin_type = PluginType::from(&plugin.plugin);
-                if plugin_type == PluginType::Edition {
+                if plugin_type == PluginType::Edition || plugin_type == PluginType::Groups {
                     return Err(MplCoreError::InvalidPlugin.into());
                 }
 
@@ -161,6 +166,7 @@ pub(crate) fn process_create_collection<'a>(
                         accounts,
                         asset_info: None,
                         collection_info: Some(ctx.accounts.collection),
+                        self_key: Key::CollectionV1,
                         self_authority: &plugin.authority.unwrap_or(plugin.plugin.manager()),
                         authority_info: ctx.accounts.payer,
                         resolved_authorities: None,

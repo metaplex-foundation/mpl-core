@@ -83,10 +83,9 @@ impl RemoveExternalPluginAdapterV1 {
             ));
         }
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = RemoveExternalPluginAdapterV1InstructionData::new()
-            .try_to_vec()
-            .unwrap();
-        let mut args = args.try_to_vec().unwrap();
+        let mut data =
+            borsh::to_vec(&(RemoveExternalPluginAdapterV1InstructionData::new())).unwrap();
+        let mut args = borsh::to_vec(&args).unwrap();
         data.append(&mut args);
 
         solana_program::instruction::Instruction {
@@ -364,14 +363,13 @@ impl<'a, 'b> RemoveExternalPluginAdapterV1Cpi<'a, 'b> {
         remaining_accounts.iter().for_each(|remaining_account| {
             accounts.push(solana_program::instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
-                is_signer: remaining_account.1,
-                is_writable: remaining_account.2,
+                is_writable: remaining_account.1,
+                is_signer: remaining_account.2,
             })
         });
-        let mut data = RemoveExternalPluginAdapterV1InstructionData::new()
-            .try_to_vec()
-            .unwrap();
-        let mut args = self.__args.try_to_vec().unwrap();
+        let mut data =
+            borsh::to_vec(&(RemoveExternalPluginAdapterV1InstructionData::new())).unwrap();
+        let mut args = borsh::to_vec(&self.__args).unwrap();
         data.append(&mut args);
 
         let instruction = solana_program::instruction::Instruction {

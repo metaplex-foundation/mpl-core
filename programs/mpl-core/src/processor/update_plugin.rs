@@ -32,12 +32,12 @@ pub(crate) fn update_plugin<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+    if ctx.accounts.system_program.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
     }
@@ -45,6 +45,11 @@ pub(crate) fn update_plugin<'a>(
     if let Key::HashedAssetV1 = load_key(ctx.accounts.asset, 0)? {
         msg!("Error: Update plugin for compressed is not available");
         return Err(MplCoreError::NotAvailable.into());
+    }
+
+    // Groups plugins must be mutated only through dedicated Group instructions.
+    if PluginType::from(&args.plugin) == PluginType::Groups {
+        return Err(MplCoreError::InvalidPlugin.into());
     }
 
     let (target_plugin_authority, _) =
@@ -102,14 +107,19 @@ pub(crate) fn update_collection_plugin<'a>(
     assert_signer(ctx.accounts.payer)?;
     let authority = resolve_authority(ctx.accounts.payer, ctx.accounts.authority)?;
 
-    if ctx.accounts.system_program.key != &solana_program::system_program::ID {
+    if ctx.accounts.system_program.key != &solana_system_interface::program::ID {
         return Err(MplCoreError::InvalidSystemProgram.into());
     }
 
     if let Some(log_wrapper) = ctx.accounts.log_wrapper {
-        if log_wrapper.key != &spl_noop::ID {
+        if log_wrapper.key != &crate::SPL_NOOP_ID {
             return Err(MplCoreError::InvalidLogWrapperProgram.into());
         }
+    }
+
+    // Groups plugins must be mutated only through dedicated Group instructions.
+    if PluginType::from(&args.plugin) == PluginType::Groups {
+        return Err(MplCoreError::InvalidPlugin.into());
     }
 
     let (target_plugin_authority, _) = fetch_wrapped_plugin::<CollectionV1>(
@@ -168,8 +178,8 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
         .ok_or(MplCoreError::PluginNotFound)?;
 
     let plugin = Plugin::load(account, registry_record.offset)?;
-    let plugin_data = plugin.try_to_vec()?;
-    let new_plugin_data = new_plugin.try_to_vec()?;
+    let plugin_data = borsh::to_vec(&plugin)?;
+    let new_plugin_data = borsh::to_vec(&new_plugin)?;
 
     // The difference in size between the new and old account which is used to calculate the new size of the account.
     let plugin_size = plugin_data.len() as isize;
@@ -203,17 +213,23 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
         resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
     }
 
-    // SAFETY: `borrow_mut` will always return a valid pointer.
-    // new_next_plugin_offset is derived from next_plugin_offset and size_diff using
-    // checked arithmetic, so it will always be less than or equal to account.data_len().
-    // This will fail and revert state if there is a memory violation.
-    unsafe {
-        let base = account.data.borrow_mut().as_mut_ptr();
-        sol_memmove(
-            base.add(new_next_plugin_offset as usize),
-            base.add(next_plugin_offset as usize),
-            registry_offset - (next_plugin_offset as usize),
-        );
+    let copy_len = (registry_offset)
+        .checked_sub(next_plugin_offset as usize)
+        .ok_or(MplCoreError::NumericalOverflow)?;
+    if copy_len > 0 {
+        unsafe {
+            let base = account.data.borrow_mut().as_mut_ptr();
+            sol_memmove(
+                base.add(new_next_plugin_offset as usize),
+                base.add(next_plugin_offset as usize),
+                copy_len,
+            );
+        }
+    }
+
+    if size_diff < 0 {
+        // Shrinking: realloc after memmove to preserve data before truncation.
+        resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
     }
 
     if size_diff < 0 {

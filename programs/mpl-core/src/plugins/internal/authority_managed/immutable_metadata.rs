@@ -37,7 +37,7 @@ mod tests {
     #[test]
     fn test_immutable_metadata_len() {
         let immutable_metadata = ImmutableMetadata {};
-        let serialized = immutable_metadata.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&immutable_metadata).unwrap();
         assert_eq!(serialized.len(), immutable_metadata.len());
     }
 }

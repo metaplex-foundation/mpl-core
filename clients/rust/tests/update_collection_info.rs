@@ -5,9 +5,10 @@ use mpl_core::{
 };
 pub use setup::*;
 
-use solana_program::{pubkey::Pubkey, system_instruction::create_account};
+use solana_program::pubkey::Pubkey;
 use solana_program_test::tokio;
 use solana_sdk::{pubkey, signature::Keypair, signer::Signer, transaction::Transaction};
+use solana_system_interface::instruction::create_account;
 
 pub const BUBBLEGUM_PROGRAM_ADDRESS: Pubkey =
     pubkey!("BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY");
