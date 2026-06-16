@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781108586826,
+  "lastUpdate": 1781629744360,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -11299,6 +11299,120 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/metaplex-foundation/mpl-core/commit/4095dca08f7eb3f8c0799aa0d71a3fbefa6357f8"
         },
         "date": 1781108586198,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 8200,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 17084,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 26913,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 32366,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 20269,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 25146,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 25177,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 33191,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 24294,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 35962,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 3958,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 5684,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 7271,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 8997,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "90809591+blockiosaurus@users.noreply.github.com",
+            "name": "blockiosaurus",
+            "username": "blockiosaurus"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "40fb1533667064adb9a40cbff4ae650c95499768",
+          "message": "Bump version from 0.11.1 to 0.12.0 (#293)",
+          "timestamp": "2026-06-16T13:03:06-04:00",
+          "tree_id": "7c6bfeb425db181ac44d2a3b1cf21ec0e6d5fb3a",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/40fb1533667064adb9a40cbff4ae650c95499768"
+        },
+        "date": 1781629743823,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
