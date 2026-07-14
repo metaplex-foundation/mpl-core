@@ -383,11 +383,20 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
             .checked_add(size_diff)
             .ok_or(MplCoreError::NumericalOverflow)?;
 
-        resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
+        if size_diff > 0 {
+            // Growing: realloc first to make room for the rightward shift.
+            resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
+        }
 
         let copy_len = (registry_offset as usize).saturating_sub(plugin_offset as usize);
 
         if copy_len > 0 {
+            // SAFETY: When growing, the account was resized above so the destination
+            // region [new_plugin_offset, new_plugin_offset + copy_len) is in bounds.
+            // When shrinking, the account is still the original size, so the source
+            // region [plugin_offset, plugin_offset + copy_len) = [plugin_offset,
+            // registry_offset) is in bounds. `sol_memmove` correctly handles
+            // overlapping regions.
             unsafe {
                 let base = account.data.borrow_mut().as_mut_ptr();
                 sol_memmove(
@@ -396,6 +405,12 @@ fn process_update<'a, T: DataBlob + SolanaAccount>(
                     copy_len,
                 );
             }
+        }
+
+        if size_diff < 0 {
+            // Shrinking: realloc after memmove so the trailing plugin bytes are
+            // preserved while the buffer still has its full pre-shrink length.
+            resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
         }
 
         plugin_header.save(account, new_core_size as usize)?;

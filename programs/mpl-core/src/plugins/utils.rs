@@ -527,14 +527,6 @@ pub fn update_external_plugin_adapter_data<'a, T: DataBlob + SolanaAccount>(
         resize_or_reallocate_account(account, payer, system_program, new_size)?;
     }
 
-    // Capture old data length before any realloc, as realloc changes data_len().
-    let old_data_len = account.data_len();
-
-    if size_diff > 0 {
-        // Growing: realloc first to make room for the rightward shift.
-        resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
-    }
-
     // SAFETY: `borrow_mut` will always return a valid pointer.
     // new_next_plugin_offset is derived from next_plugin_offset and size_diff using
     // checked arithmetic, so it will always be less than or equal to account.data_len().

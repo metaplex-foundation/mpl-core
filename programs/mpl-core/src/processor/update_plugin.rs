@@ -232,11 +232,6 @@ fn process_update_plugin<'a, T: DataBlob + SolanaAccount>(
         resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
     }
 
-    if size_diff < 0 {
-        // Shrinking: realloc after memmove to preserve data before truncation.
-        resize_or_reallocate_account(account, payer, system_program, new_size as usize)?;
-    }
-
     plugin_header.save(account, core.len())?;
 
     plugin_registry.bump_offsets(registry_record.offset, size_diff)?;

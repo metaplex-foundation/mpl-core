@@ -7,15 +7,15 @@ use mpl_core::{
     accounts::BaseAssetV1,
     fetch_external_plugin_adapter_data_info,
     instructions::{
-        AddExternalPluginAdapterV1Builder, UpdatePluginV1Builder,
-        WriteExternalPluginAdapterDataV1Builder,
+        AddExternalPluginAdapterV1Builder, UpdateCollectionV1Builder, UpdatePluginV1Builder,
+        UpdateV1Builder, WriteExternalPluginAdapterDataV1Builder,
     },
     types::{
-        AppDataInitInfo, Attribute, Attributes, ExternalPluginAdapterInitInfo,
+        AppDataInitInfo, Attribute, Attributes, Creator, ExternalPluginAdapterInitInfo,
         ExternalPluginAdapterKey, ExternalPluginAdapterSchema, FreezeDelegate, Plugin,
-        PluginAuthority, PluginAuthorityPair,
+        PluginAuthority, PluginAuthorityPair, Royalties, RuleSet,
     },
-    Asset,
+    Asset, Collection,
 };
 pub use setup::*;
 
@@ -789,4 +789,218 @@ async fn test_update_plugin_shrink_attributes_preserves_external_plugin() {
             "AppData content must be unchanged after Attributes shrink"
         );
     }
+}
+
+// Regression: shrinking asset name + uri must preserve attached plugin data.
+#[tokio::test]
+async fn test_update_v1_shrink_name_uri_preserves_plugin() {
+    let mut context = program_test().start_with_context().await;
+
+    let asset = Keypair::new();
+
+    let long_name = "x".repeat(100);
+    let long_uri = format!("https://example.com/{}", "y".repeat(200));
+
+    create_asset(
+        &mut context,
+        CreateAssetHelperArgs {
+            owner: None,
+            payer: None,
+            asset: &asset,
+            data_state: None,
+            name: Some(long_name.clone()),
+            uri: Some(long_uri.clone()),
+            authority: None,
+            update_authority: None,
+            collection: None,
+            plugins: vec![PluginAuthorityPair {
+                plugin: Plugin::FreezeDelegate(FreezeDelegate { frozen: false }),
+                authority: None,
+            }],
+            external_plugin_adapters: vec![],
+        },
+    )
+    .await
+    .unwrap();
+
+    let account_before = context
+        .banks_client
+        .get_account(asset.pubkey())
+        .await
+        .unwrap()
+        .unwrap();
+    let size_before = account_before.data.len();
+    println!("Account size before name/uri shrink: {}", size_before);
+
+    let asset_before = Asset::from_bytes(&account_before.data).unwrap();
+    assert_eq!(asset_before.base.name, long_name);
+    assert_eq!(asset_before.base.uri, long_uri);
+    assert!(asset_before.plugin_list.freeze_delegate.is_some());
+
+    let short_name = "a".to_string();
+    let short_uri = "b".to_string();
+
+    let ix = UpdateV1Builder::new()
+        .asset(asset.pubkey())
+        .payer(context.payer.pubkey())
+        .new_name(short_name.clone())
+        .new_uri(short_uri.clone())
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    context
+        .banks_client
+        .process_transaction(tx)
+        .await
+        .expect("Asset name/uri shrink transaction should succeed");
+
+    let account_after = context
+        .banks_client
+        .get_account(asset.pubkey())
+        .await
+        .unwrap()
+        .unwrap();
+    let size_after = account_after.data.len();
+    assert!(
+        size_after < size_before,
+        "Expected account to shrink from {} to {}, but it did not",
+        size_before,
+        size_after
+    );
+
+    let asset_after = Asset::from_bytes(&account_after.data).expect(
+        "Asset deserialization should succeed after name/uri shrink; registry must remain intact",
+    );
+
+    assert_eq!(asset_after.base.name, short_name, "Name should be updated");
+    assert_eq!(asset_after.base.uri, short_uri, "URI should be updated");
+
+    let fd = asset_after
+        .plugin_list
+        .freeze_delegate
+        .as_ref()
+        .expect("FreezeDelegate must still be present after name/uri shrink");
+    assert_eq!(
+        fd.freeze_delegate,
+        FreezeDelegate { frozen: false },
+        "FreezeDelegate state should be unchanged"
+    );
+}
+
+// Regression: shrinking collection name + uri must preserve attached plugin data.
+#[tokio::test]
+async fn test_update_collection_v1_shrink_name_uri_preserves_plugin() {
+    let mut context = program_test().start_with_context().await;
+
+    let collection = Keypair::new();
+
+    let long_name = "c".repeat(100);
+    let long_uri = format!("https://example.com/collection/{}", "d".repeat(200));
+
+    let royalties = Royalties {
+        basis_points: 500,
+        creators: vec![Creator {
+            address: context.payer.pubkey(),
+            percentage: 100,
+        }],
+        rule_set: RuleSet::None,
+    };
+
+    create_collection(
+        &mut context,
+        CreateCollectionHelperArgs {
+            collection: &collection,
+            update_authority: None,
+            payer: None,
+            name: Some(long_name.clone()),
+            uri: Some(long_uri.clone()),
+            plugins: vec![PluginAuthorityPair {
+                plugin: Plugin::Royalties(royalties.clone()),
+                authority: None,
+            }],
+            external_plugin_adapters: vec![],
+        },
+    )
+    .await
+    .unwrap();
+
+    let account_before = context
+        .banks_client
+        .get_account(collection.pubkey())
+        .await
+        .unwrap()
+        .unwrap();
+    let size_before = account_before.data.len();
+    println!("Collection size before name/uri shrink: {}", size_before);
+
+    let collection_before = Collection::from_bytes(&account_before.data).unwrap();
+    assert_eq!(collection_before.base.name, long_name);
+    assert_eq!(collection_before.base.uri, long_uri);
+    assert!(collection_before.plugin_list.royalties.is_some());
+
+    let short_name = "e".to_string();
+    let short_uri = "f".to_string();
+
+    let ix = UpdateCollectionV1Builder::new()
+        .collection(collection.pubkey())
+        .payer(context.payer.pubkey())
+        .new_name(short_name.clone())
+        .new_uri(short_uri.clone())
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    context
+        .banks_client
+        .process_transaction(tx)
+        .await
+        .expect("Collection name/uri shrink transaction should succeed");
+
+    let account_after = context
+        .banks_client
+        .get_account(collection.pubkey())
+        .await
+        .unwrap()
+        .unwrap();
+    let size_after = account_after.data.len();
+    assert!(
+        size_after < size_before,
+        "Expected collection to shrink from {} to {}, but it did not",
+        size_before,
+        size_after
+    );
+
+    let collection_after = Collection::from_bytes(&account_after.data).expect(
+        "Collection deserialization should succeed after name/uri shrink; registry must remain intact",
+    );
+
+    assert_eq!(
+        collection_after.base.name, short_name,
+        "Collection name should be updated"
+    );
+    assert_eq!(
+        collection_after.base.uri, short_uri,
+        "Collection URI should be updated"
+    );
+
+    let royalties_after = collection_after
+        .plugin_list
+        .royalties
+        .as_ref()
+        .expect("Royalties plugin must still be present after name/uri shrink");
+    assert_eq!(
+        royalties_after.royalties, royalties,
+        "Royalties plugin contents should be unchanged"
+    );
 }
