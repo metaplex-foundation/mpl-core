@@ -6,10 +6,13 @@
 // transaction-level signature verification, so we can set `signer: true` on
 // the PDA's AccountMeta and the program's `assert_signer()` check will pass.
 
+mod common;
+
+use common::core_mollusk;
+
 #[allow(deprecated)]
 use {
     borsh::BorshSerialize,
-    mollusk_svm::Mollusk,
     mpl_core_program::{
         plugins::{
             AgentIdentity, AgentIdentityInitInfo, AgentIdentityUpdateInfo, ExternalCheckResult,
@@ -39,11 +42,6 @@ const ACCOUNT_LAMPORTS: u64 = 1_000_000_000;
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/// Creates a Mollusk instance for the mpl-core program.
-fn core_mollusk() -> Mollusk {
-    Mollusk::new(&MPL_CORE_ID, "mpl_core_program")
-}
 
 /// Creates a payer account with lamports.
 fn payer_account() -> Account {

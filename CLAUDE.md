@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pnpm programs:build` - Build all Rust programs and fetch dependencies
 - `pnpm programs:test` - Run Rust program tests
 - `pnpm programs:debug` - Run Rust program tests with logs enabled
+- `pnpm programs:coverage` - Generate a code coverage report (unit + Mollusk tests) via `cargo llvm-cov`; output in `coverage/<program>/`
 - `pnpm clients:js:test` - Run JavaScript client tests
 - `pnpm clients:rust:test` - Run Rust client tests
 - `pnpm generate` - Generate IDLs and clients (shortcut for both commands below)
@@ -22,6 +23,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `cd clients/js && pnpm build` - Build JS client
 - `cargo test-bpf` - Run Rust program tests (from program directory)
 - `cargo build-bpf` - Build Rust program (from program directory)
+- `MPL_CORE_NATIVE_PROGRAM=1 cargo test` - Run program tests against the host-compiled program instead of the SBF binary (from program directory)
 
 ### Local Development
 - `pnpm validator` - Start local validator with program deployed
@@ -74,6 +76,8 @@ The core program follows a modular plugin-based architecture:
 
 ### Testing
 - Program tests are written in Rust using the standard test framework
+- Program integration tests in `programs/mpl-core/tests/` use Mollusk; get the `Mollusk` instance from the shared `tests/common` harness (`core_mollusk()`) rather than `Mollusk::new` so tests run both against the SBF binary and natively under coverage
+- Coverage: `cargo llvm-cov` sets `cfg(coverage)`, which makes the harness execute the program natively so Mollusk-driven code counts in the report
 - Client tests use AVA framework and require a running validator
 - Tests often use generated keypairs and work with both individual assets and collections
 

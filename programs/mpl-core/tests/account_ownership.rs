@@ -10,9 +10,12 @@
 // is a defense-in-depth measure that provides clearer error messages and
 // earlier rejection.
 
+mod common;
+
+use common::{core_mollusk, core_program_account};
+
 #[allow(deprecated)]
 use {
-    mollusk_svm::Mollusk,
     mpl_core_program::{
         plugins::{
             FreezeDelegate, PermanentBurnDelegate, PermanentFreezeDelegate,
@@ -43,11 +46,6 @@ const ACCOUNT_LAMPORTS: u64 = 1_000_000_000;
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/// Creates a Mollusk instance for the mpl-core program.
-fn core_mollusk() -> Mollusk {
-    Mollusk::new(&MPL_CORE_ID, "mpl_core_program")
-}
 
 /// Serializes an AssetV1 into an Account owned by the given program.
 fn fake_asset_account(owner_pubkey: &Pubkey, program_owner: &Pubkey) -> Account {
@@ -100,11 +98,6 @@ fn payer_account() -> Account {
         executable: false,
         rent_epoch: 0,
     }
-}
-
-/// Creates a program account for optional account sentinels that use the mpl-core ID.
-fn core_program_account() -> Account {
-    mollusk_svm::program::create_program_account_loader_v3(&MPL_CORE_ID)
 }
 
 /// Builds a TransferV1 instruction with the collection account set to a real pubkey.

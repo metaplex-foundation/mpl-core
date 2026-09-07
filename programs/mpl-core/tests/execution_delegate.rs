@@ -6,10 +6,13 @@
 // and the signing authority matches the record, the plugin approves execution
 // for non-owner authorities.
 
+mod common;
+
+use common::core_mollusk;
+
 #[allow(deprecated)]
 use {
     borsh::BorshSerialize,
-    mollusk_svm::Mollusk,
     mpl_core_program::{
         plugins::{
             AgentIdentity, ExternalCheckResult, ExternalPluginAdapter, ExternalPluginAdapterType,
@@ -37,10 +40,6 @@ const ACCOUNT_LAMPORTS: u64 = 1_000_000_000;
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-fn core_mollusk() -> Mollusk {
-    Mollusk::new(&MPL_CORE_ID, "mpl_core_program")
-}
 
 fn payer_account() -> Account {
     Account {

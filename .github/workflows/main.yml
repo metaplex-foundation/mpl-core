@@ -56,6 +56,18 @@ jobs:
     with:
       program_matrix: ${{ needs.changes.outputs.program_matrix }}
 
+  coverage:
+    name: Programs
+    if: ${{ needs.changes.outputs.programs == 'true' }}
+    needs: changes
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: ./.github/workflows/coverage.yml
+    # No `secrets: inherit`: coverage only needs the workflow's own GITHUB_TOKEN.
+    with:
+      program_matrix: ${{ needs.changes.outputs.program_matrix }}
+
   generate_clients:
     name: Generate clients
     if: ${{ needs.changes.outputs.any == 'true' }}
