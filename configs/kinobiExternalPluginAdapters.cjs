@@ -19,121 +19,136 @@
  * Adding a "regular" external plugin adapter (like AgentIdentity) now needs
  * nothing here at all — add the Rust type and re-run `pnpm generate`.
  */
+const path = require("path");
+const { pascalCase, camelCase } = require("@metaplex-foundation/kinobi");
+const { makeImports, header, writeRenderMap } = require("./kinobiRenderUtils.cjs");
+
+const HEADER = header("kinobiExternalPluginAdapters.cjs");
+
+// Import ordering for generated adapter files (anything else is appended, sorted).
+const IMPORT_ORDER = [
+  "@metaplex-foundation/umi",
+  "..",
+  "./base",
+  "../../plugins/externalPluginAdapterManifest",
+  "../../plugins/externalPluginAdapterKey",
+  "../../plugins/lib",
+  "../../plugins/pluginAuthority",
+  "../../plugins/extraAccount",
+  "../../plugins/lifecycleChecks",
+  "../../plugins/validationResultsOffset",
+  "../../plugins/linkedDataKey",
+  "../../plugins/types",
+];
 
 // ---------------------------------------------------------------------------
 // Substitution registry: base defined-type link name -> ergonomic replacement.
 // These map a generated `Base*` leaf type to its hand-written ergonomic
 // counterpart and the transform function pair that converts between them.
 // ---------------------------------------------------------------------------
+const sub = (ts, mod) => ({
+  ts,
+  from: `${camelCase(ts)}FromBase`,
+  to: `${camelCase(ts)}ToBase`,
+  mod: `../../plugins/${mod}`,
+});
+
 const SUBS = {
-  basePluginAuthority: {
-    ts: 'PluginAuthority',
-    from: 'pluginAuthorityFromBase',
-    to: 'pluginAuthorityToBase',
-    mod: 'pluginAuthority',
-  },
-  baseExtraAccount: {
-    ts: 'ExtraAccount',
-    from: 'extraAccountFromBase',
-    to: 'extraAccountToBase',
-    mod: 'extraAccount',
-  },
-  baseValidationResultsOffset: {
-    ts: 'ValidationResultsOffset',
-    from: 'validationResultsOffsetFromBase',
-    to: 'validationResultsOffsetToBase',
-    mod: 'validationResultsOffset',
-  },
-  baseLinkedDataKey: {
-    ts: 'LinkedDataKey',
-    from: 'linkedDataKeyFromBase',
-    to: 'linkedDataKeyToBase',
-    mod: 'linkedDataKey',
-  },
+  basePluginAuthority: sub("PluginAuthority", "pluginAuthority"),
+  baseExtraAccount: sub("ExtraAccount", "extraAccount"),
+  baseValidationResultsOffset: sub(
+    "ValidationResultsOffset",
+    "validationResultsOffset"
+  ),
+  baseLinkedDataKey: sub("LinkedDataKey", "linkedDataKey"),
 };
 
-const LIFECYCLE = {
-  ts: 'LifecycleChecks',
-  from: 'lifecycleChecksFromBase',
-  to: 'lifecycleChecksToBase',
-  mod: 'lifecycleChecks',
-};
+const LIFECYCLE = sub("LifecycleChecks", "lifecycleChecks");
 
 // ---------------------------------------------------------------------------
 // Per-adapter overrides for things the IDL does not encode.
 // Keyed by PascalCase adapter name. Every field is optional; a brand-new
-// regular adapter needs no entry at all.
+// regular adapter needs no entry at all. Code snippets declare the imports
+// they need as `{ code, imports: [[module, ...names]] }`.
 // ---------------------------------------------------------------------------
+const PUBLIC_KEY = ["@metaplex-foundation/umi", "PublicKey"];
+const PLUGIN_AUTHORITY = [SUBS.basePluginAuthority.mod, "PluginAuthority"];
+const LIFECYCLE_CHECKS = [LIFECYCLE.mod, "LifecycleChecks"];
+
+const HOOKED_PROGRAM_KEY = {
+  code: "hookedProgram: PublicKey;",
+  imports: [PUBLIC_KEY],
+};
+const DATA_AUTHORITY_KEY = {
+  code: "dataAuthority: PluginAuthority;",
+  imports: [PLUGIN_AUTHORITY],
+};
+// Preserve the historically-present (record-level) lifecycle checks field on
+// the ergonomic init args even though it is absent from the base type.
+const RECORD_LIFECYCLE_CHECKS = {
+  code: "lifecycleChecks?: LifecycleChecks;",
+  imports: [LIFECYCLE_CHECKS],
+};
+
 const OVERRIDES = {
   LifecycleHook: {
     hasDataField: true,
     injectData: true,
-    pluginKeyExtra: 'hookedProgram: PublicKey;',
+    pluginKeyExtra: HOOKED_PROGRAM_KEY,
   },
-  Oracle: {},
   AppData: {
     hasDataField: true,
     injectData: true,
-    pluginKeyExtra: 'dataAuthority: PluginAuthority;',
-    // Preserve the historically-present (record-level) lifecycle checks field
-    // on the ergonomic init args even though it is absent from the base type.
-    extraInitFields: 'lifecycleChecks?: LifecycleChecks;',
-    extraInitOmit: ['lifecycleChecks'],
+    pluginKeyExtra: DATA_AUTHORITY_KEY,
+    extraInitFields: RECORD_LIFECYCLE_CHECKS,
+    extraInitOmit: ["lifecycleChecks"],
   },
   LinkedLifecycleHook: {
     hasDataField: true,
-    injectData: false,
-    pluginKeyExtra: 'hookedProgram: PublicKey;',
+    pluginKeyExtra: HOOKED_PROGRAM_KEY,
   },
   LinkedAppData: {
     hasDataField: true,
-    injectData: false,
-    pluginKeyExtra: 'dataAuthority: PluginAuthority;',
-    extraInitFields: 'lifecycleChecks?: LifecycleChecks;',
-    extraInitOmit: ['lifecycleChecks'],
+    pluginKeyExtra: DATA_AUTHORITY_KEY,
+    extraInitFields: RECORD_LIFECYCLE_CHECKS,
+    extraInitOmit: ["lifecycleChecks"],
   },
   DataSection: {
     hasDataField: true,
     injectData: true,
     // dataAuthority is not a stored field; it is derived from parentKey.
-    extraTypeFields: 'dataAuthority?: PluginAuthority;',
-    extraTypeOmit: ['dataAuthority'],
-    extraFromBase:
-      "dataAuthority: input.parentKey.__kind !== 'LinkedLifecycleHook' ? pluginAuthorityFromBase(input.parentKey.fields[0]) : undefined,",
-    extraFromBaseImports: [
-      { mod: '../../plugins/pluginAuthority', names: ['pluginAuthorityFromBase'] },
-    ],
+    extraTypeFields: {
+      code: "dataAuthority?: PluginAuthority;",
+      imports: [PLUGIN_AUTHORITY],
+    },
+    extraTypeOmit: ["dataAuthority"],
+    extraFromBase: {
+      code: "dataAuthority: input.parentKey.__kind !== 'LinkedLifecycleHook' ? pluginAuthorityFromBase(input.parentKey.fields[0]) : undefined,",
+      imports: [[SUBS.basePluginAuthority.mod, SUBS.basePluginAuthority.from]],
+    },
     updatable: false,
   },
-  AgentIdentity: {},
+  // The adapters-list key defaults to `${camelCase(name)}s`.
+  AgentIdentity: { listKey: "agentIdentities" },
 };
 
 // ---------------------------------------------------------------------------
 // Node helpers.
 // ---------------------------------------------------------------------------
-const cap = (s) => String(s).charAt(0).toUpperCase() + String(s).slice(1);
-const low = (s) => String(s).charAt(0).toLowerCase() + String(s).slice(1);
-
-// Naive but sufficient pluralizer for the adapters-list keys.
-function pluralize(name) {
-  const c = low(name);
-  if (c.endsWith('y') && !/[aeiou]y$/.test(c)) return `${c.slice(0, -1)}ies`;
-  if (/(s|x|z|ch|sh)$/.test(c)) return `${c}es`;
-  return `${c}s`;
-}
-
 function tsPlain(node) {
   switch (node.kind) {
-    case 'stringTypeNode':
-      return { ts: 'string' };
-    case 'publicKeyTypeNode':
-      return { ts: 'PublicKey', umi: 'PublicKey' };
-    case 'booleanTypeNode':
-      return { ts: 'boolean' };
-    case 'bytesTypeNode':
-      return { ts: 'Uint8Array' };
-    case 'numberTypeNode':
-      return { ts: /64|128/.test(node.format || '') ? 'number | bigint' : 'number' };
+    case "stringTypeNode":
+      return { ts: "string" };
+    case "publicKeyTypeNode":
+      return { ts: "PublicKey", umi: "PublicKey" };
+    case "booleanTypeNode":
+      return { ts: "boolean" };
+    case "bytesTypeNode":
+      return { ts: "Uint8Array" };
+    case "numberTypeNode":
+      return {
+        ts: /64|128/.test(node.format || "") ? "number | bigint" : "number",
+      };
     default:
       throw new Error(`tsPlain: unsupported passthrough node kind "${node.kind}"`);
   }
@@ -141,11 +156,11 @@ function tsPlain(node) {
 
 function isLifecycleChecks(node) {
   return (
-    node.kind === 'arrayTypeNode' &&
-    node.item.kind === 'tupleTypeNode' &&
+    node.kind === "arrayTypeNode" &&
+    node.item.kind === "tupleTypeNode" &&
     node.item.items.length === 2 &&
-    node.item.items[0].kind === 'definedTypeLinkNode' &&
-    String(node.item.items[0].name) === 'hookableLifecycleEvent'
+    node.item.items[0].kind === "definedTypeLinkNode" &&
+    String(node.item.items[0].name) === "hookableLifecycleEvent"
   );
 }
 
@@ -156,124 +171,69 @@ function classify(field) {
   const name = String(field.name);
   let t = field.type;
   let optional = false;
-  if (t.kind === 'optionTypeNode') {
+  if (t.kind === "optionTypeNode") {
     optional = true;
     t = t.item;
   }
   if (isLifecycleChecks(t)) {
-    return { name, optional, cat: 'lifecycle' };
+    return { name, optional, cat: "lifecycle" };
   }
-  if (t.kind === 'arrayTypeNode' && t.item.kind === 'definedTypeLinkNode') {
-    const sub = SUBS[String(t.item.name)];
-    if (sub) return { name, optional, cat: 'subArray', sub };
+  if (t.kind === "arrayTypeNode" && t.item.kind === "definedTypeLinkNode") {
+    const s = SUBS[String(t.item.name)];
+    if (s) return { name, optional, cat: "subArray", sub: s };
   }
-  if (t.kind === 'definedTypeLinkNode') {
+  if (t.kind === "definedTypeLinkNode") {
     const linkName = String(t.name);
-    const sub = SUBS[linkName];
-    if (sub) return { name, optional, cat: 'sub', sub };
-    if (linkName === 'externalPluginAdapterSchema') {
-      return { name, optional, cat: 'schema' };
+    const s = SUBS[linkName];
+    if (s) return { name, optional, cat: "sub", sub: s };
+    if (linkName === "externalPluginAdapterSchema") {
+      return { name, optional, cat: "schema" };
     }
-    return { name, optional, cat: 'passthrough', node: t };
+    return { name, optional, cat: "passthrough", node: t };
   }
-  return { name, optional, cat: 'passthrough', node: t };
+  return { name, optional, cat: "passthrough", node: t };
 }
 
 // True when a field needs an ergonomic override (i.e. is not a plain
 // pass-through of a required leaf type).
 function isOverridden(c) {
-  if (c.cat === 'sub' || c.cat === 'subArray' || c.cat === 'lifecycle') return true;
-  if (c.cat === 'schema' && c.optional) return true;
-  if (c.cat === 'passthrough' && c.optional) return true;
-  return false;
+  if (c.cat === "sub" || c.cat === "subArray" || c.cat === "lifecycle")
+    return true;
+  return c.optional;
 }
-
-// ---------------------------------------------------------------------------
-// Import accumulator for a single generated file.
-// ---------------------------------------------------------------------------
-function makeImports() {
-  const map = new Map();
-  return {
-    use(from, ...names) {
-      if (!map.has(from)) map.set(from, new Set());
-      names.forEach((n) => map.get(from).add(n));
-    },
-    render() {
-      const order = [
-        '@metaplex-foundation/umi',
-        '..',
-        './base',
-        '../../plugins/externalPluginAdapterManifest',
-        '../../plugins/externalPluginAdapterKey',
-        '../../plugins/lib',
-        '../../plugins/pluginAuthority',
-        '../../plugins/extraAccount',
-        '../../plugins/lifecycleChecks',
-        '../../plugins/validationResultsOffset',
-        '../../plugins/linkedDataKey',
-        '../../plugins/types',
-      ];
-      const seen = [...map.keys()];
-      const sorted = [
-        ...order.filter((o) => map.has(o)),
-        ...seen.filter((s) => !order.includes(s)).sort(),
-      ];
-      return sorted
-        .map((from) => {
-          const names = [...map.get(from)].sort();
-          return `import { ${names.join(', ')} } from '${from}';`;
-        })
-        .join('\n');
-    },
-  };
-}
-
-const HEADER = `/**
- * This code was AUTOGENERATED using a custom Kinobi renderer.
- * Please DO NOT EDIT THIS FILE, instead update the Rust program or the
- * renderer at \`configs/kinobiExternalPluginAdapters.cjs\` and rerun kinobi.
- */
-`;
 
 // ---------------------------------------------------------------------------
 // Per-adapter file generation.
 // ---------------------------------------------------------------------------
 function generateAdapterFile(adapter) {
-  const { pascal, camel, baseName, ov, baseFields, initFields, updateFields } =
-    adapter;
-  const imp = makeImports();
-  imp.use('..', `Base${pascal}`, 'ExternalRegistryRecord');
+  const { pascal, camel, ov, baseFields, initFields, updateFields } = adapter;
+  const imp = makeImports(IMPORT_ORDER);
+  imp.use("..", `Base${pascal}`, "ExternalRegistryRecord");
   imp.use(
-    '../../plugins/externalPluginAdapterManifest',
-    'ExternalPluginAdapterManifest'
+    "../../plugins/externalPluginAdapterManifest",
+    "ExternalPluginAdapterManifest"
   );
-  imp.use('./base', 'BaseExternalPluginAdapter');
+  imp.use("./base", "BaseExternalPluginAdapter");
 
-  const useSubType = (sub) => {
-    imp.use(`../../plugins/${sub.mod}`, sub.ts);
-  };
-  const useSubFrom = (sub) => imp.use(`../../plugins/${sub.mod}`, sub.from);
-  const useSubTo = (sub) => imp.use(`../../plugins/${sub.mod}`, sub.to);
+  const useSubType = (s) => imp.use(s.mod, s.ts);
+  const useSubFrom = (s) => imp.use(s.mod, s.from);
+  const useSubTo = (s) => imp.use(s.mod, s.to);
 
   // ---- ergonomic data type ----
   const dataOmit = [];
   const dataOverrides = [];
   baseFields.forEach((c) => {
-    if (c.cat === 'sub' || c.cat === 'subArray') {
+    if (c.cat === "sub" || c.cat === "subArray") {
       dataOmit.push(c.name);
-      const q = c.optional ? '?' : '';
-      const ts = c.cat === 'subArray' ? `Array<${c.sub.ts}>` : c.sub.ts;
+      const q = c.optional ? "?" : "";
+      const ts = c.cat === "subArray" ? `Array<${c.sub.ts}>` : c.sub.ts;
       dataOverrides.push(`${c.name}${q}: ${ts};`);
       useSubType(c.sub);
     }
   });
   (ov.extraTypeOmit || []).forEach((n) => dataOmit.push(n));
-  if (ov.extraTypeFields) {
-    dataOverrides.push(ov.extraTypeFields);
-    if (/PluginAuthority/.test(ov.extraTypeFields))
-      imp.use('../../plugins/pluginAuthority', 'PluginAuthority');
-  }
-  if (ov.hasDataField) dataOverrides.push('data?: any;');
+  if (ov.extraTypeFields) dataOverrides.push(imp.snippet(ov.extraTypeFields));
+  if (ov.hasDataField) dataOverrides.push("data?: any;");
 
   let dataType;
   if (dataOmit.length === 0 && dataOverrides.length === 0) {
@@ -281,23 +241,17 @@ function generateAdapterFile(adapter) {
   } else {
     const omit =
       dataOmit.length > 0
-        ? `Omit<Base${pascal}, ${dataOmit.map((n) => `'${n}'`).join(' | ')}>`
+        ? `Omit<Base${pascal}, ${dataOmit.map((n) => `'${n}'`).join(" | ")}>`
         : `Base${pascal}`;
     dataType = `export type ${pascal} = ${omit} & {\n  ${dataOverrides.join(
-      '\n  '
+      "\n  "
     )}\n};`;
   }
 
   // ---- plugin type ----
   let pluginType = `export type ${pascal}Plugin = BaseExternalPluginAdapter &\n  ${pascal} & {\n    type: '${pascal}';`;
-  if (ov.pluginKeyExtra) {
-    pluginType += `\n    ${ov.pluginKeyExtra}`;
-    if (/PublicKey/.test(ov.pluginKeyExtra))
-      imp.use('@metaplex-foundation/umi', 'PublicKey');
-    if (/PluginAuthority/.test(ov.pluginKeyExtra))
-      imp.use('../../plugins/pluginAuthority', 'PluginAuthority');
-  }
-  pluginType += '\n  };';
+  if (ov.pluginKeyExtra) pluginType += `\n    ${imp.snippet(ov.pluginKeyExtra)}`;
+  pluginType += "\n  };";
 
   // ---- init args type ----
   const buildArgs = (label, fields, extraOmit, extraFields, discriminantKey) => {
@@ -306,139 +260,116 @@ function generateAdapterFile(adapter) {
     fields.forEach((c) => {
       if (!isOverridden(c)) return;
       omit.push(c.name);
-      const q = c.optional ? '?' : '';
-      if (c.cat === 'lifecycle') {
+      const q = c.optional ? "?" : "";
+      if (c.cat === "lifecycle") {
         readd.push(`${c.name}${q}: LifecycleChecks;`);
-        imp.use('../../plugins/lifecycleChecks', 'LifecycleChecks');
-      } else if (c.cat === 'subArray') {
+        useSubType(LIFECYCLE);
+      } else if (c.cat === "subArray") {
         readd.push(`${c.name}${q}: Array<${c.sub.ts}>;`);
         useSubType(c.sub);
-      } else if (c.cat === 'sub') {
+      } else if (c.cat === "sub") {
         readd.push(`${c.name}${q}: ${c.sub.ts};`);
         useSubType(c.sub);
-      } else if (c.cat === 'schema') {
+      } else if (c.cat === "schema") {
         readd.push(`${c.name}?: ExternalPluginAdapterSchema;`);
-        imp.use('..', 'ExternalPluginAdapterSchema');
-      } else if (c.cat === 'passthrough') {
+        imp.use("..", "ExternalPluginAdapterSchema");
+      } else if (c.cat === "passthrough") {
         const p = tsPlain(c.node);
         readd.push(`${c.name}?: ${p.ts};`);
-        if (p.umi) imp.use('@metaplex-foundation/umi', p.umi);
+        if (p.umi) imp.use("@metaplex-foundation/umi", p.umi);
       }
     });
     (extraOmit || []).forEach((n) => omit.push(n));
     const readdExtra = [];
-    if (discriminantKey === 'type') {
+    if (discriminantKey === "type") {
       readdExtra.push(`type: '${pascal}';`);
     } else {
-      readdExtra.push('key: ExternalPluginAdapterKey;');
-      imp.use('../../plugins/externalPluginAdapterKey', 'ExternalPluginAdapterKey');
+      readdExtra.push("key: ExternalPluginAdapterKey;");
+      imp.use("../../plugins/externalPluginAdapterKey", "ExternalPluginAdapterKey");
     }
-    if (extraFields) {
-      readdExtra.push(extraFields);
-      if (/LifecycleChecks/.test(extraFields))
-        imp.use('../../plugins/lifecycleChecks', 'LifecycleChecks');
-    }
+    if (extraFields) readdExtra.push(imp.snippet(extraFields));
     const baseArgs = `Base${pascal}${label}Args`;
-    imp.use('..', baseArgs);
-    const body = [...readdExtra, ...readd].join('\n  ');
+    imp.use("..", baseArgs);
+    const body = [...readdExtra, ...readd].join("\n  ");
     const lhs =
       omit.length > 0
-        ? `Omit<${baseArgs}, ${omit.map((n) => `'${n}'`).join(' | ')}>`
+        ? `Omit<${baseArgs}, ${omit.map((n) => `'${n}'`).join(" | ")}>`
         : baseArgs;
     return `export type ${pascal}${label}Args = ${lhs} & {\n  ${body}\n};`;
   };
 
   const initType = buildArgs(
-    'InitInfo',
+    "InitInfo",
     initFields,
     ov.extraInitOmit,
     ov.extraInitFields,
-    'type'
+    "type"
   );
   const updateType = buildArgs(
-    'UpdateInfo',
+    "UpdateInfo",
     updateFields,
     ov.extraUpdateOmit,
     ov.extraUpdateFields,
-    'key'
+    "key"
   );
 
   // ---- toBase functions ----
   const buildToBase = (label, fields) => {
     const baseArgs = `Base${pascal}${label}Args`;
     const lines = fields.map((c) => {
-      if (c.cat === 'lifecycle') {
-        useSubTo(LIFECYCLE);
+      const s = c.cat === "lifecycle" ? LIFECYCLE : c.sub;
+      if (s) {
+        useSubTo(s);
+        const conv =
+          c.cat === "subArray"
+            ? `input.${c.name}.map(${s.to})`
+            : `${s.to}(input.${c.name})`;
         return c.optional
-          ? `${c.name}: input.${c.name} ? ${LIFECYCLE.to}(input.${c.name}) : null,`
-          : `${c.name}: ${LIFECYCLE.to}(input.${c.name}),`;
+          ? `${c.name}: input.${c.name} ? ${conv} : null,`
+          : `${c.name}: ${conv},`;
       }
-      if (c.cat === 'subArray') {
-        useSubTo(c.sub);
-        return c.optional
-          ? `${c.name}: input.${c.name} ? input.${c.name}.map(${c.sub.to}) : null,`
-          : `${c.name}: input.${c.name}.map(${c.sub.to}),`;
-      }
-      if (c.cat === 'sub') {
-        useSubTo(c.sub);
-        return c.optional
-          ? `${c.name}: input.${c.name} ? ${c.sub.to}(input.${c.name}) : null,`
-          : `${c.name}: ${c.sub.to}(input.${c.name}),`;
-      }
-      if (c.cat === 'schema') {
-        return c.optional
-          ? `${c.name}: input.${c.name} ?? null,`
-          : `${c.name}: input.${c.name},`;
-      }
-      // passthrough
+      // schema / passthrough
       return c.optional
         ? `${c.name}: input.${c.name} ?? null,`
         : `${c.name}: input.${c.name},`;
     });
     const fnName = `${camel}${label}ArgsToBase`;
     const body =
-      lines.length > 0 ? `return {\n    ${lines.join('\n    ')}\n  };` : 'return {};';
+      lines.length > 0 ? `return {\n    ${lines.join("\n    ")}\n  };` : "return {};";
     return `export function ${fnName}(\n  input: ${pascal}${label}Args\n): ${baseArgs} {\n  ${body}\n}`;
   };
 
-  const initToBase = buildToBase('InitInfo', initFields);
-  const updateToBase = buildToBase('UpdateInfo', updateFields);
+  const initToBase = buildToBase("InitInfo", initFields);
+  const updateToBase = buildToBase("UpdateInfo", updateFields);
 
   // ---- fromBase function ----
   const fromLines = [];
   baseFields.forEach((c) => {
-    if (c.cat === 'sub') {
-      useSubFrom(c.sub);
-      fromLines.push(
-        c.optional
-          ? `${c.name}: input.${c.name}.__option === 'Some' ? ${c.sub.from}(input.${c.name}.value) : undefined,`
-          : `${c.name}: ${c.sub.from}(input.${c.name}),`
-      );
-    } else if (c.cat === 'subArray') {
-      useSubFrom(c.sub);
-      fromLines.push(
-        c.optional
-          ? `${c.name}: input.${c.name}.__option === 'Some' ? input.${c.name}.value.map(${c.sub.from}) : undefined,`
-          : `${c.name}: input.${c.name}.map(${c.sub.from}),`
-      );
-    }
+    if (c.cat !== "sub" && c.cat !== "subArray") return;
+    useSubFrom(c.sub);
+    const conv = (v) =>
+      c.cat === "subArray" ? `${v}.map(${c.sub.from})` : `${c.sub.from}(${v})`;
+    fromLines.push(
+      c.optional
+        ? `${c.name}: input.${c.name}.__option === 'Some' ? ${conv(
+            `input.${c.name}.value`
+          )} : undefined,`
+        : `${c.name}: ${conv(`input.${c.name}`)},`
+    );
   });
-  if (ov.extraFromBase) {
-    fromLines.push(ov.extraFromBase);
-    (ov.extraFromBaseImports || []).forEach((i) => imp.use(i.mod, ...i.names));
-  }
+  if (ov.extraFromBase) fromLines.push(imp.snippet(ov.extraFromBase));
   if (ov.injectData) {
-    imp.use('../../plugins/lib', 'parseExternalPluginAdapterData');
-    fromLines.push('data: parseExternalPluginAdapterData(input, record, account),');
+    imp.use("../../plugins/lib", "parseExternalPluginAdapterData");
+    fromLines.push("data: parseExternalPluginAdapterData(input, record, account),");
   }
   const fromBody =
     fromLines.length > 0
-      ? `return {\n    ...input,\n    ${fromLines.join('\n    ')}\n  };`
-      : 'return { ...input };';
+      ? `return {\n    ...input,\n    ${fromLines.join("\n    ")}\n  };`
+      : "return { ...input };";
   const fromBase = `export function ${camel}FromBase(\n  input: Base${pascal},\n  record: ExternalRegistryRecord,\n  account: Uint8Array\n): ${pascal} {\n  ${fromBody}\n}`;
 
   // ---- manifest ----
-  imp.use('..', `Base${pascal}InitInfoArgs`, `Base${pascal}UpdateInfoArgs`);
+  imp.use("..", `Base${pascal}InitInfoArgs`, `Base${pascal}UpdateInfoArgs`);
   const manifest = `export const ${camel}Manifest: ExternalPluginAdapterManifest<
   ${pascal},
   Base${pascal},
@@ -453,29 +384,27 @@ function generateAdapterFile(adapter) {
   updateToBase: ${camel}UpdateInfoArgsToBase,
 };`;
 
-  const code = [
+  return [
     HEADER,
     imp.render(),
-    '',
+    "",
     dataType,
-    '',
+    "",
     pluginType,
-    '',
+    "",
     initType,
-    '',
+    "",
     updateType,
-    '',
+    "",
     initToBase,
-    '',
+    "",
     updateToBase,
-    '',
+    "",
     fromBase,
-    '',
+    "",
     manifest,
-    '',
-  ].join('\n');
-
-  return code;
+    "",
+  ].join("\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -501,19 +430,19 @@ export type BaseExternalPluginAdapter = BasePlugin &
 // registry.ts (unions, manifests map, dispatch, init/update helpers).
 // ---------------------------------------------------------------------------
 function generateRegistryFile(adapters) {
-  const imp = makeImports();
-  imp.use('@metaplex-foundation/umi', 'isSome');
+  const imp = makeImports(IMPORT_ORDER);
+  imp.use("@metaplex-foundation/umi", "isSome");
   imp.use(
-    '..',
-    'ExternalRegistryRecord',
-    'getExternalPluginAdapterSerializer',
-    'BaseExternalPluginAdapterInitInfoArgs',
-    'BaseExternalPluginAdapterKey',
-    'BaseExternalPluginAdapterUpdateInfoArgs'
+    "..",
+    "ExternalRegistryRecord",
+    "getExternalPluginAdapterSerializer",
+    "BaseExternalPluginAdapterInitInfoArgs",
+    "BaseExternalPluginAdapterKey",
+    "BaseExternalPluginAdapterUpdateInfoArgs"
   );
-  imp.use('./base', 'BaseExternalPluginAdapter', 'ExternalPluginAdapterData');
-  imp.use('../../plugins/pluginAuthority', 'pluginAuthorityFromBase');
-  imp.use('../../plugins/lifecycleChecks', 'lifecycleChecksFromBase');
+  imp.use("./base", "BaseExternalPluginAdapter", "ExternalPluginAdapterData");
+  imp.use(SUBS.basePluginAuthority.mod, SUBS.basePluginAuthority.from);
+  imp.use(LIFECYCLE.mod, LIFECYCLE.from);
 
   adapters.forEach((a) => {
     imp.use(
@@ -531,24 +460,30 @@ function generateRegistryFile(adapters) {
 
   const unionAdapters = `export type ExternalPluginAdapters =\n  | ${adapters
     .map((a) => `${a.pascal}Plugin`)
-    .join('\n  | ')};`;
+    .join("\n  | ")};`;
 
   const listType = `export type ExternalPluginAdaptersList = {\n${adapters
     .map((a) => `  ${a.listKey}?: ${a.pascal}Plugin[];`)
-    .join('\n')}\n};`;
+    .join("\n")}\n};`;
 
-  const initUnion = `export type ExternalPluginAdapterInitInfoArgs =\n  | ${adapters
-    .map((a) => `({\n      type: '${a.pascal}';\n    } & ${a.pascal}InitInfoArgs)`)
-    .join('\n  | ')};`;
-
-  const updatable = adapters.filter((a) => a.updatable !== false);
-  const updateUnion = `export type ExternalPluginAdapterUpdateInfoArgs =\n  | ${updatable
-    .map((a) => `({\n      type: '${a.pascal}';\n    } & ${a.pascal}UpdateInfoArgs)`)
-    .join('\n  | ')};`;
+  const argsUnion = (name, label, members) =>
+    `export type ${name} =\n  | ${members
+      .map((a) => `({\n      type: '${a.pascal}';\n    } & ${a.pascal}${label}Args)`)
+      .join("\n  | ")};`;
+  const initUnion = argsUnion(
+    "ExternalPluginAdapterInitInfoArgs",
+    "InitInfo",
+    adapters
+  );
+  const updateUnion = argsUnion(
+    "ExternalPluginAdapterUpdateInfoArgs",
+    "UpdateInfo",
+    adapters.filter((a) => a.updatable !== false)
+  );
 
   const manifests = `export const externalPluginAdapterManifests = {\n${adapters
     .map((a) => `  ${a.pascal}: ${a.camel}Manifest,`)
-    .join('\n')}\n};`;
+    .join("\n")}\n};`;
 
   const meta = `const externalPluginAdapterMeta: Record<\n  ExternalPluginAdapterTypeString,\n  { listKey: keyof ExternalPluginAdaptersList; dataStore: boolean }\n> = {\n${adapters
     .map(
@@ -557,7 +492,7 @@ function generateRegistryFile(adapters) {
           a.injectData
         )} },`
     )
-    .join('\n')}\n};`;
+    .join("\n")}\n};`;
 
   const isType = `export const isExternalPluginAdapterType = (plugin: { type: string }) =>\n  plugin.type in externalPluginAdapterManifests;`;
 
@@ -612,119 +547,112 @@ function generateRegistryFile(adapters) {
   return result;
 }`;
 
-  const code = [
+  return [
     HEADER,
     imp.render(),
-    '',
+    "",
     typeString,
-    '',
+    "",
     dataReexport,
-    '',
+    "",
     unionAdapters,
-    '',
+    "",
     listType,
-    '',
+    "",
     initUnion,
-    '',
+    "",
     updateUnion,
-    '',
+    "",
     manifests,
-    '',
+    "",
     meta,
-    '',
+    "",
     isType,
-    '',
+    "",
     createInit,
-    '',
+    "",
     createUpdate,
-    '',
+    "",
     dispatch,
-    '',
-  ].join('\n');
-
-  return code;
+    "",
+  ].join("\n");
 }
 
 function generateIndexFile(adapters) {
   // `base` is intentionally omitted: its two types are re-exported through
   // `registry` (the ergonomic replacement for the old externalPluginAdapters
   // module), so listing it here too would be a duplicate star-export.
-  const files = [...adapters.map((a) => a.camel), 'registry'];
-  return `${HEADER}\n${files.map((f) => `export * from './${f}';`).join('\n')}\n`;
+  const files = [...adapters.map((a) => a.camel), "registry"];
+  return `${HEADER}\n${files.map((f) => `export * from './${f}';`).join("\n")}\n`;
 }
 
 // ---------------------------------------------------------------------------
 // Entry point: build the render map from the root node.
 // ---------------------------------------------------------------------------
-function buildAdapters(root) {
-  const program = root.programs[0];
-  const dtByName = new Map();
-  program.definedTypes.forEach((dt) => dtByName.set(String(dt.name), dt));
-
-  const enumNode = dtByName.get('externalPluginAdapter');
-  if (!enumNode || enumNode.type.kind !== 'enumTypeNode') {
-    throw new Error('Could not find `externalPluginAdapter` enum in the IDL.');
+/** Names of the `externalPluginAdapter` enum variants, in IDL order. */
+function getExternalPluginAdapterNames(root) {
+  const enumNode = root.programs[0].definedTypes.find(
+    (dt) => String(dt.name) === "externalPluginAdapter"
+  );
+  if (!enumNode || enumNode.type.kind !== "enumTypeNode") {
+    throw new Error("Could not find `externalPluginAdapter` enum in the IDL.");
   }
+  return enumNode.type.variants.map((v) => String(v.name));
+}
 
-  return enumNode.type.variants.map((variant) => {
-    const pascal = cap(String(variant.name));
-    const camel = low(pascal);
+function buildAdapters(root) {
+  const dtByName = new Map(
+    root.programs[0].definedTypes.map((dt) => [String(dt.name), dt])
+  );
+  const fieldsOf = (name) => {
+    const node = dtByName.get(name);
+    if (!node || node.type.kind !== "structTypeNode") return [];
+    return node.type.fields.map(classify);
+  };
+
+  return getExternalPluginAdapterNames(root).map((name) => {
+    const pascal = pascalCase(name);
+    const camel = camelCase(name);
     const baseName = `base${pascal}`;
     const ov = OVERRIDES[pascal] || {};
-
-    const fieldsOf = (node) => {
-      if (!node) return [];
-      if (node.type.kind !== 'structTypeNode') return [];
-      return node.type.fields.map(classify);
-    };
 
     return {
       pascal,
       camel,
       baseName,
       ov,
-      listKey: pluralize(pascal),
+      listKey: ov.listKey || `${camel}s`,
       injectData: Boolean(ov.injectData),
       updatable: ov.updatable,
-      baseFields: fieldsOf(dtByName.get(baseName)),
-      initFields: fieldsOf(dtByName.get(`${baseName}InitInfo`)),
-      updateFields: fieldsOf(dtByName.get(`${baseName}UpdateInfo`)),
+      baseFields: fieldsOf(baseName),
+      initFields: fieldsOf(`${baseName}InitInfo`),
+      updateFields: fieldsOf(`${baseName}UpdateInfo`),
     };
   });
 }
 
 function buildRenderMap(root) {
   const adapters = buildAdapters(root);
-  const files = {};
-  files['base.ts'] = generateBaseFile();
+  const files = { "base.ts": generateBaseFile() };
   adapters.forEach((a) => {
     files[`${a.camel}.ts`] = generateAdapterFile(a);
   });
-  files['registry.ts'] = generateRegistryFile(adapters);
-  files['index.ts'] = generateIndexFile(adapters);
+  files["registry.ts"] = generateRegistryFile(adapters);
+  files["index.ts"] = generateIndexFile(adapters);
   return files;
 }
 
-async function generateExternalPluginAdapters(root, jsGeneratedDir, prettierConfig) {
-  const path = require('path');
-  const fs = require('fs');
-  const prettier = require('prettier');
-  const outDir = path.join(jsGeneratedDir, 'plugins');
-  fs.mkdirSync(outDir, { recursive: true });
-  const files = buildRenderMap(root);
-  for (const [rel, raw] of Object.entries(files)) {
-    // eslint-disable-next-line no-await-in-loop
-    const formatted = await prettier.format(raw, {
-      ...prettierConfig,
-      parser: 'typescript',
-    });
-    fs.writeFileSync(path.join(outDir, rel), formatted);
-  }
-  return Object.keys(files).map((f) => path.join('plugins', f));
+function renderExternalPluginAdapters(root, jsGeneratedDir, prettierConfig) {
+  return writeRenderMap(
+    buildRenderMap(root),
+    path.join(jsGeneratedDir, "plugins"),
+    prettierConfig
+  ).map((f) => path.join("plugins", f));
 }
 
 module.exports = {
   buildRenderMap,
   buildAdapters,
-  generateExternalPluginAdapters,
+  getExternalPluginAdapterNames,
+  renderExternalPluginAdapters,
 };

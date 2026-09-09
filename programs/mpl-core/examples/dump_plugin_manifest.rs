@@ -34,8 +34,7 @@ fn manager_str(pt: &PluginType) -> &'static str {
 // the permanent-delegate set (authoritative const) plus Edition and BubblegumV2,
 // which reject `validate_add_plugin` unconditionally.
 fn is_create_only(pt: &PluginType) -> bool {
-    PERMANENT_DELEGATES.contains(pt)
-        || matches!(pt, PluginType::Edition | PluginType::BubblegumV2)
+    PERMANENT_DELEGATES.contains(pt) || matches!(pt, PluginType::Edition | PluginType::BubblegumV2)
 }
 
 fn main() {
