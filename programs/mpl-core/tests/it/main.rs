@@ -13,3 +13,10 @@ mod harness;
 mod account_ownership;
 mod agent_identity;
 mod execution_delegate;
+
+// --- m1 ---
+mod burn_transfer;
+mod create;
+mod plugin_management;
+mod update;
+// --- end m1 ---

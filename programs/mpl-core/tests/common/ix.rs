@@ -23,23 +23,29 @@ use {
             AddCollectionExternalPluginAdapterV1InstructionArgs, AddCollectionPluginV1,
             AddCollectionPluginV1InstructionArgs, AddExternalPluginAdapterV1,
             AddExternalPluginAdapterV1InstructionArgs, AddPluginV1, AddPluginV1InstructionArgs,
+            ApproveCollectionPluginAuthorityV1, ApproveCollectionPluginAuthorityV1InstructionArgs,
             ApprovePluginAuthorityV1, ApprovePluginAuthorityV1InstructionArgs, BurnCollectionV1,
-            BurnCollectionV1InstructionArgs, BurnV1, BurnV1InstructionArgs, CreateCollectionV2,
-            CreateCollectionV2InstructionArgs, CreateV2, CreateV2InstructionArgs, ExecuteV1,
-            ExecuteV1InstructionArgs, RemoveCollectionPluginV1,
+            BurnCollectionV1InstructionArgs, BurnV1, BurnV1InstructionArgs, CreateCollectionV1,
+            CreateCollectionV1InstructionArgs, CreateCollectionV2,
+            CreateCollectionV2InstructionArgs, CreateV1, CreateV1InstructionArgs, CreateV2,
+            CreateV2InstructionArgs, ExecuteV1, ExecuteV1InstructionArgs, RemoveCollectionPluginV1,
             RemoveCollectionPluginV1InstructionArgs, RemoveExternalPluginAdapterV1,
             RemoveExternalPluginAdapterV1InstructionArgs, RemovePluginV1,
-            RemovePluginV1InstructionArgs, RevokePluginAuthorityV1,
+            RemovePluginV1InstructionArgs, RevokeCollectionPluginAuthorityV1,
+            RevokeCollectionPluginAuthorityV1InstructionArgs, RevokePluginAuthorityV1,
             RevokePluginAuthorityV1InstructionArgs, TransferV1, TransferV1InstructionArgs,
-            UpdateCollectionV1, UpdateCollectionV1InstructionArgs, UpdateExternalPluginAdapterV1,
+            UpdateCollectionInfoV1, UpdateCollectionInfoV1InstructionArgs,
+            UpdateCollectionPluginV1, UpdateCollectionPluginV1InstructionArgs, UpdateCollectionV1,
+            UpdateCollectionV1InstructionArgs, UpdateExternalPluginAdapterV1,
             UpdateExternalPluginAdapterV1InstructionArgs, UpdatePluginV1,
-            UpdatePluginV1InstructionArgs, UpdateV1, UpdateV1InstructionArgs,
-            WriteExternalPluginAdapterDataV1, WriteExternalPluginAdapterDataV1InstructionArgs,
+            UpdatePluginV1InstructionArgs, UpdateV1, UpdateV1InstructionArgs, UpdateV2,
+            UpdateV2InstructionArgs, WriteExternalPluginAdapterDataV1,
+            WriteExternalPluginAdapterDataV1InstructionArgs,
         },
         types::{
             CompressionProof, DataState, ExternalPluginAdapterInitInfo, ExternalPluginAdapterKey,
             ExternalPluginAdapterUpdateInfo, Plugin, PluginAuthority, PluginAuthorityPair,
-            PluginType, UpdateAuthority,
+            PluginType, UpdateAuthority, UpdateType,
         },
     },
     mpl_core_program::ID as MPL_CORE_ID,
@@ -561,4 +567,203 @@ pub fn execute_v1(
         program_id,
     }
     .instruction_with_remaining_accounts(ExecuteV1InstructionArgs { instruction_data }, remaining)
+}
+
+// ---------------------------------------------------------------------------
+// --- added for m1 ---
+// ---------------------------------------------------------------------------
+
+/// `CreateV1` (the pre-V2 instruction: no external plugin adapters).
+#[allow(clippy::too_many_arguments)] // one parameter per instruction account / arg
+pub fn create_v1(
+    asset: Pubkey,
+    collection: Option<Pubkey>,
+    authority: Option<Pubkey>,
+    payer: Pubkey,
+    owner: Option<Pubkey>,
+    update_authority: Option<Pubkey>,
+    log_wrapper: Option<Pubkey>,
+    data_state: DataState,
+    name: &str,
+    uri: &str,
+    plugins: Option<Vec<PluginAuthorityPair>>,
+) -> Instruction {
+    CreateV1 {
+        asset,
+        collection,
+        authority,
+        payer,
+        owner,
+        update_authority,
+        system_program: system_program::ID,
+        log_wrapper,
+    }
+    .instruction(CreateV1InstructionArgs {
+        data_state,
+        name: name.to_string(),
+        uri: uri.to_string(),
+        plugins,
+    })
+}
+
+/// `CreateV2` with an explicit `data_state` (the [`create_v2`] wrapper always
+/// uses `DataState::AccountState`).
+#[allow(clippy::too_many_arguments)] // one parameter per instruction account / arg
+pub fn create_v2_with_data_state(
+    asset: Pubkey,
+    collection: Option<Pubkey>,
+    authority: Option<Pubkey>,
+    payer: Pubkey,
+    owner: Option<Pubkey>,
+    update_authority: Option<Pubkey>,
+    log_wrapper: Option<Pubkey>,
+    data_state: DataState,
+    name: &str,
+    uri: &str,
+    plugins: Option<Vec<PluginAuthorityPair>>,
+    external_plugin_adapters: Option<Vec<ExternalPluginAdapterInitInfo>>,
+) -> Instruction {
+    CreateV2 {
+        asset,
+        collection,
+        authority,
+        payer,
+        owner,
+        update_authority,
+        system_program: system_program::ID,
+        log_wrapper,
+    }
+    .instruction(CreateV2InstructionArgs {
+        data_state,
+        name: name.to_string(),
+        uri: uri.to_string(),
+        plugins,
+        external_plugin_adapters,
+    })
+}
+
+/// `CreateCollectionV1` (the pre-V2 instruction: no external plugin adapters).
+pub fn create_collection_v1(
+    collection: Pubkey,
+    update_authority: Option<Pubkey>,
+    payer: Pubkey,
+    name: &str,
+    uri: &str,
+    plugins: Option<Vec<PluginAuthorityPair>>,
+) -> Instruction {
+    CreateCollectionV1 {
+        collection,
+        update_authority,
+        payer,
+        system_program: system_program::ID,
+    }
+    .instruction(CreateCollectionV1InstructionArgs {
+        name: name.to_string(),
+        uri: uri.to_string(),
+        plugins,
+    })
+}
+
+/// `UpdateV2`. `new_collection` is the collection the asset is moving into.
+#[allow(clippy::too_many_arguments)] // one parameter per instruction account / arg
+pub fn update_v2(
+    asset: Pubkey,
+    collection: Option<Pubkey>,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    new_collection: Option<Pubkey>,
+    log_wrapper: Option<Pubkey>,
+    new_name: Option<String>,
+    new_uri: Option<String>,
+    new_update_authority: Option<UpdateAuthority>,
+) -> Instruction {
+    UpdateV2 {
+        asset,
+        collection,
+        payer,
+        authority,
+        new_collection,
+        system_program: system_program::ID,
+        log_wrapper,
+    }
+    .instruction(UpdateV2InstructionArgs {
+        new_name,
+        new_uri,
+        new_update_authority,
+    })
+}
+
+/// `UpdateCollectionInfoV1`, the Bubblegum-only counter instruction.
+pub fn update_collection_info_v1(
+    collection: Pubkey,
+    bubblegum_signer: Pubkey,
+    update_type: UpdateType,
+    amount: u32,
+) -> Instruction {
+    UpdateCollectionInfoV1 {
+        collection,
+        bubblegum_signer,
+    }
+    .instruction(UpdateCollectionInfoV1InstructionArgs {
+        update_type,
+        amount,
+    })
+}
+
+/// `UpdateCollectionPluginV1`.
+pub fn update_collection_plugin_v1(
+    collection: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    log_wrapper: Option<Pubkey>,
+    plugin: Plugin,
+) -> Instruction {
+    UpdateCollectionPluginV1 {
+        collection,
+        payer,
+        authority,
+        system_program: system_program::ID,
+        log_wrapper,
+    }
+    .instruction(UpdateCollectionPluginV1InstructionArgs { plugin })
+}
+
+/// `ApproveCollectionPluginAuthorityV1`.
+pub fn approve_collection_plugin_authority_v1(
+    collection: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    log_wrapper: Option<Pubkey>,
+    plugin_type: PluginType,
+    new_authority: PluginAuthority,
+) -> Instruction {
+    ApproveCollectionPluginAuthorityV1 {
+        collection,
+        payer,
+        authority,
+        system_program: system_program::ID,
+        log_wrapper,
+    }
+    .instruction(ApproveCollectionPluginAuthorityV1InstructionArgs {
+        plugin_type,
+        new_authority,
+    })
+}
+
+/// `RevokeCollectionPluginAuthorityV1`.
+pub fn revoke_collection_plugin_authority_v1(
+    collection: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    log_wrapper: Option<Pubkey>,
+    plugin_type: PluginType,
+) -> Instruction {
+    RevokeCollectionPluginAuthorityV1 {
+        collection,
+        payer,
+        authority,
+        system_program: system_program::ID,
+        log_wrapper,
+    }
+    .instruction(RevokeCollectionPluginAuthorityV1InstructionArgs { plugin_type })
 }
