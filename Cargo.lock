@@ -3783,6 +3783,7 @@ dependencies = [
  "mpl-agent-identity",
  "mpl-agent-tools",
  "mpl-bubblegum",
+ "mpl-core",
  "mpl-utils",
  "num-derive 0.3.3",
  "num-traits",

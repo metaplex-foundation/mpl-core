@@ -13,9 +13,52 @@
 //! return-data plumbing mirrors what `solana-program-test` does for its
 //! `processor!` builtins, so the program sees the same ABI in both modes.
 //!
-//! Every test module includes this file with `mod common;` and gets a
-//! `Mollusk` from [`core_mollusk`].
+//! Every test crate includes this file with `mod common;` (or
+//! `#[path = "../common/mod.rs"] mod common;`) and gets a `Mollusk` from
+//! [`core_mollusk`]. The sibling modules make up the shared test library:
+//!
+//! - [`programs`]: the spl-noop and recorder builtins, program accounts;
+//! - [`accounts`]: raw account builders (`AssetSpec`, `CollectionSpec`, ...);
+//! - [`ix`]: instruction builders over the generated Rust client;
+//! - [`fixture`]: `Fixture`, a `MolluskContext` that creates accounts
+//!   through the program and keeps them between instructions;
+//! - [`read`]: post-state parsing and the registry invariant check;
+//! - [`assert`]: result assertions with descriptive messages.
+//!
+//! `use common::*;` brings the most common items into scope.
 #![allow(dead_code)]
+
+pub mod accounts;
+pub mod assert;
+pub mod fixture;
+pub mod ix;
+pub mod programs;
+pub mod read;
+
+// Each integration crate uses a different subset of the prelude.
+#[allow(unused_imports)]
+pub use {
+    accounts::{
+        agent_identity_pda, asset_signer_pda, buffer_account, empty_account,
+        execution_delegate_record, group_account, hashed_asset_account, hashed_asset_placeholder,
+        oracle_account, payer_account, random_keys, AssetSpec, CollectionSpec, ExternalAdapterSpec,
+        ACCOUNT_LAMPORTS, MPL_AGENT_IDENTITY_ID, MPL_AGENT_TOOLS_ID,
+    },
+    assert::{
+        account_of, assert_burned, assert_core_err, assert_instruction_err, assert_ok,
+        assert_program_err, lamports_of,
+    },
+    fixture::{CreateAssetArgs, CreateCollectionArgs, Fixture},
+    ix::{convert, raw, raw_bytes, set_account, unsign, with_remaining},
+    programs::{
+        clear_recorded, keyed_program_accounts, set_recorder_result, take_recorded,
+        with_program_accounts, RecordedAccount, RecordedInvocation, RECORDER_ID, SPL_NOOP_ID,
+    },
+    read::{
+        assert_registry_consistent, parse_asset, parse_collection, read_adapter, read_asset,
+        read_collection, read_group, read_plugin, ParsedAccount,
+    },
+};
 
 use {mollusk_svm::Mollusk, mpl_core_program::ID as MPL_CORE_ID, solana_account::Account};
 
@@ -37,13 +80,16 @@ pub fn native_program_enabled() -> bool {
     }
 }
 
-/// Creates a Mollusk instance with the mpl-core program registered.
+/// Creates a Mollusk instance with the mpl-core program registered, plus the
+/// spl-noop and recorder builtins from [`programs`] (in both modes).
 pub fn core_mollusk() -> Mollusk {
-    if native_program_enabled() {
+    let mut mollusk = if native_program_enabled() {
         native::mollusk()
     } else {
         Mollusk::new(&MPL_CORE_ID, PROGRAM_NAME)
-    }
+    };
+    programs::register_builtins(&mut mollusk);
+    mollusk
 }
 
 /// Creates the executable account for the mpl-core program itself, for

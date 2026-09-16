@@ -72,7 +72,11 @@ jobs:
                   key: program-coverage-${{ matrix.program }}
 
             - name: Generate coverage report
+              id: coverage
               shell: bash
+              # Exits non-zero when the program is below the thresholds in
+              # `programs/<program>/coverage-thresholds.json`, which fails the job;
+              # the reports are written first and the steps below run regardless.
               run: RUST_LOG=error ./configs/scripts/program/coverage.sh
               env:
                   PROGRAM: ${{ matrix.program }}
@@ -80,11 +84,39 @@ jobs:
             - name: Publish coverage summary
               if: always()
               shell: bash
+              env:
+                  GATE_OUTCOME: ${{ steps.coverage.outcome }}
               run: |
                   SUMMARY="coverage/${{ matrix.program }}/summary.txt"
                   JSON="coverage/${{ matrix.program }}/coverage.json"
+                  GATE="coverage/${{ matrix.program }}/gate.json"
+                  THRESHOLDS="programs/${{ matrix.program }}/coverage-thresholds.json"
+                  # Thresholds in effect: from gate.json when the script got that far
+                  # (it also reflects a COVERAGE_MIN_LINES override), otherwise from
+                  # the committed thresholds file.
+                  THRESHOLDS_JSON='{}'
+                  if [ -f "$GATE" ]; then
+                    THRESHOLDS_JSON="$(jq -c '.thresholds' "$GATE")"
+                  elif [ -f "$THRESHOLDS" ]; then
+                    THRESHOLDS_JSON="$(jq -c '.' "$THRESHOLDS")"
+                  fi
+                  GATE_TEXT="$(jq -r '
+                    [ (.lines // empty | "lines >= \(.)%"),
+                      (.functions // empty | "functions >= \(.)%"),
+                      (.regions // empty | "regions >= \(.)%"),
+                      (.file_lines // empty | "every file >= \(.)% lines") ]
+                    | if length == 0 then "none" else join(", ") end' <<< "$THRESHOLDS_JSON")"
+                  if [ -f "$GATE" ] && [ "$(jq -r '.passed' "$GATE")" = "true" ] && [ "$GATE_OUTCOME" = "success" ]; then
+                    GATE_STATUS="passed"
+                  elif [ -f "$GATE" ]; then
+                    GATE_STATUS="FAILED"
+                  else
+                    GATE_STATUS="not evaluated (coverage generation failed)"
+                  fi
                   {
                     echo "## Coverage: ${{ matrix.program }}"
+                    echo
+                    echo "**Gate:** ${GATE_TEXT} — **${GATE_STATUS}**"
                     echo
                     if [ -f "$JSON" ]; then
                       jq -r '.data[0].totals
@@ -118,6 +150,7 @@ jobs:
               env:
                   PROGRAM: ${{ matrix.program }}
                   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  GATE_OUTCOME: ${{ steps.coverage.outcome }}
               with:
                   script: |
                       const fs = require('fs');
@@ -127,7 +160,24 @@ jobs:
                       const dir = `coverage/${program}`;
 
                       const pct = (value) => `${Math.round(value * 100) / 100}%`;
+                      const readJson = (path) => (fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, 'utf8')) : null);
+
+                      // Thresholds in effect: from gate.json when the script got that far,
+                      // otherwise from the committed thresholds file.
+                      const gate = readJson(`${dir}/gate.json`);
+                      const thresholds = gate ? gate.thresholds : (readJson(`programs/${program}/coverage-thresholds.json`) ?? {});
+                      const gateParts = [];
+                      if (thresholds.lines != null) gateParts.push(`lines >= ${thresholds.lines}%`);
+                      if (thresholds.functions != null) gateParts.push(`functions >= ${thresholds.functions}%`);
+                      if (thresholds.regions != null) gateParts.push(`regions >= ${thresholds.regions}%`);
+                      if (thresholds.file_lines != null) gateParts.push(`every file >= ${thresholds.file_lines}% lines`);
+                      const gateText = gateParts.length ? gateParts.join(', ') : 'none';
+                      const gateStatus = gate
+                        ? (gate.passed && process.env.GATE_OUTCOME === 'success' ? 'passed' : 'FAILED')
+                        : 'not evaluated (coverage generation failed)';
+
                       let body = `${marker}\n## Coverage: \`${program}\`\n\n`;
+                      body += `**Gate:** ${gateText} — **${gateStatus}**\n\n`;
 
                       if (fs.existsSync(`${dir}/coverage.json`)) {
                         const totals = JSON.parse(fs.readFileSync(`${dir}/coverage.json`, 'utf8')).data[0].totals;
@@ -143,7 +193,7 @@ jobs:
                           body += fs.readFileSync(`${dir}/summary.txt`, 'utf8').trimEnd();
                           body += '\n```\n\n</details>\n';
                         }
-                        body += `\nFull report (LCOV, JSON, HTML) is the \`coverage-${program}\` artifact on [this workflow run](${runUrl}).\n`;
+                        body += `\nFull report (LCOV, JSON, HTML, uncovered lines in \`missing.txt\`) is the \`coverage-${program}\` artifact on [this workflow run](${runUrl}).\n`;
                       } else {
                         body += `Coverage generation failed. See [the workflow run](${runUrl}) for details.\n`;
                       }
