@@ -24,3 +24,9 @@ mod update;
 mod external_plugins;
 mod plugins_internal;
 // --- end m2 ---
+// --- m3 ---
+mod adversarial;
+mod collect;
+mod compression;
+mod groups;
+// --- end m3 ---

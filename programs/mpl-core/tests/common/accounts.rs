@@ -622,3 +622,236 @@ pub fn asset_signer_pda(asset: &Pubkey) -> (Pubkey, u8) {
 pub fn core_bytes_account(bytes: Vec<u8>) -> Account {
     owned_account(bytes, ACCOUNT_LAMPORTS, MPL_CORE_ID)
 }
+
+// ---------------------------------------------------------------------------
+// --- added for m3 ---
+//
+// Group accounts with a configurable owner and lamports, the hashed-asset
+// fixture that matches a `CompressionProof`, and the rent helper the close /
+// resize paths are asserted against.
+// ---------------------------------------------------------------------------
+
+use mpl_core_program::state::{
+    Compressible, CompressionProof, HashablePluginSchema, HashedAssetSchema,
+};
+
+/// Describes a `GroupV1` account to build. The sibling of [`AssetSpec`] and
+/// [`CollectionSpec`]; [`group_account`] is the terse form for the common
+/// case (owned by mpl-core, rent exempt).
+#[derive(Clone, Debug)]
+pub struct GroupSpec {
+    /// The group update authority.
+    pub update_authority: Pubkey,
+    /// The group name.
+    pub name: String,
+    /// The group URI.
+    pub uri: String,
+    /// Collections that are direct children of the group.
+    pub collections: Vec<Pubkey>,
+    /// Groups that are direct children of the group.
+    pub groups: Vec<Pubkey>,
+    /// Groups the group is a child of.
+    pub parent_groups: Vec<Pubkey>,
+    /// Assets that are direct members of the group.
+    pub assets: Vec<Pubkey>,
+    /// Lamports on the account.
+    pub lamports: u64,
+    /// The program that owns the account (mpl-core unless testing lookalikes).
+    pub program_owner: Pubkey,
+}
+
+/// Default name for groups built by [`GroupSpec`].
+pub const DEFAULT_GROUP_NAME: &str = "Test Group";
+
+impl GroupSpec {
+    /// An empty group controlled by `update_authority`.
+    pub fn new(update_authority: Pubkey) -> Self {
+        Self {
+            update_authority,
+            name: DEFAULT_GROUP_NAME.to_string(),
+            uri: DEFAULT_URI.to_string(),
+            collections: vec![],
+            groups: vec![],
+            parent_groups: vec![],
+            assets: vec![],
+            lamports: ACCOUNT_LAMPORTS,
+            program_owner: MPL_CORE_ID,
+        }
+    }
+
+    /// Sets the name.
+    pub fn name(mut self, name: &str) -> Self {
+        self.name = name.to_string();
+        self
+    }
+
+    /// Sets the URI.
+    pub fn uri(mut self, uri: &str) -> Self {
+        self.uri = uri.to_string();
+        self
+    }
+
+    /// Sets the member collections.
+    pub fn collections(mut self, collections: Vec<Pubkey>) -> Self {
+        self.collections = collections;
+        self
+    }
+
+    /// Sets the child groups.
+    pub fn groups(mut self, groups: Vec<Pubkey>) -> Self {
+        self.groups = groups;
+        self
+    }
+
+    /// Sets the parent groups.
+    pub fn parent_groups(mut self, parent_groups: Vec<Pubkey>) -> Self {
+        self.parent_groups = parent_groups;
+        self
+    }
+
+    /// Sets the member assets.
+    pub fn assets(mut self, assets: Vec<Pubkey>) -> Self {
+        self.assets = assets;
+        self
+    }
+
+    /// Sets the lamports.
+    pub fn lamports(mut self, lamports: u64) -> Self {
+        self.lamports = lamports;
+        self
+    }
+
+    /// Sets the owning program.
+    pub fn program_owner(mut self, program_owner: Pubkey) -> Self {
+        self.program_owner = program_owner;
+        self
+    }
+
+    /// The core `GroupV1` this spec describes.
+    pub fn core(&self) -> GroupV1 {
+        GroupV1::new(
+            self.update_authority,
+            self.name.clone(),
+            self.uri.clone(),
+            self.collections.clone(),
+            self.groups.clone(),
+            self.parent_groups.clone(),
+            self.assets.clone(),
+        )
+    }
+
+    /// Builds the account.
+    pub fn build(&self) -> Account {
+        owned_account(
+            borsh::to_vec(&self.core()).expect("group serializes"),
+            self.lamports,
+            self.program_owner,
+        )
+    }
+}
+
+/// The rent-exempt minimum balance for an account of `len` bytes, under the
+/// default rent Mollusk runs with. Used to assert the refunds and top-ups of
+/// `close_program_account` and `resize_or_reallocate_account`.
+pub fn rent_exempt_balance(len: usize) -> u64 {
+    solana_program::rent::Rent::default().minimum_balance(len)
+}
+
+/// The `HashedAssetV1` account a `CompressionProof` hashes to, built exactly
+/// the way `utils::compression::verify_proof` recomputes it: the asset hash
+/// over `AssetV1::from(proof)` (so `seq == Some(proof.seq)`) and one hash per
+/// plugin, in ascending `index` order.
+///
+/// Pass the proof's plugins unsorted to make the sort in `verify_proof`
+/// meaningful; the fixture sorts a copy, as the program does.
+pub fn hashed_asset_for_proof(proof: &CompressionProof) -> Account {
+    hashed_asset_account(hashed_asset_schema_for_proof(proof))
+}
+
+/// The hash `verify_proof` compares the account against (see
+/// [`hashed_asset_for_proof`]).
+pub fn hashed_asset_schema_for_proof(proof: &CompressionProof) -> [u8; 32] {
+    let asset = AssetV1::from(proof.clone());
+    let mut plugins = proof.plugins.clone();
+    plugins.sort_by(HashablePluginSchema::compare_indeces);
+    let schema = HashedAssetSchema {
+        asset_hash: asset.hash().expect("asset hashes"),
+        plugin_hashes: plugins
+            .iter()
+            .map(|plugin| plugin.hash().expect("plugin hashes"))
+            .collect(),
+    };
+    schema.hash().expect("schema hashes")
+}
+
+/// Rewrites the registry record of the `from` plugin so it claims to be a
+/// `to` plugin, leaving the plugin bytes themselves untouched. `PluginType`
+/// is a one-byte discriminant, so the account length does not change.
+///
+/// Produces a corrupt account no instruction of the program can write, which
+/// is exactly what the `InvalidPlugin` arms guard against.
+pub fn retype_registry_record(account: &Account, from: PluginType, to: PluginType) -> Account {
+    let parsed = super::read::parse_any(&account.data);
+    let header = parsed.header.expect("account has no plugin header");
+    let mut registry = parsed.registry.expect("account has no plugin registry");
+    let record = registry
+        .registry
+        .iter_mut()
+        .find(|record| record.plugin_type == from)
+        .unwrap_or_else(|| panic!("account has no {from:?} registry record"));
+    record.plugin_type = to;
+    overwrite_registry(account, header.plugin_registry_offset, &registry)
+}
+
+/// Points the registry record of `plugin_type` at `offset`, which may be
+/// anywhere in (or past) the account.
+pub fn repoint_registry_record(
+    account: &Account,
+    plugin_type: PluginType,
+    offset: usize,
+) -> Account {
+    let parsed = super::read::parse_any(&account.data);
+    let header = parsed.header.expect("account has no plugin header");
+    let mut registry = parsed.registry.expect("account has no plugin registry");
+    let record = registry
+        .registry
+        .iter_mut()
+        .find(|record| record.plugin_type == plugin_type)
+        .unwrap_or_else(|| panic!("account has no {plugin_type:?} registry record"));
+    record.offset = offset;
+    overwrite_registry(account, header.plugin_registry_offset, &registry)
+}
+
+/// Serializes `registry` over the account data at `offset`; the caller must
+/// keep the serialized length unchanged.
+fn overwrite_registry(account: &Account, offset: usize, registry: &PluginRegistryV1) -> Account {
+    let bytes = borsh::to_vec(registry).expect("registry serializes");
+    let mut account = account.clone();
+    assert_eq!(
+        offset + bytes.len(),
+        account.data.len(),
+        "the rewritten registry must keep the account length"
+    );
+    account.data[offset..].copy_from_slice(&bytes);
+    account
+}
+
+/// Cuts an account's data down to `len` bytes, keeping its owner and
+/// lamports: a valid discriminator followed by a truncated payload.
+pub fn truncate_account(account: &Account, len: usize) -> Account {
+    let mut account = account.clone();
+    assert!(
+        len <= account.data.len(),
+        "cannot truncate {} bytes to {len}",
+        account.data.len()
+    );
+    account.data.truncate(len);
+    account
+}
+
+/// Overwrites the account's bytes from `offset` with `bytes`, in place.
+pub fn overwrite_bytes(account: &Account, offset: usize, bytes: &[u8]) -> Account {
+    let mut account = account.clone();
+    account.data[offset..offset + bytes.len()].copy_from_slice(bytes);
+    account
+}

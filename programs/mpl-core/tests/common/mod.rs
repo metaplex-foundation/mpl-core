@@ -477,3 +477,13 @@ pub mod native {
         }
     }
 }
+
+// --- added for m3 ---
+#[allow(unused_imports)]
+pub use accounts::{
+    hashed_asset_for_proof, hashed_asset_schema_for_proof, rent_exempt_balance, GroupSpec,
+};
+#[allow(unused_imports)]
+pub use accounts::{
+    overwrite_bytes, repoint_registry_record, retype_registry_record, truncate_account,
+};

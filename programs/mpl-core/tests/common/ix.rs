@@ -842,3 +842,239 @@ pub fn write_collection_external_plugin_adapter_data_v1(
 }
 
 // --- end m2 ---
+// --- added for m3 ---
+//
+// Group, compression, collect and collection-info instructions. Same shape as
+// the wrappers above: accounts first (optional ones as `Option<Pubkey>`, the
+// generated code fills the sentinel with the program id), then the args.
+// ---------------------------------------------------------------------------
+
+use mpl_core::{
+    instructions::{
+        AddAssetsToGroupV1, AddCollectionsToGroupV1, AddGroupsToGroupV1,
+        AddGroupsToGroupV1InstructionArgs, CloseGroupV1, Collect, CompressV1, CreateGroupV1,
+        CreateGroupV1InstructionArgs, DecompressV1, DecompressV1InstructionArgs,
+        RemoveAssetsFromGroupV1, RemoveAssetsFromGroupV1InstructionArgs,
+        RemoveCollectionsFromGroupV1, RemoveCollectionsFromGroupV1InstructionArgs,
+        RemoveGroupsFromGroupV1, RemoveGroupsFromGroupV1InstructionArgs, UpdateGroupV1,
+        UpdateGroupV1InstructionArgs,
+    },
+    types::RelationshipEntry,
+};
+
+/// `CreateGroupV1`. `remaining` are the relationship accounts in category
+/// order (collections, child groups, parent groups, assets), optionally
+/// followed by read-only `CollectionV1` accounts used for authority checks.
+#[allow(clippy::too_many_arguments)] // one parameter per instruction account / arg
+pub fn create_group_v1(
+    group: Pubkey,
+    update_authority: Option<Pubkey>,
+    payer: Pubkey,
+    name: &str,
+    uri: &str,
+    relationships: Vec<RelationshipEntry>,
+    remaining: &[AccountMeta],
+) -> Instruction {
+    CreateGroupV1 {
+        group,
+        update_authority,
+        payer,
+        system_program: system_program::ID,
+    }
+    .instruction_with_remaining_accounts(
+        CreateGroupV1InstructionArgs {
+            name: name.to_string(),
+            uri: uri.to_string(),
+            relationships,
+        },
+        remaining,
+    )
+}
+
+/// `CloseGroupV1`.
+pub fn close_group_v1(group: Pubkey, payer: Pubkey, authority: Option<Pubkey>) -> Instruction {
+    CloseGroupV1 {
+        group,
+        payer,
+        authority,
+    }
+    .instruction()
+}
+
+/// `UpdateGroupV1`.
+pub fn update_group_v1(
+    group: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    new_update_authority: Option<Pubkey>,
+    new_name: Option<String>,
+    new_uri: Option<String>,
+) -> Instruction {
+    UpdateGroupV1 {
+        group,
+        payer,
+        authority,
+        new_update_authority,
+        system_program: system_program::ID,
+    }
+    .instruction(UpdateGroupV1InstructionArgs { new_name, new_uri })
+}
+
+/// `AddAssetsToGroupV1`. `remaining` are the writable `AssetV1` accounts,
+/// optionally interleaved with read-only `CollectionV1` accounts.
+pub fn add_assets_to_group_v1(
+    group: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    remaining: &[AccountMeta],
+) -> Instruction {
+    AddAssetsToGroupV1 {
+        group,
+        payer,
+        authority,
+        system_program: system_program::ID,
+    }
+    .instruction_with_remaining_accounts(remaining)
+}
+
+/// `RemoveAssetsFromGroupV1`.
+pub fn remove_assets_from_group_v1(
+    group: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    assets: Vec<Pubkey>,
+    remaining: &[AccountMeta],
+) -> Instruction {
+    RemoveAssetsFromGroupV1 {
+        group,
+        payer,
+        authority,
+        system_program: system_program::ID,
+    }
+    .instruction_with_remaining_accounts(
+        RemoveAssetsFromGroupV1InstructionArgs { assets },
+        remaining,
+    )
+}
+
+/// `AddCollectionsToGroupV1`. `remaining` are the writable `CollectionV1`
+/// accounts to link.
+pub fn add_collections_to_group_v1(
+    group: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    remaining: &[AccountMeta],
+) -> Instruction {
+    AddCollectionsToGroupV1 {
+        group,
+        payer,
+        authority,
+        system_program: system_program::ID,
+    }
+    .instruction_with_remaining_accounts(remaining)
+}
+
+/// `RemoveCollectionsFromGroupV1`.
+pub fn remove_collections_from_group_v1(
+    group: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    collections: Vec<Pubkey>,
+    remaining: &[AccountMeta],
+) -> Instruction {
+    RemoveCollectionsFromGroupV1 {
+        group,
+        payer,
+        authority,
+        system_program: system_program::ID,
+    }
+    .instruction_with_remaining_accounts(
+        RemoveCollectionsFromGroupV1InstructionArgs { collections },
+        remaining,
+    )
+}
+
+/// `AddGroupsToGroupV1`.
+pub fn add_groups_to_group_v1(
+    parent_group: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    groups: Vec<Pubkey>,
+    remaining: &[AccountMeta],
+) -> Instruction {
+    AddGroupsToGroupV1 {
+        parent_group,
+        payer,
+        authority,
+        system_program: system_program::ID,
+    }
+    .instruction_with_remaining_accounts(AddGroupsToGroupV1InstructionArgs { groups }, remaining)
+}
+
+/// `RemoveGroupsFromGroupV1`.
+pub fn remove_groups_from_group_v1(
+    parent_group: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    groups: Vec<Pubkey>,
+    remaining: &[AccountMeta],
+) -> Instruction {
+    RemoveGroupsFromGroupV1 {
+        parent_group,
+        payer,
+        authority,
+        system_program: system_program::ID,
+    }
+    .instruction_with_remaining_accounts(
+        RemoveGroupsFromGroupV1InstructionArgs { groups },
+        remaining,
+    )
+}
+
+/// `CompressV1`.
+pub fn compress_v1(
+    asset: Pubkey,
+    collection: Option<Pubkey>,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    log_wrapper: Option<Pubkey>,
+) -> Instruction {
+    CompressV1 {
+        asset,
+        collection,
+        payer,
+        authority,
+        system_program: system_program::ID,
+        log_wrapper,
+    }
+    .instruction()
+}
+
+/// `DecompressV1`.
+pub fn decompress_v1(
+    asset: Pubkey,
+    collection: Option<Pubkey>,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    log_wrapper: Option<Pubkey>,
+    compression_proof: CompressionProof,
+) -> Instruction {
+    DecompressV1 {
+        asset,
+        collection,
+        payer,
+        authority,
+        system_program: system_program::ID,
+        log_wrapper,
+    }
+    .instruction(DecompressV1InstructionArgs { compression_proof })
+}
+
+/// `Collect`. `remaining` are the mpl-core-owned accounts to sweep.
+pub fn collect(recipient1: Pubkey, recipient2: Pubkey, remaining: &[AccountMeta]) -> Instruction {
+    Collect {
+        recipient1,
+        recipient2,
+    }
+    .instruction_with_remaining_accounts(remaining)
+}
