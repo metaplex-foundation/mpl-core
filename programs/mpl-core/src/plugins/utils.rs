@@ -923,3 +923,318 @@ fn check_plugin_key(
         Ok(false)
     }
 }
+
+#[cfg(test)]
+mod validation_tests {
+    use {
+        super::*,
+        crate::plugins::{
+            test_ctx::{default_ctx, FakeAccount},
+            AgentIdentity, AppData, DataSection, ExternalPluginAdapterSchema, LifecycleHook,
+            LinkedAppData, LinkedDataKey, LinkedLifecycleHook, PluginValidation, ValidationResult,
+        },
+    };
+
+    fn core_err<T>(result: Result<T, ProgramError>) -> MplCoreError {
+        match result {
+            Err(ProgramError::Custom(code)) => {
+                num_traits::FromPrimitive::from_u32(code).expect("an MplCoreError code")
+            }
+            Err(other) => panic!("expected a custom program error, got {other:?}"),
+            Ok(_) => panic!("expected an error"),
+        }
+    }
+
+    fn check(
+        event: HookableLifecycleEvent,
+        flags: u32,
+    ) -> (HookableLifecycleEvent, ExternalCheckResult) {
+        (event, ExternalCheckResult { flags })
+    }
+
+    #[test]
+    fn validate_lifecycle_checks_rules() {
+        // Empty is always refused.
+        for can_reject_only in [true, false] {
+            assert_eq!(
+                core_err(validate_lifecycle_checks(&[], can_reject_only)),
+                MplCoreError::RequiresLifecycleCheck
+            );
+        }
+
+        // Duplicate events are refused before the flag check.
+        assert_eq!(
+            core_err(validate_lifecycle_checks(
+                &[
+                    check(HookableLifecycleEvent::Transfer, 0x4),
+                    check(HookableLifecycleEvent::Transfer, 0x4),
+                ],
+                true,
+            )),
+            MplCoreError::DuplicateLifecycleChecks
+        );
+
+        // Reject-only adapters accept exactly `0x4`.
+        assert!(validate_lifecycle_checks(
+            &[
+                check(HookableLifecycleEvent::Transfer, 0x4),
+                check(HookableLifecycleEvent::Burn, 0x4),
+            ],
+            true,
+        )
+        .is_ok());
+        for flags in [0x0, 0x1, 0x2, 0x3, 0x5, 0x6, 0x7] {
+            assert_eq!(
+                core_err(validate_lifecycle_checks(
+                    &[check(HookableLifecycleEvent::Transfer, flags)],
+                    true,
+                )),
+                MplCoreError::OracleCanRejectOnly,
+                "flags {flags:#x} must be refused for a reject-only adapter"
+            );
+        }
+
+        // Everything else accepts any flags, including bits outside the three
+        // that `ExternalCheckResultBits` decodes (roadmap section 11,
+        // finding 6).
+        for flags in [0x0, 0x1, 0x7, 0xFFFF_FFF8] {
+            assert!(
+                validate_lifecycle_checks(
+                    &[check(HookableLifecycleEvent::Transfer, flags)],
+                    false,
+                )
+                .is_ok(),
+                "flags {flags:#x} are accepted for a non-Oracle adapter"
+            );
+        }
+    }
+
+    /// Validators that no instruction can route to today (roadmap section 11,
+    /// class D), kept working so a future change is a deliberate one.
+    #[test]
+    fn blocked_and_unrouted_adapter_validators() {
+        let self_authority = Authority::UpdateAuthority;
+        let data_authority = Authority::Address {
+            address: Pubkey::new_unique(),
+        };
+
+        let mut signer = FakeAccount::wallet();
+        let mut asset = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let asset_info = asset.info();
+
+        // `AppData` records are stored with `lifecycle_checks: None`, so
+        // `check_adapter_registry` never selects them for a transfer.
+        let app_data = AppData {
+            data_authority,
+            schema: ExternalPluginAdapterSchema::Binary,
+        };
+        let ctx = default_ctx(&[], &signer_info, &self_authority);
+        assert_eq!(
+            app_data.validate_transfer(&ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(
+            app_data.validate_add_external_plugin_adapter(&ctx).unwrap(),
+            ValidationResult::Pass
+        );
+
+        // `LinkedAppData::validate_create` is never called because
+        // `check_create` returns `none()` for it. Both branches still work.
+        let linked = LinkedAppData {
+            data_authority,
+            schema: ExternalPluginAdapterSchema::Binary,
+        };
+        assert_eq!(
+            linked.validate_create(&ctx).unwrap(),
+            ValidationResult::Pass,
+            "on a collection (no asset) the create is allowed"
+        );
+        let mut ctx_with_asset = default_ctx(&[], &signer_info, &self_authority);
+        ctx_with_asset.asset_info = Some(&asset_info);
+        assert_eq!(
+            linked.validate_create(&ctx_with_asset).unwrap(),
+            ValidationResult::Rejected,
+            "on an asset it is rejected"
+        );
+
+        // The hook adapters are blocked at initialization, so their constant
+        // validators never run on-chain.
+        let hook = LifecycleHook {
+            hooked_program: Pubkey::new_unique(),
+            extra_accounts: None,
+            data_authority: None,
+            schema: ExternalPluginAdapterSchema::Binary,
+        };
+        assert_eq!(
+            hook.validate_transfer(&ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(
+            hook.validate_add_external_plugin_adapter(&ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        let linked_hook = LinkedLifecycleHook {
+            hooked_program: Pubkey::new_unique(),
+            extra_accounts: None,
+            data_authority: None,
+            schema: ExternalPluginAdapterSchema::Binary,
+        };
+        assert_eq!(
+            linked_hook.validate_transfer(&ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(
+            linked_hook
+                .validate_add_external_plugin_adapter(&ctx)
+                .unwrap(),
+            ValidationResult::Pass
+        );
+
+        // A `DataSection` overrides nothing at all.
+        let section = DataSection {
+            parent_key: LinkedDataKey::LinkedAppData(data_authority),
+            schema: ExternalPluginAdapterSchema::Binary,
+        };
+        assert_eq!(
+            section.validate_transfer(&ctx).unwrap(),
+            ValidationResult::Pass
+        );
+
+        // `AgentIdentity` rejects a collection target on both the create and
+        // the add path; the add path's arm is unreachable because
+        // `add_external_plugin_adapter.rs` refuses collections first.
+        let agent = AgentIdentity {
+            uri: "https://example.com/agent.json".to_string(),
+        };
+        assert_eq!(
+            agent.validate_create(&ctx).unwrap(),
+            ValidationResult::Rejected
+        );
+        assert_eq!(
+            agent.validate_add_external_plugin_adapter(&ctx).unwrap(),
+            ValidationResult::Rejected
+        );
+        // Its lifecycle hooks are constant abstains.
+        assert_eq!(
+            agent.validate_transfer(&ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(agent.validate_burn(&ctx).unwrap(), ValidationResult::Pass);
+        assert_eq!(agent.validate_update(&ctx).unwrap(), ValidationResult::Pass);
+    }
+}
+
+#[cfg(test)]
+mod account_reader_tests {
+    use {
+        super::*,
+        crate::{
+            plugins::{
+                test_ctx::{asset_bytes, collection_bytes, FakeAccount},
+                Attributes, FreezeDelegate, UpdateDelegate,
+            },
+            state::CollectionV1,
+        },
+    };
+
+    fn core_err<T>(result: Result<T, ProgramError>) -> MplCoreError {
+        match result {
+            Err(ProgramError::Custom(code)) => {
+                num_traits::FromPrimitive::from_u32(code).expect("an MplCoreError code")
+            }
+            Err(other) => panic!("expected a custom program error, got {other:?}"),
+            Ok(_) => panic!("expected an error"),
+        }
+    }
+
+    fn plugins() -> Vec<(Plugin, Authority)> {
+        vec![
+            (
+                Plugin::Attributes(Attributes {
+                    attribute_list: vec![],
+                }),
+                Authority::UpdateAuthority,
+            ),
+            (
+                Plugin::UpdateDelegate(UpdateDelegate {
+                    additional_delegates: vec![],
+                }),
+                Authority::UpdateAuthority,
+            ),
+        ]
+    }
+
+    /// `assert_plugins_initialized` and `fetch_plugins` have no callers in the
+    /// program (roadmap section 11, class D); these keep them honest.
+    #[test]
+    fn assert_plugins_initialized_and_fetch_plugins() {
+        let owner = Pubkey::new_unique();
+
+        let mut bare = FakeAccount::with_data(asset_bytes(owner, &[]));
+        let bare_info = bare.info();
+        assert_eq!(
+            core_err(assert_plugins_initialized(&bare_info)),
+            MplCoreError::PluginsNotInitialized
+        );
+        assert_eq!(
+            core_err(fetch_plugins(&bare_info)),
+            MplCoreError::PluginNotFound
+        );
+
+        let mut with_plugins = FakeAccount::with_data(asset_bytes(owner, &plugins()));
+        let info = with_plugins.info();
+        assert!(assert_plugins_initialized(&info).is_ok());
+        let records = fetch_plugins(&info).unwrap();
+        assert_eq!(
+            records
+                .iter()
+                .map(|record| record.plugin_type)
+                .collect::<Vec<_>>(),
+            vec![PluginType::Attributes, PluginType::UpdateDelegate]
+        );
+    }
+
+    #[test]
+    fn fetch_plugin_reads_the_inner_value_and_its_authority() {
+        let owner = Pubkey::new_unique();
+        let mut account = FakeAccount::with_data(collection_bytes(owner, &plugins()));
+        let info = account.info();
+
+        let (authority, delegate, offset) =
+            fetch_plugin::<CollectionV1, UpdateDelegate>(&info, PluginType::UpdateDelegate)
+                .unwrap();
+        assert_eq!(authority, Authority::UpdateAuthority);
+        assert_eq!(delegate.additional_delegates, Vec::<Pubkey>::new());
+        assert!(offset > 0);
+
+        // A type that is not in the registry.
+        assert_eq!(
+            core_err(fetch_plugin::<CollectionV1, FreezeDelegate>(
+                &info,
+                PluginType::FreezeDelegate
+            )),
+            MplCoreError::PluginNotFound
+        );
+
+        // A bare account has no header at all.
+        let mut bare = FakeAccount::with_data(collection_bytes(owner, &[]));
+        let bare_info = bare.info();
+        assert_eq!(
+            core_err(fetch_plugin::<CollectionV1, UpdateDelegate>(
+                &bare_info,
+                PluginType::UpdateDelegate
+            )),
+            MplCoreError::PluginNotFound
+        );
+        assert_eq!(
+            core_err(list_plugins::<CollectionV1>(&bare_info)),
+            MplCoreError::PluginNotFound
+        );
+
+        assert_eq!(
+            list_plugins::<CollectionV1>(&info).unwrap(),
+            vec![PluginType::Attributes, PluginType::UpdateDelegate]
+        );
+    }
+}

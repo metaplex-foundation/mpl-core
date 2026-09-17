@@ -767,3 +767,78 @@ pub fn revoke_collection_plugin_authority_v1(
     }
     .instruction(RevokeCollectionPluginAuthorityV1InstructionArgs { plugin_type })
 }
+// --- added for m2 ---
+// ---------------------------------------------------------------------------
+
+/// `UpdateCollectionExternalPluginAdapterV1`.
+pub fn update_collection_external_plugin_adapter_v1(
+    collection: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    log_wrapper: Option<Pubkey>,
+    key: ExternalPluginAdapterKey,
+    update_info: ExternalPluginAdapterUpdateInfo,
+) -> Instruction {
+    mpl_core::instructions::UpdateCollectionExternalPluginAdapterV1 {
+        collection,
+        payer,
+        authority,
+        system_program: system_program::ID,
+        log_wrapper,
+    }
+    .instruction(
+        mpl_core::instructions::UpdateCollectionExternalPluginAdapterV1InstructionArgs {
+            key,
+            update_info,
+        },
+    )
+}
+
+/// `RemoveCollectionExternalPluginAdapterV1`.
+pub fn remove_collection_external_plugin_adapter_v1(
+    collection: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    log_wrapper: Option<Pubkey>,
+    key: ExternalPluginAdapterKey,
+) -> Instruction {
+    mpl_core::instructions::RemoveCollectionExternalPluginAdapterV1 {
+        collection,
+        payer,
+        authority,
+        system_program: system_program::ID,
+        log_wrapper,
+    }
+    .instruction(
+        mpl_core::instructions::RemoveCollectionExternalPluginAdapterV1InstructionArgs { key },
+    )
+}
+
+/// `WriteCollectionExternalPluginAdapterDataV1`. Pass either inline `data` or
+/// a `buffer` account.
+pub fn write_collection_external_plugin_adapter_data_v1(
+    collection: Pubkey,
+    payer: Pubkey,
+    authority: Option<Pubkey>,
+    buffer: Option<Pubkey>,
+    log_wrapper: Option<Pubkey>,
+    key: ExternalPluginAdapterKey,
+    data: Option<Vec<u8>>,
+) -> Instruction {
+    mpl_core::instructions::WriteCollectionExternalPluginAdapterDataV1 {
+        collection,
+        payer,
+        authority,
+        buffer,
+        system_program: system_program::ID,
+        log_wrapper,
+    }
+    .instruction(
+        mpl_core::instructions::WriteCollectionExternalPluginAdapterDataV1InstructionArgs {
+            key,
+            data,
+        },
+    )
+}
+
+// --- end m2 ---

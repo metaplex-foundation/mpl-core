@@ -20,3 +20,7 @@ mod create;
 mod plugin_management;
 mod update;
 // --- end m1 ---
+// --- m2 ---
+mod external_plugins;
+mod plugins_internal;
+// --- end m2 ---

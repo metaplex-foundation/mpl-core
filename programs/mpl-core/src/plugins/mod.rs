@@ -4,6 +4,8 @@ mod internal;
 mod lifecycle;
 mod plugin_header;
 mod plugin_registry;
+#[cfg(test)]
+pub(crate) mod test_ctx;
 mod utils;
 
 pub use external::*;
