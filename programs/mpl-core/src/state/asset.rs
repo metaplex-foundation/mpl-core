@@ -462,4 +462,491 @@ mod tests {
             assert_eq!(serialized.len(), asset.len());
         }
     }
+
+    use crate::{
+        plugins::{Attributes, FreezeDelegate},
+        state::CollectionV1,
+        utils::test_account::TestAccount,
+    };
+
+    fn asset(owner: Pubkey, update_authority: UpdateAuthority) -> AssetV1 {
+        AssetV1::new(
+            owner,
+            update_authority,
+            "name".to_string(),
+            "uri".to_string(),
+        )
+    }
+
+    /// An owner-managed plugin.
+    fn owner_managed() -> Plugin {
+        Plugin::FreezeDelegate(FreezeDelegate { frozen: false })
+    }
+
+    /// An authority-managed plugin.
+    fn ua_managed() -> Plugin {
+        Plugin::Attributes(Attributes::new())
+    }
+
+    fn invalid_plugin() -> ProgramError {
+        MplCoreError::InvalidPlugin.into()
+    }
+
+    type Validator = fn(
+        &AssetV1,
+        &AccountInfo,
+        Option<&Plugin>,
+        Option<&ExternalPluginAdapter>,
+    ) -> Result<ValidationResult, ProgramError>;
+
+    // ---------------------------------------------------------------------
+    // `increment_seq_and_save`
+    // ---------------------------------------------------------------------
+
+    /// `seq` is only ever `Some(_)` on an asset rebuilt from a compression
+    /// proof, so this branch has no on-chain producer today.
+    #[test]
+    fn increment_seq_and_save_bumps_and_persists_a_some_seq() {
+        let mut asset = asset(Pubkey::new_unique(), UpdateAuthority::None);
+        asset.seq = Some(3);
+        let mut account = TestAccount::owned(vec![0; borsh::to_vec(&asset).unwrap().len()]);
+
+        {
+            let info = account.info();
+            assert_eq!(asset.increment_seq_and_save(&info), Ok(()));
+        }
+
+        assert_eq!(asset.seq, Some(4));
+        let stored = AssetV1::try_from_slice(account.data()).unwrap();
+        assert_eq!(stored, asset);
+    }
+
+    #[test]
+    fn increment_seq_and_save_saturates_at_u64_max() {
+        let mut asset = asset(Pubkey::new_unique(), UpdateAuthority::None);
+        asset.seq = Some(u64::MAX);
+        let mut account = TestAccount::owned(vec![0; borsh::to_vec(&asset).unwrap().len()]);
+
+        {
+            let info = account.info();
+            assert_eq!(asset.increment_seq_and_save(&info), Ok(()));
+        }
+
+        assert_eq!(asset.seq, Some(u64::MAX));
+    }
+
+    /// With `seq: None` nothing is written at all, which is why the common
+    /// path can be handed an account it must not touch.
+    #[test]
+    fn increment_seq_and_save_is_a_no_op_for_a_none_seq() {
+        let mut asset = asset(Pubkey::new_unique(), UpdateAuthority::None);
+        let mut account = TestAccount::owned(vec![0; borsh::to_vec(&asset).unwrap().len()]);
+
+        {
+            let info = account.info();
+            assert_eq!(asset.increment_seq_and_save(&info), Ok(()));
+        }
+
+        assert_eq!(asset.seq, None);
+        assert!(account.data().iter().all(|byte| *byte == 0));
+    }
+
+    // ---------------------------------------------------------------------
+    // `From<CompressionProof>` and `CoreAsset`
+    // ---------------------------------------------------------------------
+
+    /// The rebuilt asset always carries the proof's `seq` as `Some(_)`, never
+    /// the `None` an on-chain asset has.
+    #[test]
+    fn from_compression_proof_sets_key_and_seq() {
+        let original = asset(
+            Pubkey::new_unique(),
+            UpdateAuthority::Address(Pubkey::new_unique()),
+        );
+        let proof = CompressionProof::new(original.clone(), 9, vec![]);
+
+        let rebuilt = AssetV1::from(proof);
+        assert_eq!(rebuilt.key, Key::AssetV1);
+        assert_eq!(rebuilt.seq, Some(9));
+        assert_eq!(
+            rebuilt,
+            AssetV1 {
+                seq: Some(9),
+                ..original
+            }
+        );
+    }
+
+    /// Reachable only through `assert_authority`, which has no callers
+    /// (roadmap section 13, finding 4).
+    #[test]
+    fn core_asset_impl_returns_the_stored_roles() {
+        let owner = Pubkey::new_unique();
+        let update_authority = Pubkey::new_unique();
+        let asset = asset(owner, UpdateAuthority::Address(update_authority));
+
+        assert_eq!(asset.owner(), &owner);
+        assert_eq!(
+            CoreAsset::update_authority(&asset),
+            UpdateAuthority::Address(update_authority)
+        );
+
+        let collection_asset = asset_in_collection(owner, update_authority);
+        assert_eq!(
+            CoreAsset::update_authority(&collection_asset),
+            UpdateAuthority::Collection(update_authority)
+        );
+        assert_eq!(
+            CoreAsset::update_authority(&collection_asset).key(),
+            CollectionV1::new(update_authority, String::new(), String::new(), 0, 0)
+                .update_authority
+        );
+    }
+
+    fn asset_in_collection(owner: Pubkey, collection: Pubkey) -> AssetV1 {
+        asset(owner, UpdateAuthority::Collection(collection))
+    }
+
+    // ---------------------------------------------------------------------
+    // `check_*` matrix. A `None` check means `validate_asset_permissions`
+    // never calls the matching validator.
+    // ---------------------------------------------------------------------
+
+    #[test]
+    fn check_matrix() {
+        assert_eq!(AssetV1::check_create(), CheckResult::CanApprove);
+        assert_eq!(AssetV1::check_add_plugin(), CheckResult::CanApprove);
+        assert_eq!(AssetV1::check_remove_plugin(), CheckResult::CanApprove);
+        assert_eq!(
+            AssetV1::check_approve_plugin_authority(),
+            CheckResult::CanApprove
+        );
+        assert_eq!(
+            AssetV1::check_revoke_plugin_authority(),
+            CheckResult::CanApprove
+        );
+        assert_eq!(AssetV1::check_transfer(), CheckResult::CanApprove);
+        assert_eq!(AssetV1::check_burn(), CheckResult::CanApprove);
+        assert_eq!(AssetV1::check_update(), CheckResult::CanApprove);
+        assert_eq!(AssetV1::check_compress(), CheckResult::CanApprove);
+        assert_eq!(AssetV1::check_decompress(), CheckResult::CanApprove);
+        assert_eq!(
+            AssetV1::check_add_external_plugin_adapter(),
+            CheckResult::CanApprove
+        );
+        assert_eq!(
+            AssetV1::check_remove_external_plugin_adapter(),
+            CheckResult::CanApprove
+        );
+        assert_eq!(AssetV1::check_execute(), CheckResult::CanApprove);
+
+        // `None` => the paired validator is never reached.
+        assert_eq!(AssetV1::check_update_plugin(), CheckResult::None);
+        assert_eq!(
+            AssetV1::check_update_external_plugin_adapter(),
+            CheckResult::None
+        );
+    }
+
+    // ---------------------------------------------------------------------
+    // `validate_*`
+    // ---------------------------------------------------------------------
+
+    /// An asset in a collection defers the create decision to the collection.
+    #[test]
+    fn validate_create_abstains_only_for_a_collection_authority() {
+        let owner = Pubkey::new_unique();
+        let mut signer = TestAccount::stranger();
+
+        for update_authority in [
+            UpdateAuthority::None,
+            UpdateAuthority::Address(Pubkey::new_unique()),
+        ] {
+            assert_eq!(
+                asset(owner, update_authority).validate_create(&signer.info(), None, None),
+                Ok(ValidationResult::Approved)
+            );
+        }
+
+        assert_eq!(
+            asset_in_collection(owner, Pubkey::new_unique()).validate_create(
+                &signer.info(),
+                None,
+                None
+            ),
+            Ok(ValidationResult::Pass)
+        );
+    }
+
+    /// The owner may add owner-managed plugins and the update authority may add
+    /// authority-managed ones; crossing the two abstains, and an asset in a
+    /// collection abstains either way so the collection decides.
+    #[test]
+    fn validate_add_and_remove_plugin_matrix() {
+        let owner = Pubkey::new_unique();
+        let update_authority = Pubkey::new_unique();
+        let asset = asset(owner, UpdateAuthority::Address(update_authority));
+        let collection_asset = asset_in_collection(owner, update_authority);
+
+        let validators: [Validator; 2] = [
+            AssetV1::validate_add_plugin,
+            AssetV1::validate_remove_plugin,
+        ];
+
+        for validate in validators {
+            let mut signer = TestAccount::signer(owner);
+            assert_eq!(
+                validate(&asset, &signer.info(), Some(&owner_managed()), None),
+                Ok(ValidationResult::Approved)
+            );
+
+            let mut signer = TestAccount::signer(update_authority);
+            assert_eq!(
+                validate(&asset, &signer.info(), Some(&ua_managed()), None),
+                Ok(ValidationResult::Approved)
+            );
+
+            // Owner cannot touch an authority-managed plugin...
+            let mut signer = TestAccount::signer(owner);
+            assert_eq!(
+                validate(&asset, &signer.info(), Some(&ua_managed()), None),
+                Ok(ValidationResult::Pass)
+            );
+
+            // ...nor the update authority an owner-managed one.
+            let mut signer = TestAccount::signer(update_authority);
+            assert_eq!(
+                validate(&asset, &signer.info(), Some(&owner_managed()), None),
+                Ok(ValidationResult::Pass)
+            );
+
+            let mut signer = TestAccount::stranger();
+            assert_eq!(
+                validate(&asset, &signer.info(), Some(&owner_managed()), None),
+                Ok(ValidationResult::Pass)
+            );
+
+            // In a collection the asset abstains on the UA-managed plugin even
+            // for the collection address, leaving the decision to the
+            // collection's own validator.
+            let mut signer = TestAccount::signer(update_authority);
+            assert_eq!(
+                validate(&collection_asset, &signer.info(), Some(&ua_managed()), None),
+                Ok(ValidationResult::Pass)
+            );
+
+            // The owner keeps control of owner-managed plugins in a collection.
+            let mut signer = TestAccount::signer(owner);
+            assert_eq!(
+                validate(
+                    &collection_asset,
+                    &signer.info(),
+                    Some(&owner_managed()),
+                    None
+                ),
+                Ok(ValidationResult::Approved)
+            );
+
+            // No processor passes `None`; the arm errors rather than abstains.
+            let mut signer = TestAccount::signer(owner);
+            assert_eq!(
+                validate(&asset, &signer.info(), None, None),
+                Err(invalid_plugin())
+            );
+        }
+    }
+
+    /// Approve and revoke use the same authority matrix as add/remove, but a
+    /// missing plugin abstains here instead of erroring.
+    #[test]
+    fn validate_approve_and_revoke_plugin_authority_matrix() {
+        let owner = Pubkey::new_unique();
+        let update_authority = Pubkey::new_unique();
+        let asset = asset(owner, UpdateAuthority::Address(update_authority));
+
+        let validators: [Validator; 2] = [
+            AssetV1::validate_approve_plugin_authority,
+            AssetV1::validate_revoke_plugin_authority,
+        ];
+
+        for validate in validators {
+            let mut signer = TestAccount::signer(owner);
+            assert_eq!(
+                validate(&asset, &signer.info(), Some(&owner_managed()), None),
+                Ok(ValidationResult::Approved)
+            );
+
+            let mut signer = TestAccount::signer(update_authority);
+            assert_eq!(
+                validate(&asset, &signer.info(), Some(&ua_managed()), None),
+                Ok(ValidationResult::Approved)
+            );
+
+            let mut signer = TestAccount::signer(owner);
+            assert_eq!(
+                validate(&asset, &signer.info(), Some(&ua_managed()), None),
+                Ok(ValidationResult::Pass)
+            );
+
+            let mut signer = TestAccount::stranger();
+            assert_eq!(
+                validate(&asset, &signer.info(), Some(&owner_managed()), None),
+                Ok(ValidationResult::Pass)
+            );
+
+            let mut signer = TestAccount::signer(owner);
+            assert_eq!(
+                validate(&asset, &signer.info(), None, None),
+                Ok(ValidationResult::Pass)
+            );
+        }
+    }
+
+    /// Burn, transfer, compress, decompress and execute all approve exactly the
+    /// owner and abstain for everybody else; abstention becomes `NoApprovals`
+    /// unless a plugin approves.
+    #[test]
+    fn owner_gated_validators() {
+        let owner = Pubkey::new_unique();
+        let update_authority = Pubkey::new_unique();
+        let asset = asset(owner, UpdateAuthority::Address(update_authority));
+
+        let validators: [Validator; 5] = [
+            AssetV1::validate_burn,
+            AssetV1::validate_transfer,
+            AssetV1::validate_compress,
+            AssetV1::validate_decompress,
+            AssetV1::validate_execute,
+        ];
+
+        for validate in validators {
+            let mut signer = TestAccount::signer(owner);
+            assert_eq!(
+                validate(&asset, &signer.info(), None, None),
+                Ok(ValidationResult::Approved)
+            );
+
+            // Not even the update authority.
+            let mut signer = TestAccount::signer(update_authority);
+            assert_eq!(
+                validate(&asset, &signer.info(), None, None),
+                Ok(ValidationResult::Pass)
+            );
+
+            let mut signer = TestAccount::stranger();
+            assert_eq!(
+                validate(&asset, &signer.info(), None, None),
+                Ok(ValidationResult::Pass)
+            );
+        }
+    }
+
+    /// `validate_update` compares the signer against `update_authority.key()`.
+    /// For `UpdateAuthority::None` that is the system program id, so the arm is
+    /// safe only because the system program cannot sign (roadmap section 13,
+    /// note 9). For `Collection(c)` it is the collection address, so an update
+    /// signed by the collection *account address* would be approved by the
+    /// asset itself.
+    #[test]
+    fn validate_update_compares_against_update_authority_key() {
+        let owner = Pubkey::new_unique();
+        let update_authority = Pubkey::new_unique();
+
+        let addressed = asset(owner, UpdateAuthority::Address(update_authority));
+        let mut signer = TestAccount::signer(update_authority);
+        assert_eq!(
+            addressed.validate_update(&signer.info(), None, None),
+            Ok(ValidationResult::Approved)
+        );
+        let mut signer = TestAccount::signer(owner);
+        assert_eq!(
+            addressed.validate_update(&signer.info(), None, None),
+            Ok(ValidationResult::Pass)
+        );
+
+        let collection = Pubkey::new_unique();
+        let collection_asset = asset_in_collection(owner, collection);
+        let mut signer = TestAccount::signer(collection);
+        assert_eq!(
+            collection_asset.validate_update(&signer.info(), None, None),
+            Ok(ValidationResult::Approved)
+        );
+
+        let immutable = asset(owner, UpdateAuthority::None);
+        let mut signer = TestAccount::signer(solana_system_interface::program::ID);
+        assert_eq!(
+            immutable.validate_update(&signer.info(), None, None),
+            Ok(ValidationResult::Approved)
+        );
+        let mut signer = TestAccount::stranger();
+        assert_eq!(
+            immutable.validate_update(&signer.info(), None, None),
+            Ok(ValidationResult::Pass)
+        );
+    }
+
+    /// External adapters may be added or removed only by an `Address` update
+    /// authority; an asset in a collection always abstains so the collection
+    /// decides.
+    #[test]
+    fn validate_external_adapter_ops_require_an_address_update_authority() {
+        let owner = Pubkey::new_unique();
+        let update_authority = Pubkey::new_unique();
+        let asset = asset(owner, UpdateAuthority::Address(update_authority));
+
+        let validators: [Validator; 2] = [
+            AssetV1::validate_add_external_plugin_adapter,
+            AssetV1::validate_remove_external_plugin_adapter,
+        ];
+
+        for validate in validators {
+            let mut signer = TestAccount::signer(update_authority);
+            assert_eq!(
+                validate(&asset, &signer.info(), None, None),
+                Ok(ValidationResult::Approved)
+            );
+
+            let mut signer = TestAccount::signer(owner);
+            assert_eq!(
+                validate(&asset, &signer.info(), None, None),
+                Ok(ValidationResult::Pass)
+            );
+
+            let collection = Pubkey::new_unique();
+            let mut signer = TestAccount::signer(collection);
+            assert_eq!(
+                validate(
+                    &asset_in_collection(owner, collection),
+                    &signer.info(),
+                    None,
+                    None
+                ),
+                Ok(ValidationResult::Pass)
+            );
+        }
+    }
+
+    /// Both of these are dead: their paired `check_*` returns
+    /// `CheckResult::None`, so `validate_asset_permissions` never calls them
+    /// (roadmap section 13, finding 4).
+    #[test]
+    fn dead_validators_always_abstain() {
+        let owner = Pubkey::new_unique();
+        let update_authority = Pubkey::new_unique();
+        let asset = asset(owner, UpdateAuthority::Address(update_authority));
+
+        for key in [owner, update_authority, Pubkey::new_unique()] {
+            let mut signer = TestAccount::signer(key);
+            assert_eq!(
+                asset.validate_update_plugin(&signer.info(), Some(&ua_managed()), None),
+                Ok(ValidationResult::Pass)
+            );
+
+            let mut signer = TestAccount::signer(key);
+            assert_eq!(
+                asset.validate_update_external_plugin_adapter(&signer.info(), None, None),
+                Ok(ValidationResult::Pass)
+            );
+        }
+    }
 }

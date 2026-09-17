@@ -67,6 +67,24 @@ The thresholds ratchet:
 - **Raise them with your PR when the headroom exceeds 2 points.** The script prints `ratchet: <metric> coverage is X%, more than 2 points above the Y% threshold; bump coverage-thresholds.json` for any metric in that state; a PR that leaves that warning in place should be asked to bump the file.
 - **Lowering a value needs a reviewer-approved note** in [programs/mpl-core/COVERAGE_EXCLUSIONS.md](programs/mpl-core/COVERAGE_EXCLUSIONS.md), the file that records every accepted exclusion (`file:line(s) | symbol | reason | reviewer | date`) and is the only thing that separates the measured number from 100%.
 
+### What the reported percentage includes
+
+Unit tests written as `#[cfg(test)] mod` blocks inside `programs/mpl-core/src` are compiled into the
+instrumented binary like any other code, so their own lines count as covered source and lift the
+reported percentage above the program's real coverage. At the time this was written the gap is about
+1.3 points: 96.97% reported, and 95.64% (8055 of 8422 lines) counting only the lines that existed
+before those test modules were added.
+
+The gate measures the reported number, which is consistent as long as everyone reads it the same way.
+Two consequences worth knowing:
+
+- Adding in-crate unit tests raises the reported number by itself. When a PR's gain comes mostly from
+  new `#[cfg(test)]` code rather than from newly exercised program code, say so in the description.
+- If the gap ever grows enough to matter, the fix is to move the in-crate tests into sibling
+  `src/**/tests.rs` files included with `#[cfg(test)] #[path = "tests.rs"] mod tests;` and add that
+  path to `IGNORE_REGEX` in `configs/scripts/program/coverage.sh`, which excludes them from the report
+  without changing where the tests live logically.
+
 ### Native execution and the fast loop
 
 Mollusk normally executes the compiled SBF ELF inside the SVM, which coverage instrumentation cannot observe. To make the Mollusk tests count, `cargo llvm-cov` sets `cfg(coverage)`, and the shared harness in `programs/mpl-core/tests/common` then registers the host-compiled program with Mollusk as a native builtin instead of loading the `.so`. The instruction accounts are still serialized with the SBF ABI, CPIs and sysvars go through the runtime, and account changes are committed back the way the BPF loader does it, so the same test code runs in both modes. The harness only changes _how_ the program is executed, not what the tests assert.
