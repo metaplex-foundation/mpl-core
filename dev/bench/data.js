@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791301014822,
+  "lastUpdate": 1791319124273,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -11755,6 +11755,120 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/metaplex-foundation/mpl-core/commit/05e3e60bd921088984d64377b1546b2222839a54"
         },
         "date": 1791301014039,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 7716,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 16598,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 26429,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 31882,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 20269,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 25146,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 25177,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 33191,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 24294,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 35962,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 3958,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 5684,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 7271,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 8997,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "90809591+blockiosaurus@users.noreply.github.com",
+            "name": "blockiosaurus",
+            "username": "blockiosaurus"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8c5cee35199a7d103e181de7b13f2e20b1e20103",
+          "message": "Fix VerifiedCreators collection plugin blocking asset lifecycle events (#302)\n\nWhen a collection carries the VerifiedCreators plugin, its validation was\nrun for every asset created in, or plugin added/updated on, that\ncollection, and treated the collection's own creator list as if it were\nthe new data being written. Any verified creator who was not the signer\nthen caused a MissingSigner rejection, so e.g. a printing program (or an\nupdate delegate) could not mint editions into a Master Edition collection\nwith verified creators.\n\nDistinguish the self check from the inherited collection check: when the\nplugin lives on the collection and an asset is the lifecycle target, the\ncollection's creators are untouched, so abstain. Collection-level events\n(create collection, add/update the plugin on the collection itself) still\nvalidate as before, as does an asset's own VerifiedCreators plugin.\n\nAdds unit tests for the self vs. inherited paths and a JS test suite for\nthe plugin on collections, including printing into a Master Edition\ncollection as an update delegate.\n\n\nClaude-Session: https://claude.ai/code/session_01SxijCjapV4BwPTNVBJrsQW\n\nCo-authored-by: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-10-06T16:33:47-04:00",
+          "tree_id": "578bd3c99c555a695db4a8c035805fc19cfba35b",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/8c5cee35199a7d103e181de7b13f2e20b1e20103"
+        },
+        "date": 1791319123707,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
