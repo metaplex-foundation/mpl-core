@@ -8,7 +8,7 @@ use crate::error::MplCoreError;
 use crate::plugins::{
     abstain, Plugin, PluginValidation, PluginValidationContext, ValidationResult,
 };
-use crate::state::DataBlob;
+use crate::state::{DataBlob, Key};
 
 /// The creator on an asset and whether or not they are verified.
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Hash)]
@@ -174,11 +174,28 @@ fn validate_verified_creators_as_plugin_authority(
     abstain!()
 }
 
+/// Returns `true` when the plugin being validated lives on a parent collection while the
+/// lifecycle event targets an asset inside that collection (`self_key == CollectionV1` with an
+/// asset present). Collection plugins are checked for every asset lifecycle event, but the
+/// collection's own creator list is not what is being created or modified in that case, so it
+/// must not be validated as if it were the new or target data. Collection-level events
+/// (creating the collection, or adding/updating the plugin on the collection itself) have no
+/// asset in the context and are still validated normally.
+fn is_inherited_from_collection(ctx: &PluginValidationContext) -> bool {
+    ctx.self_key == Key::CollectionV1 && ctx.asset_info.is_some()
+}
+
 impl PluginValidation for VerifiedCreators {
     fn validate_create(
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        if is_inherited_from_collection(ctx) {
+            // An asset is being created inside the collection; the collection's verified
+            // creators are untouched and nothing needs to be signed for.
+            return abstain!();
+        }
+
         validate_verified_creators_as_plugin_authority(self, None, ctx.authority_info.key)
     }
 
@@ -186,6 +203,12 @@ impl PluginValidation for VerifiedCreators {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        if is_inherited_from_collection(ctx) {
+            // A plugin is being added to an asset in the collection; the collection's
+            // verified creators are not affected.
+            return abstain!();
+        }
+
         match ctx.target_plugin {
             Some(Plugin::VerifiedCreators(_verified_creators)) => {
                 validate_verified_creators_as_plugin_authority(self, None, ctx.authority_info.key)
@@ -198,6 +221,12 @@ impl PluginValidation for VerifiedCreators {
         &self,
         ctx: &PluginValidationContext,
     ) -> Result<ValidationResult, ProgramError> {
+        if is_inherited_from_collection(ctx) {
+            // A plugin is being updated on an asset in the collection. The asset's own
+            // VerifiedCreators plugin (if any) validates the change against its own data.
+            return abstain!();
+        }
+
         let resolved_authorities = ctx
             .resolved_authorities
             .ok_or(MplCoreError::InvalidAuthority)?;
@@ -227,6 +256,8 @@ impl PluginValidation for VerifiedCreators {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::Authority;
+    use solana_program::account_info::AccountInfo;
 
     #[test]
     fn test_verified_creators_signature_len() {
@@ -261,6 +292,263 @@ mod tests {
         };
         let serialized = borsh::to_vec(&verified_creators).unwrap();
         assert_eq!(serialized.len(), verified_creators.len());
+    }
+
+    /// Everything needed to build a `PluginValidationContext` for a plugin that lives on
+    /// `self_key`, validated by `authority`, optionally with an asset as the lifecycle target.
+    struct TestAccounts {
+        authority_key: Pubkey,
+        asset_key: Pubkey,
+        collection_key: Pubkey,
+        owner: Pubkey,
+        lamports: [u64; 3],
+        data: [[u8; 0]; 3],
+    }
+
+    impl TestAccounts {
+        fn new(authority_key: Pubkey) -> Self {
+            Self {
+                authority_key,
+                asset_key: Pubkey::new_unique(),
+                collection_key: Pubkey::new_unique(),
+                owner: crate::ID,
+                lamports: [0; 3],
+                data: [[]; 3],
+            }
+        }
+
+        fn infos(&mut self) -> (AccountInfo<'_>, AccountInfo<'_>, AccountInfo<'_>) {
+            let [l0, l1, l2] = &mut self.lamports;
+            let [d0, d1, d2] = &mut self.data;
+            (
+                AccountInfo::new(&self.authority_key, true, false, l0, d0, &self.owner, false),
+                AccountInfo::new(&self.asset_key, false, true, l1, d1, &self.owner, false),
+                AccountInfo::new(
+                    &self.collection_key,
+                    false,
+                    true,
+                    l2,
+                    d2,
+                    &self.owner,
+                    false,
+                ),
+            )
+        }
+    }
+
+    fn context<'a, 'b>(
+        authority_info: &'a AccountInfo<'a>,
+        asset_info: Option<&'a AccountInfo<'a>>,
+        collection_info: Option<&'a AccountInfo<'a>>,
+        self_key: Key,
+        self_authority: &'b Authority,
+        resolved_authorities: Option<&'b [Authority]>,
+        target_plugin: Option<&'b Plugin>,
+    ) -> PluginValidationContext<'a, 'b> {
+        PluginValidationContext {
+            accounts: &[],
+            asset_info,
+            collection_info,
+            self_key,
+            self_authority,
+            authority_info,
+            resolved_authorities,
+            new_owner: None,
+            new_asset_authority: None,
+            new_collection_authority: None,
+            target_plugin,
+            target_plugin_authority: None,
+            target_external_plugin: None,
+            target_external_plugin_authority: None,
+        }
+    }
+
+    fn verified_creators(signatures: &[(Pubkey, bool)]) -> VerifiedCreators {
+        VerifiedCreators {
+            signatures: signatures
+                .iter()
+                .map(|(address, verified)| VerifiedCreatorsSignature {
+                    address: *address,
+                    verified: *verified,
+                })
+                .collect(),
+        }
+    }
+
+    #[test]
+    fn test_create_asset_in_collection_ignores_collection_verified_creators() {
+        // The collection has a verified creator that is not the signer creating the asset.
+        let creator = Pubkey::new_unique();
+        let mut accounts = TestAccounts::new(Pubkey::new_unique());
+        let (authority, asset, collection) = accounts.infos();
+        let plugin = verified_creators(&[(creator, true)]);
+        let self_authority = Authority::UpdateAuthority;
+
+        let ctx = context(
+            &authority,
+            Some(&asset),
+            Some(&collection),
+            Key::CollectionV1,
+            &self_authority,
+            Some(&[Authority::UpdateAuthority]),
+            None,
+        );
+
+        assert_eq!(plugin.validate_create(&ctx), Ok(ValidationResult::Pass));
+    }
+
+    #[test]
+    fn test_create_asset_still_validates_own_verified_creators() {
+        // Same creator list, but now it is the asset's own plugin being created.
+        let creator = Pubkey::new_unique();
+        let mut accounts = TestAccounts::new(Pubkey::new_unique());
+        let (authority, asset, collection) = accounts.infos();
+        let plugin = verified_creators(&[(creator, true)]);
+        let self_authority = Authority::UpdateAuthority;
+
+        let ctx = context(
+            &authority,
+            Some(&asset),
+            Some(&collection),
+            Key::AssetV1,
+            &self_authority,
+            None,
+            None,
+        );
+
+        assert_eq!(
+            plugin.validate_create(&ctx),
+            Err(MplCoreError::MissingSigner.into())
+        );
+    }
+
+    #[test]
+    fn test_create_collection_still_validates_verified_creators() {
+        // Creating the collection itself: no asset in the context, so the plugin is the
+        // collection's own and must still be validated.
+        let creator = Pubkey::new_unique();
+        let mut accounts = TestAccounts::new(Pubkey::new_unique());
+        let (authority, _asset, collection) = accounts.infos();
+        let plugin = verified_creators(&[(creator, true)]);
+        let self_authority = Authority::UpdateAuthority;
+
+        let ctx = context(
+            &authority,
+            None,
+            Some(&collection),
+            Key::CollectionV1,
+            &self_authority,
+            None,
+            None,
+        );
+
+        assert_eq!(
+            plugin.validate_create(&ctx),
+            Err(MplCoreError::MissingSigner.into())
+        );
+    }
+
+    #[test]
+    fn test_add_plugin_to_asset_in_collection_ignores_collection_verified_creators() {
+        let creator = Pubkey::new_unique();
+        let mut accounts = TestAccounts::new(Pubkey::new_unique());
+        let (authority, asset, collection) = accounts.infos();
+        let collection_plugin = verified_creators(&[(creator, true)]);
+        let target = Plugin::VerifiedCreators(verified_creators(&[(*authority.key, true)]));
+        let self_authority = Authority::UpdateAuthority;
+
+        let ctx = context(
+            &authority,
+            Some(&asset),
+            Some(&collection),
+            Key::CollectionV1,
+            &self_authority,
+            Some(&[Authority::UpdateAuthority]),
+            Some(&target),
+        );
+
+        assert_eq!(
+            collection_plugin.validate_add_plugin(&ctx),
+            Ok(ValidationResult::Pass)
+        );
+    }
+
+    #[test]
+    fn test_add_plugin_to_collection_still_validates_verified_creators() {
+        let creator = Pubkey::new_unique();
+        let mut accounts = TestAccounts::new(Pubkey::new_unique());
+        let (authority, _asset, collection) = accounts.infos();
+        let plugin = verified_creators(&[(creator, true)]);
+        let target = Plugin::VerifiedCreators(plugin.clone());
+        let self_authority = Authority::UpdateAuthority;
+
+        let ctx = context(
+            &authority,
+            None,
+            Some(&collection),
+            Key::CollectionV1,
+            &self_authority,
+            None,
+            Some(&target),
+        );
+
+        assert_eq!(
+            plugin.validate_add_plugin(&ctx),
+            Err(MplCoreError::MissingSigner.into())
+        );
+    }
+
+    #[test]
+    fn test_update_plugin_on_asset_in_collection_ignores_collection_verified_creators() {
+        // The asset's creator list differs entirely from the collection's; the collection
+        // plugin must not treat that as unauthorized additions/removals.
+        let creator = Pubkey::new_unique();
+        let mut accounts = TestAccounts::new(Pubkey::new_unique());
+        let (authority, asset, collection) = accounts.infos();
+        let collection_plugin = verified_creators(&[(creator, true)]);
+        let target = Plugin::VerifiedCreators(verified_creators(&[(Pubkey::new_unique(), false)]));
+        let self_authority = Authority::UpdateAuthority;
+
+        let ctx = context(
+            &authority,
+            Some(&asset),
+            Some(&collection),
+            Key::CollectionV1,
+            &self_authority,
+            Some(&[Authority::UpdateAuthority]),
+            Some(&target),
+        );
+
+        assert_eq!(
+            collection_plugin.validate_update_plugin(&ctx),
+            Ok(ValidationResult::Pass)
+        );
+    }
+
+    #[test]
+    fn test_update_plugin_on_collection_still_validates_verified_creators() {
+        let creator = Pubkey::new_unique();
+        let mut accounts = TestAccounts::new(Pubkey::new_unique());
+        let (authority, _asset, collection) = accounts.infos();
+        let plugin = verified_creators(&[(creator, true)]);
+        // The update authority tries to unverify a creator other than itself.
+        let target = Plugin::VerifiedCreators(verified_creators(&[(creator, false)]));
+        let self_authority = Authority::UpdateAuthority;
+
+        let ctx = context(
+            &authority,
+            None,
+            Some(&collection),
+            Key::CollectionV1,
+            &self_authority,
+            Some(&[Authority::UpdateAuthority]),
+            Some(&target),
+        );
+
+        assert_eq!(
+            plugin.validate_update_plugin(&ctx),
+            Err(MplCoreError::InvalidPluginOperation.into())
+        );
     }
 }
 
