@@ -17,7 +17,7 @@ use crate::{
         ExternalPluginAdapterKey, ExternalRegistryRecord, LifecycleHook, LinkedAppData,
         LinkedDataKey, LinkedLifecycleHook, PluginHeaderV1, PluginRegistryV1,
     },
-    state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount},
+    state::{AssetV1, Authority, CollectionV1, DataBlob, Key, SolanaAccount, UpdateAuthority},
     utils::{
         fetch_core_data, load_key, resolve_authority, resolve_pubkey_to_authorities,
         resolve_pubkey_to_authorities_collection,
@@ -72,6 +72,13 @@ pub(crate) fn write_external_plugin_adapter_data<'a>(
                 .accounts
                 .collection
                 .ok_or(MplCoreError::MissingCollection)?;
+            // The linked plugin lives on the collection, but the data section
+            // is written onto the asset. Require that the asset is actually a
+            // member of the supplied collection — otherwise any collection
+            // owner could write a DataSection onto an unrelated asset.
+            if asset.update_authority != UpdateAuthority::Collection(*collection.key) {
+                return Err(MplCoreError::InvalidCollection.into());
+            }
             fetch_wrapped_external_plugin_adapter::<CollectionV1>(collection, None, &args.key)
         }
         _ => return Err(MplCoreError::UnsupportedOperation.into()),

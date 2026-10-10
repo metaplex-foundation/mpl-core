@@ -841,3 +841,1067 @@ mod test {
         );
     }
 }
+
+#[cfg(test)]
+mod validation_tests {
+    use {
+        super::*,
+        crate::plugins::{
+            test_ctx::{default_ctx, FakeAccount},
+            AddBlocker, Attributes, Autograph, BubblegumV2, BurnDelegate, Edition, FreezeDelegate,
+            FreezeExecute, Groups, ImmutableMetadata, MasterEdition, PermanentBurnDelegate,
+            PermanentFreezeDelegate, PermanentFreezeExecute, PermanentTransferDelegate, Royalties,
+            RuleSet, TransferDelegate, UpdateDelegate, VerifiedCreators,
+        },
+        strum::IntoEnumIterator,
+    };
+
+    /// One value of every `Plugin` variant, in `PluginType` order.
+    fn every_plugin() -> Vec<Plugin> {
+        vec![
+            Plugin::Royalties(Royalties {
+                basis_points: 0,
+                creators: vec![],
+                rule_set: RuleSet::None,
+            }),
+            Plugin::FreezeDelegate(FreezeDelegate { frozen: false }),
+            Plugin::BurnDelegate(BurnDelegate {}),
+            Plugin::TransferDelegate(TransferDelegate {}),
+            Plugin::UpdateDelegate(UpdateDelegate {
+                additional_delegates: vec![],
+            }),
+            Plugin::PermanentFreezeDelegate(PermanentFreezeDelegate { frozen: false }),
+            Plugin::Attributes(Attributes {
+                attribute_list: vec![],
+            }),
+            Plugin::PermanentTransferDelegate(PermanentTransferDelegate {}),
+            Plugin::PermanentBurnDelegate(PermanentBurnDelegate {}),
+            Plugin::Edition(Edition { number: 0 }),
+            Plugin::MasterEdition(MasterEdition {
+                max_supply: None,
+                name: None,
+                uri: None,
+            }),
+            Plugin::AddBlocker(AddBlocker {}),
+            Plugin::ImmutableMetadata(ImmutableMetadata {}),
+            Plugin::VerifiedCreators(VerifiedCreators { signatures: vec![] }),
+            Plugin::Autograph(Autograph { signatures: vec![] }),
+            Plugin::BubblegumV2(BubblegumV2 {}),
+            Plugin::FreezeExecute(FreezeExecute { frozen: false }),
+            Plugin::PermanentFreezeExecute(PermanentFreezeExecute { frozen: false }),
+            Plugin::Groups(Groups { groups: vec![] }),
+        ]
+    }
+
+    fn core_err<T>(result: Result<T, ProgramError>) -> MplCoreError {
+        match result {
+            Err(ProgramError::Custom(code)) => {
+                num_traits::FromPrimitive::from_u32(code).expect("an MplCoreError code")
+            }
+            Err(other) => panic!("expected a custom program error, got {other:?}"),
+            Ok(_) => panic!("expected an error"),
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // External check result bitfield
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn external_check_result_bits_round_trip() {
+        for flags in 0u32..8 {
+            let result = ExternalCheckResult { flags };
+            let bits = ExternalCheckResultBits::from(result);
+            assert_eq!(bits.can_listen(), flags & 0x1 != 0);
+            assert_eq!(bits.can_approve(), flags & 0x2 != 0);
+            assert_eq!(bits.can_reject(), flags & 0x4 != 0);
+            assert_eq!(
+                ExternalCheckResult::from(bits),
+                result,
+                "flags {flags} should round trip"
+            );
+        }
+
+        // The unused 29 bits are preserved in both directions.
+        let wide = ExternalCheckResult { flags: 0xFFFF_FFFF };
+        let bits = ExternalCheckResultBits::from(wide);
+        assert_eq!(bits.empty_bits(), (1 << 29) - 1);
+        assert_eq!(ExternalCheckResult::from(bits), wide);
+
+        // The builder setters (the program never calls them).
+        let built = ExternalCheckResultBits::new()
+            .with_can_listen(true)
+            .with_can_approve(true)
+            .with_can_reject(true)
+            .with_empty_bits(0);
+        assert_eq!(
+            ExternalCheckResult::from(built),
+            ExternalCheckResult { flags: 0x7 }
+        );
+
+        // The mutating setters, including the checked ones the program never
+        // calls.
+        let mut bits = ExternalCheckResultBits::new();
+        bits.set_can_listen(true);
+        bits.set_can_approve(true);
+        bits.set_can_reject(true);
+        assert_eq!(
+            ExternalCheckResult::from(bits),
+            ExternalCheckResult { flags: 0x7 }
+        );
+        bits.set_can_listen_checked(false).unwrap();
+        bits.set_can_approve_checked(false).unwrap();
+        bits.set_can_reject_checked(false).unwrap();
+        bits.set_empty_bits_checked(1).unwrap();
+        assert_eq!(
+            ExternalCheckResult::from(bits),
+            ExternalCheckResult { flags: 0x8 }
+        );
+        assert!(
+            bits.set_empty_bits_checked(1 << 29).is_err(),
+            "a value wider than 29 bits must be refused"
+        );
+
+        assert_eq!(
+            ExternalCheckResult::none(),
+            ExternalCheckResult { flags: 0 }
+        );
+        assert_eq!(
+            ExternalCheckResult::can_reject_only(),
+            ExternalCheckResult { flags: 0x4 }
+        );
+    }
+
+    /// `CompressV1` / `DecompressV1` return `NotAvailable` before validation,
+    /// so these routers and the trait defaults behind them are dead on-chain.
+    #[test]
+    fn compress_and_decompress_routers_and_trait_defaults() {
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let authority = Authority::UpdateAuthority;
+        let ctx = default_ctx(&[], &signer_info, &authority);
+        let target = inert();
+
+        for plugin in every_plugin() {
+            assert_eq!(
+                Plugin::validate_compress(&plugin, &ctx).unwrap(),
+                ValidationResult::Pass,
+                "{:?}::validate_compress",
+                PluginType::from(&plugin)
+            );
+            assert_eq!(
+                Plugin::validate_decompress(&plugin, &ctx).unwrap(),
+                ValidationResult::Pass,
+                "{:?}::validate_decompress",
+                PluginType::from(&plugin)
+            );
+        }
+
+        // The `PluginValidation` default bodies, reached through a plugin that
+        // overrides none of them.
+        let attributes = inert();
+        let inner = attributes.inner();
+        let mut ctx_with_target = default_ctx(&[], &signer_info, &authority);
+        ctx_with_target.target_plugin = Some(&target);
+        for result in [
+            inner.validate_add_plugin(&ctx_with_target),
+            inner.validate_remove_plugin(&ctx_with_target),
+            inner.validate_approve_plugin_authority(&ctx_with_target),
+            inner.validate_revoke_plugin_authority(&ctx_with_target),
+            inner.validate_create(&ctx),
+            inner.validate_update(&ctx),
+            inner.validate_update_plugin(&ctx_with_target),
+            inner.validate_burn(&ctx),
+            inner.validate_transfer(&ctx),
+            inner.validate_compress(&ctx),
+            inner.validate_decompress(&ctx),
+            inner.validate_execute(&ctx),
+            inner.validate_add_external_plugin_adapter(&ctx),
+            inner.validate_remove_external_plugin_adapter(&ctx),
+            inner.validate_update_external_plugin_adapter(&ctx),
+        ] {
+            assert_eq!(
+                result.unwrap(),
+                ValidationResult::Pass,
+                "every PluginValidation default body abstains"
+            );
+        }
+
+        // The remaining `Plugin::validate_*` routers.
+        assert_eq!(
+            Plugin::validate_execute(&attributes, &ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(
+            Plugin::validate_add_external_plugin_adapter(&attributes, &ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(
+            Plugin::validate_remove_external_plugin_adapter(&attributes, &ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(
+            Plugin::validate_create(&attributes, &ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(
+            Plugin::validate_update(&attributes, &ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(
+            Plugin::validate_burn(&attributes, &ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(
+            Plugin::validate_add_plugin(&attributes, &ctx_with_target).unwrap(),
+            ValidationResult::Pass
+        );
+    }
+
+    #[test]
+    fn external_validation_result_maps_onto_validation_result() {
+        assert_eq!(
+            ValidationResult::from(ExternalValidationResult::Approved),
+            ValidationResult::Approved
+        );
+        assert_eq!(
+            ValidationResult::from(ExternalValidationResult::Rejected),
+            ValidationResult::Rejected
+        );
+        assert_eq!(
+            ValidationResult::from(ExternalValidationResult::Pass),
+            ValidationResult::Pass
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // Check tables
+    // -----------------------------------------------------------------------
+
+    /// Asserts that `table` returns `CanApprove` exactly for `can_approve`,
+    /// `CanReject` exactly for `can_reject`, and `default` for everything else.
+    fn assert_table(
+        name: &str,
+        table: fn(&PluginType) -> CheckResult,
+        can_approve: &[PluginType],
+        can_reject: &[PluginType],
+        default: CheckResult,
+    ) {
+        for plugin_type in PluginType::iter() {
+            let expected = if can_approve.contains(&plugin_type) {
+                CheckResult::CanApprove
+            } else if can_reject.contains(&plugin_type) {
+                CheckResult::CanReject
+            } else {
+                default
+            };
+            assert_eq!(
+                table(&plugin_type),
+                expected,
+                "{name}({plugin_type:?}) should be {expected:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn plugin_type_check_tables_match_the_documented_matrix() {
+        assert_table(
+            "check_add_plugin",
+            PluginType::check_add_plugin,
+            &[PluginType::UpdateDelegate],
+            &[
+                PluginType::AddBlocker,
+                PluginType::Royalties,
+                PluginType::PermanentFreezeDelegate,
+                PluginType::PermanentTransferDelegate,
+                PluginType::PermanentBurnDelegate,
+                PluginType::Edition,
+                PluginType::Autograph,
+                PluginType::VerifiedCreators,
+                PluginType::BubblegumV2,
+                PluginType::PermanentFreezeExecute,
+            ],
+            CheckResult::None,
+        );
+
+        // Every other type defaults to `CanReject` here, because a plugin with
+        // `Authority::None` must be able to refuse its own removal.
+        assert_table(
+            "check_remove_plugin",
+            PluginType::check_remove_plugin,
+            &[PluginType::UpdateDelegate],
+            &[],
+            CheckResult::CanReject,
+        );
+
+        for (name, table) in [
+            (
+                "check_update_plugin",
+                PluginType::check_update_plugin as fn(&PluginType) -> CheckResult,
+            ),
+            (
+                "check_approve_plugin_authority",
+                PluginType::check_approve_plugin_authority,
+            ),
+            (
+                "check_revoke_plugin_authority",
+                PluginType::check_revoke_plugin_authority,
+            ),
+        ] {
+            assert_table(name, table, &[], &[], CheckResult::CanApprove);
+        }
+
+        assert_table(
+            "check_create",
+            PluginType::check_create,
+            &[PluginType::UpdateDelegate],
+            &[
+                PluginType::Royalties,
+                PluginType::Autograph,
+                PluginType::VerifiedCreators,
+            ],
+            CheckResult::None,
+        );
+        assert_table(
+            "check_update",
+            PluginType::check_update,
+            &[PluginType::UpdateDelegate],
+            &[PluginType::ImmutableMetadata],
+            CheckResult::None,
+        );
+        assert_table(
+            "check_burn",
+            PluginType::check_burn,
+            &[PluginType::BurnDelegate, PluginType::PermanentBurnDelegate],
+            &[
+                PluginType::FreezeDelegate,
+                PluginType::PermanentFreezeDelegate,
+                PluginType::Groups,
+            ],
+            CheckResult::None,
+        );
+        assert_table(
+            "check_transfer",
+            PluginType::check_transfer,
+            &[
+                PluginType::TransferDelegate,
+                PluginType::PermanentTransferDelegate,
+            ],
+            &[
+                PluginType::Royalties,
+                PluginType::FreezeDelegate,
+                PluginType::PermanentFreezeDelegate,
+            ],
+            CheckResult::None,
+        );
+        assert_table(
+            "check_execute",
+            PluginType::check_execute,
+            &[],
+            &[
+                PluginType::FreezeExecute,
+                PluginType::PermanentFreezeExecute,
+            ],
+            CheckResult::None,
+        );
+        assert_table(
+            "check_add_external_plugin_adapter",
+            PluginType::check_add_external_plugin_adapter,
+            &[],
+            &[PluginType::BubblegumV2],
+            CheckResult::None,
+        );
+
+        // `CompressV1` / `DecompressV1` return `NotAvailable` before reaching
+        // validation, and the remove/update adapter events consult no plugin.
+        for (name, table) in [
+            (
+                "check_compress",
+                PluginType::check_compress as fn(&PluginType) -> CheckResult,
+            ),
+            ("check_decompress", PluginType::check_decompress),
+            (
+                "check_remove_external_plugin_adapter",
+                PluginType::check_remove_external_plugin_adapter,
+            ),
+            (
+                "check_update_external_plugin_adapter",
+                PluginType::check_update_external_plugin_adapter,
+            ),
+        ] {
+            assert_table(name, table, &[], &[], CheckResult::None);
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Dispatch tables
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn plugin_dispatch_tables_cover_every_variant() {
+        let plugins = every_plugin();
+        assert_eq!(
+            plugins.len(),
+            PluginType::iter().count(),
+            "every_plugin() must hold one value per PluginType"
+        );
+
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let self_authority = Authority::None;
+
+        for (plugin, plugin_type) in plugins.iter().zip(PluginType::iter()) {
+            assert_eq!(
+                PluginType::from(plugin),
+                plugin_type,
+                "From<&Plugin> for PluginType is out of order at {plugin_type:?}"
+            );
+            assert_eq!(
+                plugin.manager(),
+                plugin_type.manager(),
+                "Plugin::manager must agree with PluginType::manager"
+            );
+
+            // `inner()` routes to the plugin's own trait object; every plugin
+            // either abstains or rejects a transfer from a default context.
+            let ctx = default_ctx(&[], &signer_info, &self_authority);
+            let result = plugin.inner().validate_transfer(&ctx);
+            match plugin {
+                // Royalties needs a new owner.
+                Plugin::Royalties(_) => {
+                    assert_eq!(core_err(result), MplCoreError::MissingNewOwner);
+                }
+                _ => {
+                    assert!(
+                        matches!(
+                            result,
+                            Ok(ValidationResult::Pass) | Ok(ValidationResult::Rejected)
+                        ),
+                        "{plugin_type:?}::validate_transfer returned {result:?}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn plugin_save_and_load_round_trip_and_report_errors() {
+        let plugin = inert();
+        let bytes = borsh::to_vec(&plugin).unwrap();
+
+        let mut account = FakeAccount::with_data(vec![0u8; bytes.len() + 4]);
+        let info = account.info();
+        plugin.save(&info, 4).unwrap();
+        assert_eq!(Plugin::load(&info, 4).unwrap(), plugin);
+
+        // A corrupted discriminator is a clean `DeserializationError`.
+        info.data.borrow_mut()[4] = 0xFE;
+        assert_eq!(
+            Plugin::load(&info, 4).unwrap_err(),
+            MplCoreError::DeserializationError.into()
+        );
+
+        // Writing into a buffer that is too short is a `SerializationError`;
+        // the program always reallocates first, so this arm is defensive.
+        let mut small = FakeAccount::with_data(vec![0u8; 1]);
+        let small_info = small.info();
+        assert_eq!(
+            Plugin::save(&plugin, &small_info, 0).unwrap_err(),
+            MplCoreError::SerializationError.into()
+        );
+    }
+
+    #[test]
+    fn plugin_type_manager_assigns_owner_only_to_owner_managed_plugins() {
+        let owner_managed = [
+            PluginType::FreezeDelegate,
+            PluginType::BurnDelegate,
+            PluginType::TransferDelegate,
+            PluginType::Autograph,
+            PluginType::FreezeExecute,
+        ];
+        for plugin_type in PluginType::iter() {
+            let expected = if owner_managed.contains(&plugin_type) {
+                Authority::Owner
+            } else if plugin_type == PluginType::BubblegumV2 {
+                Authority::Address {
+                    address: mpl_bubblegum::ID,
+                }
+            } else {
+                Authority::UpdateAuthority
+            };
+            assert_eq!(
+                plugin_type.manager(),
+                expected,
+                "{plugin_type:?}::manager()"
+            );
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Wrappers and the result-combination matrix
+    // -----------------------------------------------------------------------
+
+    /// A plugin that has no `validate_*` overrides at all, so the wrapper's
+    /// base result is the only thing in play.
+    fn inert() -> Plugin {
+        Plugin::Attributes(Attributes {
+            attribute_list: vec![],
+        })
+    }
+
+    #[test]
+    fn validate_remove_plugin_refuses_an_authority_none_self_target() {
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let none = Authority::None;
+        let target = inert();
+
+        let mut ctx = default_ctx(&[], &signer_info, &none);
+        ctx.target_plugin = Some(&target);
+        assert_eq!(
+            Plugin::validate_remove_plugin(&inert(), &ctx).unwrap(),
+            ValidationResult::Rejected
+        );
+
+        // A different plugin type with `Authority::None` does not refuse the
+        // removal of somebody else.
+        let other = Plugin::Edition(Edition { number: 1 });
+        assert_eq!(
+            Plugin::validate_remove_plugin(&other, &ctx).unwrap(),
+            ValidationResult::Pass
+        );
+    }
+
+    #[test]
+    fn validate_approve_plugin_authority_refuses_to_redelegate() {
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let target = inert();
+
+        // The target's authority is already delegated away from its manager.
+        let delegated = Authority::Address {
+            address: Pubkey::new_unique(),
+        };
+        let mut ctx = default_ctx(&[], &signer_info, &delegated);
+        ctx.target_plugin = Some(&target);
+        assert_eq!(
+            core_err(Plugin::validate_approve_plugin_authority(&inert(), &ctx)),
+            MplCoreError::CannotRedelegate
+        );
+
+        // Still at its manager: the plugin's own validator runs (and abstains).
+        let manager = Authority::UpdateAuthority;
+        let mut ctx = default_ctx(&[], &signer_info, &manager);
+        ctx.target_plugin = Some(&target);
+        assert_eq!(
+            Plugin::validate_approve_plugin_authority(&inert(), &ctx).unwrap(),
+            ValidationResult::Pass
+        );
+
+        // No target at all: unreachable from the processors.
+        let ctx = default_ctx(&[], &signer_info, &manager);
+        assert_eq!(
+            core_err(Plugin::validate_approve_plugin_authority(&inert(), &ctx)),
+            MplCoreError::InvalidPlugin
+        );
+    }
+
+    #[test]
+    fn validate_revoke_plugin_authority_base_result() {
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let target = inert();
+        let manager = Authority::UpdateAuthority;
+        let resolved = [Authority::UpdateAuthority];
+
+        // Self target, signer resolves to the record authority: approved.
+        let mut ctx = default_ctx(&[], &signer_info, &manager);
+        ctx.target_plugin = Some(&target);
+        ctx.resolved_authorities = Some(&resolved);
+        assert_eq!(
+            Plugin::validate_revoke_plugin_authority(&inert(), &ctx).unwrap(),
+            ValidationResult::Approved
+        );
+
+        // The signer does not resolve to it: pass.
+        let unrelated = [Authority::Owner];
+        ctx.resolved_authorities = Some(&unrelated);
+        assert_eq!(
+            Plugin::validate_revoke_plugin_authority(&inert(), &ctx).unwrap(),
+            ValidationResult::Pass
+        );
+
+        // `Authority::None` cannot be revoked.
+        let none = Authority::None;
+        let mut ctx = default_ctx(&[], &signer_info, &none);
+        ctx.target_plugin = Some(&target);
+        ctx.resolved_authorities = Some(&resolved);
+        assert_eq!(
+            Plugin::validate_revoke_plugin_authority(&inert(), &ctx).unwrap(),
+            ValidationResult::Rejected
+        );
+
+        // No target: unreachable from the processors.
+        let ctx = default_ctx(&[], &signer_info, &manager);
+        assert_eq!(
+            core_err(Plugin::validate_revoke_plugin_authority(&inert(), &ctx)),
+            MplCoreError::InvalidPlugin
+        );
+    }
+
+    #[test]
+    fn validate_update_plugin_combines_the_base_and_inner_results() {
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let manager = Authority::UpdateAuthority;
+
+        // No resolved authorities: unreachable from the processors.
+        let ctx = default_ctx(&[], &signer_info, &manager);
+        assert_eq!(
+            core_err(Plugin::validate_update_plugin(&inert(), &ctx)),
+            MplCoreError::InvalidAuthority
+        );
+
+        // (base Approved, inner Pass): the base wins.
+        let target = inert();
+        let resolved = [Authority::UpdateAuthority];
+        let mut ctx = default_ctx(&[], &signer_info, &manager);
+        ctx.resolved_authorities = Some(&resolved);
+        ctx.target_plugin = Some(&target);
+        assert_eq!(
+            Plugin::validate_update_plugin(&inert(), &ctx).unwrap(),
+            ValidationResult::Approved
+        );
+
+        // (base Pass, inner Pass): the inner result is returned.
+        let unrelated = [Authority::Owner];
+        ctx.resolved_authorities = Some(&unrelated);
+        assert_eq!(
+            Plugin::validate_update_plugin(&inert(), &ctx).unwrap(),
+            ValidationResult::Pass
+        );
+
+        // (base Approved, inner Approved): approved. `Autograph` approves a
+        // self-consistent update from its own authority.
+        let autograph = Plugin::Autograph(Autograph { signatures: vec![] });
+        let owner = Authority::Owner;
+        let owner_resolved = [Authority::Owner];
+        let mut ctx = default_ctx(&[], &signer_info, &owner);
+        ctx.resolved_authorities = Some(&owner_resolved);
+        ctx.target_plugin = Some(&autograph);
+        assert_eq!(
+            Plugin::validate_update_plugin(&autograph, &ctx).unwrap(),
+            ValidationResult::Approved
+        );
+
+        // The remaining arms of the match — anything involving `Rejected`,
+        // `ForceApproved`, or an inner `ForceApproved` — cannot be produced by
+        // any plugin in the crate: no `validate_update_plugin` implementation
+        // returns `Rejected` (they return an error instead) or
+        // `ForceApproved`, and the base result is only ever `Approved` or
+        // `Pass`. Roadmap section 11 records the matrix as partly unreachable
+        // on-chain for exactly this reason.
+    }
+
+    // -----------------------------------------------------------------------
+    // Stateless reject / abstain arms of the small plugins
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn add_blocker_only_lets_owner_managed_plugins_and_itself_through() {
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let authority = Authority::UpdateAuthority;
+        let blocker = AddBlocker {};
+
+        for (target, expected) in [
+            (
+                Plugin::FreezeDelegate(FreezeDelegate { frozen: false }),
+                ValidationResult::Pass,
+            ),
+            (Plugin::AddBlocker(AddBlocker {}), ValidationResult::Pass),
+            (
+                Plugin::Attributes(Attributes {
+                    attribute_list: vec![],
+                }),
+                ValidationResult::Rejected,
+            ),
+        ] {
+            let mut ctx = default_ctx(&[], &signer_info, &authority);
+            ctx.target_plugin = Some(&target);
+            assert_eq!(
+                blocker.validate_add_plugin(&ctx).unwrap(),
+                expected,
+                "AddBlocker on {:?}",
+                PluginType::from(&target)
+            );
+        }
+
+        // No target: rejects (unreachable from the processors).
+        let ctx = default_ctx(&[], &signer_info, &authority);
+        assert_eq!(
+            blocker.validate_add_plugin(&ctx).unwrap(),
+            ValidationResult::Rejected
+        );
+    }
+
+    #[test]
+    fn immutable_metadata_always_rejects_an_update() {
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let authority = Authority::None;
+        let ctx = default_ctx(&[], &signer_info, &authority);
+        assert_eq!(
+            ImmutableMetadata {}.validate_update(&ctx).unwrap(),
+            ValidationResult::Rejected
+        );
+    }
+
+    #[test]
+    fn permanent_and_edition_plugins_refuse_to_be_added_or_removed() {
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let authority = Authority::UpdateAuthority;
+        let unrelated = Plugin::Attributes(Attributes {
+            attribute_list: vec![],
+        });
+
+        // (plugin under test, its own Plugin value, blocks its own removal)
+        let cases: Vec<(Box<dyn PluginValidation>, Plugin, bool)> = vec![
+            (
+                Box::new(PermanentBurnDelegate {}),
+                Plugin::PermanentBurnDelegate(PermanentBurnDelegate {}),
+                false,
+            ),
+            (
+                Box::new(PermanentTransferDelegate {}),
+                Plugin::PermanentTransferDelegate(PermanentTransferDelegate {}),
+                false,
+            ),
+            (
+                Box::new(PermanentFreezeDelegate { frozen: false }),
+                Plugin::PermanentFreezeDelegate(PermanentFreezeDelegate { frozen: false }),
+                false,
+            ),
+            (
+                Box::new(PermanentFreezeExecute { frozen: false }),
+                Plugin::PermanentFreezeExecute(PermanentFreezeExecute { frozen: false }),
+                false,
+            ),
+            (
+                Box::new(Edition { number: 1 }),
+                Plugin::Edition(Edition { number: 1 }),
+                true,
+            ),
+            (
+                Box::new(BubblegumV2 {}),
+                Plugin::BubblegumV2(BubblegumV2 {}),
+                true,
+            ),
+        ];
+
+        for (plugin, own, blocks_removal) in cases {
+            let name = PluginType::from(&own);
+
+            let mut ctx = default_ctx(&[], &signer_info, &authority);
+            ctx.target_plugin = Some(&own);
+            assert_eq!(
+                plugin.validate_add_plugin(&ctx).unwrap(),
+                ValidationResult::Rejected,
+                "{name:?} must refuse to be added after creation"
+            );
+            assert_eq!(
+                plugin.validate_remove_plugin(&ctx).unwrap(),
+                if blocks_removal {
+                    ValidationResult::Rejected
+                } else {
+                    ValidationResult::Pass
+                },
+                "{name:?} removal of itself while unfrozen"
+            );
+
+            let mut ctx = default_ctx(&[], &signer_info, &authority);
+            ctx.target_plugin = Some(&unrelated);
+            assert_eq!(
+                plugin.validate_add_plugin(&ctx).unwrap(),
+                ValidationResult::Pass,
+                "{name:?} must not block unrelated adds"
+            );
+
+            // No target at all (unreachable from the processors).
+            let ctx = default_ctx(&[], &signer_info, &authority);
+            assert_eq!(
+                plugin.validate_add_plugin(&ctx).unwrap(),
+                ValidationResult::Pass,
+                "{name:?} with no target abstains"
+            );
+        }
+    }
+
+    #[test]
+    fn bubblegum_v2_allow_list_and_adapter_arms() {
+        let mut signer = FakeAccount::wallet();
+        let mut asset = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let asset_info = asset.info();
+        let authority = Authority::Address {
+            address: mpl_bubblegum::ID,
+        };
+
+        let allow_listed = Plugin::Attributes(Attributes {
+            attribute_list: vec![],
+        });
+        let not_allow_listed = Plugin::ImmutableMetadata(ImmutableMetadata {});
+
+        // On the collection itself (`asset_info` is `None`).
+        for (target, expected) in [
+            (&allow_listed, ValidationResult::Pass),
+            (&not_allow_listed, ValidationResult::Rejected),
+        ] {
+            let mut ctx = default_ctx(&[], &signer_info, &authority);
+            ctx.target_plugin = Some(target);
+            assert_eq!(BubblegumV2 {}.validate_add_plugin(&ctx).unwrap(), expected);
+        }
+
+        // On a member asset nothing is restricted.
+        let mut ctx = default_ctx(&[], &signer_info, &authority);
+        ctx.asset_info = Some(&asset_info);
+        ctx.target_plugin = Some(&not_allow_listed);
+        assert_eq!(
+            BubblegumV2 {}.validate_add_plugin(&ctx).unwrap(),
+            ValidationResult::Pass
+        );
+
+        // External adapters: refused on the collection, allowed on an asset.
+        let ctx = default_ctx(&[], &signer_info, &authority);
+        assert_eq!(
+            BubblegumV2 {}
+                .validate_add_external_plugin_adapter(&ctx)
+                .unwrap(),
+            ValidationResult::Rejected
+        );
+        let mut ctx = default_ctx(&[], &signer_info, &authority);
+        ctx.asset_info = Some(&asset_info);
+        assert_eq!(
+            BubblegumV2 {}
+                .validate_add_external_plugin_adapter(&ctx)
+                .unwrap(),
+            ValidationResult::Pass
+        );
+    }
+
+    #[test]
+    fn freeze_plugins_gate_on_the_frozen_flag() {
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let owner = Authority::Owner;
+        let resolved = [Authority::Owner];
+        let unrelated_target = Plugin::Attributes(Attributes {
+            attribute_list: vec![],
+        });
+
+        for frozen in [true, false] {
+            let expected = if frozen {
+                ValidationResult::Rejected
+            } else {
+                ValidationResult::Pass
+            };
+
+            // FreezeDelegate blocks burn and transfer while frozen.
+            let freeze = FreezeDelegate { frozen };
+            let ctx = default_ctx(&[], &signer_info, &owner);
+            assert_eq!(freeze.validate_burn(&ctx).unwrap(), expected);
+            assert_eq!(freeze.validate_transfer(&ctx).unwrap(), expected);
+
+            // ... and the removal of *any* plugin while frozen.
+            let mut ctx = default_ctx(&[], &signer_info, &owner);
+            ctx.target_plugin = Some(&unrelated_target);
+            assert_eq!(freeze.validate_remove_plugin(&ctx).unwrap(), expected);
+
+            // FreezeExecute blocks execute while frozen, but only its own
+            // removal.
+            let freeze_execute = FreezeExecute { frozen };
+            let ctx = default_ctx(&[], &signer_info, &owner);
+            assert_eq!(freeze_execute.validate_execute(&ctx).unwrap(), expected);
+            let mut ctx = default_ctx(&[], &signer_info, &owner);
+            ctx.target_plugin = Some(&unrelated_target);
+            assert_eq!(
+                freeze_execute.validate_remove_plugin(&ctx).unwrap(),
+                ValidationResult::Pass,
+                "FreezeExecute only blocks its own removal"
+            );
+            let own = Plugin::FreezeExecute(FreezeExecute { frozen });
+            let mut ctx = default_ctx(&[], &signer_info, &owner);
+            ctx.target_plugin = Some(&own);
+            assert_eq!(
+                freeze_execute.validate_remove_plugin(&ctx).unwrap(),
+                expected
+            );
+
+            // PermanentFreezeExecute has the same shape on execute.
+            let permanent = PermanentFreezeExecute { frozen };
+            let ctx = default_ctx(&[], &signer_info, &owner);
+            assert_eq!(permanent.validate_execute(&ctx).unwrap(), expected);
+
+            // Approve and revoke: both freeze plugins refuse while the *target*
+            // is frozen; unfrozen, revoke approves for the record authority.
+            for (target, approve, revoke) in [
+                (
+                    Plugin::FreezeDelegate(FreezeDelegate { frozen }),
+                    expected.clone(),
+                    if frozen {
+                        ValidationResult::Rejected
+                    } else {
+                        ValidationResult::Approved
+                    },
+                ),
+                (
+                    unrelated_target.clone(),
+                    ValidationResult::Pass,
+                    ValidationResult::Pass,
+                ),
+            ] {
+                let mut ctx = default_ctx(&[], &signer_info, &owner);
+                ctx.resolved_authorities = Some(&resolved);
+                ctx.target_plugin = Some(&target);
+                assert_eq!(
+                    freeze.validate_approve_plugin_authority(&ctx).unwrap(),
+                    approve
+                );
+                assert_eq!(
+                    freeze.validate_revoke_plugin_authority(&ctx).unwrap(),
+                    revoke
+                );
+            }
+
+            // An unrelated target leaves both execute-freeze plugins abstaining
+            // on every authority and removal callback.
+            let mut ctx = default_ctx(&[], &signer_info, &owner);
+            ctx.resolved_authorities = Some(&resolved);
+            ctx.target_plugin = Some(&unrelated_target);
+            assert_eq!(
+                freeze_execute
+                    .validate_approve_plugin_authority(&ctx)
+                    .unwrap(),
+                ValidationResult::Pass
+            );
+            assert_eq!(
+                freeze_execute
+                    .validate_revoke_plugin_authority(&ctx)
+                    .unwrap(),
+                ValidationResult::Pass
+            );
+            assert_eq!(
+                permanent.validate_remove_plugin(&ctx).unwrap(),
+                ValidationResult::Pass
+            );
+            let permanent_target =
+                Plugin::PermanentFreezeExecute(PermanentFreezeExecute { frozen });
+            ctx.target_plugin = Some(&permanent_target);
+            assert_eq!(permanent.validate_remove_plugin(&ctx).unwrap(), expected);
+            assert_eq!(
+                permanent.validate_add_plugin(&ctx).unwrap(),
+                ValidationResult::Rejected
+            );
+
+            let freeze_execute_target = Plugin::FreezeExecute(FreezeExecute { frozen });
+            let mut ctx = default_ctx(&[], &signer_info, &owner);
+            ctx.resolved_authorities = Some(&resolved);
+            ctx.target_plugin = Some(&freeze_execute_target);
+            assert_eq!(
+                freeze_execute
+                    .validate_approve_plugin_authority(&ctx)
+                    .unwrap(),
+                expected
+            );
+            assert_eq!(
+                freeze_execute
+                    .validate_revoke_plugin_authority(&ctx)
+                    .unwrap(),
+                if frozen {
+                    ValidationResult::Rejected
+                } else {
+                    ValidationResult::Approved
+                }
+            );
+
+            // PermanentFreezeDelegate blocks burn, transfer and every removal.
+            let permanent_freeze = PermanentFreezeDelegate { frozen };
+            let ctx = default_ctx(&[], &signer_info, &owner);
+            assert_eq!(permanent_freeze.validate_burn(&ctx).unwrap(), expected);
+            assert_eq!(permanent_freeze.validate_transfer(&ctx).unwrap(), expected);
+            let mut ctx = default_ctx(&[], &signer_info, &owner);
+            ctx.target_plugin = Some(&unrelated_target);
+            assert_eq!(
+                permanent_freeze.validate_remove_plugin(&ctx).unwrap(),
+                expected
+            );
+        }
+    }
+
+    #[test]
+    fn delegate_plugins_approve_only_their_own_record_authority() {
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let owner = Authority::Owner;
+
+        for (resolved, expected) in [
+            (
+                vec![Authority::Owner],
+                (ValidationResult::Approved, ValidationResult::ForceApproved),
+            ),
+            (
+                vec![Authority::UpdateAuthority],
+                (ValidationResult::Pass, ValidationResult::Pass),
+            ),
+        ] {
+            let mut ctx = default_ctx(&[], &signer_info, &owner);
+            ctx.resolved_authorities = Some(&resolved);
+
+            assert_eq!(
+                BurnDelegate {}.validate_burn(&ctx).unwrap(),
+                expected.0,
+                "BurnDelegate with {resolved:?}"
+            );
+            assert_eq!(
+                TransferDelegate {}.validate_transfer(&ctx).unwrap(),
+                expected.0,
+                "TransferDelegate with {resolved:?}"
+            );
+            assert_eq!(
+                PermanentBurnDelegate {}.validate_burn(&ctx).unwrap(),
+                expected.1,
+                "PermanentBurnDelegate with {resolved:?}"
+            );
+            assert_eq!(
+                PermanentTransferDelegate {}
+                    .validate_transfer(&ctx)
+                    .unwrap(),
+                expected.1,
+                "PermanentTransferDelegate with {resolved:?}"
+            );
+        }
+
+        // With no resolved authorities at all every delegate abstains.
+        let ctx = default_ctx(&[], &signer_info, &owner);
+        assert_eq!(
+            BurnDelegate {}.validate_burn(&ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(
+            TransferDelegate {}.validate_transfer(&ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(
+            PermanentBurnDelegate {}.validate_burn(&ctx).unwrap(),
+            ValidationResult::Pass
+        );
+        assert_eq!(
+            PermanentTransferDelegate {}
+                .validate_transfer(&ctx)
+                .unwrap(),
+            ValidationResult::Pass
+        );
+    }
+}

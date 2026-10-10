@@ -646,3 +646,328 @@ pub fn is_valid_collection_authority(
 
     Ok(false)
 }
+
+/// Test-only scaffolding: an owned buffer plus the metadata needed to build an
+/// `AccountInfo` over it, so that functions taking `&AccountInfo` can be unit
+/// tested without a runtime. Shared by the unit tests in `state` and `utils`.
+#[cfg(test)]
+pub(crate) mod test_account {
+    use solana_program::{account_info::AccountInfo, pubkey::Pubkey};
+
+    /// An account backed by a local buffer.
+    pub(crate) struct TestAccount {
+        key: Pubkey,
+        owner: Pubkey,
+        lamports: u64,
+        data: Vec<u8>,
+    }
+
+    impl TestAccount {
+        /// An account with an explicit key, owner and payload.
+        pub(crate) fn new(key: Pubkey, owner: Pubkey, data: Vec<u8>) -> Self {
+            Self {
+                key,
+                owner,
+                lamports: 1,
+                data,
+            }
+        }
+
+        /// An account owned by this program, under a fresh key.
+        pub(crate) fn owned(data: Vec<u8>) -> Self {
+            Self::new(Pubkey::new_unique(), crate::ID, data)
+        }
+
+        /// A data-less account standing in for a signer with the given key.
+        pub(crate) fn signer(key: Pubkey) -> Self {
+            Self::new(key, solana_system_interface::program::ID, Vec::new())
+        }
+
+        /// A data-less account standing in for a signer under a fresh key.
+        pub(crate) fn stranger() -> Self {
+            Self::signer(Pubkey::new_unique())
+        }
+
+        /// The current contents of the data buffer.
+        pub(crate) fn data(&self) -> &[u8] {
+            &self.data
+        }
+
+        /// Borrow the account as an `AccountInfo`. The borrow is exclusive for
+        /// the lifetime of the returned value, so scope it where the buffer has
+        /// to be read back afterwards.
+        pub(crate) fn info(&mut self) -> AccountInfo<'_> {
+            AccountInfo::new(
+                &self.key,
+                false,
+                true,
+                &mut self.lamports,
+                &mut self.data,
+                &self.owner,
+                false,
+            )
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::test_account::TestAccount;
+    use super::*;
+    use crate::state::{AssetV1, CollectionV1, UpdateAuthority};
+
+    fn invalid_authority() -> ProgramError {
+        MplCoreError::InvalidAuthority.into()
+    }
+
+    fn asset(owner: Pubkey, update_authority: UpdateAuthority) -> AssetV1 {
+        AssetV1::new(
+            owner,
+            update_authority,
+            "name".to_string(),
+            "uri".to_string(),
+        )
+    }
+
+    fn collection(update_authority: Pubkey) -> CollectionV1 {
+        CollectionV1::new(
+            update_authority,
+            "name".to_string(),
+            "uri".to_string(),
+            0,
+            0,
+        )
+    }
+
+    // ---------------------------------------------------------------------
+    // `assert_authority`. This function has no callers anywhere in `src`
+    // (roadmap section 13, finding 4); these tests pin its behaviour so that a
+    // future caller cannot be wired up to something different by accident.
+    // ---------------------------------------------------------------------
+
+    #[test]
+    fn assert_authority_owner_arm() {
+        let owner = Pubkey::new_unique();
+        let asset = asset(owner, UpdateAuthority::Address(Pubkey::new_unique()));
+
+        let mut matching = TestAccount::signer(owner);
+        assert_eq!(
+            assert_authority(&asset, &matching.info(), &Authority::Owner),
+            Ok(())
+        );
+
+        let mut other = TestAccount::stranger();
+        assert_eq!(
+            assert_authority(&asset, &other.info(), &Authority::Owner),
+            Err(invalid_authority())
+        );
+    }
+
+    #[test]
+    fn assert_authority_update_authority_arm() {
+        let update_authority = Pubkey::new_unique();
+        let asset = asset(
+            Pubkey::new_unique(),
+            UpdateAuthority::Address(update_authority),
+        );
+
+        let mut matching = TestAccount::signer(update_authority);
+        assert_eq!(
+            assert_authority(&asset, &matching.info(), &Authority::UpdateAuthority),
+            Ok(())
+        );
+
+        let mut other = TestAccount::stranger();
+        assert_eq!(
+            assert_authority(&asset, &other.info(), &Authority::UpdateAuthority),
+            Err(invalid_authority())
+        );
+    }
+
+    /// `UpdateAuthority::None.key()` is the system program id, so the
+    /// `UpdateAuthority` arm would accept a system-program signer. That cannot
+    /// happen on chain (the system program never signs), but the assertion
+    /// documents the hazard (roadmap section 13, note 9).
+    #[test]
+    fn assert_authority_update_authority_none_is_system_program() {
+        let asset = asset(Pubkey::new_unique(), UpdateAuthority::None);
+
+        let mut system = TestAccount::signer(solana_system_interface::program::ID);
+        assert_eq!(
+            assert_authority(&asset, &system.info(), &Authority::UpdateAuthority),
+            Ok(())
+        );
+
+        let mut other = TestAccount::stranger();
+        assert_eq!(
+            assert_authority(&asset, &other.info(), &Authority::UpdateAuthority),
+            Err(invalid_authority())
+        );
+    }
+
+    #[test]
+    fn assert_authority_address_arm() {
+        let delegate = Pubkey::new_unique();
+        let asset = asset(Pubkey::new_unique(), UpdateAuthority::None);
+
+        let mut matching = TestAccount::signer(delegate);
+        assert_eq!(
+            assert_authority(
+                &asset,
+                &matching.info(),
+                &Authority::Address { address: delegate }
+            ),
+            Ok(())
+        );
+
+        let mut other = TestAccount::stranger();
+        assert_eq!(
+            assert_authority(
+                &asset,
+                &other.info(),
+                &Authority::Address { address: delegate }
+            ),
+            Err(invalid_authority())
+        );
+    }
+
+    /// `Authority::None` falls through to the error for every signer,
+    /// including the owner and the update authority.
+    #[test]
+    fn assert_authority_none_arm_always_rejects() {
+        let owner = Pubkey::new_unique();
+        let update_authority = Pubkey::new_unique();
+        let asset = asset(owner, UpdateAuthority::Address(update_authority));
+
+        for key in [owner, update_authority, Pubkey::new_unique()] {
+            let mut signer = TestAccount::signer(key);
+            assert_eq!(
+                assert_authority(&asset, &signer.info(), &Authority::None),
+                Err(invalid_authority())
+            );
+        }
+    }
+
+    /// `CollectionV1::owner()` returns the update authority, so under
+    /// `assert_authority` a collection's update authority satisfies an
+    /// `Authority::Owner` record (roadmap section 13, note 4).
+    #[test]
+    fn assert_authority_collection_owner_is_update_authority() {
+        let update_authority = Pubkey::new_unique();
+        let collection = collection(update_authority);
+
+        let mut ua = TestAccount::signer(update_authority);
+        assert_eq!(
+            assert_authority(&collection, &ua.info(), &Authority::Owner),
+            Ok(())
+        );
+        let mut ua = TestAccount::signer(update_authority);
+        assert_eq!(
+            assert_authority(&collection, &ua.info(), &Authority::UpdateAuthority),
+            Ok(())
+        );
+
+        let mut other = TestAccount::stranger();
+        assert_eq!(
+            assert_authority(&collection, &other.info(), &Authority::Owner),
+            Err(invalid_authority())
+        );
+    }
+
+    // ---------------------------------------------------------------------
+    // `assert_collection_authority`. Single caller: `UpdateV2` when the new
+    // collection carries an `UpdateDelegate` plugin (`processor/update.rs`).
+    // ---------------------------------------------------------------------
+
+    #[test]
+    fn assert_collection_authority_update_authority_arm() {
+        let update_authority = Pubkey::new_unique();
+        let collection = collection(update_authority);
+
+        let mut ua = TestAccount::signer(update_authority);
+        assert_eq!(
+            assert_collection_authority(&collection, &ua.info(), &Authority::UpdateAuthority),
+            Ok(())
+        );
+
+        let mut other = TestAccount::stranger();
+        assert_eq!(
+            assert_collection_authority(&collection, &other.info(), &Authority::UpdateAuthority),
+            Err(invalid_authority())
+        );
+    }
+
+    #[test]
+    fn assert_collection_authority_address_arm() {
+        let delegate = Pubkey::new_unique();
+        let collection = collection(Pubkey::new_unique());
+
+        let mut matching = TestAccount::signer(delegate);
+        assert_eq!(
+            assert_collection_authority(
+                &collection,
+                &matching.info(),
+                &Authority::Address { address: delegate }
+            ),
+            Ok(())
+        );
+
+        let mut other = TestAccount::stranger();
+        assert_eq!(
+            assert_collection_authority(
+                &collection,
+                &other.info(),
+                &Authority::Address { address: delegate }
+            ),
+            Err(invalid_authority())
+        );
+    }
+
+    /// Unlike `assert_authority`, the collection variant lumps `Owner` in with
+    /// `None`: both fall through to `InvalidAuthority` even for the collection
+    /// update authority.
+    #[test]
+    fn assert_collection_authority_none_and_owner_arms_always_reject() {
+        let update_authority = Pubkey::new_unique();
+        let collection = collection(update_authority);
+
+        for authority in [Authority::None, Authority::Owner] {
+            for key in [update_authority, Pubkey::new_unique()] {
+                let mut signer = TestAccount::signer(key);
+                assert_eq!(
+                    assert_collection_authority(&collection, &signer.info(), &authority),
+                    Err(invalid_authority())
+                );
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // `load_key`
+    // ---------------------------------------------------------------------
+
+    #[test]
+    fn load_key_reads_the_discriminator_at_the_offset() {
+        let mut account = TestAccount::owned(vec![
+            Key::Uninitialized as u8,
+            Key::AssetV1 as u8,
+            Key::CollectionV1 as u8,
+        ]);
+        let info = account.info();
+
+        assert_eq!(load_key(&info, 0), Ok(Key::Uninitialized));
+        assert_eq!(load_key(&info, 1), Ok(Key::AssetV1));
+        assert_eq!(load_key(&info, 2), Ok(Key::CollectionV1));
+    }
+
+    #[test]
+    fn load_key_rejects_an_unknown_discriminator() {
+        let mut account = TestAccount::owned(vec![u8::MAX]);
+        let info = account.info();
+
+        assert_eq!(
+            load_key(&info, 0),
+            Err(MplCoreError::DeserializationError.into())
+        );
+    }
+}

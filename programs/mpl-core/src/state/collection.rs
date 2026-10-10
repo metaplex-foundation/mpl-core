@@ -421,4 +421,331 @@ mod tests {
             assert_eq!(serialized.len(), collection.len());
         }
     }
+
+    use crate::{
+        plugins::{Attributes, FreezeDelegate},
+        utils::test_account::TestAccount,
+    };
+
+    fn collection(update_authority: Pubkey) -> CollectionV1 {
+        CollectionV1::new(
+            update_authority,
+            "name".to_string(),
+            "uri".to_string(),
+            0,
+            0,
+        )
+    }
+
+    /// An authority-managed plugin: the collection update authority manages it.
+    fn ua_managed() -> Plugin {
+        Plugin::Attributes(Attributes::new())
+    }
+
+    /// An owner-managed plugin. Collections have no owner, so the collection
+    /// validators never approve one.
+    fn owner_managed() -> Plugin {
+        Plugin::FreezeDelegate(FreezeDelegate { frozen: false })
+    }
+
+    fn overflow() -> ProgramError {
+        MplCoreError::NumericalOverflowError.into()
+    }
+
+    fn invalid_plugin() -> ProgramError {
+        MplCoreError::InvalidPlugin.into()
+    }
+
+    // ---------------------------------------------------------------------
+    // Counters
+    // ---------------------------------------------------------------------
+
+    #[test]
+    fn increment_minted_counts_up() {
+        let mut collection = collection(Pubkey::new_unique());
+
+        assert_eq!(collection.increment_minted(), Ok(()));
+        assert_eq!(collection.num_minted, 1);
+        assert_eq!(collection.increment_minted(), Ok(()));
+        assert_eq!(collection.num_minted, 2);
+        // `num_minted` is independent of `current_size`.
+        assert_eq!(collection.current_size, 0);
+    }
+
+    #[test]
+    fn increment_minted_overflows_at_u32_max() {
+        let mut collection = collection(Pubkey::new_unique());
+        collection.num_minted = u32::MAX;
+
+        assert_eq!(collection.increment_minted(), Err(overflow()));
+        assert_eq!(collection.num_minted, u32::MAX);
+    }
+
+    #[test]
+    fn increment_size_counts_up() {
+        let mut collection = collection(Pubkey::new_unique());
+
+        assert_eq!(collection.increment_size(), Ok(()));
+        assert_eq!(collection.current_size, 1);
+        assert_eq!(collection.num_minted, 0);
+    }
+
+    #[test]
+    fn increment_size_overflows_at_u32_max() {
+        let mut collection = collection(Pubkey::new_unique());
+        collection.current_size = u32::MAX;
+
+        assert_eq!(collection.increment_size(), Err(overflow()));
+        assert_eq!(collection.current_size, u32::MAX);
+    }
+
+    #[test]
+    fn decrement_size_counts_down() {
+        let mut collection = collection(Pubkey::new_unique());
+        collection.current_size = 2;
+
+        assert_eq!(collection.decrement_size(), Ok(()));
+        assert_eq!(collection.current_size, 1);
+        assert_eq!(collection.decrement_size(), Ok(()));
+        assert_eq!(collection.current_size, 0);
+    }
+
+    /// A collection whose `current_size` reached zero while assets still
+    /// reference it cannot burn or un-collection those assets: every
+    /// `decrement_size` fails with `NumericalOverflowError` (roadmap section
+    /// 13, note 7).
+    #[test]
+    fn decrement_size_underflows_at_zero() {
+        let mut collection = collection(Pubkey::new_unique());
+
+        assert_eq!(collection.current_size, 0);
+        assert_eq!(collection.decrement_size(), Err(overflow()));
+        assert_eq!(collection.current_size, 0);
+    }
+
+    // ---------------------------------------------------------------------
+    // `CoreAsset`
+    // ---------------------------------------------------------------------
+
+    /// `owner()` returns the update authority, which is why
+    /// `resolve_pubkey_to_authorities_collection` grants `Authority::Owner` to
+    /// a collection's update authority (roadmap section 13, note 4).
+    #[test]
+    fn core_asset_impl_maps_both_roles_to_the_update_authority() {
+        let update_authority = Pubkey::new_unique();
+        let collection = collection(update_authority);
+
+        assert_eq!(collection.owner(), &update_authority);
+        assert_eq!(
+            CoreAsset::update_authority(&collection),
+            UpdateAuthority::Collection(update_authority)
+        );
+    }
+
+    // ---------------------------------------------------------------------
+    // `check_*` matrix. A `None` check means `validate_collection_permissions`
+    // never calls the matching validator, so those validators are dead code.
+    // ---------------------------------------------------------------------
+
+    #[test]
+    fn check_matrix() {
+        assert_eq!(CollectionV1::check_create(), CheckResult::CanApprove);
+        assert_eq!(CollectionV1::check_add_plugin(), CheckResult::CanApprove);
+        assert_eq!(CollectionV1::check_remove_plugin(), CheckResult::CanApprove);
+        assert_eq!(
+            CollectionV1::check_approve_plugin_authority(),
+            CheckResult::CanApprove
+        );
+        assert_eq!(
+            CollectionV1::check_revoke_plugin_authority(),
+            CheckResult::CanApprove
+        );
+        assert_eq!(CollectionV1::check_update(), CheckResult::CanApprove);
+        assert_eq!(
+            CollectionV1::check_add_external_plugin_adapter(),
+            CheckResult::CanApprove
+        );
+        assert_eq!(
+            CollectionV1::check_remove_external_plugin_adapter(),
+            CheckResult::CanApprove
+        );
+        assert_eq!(CollectionV1::check_execute(), CheckResult::CanApprove);
+
+        // `None` => the paired validator is never reached.
+        assert_eq!(CollectionV1::check_update_plugin(), CheckResult::None);
+        assert_eq!(CollectionV1::check_transfer(), CheckResult::None);
+        assert_eq!(CollectionV1::check_burn(), CheckResult::None);
+        assert_eq!(CollectionV1::check_compress(), CheckResult::None);
+        assert_eq!(CollectionV1::check_decompress(), CheckResult::None);
+        assert_eq!(
+            CollectionV1::check_update_external_plugin_adapter(),
+            CheckResult::None
+        );
+    }
+
+    // ---------------------------------------------------------------------
+    // `validate_*`
+    // ---------------------------------------------------------------------
+
+    #[test]
+    fn validate_create_approves_only_the_update_authority() {
+        let update_authority = Pubkey::new_unique();
+        let collection = collection(update_authority);
+
+        let mut ua = TestAccount::signer(update_authority);
+        assert_eq!(
+            collection.validate_create(&ua.info(), None, None),
+            Ok(ValidationResult::Approved)
+        );
+
+        let mut other = TestAccount::stranger();
+        assert_eq!(
+            collection.validate_create(&other.info(), None, None),
+            Ok(ValidationResult::Pass)
+        );
+    }
+
+    #[test]
+    fn validate_update_approves_only_the_update_authority() {
+        let update_authority = Pubkey::new_unique();
+        let collection = collection(update_authority);
+
+        let mut ua = TestAccount::signer(update_authority);
+        assert_eq!(
+            collection.validate_update(&ua.info(), None, None),
+            Ok(ValidationResult::Approved)
+        );
+
+        let mut other = TestAccount::stranger();
+        assert_eq!(
+            collection.validate_update(&other.info(), None, None),
+            Ok(ValidationResult::Pass)
+        );
+    }
+
+    /// Add, remove, approve and revoke all require the update authority *and*
+    /// an authority-managed plugin; an owner-managed plugin only ever abstains,
+    /// which is what turns `AddCollectionPluginV1` of `FreezeDelegate` into
+    /// `InvalidAuthority`.
+    #[test]
+    fn validate_plugin_ops_require_ua_and_a_ua_managed_plugin() {
+        let update_authority = Pubkey::new_unique();
+        let collection = collection(update_authority);
+
+        type Validator = fn(
+            &CollectionV1,
+            &AccountInfo,
+            Option<&Plugin>,
+            Option<&ExternalPluginAdapter>,
+        ) -> Result<ValidationResult, ProgramError>;
+
+        let validators: [Validator; 4] = [
+            CollectionV1::validate_add_plugin,
+            CollectionV1::validate_remove_plugin,
+            CollectionV1::validate_approve_plugin_authority,
+            CollectionV1::validate_revoke_plugin_authority,
+        ];
+
+        for validate in validators {
+            let mut ua = TestAccount::signer(update_authority);
+            assert_eq!(
+                validate(&collection, &ua.info(), Some(&ua_managed()), None),
+                Ok(ValidationResult::Approved)
+            );
+
+            let mut ua = TestAccount::signer(update_authority);
+            assert_eq!(
+                validate(&collection, &ua.info(), Some(&owner_managed()), None),
+                Ok(ValidationResult::Pass)
+            );
+
+            let mut other = TestAccount::stranger();
+            assert_eq!(
+                validate(&collection, &other.info(), Some(&ua_managed()), None),
+                Ok(ValidationResult::Pass)
+            );
+
+            // No processor passes `None`; the arm errors rather than abstains.
+            let mut ua = TestAccount::signer(update_authority);
+            assert_eq!(
+                validate(&collection, &ua.info(), None, None),
+                Err(invalid_plugin())
+            );
+        }
+    }
+
+    #[test]
+    fn validate_external_adapter_ops_approve_only_the_update_authority() {
+        let update_authority = Pubkey::new_unique();
+        let collection = collection(update_authority);
+
+        type Validator = fn(
+            &CollectionV1,
+            &AccountInfo,
+            Option<&Plugin>,
+            Option<&ExternalPluginAdapter>,
+        ) -> Result<ValidationResult, ProgramError>;
+
+        let validators: [Validator; 2] = [
+            CollectionV1::validate_add_external_plugin_adapter,
+            CollectionV1::validate_remove_external_plugin_adapter,
+        ];
+
+        for validate in validators {
+            let mut ua = TestAccount::signer(update_authority);
+            assert_eq!(
+                validate(&collection, &ua.info(), None, None),
+                Ok(ValidationResult::Approved)
+            );
+
+            let mut other = TestAccount::stranger();
+            assert_eq!(
+                validate(&collection, &other.info(), None, None),
+                Ok(ValidationResult::Pass)
+            );
+        }
+    }
+
+    /// These validators are unconditional abstentions. Five of them are also
+    /// unreachable, because their paired `check_*` returns `CheckResult::None`
+    /// (roadmap section 13, finding 4); `validate_execute` is reachable and
+    /// leaves the decision to the asset.
+    #[test]
+    fn validators_that_always_abstain() {
+        let update_authority = Pubkey::new_unique();
+        let collection = collection(update_authority);
+
+        type Validator = fn(
+            &CollectionV1,
+            &AccountInfo,
+            Option<&Plugin>,
+            Option<&ExternalPluginAdapter>,
+        ) -> Result<ValidationResult, ProgramError>;
+
+        let validators: [Validator; 6] = [
+            CollectionV1::validate_update_plugin,
+            CollectionV1::validate_transfer,
+            CollectionV1::validate_burn,
+            CollectionV1::validate_compress,
+            CollectionV1::validate_decompress,
+            CollectionV1::validate_execute,
+        ];
+
+        for validate in validators {
+            // Even the update authority, and even with a plugin supplied.
+            let mut ua = TestAccount::signer(update_authority);
+            assert_eq!(
+                validate(&collection, &ua.info(), Some(&ua_managed()), None),
+                Ok(ValidationResult::Pass)
+            );
+        }
+
+        // `validate_update_external_plugin_adapter` has no `Plugin` argument
+        // that matters either; it is dead for the same reason.
+        let mut ua = TestAccount::signer(update_authority);
+        assert_eq!(
+            collection.validate_update_external_plugin_adapter(&ua.info(), None, None),
+            Ok(ValidationResult::Pass)
+        );
+    }
 }

@@ -7,8 +7,10 @@ use crate::processor;
 
 entrypoint!(process_instruction);
 
-/// Entrypoint function
-fn process_instruction<'a>(
+/// Entrypoint function.
+///
+/// Public so the test harness can execute the program natively for coverage.
+pub fn process_instruction<'a>(
     program_id: &'a Pubkey,
     accounts: &'a [AccountInfo<'a>],
     instruction_data: &[u8],
