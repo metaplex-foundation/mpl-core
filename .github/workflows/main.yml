@@ -4,7 +4,11 @@ on:
   push:
     branches: [main, jun-2024-feature-staging]
   pull_request:
-    branches: [main, jun-2024-feature-staging]
+    # Stacked pull requests target the branch below them in the stack rather
+    # than a long-lived branch, so restricting this to `main` would leave every
+    # PR in a stack with no CI at all. Any PR that targets a development branch
+    # gets the same checks as one targeting `main`.
+    branches: [main, jun-2024-feature-staging, 'claude/**']
 
 env:
   CACHE: true
@@ -53,6 +57,18 @@ jobs:
     needs: changes
     uses: ./.github/workflows/test-programs.yml
     secrets: inherit
+    with:
+      program_matrix: ${{ needs.changes.outputs.program_matrix }}
+
+  coverage:
+    name: Programs
+    if: ${{ needs.changes.outputs.programs == 'true' }}
+    needs: changes
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: ./.github/workflows/coverage.yml
+    # No `secrets: inherit`: coverage only needs the workflow's own GITHUB_TOKEN.
     with:
       program_matrix: ${{ needs.changes.outputs.program_matrix }}
 

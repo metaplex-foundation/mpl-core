@@ -7,6 +7,7 @@
 program_common: &program_common
   - ".github/workflows/build-programs.yml"
   - ".github/workflows/test-programs.yml"
+  - ".github/workflows/coverage.yml"
   - ".github/workflows/main.yml"
   - ".github/file-filters.yml"
   - ".github/.env"
@@ -14,6 +15,11 @@ program_common: &program_common
 mpl_core_program: &mpl_core_program
   - *program_common
   - "programs/mpl-core/**"
+  # The program's Mollusk tests use the Rust client as a path dev-dependency
+  # for its generated instruction builders, so a regenerated client must
+  # re-run the program tests and coverage.
+  - "clients/rust/src/**"
+  - "clients/rust/Cargo.toml"
 
 programs: &programs
   - *mpl_core_program

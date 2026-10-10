@@ -1010,3 +1010,989 @@ mod test {
         );
     }
 }
+
+#[cfg(test)]
+mod validation_tests {
+    use {
+        super::*,
+        crate::{
+            plugins::{
+                test_ctx::{default_ctx, FakeAccount},
+                AgentIdentity, AgentIdentityInitInfo, AgentIdentityUpdateInfo, AppData,
+                AppDataInitInfo, AppDataUpdateInfo, DataSection, DataSectionInitInfo,
+                LifecycleHook, LifecycleHookInitInfo, LifecycleHookUpdateInfo, LinkedAppData,
+                LinkedAppDataInitInfo, LinkedAppDataUpdateInfo, LinkedLifecycleHook,
+                LinkedLifecycleHookInitInfo, Oracle, OracleInitInfo, OracleUpdateInfo,
+                ValidationResultsOffset,
+            },
+            state::{AssetV1, Key, UpdateAuthority},
+        },
+    };
+
+    const HOOK: Pubkey = Pubkey::new_from_array([7u8; 32]);
+    const ORACLE: Pubkey = Pubkey::new_from_array([8u8; 32]);
+
+    fn data_authority() -> Authority {
+        Authority::Address {
+            address: Pubkey::new_from_array([9u8; 32]),
+        }
+    }
+
+    fn create_check(flags: u32) -> Vec<(HookableLifecycleEvent, ExternalCheckResult)> {
+        vec![(
+            HookableLifecycleEvent::Create,
+            ExternalCheckResult { flags },
+        )]
+    }
+
+    /// One init info per variant, paired with the adapter and key it should
+    /// convert into.
+    #[allow(clippy::type_complexity)]
+    fn conversion_cases() -> Vec<(
+        ExternalPluginAdapterInitInfo,
+        ExternalPluginAdapterType,
+        ExternalPluginAdapter,
+        ExternalPluginAdapterKey,
+    )> {
+        vec![
+            (
+                ExternalPluginAdapterInitInfo::LifecycleHook(LifecycleHookInitInfo {
+                    hooked_program: HOOK,
+                    init_plugin_authority: None,
+                    lifecycle_checks: create_check(0x4),
+                    extra_accounts: None,
+                    data_authority: Some(data_authority()),
+                    schema: None,
+                }),
+                ExternalPluginAdapterType::LifecycleHook,
+                ExternalPluginAdapter::LifecycleHook(LifecycleHook {
+                    hooked_program: HOOK,
+                    extra_accounts: None,
+                    data_authority: Some(data_authority()),
+                    schema: ExternalPluginAdapterSchema::Binary,
+                }),
+                ExternalPluginAdapterKey::LifecycleHook(HOOK),
+            ),
+            (
+                ExternalPluginAdapterInitInfo::Oracle(OracleInitInfo {
+                    base_address: ORACLE,
+                    init_plugin_authority: None,
+                    lifecycle_checks: create_check(0x4),
+                    base_address_config: None,
+                    results_offset: None,
+                }),
+                ExternalPluginAdapterType::Oracle,
+                ExternalPluginAdapter::Oracle(Oracle {
+                    base_address: ORACLE,
+                    base_address_config: None,
+                    results_offset: ValidationResultsOffset::NoOffset,
+                }),
+                ExternalPluginAdapterKey::Oracle(ORACLE),
+            ),
+            (
+                ExternalPluginAdapterInitInfo::AppData(AppDataInitInfo {
+                    data_authority: data_authority(),
+                    init_plugin_authority: None,
+                    schema: None,
+                }),
+                ExternalPluginAdapterType::AppData,
+                ExternalPluginAdapter::AppData(AppData {
+                    data_authority: data_authority(),
+                    schema: ExternalPluginAdapterSchema::Binary,
+                }),
+                ExternalPluginAdapterKey::AppData(data_authority()),
+            ),
+            (
+                ExternalPluginAdapterInitInfo::LinkedLifecycleHook(LinkedLifecycleHookInitInfo {
+                    hooked_program: HOOK,
+                    init_plugin_authority: None,
+                    lifecycle_checks: create_check(0x4),
+                    extra_accounts: None,
+                    data_authority: Some(data_authority()),
+                    schema: None,
+                }),
+                ExternalPluginAdapterType::LinkedLifecycleHook,
+                ExternalPluginAdapter::LinkedLifecycleHook(LinkedLifecycleHook {
+                    hooked_program: HOOK,
+                    extra_accounts: None,
+                    data_authority: Some(data_authority()),
+                    schema: ExternalPluginAdapterSchema::Binary,
+                }),
+                ExternalPluginAdapterKey::LinkedLifecycleHook(HOOK),
+            ),
+            (
+                ExternalPluginAdapterInitInfo::LinkedAppData(LinkedAppDataInitInfo {
+                    data_authority: data_authority(),
+                    init_plugin_authority: None,
+                    schema: None,
+                }),
+                ExternalPluginAdapterType::LinkedAppData,
+                ExternalPluginAdapter::LinkedAppData(LinkedAppData {
+                    data_authority: data_authority(),
+                    schema: ExternalPluginAdapterSchema::Binary,
+                }),
+                ExternalPluginAdapterKey::LinkedAppData(data_authority()),
+            ),
+            (
+                ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
+                    parent_key: LinkedDataKey::LinkedAppData(data_authority()),
+                    schema: ExternalPluginAdapterSchema::Json,
+                }),
+                ExternalPluginAdapterType::DataSection,
+                ExternalPluginAdapter::DataSection(DataSection {
+                    parent_key: LinkedDataKey::LinkedAppData(data_authority()),
+                    schema: ExternalPluginAdapterSchema::Json,
+                }),
+                ExternalPluginAdapterKey::DataSection(LinkedDataKey::LinkedAppData(
+                    data_authority(),
+                )),
+            ),
+            (
+                ExternalPluginAdapterInitInfo::AgentIdentity(AgentIdentityInitInfo {
+                    uri: "https://example.com/agent.json".to_string(),
+                    init_plugin_authority: None,
+                    lifecycle_checks: create_check(0x4),
+                }),
+                ExternalPluginAdapterType::AgentIdentity,
+                ExternalPluginAdapter::AgentIdentity(AgentIdentity {
+                    uri: "https://example.com/agent.json".to_string(),
+                }),
+                ExternalPluginAdapterKey::AgentIdentity,
+            ),
+        ]
+    }
+
+    #[test]
+    fn init_info_conversions_cover_every_variant() {
+        for (init_info, expected_type, expected_adapter, expected_key) in conversion_cases() {
+            assert_eq!(
+                ExternalPluginAdapterType::from(&init_info),
+                expected_type,
+                "{init_info:?} type"
+            );
+            assert_eq!(
+                ExternalPluginAdapter::from(&init_info),
+                expected_adapter,
+                "{init_info:?} adapter"
+            );
+            assert_eq!(
+                ExternalPluginAdapterKey::from(&init_info),
+                expected_key,
+                "{init_info:?} key"
+            );
+            // The adapter and its key agree on the type.
+            assert_eq!(
+                ExternalPluginAdapterType::from(&expected_adapter),
+                expected_type
+            );
+            assert_eq!(
+                ExternalPluginAdapterType::from(&expected_key),
+                expected_type
+            );
+        }
+    }
+
+    #[test]
+    fn check_create_and_check_execute_read_the_declared_checks() {
+        // Hookable adapters return the declared flags for the event, and
+        // `none()` when the event is absent; the data-only adapters always
+        // return `none()`.
+        for (init_info, expected_create) in [
+            (
+                ExternalPluginAdapterInitInfo::Oracle(OracleInitInfo {
+                    base_address: ORACLE,
+                    init_plugin_authority: None,
+                    lifecycle_checks: create_check(0x4),
+                    base_address_config: None,
+                    results_offset: None,
+                }),
+                ExternalCheckResult { flags: 0x4 },
+            ),
+            (
+                ExternalPluginAdapterInitInfo::Oracle(OracleInitInfo {
+                    base_address: ORACLE,
+                    init_plugin_authority: None,
+                    lifecycle_checks: vec![(
+                        HookableLifecycleEvent::Burn,
+                        ExternalCheckResult { flags: 0x4 },
+                    )],
+                    base_address_config: None,
+                    results_offset: None,
+                }),
+                ExternalCheckResult::none(),
+            ),
+            (
+                ExternalPluginAdapterInitInfo::AppData(AppDataInitInfo {
+                    data_authority: data_authority(),
+                    init_plugin_authority: None,
+                    schema: None,
+                }),
+                ExternalCheckResult::none(),
+            ),
+            (
+                ExternalPluginAdapterInitInfo::LinkedAppData(LinkedAppDataInitInfo {
+                    data_authority: data_authority(),
+                    init_plugin_authority: None,
+                    schema: None,
+                }),
+                ExternalCheckResult::none(),
+            ),
+            (
+                ExternalPluginAdapterInitInfo::DataSection(DataSectionInitInfo {
+                    parent_key: LinkedDataKey::LinkedAppData(data_authority()),
+                    schema: ExternalPluginAdapterSchema::Binary,
+                }),
+                ExternalCheckResult::none(),
+            ),
+        ] {
+            assert_eq!(
+                ExternalPluginAdapter::check_create(&init_info),
+                expected_create,
+                "check_create({init_info:?})"
+            );
+        }
+
+        // `check_execute` has no callers in the program (roadmap section 11,
+        // finding 7); it reads the `Execute` entry the same way.
+        let execute_hook = ExternalPluginAdapterInitInfo::LifecycleHook(LifecycleHookInitInfo {
+            hooked_program: HOOK,
+            init_plugin_authority: None,
+            lifecycle_checks: vec![(
+                HookableLifecycleEvent::Execute,
+                ExternalCheckResult { flags: 0x1 },
+            )],
+            extra_accounts: None,
+            data_authority: None,
+            schema: None,
+        });
+        assert_eq!(
+            ExternalPluginAdapter::check_execute(&execute_hook),
+            ExternalCheckResult { flags: 0x1 }
+        );
+        assert_eq!(
+            ExternalPluginAdapter::check_execute(&ExternalPluginAdapterInitInfo::AppData(
+                AppDataInitInfo {
+                    data_authority: data_authority(),
+                    init_plugin_authority: None,
+                    schema: None,
+                }
+            )),
+            ExternalCheckResult::none()
+        );
+    }
+
+    #[test]
+    fn update_requires_matching_adapter_and_update_info_variants() {
+        let mut oracle = ExternalPluginAdapter::Oracle(Oracle {
+            base_address: ORACLE,
+            base_address_config: None,
+            results_offset: ValidationResultsOffset::NoOffset,
+        });
+        oracle
+            .update(&ExternalPluginAdapterUpdateInfo::Oracle(OracleUpdateInfo {
+                lifecycle_checks: None,
+                base_address_config: Some(ExtraAccount::PreconfiguredAsset {
+                    is_signer: false,
+                    is_writable: false,
+                }),
+                results_offset: Some(ValidationResultsOffset::Anchor),
+            }))
+            .unwrap();
+        assert_eq!(
+            oracle,
+            ExternalPluginAdapter::Oracle(Oracle {
+                base_address: ORACLE,
+                base_address_config: Some(ExtraAccount::PreconfiguredAsset {
+                    is_signer: false,
+                    is_writable: false
+                }),
+                results_offset: ValidationResultsOffset::Anchor,
+            })
+        );
+
+        let mut app_data = ExternalPluginAdapter::AppData(AppData {
+            data_authority: data_authority(),
+            schema: ExternalPluginAdapterSchema::Binary,
+        });
+        app_data
+            .update(&ExternalPluginAdapterUpdateInfo::AppData(
+                AppDataUpdateInfo {
+                    schema: Some(ExternalPluginAdapterSchema::Json),
+                },
+            ))
+            .unwrap();
+        assert_eq!(
+            app_data,
+            ExternalPluginAdapter::AppData(AppData {
+                data_authority: data_authority(),
+                schema: ExternalPluginAdapterSchema::Json,
+            })
+        );
+
+        let mut linked = ExternalPluginAdapter::LinkedAppData(LinkedAppData {
+            data_authority: data_authority(),
+            schema: ExternalPluginAdapterSchema::Binary,
+        });
+        linked
+            .update(&ExternalPluginAdapterUpdateInfo::LinkedAppData(
+                LinkedAppDataUpdateInfo {
+                    schema: Some(ExternalPluginAdapterSchema::MsgPack),
+                },
+            ))
+            .unwrap();
+        assert_eq!(
+            linked,
+            ExternalPluginAdapter::LinkedAppData(LinkedAppData {
+                data_authority: data_authority(),
+                schema: ExternalPluginAdapterSchema::MsgPack,
+            })
+        );
+
+        // The hook arms, reachable only from crafted state on-chain.
+        let mut hook = ExternalPluginAdapter::LifecycleHook(LifecycleHook {
+            hooked_program: HOOK,
+            extra_accounts: None,
+            data_authority: None,
+            schema: ExternalPluginAdapterSchema::Binary,
+        });
+        hook.update(&ExternalPluginAdapterUpdateInfo::LifecycleHook(
+            LifecycleHookUpdateInfo {
+                lifecycle_checks: None,
+                extra_accounts: Some(vec![]),
+                schema: Some(ExternalPluginAdapterSchema::Json),
+            },
+        ))
+        .unwrap();
+        assert_eq!(
+            hook,
+            ExternalPluginAdapter::LifecycleHook(LifecycleHook {
+                hooked_program: HOOK,
+                extra_accounts: Some(vec![]),
+                data_authority: None,
+                schema: ExternalPluginAdapterSchema::Json,
+            })
+        );
+
+        let mut linked_hook = ExternalPluginAdapter::LinkedLifecycleHook(LinkedLifecycleHook {
+            hooked_program: HOOK,
+            extra_accounts: None,
+            data_authority: None,
+            schema: ExternalPluginAdapterSchema::Binary,
+        });
+        linked_hook
+            .update(&ExternalPluginAdapterUpdateInfo::LinkedLifecycleHook(
+                LinkedLifecycleHookUpdateInfo {
+                    lifecycle_checks: None,
+                    extra_accounts: Some(vec![]),
+                    schema: Some(ExternalPluginAdapterSchema::Json),
+                },
+            ))
+            .unwrap();
+        assert_eq!(
+            linked_hook,
+            ExternalPluginAdapter::LinkedLifecycleHook(LinkedLifecycleHook {
+                hooked_program: HOOK,
+                extra_accounts: Some(vec![]),
+                data_authority: None,
+                schema: ExternalPluginAdapterSchema::Json,
+            })
+        );
+
+        let mut agent = ExternalPluginAdapter::AgentIdentity(AgentIdentity {
+            uri: "a".to_string(),
+        });
+        agent
+            .update(&ExternalPluginAdapterUpdateInfo::AgentIdentity(
+                AgentIdentityUpdateInfo {
+                    uri: Some("b".to_string()),
+                    lifecycle_checks: None,
+                },
+            ))
+            .unwrap();
+        assert_eq!(
+            agent,
+            ExternalPluginAdapter::AgentIdentity(AgentIdentity {
+                uri: "b".to_string()
+            })
+        );
+
+        // A mismatched pair (and every `DataSection` update, since there is no
+        // `DataSection` update-info variant) is `InvalidPlugin`.
+        let mut section = ExternalPluginAdapter::DataSection(DataSection {
+            parent_key: LinkedDataKey::LinkedAppData(data_authority()),
+            schema: ExternalPluginAdapterSchema::Binary,
+        });
+        let err = section
+            .update(&ExternalPluginAdapterUpdateInfo::AppData(
+                AppDataUpdateInfo { schema: None },
+            ))
+            .unwrap_err();
+        assert_eq!(err, MplCoreError::InvalidPlugin.into());
+    }
+
+    // -----------------------------------------------------------------------
+    // ExtraAccount::derive and transform_seeds
+    // -----------------------------------------------------------------------
+
+    fn asset_bytes(owner: Pubkey) -> Vec<u8> {
+        borsh::to_vec(&AssetV1 {
+            key: Key::AssetV1,
+            owner,
+            update_authority: UpdateAuthority::Address(owner),
+            name: "Test Asset".to_string(),
+            uri: "https://example.com/test".to_string(),
+            seq: None,
+        })
+        .unwrap()
+    }
+
+    fn pda(base: &Pubkey, extra: Option<&Pubkey>) -> Pubkey {
+        match extra {
+            None => Pubkey::find_program_address(&[MPL_CORE_PREFIX.as_bytes()], base).0,
+            Some(seed) => {
+                Pubkey::find_program_address(&[MPL_CORE_PREFIX.as_bytes(), seed.as_ref()], base).0
+            }
+        }
+    }
+
+    fn core_err<T>(result: Result<T, ProgramError>) -> MplCoreError {
+        match result {
+            Err(ProgramError::Custom(code)) => {
+                num_traits::FromPrimitive::from_u32(code).expect("an MplCoreError code")
+            }
+            Err(other) => panic!("expected a custom program error, got {other:?}"),
+            Ok(_) => panic!("expected an error"),
+        }
+    }
+
+    #[test]
+    fn extra_account_derive_covers_every_variant() {
+        let base = Pubkey::new_unique();
+        let owner = Pubkey::new_unique();
+        let literal = Pubkey::new_unique();
+        let self_authority = Authority::UpdateAuthority;
+
+        let mut signer = FakeAccount::wallet();
+        let mut collection = FakeAccount::wallet();
+        let mut new_owner = FakeAccount::wallet();
+        let mut asset = FakeAccount::with_data(asset_bytes(owner));
+        let signer_info = signer.info();
+        let collection_info = collection.info();
+        let new_owner_info = new_owner.info();
+        let asset_info = asset.info();
+
+        let mut ctx = default_ctx(&[], &signer_info, &self_authority);
+        ctx.asset_info = Some(&asset_info);
+        ctx.collection_info = Some(&collection_info);
+        ctx.new_owner = Some(&new_owner_info);
+
+        let flags = (false, false);
+        let cases: Vec<(ExtraAccount, Pubkey)> = vec![
+            (
+                ExtraAccount::PreconfiguredProgram {
+                    is_signer: flags.0,
+                    is_writable: flags.1,
+                },
+                pda(&base, None),
+            ),
+            (
+                ExtraAccount::PreconfiguredCollection {
+                    is_signer: flags.0,
+                    is_writable: flags.1,
+                },
+                pda(&base, Some(collection_info.key)),
+            ),
+            (
+                ExtraAccount::PreconfiguredOwner {
+                    is_signer: flags.0,
+                    is_writable: flags.1,
+                },
+                pda(&base, Some(&owner)),
+            ),
+            (
+                ExtraAccount::PreconfiguredRecipient {
+                    is_signer: flags.0,
+                    is_writable: flags.1,
+                },
+                pda(&base, Some(new_owner_info.key)),
+            ),
+            (
+                ExtraAccount::PreconfiguredAsset {
+                    is_signer: flags.0,
+                    is_writable: flags.1,
+                },
+                pda(&base, Some(asset_info.key)),
+            ),
+            (
+                ExtraAccount::Address {
+                    address: literal,
+                    is_signer: flags.0,
+                    is_writable: flags.1,
+                },
+                literal,
+            ),
+        ];
+
+        for (config, expected) in cases {
+            assert_eq!(
+                config.derive(&base, &ctx).unwrap(),
+                expected,
+                "{config:?} derivation"
+            );
+        }
+
+        // Every `Seed` variant, with and without a custom program id.
+        let seeds = vec![
+            Seed::Bytes(b"prefix".to_vec()),
+            Seed::Collection,
+            Seed::Owner,
+            Seed::Recipient,
+            Seed::Asset,
+            Seed::Address(literal),
+        ];
+        let seed_bytes: Vec<Vec<u8>> = vec![
+            b"prefix".to_vec(),
+            collection_info.key.as_ref().to_vec(),
+            owner.as_ref().to_vec(),
+            new_owner_info.key.as_ref().to_vec(),
+            asset_info.key.as_ref().to_vec(),
+            literal.as_ref().to_vec(),
+        ];
+        let slices: Vec<&[u8]> = seed_bytes.iter().map(Vec::as_slice).collect();
+
+        let custom_program = Pubkey::new_unique();
+        for custom_program_id in [None, Some(custom_program)] {
+            let config = ExtraAccount::CustomPda {
+                seeds: seeds.clone(),
+                custom_program_id,
+                is_signer: false,
+                is_writable: false,
+            };
+            let expected =
+                Pubkey::find_program_address(&slices, custom_program_id.as_ref().unwrap_or(&base))
+                    .0;
+            assert_eq!(config.derive(&base, &ctx).unwrap(), expected);
+        }
+    }
+
+    #[test]
+    fn extra_account_derive_reports_the_missing_context() {
+        let base = Pubkey::new_unique();
+        let self_authority = Authority::UpdateAuthority;
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let ctx = default_ctx(&[], &signer_info, &self_authority);
+
+        assert_eq!(
+            core_err(
+                ExtraAccount::PreconfiguredCollection {
+                    is_signer: false,
+                    is_writable: false,
+                }
+                .derive(&base, &ctx)
+            ),
+            MplCoreError::MissingCollection
+        );
+        assert_eq!(
+            core_err(
+                ExtraAccount::PreconfiguredOwner {
+                    is_signer: false,
+                    is_writable: false,
+                }
+                .derive(&base, &ctx)
+            ),
+            MplCoreError::MissingAsset
+        );
+        assert_eq!(
+            core_err(
+                ExtraAccount::PreconfiguredAsset {
+                    is_signer: false,
+                    is_writable: false,
+                }
+                .derive(&base, &ctx)
+            ),
+            MplCoreError::MissingAsset
+        );
+        assert_eq!(
+            core_err(
+                ExtraAccount::PreconfiguredRecipient {
+                    is_signer: false,
+                    is_writable: false,
+                }
+                .derive(&base, &ctx)
+            ),
+            MplCoreError::MissingNewOwner
+        );
+
+        for (seed, expected) in [
+            (Seed::Collection, MplCoreError::MissingCollection),
+            (Seed::Owner, MplCoreError::MissingAsset),
+            (Seed::Recipient, MplCoreError::MissingNewOwner),
+            (Seed::Asset, MplCoreError::MissingAsset),
+        ] {
+            assert_eq!(
+                core_err(
+                    ExtraAccount::CustomPda {
+                        seeds: vec![seed.clone()],
+                        custom_program_id: None,
+                        is_signer: false,
+                        is_writable: false,
+                    }
+                    .derive(&base, &ctx)
+                ),
+                expected,
+                "{seed:?}"
+            );
+        }
+    }
+}
+
+#[cfg(test)]
+mod router_tests {
+    use {
+        super::*,
+        crate::plugins::{
+            test_ctx::{default_ctx, FakeAccount},
+            AgentIdentity, AppData, DataSection, LifecycleHook, LifecycleHookInitInfo,
+            LinkedAppData, LinkedLifecycleHook, LinkedLifecycleHookInitInfo, Oracle,
+            ValidationResultsOffset,
+        },
+    };
+
+    fn data_authority() -> Authority {
+        Authority::Address {
+            address: Pubkey::new_from_array([3u8; 32]),
+        }
+    }
+
+    /// Every adapter variant, in registry order.
+    fn every_adapter() -> Vec<ExternalPluginAdapter> {
+        let hooked_program = Pubkey::new_from_array([4u8; 32]);
+        vec![
+            ExternalPluginAdapter::LifecycleHook(LifecycleHook {
+                hooked_program,
+                extra_accounts: None,
+                data_authority: None,
+                schema: ExternalPluginAdapterSchema::Binary,
+            }),
+            ExternalPluginAdapter::Oracle(Oracle {
+                base_address: Pubkey::new_from_array([5u8; 32]),
+                base_address_config: None,
+                results_offset: ValidationResultsOffset::NoOffset,
+            }),
+            ExternalPluginAdapter::AppData(AppData {
+                data_authority: data_authority(),
+                schema: ExternalPluginAdapterSchema::Binary,
+            }),
+            ExternalPluginAdapter::LinkedLifecycleHook(LinkedLifecycleHook {
+                hooked_program,
+                extra_accounts: None,
+                data_authority: None,
+                schema: ExternalPluginAdapterSchema::Binary,
+            }),
+            ExternalPluginAdapter::LinkedAppData(LinkedAppData {
+                data_authority: data_authority(),
+                schema: ExternalPluginAdapterSchema::Binary,
+            }),
+            ExternalPluginAdapter::DataSection(DataSection {
+                parent_key: LinkedDataKey::LinkedAppData(data_authority()),
+                schema: ExternalPluginAdapterSchema::Binary,
+            }),
+            ExternalPluginAdapter::AgentIdentity(AgentIdentity {
+                uri: "https://example.com/agent.json".to_string(),
+            }),
+        ]
+    }
+
+    /// With no oracle account in `ctx.accounts` an Oracle errors; every other
+    /// adapter takes a constant arm. The expectation per variant is spelled
+    /// out so an added variant fails the test rather than slipping through.
+    #[test]
+    fn lifecycle_routers_cover_every_adapter_variant() {
+        let mut signer = FakeAccount::wallet();
+        let mut asset = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let asset_info = asset.info();
+        // `AgentIdentity` reads `ctx.accounts.last()` unguarded, so the slice
+        // must not be empty.
+        let accounts = vec![signer_info.clone()];
+        let self_authority = Authority::UpdateAuthority;
+
+        for adapter in every_adapter() {
+            let adapter_type = ExternalPluginAdapterType::from(&adapter);
+            let mut ctx = default_ctx(&accounts, &signer_info, &self_authority);
+            ctx.asset_info = Some(&asset_info);
+
+            // `validate_create`: only the DataSection arm is a hard reject;
+            // the Oracle needs its account and errors without it.
+            match adapter_type {
+                ExternalPluginAdapterType::Oracle => {
+                    assert!(ExternalPluginAdapter::validate_create(&adapter, &ctx).is_err());
+                }
+                ExternalPluginAdapterType::DataSection => {
+                    assert_eq!(
+                        ExternalPluginAdapter::validate_create(&adapter, &ctx).unwrap(),
+                        ValidationResult::Rejected
+                    );
+                }
+                ExternalPluginAdapterType::LinkedAppData => {
+                    // Rejected on an asset, allowed on a collection.
+                    assert_eq!(
+                        ExternalPluginAdapter::validate_create(&adapter, &ctx).unwrap(),
+                        ValidationResult::Rejected
+                    );
+                }
+                ExternalPluginAdapterType::AgentIdentity => {
+                    // Demands the identity PDA as the last account.
+                    assert!(ExternalPluginAdapter::validate_create(&adapter, &ctx).is_err());
+                }
+                _ => {
+                    assert_eq!(
+                        ExternalPluginAdapter::validate_create(&adapter, &ctx).unwrap(),
+                        ValidationResult::Pass,
+                        "{adapter_type:?}::validate_create"
+                    );
+                }
+            }
+
+            // `validate_update` / `validate_burn` / `validate_transfer`:
+            // everything but the Oracle abstains.
+            for (name, result) in [
+                (
+                    "update",
+                    ExternalPluginAdapter::validate_update(&adapter, &ctx),
+                ),
+                ("burn", ExternalPluginAdapter::validate_burn(&adapter, &ctx)),
+                (
+                    "transfer",
+                    ExternalPluginAdapter::validate_transfer(&adapter, &ctx),
+                ),
+            ] {
+                if adapter_type == ExternalPluginAdapterType::Oracle {
+                    assert!(result.is_err(), "{adapter_type:?}::validate_{name}");
+                } else {
+                    assert_eq!(
+                        result.unwrap(),
+                        ValidationResult::Pass,
+                        "{adapter_type:?}::validate_{name}"
+                    );
+                }
+            }
+
+            // `validate_execute` abstains for every variant today; the Oracle
+            // is routed to the trait default rather than through
+            // `validate_helper` (roadmap section 11, finding 3).
+            assert_eq!(
+                ExternalPluginAdapter::validate_execute(&adapter, &ctx).unwrap(),
+                ValidationResult::Pass,
+                "{adapter_type:?}::validate_execute"
+            );
+
+            // `validate_add_external_plugin_adapter`: only a DataSection is
+            // refused outright; `AgentIdentity` demands its identity PDA and
+            // errors without it.
+            let result =
+                ExternalPluginAdapter::validate_add_external_plugin_adapter(&adapter, &ctx);
+            match adapter_type {
+                ExternalPluginAdapterType::AgentIdentity => {
+                    assert!(result.is_err(), "AgentIdentity demands a signing PDA");
+                }
+                ExternalPluginAdapterType::DataSection => {
+                    assert_eq!(result.unwrap(), ValidationResult::Rejected);
+                }
+                _ => assert_eq!(
+                    result.unwrap(),
+                    ValidationResult::Pass,
+                    "{adapter_type:?}::validate_add_external_plugin_adapter"
+                ),
+            }
+        }
+    }
+
+    #[test]
+    fn validate_update_external_plugin_adapter_is_an_authority_check() {
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let self_authority = Authority::UpdateAuthority;
+        let resolved = [Authority::UpdateAuthority];
+        let unrelated = [Authority::Owner];
+
+        for adapter in every_adapter() {
+            let adapter_type = ExternalPluginAdapterType::from(&adapter);
+            let target = adapter.clone();
+
+            // No resolved authorities: unreachable from the processors.
+            let mut ctx = default_ctx(&[], &signer_info, &self_authority);
+            ctx.target_external_plugin = Some(&target);
+            assert!(
+                ExternalPluginAdapter::validate_update_external_plugin_adapter(&adapter, &ctx)
+                    .is_err()
+            );
+
+            // The signer resolves to the record authority and the target is
+            // the same adapter type: approved (except a DataSection, which the
+            // inner validator refuses outright).
+            let mut ctx = default_ctx(&[], &signer_info, &self_authority);
+            ctx.resolved_authorities = Some(&resolved);
+            ctx.target_external_plugin = Some(&target);
+            let expected = if adapter_type == ExternalPluginAdapterType::DataSection {
+                ValidationResult::Rejected
+            } else {
+                ValidationResult::Approved
+            };
+            assert_eq!(
+                ExternalPluginAdapter::validate_update_external_plugin_adapter(&adapter, &ctx)
+                    .unwrap(),
+                expected,
+                "{adapter_type:?} with the record authority"
+            );
+
+            // A signer that does not resolve to the record authority: the base
+            // result is `Pass`, which the processor turns into
+            // `InvalidAuthority`.
+            let mut ctx = default_ctx(&[], &signer_info, &self_authority);
+            ctx.resolved_authorities = Some(&unrelated);
+            ctx.target_external_plugin = Some(&target);
+            let expected = if adapter_type == ExternalPluginAdapterType::DataSection {
+                ValidationResult::Rejected
+            } else {
+                ValidationResult::Pass
+            };
+            assert_eq!(
+                ExternalPluginAdapter::validate_update_external_plugin_adapter(&adapter, &ctx)
+                    .unwrap(),
+                expected,
+                "{adapter_type:?} with a foreign authority"
+            );
+        }
+    }
+
+    #[test]
+    fn check_create_and_check_execute_hook_arms() {
+        let hooked_program = Pubkey::new_unique();
+        let checks = |event| vec![(event, ExternalCheckResult { flags: 0x4 })];
+
+        for event in [
+            HookableLifecycleEvent::Create,
+            HookableLifecycleEvent::Execute,
+        ] {
+            let hook = ExternalPluginAdapterInitInfo::LifecycleHook(LifecycleHookInitInfo {
+                hooked_program,
+                init_plugin_authority: None,
+                lifecycle_checks: checks(event.clone()),
+                extra_accounts: None,
+                data_authority: None,
+                schema: None,
+            });
+            let linked =
+                ExternalPluginAdapterInitInfo::LinkedLifecycleHook(LinkedLifecycleHookInitInfo {
+                    hooked_program,
+                    init_plugin_authority: None,
+                    lifecycle_checks: checks(event.clone()),
+                    extra_accounts: None,
+                    data_authority: None,
+                    schema: None,
+                });
+
+            let is_create = event == HookableLifecycleEvent::Create;
+            for init in [hook, linked] {
+                assert_eq!(
+                    ExternalPluginAdapter::check_create(&init),
+                    if is_create {
+                        ExternalCheckResult { flags: 0x4 }
+                    } else {
+                        ExternalCheckResult::none()
+                    }
+                );
+                assert_eq!(
+                    ExternalPluginAdapter::check_execute(&init),
+                    if is_create {
+                        ExternalCheckResult::none()
+                    } else {
+                        ExternalCheckResult { flags: 0x4 }
+                    }
+                );
+            }
+        }
+
+        // `check_execute` for the remaining variants (no callers in the
+        // program; roadmap section 11, finding 7).
+        for init in [
+            ExternalPluginAdapterInitInfo::LinkedAppData(crate::plugins::LinkedAppDataInitInfo {
+                data_authority: data_authority(),
+                init_plugin_authority: None,
+                schema: None,
+            }),
+            ExternalPluginAdapterInitInfo::DataSection(crate::plugins::DataSectionInitInfo {
+                parent_key: LinkedDataKey::LinkedAppData(data_authority()),
+                schema: ExternalPluginAdapterSchema::Binary,
+            }),
+            ExternalPluginAdapterInitInfo::Oracle(crate::plugins::OracleInitInfo {
+                base_address: Pubkey::new_unique(),
+                init_plugin_authority: None,
+                lifecycle_checks: vec![],
+                base_address_config: None,
+                results_offset: None,
+            }),
+            ExternalPluginAdapterInitInfo::AgentIdentity(crate::plugins::AgentIdentityInitInfo {
+                uri: "u".to_string(),
+                init_plugin_authority: None,
+                lifecycle_checks: vec![],
+            }),
+        ] {
+            assert_eq!(
+                ExternalPluginAdapter::check_execute(&init),
+                ExternalCheckResult::none()
+            );
+        }
+    }
+
+    #[test]
+    fn key_from_record_reads_the_account_bytes_for_every_type() {
+        for adapter in every_adapter() {
+            let plugin_type = ExternalPluginAdapterType::from(&adapter);
+            // The adapter bytes sit at `offset`, preceded by padding so the
+            // offset arithmetic is exercised.
+            let offset = 16usize;
+            let mut data = vec![0u8; offset];
+            data.extend(borsh::to_vec(&adapter).unwrap());
+            let mut account = FakeAccount::with_data(data);
+            let info = account.info();
+
+            let record = ExternalRegistryRecord {
+                plugin_type,
+                authority: Authority::UpdateAuthority,
+                lifecycle_checks: None,
+                offset,
+                data_offset: None,
+                data_len: None,
+            };
+            assert_eq!(
+                ExternalPluginAdapterKey::from_record(&info, &record).unwrap(),
+                crate::plugins::test_ctx::adapter_key(&adapter),
+                "from_record for {plugin_type:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn load_and_save_round_trip_through_an_account() {
+        let adapter = ExternalPluginAdapter::AppData(AppData {
+            data_authority: data_authority(),
+            schema: ExternalPluginAdapterSchema::Binary,
+        });
+        let bytes = borsh::to_vec(&adapter).unwrap();
+        let mut account = FakeAccount::with_data(vec![0u8; bytes.len() + 8]);
+        let info = account.info();
+
+        adapter.save(&info, 8).unwrap();
+        assert_eq!(ExternalPluginAdapter::load(&info, 8).unwrap(), adapter);
+
+        // A corrupted discriminator is a clean `DeserializationError`.
+        info.data.borrow_mut()[8] = 0xFF;
+        assert_eq!(
+            ExternalPluginAdapter::load(&info, 8).unwrap_err(),
+            MplCoreError::DeserializationError.into()
+        );
+    }
+}

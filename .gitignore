@@ -14,3 +14,5 @@ corebAsZhvD7wa9UiwMiqdbmminpxCp1AxvTrFJbizL.json
 CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d.json
 clients/js/yarn.lock
 clients/js/output.json
+coverage
+*.profraw

@@ -214,3 +214,289 @@ impl OracleValidation {
         5
     }
 }
+
+#[cfg(test)]
+mod validation_tests {
+    use {
+        super::*,
+        crate::plugins::{
+            test_ctx::{default_ctx, FakeAccount},
+            ExtraAccount,
+        },
+        solana_program::account_info::AccountInfo,
+    };
+
+    fn core_err<T>(result: Result<T, ProgramError>) -> crate::error::MplCoreError {
+        match result {
+            Err(ProgramError::Custom(code)) => {
+                num_traits::FromPrimitive::from_u32(code).expect("an MplCoreError code")
+            }
+            Err(other) => panic!("expected a custom program error, got {other:?}"),
+            Ok(_) => panic!("expected an error"),
+        }
+    }
+
+    fn validation(result: &ExternalValidationResult) -> OracleValidation {
+        OracleValidation::V1 {
+            create: result.clone(),
+            transfer: result.clone(),
+            burn: result.clone(),
+            update: result.clone(),
+        }
+    }
+
+    /// `offset` zero bytes followed by the serialized validation, as the
+    /// on-chain fixture builds them.
+    fn oracle_bytes(validation: &OracleValidation, offset: usize) -> Vec<u8> {
+        let mut data = vec![0u8; offset];
+        data.extend(borsh::to_vec(validation).unwrap());
+        data
+    }
+
+    #[test]
+    fn to_offset_usize_and_serialized_size() {
+        assert_eq!(ValidationResultsOffset::NoOffset.to_offset_usize(), 0);
+        assert_eq!(ValidationResultsOffset::Anchor.to_offset_usize(), 8);
+        assert_eq!(ValidationResultsOffset::Custom(42).to_offset_usize(), 42);
+        assert_eq!(OracleValidation::serialized_size(), 5);
+        assert_eq!(
+            borsh::to_vec(&validation(&ExternalValidationResult::Pass))
+                .unwrap()
+                .len(),
+            OracleValidation::serialized_size()
+        );
+    }
+
+    #[test]
+    fn oracle_update_and_init_conversions() {
+        let base = Pubkey::new_unique();
+        let init = OracleInitInfo {
+            base_address: base,
+            init_plugin_authority: None,
+            lifecycle_checks: vec![],
+            base_address_config: None,
+            results_offset: None,
+        };
+        // A missing `results_offset` defaults to `NoOffset`.
+        assert_eq!(
+            Oracle::from(&init),
+            Oracle {
+                base_address: base,
+                base_address_config: None,
+                results_offset: ValidationResultsOffset::NoOffset,
+            }
+        );
+
+        let config = ExtraAccount::PreconfiguredAsset {
+            is_signer: false,
+            is_writable: false,
+        };
+        let init = OracleInitInfo {
+            results_offset: Some(ValidationResultsOffset::Anchor),
+            base_address_config: Some(config.clone()),
+            ..init
+        };
+        assert_eq!(
+            Oracle::from(&init),
+            Oracle {
+                base_address: base,
+                base_address_config: Some(config.clone()),
+                results_offset: ValidationResultsOffset::Anchor,
+            }
+        );
+
+        // `update` only writes the fields that are `Some`.
+        let mut oracle = Oracle {
+            base_address: base,
+            base_address_config: None,
+            results_offset: ValidationResultsOffset::NoOffset,
+        };
+        oracle.update(&OracleUpdateInfo {
+            lifecycle_checks: None,
+            base_address_config: None,
+            results_offset: None,
+        });
+        assert_eq!(oracle.base_address_config, None);
+        assert_eq!(oracle.results_offset, ValidationResultsOffset::NoOffset);
+
+        oracle.update(&OracleUpdateInfo {
+            lifecycle_checks: None,
+            base_address_config: Some(config.clone()),
+            results_offset: Some(ValidationResultsOffset::Custom(9)),
+        });
+        assert_eq!(oracle.base_address_config, Some(config));
+        assert_eq!(oracle.results_offset, ValidationResultsOffset::Custom(9));
+    }
+
+    #[test]
+    fn validate_helper_returns_the_arm_for_each_event() {
+        let base = Pubkey::new_unique();
+        let self_authority = Authority::UpdateAuthority;
+
+        for (result, expected) in [
+            (
+                ExternalValidationResult::Approved,
+                ValidationResult::Approved,
+            ),
+            (
+                ExternalValidationResult::Rejected,
+                ValidationResult::Rejected,
+            ),
+            (ExternalValidationResult::Pass, ValidationResult::Pass),
+        ] {
+            let mut signer = FakeAccount::wallet();
+            let mut account = FakeAccount::with_data(oracle_bytes(&validation(&result), 0));
+            account.key = base;
+            let signer_info = signer.info();
+            let info = account.info();
+            let accounts: Vec<AccountInfo> = vec![info];
+            let ctx = default_ctx(&accounts, &signer_info, &self_authority);
+            let oracle = Oracle {
+                base_address: base,
+                base_address_config: None,
+                results_offset: ValidationResultsOffset::NoOffset,
+            };
+
+            assert_eq!(oracle.validate_create(&ctx).unwrap(), expected);
+            assert_eq!(oracle.validate_transfer(&ctx).unwrap(), expected);
+            assert_eq!(oracle.validate_burn(&ctx).unwrap(), expected);
+            assert_eq!(oracle.validate_update(&ctx).unwrap(), expected);
+
+            // Roadmap section 11, finding 3: the `Execute` arm of the helper
+            // always passes, and nothing routes Oracle's execute through it.
+            assert_eq!(
+                oracle
+                    .validate_helper(&ctx, HookableLifecycleEvent::Execute)
+                    .unwrap(),
+                ValidationResult::Pass
+            );
+        }
+    }
+
+    #[test]
+    fn validate_helper_error_arms() {
+        let base = Pubkey::new_unique();
+        let self_authority = Authority::UpdateAuthority;
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+
+        let oracle = |results_offset| Oracle {
+            base_address: base,
+            base_address_config: None,
+            results_offset,
+        };
+
+        // The account is not among `ctx.accounts` at all.
+        let ctx = default_ctx(&[], &signer_info, &self_authority);
+        assert_eq!(
+            core_err(oracle(ValidationResultsOffset::NoOffset).validate_transfer(&ctx)),
+            crate::error::MplCoreError::MissingExternalPluginAdapterAccount
+        );
+
+        // (account bytes, stored offset, expected error)
+        let cases = [
+            (vec![1u8, 0, 0], ValidationResultsOffset::NoOffset),
+            (vec![1u8, 2, 2, 2, 2], ValidationResultsOffset::Custom(64)),
+        ];
+        for (bytes, offset) in cases {
+            let mut loop_signer = FakeAccount::wallet();
+            let mut account = FakeAccount::with_data(bytes);
+            account.key = base;
+            let loop_signer_info = loop_signer.info();
+            let info = account.info();
+            let accounts: Vec<AccountInfo> = vec![info];
+            let ctx = default_ctx(&accounts, &loop_signer_info, &self_authority);
+            assert_eq!(
+                core_err(oracle(offset).validate_transfer(&ctx)),
+                crate::error::MplCoreError::InvalidOracleAccountData
+            );
+        }
+
+        // A discriminant that is neither `Uninitialized` nor `V1`.
+        let mut account = FakeAccount::with_data(vec![2u8, 0, 0, 0, 0]);
+        account.key = base;
+        let info = account.info();
+        let accounts: Vec<AccountInfo> = vec![info];
+        let ctx = default_ctx(&accounts, &signer_info, &self_authority);
+        assert_eq!(
+            core_err(oracle(ValidationResultsOffset::NoOffset).validate_transfer(&ctx)),
+            crate::error::MplCoreError::InvalidOracleAccountData
+        );
+
+        // An all-zero account deserializes as `Uninitialized`.
+        let mut account = FakeAccount::with_data(vec![0u8; 16]);
+        account.key = base;
+        let info = account.info();
+        let accounts: Vec<AccountInfo> = vec![info];
+        let ctx = default_ctx(&accounts, &signer_info, &self_authority);
+        assert_eq!(
+            core_err(oracle(ValidationResultsOffset::NoOffset).validate_transfer(&ctx)),
+            crate::error::MplCoreError::UninitializedOracleAccount
+        );
+
+        // An `Anchor` offset skips the 8-byte discriminator.
+        let mut account = FakeAccount::with_data(oracle_bytes(
+            &validation(&ExternalValidationResult::Rejected),
+            8,
+        ));
+        account.key = base;
+        let info = account.info();
+        let accounts: Vec<AccountInfo> = vec![info];
+        let ctx = default_ctx(&accounts, &signer_info, &self_authority);
+        assert_eq!(
+            oracle(ValidationResultsOffset::Anchor)
+                .validate_transfer(&ctx)
+                .unwrap(),
+            ValidationResult::Rejected
+        );
+    }
+
+    #[test]
+    fn validate_helper_derives_the_account_from_the_config() {
+        let base = Pubkey::new_unique();
+        let self_authority = Authority::UpdateAuthority;
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+
+        let derived =
+            Pubkey::find_program_address(&[crate::plugins::MPL_CORE_PREFIX.as_bytes()], &base).0;
+        let mut account = FakeAccount::with_data(oracle_bytes(
+            &validation(&ExternalValidationResult::Rejected),
+            0,
+        ));
+        account.key = derived;
+        let info = account.info();
+        let accounts: Vec<AccountInfo> = vec![info];
+        let ctx = default_ctx(&accounts, &signer_info, &self_authority);
+
+        let oracle = Oracle {
+            base_address: base,
+            base_address_config: Some(ExtraAccount::PreconfiguredProgram {
+                is_signer: false,
+                is_writable: false,
+            }),
+            results_offset: ValidationResultsOffset::NoOffset,
+        };
+        assert_eq!(
+            oracle.validate_transfer(&ctx).unwrap(),
+            ValidationResult::Rejected
+        );
+    }
+
+    #[test]
+    fn validate_add_external_plugin_adapter_abstains() {
+        let self_authority = Authority::UpdateAuthority;
+        let mut signer = FakeAccount::wallet();
+        let signer_info = signer.info();
+        let ctx = default_ctx(&[], &signer_info, &self_authority);
+        let oracle = Oracle {
+            base_address: Pubkey::new_unique(),
+            base_address_config: None,
+            results_offset: ValidationResultsOffset::NoOffset,
+        };
+        assert_eq!(
+            oracle.validate_add_external_plugin_adapter(&ctx).unwrap(),
+            ValidationResult::Pass
+        );
+    }
+}

@@ -1,0 +1,225 @@
+name: Coverage
+
+on:
+    workflow_call:
+        inputs:
+            program_matrix:
+                type: string
+            git_ref:
+                type: string
+    workflow_dispatch:
+        inputs:
+            git_ref:
+                description: Commit hash, branch, or tag to measure
+                default: main
+                required: true
+                type: string
+
+# Read-only by default; the coverage job below only adds `pull-requests: write`
+# so it can post the sticky coverage comment.
+permissions:
+    contents: read
+
+env:
+    CACHE: true
+
+jobs:
+    coverage:
+        name: Coverage
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: write
+        strategy:
+            matrix:
+                program: ${{ fromJson(inputs.program_matrix || '["mpl-core"]') }}
+        steps:
+            - name: Git checkout
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.git_ref }}
+                  # Nothing here pushes, so keep the token out of the checkout.
+                  persist-credentials: false
+
+            - name: Load environment variables
+              run: |
+                  # Allowlist instead of a blanket `cat .github/.env >> "$GITHUB_ENV"` so a
+                  # PR-editable key in `.github/.env` cannot inject arbitrary env vars into
+                  # subsequent steps.
+                  grep -E '^(CARGO_TERM_COLOR|RUST_VERSION|PROGRAMS)=' .github/.env >> "$GITHUB_ENV"
+
+            - name: Install Rust
+              uses: metaplex-foundation/actions/install-rust@v1
+              with:
+                  toolchain: ${{ env.RUST_VERSION }}
+
+            - name: Install llvm-tools
+              # `rust-toolchain.toml` pins the toolchain the tests build with, so add
+              # the component to that one rather than to a version string.
+              run: rustup component add llvm-tools-preview
+
+            - name: Install cargo-llvm-cov
+              uses: taiki-e/install-action@cargo-llvm-cov
+
+            - name: Install Protobuf Compiler
+              run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+            - name: Cache program dependencies
+              if: env.CACHE == 'true'
+              uses: metaplex-foundation/actions/cache-program@v1
+              with:
+                  folder: ./programs/${{ matrix.program }}
+                  key: program-coverage-${{ matrix.program }}
+
+            - name: Generate coverage report
+              id: coverage
+              shell: bash
+              # Exits non-zero when the program is below the thresholds in
+              # `programs/<program>/coverage-thresholds.json`, which fails the job;
+              # the reports are written first and the steps below run regardless.
+              run: RUST_LOG=error ./configs/scripts/program/coverage.sh
+              env:
+                  PROGRAM: ${{ matrix.program }}
+
+            - name: Publish coverage summary
+              if: always()
+              shell: bash
+              env:
+                  GATE_OUTCOME: ${{ steps.coverage.outcome }}
+              run: |
+                  SUMMARY="coverage/${{ matrix.program }}/summary.txt"
+                  JSON="coverage/${{ matrix.program }}/coverage.json"
+                  GATE="coverage/${{ matrix.program }}/gate.json"
+                  THRESHOLDS="programs/${{ matrix.program }}/coverage-thresholds.json"
+                  # Thresholds in effect: from gate.json when the script got that far
+                  # (it also reflects a COVERAGE_MIN_LINES override), otherwise from
+                  # the committed thresholds file.
+                  THRESHOLDS_JSON='{}'
+                  if [ -f "$GATE" ]; then
+                    THRESHOLDS_JSON="$(jq -c '.thresholds' "$GATE")"
+                  elif [ -f "$THRESHOLDS" ]; then
+                    THRESHOLDS_JSON="$(jq -c '.' "$THRESHOLDS")"
+                  fi
+                  GATE_TEXT="$(jq -r '
+                    [ (.lines // empty | "lines >= \(.)%"),
+                      (.functions // empty | "functions >= \(.)%"),
+                      (.regions // empty | "regions >= \(.)%"),
+                      (.file_lines // empty | "every file >= \(.)% lines") ]
+                    | if length == 0 then "none" else join(", ") end' <<< "$THRESHOLDS_JSON")"
+                  if [ -f "$GATE" ] && [ "$(jq -r '.passed' "$GATE")" = "true" ] && [ "$GATE_OUTCOME" = "success" ]; then
+                    GATE_STATUS="passed"
+                  elif [ -f "$GATE" ]; then
+                    GATE_STATUS="FAILED"
+                  else
+                    GATE_STATUS="not evaluated (coverage generation failed)"
+                  fi
+                  {
+                    echo "## Coverage: ${{ matrix.program }}"
+                    echo
+                    echo "**Gate:** ${GATE_TEXT} — **${GATE_STATUS}**"
+                    echo
+                    if [ -f "$JSON" ]; then
+                      jq -r '.data[0].totals
+                        | "| Metric | Covered | Total | Percent |",
+                          "| --- | ---: | ---: | ---: |",
+                          "| Lines | \(.lines.covered) | \(.lines.count) | \(.lines.percent | . * 100 | round / 100)% |",
+                          "| Functions | \(.functions.covered) | \(.functions.count) | \(.functions.percent | . * 100 | round / 100)% |",
+                          "| Regions | \(.regions.covered) | \(.regions.count) | \(.regions.percent | . * 100 | round / 100)% |"' "$JSON"
+                      echo
+                      echo "Covers the crate's unit tests and its Mollusk integration tests (run against the host-compiled program)."
+                      echo
+                    fi
+                    if [ -f "$SUMMARY" ]; then
+                      echo "<details><summary>Per-file breakdown</summary>"
+                      echo
+                      echo '```'
+                      cat "$SUMMARY"
+                      echo '```'
+                      echo
+                      echo "</details>"
+                    else
+                      echo "No coverage report was produced."
+                    fi
+                  } >> "$GITHUB_STEP_SUMMARY"
+
+            - name: Post coverage comment on the pull request
+              # Only same-repository PRs: the token is read-only on PRs from forks,
+              # where the job summary above is the fallback.
+              if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+              uses: actions/github-script@v7
+              env:
+                  PROGRAM: ${{ matrix.program }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  GATE_OUTCOME: ${{ steps.coverage.outcome }}
+              with:
+                  script: |
+                      const fs = require('fs');
+                      const program = process.env.PROGRAM;
+                      const runUrl = process.env.RUN_URL;
+                      const marker = `<!-- coverage-report:${program} -->`;
+                      const dir = `coverage/${program}`;
+
+                      const pct = (value) => `${Math.round(value * 100) / 100}%`;
+                      const readJson = (path) => (fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, 'utf8')) : null);
+
+                      // Thresholds in effect: from gate.json when the script got that far,
+                      // otherwise from the committed thresholds file.
+                      const gate = readJson(`${dir}/gate.json`);
+                      const thresholds = gate ? gate.thresholds : (readJson(`programs/${program}/coverage-thresholds.json`) ?? {});
+                      const gateParts = [];
+                      if (thresholds.lines != null) gateParts.push(`lines >= ${thresholds.lines}%`);
+                      if (thresholds.functions != null) gateParts.push(`functions >= ${thresholds.functions}%`);
+                      if (thresholds.regions != null) gateParts.push(`regions >= ${thresholds.regions}%`);
+                      if (thresholds.file_lines != null) gateParts.push(`every file >= ${thresholds.file_lines}% lines`);
+                      const gateText = gateParts.length ? gateParts.join(', ') : 'none';
+                      const gateStatus = gate
+                        ? (gate.passed && process.env.GATE_OUTCOME === 'success' ? 'passed' : 'FAILED')
+                        : 'not evaluated (coverage generation failed)';
+
+                      let body = `${marker}\n## Coverage: \`${program}\`\n\n`;
+                      body += `**Gate:** ${gateText} — **${gateStatus}**\n\n`;
+
+                      if (fs.existsSync(`${dir}/coverage.json`)) {
+                        const totals = JSON.parse(fs.readFileSync(`${dir}/coverage.json`, 'utf8')).data[0].totals;
+                        body += '| Metric | Covered | Total | Percent |\n';
+                        body += '| --- | ---: | ---: | ---: |\n';
+                        for (const [label, key] of [['Lines', 'lines'], ['Functions', 'functions'], ['Regions', 'regions']]) {
+                          const t = totals[key];
+                          body += `| ${label} | ${t.covered} | ${t.count} | ${pct(t.percent)} |\n`;
+                        }
+                        body += '\nCovers the crate\'s unit tests and its Mollusk integration tests (run against the host-compiled program).\n';
+                        if (fs.existsSync(`${dir}/summary.txt`)) {
+                          body += '\n<details><summary>Per-file breakdown</summary>\n\n```\n';
+                          body += fs.readFileSync(`${dir}/summary.txt`, 'utf8').trimEnd();
+                          body += '\n```\n\n</details>\n';
+                        }
+                        body += `\nFull report (LCOV, JSON, HTML, uncovered lines in \`missing.txt\`) is the \`coverage-${program}\` artifact on [this workflow run](${runUrl}).\n`;
+                      } else {
+                        body += `Coverage generation failed. See [the workflow run](${runUrl}) for details.\n`;
+                      }
+
+                      body += `\n<sub>Updated for ${context.payload.pull_request.head.sha}</sub>\n`;
+
+                      const { owner, repo } = context.repo;
+                      const issue_number = context.payload.pull_request.number;
+                      const comments = await github.paginate(github.rest.issues.listComments, {
+                        owner, repo, issue_number, per_page: 100,
+                      });
+                      // Only ever update the workflow's own comment: a user could paste the
+                      // marker into theirs, and the token has write access to it.
+                      const existing = comments.find(
+                        (c) => c.user?.login === 'github-actions[bot]' && c.body?.includes(marker),
+                      );
+                      if (existing) {
+                        await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+                      } else {
+                        await github.rest.issues.createComment({ owner, repo, issue_number, body });
+                      }
+
+            - name: Upload coverage report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-${{ matrix.program }}
+                  path: coverage/${{ matrix.program }}
+                  if-no-files-found: error
