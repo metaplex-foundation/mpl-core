@@ -1,41 +1,24 @@
 import {
-  AddBlocker,
-  Attributes,
   AttributesArgs,
-  Autograph,
-  AutographArgs,
   BaseMasterEditionArgs,
   BasePluginAuthority,
   BaseRoyaltiesArgs,
-  BubblegumV2,
-  BurnDelegate,
-  Edition,
   EditionArgs,
-  FreezeDelegate,
   FreezeDelegateArgs,
-  FreezeExecute,
   FreezeExecuteArgs,
-  Groups,
   GroupsArgs,
-  ImmutableMetadata,
-  PermanentBurnDelegate,
-  PermanentFreezeDelegate,
   PermanentFreezeDelegateArgs,
-  PermanentFreezeExecute,
   PermanentFreezeExecuteArgs,
-  PermanentTransferDelegate,
+  UpdateDelegateArgs,
   basePluginAuthority as pluginAuthority,
   baseRuleSet as ruleSet,
-  TransferDelegate,
   baseUpdateAuthority as updateAuthority,
-  UpdateDelegate,
-  UpdateDelegateArgs,
-  VerifiedCreators,
-  VerifiedCreatorsArgs,
 } from '../generated';
-import { MasterEdition, MasterEditionArgs } from './masterEdition';
 import { PluginAuthority } from './pluginAuthority';
-import { RoyaltiesArgs, RoyaltiesPlugin } from './royalties';
+
+// The plugin type aliases, V2 argument unions, and plugin lists are generated
+// from the IDL + program-derived plugin manifest.
+export * from '../generated/plugins/internal';
 
 // for backwards compatibility
 export { pluginAuthority, ruleSet, updateAuthority };
@@ -49,6 +32,10 @@ export type PluginAuthorityPairHelperArgs = CreatePluginArgs & {
   authority?: BasePluginAuthority;
 };
 
+/**
+ * @deprecated Use the V2 plugin argument unions (e.g. `AssetAllPluginArgsV2`)
+ * with the `create`/`addPlugin` helpers instead.
+ */
 export type CreatePluginArgs =
   | {
       type: 'Royalties';
@@ -111,147 +98,3 @@ export type CreatePluginArgs =
       type: 'PermanentFreezeExecute';
       data: PermanentFreezeExecuteArgs;
     };
-
-export type AuthorityArgsV2 = {
-  authority?: PluginAuthority;
-};
-
-export type CreateOnlyPluginArgsV2 =
-  | ({
-      type: 'PermanentFreezeDelegate';
-    } & PermanentFreezeDelegateArgs)
-  | {
-      type: 'PermanentTransferDelegate';
-    }
-  | {
-      type: 'PermanentBurnDelegate';
-    }
-  | ({
-      type: 'Edition';
-    } & EditionArgs)
-  | {
-      type: 'BubblegumV2';
-    }
-  | ({
-      type: 'PermanentFreezeExecute';
-    } & PermanentFreezeExecuteArgs);
-
-export type OwnerManagedPluginArgsV2 =
-  | ({
-      type: 'FreezeDelegate';
-    } & FreezeDelegateArgs)
-  | {
-      type: 'BurnDelegate';
-    }
-  | {
-      type: 'TransferDelegate';
-    }
-  | ({
-      type: 'Autograph';
-    } & AutographArgs)
-  | ({
-      type: 'FreezeExecute';
-    } & FreezeExecuteArgs);
-
-export type AuthorityManagedPluginArgsV2 =
-  | ({
-      type: 'Royalties';
-    } & RoyaltiesArgs)
-  | ({
-      type: 'UpdateDelegate';
-    } & UpdateDelegateArgs)
-  | ({
-      type: 'Attributes';
-    } & AttributesArgs)
-  | ({
-      type: 'Groups';
-    } & GroupsArgs)
-  | ({
-      type: 'MasterEdition';
-    } & MasterEditionArgs)
-  | {
-      type: 'ImmutableMetadata';
-    }
-  | {
-      type: 'AddBlocker';
-    }
-  | ({
-      type: 'VerifiedCreators';
-    } & VerifiedCreatorsArgs);
-
-export type AssetAddablePluginArgsV2 =
-  | OwnerManagedPluginArgsV2
-  | AuthorityManagedPluginArgsV2;
-export type AssetAllPluginArgsV2 =
-  | AssetAddablePluginArgsV2
-  | CreateOnlyPluginArgsV2;
-export type AssetPluginAuthorityPairArgsV2 = AssetAllPluginArgsV2 &
-  AuthorityArgsV2;
-export type AssetAddablePluginAuthorityPairArgsV2 = AssetAddablePluginArgsV2 &
-  AuthorityArgsV2;
-
-export type CollectionAddablePluginArgsV2 = AuthorityManagedPluginArgsV2;
-export type CollectionAllPluginArgsV2 =
-  | CreateOnlyPluginArgsV2
-  | CollectionAddablePluginArgsV2;
-export type CollectionPluginAuthorityPairArgsV2 = CollectionAllPluginArgsV2 &
-  AuthorityArgsV2;
-export type CollectionAddablePluginAuthorityPairArgsV2 =
-  CollectionAddablePluginArgsV2 & AuthorityArgsV2;
-
-export type FreezeDelegatePlugin = BasePlugin & FreezeDelegate;
-export type BurnDelegatePlugin = BasePlugin & BurnDelegate;
-export type TransferDelegatePlugin = BasePlugin & TransferDelegate;
-export type UpdateDelegatePlugin = BasePlugin & UpdateDelegate;
-export type PermanentFreezeDelegatePlugin = BasePlugin &
-  PermanentFreezeDelegate;
-export type AttributesPlugin = BasePlugin & Attributes;
-export type PermanentTransferDelegatePlugin = BasePlugin &
-  PermanentTransferDelegate;
-export type PermanentBurnDelegatePlugin = BasePlugin & PermanentBurnDelegate;
-export type EditionPlugin = BasePlugin & Edition;
-export type MasterEditionPlugin = BasePlugin & MasterEdition;
-export type AddBlockerPlugin = BasePlugin & AddBlocker;
-export type ImmutableMetadataPlugin = BasePlugin & ImmutableMetadata;
-export type VerifiedCreatorsPlugin = BasePlugin & VerifiedCreators;
-export type AutographPlugin = BasePlugin & Autograph;
-export type BubblegumV2Plugin = BasePlugin & BubblegumV2;
-export type FreezeExecutePlugin = BasePlugin & FreezeExecute;
-export type GroupsPlugin = BasePlugin & Groups;
-export type PermanentFreezeExecutePlugin = BasePlugin & PermanentFreezeExecute;
-
-export type CommonPluginsList = {
-  attributes?: AttributesPlugin;
-  groups?: GroupsPlugin;
-  royalties?: RoyaltiesPlugin;
-  updateDelegate?: UpdateDelegatePlugin;
-  permanentFreezeDelegate?: PermanentFreezeDelegatePlugin;
-  permanentTransferDelegate?: PermanentTransferDelegatePlugin;
-  permanentBurnDelegate?: PermanentBurnDelegatePlugin;
-  addBlocker?: AddBlockerPlugin;
-  immutableMetadata?: ImmutableMetadataPlugin;
-  autograph?: AutographPlugin;
-  verifiedCreators?: VerifiedCreatorsPlugin;
-  freezeExecute?: FreezeExecutePlugin;
-  permanentFreezeExecute?: PermanentFreezeExecutePlugin;
-};
-
-export type AssetPluginsList = {
-  freezeDelegate?: FreezeDelegatePlugin;
-  burnDelegate?: BurnDelegatePlugin;
-  transferDelegate?: TransferDelegatePlugin;
-  edition?: EditionPlugin;
-} & CommonPluginsList;
-
-export type CollectionPluginsList = {
-  masterEdition?: MasterEditionPlugin;
-  bubblegumV2?: BubblegumV2Plugin;
-} & CommonPluginsList;
-
-export type PluginsList = AssetPluginsList & CollectionPluginsList;
-
-export type GroupPluginsList = {
-  attributes?: AttributesPlugin;
-  autograph?: AutographPlugin;
-  verifiedCreators?: VerifiedCreatorsPlugin;
-};
