@@ -41,12 +41,21 @@ js_client: &js_client
   - *client_common
   - "clients/js/**"
 
+js_kit_client: &js_kit_client
+  - *client_common
+  - ".github/workflows/test-js-kit-client.yml"
+  - "clients/js-kit/**"
+  - "configs/codama.cjs"
+  - "package.json"
+  - "pnpm-lock.yaml"
+
 rust_client: &rust_client
   - *client_common
   - "clients/rust/**"
 
 clients: &clients
   - *js_client
+  - *js_kit_client
   - *rust_client
 
 # Any.

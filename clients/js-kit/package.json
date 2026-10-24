@@ -1,0 +1,57 @@
+{
+  "dependencies": {
+    "@msgpack/msgpack": "^3.1.3",
+    "@solana/program-client-core": "^8.5.0"
+  },
+  "description": "Solana Kit client for Metaplex Core",
+  "devDependencies": {
+    "@solana/kit": "8.5.0",
+    "@types/node": "^24.0.3",
+    "@typescript-eslint/eslint-plugin": "^8",
+    "@typescript-eslint/parser": "^8",
+    "eslint": "^8",
+    "prettier": "^3.8.1",
+    "rimraf": "^3.0.2",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20.18.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "license": "Apache-2.0",
+  "main": "./dist/index.js",
+  "name": "@metaplex-foundation/mpl-core-kit",
+  "packageManager": "pnpm@8.9.0",
+  "peerDependencies": {
+    "@solana/kit": "^8.5.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "directory": "clients/js-kit",
+    "type": "git",
+    "url": "https://github.com/metaplex-foundation/mpl-core.git"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc -p tsconfig.json",
+    "format": "prettier --check src test",
+    "format:fix": "prettier --write src test",
+    "lint": "eslint src --ext .ts",
+    "test": "node --test test/*.test.mjs",
+    "test:integration": "node --test test/integration/*.test.mjs",
+    "test:package": "node test/package.mjs"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "0.1.0"
+}
