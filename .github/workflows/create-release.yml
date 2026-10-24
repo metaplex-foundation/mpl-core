@@ -73,18 +73,21 @@ jobs:
       with:
         ref: ${{ inputs.git_ref }}
     - name: Bump Program Version
+      env:
+        PROGRAM: ${{ inputs.program }}
+        BUMP: ${{ inputs.bump }}
       run: |
         git fetch --tags --all
-        VERSION=`git tag -l --sort -version:refname "release/${{ inputs.program }}@*" | head -n 1 | sed 's|release/${{ inputs.program }}@||'`
+        VERSION=`git tag -l --sort -version:refname "release/$PROGRAM@*" | head -n 1 | sed 's|release/$PROGRAM@||'`
         MAJOR=`echo ${VERSION} | cut -d. -f1`
         MINOR=`echo ${VERSION} | cut -d. -f2`
         PATCH=`echo ${VERSION} | cut -d. -f3`
         
-        if [ "${{ inputs.bump }}" == "major" ]; then
+        if [ "$BUMP" == "major" ]; then
             MAJOR=$((MAJOR + 1))
             MINOR=0
             PATCH=0
-        elif [ "${{ inputs.bump }}" == "minor" ]; then
+        elif [ "$BUMP" == "minor" ]; then
             MINOR=$((MINOR + 1))
             PATCH=0
         else
@@ -98,8 +101,10 @@ jobs:
     - name: Sanitize Ref
       id: sanitize
       shell: bash
+      env:
+        GIT_REF: ${{ inputs.git_ref }}
       run: |
-        REF="${{ inputs.git_ref }}"
+        REF="$GIT_REF"
         if [ -z "$REF" ]; then
           REF="default"
         fi
