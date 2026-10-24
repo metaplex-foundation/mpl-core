@@ -116,6 +116,7 @@ The plan for taking the program to full coverage, with the per-file gaps, the te
 Each client has its own README with instructions on how to get started. You can find them in the `clients` folder.
 
 - [JavaScript client](./clients/js/README.md)
+- [Kit client](./clients/js-kit/README.md)
 - [Rust client](./clients/rust/README.md)
 
 In order to generate the clients, run the following command.
