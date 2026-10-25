@@ -1,0 +1,21 @@
+[
+  { "name": "Royalties", "manager": "UpdateAuthority", "createOnly": false },
+  { "name": "FreezeDelegate", "manager": "Owner", "createOnly": false },
+  { "name": "BurnDelegate", "manager": "Owner", "createOnly": false },
+  { "name": "TransferDelegate", "manager": "Owner", "createOnly": false },
+  { "name": "UpdateDelegate", "manager": "UpdateAuthority", "createOnly": false },
+  { "name": "PermanentFreezeDelegate", "manager": "UpdateAuthority", "createOnly": true },
+  { "name": "Attributes", "manager": "UpdateAuthority", "createOnly": false },
+  { "name": "PermanentTransferDelegate", "manager": "UpdateAuthority", "createOnly": true },
+  { "name": "PermanentBurnDelegate", "manager": "UpdateAuthority", "createOnly": true },
+  { "name": "Edition", "manager": "UpdateAuthority", "createOnly": true },
+  { "name": "MasterEdition", "manager": "UpdateAuthority", "createOnly": false },
+  { "name": "AddBlocker", "manager": "UpdateAuthority", "createOnly": false },
+  { "name": "ImmutableMetadata", "manager": "UpdateAuthority", "createOnly": false },
+  { "name": "VerifiedCreators", "manager": "UpdateAuthority", "createOnly": false },
+  { "name": "Autograph", "manager": "Owner", "createOnly": false },
+  { "name": "BubblegumV2", "manager": "Address", "createOnly": true },
+  { "name": "FreezeExecute", "manager": "Owner", "createOnly": false },
+  { "name": "PermanentFreezeExecute", "manager": "UpdateAuthority", "createOnly": true },
+  { "name": "Groups", "manager": "UpdateAuthority", "createOnly": false }
+]
