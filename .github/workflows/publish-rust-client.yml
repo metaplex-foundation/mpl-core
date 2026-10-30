@@ -1,5 +1,7 @@
 name: Publish Rust Client
 
+run-name: Publish Rust Client (${{ inputs.level }}${{ inputs.dry_run && ', dry run' || '' }})
+
 on:
   workflow_dispatch:
     inputs:
@@ -8,17 +10,9 @@ on:
         required: true
         default: patch
         type: choice
-        options:
-          - patch
-          - minor
-          - major
-          - rc
-          - beta
-          - alpha
-          - release
-          - version
+        options: [patch, minor, major, rc, beta, alpha, release, version]
       version:
-        description: Version
+        description: Version (when level is `version`)
         required: false
         type: string
       dry_run:
@@ -27,81 +21,43 @@ on:
         default: true
         type: boolean
 
-env:
-  CACHE: true
+permissions: {}
 
 jobs:
   build_programs:
     name: Programs
-    uses: ./.github/workflows/build-programs.yml
-    secrets: inherit
+    uses: metaplex-foundation/actions/.github/workflows/build-programs.yml@269d4cbf2dbbebda3ff5ad7cb00caca8af134fad # v2.0.0
+    permissions:
+      contents: read
 
   build_rust_client:
-    name: Rust Client
-    uses: ./.github/workflows/build-rust-client.yml
-    secrets: inherit
+    name: Rust client
+    uses: metaplex-foundation/actions/.github/workflows/build-rust-client.yml@269d4cbf2dbbebda3ff5ad7cb00caca8af134fad # v2.0.0
+    permissions:
+      contents: read
+    with:
+      apt_packages: protobuf-compiler
 
   test_rust_client:
-    name: Rust Client
+    name: Rust client
     needs: [build_programs, build_rust_client]
-    uses: ./.github/workflows/test-rust-client.yml
-    secrets: inherit
+    uses: metaplex-foundation/actions/.github/workflows/test-rust-client.yml@269d4cbf2dbbebda3ff5ad7cb00caca8af134fad # v2.0.0
+    permissions:
+      contents: read
+    with:
+      apt_packages: protobuf-compiler
+      sbf_tools_version: 4.0.0
 
-  publish_crate:
-    name: Rust Client / Publish Crate
-    runs-on: ubuntu-latest
+  publish:
+    name: Rust client
     needs: test_rust_client
+    uses: metaplex-foundation/actions/.github/workflows/publish-rust-client.yml@269d4cbf2dbbebda3ff5ad7cb00caca8af134fad # v2.0.0
     permissions:
       contents: write
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v4
-
-      - name: Load environment variables
-        run: cat .github/.env >> $GITHUB_ENV
-
-      - name: Install Rust
-        uses: metaplex-foundation/actions/install-rust@v1
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
-
-      - name: Install cargo-release
-        uses: metaplex-foundation/actions/install-cargo-release@v1
-        with:
-          cache: ${{ env.CACHE }}
-
-      - name: Publish crate
-        working-directory: ./clients/rust
-        run: |
-          if [ "${{ inputs.level }}" == "version" ]; then
-            BUMP=${{ inputs.version }}
-          else
-            BUMP=${{ inputs.level }}
-          fi
-
-          if [ "${{ inputs.dry_run }}" == "false" ]; then
-            OPTIONS="--no-push --no-tag --no-confirm --execute"
-            git config user.name ${{ env.COMMIT_USER_NAME }}
-            git config user.email ${{ env.COMMIT_USER_EMAIL }}
-          fi
-
-          echo "Cargo logging in"
-          cargo login ${{ secrets.CRATES_TOKEN }}
-          echo "Cargo release"
-          cargo release $BUMP $OPTIONS
-
-          if [ "${{ inputs.dry_run }}" == "false" ]; then
-            git reset --soft HEAD~1
-          fi
-
-          CLIENT_NAME=`grep -E '^name\s*=' Cargo.toml | awk -F '"' '{print $2}'`
-          CLIENT_VERSION=`grep -E '^version\s*=' Cargo.toml | awk -F '"' '{print $2}'`
-          echo CLIENT_NAME="${CLIENT_NAME}" >> $GITHUB_ENV
-          echo CLIENT_VERSION="${CLIENT_VERSION}" >> $GITHUB_ENV
-
-      - name: Commit and tag new version
-        uses: stefanzweifel/git-auto-commit-action@v4
-        if: github.event.inputs.dry_run == 'false'
-        with:
-          commit_message: "chore: Release ${{ env.CLIENT_NAME }} version ${{ env.CLIENT_VERSION }}"
-          tagging_message: ${{ env.CLIENT_NAME }}@v${{ env.CLIENT_VERSION }}
+      pull-requests: write
+    secrets:
+      CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+    with:
+      level: ${{ inputs.level }}
+      version: ${{ inputs.version }}
+      dry_run: ${{ inputs.dry_run }}
