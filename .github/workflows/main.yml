@@ -19,7 +19,7 @@ permissions: {}
 jobs:
   changes:
     name: Detect changes
-    uses: metaplex-foundation/actions/.github/workflows/detect-changes.yml@da62cf9659efdd4e28daa0c777535ea5f54ab53a # v2.0.0
+    uses: metaplex-foundation/actions/.github/workflows/detect-changes.yml@6064713458c329034014d12f2f27488b592ad8a4 # v2.0.0
     permissions:
       contents: read
       pull-requests: read
@@ -28,7 +28,7 @@ jobs:
     name: Programs
     if: needs.changes.outputs.any == 'true'
     needs: changes
-    uses: metaplex-foundation/actions/.github/workflows/build-programs.yml@da62cf9659efdd4e28daa0c777535ea5f54ab53a # v2.0.0
+    uses: metaplex-foundation/actions/.github/workflows/build-programs.yml@6064713458c329034014d12f2f27488b592ad8a4 # v2.0.0
     permissions:
       contents: read
 
@@ -36,7 +36,7 @@ jobs:
     name: Programs
     if: needs.changes.outputs.programs == 'true'
     needs: changes
-    uses: metaplex-foundation/actions/.github/workflows/test-programs.yml@da62cf9659efdd4e28daa0c777535ea5f54ab53a # v2.0.0
+    uses: metaplex-foundation/actions/.github/workflows/test-programs.yml@6064713458c329034014d12f2f27488b592ad8a4 # v2.0.0
     permissions:
       contents: read
     with:
@@ -48,7 +48,7 @@ jobs:
     name: Programs
     if: needs.changes.outputs.programs == 'true'
     needs: changes
-    uses: metaplex-foundation/actions/.github/workflows/coverage.yml@da62cf9659efdd4e28daa0c777535ea5f54ab53a # v2.0.0
+    uses: metaplex-foundation/actions/.github/workflows/coverage.yml@6064713458c329034014d12f2f27488b592ad8a4 # v2.0.0
     permissions:
       contents: read
       pull-requests: write
@@ -60,7 +60,7 @@ jobs:
     name: Generate clients
     if: needs.changes.outputs.any == 'true'
     needs: [changes, build_programs]
-    uses: metaplex-foundation/actions/.github/workflows/generate-clients.yml@da62cf9659efdd4e28daa0c777535ea5f54ab53a # v2.0.0
+    uses: metaplex-foundation/actions/.github/workflows/generate-clients.yml@6064713458c329034014d12f2f27488b592ad8a4 # v2.0.0
     permissions:
       contents: read
 
@@ -68,7 +68,7 @@ jobs:
     name: JS Client
     if: needs.changes.outputs.js_client == 'true'
     needs: [changes, generate_clients]
-    uses: metaplex-foundation/actions/.github/workflows/test-js-client.yml@da62cf9659efdd4e28daa0c777535ea5f54ab53a # v2.0.0
+    uses: metaplex-foundation/actions/.github/workflows/test-js-client.yml@6064713458c329034014d12f2f27488b592ad8a4 # v2.0.0
     permissions:
       contents: read
 
@@ -76,7 +76,7 @@ jobs:
     name: Benchmark
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: generate_clients
-    uses: metaplex-foundation/actions/.github/workflows/benchmark.yml@da62cf9659efdd4e28daa0c777535ea5f54ab53a # v2.0.0
+    uses: metaplex-foundation/actions/.github/workflows/benchmark.yml@6064713458c329034014d12f2f27488b592ad8a4 # v2.0.0
     permissions:
       contents: write
       deployments: write
@@ -88,7 +88,7 @@ jobs:
     name: Benchmark Summary
     if: github.event_name == 'pull_request'
     needs: generate_clients
-    uses: metaplex-foundation/actions/.github/workflows/benchmark.yml@da62cf9659efdd4e28daa0c777535ea5f54ab53a # v2.0.0
+    uses: metaplex-foundation/actions/.github/workflows/benchmark.yml@6064713458c329034014d12f2f27488b592ad8a4 # v2.0.0
     permissions:
       contents: write
       deployments: write
@@ -100,7 +100,7 @@ jobs:
     name: Rust Client
     if: needs.changes.outputs.rust_client == 'true'
     needs: [changes, generate_clients]
-    uses: metaplex-foundation/actions/.github/workflows/build-rust-client.yml@da62cf9659efdd4e28daa0c777535ea5f54ab53a # v2.0.0
+    uses: metaplex-foundation/actions/.github/workflows/build-rust-client.yml@6064713458c329034014d12f2f27488b592ad8a4 # v2.0.0
     permissions:
       contents: read
     with:
@@ -110,7 +110,7 @@ jobs:
     name: Rust Client
     if: needs.changes.outputs.rust_client == 'true'
     needs: [changes, generate_clients]
-    uses: metaplex-foundation/actions/.github/workflows/test-rust-client.yml@da62cf9659efdd4e28daa0c777535ea5f54ab53a # v2.0.0
+    uses: metaplex-foundation/actions/.github/workflows/test-rust-client.yml@6064713458c329034014d12f2f27488b592ad8a4 # v2.0.0
     permissions:
       contents: read
     with:
