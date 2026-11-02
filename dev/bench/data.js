@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792857145169,
+  "lastUpdate": 1793655937860,
   "repoUrl": "https://github.com/metaplex-foundation/mpl-core",
   "entries": {
     "Benchmark": [
@@ -12097,6 +12097,120 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/metaplex-foundation/mpl-core/commit/a5c35db436fdb6382ac75b1d59205d769c4762ea"
         },
         "date": 1792857144438,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "CU: create a new, empty asset",
+            "value": 7716,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new, empty asset with empty collection",
+            "value": 16598,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new, empty asset with empty collection",
+            "value": 91,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins",
+            "value": 26429,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: create a new asset with plugins and empty collection",
+            "value": 31882,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "Space: create a new asset with plugins and empty collection",
+            "value": 194,
+            "unit": "Bytes"
+          },
+          {
+            "name": "CU: list an asset",
+            "value": 20269,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset",
+            "value": 25146,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with empty collection",
+            "value": 25177,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with empty collection",
+            "value": 33191,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: list an asset with collection royalties",
+            "value": 24294,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: sell an asset with collection royalties",
+            "value": 35962,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset",
+            "value": 3958,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an empty asset with empty collection",
+            "value": 5684,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins",
+            "value": 7271,
+            "unit": "Compute Units"
+          },
+          {
+            "name": "CU: transfer an asset with plugins and empty collection",
+            "value": 8997,
+            "unit": "Compute Units"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "90809591+blockiosaurus@users.noreply.github.com",
+            "name": "blockiosaurus",
+            "username": "blockiosaurus"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c8732ac66066ec5174beaaab51f9dabf05089f26",
+          "message": "ci: use the shared reusable workflows from metaplex-foundation/actions (#317)\n\n* ci: call the shared reusable workflows from metaplex-foundation/actions\n\nReplaces the repository's copies of build, test, coverage, benchmark and\nclient workflows with calls into metaplex-foundation/actions, pinned by\ncommit. Program facts move to .github/programs.json; toolchain pins stay in\n.github/.env. The publish workflows now open a release pull request and the\nnew release-* workflows tag on merge, matching bubblegum and genesis.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* ci: pin shared workflows to actions@7afc538992df\n\nPicks up the solana-verify version default in the shared workflows.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* ci: pin shared workflows to actions@772e5a7cf740 and tighten the dispatch gates\n\n- deploy and publish only accept skipped build/test jobs when git_ref is a\n  release tag; a failed build or tag check now blocks them\n- check_tag rejects release tags that do not belong to this repository (or,\n  for deploy, to the selected program)\n- one deploy per program and cluster, one publish and one release at a time\n- the shared deploy workflow now emits its squads plan output and reads\n  programs.json from the dispatched revision, so older release tags deploy\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* ci: pin shared workflows to actions@089e761576b6\n\nPicks up the benchmark fix for repos without a gh-pages branch.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* ci: pin shared workflows to actions@8f4db07ffb2a; check_tag confirms the tag exists\n\nPicks up the second CodeRabbit round on the shared workflows: programs.json\nand host tool pins read from the dispatched revision, publish from the tested\ncommit, resumable releases. check_tag now rejects a branch named like a\nrelease tag, and create_release waits for the program build.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* ci: pin shared workflows to actions@da62cf9659ef\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* ci: pin shared workflows to actions 6064713 (CodeRabbit round 3)\n\nDispatch workflows resolve git_ref to one commit in check_tag and pass\nthat commit to every build, test, publish, release and deploy job, so a\nmoving branch or a branch named like a tag cannot split a run across\ndifferent source. The release workflows get the merged branch name to\npick the released version.\nThe JS client CONTRIBUTING guide describes npm trusted publishing instead\nof NPM_TOKEN.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* ci: pin shared workflows to actions 782403d\n\ndetect-changes works on pushes to private repositories again and\ncreate-release continues the program's version across tag families.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* ci: pin shared workflows at 759f332, trusted-publisher setup notes\n\n- Regenerated from metaplex-foundation/actions@759f332: filter-matrix\n  injection fix, publish reruns recover after a published-but-unreleased\n  run, create-release's check_tag drops its unreachable release branch.\n- CONTRIBUTING: npm trusted publisher takes the workflow filename alone,\n  must allow direct `npm publish`, and the release PR needs \"Allow GitHub\n  Actions to create and approve pull requests\".\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* ci: pin shared workflows at 7f55495\n\n- Regenerated from metaplex-foundation/actions@7f55495: publish reruns only\n  recover when the registry holds this commit's content, buffer-only Squads\n  deploys export the verified-build PDA transaction, a release whose asset\n  upload fails now fails, release workflows accept SemVer build metadata.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* ci: pin shared workflows at v2.0.0\n\n- Pin metaplex-foundation/actions at v2.0.0 (4ee4bcf), the merge of\n  metaplex-foundation/actions#18. Also brings rerun recovery that compares\n  unpacked crates, a non-fatal PDA export for buffer-only Squads deploys,\n  and a node_modules cache keyed by runner image.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* ci: pin shared workflows at v2.0.1\n\n- Pin metaplex-foundation/actions at v2.0.1 (8fcadb6), the merge of\n  metaplex-foundation/actions#20: verify-from-repo fails on a hash\n  mismatch, no remote verification job on devnet or for private\n  repositories, npm provenance only from public repositories, and publish\n  reruns check the requested dist-tag.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Fable 5.1 <noreply@anthropic.com>",
+          "timestamp": "2026-11-02T16:39:49-05:00",
+          "tree_id": "1a8343136a4a4195d30bb3d4ddfe0274b0c96577",
+          "url": "https://github.com/metaplex-foundation/mpl-core/commit/c8732ac66066ec5174beaaab51f9dabf05089f26"
+        },
+        "date": 1793655937280,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
