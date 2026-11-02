@@ -28,8 +28,10 @@ jobs:
       - name: Sanitize Ref
         id: sanitize
         shell: bash
+        env:
+          GIT_REF: ${{ inputs.git_ref }}
         run: |
-          REF="${{ inputs.git_ref }}"
+          REF="$GIT_REF"
           if [ -z "$REF" ]; then
             REF="default"
           fi
