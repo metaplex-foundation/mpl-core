@@ -10,3 +10,12 @@ updates:
     allow:
       # Starting slow by only checking our own packages for updates.
       - dependency-name: '@metaplex-foundation/*'
+
+  # Shared CI workflows and third-party actions are SHA-pinned; keep them current.
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    groups:
+      actions:
+        patterns: ['*']

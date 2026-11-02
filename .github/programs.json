@@ -1,0 +1,49 @@
+{
+  "$comment": "Program descriptors for the shared CI in metaplex-foundation/actions. Toolchain pins live in .github/.env.",
+  "programs": [
+    {
+      "name": "mpl-core",
+      "package": "mpl-core-program",
+      "library": "mpl_core_program",
+      "release_tag": "core",
+      "deploy": {
+        "program_id": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+        "spill_address": "botTxAkJhuCtNNn9xsH8fHJjzTkcN6XD4dR3R5hkzV2",
+        "repo_visibility": "public",
+        "clusters": {
+          "devnet": {
+            "type": "squads",
+            "multisig": "Gs6jZWxXFvmZtBcyYr6fBXX5ikwRTemBDS4f6kFuB31U",
+            "vault": "Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59",
+            "program_index": 1
+          },
+          "mainnet-beta": {
+            "type": "squads",
+            "multisig": "EADFTJ9b6yPAqyRjhz1scirvWhggMSWTt1BgBjKgm5wT",
+            "vault": "bfQVv6niKVgEURYqQ1beJmiEQQN7MrvLRvk3mZGFubb",
+            "program_index": 1
+          },
+          "sonic-devnet": {
+            "type": "direct"
+          },
+          "sonic-testnet": {
+            "type": "direct"
+          },
+          "eclipse-devnet": {
+            "type": "direct"
+          },
+          "eclipse-testnet": {
+            "type": "direct"
+          },
+          "eclipse-mainnet": {
+            "type": "direct"
+          }
+        }
+      }
+    }
+  ],
+  "dump_scripts": [
+    "configs/scripts/program/dump.sh",
+    "configs/scripts/program/dump_oracle_example.sh"
+  ]
+}
