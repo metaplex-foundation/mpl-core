@@ -19,7 +19,7 @@ permissions: {}
 jobs:
   changes:
     name: Detect changes
-    uses: metaplex-foundation/actions/.github/workflows/detect-changes.yml@7f7eb6c041079973a7b2d743b174fc5d070f89f3 # ci/faster-ci, v2.1.0 candidate
+    uses: metaplex-foundation/actions/.github/workflows/detect-changes.yml@b7f2319cc97d9c8c052f24be1a709c88961dc1a8 # ci/faster-ci, v2.1.0 candidate
     permissions:
       contents: read
       pull-requests: read
@@ -28,7 +28,7 @@ jobs:
     name: Programs
     if: needs.changes.outputs.any == 'true'
     needs: changes
-    uses: metaplex-foundation/actions/.github/workflows/build-programs.yml@7f7eb6c041079973a7b2d743b174fc5d070f89f3 # ci/faster-ci, v2.1.0 candidate
+    uses: metaplex-foundation/actions/.github/workflows/build-programs.yml@b7f2319cc97d9c8c052f24be1a709c88961dc1a8 # ci/faster-ci, v2.1.0 candidate
     permissions:
       contents: read
 
@@ -36,7 +36,7 @@ jobs:
     name: Programs
     if: needs.changes.outputs.programs == 'true'
     needs: changes
-    uses: metaplex-foundation/actions/.github/workflows/test-programs.yml@7f7eb6c041079973a7b2d743b174fc5d070f89f3 # ci/faster-ci, v2.1.0 candidate
+    uses: metaplex-foundation/actions/.github/workflows/test-programs.yml@b7f2319cc97d9c8c052f24be1a709c88961dc1a8 # ci/faster-ci, v2.1.0 candidate
     permissions:
       contents: read
     with:
@@ -48,7 +48,7 @@ jobs:
     name: Programs
     if: needs.changes.outputs.programs == 'true'
     needs: changes
-    uses: metaplex-foundation/actions/.github/workflows/coverage.yml@7f7eb6c041079973a7b2d743b174fc5d070f89f3 # ci/faster-ci, v2.1.0 candidate
+    uses: metaplex-foundation/actions/.github/workflows/coverage.yml@b7f2319cc97d9c8c052f24be1a709c88961dc1a8 # ci/faster-ci, v2.1.0 candidate
     permissions:
       contents: read
       pull-requests: write
@@ -60,7 +60,7 @@ jobs:
     name: Generate clients
     if: needs.changes.outputs.any == 'true'
     needs: changes
-    uses: metaplex-foundation/actions/.github/workflows/generate-clients.yml@7f7eb6c041079973a7b2d743b174fc5d070f89f3 # ci/faster-ci, v2.1.0 candidate
+    uses: metaplex-foundation/actions/.github/workflows/generate-clients.yml@b7f2319cc97d9c8c052f24be1a709c88961dc1a8 # ci/faster-ci, v2.1.0 candidate
     permissions:
       contents: read
 
@@ -68,7 +68,7 @@ jobs:
     name: JS Client
     if: needs.changes.outputs.js_client == 'true'
     needs: [changes, build_programs]
-    uses: metaplex-foundation/actions/.github/workflows/test-js-client.yml@7f7eb6c041079973a7b2d743b174fc5d070f89f3 # ci/faster-ci, v2.1.0 candidate
+    uses: metaplex-foundation/actions/.github/workflows/test-js-client.yml@b7f2319cc97d9c8c052f24be1a709c88961dc1a8 # ci/faster-ci, v2.1.0 candidate
     permissions:
       contents: read
 
@@ -76,7 +76,7 @@ jobs:
     name: Benchmark
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build_programs
-    uses: metaplex-foundation/actions/.github/workflows/benchmark.yml@7f7eb6c041079973a7b2d743b174fc5d070f89f3 # ci/faster-ci, v2.1.0 candidate
+    uses: metaplex-foundation/actions/.github/workflows/benchmark.yml@b7f2319cc97d9c8c052f24be1a709c88961dc1a8 # ci/faster-ci, v2.1.0 candidate
     permissions:
       contents: write
       deployments: write
@@ -88,7 +88,7 @@ jobs:
     name: Benchmark Summary
     if: github.event_name == 'pull_request'
     needs: build_programs
-    uses: metaplex-foundation/actions/.github/workflows/benchmark.yml@7f7eb6c041079973a7b2d743b174fc5d070f89f3 # ci/faster-ci, v2.1.0 candidate
+    uses: metaplex-foundation/actions/.github/workflows/benchmark.yml@b7f2319cc97d9c8c052f24be1a709c88961dc1a8 # ci/faster-ci, v2.1.0 candidate
     permissions:
       contents: write
       deployments: write
@@ -100,7 +100,7 @@ jobs:
     name: Rust Client
     if: needs.changes.outputs.rust_client == 'true'
     needs: [changes, build_programs]
-    uses: metaplex-foundation/actions/.github/workflows/test-rust-client.yml@7f7eb6c041079973a7b2d743b174fc5d070f89f3 # ci/faster-ci, v2.1.0 candidate
+    uses: metaplex-foundation/actions/.github/workflows/test-rust-client.yml@b7f2319cc97d9c8c052f24be1a709c88961dc1a8 # ci/faster-ci, v2.1.0 candidate
     permissions:
       contents: read
     with:
