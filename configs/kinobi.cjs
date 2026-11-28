@@ -324,76 +324,34 @@ kinobi.update(
         externalPluginAdapterUpdateInfo: {
             name: "baseExternalPluginAdapterUpdateInfo",
         },
-        oracle: {
-            name: "baseOracle",
-        },
-        oracleInitInfo: {
-            name: "baseOracleInitInfo",
-        },
-        oracleUpdateInfo: {
-            name: "baseOracleUpdateInfo",
-        },
-        lifecycleHook: {
-            name: "baseLifecycleHook",
-        },
-        lifecycleHookInitInfo: {
-            name: "baseLifecycleHookInitInfo",
-        },
-        lifecycleHookUpdateInfo: {
-            name: "baseLifecycleHookUpdateInfo",
-        },
-        linkedLifecycleHook: {
-            name: "baseLinkedLifecycleHook",
-        },
-        linkedLifecycleHookInitInfo: {
-            name: "baseLinkedLifecycleHookInitInfo",
-        },
-        linkedLifecycleHookUpdateInfo: {
-            name: "baseLinkedLifecycleHookUpdateInfo",
-        },
-        appData: {
-            name: "baseAppData",
-        },
-        appDataInitInfo: {
-            name: "baseAppDataInitInfo",
-        },
-        appDataUpdateInfo: {
-            name: "baseAppDataUpdateInfo",
-        },
-        linkedAppData: {
-            name: "baseLinkedAppData",
-        },
-        linkedAppDataInitInfo: {
-            name: "baseLinkedAppDataInitInfo",
-        },
-        linkedAppDataUpdateInfo: {
-            name: "baseLinkedAppDataUpdateInfo",
-        },
-        dataSection: {
-            name: "baseDataSection",
-        },
-        dataSectionInitInfo: {
-            name: "baseDataSectionInitInfo",
-        },
-        dataSectionUpdateInfo: {
-            name: "baseDataSectionUpdateInfo",
-        },
         validationResultsOffset: {
             name: "baseValidationResultsOffset",
         },
         masterEdition: {
             name: "baseMasterEdition",
         },
-        agentIdentity: {
-            name: "baseAgentIdentity",
-        },
-        agentIdentityInitInfo: {
-            name: "baseAgentIdentityInitInfo",
-        },
-        agentIdentityUpdateInfo: {
-            name: "baseAgentIdentityUpdateInfo",
-        },
     })
+);
+
+// Every external plugin adapter variant `X` has `X`, `XInitInfo` and
+// `XUpdateInfo` defined types that the hand-written SDK wraps, so rename them
+// all to `baseX*` from the enum rather than listing each one by hand.
+const {
+    getExternalPluginAdapterNames,
+    renderExternalPluginAdapters,
+} = require("./kinobiExternalPluginAdapters.cjs");
+const { renderInternalPlugins } = require("./kinobiInternalPlugins.cjs");
+kinobi.update(
+    new k.updateDefinedTypesVisitor(
+        Object.fromEntries(
+            getExternalPluginAdapterNames(kinobi.getRoot()).flatMap((name) =>
+                ["", "InitInfo", "UpdateInfo"].map((suffix) => [
+                    `${name}${suffix}`,
+                    { name: `base${k.pascalCase(name)}${suffix}` },
+                ])
+            )
+        )
+    )
 );
 
 // Render JavaScript.
@@ -422,4 +380,23 @@ kinobi.accept(
             },
         ],
     })
+);
+
+// Render the ergonomic plugin wrapper layers with custom renderers. These derive
+// the per-plugin ergonomic types + transformers from the same node tree,
+// replacing what used to be hand-written in clients/js/src/plugins. They must run
+// AFTER renderJavaScriptVisitor because that deletes and re-renders `src/generated`.
+const rendered = [
+    ...renderExternalPluginAdapters(kinobi.getRoot(), jsDir, prettier),
+    ...renderInternalPlugins(
+        kinobi.getRoot(),
+        jsDir,
+        prettier,
+        path.join(__dirname, "plugin-manifest.json")
+    ),
+];
+// eslint-disable-next-line no-console
+console.log(
+    "Rendered plugin layers:\n" +
+        rendered.map((f) => "  clients/js/src/generated/" + f).join("\n")
 );
